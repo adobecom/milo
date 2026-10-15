@@ -136,6 +136,7 @@ describe('adobetv autoblock', () => {
       expect(wrapper.querySelector('a')).to.be.null;
       expect(iframe.src).to.equal('https://video.tv.adobe.com/v/111111?autoplay=true');
       expect(iframe.getAttribute('allow')).to.include('autoplay');
+      expect(document.activeElement).to.equal(iframe);
     });
 
     it('plays a poster that was cloned after decoration', async () => {
@@ -174,6 +175,17 @@ describe('adobetv autoblock', () => {
       await init(wrapper.querySelector('a'));
       expect(wrapper.querySelector('video')).to.be.null;
       expect(wrapper.querySelector('iframe').src).to.equal('https://video.tv.adobe.com/v/444444?autoplay=true&end=replay');
+    });
+
+    it('skips the poster and autoplays the iframe for a poster with ?autoplay=true', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPosterQueryAutoplay');
+      await init(wrapper.querySelector('a'));
+      expect(wrapper.querySelector('.mpc-poster')).to.be.null;
+      expect(wrapper.querySelector('video')).to.be.null;
+      const iframe = wrapper.querySelector('iframe');
+      expect(iframe.src).to.equal('https://video.tv.adobe.com/v/888888?autoplay=true&end=replay');
+      expect(iframe.getAttribute('allow')).to.include('autoplay');
+      expect(document.activeElement).to.not.equal(iframe);
     });
 
     it('renders natively when a Milo hash is added to MPC query params', async () => {

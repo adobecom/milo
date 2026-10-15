@@ -46,7 +46,7 @@ const onPlayerMessage = (event) => {
 };
 let playerListenerAdded = false;
 
-const createIframe = (a, href, { autoplay = false } = {}) => {
+const createIframe = (a, href, { autoplay = false, focus = false } = {}) => {
   const videoHref = href || a.href;
 
   const iframe = createTag('iframe', {
@@ -79,7 +79,7 @@ const createIframe = (a, href, { autoplay = false } = {}) => {
   getPlayerObserver().observe(iframe);
 
   a.remove();
-  if (autoplay) iframe.focus();
+  if (focus) iframe.focus();
 };
 
 const createIframeWithCaptions = (a, url, geo, opts) => {
@@ -132,7 +132,7 @@ const onPosterPlay = (e) => {
   const a = poster.previousElementSibling;
   if (a?.tagName !== 'A') return;
   poster.remove();
-  embedPlayer(a, { autoplay: true });
+  embedPlayer(a, { autoplay: true, focus: true });
 };
 let posterListenerAdded = false;
 
@@ -174,9 +174,12 @@ export default function init(a) {
       src: a.href,
       anchorTag: a,
     });
-  } else if (a.dataset.videoPoster && getMpcPlayerId(a.href)) {
-    createPosterPlayer(a);
   } else {
-    embedPlayer(a);
+    const queryAutoplay = new URL(a.href).searchParams.get('autoplay') === 'true';
+    if (a.dataset.videoPoster && getMpcPlayerId(a.href) && !queryAutoplay) {
+      createPosterPlayer(a);
+    } else {
+      embedPlayer(a, { autoplay: queryAutoplay });
+    }
   }
 }
