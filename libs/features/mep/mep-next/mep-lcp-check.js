@@ -27,7 +27,7 @@ const MAX_FRAGMENT_DEPTH = 2;
 const HASH_IMAGE_PARAMS = 'width=64&format=png&optimize=medium';
 const MEDIA_RE = /media_[0-9a-f]+\.[a-z0-9]+/i;
 const NON_CONTENT_ACTIONS = ['remove', 'updateattribute'];
-const LOG_TITLE = 'MEP LCP image checks';
+const LOG_TITLE = 'MEP LCP near-dupe image checks';
 const FIRST_SECTION_RE = /^main>div(:first-child|:first-of-type|:nth-child\(1\)|:nth-of-type\(1\))?(?=$|[\s>])/;
 
 const checkedVariants = new Set();
@@ -521,8 +521,11 @@ const groupByFragment = (findings) => {
   return [...groups.values()];
 };
 
-export function logFindings({ findings, unable }) {
-  if (!findings.length && !unable.length) return;
+export function logFindings({ findings, unable }, checked = 0) {
+  if (!findings.length && !unable.length) {
+    console.log(`${LOG_TITLE}: no issues found (${checked} variant${checked === 1 ? '' : 's'} checked)`);
+    return;
+  }
   console.groupCollapsed(`${LOG_TITLE} (${findings.length})`);
   groupByFragment(findings).forEach((group) => console.log(describeNearDuplicates(group)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
@@ -564,11 +567,16 @@ export default async function init() {
   const { mep } = getConfig();
   if (!mep?.lcpCheck || !mep.lcpSection) return [];
   const experiments = getVariantsToCheck(mep.lcpExperiments, mep.variantOverride);
-  if (!experiments.length) return mep.lcpFindings || [];
+  if (!experiments.length) {
+    if (!mep.lcpFindings) console.log(`${LOG_TITLE}: no personalization variants to check`);
+    mep.lcpFindings ??= [];
+    return mep.lcpFindings;
+  }
   await whenIdle();
   mep.lcpSnapshot ??= getLcpSnapshot(mep.lcpSection);
   const result = await findNearDuplicates(experiments, mep.lcpSnapshot);
   mep.lcpFindings = [...(mep.lcpFindings || []), ...result.findings];
-  logFindings(result);
+  const checked = experiments.reduce((n, exp) => n + Object.keys(exp.variants).length, 0);
+  logFindings(result, checked);
   return mep.lcpFindings;
 }

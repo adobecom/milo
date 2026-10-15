@@ -478,5 +478,20 @@ describe('mep-lcp-check', () => {
       expect(await init()).to.equal(getConfig().mep.lcpFindings);
       expect(log.calledTwice).to.be.true;
     });
+
+    it('says when there is nothing to report', async () => {
+      const log = sinon.stub(console, 'log');
+      logFindings({ findings: [], unable: [] }, 3);
+      logFindings({ findings: [], unable: [] }, 1);
+      getConfig().mep = { preview: true, lcpCheck: true, lcpSection: { clone: document.createElement('div') }, lcpExperiments: [] };
+      expect(await init()).to.deep.equal([]);
+      expect(await init()).to.deep.equal([]);
+      sinon.restore();
+      expect(log.args.map(([msg]) => msg)).to.deep.equal([
+        'MEP LCP near-dupe image checks: no issues found (3 variants checked)',
+        'MEP LCP near-dupe image checks: no issues found (1 variant checked)',
+        'MEP LCP near-dupe image checks: no personalization variants to check',
+      ]);
+    });
   });
 });
