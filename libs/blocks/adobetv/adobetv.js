@@ -198,16 +198,10 @@ const createPosterPlayer = (a) => {
   }
 };
 
-const PLAYBACK_HASH = /autoplay|hoverplay|viewportplay/;
-
 export default function init(a) {
   a.classList.add('hide-video');
-  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
-  const inBgBlock = bgBlocks.some((b) => a.closest(`.${b}`));
-  // MPC MP4s render natively; MPC player URLs always use the MPC player.
-  const isNativeVideo = a.href.includes('.mp4')
-    && (inBgBlock || PLAYBACK_HASH.test(a.hash) || !!a.dataset.videoPoster);
-  if (isNativeVideo) {
+  // MPC MP4s render natively like any MP4; MPC player URLs always use the MPC player.
+  if (a.href.includes('.mp4')) {
     a.classList.add('hide');
     if (!a.parentNode) return;
     decorateAnchorVideo({
