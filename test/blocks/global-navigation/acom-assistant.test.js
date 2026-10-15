@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { createFullGlobalNavigation } from './test-utilities.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { ensureAcomAssistant } from '../../../libs/blocks/brand-concierge/acom-assistant-bootstrap.js';
+import { loadAcomAssistantGnav } from '../../../libs/features/acom-assistant-gnav.js';
 
 describe('C1 global navigation authored Assistant entry point', () => {
   let originalClient;
@@ -65,9 +66,28 @@ describe('C1 global navigation authored Assistant entry point', () => {
     expect(client.initialize.called).to.be.false;
   });
 
+  it('does not mount or initialize Assistant below 900px with no-gnav-mobile authoring', async () => {
+    document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
+    await createFullGlobalNavigation({
+      globalNavigation: authoredNav.replace('class="brand-concierge-global"', 'class="brand-concierge-global no-gnav-mobile"'),
+      viewport: 'mobile',
+      imsInitialized: true,
+    });
+    await loadAcomAssistantGnav();
+
+    expect(document.querySelector('.feds-bc-wrapper')).to.exist;
+    expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    expect(document.querySelector('.bc-gnav')).to.be.null;
+    expect(client.initialize.called).to.be.false;
+    expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
+  });
+
   it('uses Assistant for an authored entry point and retains authored prompts', async () => {
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
-    await createFullGlobalNavigation({ globalNavigation: authoredNav, imsInitialized: true });
+    await createFullGlobalNavigation({
+      globalNavigation: authoredNav.replace('class="brand-concierge-global"', 'class="brand-concierge-global no-gnav-mobile"'),
+      imsInitialized: true,
+    });
     await ensureAcomAssistant();
 
     expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
@@ -80,9 +100,21 @@ describe('C1 global navigation authored Assistant entry point', () => {
     expect(document.querySelector('.bc-gnav')).to.be.null;
   });
 
+  it('keeps the authored Assistant entry point below 900px without no-gnav-mobile', async () => {
+    document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
+    await createFullGlobalNavigation({
+      globalNavigation: authoredNav,
+      viewport: 'mobile',
+      imsInitialized: true,
+    });
+
+    expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+    expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
+  });
+
   it('mounts Assistant in the authored wrapper without requiring a BC block', async () => {
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
-    await createFullGlobalNavigation({ imsInitialized: true });
+    await createFullGlobalNavigation({ viewport: 'mobile', imsInitialized: true });
     await ensureAcomAssistant();
 
     expect(document.querySelector('.feds-bc-wrapper #acomAssistant-gnav-mount')).to.exist;
