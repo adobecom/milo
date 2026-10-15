@@ -492,11 +492,27 @@ describe('Functional Test', () => {
     window.console.log.reset();
   });
 
-  it('keeps variants and a pre-decoration LCP section clone for the LCP check in preview', async () => {
+  it('skips the LCP check setup in preview without ?meplcp', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
+    await init(mepSettingsPreview);
+    const { lcpCheck, lcpExperiments, lcpSection } = getConfig().mep;
+    expect(lcpCheck).to.be.false;
+    expect(lcpExperiments).to.be.undefined;
+    expect(lcpSection).to.be.undefined;
+  });
+
+  it('keeps variants and a pre-decoration LCP section clone with ?meplcp', async () => {
+    const { href } = window.location;
+    window.history.replaceState({}, '', `${window.location.pathname}?mepLCP`);
     await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
     const firstSection = document.querySelector('body > main > div');
-    await init(mepSettingsPreview);
-    const { lcpExperiments, lcpSection } = getConfig().mep;
+    try {
+      await init(mepSettingsPreview);
+    } finally {
+      window.history.replaceState({}, '', href);
+    }
+    const { lcpCheck, lcpExperiments, lcpSection } = getConfig().mep;
+    expect(lcpCheck).to.be.true;
     expect(Object.keys(lcpExperiments[0].variants)).to.not.be.empty;
     expect(lcpSection.original).to.equal(firstSection);
     expect(lcpSection.clone).to.not.equal(firstSection);

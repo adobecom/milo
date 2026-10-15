@@ -1537,7 +1537,7 @@ export async function applyPers({ manifests }) {
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
   // shallow copies keep variants, which cleanAndSortManifestList deletes
-  if (config.mep.preview) config.mep.lcpExperiments = experiments.map((exp) => exp && { ...exp });
+  if (config.mep.lcpCheck) config.mep.lcpExperiments = experiments.map((exp) => exp && { ...exp });
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
@@ -1781,10 +1781,12 @@ export async function init(enablements = {}) {
     isPostLCP = true;
   } else {
     for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
+    const preview = mepButton !== 'off'
+      && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton);
     config.mep = {
       updateFragDataProps,
-      preview: (mepButton !== 'off'
-        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+      preview,
+      lcpCheck: preview && new URLSearchParams(window.location.search.toLowerCase()).has('meplcp'),
       variantOverride: parseMepParam(mepParam),
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
@@ -1797,7 +1799,7 @@ export async function init(enablements = {}) {
       akamaiCode: akamaiCode?.toLowerCase(),
       consentState: getMepConsentConfig(),
     };
-    const lcpEl = config.mep.preview && document.querySelector('body > main > div');
+    const lcpEl = config.mep.lcpCheck && document.querySelector('body > main > div');
     if (lcpEl) config.mep.lcpSection = { original: lcpEl, clone: lcpEl.cloneNode(true) };
 
     manifests = manifests.concat(await combineMepSources(
@@ -1840,9 +1842,11 @@ export async function init(enablements = {}) {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });
-      import('../mep/mep-next/mep-lcp-check.js')
-        .then(({ default: checkLcpImages }) => checkLcpImages())
-        .catch((e) => window.lana?.log(`MEP LCP check error: ${e.toString()}`));
+      if (config.mep.lcpCheck) {
+        import('../mep/mep-next/mep-lcp-check.js')
+          .then(({ default: checkLcpImages }) => checkLcpImages())
+          .catch((e) => window.lana?.log(`MEP LCP check error: ${e.toString()}`));
+      }
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);

@@ -537,10 +537,10 @@ describe('mep-lcp-check', () => {
   describe('init', () => {
     afterEach(() => sinon.restore());
 
-    it('does nothing without preview or a snapshot', async () => {
-      getConfig().mep = { preview: false };
+    it('does nothing without ?meplcp or a snapshot', async () => {
+      getConfig().mep = { preview: true, lcpCheck: false };
       expect(await init()).to.deep.equal([]);
-      getConfig().mep = { preview: true };
+      getConfig().mep = { preview: true, lcpCheck: true };
       expect(await init()).to.deep.equal([]);
     });
 
@@ -552,6 +552,7 @@ describe('mep-lcp-check', () => {
       sinon.stub(console, 'groupEnd');
       getConfig().mep = {
         preview: true,
+        lcpCheck: true,
         lcpSection: { original: section, clone: section.cloneNode(true) },
         lcpExperiments: [null, { manifestPath: '/test/default.json' }, {
           manifestPath: '/test/init-manifest.json',

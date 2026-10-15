@@ -636,7 +636,7 @@ export function getVariantsToCheck(experiments = [], variantOverride = {}) {
 
 export default async function init() {
   const { mep } = getConfig();
-  if (!mep?.preview || !mep.lcpSection) return [];
+  if (!mep?.lcpCheck || !mep.lcpSection) return [];
   const experiments = getVariantsToCheck(mep.lcpExperiments, mep.variantOverride);
   if (!experiments.length) return mep.lcpFindings || [];
   await whenIdle();
