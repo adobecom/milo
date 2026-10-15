@@ -49,12 +49,6 @@ function decorate(block, root, el) {
   backgroundDiv?.classList.add(`${blockName}-background`);
   contentDiv?.classList.add(`${blockName}-content`);
   firstRow.classList.add(`${blockName}-container`);
-  // The content layer covers the background video, so forward hover to it
-  ['mouseenter', 'mouseleave'].forEach((type) => {
-    firstRow.addEventListener(type, () => {
-      firstRow.querySelector('video[data-hoverplay]')?.dispatchEvent(new Event(type));
-    });
-  });
 
   decorateBlockBg(block, backgroundDiv, { useHandleFocalpoint: true });
 

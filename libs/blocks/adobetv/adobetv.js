@@ -1,7 +1,9 @@
-import { decorateAnchorVideo, getMpcPlayerId } from '../../utils/decorate.js';
+import { decorateAnchorVideo } from '../../utils/decorate.js';
 import { createTag, getConfig, getFederatedContentRoot, loadStyle } from '../../utils/utils.js';
 
 let captionsLangMapPromise = null;
+
+const isMpcPlayerUrl = (url) => /^https:\/\/(?:stage-)?video\.tv\.adobe\.com\/v\/\d+/.test(url);
 
 const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, {
   tags: 'adobetv',
@@ -23,7 +25,7 @@ const sendMpcAction = (iframe, action) => {
   iframe.contentWindow?.postMessage({ type: 'mpcAction', action }, iframe.src);
 };
 
-export const pauseMpcPlayer = (iframe) => sendMpcAction(iframe, 'pause');
+const pauseMpcPlayer = (iframe) => sendMpcAction(iframe, 'pause');
 
 // A WeakSet rather than a data attribute so carousel clones don't inherit the state.
 const inViewPlayers = new WeakSet();
@@ -196,13 +198,11 @@ const PLAYBACK_HASH = /autoplay|hoverplay|viewportplay/;
 
 export default function init(a) {
   a.classList.add('hide-video');
-  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form', 'explore-card'];
-  const isMp4 = a.href.includes('.mp4');
+  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
   const inBgBlock = bgBlocks.some((b) => a.closest(`.${b}`));
-  const hasPlaybackHash = PLAYBACK_HASH.test(a.hash);
-  // MPC player URLs stay the iframe unless a Milo video hash or a background block asks for native.
-  const isNativeVideo = (isMp4 && (inBgBlock || hasPlaybackHash || !!a.dataset.videoPoster))
-    || (!!getMpcPlayerId(a.href) && (inBgBlock || hasPlaybackHash));
+  // MPC MP4s render natively; MPC player URLs always use the MPC player.
+  const isNativeVideo = a.href.includes('.mp4')
+    && (inBgBlock || PLAYBACK_HASH.test(a.hash) || !!a.dataset.videoPoster);
   if (isNativeVideo) {
     a.classList.add('hide');
     if (!a.parentNode) return;
@@ -212,7 +212,7 @@ export default function init(a) {
     });
   } else {
     const queryAutoplay = new URL(a.href).searchParams.get('autoplay') === 'true';
-    if (a.dataset.videoPoster && getMpcPlayerId(a.href) && !queryAutoplay) {
+    if (a.dataset.videoPoster && isMpcPlayerUrl(a.href) && !queryAutoplay) {
       createPosterPlayer(a);
     } else {
       embedPlayer(a, { autoplayInView: queryAutoplay });

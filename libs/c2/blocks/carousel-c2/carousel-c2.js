@@ -171,10 +171,7 @@ function cloneSlides(carouselEls) {
       img?.setAttribute('loading', 'eager');
     });
   });
-  // Keep the real slides attached; re-inserting them would reload any playing iframe.
-  [...wrapper.children].forEach((node) => { if (!slides.includes(node)) node.remove(); });
-  wrapper.prepend(...cloneFront);
-  wrapper.append(...cloneBack);
+  wrapper.replaceChildren(...allSlides);
   carouselEls.allSlides = allSlides;
   goToActive(carouselEls, activeSlide);
   wrapper.setAttribute('data-slides-cloned', 'true');
@@ -221,15 +218,6 @@ function slideAnimation(carouselEls, direction) {
   if (wrapper._timeout) clearTimeout(wrapper._timeout);
   wrapper._timeout = setTimeout(() => goToActive(carouselEls), duration - 20);
   /* eslint-enable */
-}
-
-function pauseInactiveMpcPlayers(slides, activeSlides) {
-  const playing = slides
-    .filter((slide) => !activeSlides.includes(slide))
-    .flatMap((slide) => [...slide.querySelectorAll('iframe.adobetv[data-playing="true"]')]);
-  if (!playing.length) return;
-  import('../../../blocks/adobetv/adobetv.js')
-    .then(({ pauseMpcPlayer }) => playing.forEach(pauseMpcPlayer));
 }
 
 function moveSlides(carouselEls, direction, e) {
@@ -282,7 +270,6 @@ function moveSlides(carouselEls, direction, e) {
   activeSlideIndicator.setAttribute('aria-current', 'location');
   carouselEls.activeClone = activeClone;
   carouselEls.activeSlide = activeSlide;
-  pauseInactiveMpcPlayers(allSlides, [activeSlide, activeClone]);
 
   slideAnimation(carouselEls, direction);
 
@@ -314,7 +301,7 @@ function attachListeners(carouselEls) {
 
   wrapper.addEventListener('pointerdown', (e) => {
     const { target } = e;
-    if (target.closest('a, button')) return;
+    if (target.tagName === 'A') return;
     e.preventDefault();
     wrapper.classList.add('grabbing');
     startX = e.clientX;

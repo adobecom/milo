@@ -242,21 +242,11 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
     });
 
-    it('warms adobetv and preconnects MPC hosts from an MPC player image alt', () => {
+    it('preloads adobetv for an MPC URL in a first-section image alt', () => {
       document.body.innerHTML = '<main><div><img alt="https://video.tv.adobe.com/v/332632?autoplay=true | poster"></div></main>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelector('link[href*="/libs/blocks/adobetv/adobetv.js"]')).to.exist;
-      expect(document.head.querySelector('link[rel="preconnect"][href="https://images-tv.adobe.com"]')).to.exist;
-      expect(document.head.querySelector('link[rel="preconnect"][href="https://video.tv.adobe.com"][crossorigin="anonymous"]')).to.exist;
-    });
-
-    it('only preconnects the MPC media host for an MPC MP4 image alt', () => {
-      document.head.innerHTML = '';
-      document.body.innerHTML = '<main><div><img alt="https://images-tv.adobe.com/mpcv3/1/clip.mp4#_autoplay | poster"></div></main>';
-      utils.preloadLcpCodeFiles();
-      expect(document.head.querySelector('link[href*="/libs/blocks/adobetv/adobetv.js"]')).to.exist;
-      expect(document.head.querySelector('link[rel="preconnect"][href="https://images-tv.adobe.com"]')).to.exist;
-      expect(document.head.querySelector('link[href="https://video.tv.adobe.com"]')).to.not.exist;
+      expect(document.head.querySelector('link[rel="preconnect"][href*="tv.adobe.com"]')).to.not.exist;
     });
 
     it('preloads placeholders.js when the first section uses {{ }} tokens', () => {

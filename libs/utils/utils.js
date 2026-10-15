@@ -2378,13 +2378,7 @@ export function preloadLcpCodeFiles(area = document) {
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
     autoNames.add('video');
   }
-  if (firstSection.querySelector('img[alt*="tv.adobe.com"]')) {
-    autoNames.add('adobetv');
-    loadLink('https://images-tv.adobe.com', { rel: 'preconnect' });
-    if (firstSection.querySelector('img[alt*="video.tv.adobe.com"]')) {
-      loadLink('https://video.tv.adobe.com', { rel: 'preconnect', crossorigin: 'anonymous' });
-    }
-  }
+  if (firstSection.querySelector('img[alt*="tv.adobe.com"]')) autoNames.add('adobetv');
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {

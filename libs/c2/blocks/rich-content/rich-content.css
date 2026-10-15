@@ -23,12 +23,6 @@
     background-color: unset;
   }
 
-  /* MPC MP4 renditions top out at 960px wide, so don't rely on intrinsic width. */
-  .video-container,
-  .video-container video {
-    width: 100%;
-  }
-
   .foreground .content {
     display: flex;
     align-items: flex-start;

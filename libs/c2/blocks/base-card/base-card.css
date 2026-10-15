@@ -166,10 +166,7 @@
         }
       }
 
-      .media picture:not(.icon) img {
-        aspect-ratio: 2.2/1;
-      }
-
+      .media picture:not(.icon) img,
       .media .milo-video {
         aspect-ratio: 2.2/1;
       }
