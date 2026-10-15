@@ -73,12 +73,6 @@ describe('hub-hero block', () => {
     let originalMargin;
     let originalViewport;
 
-    const settleLayout = async () => {
-      for (let frame = 0; frame < 3; frame += 1) {
-        await new Promise((resolve) => { requestAnimationFrame(resolve); });
-      }
-    };
-
     beforeEach(async () => {
       originalMargin = document.body.style.margin;
       originalViewport = { width: window.innerWidth, height: window.innerHeight };
