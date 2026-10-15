@@ -364,17 +364,17 @@ describe('mep-lcp-check', () => {
     });
 
     it('logs the viewport, cells and fix', async () => {
-      const warn = sinon.stub(console, 'warn');
+      const log = sinon.stub(console, 'log');
       sinon.stub(console, 'groupCollapsed');
       sinon.stub(console, 'groupEnd');
       logFindings(await run('hero-cells-single'));
       logFindings({ findings: [{ ...(await run('hero-cells-near')).findings[0], match: 'possible', distance: 10 }], unable: [] });
       sinon.restore();
-      const [layoutMsg] = warn.firstCall.args;
+      const [layoutMsg] = log.firstCall.args;
       expect(layoutMsg).to.include('phone: fragment background cell 1 of 1 media_aaa222.png is a near-duplicate');
       expect(layoutMsg).to.include('fix: copy the image from the page hero background cell 1 of 2 into the fragment hero background cell 1 of 1 so both use media_aaa111.png');
       expect(layoutMsg).to.include('note: hero layouts differ');
-      expect(warn.secondCall.args[0]).to.include('possible near-duplicate (distance 10');
+      expect(log.secondCall.args[0]).to.include('possible near-duplicate (distance 10');
     });
   });
 
@@ -476,7 +476,7 @@ describe('mep-lcp-check', () => {
     it('logs findings once per manifest', async () => {
       const section = document.createElement('div');
       section.innerHTML = `<picture><source srcset="${MOCKS}/media_aaa111.png?width=750 750w"><img alt="" src="${IMG_A}"></picture>`;
-      const warn = sinon.stub(console, 'warn');
+      const log = sinon.stub(console, 'log');
       sinon.stub(console, 'groupCollapsed');
       sinon.stub(console, 'groupEnd');
       getConfig().mep = {
@@ -494,13 +494,13 @@ describe('mep-lcp-check', () => {
       };
       const findings = await init();
       expect(findings).to.have.length(1);
-      expect(warn.calledOnce).to.be.true;
-      expect(warn.firstCall.args[0]).to.include('/test/init-manifest.json');
-      expect(warn.firstCall.args[0]).to.include('media_aaa111.png');
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.include('/test/init-manifest.json');
+      expect(log.firstCall.args[0]).to.include('media_aaa111.png');
       expect(getConfig().mep.lcpSnapshot.images.map(getMediaName))
         .to.deep.equal(['media_aaa111.png', 'media_aaa111.png']);
       expect(await init()).to.equal(getConfig().mep.lcpFindings);
-      expect(warn.calledOnce).to.be.true;
+      expect(log.calledOnce).to.be.true;
     });
   });
 });

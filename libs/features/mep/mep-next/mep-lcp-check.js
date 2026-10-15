@@ -552,14 +552,14 @@ const describeNearDuplicate = (f) => {
 export function logFindings({ findings, unable }) {
   if (!findings.length && !unable.length) return;
   console.groupCollapsed(`${LOG_TITLE} (${findings.length})`);
-  findings.filter((f) => f.type === 'hidden-image').forEach((f) => console.warn(
+  findings.filter((f) => f.type === 'hidden-image').forEach((f) => console.log(
     `Hidden ${f.source} image in the LCP area still downloads: ${f.image}\n`
     + `  hidden block: ${f.block}\n`
     + `  manifests in LCP area: ${f.manifests.join(', ') || 'unknown'}\n`
     + '  remove the hidden content instead of hiding it with CSS, or reuse the visible hero image',
   ));
   findings.filter((f) => f.type === 'near-duplicate')
-    .forEach((f) => console.warn(describeNearDuplicate(f)));
+    .forEach((f) => console.log(describeNearDuplicate(f)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
   console.groupEnd();
 }
