@@ -312,7 +312,7 @@ describe('hub-hero block', () => {
       await setViewport(originalViewport);
     });
 
-    const loadCarousel = async (slideCount = 3) => {
+    const loadCarousel = async (slideCount = 3, footerTag = 'p') => {
       document.body.innerHTML = await readFile({ path: './mocks/default.html' });
       const block = document.querySelector('.hub-hero');
       if (slideCount === 3) {
@@ -323,12 +323,13 @@ describe('hub-hero block', () => {
       const image = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="gray"/></svg>';
       const svg = `data:image/svg+xml,${encodeURIComponent(image)}`;
       block.querySelectorAll('img').forEach((img) => { img.src = svg; });
-      // Match the paragraph-authored footers used by current C2 content.
-      block.querySelectorAll('h3').forEach((heading) => {
-        const paragraph = document.createElement('p');
-        paragraph.textContent = heading.textContent;
-        heading.replaceWith(paragraph);
-      });
+      if (footerTag === 'p') {
+        block.querySelectorAll('h3').forEach((heading) => {
+          const paragraph = document.createElement('p');
+          paragraph.textContent = heading.textContent;
+          heading.replaceWith(paragraph);
+        });
+      }
       await init(block);
       await settleLayout();
       return block;
@@ -402,163 +403,217 @@ describe('hub-hero block', () => {
         .to.not.include('carousel-slides-three-assemble');
     });
 
-    [3, 4].forEach((slideCount) => {
-      ['ltr', 'rtl'].forEach((direction) => {
-        it(`expands fixed XL ${slideCount}-slide ${direction} cards in short viewports without narrowing footer text`, async () => {
-          document.documentElement.setAttribute('dir', direction);
-          for (const viewport of [
-            { width: 1536, height: 730 },
-            { width: 1440, height: 760 },
-            { width: 1470, height: 800 },
-          ]) {
-            await setViewport(viewport);
-            const block = await loadCarousel(slideCount);
-            window.scrollTo(0, 1800);
-            await settleLayout();
-            const row = block.querySelector('.hub-hero-carousel-container');
-            const card = row.querySelector('[data-index]');
-            const paragraph = card.querySelector('.hub-hero-carousel-item-footer p');
-            const icon = card.querySelector('.hub-hero-carousel-item-footer span');
-            paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
-            await settleLayout();
-            row.querySelectorAll('[data-index]').forEach((slide) => {
-              expect(slide.getBoundingClientRect().width).to.be.closeTo(392, 0.1);
-            });
-            const rowWidth = row.getBoundingClientRect().width;
-            const textWidth = paragraph.getBoundingClientRect().width;
-            const gap = parseFloat(getComputedStyle(block).getPropertyValue('--s2a-spacing-xs'));
-            for (const state of ['hovered', 'focused']) {
-              card.classList.add(state);
-              const start = performance.now();
-              const samples = [];
-              await new Promise((resolve) => {
-                const sample = () => {
-                  samples.push({
-                    cardWidth: card.getBoundingClientRect().width,
-                    textWidth: paragraph.getBoundingClientRect().width,
-                    rowWidth: row.getBoundingClientRect().width,
-                  });
-                  if (performance.now() - start < 400) requestAnimationFrame(sample);
-                  else resolve();
-                };
-                requestAnimationFrame(sample);
+    ['p', 'h3'].forEach((footerTag) => {
+      [3, 4].forEach((slideCount) => {
+        ['ltr', 'rtl'].forEach((direction) => {
+          it(`expands fixed XL ${slideCount}-slide ${direction} ${footerTag} cards in short viewports without narrowing footer text`, async () => {
+            document.documentElement.setAttribute('dir', direction);
+            for (const viewport of [
+              { width: 1536, height: 730 },
+              { width: 1440, height: 760 },
+              { width: 1470, height: 800 },
+            ]) {
+              await setViewport(viewport);
+              const block = await loadCarousel(slideCount, footerTag);
+              window.scrollTo(0, 1800);
+              await settleLayout();
+              const row = block.querySelector('.hub-hero-carousel-container');
+              const card = row.querySelector('[data-index]');
+              const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
+              expect(paragraph.tagName.toLowerCase()).to.equal(footerTag);
+              const icon = card.querySelector('.hub-hero-carousel-item-footer span');
+              paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
+              await settleLayout();
+              row.querySelectorAll('[data-index]').forEach((slide) => {
+                expect(slide.getBoundingClientRect().width).to.be.closeTo(392, 0.1);
               });
-              samples.forEach((sample) => {
-                expect(sample.cardWidth).to.be.at.least(392 - 0.1);
-                expect(sample.textWidth).to.be.at.least(textWidth - 0.1);
-                expect(sample.rowWidth).to.be.closeTo(rowWidth, 0.1);
-              });
-              expect(card.getBoundingClientRect().width)
-                .to.be.at.least(392 + icon.getBoundingClientRect().width + gap - 0.1);
-              card.classList.remove(state);
-              await new Promise((resolve) => { setTimeout(resolve, 350); });
-              expect(card.getBoundingClientRect().width).to.be.closeTo(392, 0.1);
+              const rowWidth = row.getBoundingClientRect().width;
+              const textWidth = paragraph.getBoundingClientRect().width;
+              const gap = parseFloat(getComputedStyle(block).getPropertyValue('--s2a-spacing-xs'));
+              for (const state of ['hovered', 'focused']) {
+                card.classList.add(state);
+                const start = performance.now();
+                const samples = [];
+                await new Promise((resolve) => {
+                  const sample = () => {
+                    samples.push({
+                      cardWidth: card.getBoundingClientRect().width,
+                      textWidth: paragraph.getBoundingClientRect().width,
+                      rowWidth: row.getBoundingClientRect().width,
+                    });
+                    if (performance.now() - start < 400) requestAnimationFrame(sample);
+                    else resolve();
+                  };
+                  requestAnimationFrame(sample);
+                });
+                samples.forEach((sample) => {
+                  expect(sample.cardWidth).to.be.at.least(392 - 0.1);
+                  expect(sample.textWidth).to.be.at.least(textWidth - 0.1);
+                  expect(sample.rowWidth).to.be.closeTo(rowWidth, 0.1);
+                });
+                expect(card.getBoundingClientRect().width)
+                  .to.be.at.least(392 + icon.getBoundingClientRect().width + gap - 0.1);
+                card.classList.remove(state);
+                await new Promise((resolve) => { setTimeout(resolve, 350); });
+                expect(card.getBoundingClientRect().width).to.be.closeTo(392, 0.1);
+              }
+              block.remove();
+              window.scrollTo(0, 0);
+              await settleLayout();
             }
-            block.remove();
-            window.scrollTo(0, 0);
-            await settleLayout();
-          }
-        }).timeout(10000);
+          }).timeout(10000);
 
-        it(`reveals ${slideCount}-slide ${direction} footer icons without a layout jump`, async () => {
-          await setViewport({ width: 1470, height: 800 });
-          document.documentElement.setAttribute('dir', direction);
-          const block = await loadCarousel(slideCount);
-          window.scrollTo(0, 1800);
-          await settleLayout();
-          const card = block.querySelector('.hub-hero-carousel-item[data-index]');
-          const footer = card.querySelector('.hub-hero-carousel-item-footer');
-          const paragraph = footer.querySelector('p');
-          const icon = footer.querySelector('span');
-          paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
-          await settleLayout();
-          const measure = () => {
-            const bounds = footer.getBoundingClientRect();
-            const text = paragraph.getBoundingClientRect();
-            const symbol = icon.getBoundingClientRect();
-            const style = getComputedStyle(footer);
-            const innerWidth = bounds.width
-              - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-            return {
-              height: bounds.height,
-              textWidth: text.width,
-              reserved: innerWidth - text.width,
-              opacity: parseFloat(getComputedStyle(icon).opacity),
-              inset: direction === 'ltr' ? bounds.right - symbol.right : symbol.left - bounds.left,
-              padding: parseFloat(direction === 'ltr' ? style.paddingRight : style.paddingLeft),
-            };
-          };
-          const initial = measure();
-          expect(getComputedStyle(icon).position).to.equal('absolute');
-          expect(initial.reserved).to.be.closeTo(0, 0.1);
-          expect(initial.opacity).to.equal(0);
-          expect(initial.inset).to.be.closeTo(initial.padding, 0.1);
-          const samples = [];
-          const start = performance.now();
-          card.classList.add('hovered');
-          await new Promise((resolve) => {
-            const sample = () => {
-              const elapsed = performance.now() - start;
-              samples.push({ elapsed, ...measure() });
-              if (elapsed < 450) requestAnimationFrame(sample);
-              else resolve();
-            };
-            requestAnimationFrame(sample);
-          });
-          const hovered = measure();
-          const gap = parseFloat(getComputedStyle(footer).getPropertyValue('--s2a-spacing-xs'));
-          expect(hovered.reserved).to.be.closeTo(icon.getBoundingClientRect().width + gap, 0.1);
-          expect(hovered.opacity).to.equal(1);
-          expect(samples.filter((sample) => sample.reserved > 1
-            && sample.reserved < hovered.reserved - 1).length).to.be.at.least(2);
-          samples.filter((sample) => sample.elapsed < 280).forEach((sample) => {
-            expect(sample.opacity).to.equal(0);
-          });
-          samples.forEach((sample) => {
-            expect(sample.height).to.be.closeTo(initial.height, 0.1);
-            expect(sample.inset).to.be.closeTo(sample.padding, 0.1);
-            expect(sample.textWidth)
-              .to.be.at.least(Math.min(initial.textWidth, hovered.textWidth) - 0.1);
-            expect(sample.textWidth)
-              .to.be.at.most(Math.max(initial.textWidth, hovered.textWidth) + 0.1);
-          });
-          card.classList.remove('hovered');
-          expect(parseFloat(getComputedStyle(icon).transitionDelay)).to.equal(0);
-          await new Promise((resolve) => { setTimeout(resolve, 130); });
-          expect(measure().opacity).to.equal(0);
-          await new Promise((resolve) => { setTimeout(resolve, 220); });
-          expect(measure().reserved).to.be.closeTo(0, 0.1);
-          block.style.setProperty('--s2a-spacing-lg', '32px');
-          await settleLayout();
-          expect(measure().inset).to.be.closeTo(32, 0.1);
-        });
-
-        it(`keeps ${slideCount}-slide footer text clamped to two lines with its full accessible name at mobile and doubled text sizes`, async () => {
-          for (const width of [375, 1470]) {
-            await setViewport({ width, height: 800 });
-            const block = await loadCarousel(slideCount);
+          it(`reveals ${slideCount}-slide ${direction} ${footerTag} footer icons without narrowing text`, async () => {
+            await setViewport({ width: 1470, height: 800 });
+            document.documentElement.setAttribute('dir', direction);
+            const block = await loadCarousel(slideCount, footerTag);
             window.scrollTo(0, 1800);
             await settleLayout();
             const card = block.querySelector('.hub-hero-carousel-item[data-index]');
-            const paragraph = card.querySelector('.hub-hero-carousel-item-footer p');
-            const fullText = 'Create, edit, and organize images and digital art. '.repeat(12);
-            for (const scale of [1, 2]) {
-              paragraph.style.fontSize = `calc(var(--s2a-typography-font-size-eyebrow) * ${scale})`;
-              paragraph.textContent = 'Short';
-              await settleLayout();
-              const lineHeight = paragraph.getBoundingClientRect().height;
-              paragraph.textContent = fullText;
-              await settleLayout();
-              expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('2');
-              expect(paragraph.getBoundingClientRect().height).to.be.closeTo(lineHeight * 2, 0.1);
-              expect(paragraph.scrollHeight).to.be.above(paragraph.clientHeight);
-              expect(card.getAttribute('aria-labelledby').split(' ')).to.include(paragraph.id);
-              expect(document.getElementById(paragraph.id).textContent).to.equal(fullText);
-            }
-            block.remove();
-            window.scrollTo(0, 0);
+            const footer = card.querySelector('.hub-hero-carousel-item-footer');
+            const paragraph = footer.querySelector('.hub-hero-carousel-item-footer-text');
+            const icon = footer.querySelector('span');
+            paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
             await settleLayout();
-          }
+            const measure = () => {
+              const bounds = footer.getBoundingClientRect();
+              const text = paragraph.getBoundingClientRect();
+              const symbol = icon.getBoundingClientRect();
+              const style = getComputedStyle(footer);
+              const innerWidth = bounds.width
+              - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+              return {
+                height: bounds.height,
+                textWidth: text.width,
+                reserved: innerWidth - text.width,
+                opacity: parseFloat(getComputedStyle(icon).opacity),
+                inset: direction === 'ltr' ? bounds.right - symbol.right : symbol.left - bounds.left,
+                padding: parseFloat(direction === 'ltr' ? style.paddingRight : style.paddingLeft),
+              };
+            };
+            const initial = measure();
+            expect(getComputedStyle(icon).position).to.equal('absolute');
+            expect(initial.reserved).to.be.closeTo(0, 0.1);
+            expect(initial.opacity).to.equal(0);
+            expect(initial.inset).to.be.closeTo(initial.padding, 0.1);
+            const samples = [];
+            const start = performance.now();
+            card.classList.add('hovered');
+            await new Promise((resolve) => {
+              const sample = () => {
+                const elapsed = performance.now() - start;
+                samples.push({ elapsed, ...measure() });
+                if (elapsed < 450) requestAnimationFrame(sample);
+                else resolve();
+              };
+              requestAnimationFrame(sample);
+            });
+            const hovered = measure();
+            const gap = parseFloat(getComputedStyle(footer).getPropertyValue('--s2a-spacing-xs'));
+            expect(hovered.reserved).to.be.closeTo(icon.getBoundingClientRect().width + gap, 0.1);
+            expect(hovered.opacity).to.equal(1);
+            expect(samples.filter((sample) => sample.reserved > 1
+            && sample.reserved < hovered.reserved - 1).length).to.be.at.least(2);
+            samples.filter((sample) => sample.elapsed < 280).forEach((sample) => {
+              expect(sample.opacity).to.equal(0);
+            });
+            samples.forEach((sample) => {
+              expect(sample.height).to.be.at.least(initial.height - 0.1);
+              expect(sample.inset).to.be.closeTo(sample.padding, 0.1);
+              expect(sample.textWidth)
+                .to.be.at.least(Math.min(initial.textWidth, hovered.textWidth) - 0.1);
+              expect(sample.textWidth)
+                .to.be.at.most(Math.max(initial.textWidth, hovered.textWidth) + 0.1);
+            });
+            card.classList.remove('hovered');
+            expect(parseFloat(getComputedStyle(icon).transitionDelay)).to.equal(0);
+            await new Promise((resolve) => { setTimeout(resolve, 130); });
+            expect(measure().opacity).to.equal(0);
+            await new Promise((resolve) => { setTimeout(resolve, 220); });
+            expect(measure().reserved).to.be.closeTo(0, 0.1);
+            block.style.setProperty('--s2a-spacing-lg', '32px');
+            await settleLayout();
+            expect(measure().inset).to.be.closeTo(32, 0.1);
+          });
+
+          it(`exposes complete ${slideCount}-slide ${direction} ${footerTag} footer text on mobile and desktop hover/focus at doubled text sizes`, async () => {
+            document.documentElement.setAttribute('dir', direction);
+            for (const width of [375, 1470]) {
+              await setViewport({ width, height: 800 });
+              const block = await loadCarousel(slideCount, footerTag);
+              window.scrollTo(0, 1800);
+              await settleLayout();
+              const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+              const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
+              const fullText = 'Create, edit, and organize images and digital art. '.repeat(12);
+              const expectFullText = () => {
+                expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('none');
+                expect(paragraph.scrollHeight).to.be.at.most(paragraph.clientHeight + 1);
+                const text = paragraph.getBoundingClientRect();
+                const footer = paragraph.parentElement.getBoundingClientRect();
+                const bounds = card.getBoundingClientRect();
+                const carousel = block.querySelector('.hub-hero-carousel').getBoundingClientRect();
+                expect(text.top).to.be.at.least(footer.top - 1);
+                expect(text.bottom).to.be.at.most(footer.bottom + 1);
+                expect(footer.bottom).to.be.at.most(bounds.bottom + 1);
+                expect(text.bottom).to.be.at.most(carousel.bottom + 1);
+                if (width < 768) {
+                  expect(parseFloat(card.style.getPropertyValue('--slide-content-height')))
+                    .to.be.closeTo(card.offsetHeight, 1);
+                }
+                expect(card.getAttribute('aria-labelledby').split(' ')).to.include(paragraph.id);
+                expect(document.getElementById(paragraph.id).textContent).to.equal(fullText);
+              };
+              for (const scale of [1, 2]) {
+                card.blur();
+                card.classList.remove('hovered', 'focused');
+                await new Promise((resolve) => { setTimeout(resolve, 350); });
+                paragraph.style.fontSize = `calc(var(--s2a-typography-font-size-eyebrow) * ${scale})`;
+                paragraph.textContent = 'Short';
+                await settleLayout();
+                const lineHeight = paragraph.getBoundingClientRect().height;
+                paragraph.textContent = fullText;
+                await settleLayout();
+                if (width < 768) {
+                  expectFullText();
+                } else {
+                  expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('2');
+                  expect(paragraph.getBoundingClientRect().height)
+                    .to.be.closeTo(lineHeight * 2, 0.1);
+                  expect(paragraph.scrollHeight).to.be.above(paragraph.clientHeight);
+                  card.classList.add('hovered');
+                  await new Promise((resolve) => { setTimeout(resolve, 350); });
+                  expectFullText();
+                  card.classList.remove('hovered');
+                  card.focus();
+                  await new Promise((resolve) => { setTimeout(resolve, 350); });
+                  expect(card.matches(':focus-visible')).to.be.true;
+                  expectFullText();
+                }
+                if (width < 768) {
+                  const row = card.parentElement.getBoundingClientRect();
+                  window.scrollTo(0, window.scrollY + row.top
+                    + card.offsetHeight - window.innerHeight + 24);
+                } else window.scrollTo(0, document.documentElement.scrollHeight);
+                await new Promise((resolve) => { setTimeout(resolve, 150); });
+                const range = document.createRange();
+                const node = paragraph.firstChild;
+                range.setStart(node, node.length - 5);
+                range.setEnd(node, node.length);
+                const lastLine = range.getBoundingClientRect();
+                expect(lastLine.top).to.be.at.least(0);
+                expect(lastLine.bottom).to.be.at.most(window.innerHeight);
+                const target = document.elementFromPoint(
+                  lastLine.left + lastLine.width / 2,
+                  lastLine.top + lastLine.height / 2,
+                );
+                expect(target.closest('.hub-hero-carousel-item-footer-text')).to.equal(paragraph);
+              }
+              block.remove();
+              window.scrollTo(0, 0);
+              await settleLayout();
+            }
+          }).timeout(10000);
         });
       });
     });
@@ -571,12 +626,33 @@ describe('hub-hero block', () => {
       const original = block.querySelector('.hub-hero-carousel-item[data-index]');
       const card = original.cloneNode(true);
       original.replaceWith(card);
+      const text = card.querySelector('.hub-hero-carousel-item-footer-text');
+      text.textContent = 'Read the complete description on keyboard focus. '.repeat(12);
       card.focus();
       expect(card.matches(':focus-visible')).to.be.true;
       expect(card.classList.contains('focused')).to.be.false;
       await new Promise((resolve) => { setTimeout(resolve, 450); });
       expect(getComputedStyle(card.querySelector('.hub-hero-carousel-item-footer span')).opacity)
         .to.equal('1');
+      expect(getComputedStyle(text).webkitLineClamp).to.equal('none');
+      expect(text.scrollHeight).to.be.at.most(text.clientHeight + 1);
+      expect(text.getBoundingClientRect().bottom)
+        .to.be.at.most(card.getBoundingClientRect().bottom + 1);
+    });
+
+    it('disconnects footer sizing observation when the block is removed', async () => {
+      const observe = sinon.spy(ResizeObserver.prototype, 'observe');
+      try {
+        const block = await loadCarousel();
+        const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+        const observer = observe.getCalls().find((call) => call.args[0] === card).thisValue;
+        const disconnect = sinon.spy(observer, 'disconnect');
+        block.remove();
+        await settleLayout();
+        expect(disconnect.calledOnce).to.be.true;
+      } finally {
+        sinon.restore();
+      }
     });
 
     it('never temporarily narrows footer text before a card expands', async () => {
@@ -586,7 +662,7 @@ describe('hub-hero block', () => {
         window.scrollTo(0, 1800);
         await settleLayout();
         const card = block.querySelector('.hub-hero-carousel-item[data-index]');
-        const paragraph = card.querySelector('.hub-hero-carousel-item-footer p');
+        const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
         const initialWidth = paragraph.getBoundingClientRect().width;
         const samples = [initialWidth];
         card.classList.add('hovered');
