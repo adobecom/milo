@@ -165,13 +165,9 @@ const PLAYBACK_HASH = /autoplay|hoverplay|viewportplay/;
 
 export default function init(a) {
   a.classList.add('hide-video');
-  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form', 'explore-card'];
-  const isMp4 = a.href.includes('.mp4');
-  const inBgBlock = bgBlocks.some((b) => a.closest(`.${b}`));
   const hasPlaybackHash = PLAYBACK_HASH.test(a.hash);
-  // MPC player URLs stay the iframe player (sound, captions, controls) unless a Milo hash opts in.
-  const isNativeVideo = (isMp4 && (inBgBlock || hasPlaybackHash || !!a.dataset.videoPoster))
-    || (!!getMpcPlayerId(a.href) && hasPlaybackHash);
+  // Any MP4 renders natively; MPC player URLs need a Milo hash to go native.
+  const isNativeVideo = a.href.includes('.mp4') || (!!getMpcPlayerId(a.href) && hasPlaybackHash);
   if (isNativeVideo) {
     a.classList.add('hide');
     if (!a.parentNode) return;

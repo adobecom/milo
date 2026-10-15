@@ -172,6 +172,13 @@ describe('adobetv autoblock', () => {
       expect(source.getAttribute('src')).to.equal('https://images-tv.adobe.com/x/854.mp4#t=3');
     });
 
+    it('renders a plain MPC MP4 link as a native video with controls', async () => {
+      const wrapper = document.querySelector('#mpcMp4Plain');
+      await init(wrapper.querySelector('a'));
+      expect(wrapper.querySelector('iframe')).to.be.null;
+      expect(wrapper.querySelector('video').hasAttribute('controls')).to.be.true;
+    });
+
     it('passes an authored ?autoplay=true through to the MPC player unchanged', async () => {
       const wrapper = document.querySelector('#mpcPlayerQueryAutoplay');
       await init(wrapper.querySelector('a'));
