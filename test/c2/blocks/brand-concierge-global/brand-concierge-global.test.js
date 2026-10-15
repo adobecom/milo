@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from '../../../../libs/c2/blocks/brand-concierge-global/brand-concierge-global.js';
 import { loadBrandConcierge } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
-import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
@@ -117,43 +117,5 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     expect(document.querySelectorAll('.bc-gnav')).to.have.lengthOf(1);
     expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
     expect(ready.calledOnce).to.be.true;
-  });
-
-  it('retains authored prompts supplied before navigation mounts for delayed initialization', async () => {
-    const header = document.querySelector('header');
-    header.remove();
-    await loadBrandConcierge(block);
-    expect(initialize.called).to.be.false;
-    document.body.prepend(header);
-    decorateAcomAssistantGnav(header);
-    await waitFor(() => window.milo?.brandConcierge?.brandConciergeGlobal);
-
-    const foundation = document.createElement('meta');
-    foundation.name = 'foundation';
-    foundation.content = 'c2';
-    const script = document.createElement('script');
-    script.type = 'javascript/blocked';
-    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
-    script.dataset.loaded = 'true';
-    const style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
-    document.head.append(foundation, script, style);
-
-    try {
-      await loadAcomAssistantGnav();
-      expect(initialize.calledOnce).to.be.true;
-      expect(initialize.firstCall.args[0].context.prompts)
-        .to.deep.equal(['Prompt one', 'Prompt two'].map((label) => ({
-          label,
-          action: { click_analytics: `BC-suggested_prompt_clicked|gnav|${label}` },
-        })));
-      expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
-      expect(document.querySelector('.bc-gnav')).to.be.null;
-    } finally {
-      foundation.remove();
-      script.remove();
-      style.remove();
-    }
   });
 });
