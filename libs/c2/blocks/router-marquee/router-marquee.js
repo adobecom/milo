@@ -1013,19 +1013,15 @@ const retryFailedFields = (el) => {
     waiting.forEach((fragments, key) => {
       const [first, ...rest] = [...fragments].filter((f) => f.isConnected);
       if (!first) return;
-      const loaded = Promise.resolve(first.refresh(false)).catch(() => false);
+      const loaded = first.refresh(false).catch(() => false);
       retries.set(key, loaded);
       loaded.then((ok) => ok && rest.forEach((f) => f.refresh(false)));
     });
     waiting.clear();
   };
-  const whenOnline = (fn) => {
-    if (navigator.onLine === false) window.addEventListener('online', fn, { once: true });
-    else fn();
-  };
 
   el.addEventListener('aem:error', ({ target }) => {
-    if (target?.tagName !== 'AEM-FRAGMENT' || typeof target.refresh !== 'function') return;
+    if (target?.tagName !== 'AEM-FRAGMENT') return;
     const key = ['fragment', 'pzn', 'mask'].map((attr) => target.getAttribute(attr) ?? '').join('|');
     if (retries.has(key)) {
       retries.get(key).then((ok) => ok && target.refresh(false));
@@ -1033,7 +1029,7 @@ const retryFailedFields = (el) => {
     }
     if (!waiting.has(key)) waiting.set(key, new Set());
     waiting.get(key).add(target);
-    if (!timer) timer = setTimeout(() => whenOnline(() => schedule(retry)), RETRY_DELAY_MS);
+    if (!timer) timer = setTimeout(retry, RETRY_DELAY_MS);
   });
 };
 
@@ -1095,7 +1091,6 @@ export default function init(el) {
   loadViewportVideos(el);
   syncViewportAutoplay();
 
-  const hasPromo = !!el.querySelector(`.${PROMO_PLACEHOLDER}`);
   let lateContentFrame = null;
   const onLateContent = () => {
     if (lateContentFrame) return;
@@ -1107,7 +1102,7 @@ export default function init(el) {
       });
       // merch.js reveals a resolved promo slide and its nav card. If the authored first slide
       // was skipped while pending, make it active once the promotion resolves.
-      if (hasPromo) controllersByVp.forEach((ctrl) => ctrl.activateResolvedFirstPromo());
+      controllersByVp.forEach((ctrl) => ctrl.activateResolvedFirstPromo());
       dynamicLayoutUpdates(el);
     });
   };

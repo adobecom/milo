@@ -424,7 +424,6 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
 
   describe('retrying failed fields', () => {
     let clock;
-    let idleStub;
 
     const failAll = (fragments) => fragments.forEach((f) => {
       f.dispatchEvent(new CustomEvent('aem:error', { bubbles: true }));
@@ -432,13 +431,11 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
 
     beforeEach(() => {
       clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-      idleStub = sinon.stub(window, 'requestIdleCallback').callsFake((fn) => { fn(); return 1; });
       init(block);
     });
 
     afterEach(() => {
       clock.restore();
-      idleStub.restore();
     });
 
     const fragmentsOf = (id, refresh) => [...block.querySelectorAll(`aem-fragment[fragment="${id}"]`)]
@@ -480,22 +477,6 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
       clock.tick(RETRY_DELAY_MS * 2);
       const calls = one.reduce((sum, f) => sum + f.refresh.callCount, 0);
       expect(calls).to.equal(1);
-    });
-
-    it('waits for the network to come back before retrying', () => {
-      const onLine = sinon.stub(navigator, 'onLine').get(() => false);
-      try {
-        const one = fragmentsOf('frag-one', () => sinon.stub().resolves(true));
-        failAll(one);
-        clock.tick(RETRY_DELAY_MS);
-        expect(one[0].refresh.called).to.be.false;
-
-        onLine.get(() => true);
-        window.dispatchEvent(new Event('online'));
-        expect(one[0].refresh.calledOnce).to.be.true;
-      } finally {
-        onLine.restore();
-      }
     });
   });
 });
