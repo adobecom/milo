@@ -117,12 +117,37 @@ describe('adobetv autoblock', () => {
       expect(window.fetch.calledWith('https://video.tv.adobe.com/v/332632?format=json')).to.be.true;
     });
 
-    it('renders an MPC player URL authored with a poster as a native video', async () => {
+    it('renders a poster with a play button for an MPC player URL with a poster', async () => {
       const wrapper = document.querySelector('#mpcPlayerPoster');
       await init(wrapper.querySelector('a'));
       expect(wrapper.querySelector('iframe')).to.be.null;
-      expect(wrapper.querySelector('video[controls]')).to.exist;
-      await waitForElement('#mpcPlayerPoster video source');
+      expect(wrapper.querySelector('video')).to.be.null;
+      expect(wrapper.querySelector('.mpc-poster img').getAttribute('src')).to.equal('poster.jpg');
+      const button = wrapper.querySelector('.mpc-poster button.consonant-play-btn');
+      expect(button.getAttribute('aria-label')).to.equal('Play Demo video');
+    });
+
+    it('swaps the poster for an autoplaying MPC iframe on play', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      await init(wrapper.querySelector('a'));
+      wrapper.querySelector('.mpc-poster button').click();
+      const iframe = wrapper.querySelector('iframe');
+      expect(wrapper.querySelector('.mpc-poster')).to.be.null;
+      expect(wrapper.querySelector('a')).to.be.null;
+      expect(iframe.src).to.equal('https://video.tv.adobe.com/v/111111?autoplay=true');
+      expect(iframe.getAttribute('allow')).to.include('autoplay');
+    });
+
+    it('plays a poster that was cloned after decoration', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      await init(wrapper.querySelector('a'));
+      const clone = wrapper.cloneNode(true);
+      clone.id = 'mpcPlayerPosterClone';
+      wrapper.after(clone);
+      clone.querySelector('.mpc-poster button').click();
+      expect(clone.querySelector('.mpc-poster')).to.be.null;
+      expect(clone.querySelector('iframe').src).to.include('autoplay=true');
+      expect(wrapper.querySelector('.mpc-poster')).to.exist;
     });
 
     it('renders an autoplay MPC MP4 outside background blocks as a native video', async () => {
@@ -133,7 +158,7 @@ describe('adobetv autoblock', () => {
       expect(source.getAttribute('src')).to.include('images-tv.adobe.com/mpcv3/1229/clip');
     });
 
-    it('maps MPC query params onto the native video', async () => {
+    it('applies MPC quality and t params to a native video', async () => {
       const wrapper = document.querySelector('#mpcPlayerParams');
       await init(wrapper.querySelector('a'));
       const video = wrapper.querySelector('video');
@@ -142,31 +167,28 @@ describe('adobetv autoblock', () => {
       expect(wrapper.querySelector('.pause-play-wrapper')).to.be.null;
       const source = await waitForElement('#mpcPlayerParams video source');
       expect(source.getAttribute('src')).to.equal('https://images-tv.adobe.com/x/854.mp4#t=3');
-      expect(video.muted).to.be.true;
     });
 
-    it('plays once when MPC autoplay has no end=replay', async () => {
-      const wrapper = document.querySelector('#mpcPlayerOnce');
+    it('passes MPC autoplay query params through to the iframe player', async () => {
+      const wrapper = document.querySelector('#mpcPlayerQueryAutoplay');
       await init(wrapper.querySelector('a'));
-      const video = wrapper.querySelector('video');
-      expect(video.hasAttribute('autoplay')).to.be.true;
-      expect(video.hasAttribute('loop')).to.be.false;
+      expect(wrapper.querySelector('video')).to.be.null;
+      expect(wrapper.querySelector('iframe').src).to.equal('https://video.tv.adobe.com/v/444444?autoplay=true&end=replay');
     });
 
-    it('lets an authored Milo hash win over MPC query params', async () => {
-      const wrapper = document.querySelector('#mpcPlayerHashWins');
+    it('renders natively when a Milo hash is added to MPC query params', async () => {
+      const wrapper = document.querySelector('#mpcPlayerHashAndQuery');
       await init(wrapper.querySelector('a'));
       const video = wrapper.querySelector('video');
       expect(video.hasAttribute('autoplay')).to.be.true;
       expect(video.hasAttribute('loop')).to.be.true;
     });
 
-    it('mutes a click-to-play MPC video with hasaudio=0', async () => {
-      const wrapper = document.querySelector('#mpcPlayerNoAudio');
+    it('renders an MPC player URL in a background block as a native video', async () => {
+      const wrapper = document.querySelector('#mpcPlayerMarquee');
       await init(wrapper.querySelector('a'));
-      expect(wrapper.querySelector('video[controls]')).to.exist;
-      await waitForElement('#mpcPlayerNoAudio video source');
-      expect(wrapper.querySelector('video').muted).to.be.true;
+      expect(wrapper.querySelector('iframe')).to.be.null;
+      expect(wrapper.querySelector('video').hasAttribute('autoplay')).to.be.true;
     });
 
     it('fetches MPC data once per video id', async () => {
@@ -185,6 +207,45 @@ describe('adobetv autoblock', () => {
       await init(wrapper.querySelector('a'));
       expect(wrapper.querySelector('video')).to.be.null;
       expect(wrapper.querySelector('iframe').src).to.equal('https://video.tv.adobe.com/v/888888');
+    });
+
+    it('tracks MPC play state on the iframe that sent it', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPlain');
+      const dupe = wrapper.cloneNode(true);
+      dupe.removeAttribute('id');
+      wrapper.after(dupe);
+      await init(wrapper.querySelector('a'));
+      await init(dupe.querySelector('a'));
+      const iframe = wrapper.querySelector('iframe');
+      const other = dupe.querySelector('iframe');
+      const send = (source, data, origin = 'https://video.tv.adobe.com') => window
+        .dispatchEvent(new MessageEvent('message', { origin, source, data }));
+
+      send(iframe.contentWindow, { state: 'play' }, 'https://evil.example');
+      expect(iframe.getAttribute('data-playing')).to.be.null;
+      send(iframe.contentWindow, { type: 'mpcStatus', state: 'play', id: '888888' });
+      expect(iframe.getAttribute('data-playing')).to.equal('true');
+      expect(other.getAttribute('data-playing')).to.be.null;
+      send(iframe.contentWindow, { type: 'mpcStatus', state: 'pause', id: 888888 });
+      expect(iframe.getAttribute('data-playing')).to.equal('false');
+      dupe.remove();
+    });
+
+    it('tracks MPC play state on a cloned player iframe', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPlain');
+      await init(wrapper.querySelector('a'));
+      const clone = wrapper.cloneNode(true);
+      clone.removeAttribute('id');
+      wrapper.after(clone);
+      const cloneIframe = clone.querySelector('iframe');
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://video.tv.adobe.com',
+        source: cloneIframe.contentWindow,
+        data: { type: 'mpcStatus', state: 'play', id: '888888' },
+      }));
+      expect(cloneIframe.getAttribute('data-playing')).to.equal('true');
+      expect(wrapper.querySelector('iframe').getAttribute('data-playing')).to.be.null;
+      clone.remove();
     });
 
     it('logs and leaves the video without a source when MPC data fails', async () => {

@@ -122,6 +122,51 @@ describe('Carousel C2', () => {
     expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 3');
   });
 
+  it('pauses a playing MPC player when its slide stops being active', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const next = block.querySelector('button.next');
+    next.click();
+    await new Promise((resolve) => { setTimeout(resolve, 150); });
+
+    const slide = block.querySelector('.carousel-wrapper .active-clone');
+    const iframe = document.createElement('iframe');
+    iframe.className = 'adobetv';
+    iframe.dataset.playing = 'true';
+    slide.append(iframe);
+    const messages = [];
+    iframe.contentWindow.postMessage = (msg) => messages.push(msg);
+
+    next.click();
+    await import('../../../libs/blocks/adobetv/adobetv.js');
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(messages).to.deep.equal([{ type: 'mpcAction', action: 'pause' }]);
+  });
+
+  it('keeps the real slides attached when cloning on the first move', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const realSlides = [...wrapper.querySelectorAll('.carousel-slide:not([data-cloned])')];
+    const removed = [];
+    const observer = new MutationObserver((records) => {
+      records.forEach((r) => removed.push(...r.removedNodes));
+    });
+    observer.observe(wrapper, { childList: true });
+
+    block.querySelector('button.next').click();
+    await Promise.resolve();
+    observer.disconnect();
+
+    expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
+    expect(removed.filter((node) => realSlides.includes(node))).to.be.empty;
+    expect([...wrapper.children].filter((node) => !node.hasAttribute('data-cloned')))
+      .to.deep.equal(realSlides);
+  });
+
   it('does not pad the wrapper when there are three or more slides', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.carousel-c2');

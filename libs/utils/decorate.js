@@ -621,9 +621,6 @@ async function loadMpcSource(videoEl, playerUrl) {
     const targetWidth = (videoEl.offsetWidth || 0) * Math.min(window.devicePixelRatio || 1, 2);
     const mp4 = pickMpcMp4(sources, targetWidth, params.get('quality'));
     if (!mp4) throw new Error('no MP4 rendition');
-    if (params.get('mute') === 'true' || ['false', '0'].includes(params.get('hasaudio'))) {
-      videoEl.muted = true;
-    }
     const start = parseInt(params.get('t'), 10);
     const src = start > 0 ? `${mp4}#t=${start}` : mp4;
     videoEl.dataset.videoSource = src;
