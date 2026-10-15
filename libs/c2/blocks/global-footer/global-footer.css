@@ -839,7 +839,7 @@ span.feds-footer-privacyLink-divider {
 }
 
 @media (hover: none) and (pointer: coarse) {
-  .global-footer .feds-footer-logo img {
+  .global-footer .feds-footer-wrapper {
     will-change: transform;
   }
 }
