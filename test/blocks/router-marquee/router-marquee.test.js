@@ -258,6 +258,248 @@ describe('Router Marquee', () => {
   });
 });
 
+/** Stands in for MAS rendering a late field into its content span and announcing it. */
+const resolveLate = (masField, html) => {
+  masField.querySelector('[data-role="mas-field-content"]').innerHTML = html;
+  masField.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+};
+
+/** Stands in for merch.js' watchMasFieldCtas hoisting a late CTA's link out of its field. */
+const hoistLateCta = (masField, html) => {
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  masField.replaceWith(...template.content.childNodes);
+};
+
+const flushMutations = () => new Promise((resolve) => { setTimeout(resolve); });
+const afterFrame = () => new Promise((resolve) => { requestAnimationFrame(() => resolve()); });
+const RETRY_DELAY_MS = 5000;
+
+describe('router-marquee with MAS fields still loading at decoration', () => {
+  let block;
+
+  beforeEach(async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/pending-fields.html' });
+    block = document.querySelector('.router-marquee');
+  });
+
+  it('keeps a pending card label field connected inside the card, in every viewport', () => {
+    init(block);
+    block.querySelectorAll('.rm-viewport').forEach((vp) => {
+      const [first, second] = vp.querySelectorAll('.rm-card');
+      expect(first.querySelector('.rm-card-label > mas-field[field="callout"]')?.isConnected).to.be.true;
+      expect(first.querySelector('.rm-card-label').textContent.trim()).to.equal('');
+      // a plain-text label still takes the copy-the-text path
+      expect(second.querySelector('.rm-card-label mas-field')).to.not.exist;
+      expect(second.querySelector('.rm-card-label').textContent).to.equal('Adobe for Business');
+      expect(second.getAttribute('href')).to.equal('https://business.adobe.com');
+    });
+  });
+
+  it('fills the card label, aria-label and icon alt when its fields resolve late', async () => {
+    init(block);
+    const vp = mobileVp(block);
+    const card = vp.querySelector('.rm-card');
+    resolveLate(vp.querySelector('.rm-slide .rm-eyebrow mas-field'), 'Creative Cloud');
+    resolveLate(card.querySelector('mas-field[field="callout"]'), 'Creativity and design');
+    await afterFrame();
+
+    expect(card.querySelector('.rm-card-label').textContent.trim()).to.equal('Creativity and design');
+    expect(card.getAttribute('aria-label')).to.equal('Creative Cloud, Creativity and design');
+    expect(card.querySelector('.rm-card-icon').getAttribute('alt')).to.equal('Creativity and design');
+  });
+
+  it('never nests a link inside the card when a late label renders one', async () => {
+    init(block);
+    const card = mobileVp(block).querySelector('.rm-card');
+    resolveLate(card.querySelector('mas-field[field="callout"]'), '<a href="/design">Creativity</a> and design');
+    await afterFrame();
+
+    expect(card.querySelector('a')).to.not.exist;
+    expect(card.querySelector('.rm-card-label').textContent.trim()).to.equal('Creativity and design');
+  });
+
+  it('keeps pending CTA slots, then decorates the links merch.js hoists into them', async () => {
+    init(block);
+    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['EM', 'EM']);
+
+    hoistLateCta(ctas.querySelector('mas-field[field="ctas[primary]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
+    hoistLateCta(ctas.querySelector('mas-field[field="ctas[secondary]"]'), '<a href="https://www.adobe.com/buy">Buy now</a>');
+    await flushMutations();
+
+    // same shape as a CTA that was already resolved at decoration time
+    const [primary, secondary] = ctas.children;
+    expect(ctas.children.length).to.equal(2);
+    expect(primary.matches('a.con-button.rm-cta-primary.fill.outline')).to.be.true;
+    expect(primary.getAttribute('href')).to.equal('https://www.adobe.com/trial');
+    expect(secondary.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
+    expect(secondary.getAttribute('href')).to.equal('https://www.adobe.com/buy');
+  });
+
+  it('decorates a resolved CTA right away next to a pending one', async () => {
+    init(block);
+    const ctas = mobileVp(block).querySelectorAll('.rm-slide')[1].querySelector('.rm-ctas');
+    expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
+    expect(ctas.firstElementChild.textContent).to.equal('Resolved CTA');
+
+    hoistLateCta(ctas.querySelector('mas-field'), '<a href="https://www.adobe.com/more">Learn more</a>');
+    await flushMutations();
+    expect([...ctas.children].map((a) => a.textContent)).to.deep.equal(['Resolved CTA', 'Learn more']);
+    expect(ctas.lastElementChild.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
+  });
+
+  it('keeps a CTA slot hidden while its field has not produced a link', async () => {
+    const style = document.createElement('link');
+    style.rel = 'stylesheet';
+    style.href = '/libs/c2/blocks/router-marquee/router-marquee.css';
+    await new Promise((resolve) => { style.onload = resolve; document.head.append(style); });
+    init(block);
+    const slot = mobileVp(block).querySelector('.rm-slide .rm-ctas > em');
+    resolveLate(slot.querySelector('mas-field'), '');
+    await flushMutations();
+    expect(slot.isConnected).to.be.true;
+    expect(getComputedStyle(slot).display).to.equal('none');
+    style.remove();
+  });
+
+  it('prefers a resolved CTA over an earlier empty field, as before', () => {
+    // e.g. a region-only CTA that loaded empty, authored ahead of the real one
+    block.querySelector('p:has(> em)').innerHTML = '<em><strong><mas-field field="ctas[kr-only]"><span data-role="mas-field-content"></span></mas-field></strong></em> <em><strong><a href="https://www.adobe.com/trial">Free trial</a></strong></em>';
+    init(block);
+    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
+    expect(ctas.children.length).to.equal(1);
+    expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
+  });
+
+  describe('a slot shared by several CTA fields', () => {
+    const field = (name) => `<mas-field field="${name}"><aem-fragment fragment="frag-three"></aem-fragment><span data-role="mas-field-content"></span></mas-field>`;
+    let ctas;
+
+    beforeEach(() => {
+      // e.g. a free trial next to a region-only buy now that resolves empty elsewhere
+      block.querySelector('p:has(> em)').innerHTML = `<em><strong>${field('ctas[trial]')} ${field('ctas[kr-only]')}</strong></em>`;
+      init(block);
+      ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
+    });
+
+    it('settles on the first link to land, without waiting on the other field', async () => {
+      hoistLateCta(ctas.querySelector('mas-field[field="ctas[trial]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
+      await flushMutations();
+      expect(ctas.children.length).to.equal(1);
+      expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
+      expect(ctas.querySelector('mas-field')).to.not.exist;
+    });
+
+    it('does not settle on a link still inside its field, before merch.js hoists it', async () => {
+      resolveLate(ctas.querySelector('mas-field[field="ctas[trial]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
+      await flushMutations();
+      expect(ctas.querySelector('em mas-field a')).to.exist;
+      expect(ctas.querySelector(':scope > a')).to.not.exist;
+    });
+  });
+
+  it('updates the analytics label once a pending title resolves', async () => {
+    init(block);
+    const vp = [...block.querySelectorAll('.rm-viewport')].find((v) => v.querySelector('.rm-slide[daa-lh]'));
+    // the 20-char cut ends on a space; normalized like martech's block-analytics pass does
+    resolveLate(vp.querySelector('.rm-slide .rm-title mas-field'), 'All the best models, all in one place.');
+    await afterFrame();
+    expect(vp.querySelector('.rm-card').getAttribute('daa-ll')).to.equal('rm-nav-1--All the best models');
+  });
+
+  it('re-measures the layout once per frame when fields resolve late', () => {
+    const rafSpy = sinon.spy(window, 'requestAnimationFrame');
+    try {
+      init(block);
+      const callsAfterInit = rafSpy.callCount;
+      const vp = mobileVp(block);
+      resolveLate(vp.querySelector('.rm-slide .rm-title mas-field'), 'Title');
+      resolveLate(vp.querySelector('.rm-slide .rm-body mas-field'), 'Body');
+      expect(rafSpy.callCount).to.equal(callsAfterInit + 1);
+    } finally {
+      rafSpy.restore();
+    }
+  });
+
+  describe('retrying failed fields', () => {
+    let clock;
+    let idleStub;
+
+    const failAll = (fragments) => fragments.forEach((f) => {
+      f.dispatchEvent(new CustomEvent('aem:error', { bubbles: true }));
+    });
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      idleStub = sinon.stub(window, 'requestIdleCallback').callsFake((fn) => { fn(); return 1; });
+      init(block);
+    });
+
+    afterEach(() => {
+      clock.restore();
+      idleStub.restore();
+    });
+
+    const fragmentsOf = (id, refresh) => [...block.querySelectorAll(`aem-fragment[fragment="${id}"]`)]
+      .map((f) => { f.refresh = refresh(); return f; });
+
+    it('refetches one field per fragment after a delay, then the rest from cache', async () => {
+      let resolveRetry;
+      const one = fragmentsOf('frag-one', () => sinon.stub().resolves(true));
+      one[0].refresh = sinon.stub().returns(new Promise((r) => { resolveRetry = r; }));
+      const two = fragmentsOf('frag-two', () => sinon.stub().resolves(true));
+      failAll([...one, ...two]);
+
+      expect(one[0].refresh.called).to.be.false;
+      clock.tick(RETRY_DELAY_MS);
+      expect(one[0].refresh.calledOnceWith(false)).to.be.true;
+      expect(two[0].refresh.calledOnce).to.be.true;
+      one.slice(1).forEach((f) => expect(f.refresh.called).to.be.false);
+
+      resolveRetry(true);
+      await Promise.resolve();
+      await Promise.resolve();
+      one.slice(1).forEach((f) => expect(f.refresh.calledOnceWith(false)).to.be.true);
+
+      // a field of an already-recovered fragment that fails later refreshes from cache too
+      one[1].refresh.resetHistory();
+      failAll([one[1]]);
+      await Promise.resolve();
+      expect(one[1].refresh.calledOnce).to.be.true;
+    });
+
+    it('gives up on a fragment whose single retry fails', async () => {
+      const one = fragmentsOf('frag-one', () => sinon.stub().resolves(false));
+      failAll(one);
+      clock.tick(RETRY_DELAY_MS);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      failAll(one);
+      clock.tick(RETRY_DELAY_MS * 2);
+      const calls = one.reduce((sum, f) => sum + f.refresh.callCount, 0);
+      expect(calls).to.equal(1);
+    });
+
+    it('waits for the network to come back before retrying', () => {
+      const onLine = sinon.stub(navigator, 'onLine').get(() => false);
+      try {
+        const one = fragmentsOf('frag-one', () => sinon.stub().resolves(true));
+        failAll(one);
+        clock.tick(RETRY_DELAY_MS);
+        expect(one[0].refresh.called).to.be.false;
+
+        onLine.get(() => true);
+        window.dispatchEvent(new Event('online'));
+        expect(one[0].refresh.calledOnce).to.be.true;
+      } finally {
+        onLine.restore();
+      }
+    });
+  });
+});
+
 const slideHtml = (title) => `
   <div>
     <div>

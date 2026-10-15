@@ -53,6 +53,8 @@ const setSlideObserver = (slides) => {
   });
 };
 
+const cardDaaLl = (index, label, config) => `rm-nav-${index + 1}--${processTrackingLabels(label, config, 20)}`;
+
 const setAnalytics = (slides, cards, container, el) => {
   const config = getConfig();
   const mepMartech = config?.mep?.martech || '';
@@ -66,7 +68,7 @@ const setAnalytics = (slides, cards, container, el) => {
   });
   cards.querySelectorAll('.rm-card').forEach((card, index) => {
     const { label } = SLIDE_ANALYTICS[container.dataset.viewport][index];
-    card.setAttribute('daa-ll', `rm-nav-${index + 1}--${processTrackingLabels(label, config, 20)}`);
+    card.setAttribute('daa-ll', cardDaaLl(index, label, config));
   });
 };
 
@@ -93,6 +95,9 @@ const clearInlineStyles = (el, props) => {
 };
 
 const STAGGER_CHILDREN = ['.rm-eyebrow', '.rm-title', '.rm-body', '.rm-ctas'];
+
+// A field merch.js gave up waiting on still renders in place later, so keep it connected.
+const isPendingField = (mf) => !mf.querySelector(':scope > [data-role="mas-field-content"]')?.hasChildNodes();
 
 // A slide can be authored as a promotion placeholder through a block variant class,
 // `promo-placeholder-slide-<n>` (1-based, e.g. "router-marquee (promo placeholder slide 3)").
@@ -189,17 +194,39 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
+const PRIMARY_CTA_CLASSES = ['con-button', 'rm-cta-primary', 'fill', 'outline'];
+const SECONDARY_CTA_CLASSES = ['con-button', 'outline'];
+
 const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
   cta.classList.add('rm-ctas', 'action-area');
   cta.classList.toggle('dark', !isLight);
-  const primary = cta.querySelector('em > strong a');
-  const secondary = cta.querySelector('em > a');
-  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
-  secondary?.classList.add('con-button', 'outline');
-  cta.replaceChildren(...[primary, secondary]
-    .filter((btn) => btn && !shouldBlockFreeTrialLinks(btn)));
+  // A pending CTA field keeps its <em> as a slot
+  const pick = (linkSel, fieldSel) => cta.querySelector(linkSel)
+    ?? [...cta.querySelectorAll(fieldSel)].find(isPendingField);
+  const primary = pick('em > strong a', 'em > strong mas-field');
+  const secondary = pick('em > a', 'em > mas-field');
+  if (primary?.tagName === 'A') primary.classList.add(...PRIMARY_CTA_CLASSES);
+  if (secondary?.tagName === 'A') secondary.classList.add(...SECONDARY_CTA_CLASSES);
+  const ctas = [primary, secondary]
+    .map((node) => (node?.tagName === 'MAS-FIELD' ? node.closest('em') : node))
+    .filter((node) => node && (node.tagName === 'EM' || !shouldBlockFreeTrialLinks(node)));
+  cta.replaceChildren(...new Set(ctas));
+};
+
+// merch.js hoists a late CTA's link only inside em/strong; a link still in the field is mid-hoist
+const settleCtaSlot = (slot, onSettle) => {
+  const observer = new MutationObserver(() => {
+    const link = slot.querySelector('a:not(mas-field a)');
+    if (!link) return;
+    observer.disconnect();
+    link.classList.add(...(link.closest('em > strong') ? PRIMARY_CTA_CLASSES : SECONDARY_CTA_CLASSES));
+    if (shouldBlockFreeTrialLinks(link)) slot.remove();
+    else slot.replaceWith(link);
+    onSettle();
+  });
+  observer.observe(slot, { childList: true, subtree: true });
 };
 
 const prepareVideo = (imageCol) => {
@@ -374,6 +401,8 @@ const decorateSlide = (slide, isLight) => {
   decorateCtas(textCol, isLight);
 };
 
+const titleLabelCards = new WeakSet();
+
 const buildCard = (slide) => {
   const icon = [...slide.querySelectorAll('p')]
     .find((p) => p.querySelector('img[src*=".svg"]'));
@@ -383,6 +412,8 @@ const buildCard = (slide) => {
   const href = label?.querySelector('a')?.getAttribute('href') || '';
   const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
   const ariaLabel = [eyebrowText, labelText].filter(Boolean).join(', ');
+  const labelField = label?.querySelector('mas-field');
+  const pendingLabel = labelField && isPendingField(labelField) ? labelField : null;
 
   icon?.remove();
   label?.remove();
@@ -394,10 +425,11 @@ const buildCard = (slide) => {
     role: 'tab',
     'aria-selected': 'false',
   });
+  if (!label) titleLabelCards.add(card);
   card.replaceChildren(
     ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' })] : []),
     createTag('div', { class: 'rm-card-content' }, [
-      createTag('span', { class: 'rm-card-label' }, labelText),
+      createTag('span', { class: 'rm-card-label' }, pendingLabel ?? labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
     ]),
     createTag('div', { class: 'rm-card-progress' }, [
@@ -405,6 +437,26 @@ const buildCard = (slide) => {
     ]),
   );
   return card;
+};
+
+// Re-derives what buildCard and setAnalytics captured, after late MAS content.
+const refreshCard = (card, slide, index) => {
+  const labelEl = card.querySelector('.rm-card-label');
+  if (titleLabelCards.has(card)) {
+    labelEl.textContent = slide.querySelector('.rm-title')?.textContent.trim() ?? '';
+  }
+  labelEl.querySelectorAll('a').forEach((a) => a.replaceWith(...a.childNodes));
+  const labelText = labelEl.textContent.trim();
+  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
+  card.setAttribute('aria-label', [eyebrowText, labelText].filter(Boolean).join(', '));
+  card.querySelector('.rm-card-icon')?.setAttribute('alt', labelText);
+
+  const analytics = SLIDE_ANALYTICS[getViewport(slide)]?.[index];
+  const title = slide.querySelector('.rm-title')?.textContent;
+  if (!analytics || analytics.label === title) return;
+  analytics.label = title;
+  // martech trims on-time labels before this runs
+  card.setAttribute('daa-ll', cardDaaLl(index, title, getConfig()).trim());
 };
 
 const buildReset = () => createTag('button', {
@@ -948,6 +1000,43 @@ const reorderSlidesMaybe = (el, viewports) => {
   }
 };
 
+const RETRY_DELAY_MS = 5000;
+
+// Retries each failed fragment once, through one field; its other fields then load from MAS' cache.
+const retryFailedFields = (el) => {
+  const waiting = new Map();
+  const retries = new Map();
+  let timer = null;
+
+  const retry = () => {
+    timer = null;
+    waiting.forEach((fragments, key) => {
+      const [first, ...rest] = [...fragments].filter((f) => f.isConnected);
+      if (!first) return;
+      const loaded = Promise.resolve(first.refresh(false)).catch(() => false);
+      retries.set(key, loaded);
+      loaded.then((ok) => ok && rest.forEach((f) => f.refresh(false)));
+    });
+    waiting.clear();
+  };
+  const whenOnline = (fn) => {
+    if (navigator.onLine === false) window.addEventListener('online', fn, { once: true });
+    else fn();
+  };
+
+  el.addEventListener('aem:error', ({ target }) => {
+    if (target?.tagName !== 'AEM-FRAGMENT' || typeof target.refresh !== 'function') return;
+    const key = ['fragment', 'pzn', 'mask'].map((attr) => target.getAttribute(attr) ?? '').join('|');
+    if (retries.has(key)) {
+      retries.get(key).then((ok) => ok && target.refresh(false));
+      return;
+    }
+    if (!waiting.has(key)) waiting.set(key, new Set());
+    waiting.get(key).add(target);
+    if (!timer) timer = setTimeout(() => whenOnline(() => schedule(retry)), RETRY_DELAY_MS);
+  });
+};
+
 export default function init(el) {
   const viewports = groupByViewport(el);
   markPromoSlides(el, viewports);
@@ -1006,16 +1095,25 @@ export default function init(el) {
   loadViewportVideos(el);
   syncViewportAutoplay();
 
-  // merch.js reveals a resolved promo slide and its nav card. If the authored first slide was
-  // skipped while pending, make it active once the promotion resolves.
-  if (el.querySelector(`.${PROMO_PLACEHOLDER}`)) {
-    el.addEventListener('mas:ready', () => {
-      requestAnimationFrame(() => {
-        controllersByVp.forEach((ctrl) => ctrl.activateResolvedFirstPromo());
-        dynamicLayoutUpdates(el);
+  const hasPromo = !!el.querySelector(`.${PROMO_PLACEHOLDER}`);
+  let lateContentFrame = null;
+  const onLateContent = () => {
+    if (lateContentFrame) return;
+    lateContentFrame = requestAnimationFrame(() => {
+      lateContentFrame = null;
+      containers.forEach((container) => {
+        const cards = container.querySelectorAll('.rm-card');
+        container.querySelectorAll('.rm-slide').forEach((slide, i) => refreshCard(cards[i], slide, i));
       });
+      // merch.js reveals a resolved promo slide and its nav card. If the authored first slide
+      // was skipped while pending, make it active once the promotion resolves.
+      if (hasPromo) controllersByVp.forEach((ctrl) => ctrl.activateResolvedFirstPromo());
+      dynamicLayoutUpdates(el);
     });
-  }
+  };
+  el.addEventListener('mas:ready', onLateContent);
+  el.querySelectorAll('.rm-ctas > em').forEach((slot) => settleCtaSlot(slot, onLateContent));
+  retryFailedFields(el);
 
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
   // syncViewportAutoplay stays un-debounced: getActiveViewport() is a cheap matchMedia check,

@@ -580,3 +580,8 @@
 .router-marquee mas-field > [data-role="mas-field-content"] p {
   display: inline;
 }
+
+/* pending CTA slot */
+.router-marquee .rm-ctas > em {
+  display: none;
+}
