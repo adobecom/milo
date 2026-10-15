@@ -391,7 +391,10 @@ describe('mep-lcp-check', () => {
       expect(layoutMsg).to.include('1. phone: fragment background cell 1 of 1 media_aaa222.png is a near-duplicate');
       expect(layoutMsg).to.include('fix: copy the image from the page hero background cell 1 of 2 into the fragment hero background cell 1 of 1 so both use media_aaa111.png');
       expect(layoutMsg).to.include('note: hero layouts differ');
-      expect(log.secondCall.args[0]).to.include('possible near-duplicate (distance 10');
+      expect(layoutMsg).to.match(/near-duplicate \(distance \d+, <= 8\)\*/);
+      expect(log.secondCall.args[0]).to.include('* distance: how many of the 64 bits differ');
+      expect(log.thirdCall.args[0]).to.include('possible near-duplicate (distance 10, 9-12: check visually)*');
+      expect(log.lastCall.args[0]).to.include('* distance:');
     });
 
     it('logs one entry per fragment with a numbered fix per image', () => {
@@ -424,13 +427,14 @@ describe('mep-lcp-check', () => {
         unable: [],
       });
       sinon.restore();
-      expect(log.callCount).to.equal(2);
+      expect(log.callCount).to.equal(3);
       const [msg] = log.firstCall.args;
       expect(msg.match(/\n {2}fragment: /g)).to.have.length(1);
       expect(msg).to.include('1. phone: fragment background cell 1 of 3 media_f1.png');
       expect(msg).to.include('2. tablet, desktop: fragment foreground image media_f2.png');
       expect(msg.match(/note: hero layouts differ/g)).to.have.length(1);
       expect(log.secondCall.args[0]).to.not.include('note: hero layouts differ');
+      expect(log.lastCall.args[0]).to.include('* distance:');
     });
   });
 
@@ -466,13 +470,13 @@ describe('mep-lcp-check', () => {
       };
       const findings = await init();
       expect(findings).to.have.length(1);
-      expect(log.calledOnce).to.be.true;
+      expect(log.calledTwice).to.be.true;
       expect(log.firstCall.args[0]).to.include('/test/init-manifest.json');
       expect(log.firstCall.args[0]).to.include('media_aaa111.png');
       expect(getConfig().mep.lcpSnapshot.images.map(getMediaName))
         .to.deep.equal(['media_aaa111.png', 'media_aaa111.png']);
       expect(await init()).to.equal(getConfig().mep.lcpFindings);
-      expect(log.calledOnce).to.be.true;
+      expect(log.calledTwice).to.be.true;
     });
   });
 });

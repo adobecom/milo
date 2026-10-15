@@ -467,8 +467,12 @@ export async function findNearDuplicates(experiments, snapshot) {
 }
 
 const describeVerdict = (f) => (f.match === 'possible'
-  ? `possible near-duplicate (distance ${f.distance}, ${NEAR_DUP_MAX_DISTANCE + 1}-${NEAR_DUP_REVIEW_DISTANCE}: check visually)`
-  : `near-duplicate (distance ${f.distance}, <= ${NEAR_DUP_MAX_DISTANCE})`);
+  ? `possible near-duplicate (distance ${f.distance}, ${NEAR_DUP_MAX_DISTANCE + 1}-${NEAR_DUP_REVIEW_DISTANCE}: check visually)*`
+  : `near-duplicate (distance ${f.distance}, <= ${NEAR_DUP_MAX_DISTANCE})*`);
+
+const DISTANCE_NOTE = '* distance: how many of the 64 bits differ between the two images\' visual fingerprints'
+  + ` (0 = identical). ${NEAR_DUP_MAX_DISTANCE} or fewer counts as the same image;`
+  + ` ${NEAR_DUP_MAX_DISTANCE + 1}-${NEAR_DUP_REVIEW_DISTANCE} might be, so check visually.`;
 
 const describeImageFix = (f, i) => {
   const fragName = getMediaName(f.fragmentImage);
@@ -522,6 +526,7 @@ export function logFindings({ findings, unable }) {
   console.groupCollapsed(`${LOG_TITLE} (${findings.length})`);
   groupByFragment(findings).forEach((group) => console.log(describeNearDuplicates(group)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
+  if (findings.length) console.log(DISTANCE_NOTE);
   console.groupEnd();
 }
 
