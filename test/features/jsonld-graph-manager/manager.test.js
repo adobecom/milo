@@ -764,27 +764,30 @@ describe('SoftwareApplication nested entities', () => {
     expect(graph.find((node) => node['@type'] === 'Article').about).to.deep.equal({ '@type': 'Offer', '@id': `${PAGE_URL}#paid` });
   });
 
-  it('rebuilds nested children from runtime contributions using existing source priority', () => {
+  it('merges untyped reference bodies using runtime source priority', () => {
+    const offerId = `${PAGE_URL}#paid`;
+    const ratingId = `${PAGE_URL}#rating`;
     const boot = makeScript({
       '@type': 'SoftwareApplication',
       name: 'Photoshop',
-      offers: [{ '@type': 'Offer', '@id': `${PAGE_URL}#paid`, price: '19.99', priceCurrency: 'USD' }],
-      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.5', ratingCount: '200' },
+      offers: [{ '@id': offerId, price: '19.99', priceCurrency: 'USD' }],
+      aggregateRating: { '@id': ratingId, ratingValue: '4.5', ratingCount: '200' },
     });
     const manager = trackedManager();
     manager.enqueue(boot, 'bootDom');
     manager.rebuild();
-    const runtime = makeScript([
-      { '@type': 'Offer', '@id': `${PAGE_URL}#paid`, price: '24.99', priceCurrency: 'USD' },
-      { '@type': 'AggregateRating', ratingValue: '4.8', ratingCount: '300' },
-    ]);
+    const runtime = makeScript({
+      '@type': 'SoftwareApplication',
+      offers: [{ '@id': offerId, price: '24.99', priceCurrency: 'USD' }],
+      aggregateRating: { '@id': ratingId, ratingValue: '4.8', ratingCount: '300' },
+    });
     manager.enqueue(runtime, 'runtime');
     manager.rebuild();
 
     const app = getManagedGraph()['@graph'].find((node) => node['@type'] === 'SoftwareApplication');
     expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '24.99', priceCurrency: 'USD' }]);
     expect(app.aggregateRating).to.deep.equal({ '@type': 'AggregateRating', ratingValue: '4.8', ratingCount: '300' });
-    expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.deep.equal([{ '@id': `${PAGE_URL}#paid` }]);
+    expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.deep.equal([{ '@id': offerId }]);
   });
 
   it('removes remapped low-quality rating references, including array values', () => {

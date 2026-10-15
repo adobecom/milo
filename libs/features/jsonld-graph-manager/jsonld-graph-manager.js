@@ -388,7 +388,7 @@ function nestApplicationEntities(nodes) {
         if (!value || typeof value !== 'object') return value;
         const entity = byId.get(value['@id']) ?? value;
         if (entity['@type'] !== type) return value;
-        const nested = { ...entity, ...value };
+        const nested = { ...entity };
         if (entity['@id']) nestedIds.add(entity['@id']);
         delete nested['@id'];
         delete nested['@context'];
@@ -420,10 +420,16 @@ function nestApplicationEntities(nodes) {
 
 const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand', 'seller', 'offers', 'itemOffered', 'aggregateRating'];
 
-function extractEntity(val, idRemap) {
-  if (!val || typeof val !== 'object' || Array.isArray(val) || !val['@type']) return null;
-  if (!RULES[val['@type']] && !TYPE_TRANSFORMS[val['@type']]) return null;
-  const normalized = normalizeNode(val);
+function extractEntity(val, idRemap, inferredType) {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return null;
+  const hasReferenceBody = typeof val['@id'] === 'string'
+    && Object.keys(val).some((key) => key !== '@id' && key !== '@context');
+  let entity = val;
+  if (!val['@type']) {
+    entity = inferredType && hasReferenceBody ? { ...val, '@type': inferredType } : null;
+  }
+  if (!entity || (!RULES[entity['@type']] && !TYPE_TRANSFORMS[entity['@type']])) return null;
+  const normalized = normalizeNode(entity);
   if (typeof val['@id'] === 'string' && normalized['@id'] && val['@id'] !== normalized['@id']) {
     idRemap?.set(val['@id'], normalized['@id']);
   }
@@ -437,13 +443,13 @@ export function extractInlineEntities(node, idRemap) {
     if (val == null) continue;
     if (Array.isArray(val)) {
       node[prop] = val.map((item) => {
-        const ent = extractEntity(item, idRemap);
+        const ent = extractEntity(item, idRemap, APPLICATION_ENTITY_TYPES[prop]);
         if (!ent) return item;
         extracted.push(ent);
         return { '@id': ent['@id'] };
       });
     } else {
-      const ent = extractEntity(val, idRemap);
+      const ent = extractEntity(val, idRemap, APPLICATION_ENTITY_TYPES[prop]);
       if (ent) {
         extracted.push(ent);
         node[prop] = { '@id': ent['@id'] };
