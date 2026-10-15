@@ -1283,7 +1283,7 @@
   .hub-hero.touch-scroll .hub-hero-carousel-scroll {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }

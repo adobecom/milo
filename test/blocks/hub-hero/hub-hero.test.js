@@ -300,6 +300,7 @@ describe('hub-hero block', () => {
     });
 
     afterEach(async () => {
+      sinon.restore();
       document.body.replaceChildren();
       window.scrollTo(0, 0);
       if (originalDirection === null) document.documentElement.removeAttribute('dir');
@@ -401,6 +402,50 @@ describe('hub-hero block', () => {
       const block = await loadCarousel();
       expect(getComputedStyle(block.querySelector('.hub-hero-carousel-container')).animationName)
         .to.not.include('carousel-slides-three-assemble');
+    });
+
+    [3, 4].forEach((slideCount) => {
+      it(`settles ${slideCount}-slide touch tablet page height without interaction`, async () => {
+        await setViewport({ width: 1024, height: 800 });
+        const nativeMatchMedia = window.matchMedia.bind(window);
+        const touchQuery = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
+        const matchMedia = sinon.stub(window, 'matchMedia').callsFake((query) => (
+          nativeMatchMedia(query === touchQuery ? '(min-width: 0px)' : query)
+        ));
+        try {
+          const block = await loadCarousel(slideCount, 'h3');
+          expect(block.classList.contains('touch-scroll')).to.be.true;
+          expect(block.querySelector('.hub-hero-carousel-scroll')).to.exist;
+          expect(parseFloat(block.style.getPropertyValue('--hub-hero-content-height')))
+            .to.be.above(0);
+          const following = document.createElement('div');
+          following.style.height = '200px';
+          document.body.append(following);
+          await document.fonts.ready;
+          await settleLayout();
+          const samples = [];
+          const start = performance.now();
+          await new Promise((resolve) => {
+            const sample = () => {
+              samples.push({
+                page: document.documentElement.scrollHeight,
+                hero: block.offsetHeight,
+                following: following.getBoundingClientRect().top + window.scrollY,
+              });
+              if (performance.now() - start < 2000) requestAnimationFrame(sample);
+              else resolve();
+            };
+            requestAnimationFrame(sample);
+          });
+          for (const key of ['page', 'hero', 'following']) {
+            const heights = samples.map((sample) => sample[key]);
+            expect(Math.max(...heights) - Math.min(...heights), key).to.be.at.most(1);
+          }
+          expect(window.scrollY).to.equal(0);
+        } finally {
+          matchMedia.restore();
+        }
+      }).timeout(5000);
     });
 
     ['p', 'h3'].forEach((footerTag) => {
