@@ -603,6 +603,36 @@ describe('#_all with #_all-breakpoints', () => {
   });
 });
 
+describe('#_all-breakpoints on breakpoint label rows', () => {
+  const markup = `<div class="router-marquee">
+    <div><div>mobile</div></div>
+    <div><div>m1</div><div></div></div>
+    <div><div>tablet</div></div>
+    <div><div>t1</div><div></div></div>
+  </div>`;
+
+  it('insertafter on the first label row inserts a first slide in every breakpoint', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertafter', content: '/fragments/new-content', selector: 'router-marquee row1 #_all-breakpoints' }];
+    await handleCommands(commands, rootEl, false, true);
+    const rows = rootEl.querySelectorAll('.router-marquee > div');
+    expect(rows.length).to.equal(6);
+    expect(rows[1].querySelector('a[href="/fragments/new-content"]').dataset.mepBreakpoint).to.equal('mobile');
+    expect(rows[4].querySelector('a[href="/fragments/new-content"]').dataset.mepBreakpoint).to.equal('tablet');
+    expect(rows[2].textContent).to.include('m1');
+    expect(rows[5].textContent).to.include('t1');
+  });
+
+  it('ignores the flag on label rows for actions other than insertafter', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertbefore', content: '/fragments/new-content', selector: 'router-marquee row1 #_all-breakpoints' }];
+    await handleCommands(commands, rootEl, false, true);
+    expect(rootEl.querySelectorAll('a[href="/fragments/new-content"]').length).to.equal(1);
+  });
+});
+
 describe('getBreakpointRows', () => {
   const toRows = (html) => {
     const el = document.createElement('div');
