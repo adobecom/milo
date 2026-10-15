@@ -1840,6 +1840,9 @@ export async function init(enablements = {}) {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });
+      import('../mep/mep-next/mep-lcp-check.js')
+        .then(({ default: checkLcpImages }) => checkLcpImages())
+        .catch((e) => window.lana?.log(`MEP LCP check error: ${e.toString()}`));
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);

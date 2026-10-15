@@ -5,6 +5,7 @@ import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
 const {
   default: init,
   NEAR_DUP_MAX_DISTANCE,
+  NEAR_DUP_REVIEW_DISTANCE,
   computeDHash,
   getHammingDistance,
   getMediaName,
@@ -12,7 +13,11 @@ const {
   getImageHash,
   isHeroSelector,
   getHeroCandidates,
+  getViewportImages,
+  getHeroLayout,
+  getPageHero,
   findHiddenHeroImages,
+  logFindings,
   whenLcpAreaSettled,
   compareImages,
   findNearDuplicates,
@@ -70,7 +75,7 @@ describe('mep-lcp-check', () => {
     });
 
     it('scores different images above the threshold', () => {
-      expect(getHammingDistance(hashA, hashB)).to.be.above(NEAR_DUP_MAX_DISTANCE);
+      expect(getHammingDistance(hashA, hashB)).to.be.above(NEAR_DUP_REVIEW_DISTANCE);
     });
   });
 
@@ -222,6 +227,89 @@ describe('mep-lcp-check', () => {
     it('returns nothing when the page has no LCP images', async () => {
       const result = await findNearDuplicates(experiments, { images: [], fragments: [] });
       expect(result.findings).to.deep.equal([]);
+    });
+  });
+
+  describe('getViewportImages', () => {
+    const parse = (html) => new DOMParser().parseFromString(html, 'text/html').body.firstElementChild;
+    const names = (byViewport) => Object.fromEntries(Object.entries(byViewport)
+      .map(([vp, imgs]) => [vp, imgs.map(({ name, role }) => `${name} ${role}`)]));
+
+    it('maps three background cells to one viewport each and posters to visible viewports', () => {
+      const block = parse(`<div class="marquee media-hidden-mobile">
+        <div><div><img alt="" src="./media_a1.png"></div><div><img alt="" src="./media_b2.png"></div><div>#000</div></div>
+        <div><div><h1>Hi</h1></div><div><img alt="" src="./media_c3.png"><a href="/v.mp4">v</a></div></div>
+      </div>`);
+      expect(names(getViewportImages(block, window.location.href))).to.deep.equal({
+        phone: ['media_a1.png background cell 1 of 3'],
+        tablet: ['media_b2.png background cell 2 of 3', 'media_c3.png foreground video poster'],
+        desktop: ['media_c3.png foreground video poster'],
+      });
+    });
+
+    it('maps two cells to phone and tablet+desktop, and one cell to all viewports', () => {
+      const two = parse(`<div class="marquee"><div><div><img alt="" src="./media_a1.png"></div>
+        <div><img alt="" src="./media_b2.png"></div></div><div><div>text</div></div></div>`);
+      expect(getHeroLayout(two)).to.equal('phone: background cell 1 of 2; tablet: background cell 2 of 2; desktop: background cell 2 of 2');
+      const one = parse(`<div class="marquee"><div><div><img alt="" src="./media_a1.png"></div></div>
+        <div><div><img alt="" src="./media_b2.png"></div></div></div>`);
+      expect(getHeroLayout(one)).to.equal('phone: background cell 1 of 1, foreground image; tablet: background cell 1 of 1, foreground image; desktop: background cell 1 of 1, foreground image');
+    });
+  });
+
+  describe('findNearDuplicates by viewport', () => {
+    const pageSnapshot = { images: [], fragments: [abs(`${MOCKS}/hero-cells-page`)] };
+    const run = (fragment) => findNearDuplicates([makeExperiment({
+      phone: {
+        commands: [{ action: 'replace', selector: 'marquee', content: `${MOCKS}/${fragment}` }],
+        fragments: [],
+      },
+    })], pageSnapshot);
+
+    it('finds the page hero in a page fragment', async () => {
+      const hero = await getPageHero(pageSnapshot);
+      expect(hero.block.classList.contains('marquee')).to.be.true;
+      expect(hero.baseUrl).to.equal(abs(`${MOCKS}/hero-cells-page.plain.html`));
+      expect(await getPageHero({ images: [], fragments: [] })).to.be.null;
+    });
+
+    it('reports the viewport and the matching cells', async () => {
+      const { findings } = await run('hero-cells-near');
+      expect(findings).to.have.length(1);
+      expect(findings[0]).to.include({
+        match: 'near-duplicate',
+        fragmentRole: 'background cell 1 of 2',
+        pageRole: 'background cell 1 of 2',
+        layout: null,
+      });
+      expect(findings[0].viewports).to.deep.equal(['phone']);
+      expect(getMediaName(findings[0].pageImage)).to.equal('media_aaa111.png');
+    });
+
+    it('ignores look-alikes that never show at the same viewport', async () => {
+      expect((await run('hero-cells-swapped')).findings).to.deep.equal([]);
+    });
+
+    it('flags hero layouts that differ from the page', async () => {
+      const { findings } = await run('hero-cells-single');
+      expect(findings).to.have.length(1);
+      expect(findings[0].viewports).to.deep.equal(['phone']);
+      expect(findings[0].fragmentRole).to.equal('background cell 1 of 1');
+      expect(findings[0].layout.fragment).to.include('phone: background cell 1 of 1');
+    });
+
+    it('logs the viewport, cells and fix', async () => {
+      const warn = sinon.stub(console, 'warn');
+      sinon.stub(console, 'groupCollapsed');
+      sinon.stub(console, 'groupEnd');
+      logFindings(await run('hero-cells-single'));
+      logFindings({ findings: [{ ...(await run('hero-cells-near')).findings[0], match: 'possible', distance: 10 }], unable: [] });
+      sinon.restore();
+      const [layoutMsg] = warn.firstCall.args;
+      expect(layoutMsg).to.include('phone: fragment background cell 1 of 1 media_aaa222.png is a near-duplicate');
+      expect(layoutMsg).to.include('fix: copy the image from the page hero background cell 1 of 2 into the fragment hero background cell 1 of 1 so both use media_aaa111.png');
+      expect(layoutMsg).to.include('note: hero layouts differ');
+      expect(warn.secondCall.args[0]).to.include('possible near-duplicate (distance 10');
     });
   });
 

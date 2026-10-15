@@ -3,6 +3,19 @@ import { getConfig, isTrustedUrl } from '../../../utils/utils.js';
 import { normalizePath } from '../../personalization/personalization.js';
 
 export const NEAR_DUP_MAX_DISTANCE = 8;
+export const NEAR_DUP_REVIEW_DISTANCE = 12;
+const VIEWPORTS = ['phone', 'tablet', 'desktop'];
+// mirrors decorateBlockBg: 1 cell = all viewports, 2 = phone | tablet+desktop, 3 = one each
+const BG_CELL_VIEWPORTS = {
+  1: [VIEWPORTS],
+  2: [['phone'], ['tablet', 'desktop']],
+  3: [['phone'], ['tablet'], ['desktop']],
+};
+const HIDDEN_MEDIA_CLASSES = {
+  phone: 'media-hidden-mobile',
+  tablet: 'media-hidden-tablet',
+  desktop: 'media-hidden-desktop',
+};
 const MAX_CONCURRENT = 4;
 const MAX_FRAGMENT_DEPTH = 2;
 const HASH_IMAGE_PARAMS = 'width=64&format=png&optimize=medium';
@@ -180,6 +193,7 @@ export function getLcpSnapshot(lcpSection) {
     .map((s) => toUrl(s.getAttribute('srcset').split(',')[0].trim().split(/\s+/)[0]));
   return {
     section: original,
+    root: clone,
     images: [...[...clone.querySelectorAll('img[src*="media_"]')].map((img) => toUrl(img.getAttribute('src'))), ...sources],
     fragments: [...clone.querySelectorAll('a[href*="/fragments/"]')].map((a) => toUrl(a.getAttribute('href'))),
   };
@@ -251,11 +265,64 @@ export function getHeroCandidates(experiment, pageFragments = []) {
   return candidates.map((c) => ({ ...c, manifestPath }));
 }
 
-async function getCandidateImages({ fragmentUrl, replacePage }) {
-  if (!replacePage) return getFragmentImages(fragmentUrl);
-  const doc = await fetchFragmentDoc(fragmentUrl);
-  const firstSection = doc?.body.querySelector(':scope > div');
-  return firstSection ? getFragmentImages(fragmentUrl, firstSection) : [];
+export const findHeroBlock = (root) => root?.querySelector('.marquee, .hero-marquee') || null;
+
+const isPoster = (img) => (img.getAttribute('alt') || '').includes('.mp4')
+  || !!img.closest('div')?.querySelector('a[href*=".mp4"]');
+
+export function getViewportImages(block, baseUrl) {
+  const byViewport = Object.fromEntries(VIEWPORTS.map((vp) => [vp, []]));
+  const add = (img, viewports, role) => {
+    let src;
+    try {
+      src = new URL(img.getAttribute('src'), baseUrl).href;
+    } catch {
+      return;
+    }
+    const name = getMediaName(src);
+    if (name) viewports.forEach((vp) => byViewport[vp].push({ src, name, role }));
+  };
+  const rows = [...block.children];
+  let fgRows = rows;
+  const [bgRow] = rows;
+  if (rows.length > 1 && (bgRow.textContent.trim() || bgRow.querySelector('img'))) {
+    const cells = [...bgRow.children];
+    const count = Math.min(Math.max(cells.length, 1), 3);
+    const targets = cells.length > 1 ? cells.slice(0, 3) : [bgRow];
+    targets.forEach((cell, i) => cell.querySelectorAll('img[src*="media_"]')
+      .forEach((img) => add(img, BG_CELL_VIEWPORTS[count][i], `background cell ${i + 1} of ${count}`)));
+    fgRows = rows.slice(1);
+  }
+  const shown = VIEWPORTS.filter((vp) => !block.classList.contains(HIDDEN_MEDIA_CLASSES[vp]));
+  fgRows.forEach((row) => row.querySelectorAll('img[src*="media_"]')
+    .forEach((img) => add(img, shown, isPoster(img) ? 'foreground video poster' : 'foreground image')));
+  return byViewport;
+}
+
+export function getHeroLayout(block) {
+  const byViewport = getViewportImages(block, window.location.href);
+  return VIEWPORTS
+    .map((vp) => `${vp}: ${byViewport[vp].map(({ role }) => role).join(', ') || 'none'}`)
+    .join('; ');
+}
+
+export async function getPageHero(snapshot) {
+  const block = findHeroBlock(snapshot?.root);
+  if (block) return { block, baseUrl: window.location.href };
+  const fragments = await Promise.all((snapshot?.fragments || [])
+    .map(getFragmentUrl)
+    .filter(Boolean)
+    .map(async (url) => ({
+      block: findHeroBlock((await fetchFragmentDoc(url))?.body),
+      baseUrl: `${url}.plain.html`,
+    })));
+  return fragments.find((frag) => frag.block) || null;
+}
+
+async function getCandidateRoot({ fragmentUrl, replacePage }) {
+  const body = (await fetchFragmentDoc(fragmentUrl))?.body;
+  if (!replacePage) return body;
+  return body?.querySelector(':scope > div') || null;
 }
 
 export async function compareImages(fragmentImage, pageImages) {
@@ -272,35 +339,89 @@ export async function compareImages(fragmentImage, pageImages) {
   const best = results
     .filter((r) => !r.error)
     .sort((a, b) => a.distance - b.distance)[0];
-  if (best && best.distance <= NEAR_DUP_MAX_DISTANCE) return { ...best, unable };
+  if (best && best.distance <= NEAR_DUP_REVIEW_DISTANCE) return { ...best, unable };
   return { unable };
+}
+
+async function compareByViewport(fragmentBlock, fragmentUrl, pageHero) {
+  const pageByViewport = getViewportImages(pageHero.block, pageHero.baseUrl);
+  const fragByViewport = getViewportImages(fragmentBlock, `${fragmentUrl}.plain.html`);
+  const pageLayout = getHeroLayout(pageHero.block);
+  const fragmentLayout = getHeroLayout(fragmentBlock);
+  const layout = pageLayout === fragmentLayout
+    ? null
+    : { page: pageLayout, fragment: fragmentLayout };
+  const matches = new Map();
+  const unable = [];
+  await Promise.all(VIEWPORTS.flatMap((vp) => fragByViewport[vp].map(async (fragImg) => {
+    const pageImages = pageByViewport[vp];
+    if (!pageImages.length) return;
+    const result = await compareImages(fragImg.src, pageImages.map(({ src }) => src));
+    if (!result) return;
+    unable.push(...result.unable);
+    if (result.distance === undefined) return;
+    const pageImg = pageImages.find(({ src }) => src === result.pageImage);
+    const key = `${fragImg.name}|${fragImg.role}|${pageImg.name}|${pageImg.role}`;
+    if (!matches.has(key)) {
+      matches.set(key, {
+        fragmentImage: fragImg.src,
+        fragmentRole: fragImg.role,
+        pageImage: pageImg.src,
+        pageRole: pageImg.role,
+        distance: result.distance,
+        viewports: [],
+        layout,
+      });
+    }
+    matches.get(key).viewports.push(vp);
+  })));
+  const byOrder = (a, b) => VIEWPORTS.indexOf(a) - VIEWPORTS.indexOf(b);
+  matches.forEach((match) => match.viewports.sort(byOrder));
+  return { matches: [...matches.values()], unable };
+}
+
+async function compareAnyImage(root, fragmentUrl, pageImages) {
+  const images = root ? await getFragmentImages(fragmentUrl, root) : [];
+  const results = await Promise.all(images.map(async (fragmentImage) => {
+    const result = await compareImages(fragmentImage, pageImages);
+    return result && { ...result, fragmentImage };
+  }));
+  const valid = results.filter(Boolean);
+  return {
+    matches: valid
+      .filter((r) => r.distance !== undefined)
+      .map(({ fragmentImage, pageImage, distance }) => ({ fragmentImage, pageImage, distance })),
+    unable: valid.flatMap((r) => r.unable),
+  };
 }
 
 export async function findNearDuplicates(experiments, snapshot) {
   const findings = [];
   const unable = new Set();
-  const pageImages = await getPageLcpImages(snapshot);
+  const [pageImages, pageHero] = await Promise.all([
+    getPageLcpImages(snapshot),
+    getPageHero(snapshot),
+  ]);
   if (!pageImages.length) return { findings, unable: [] };
   const candidates = experiments.flatMap((exp) => getHeroCandidates(exp, snapshot.fragments));
   await Promise.all(candidates.map(async (candidate) => {
-    const images = await getCandidateImages(candidate);
-    await Promise.all(images.map(async (fragmentImage) => {
-      const result = await compareImages(fragmentImage, pageImages);
-      if (!result) return;
-      result.unable?.forEach((msg) => unable.add(msg));
-      if (result.distance === undefined) return;
-      const { variant, action, selector, fragmentUrl, manifestPath } = candidate;
-      findings.push({
-        type: 'near-duplicate',
-        manifestPath,
-        variant,
-        action,
-        selector,
-        fragmentUrl,
-        fragmentImage,
-        pageImage: result.pageImage,
-        distance: result.distance,
-      });
+    const { variant, action, selector, fragmentUrl, manifestPath } = candidate;
+    const root = await getCandidateRoot(candidate);
+    const fragmentBlock = findHeroBlock(root);
+    const { matches, unable: missed } = pageHero && fragmentBlock
+      ? await compareByViewport(fragmentBlock, fragmentUrl, pageHero)
+      : await compareAnyImage(root, fragmentUrl, pageImages);
+    missed.forEach((msg) => unable.add(msg));
+    matches.forEach((match) => findings.push({
+      type: 'near-duplicate',
+      match: match.distance <= NEAR_DUP_MAX_DISTANCE ? 'near-duplicate' : 'possible',
+      manifestPath,
+      variant,
+      action,
+      selector,
+      fragmentUrl,
+      viewports: null,
+      ...match,
     }));
   }));
   return { findings, unable: [...unable] };
@@ -367,6 +488,40 @@ export function findHiddenHeroImages(pageImageNames, originalSection) {
   return findings;
 }
 
+const describeNearDuplicate = (f) => {
+  const fragName = getMediaName(f.fragmentImage);
+  const pageName = getMediaName(f.pageImage);
+  const verdict = f.match === 'possible'
+    ? `possible near-duplicate (distance ${f.distance}, ${NEAR_DUP_MAX_DISTANCE + 1}-${NEAR_DUP_REVIEW_DISTANCE}: check visually)`
+    : `near-duplicate (distance ${f.distance}, <= ${NEAR_DUP_MAX_DISTANCE})`;
+  const lines = [
+    `${f.manifestPath} | variant "${f.variant}" | ${f.action} "${f.selector}"`,
+    `  fragment: ${f.fragmentUrl}`,
+  ];
+  if (!f.viewports) {
+    lines.push(
+      `  fragment image: ${f.fragmentImage}`,
+      `  page image: ${f.pageImage}`,
+      `  ${verdict}, viewport unknown (no marquee found to map cells)`,
+      `  fix: reuse ${pageName} from the page hero instead of ${fragName}`,
+    );
+    return lines.join('\n');
+  }
+  lines.push(
+    `  ${f.viewports.join(', ')}: fragment ${f.fragmentRole} ${fragName} is a ${verdict}`,
+    `    of page ${f.pageRole} ${pageName}`,
+    `  fix: copy the image from the page hero ${f.pageRole} into the fragment hero ${f.fragmentRole} so both use ${pageName}`,
+  );
+  if (f.layout) {
+    lines.push(
+      '  note: hero layouts differ, so match images by viewport, not by cell position',
+      `    page: ${f.layout.page}`,
+      `    fragment: ${f.layout.fragment}`,
+    );
+  }
+  return lines.join('\n');
+};
+
 export function logFindings({ findings, unable }) {
   if (!findings.length && !unable.length) return;
   console.groupCollapsed(`${LOG_TITLE} (${findings.length})`);
@@ -376,13 +531,8 @@ export function logFindings({ findings, unable }) {
     + `  manifests in LCP area: ${f.manifests.join(', ') || 'unknown'}\n`
     + '  remove the hidden content instead of hiding it with CSS, or reuse the visible hero image',
   ));
-  findings.filter((f) => f.type === 'near-duplicate').forEach((f) => console.warn(
-    `${f.manifestPath} | variant "${f.variant}" | ${f.action} "${f.selector}"\n`
-    + `  fragment: ${f.fragmentUrl}\n`
-    + `  fragment image: ${f.fragmentImage}\n`
-    + `  page image: ${f.pageImage}\n`
-    + `  distance: ${f.distance} (<= ${NEAR_DUP_MAX_DISTANCE} is a near-duplicate; reuse ${getMediaName(f.pageImage)} from the page)`,
-  ));
+  findings.filter((f) => f.type === 'near-duplicate')
+    .forEach((f) => console.warn(describeNearDuplicate(f)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
   console.groupEnd();
 }
