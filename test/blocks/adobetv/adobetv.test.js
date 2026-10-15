@@ -170,21 +170,60 @@ describe('adobetv autoblock', () => {
       expect(source.getAttribute('src')).to.equal('https://images-tv.adobe.com/x/854.mp4#t=3');
     });
 
-    it('passes MPC autoplay query params through to the iframe player', async () => {
+    it('loads an authored ?autoplay=true player paused with autoplay pending', async () => {
       const wrapper = document.querySelector('#mpcPlayerQueryAutoplay');
       await init(wrapper.querySelector('a'));
       expect(wrapper.querySelector('video')).to.be.null;
-      expect(wrapper.querySelector('iframe').src).to.equal('https://video.tv.adobe.com/v/444444?autoplay=true&end=replay');
+      const iframe = wrapper.querySelector('iframe');
+      expect(iframe.src).to.equal('https://video.tv.adobe.com/v/444444?end=replay');
+      expect(iframe.getAttribute('allow')).to.include('autoplay');
+      expect(iframe.dataset.autoplayPending).to.equal('true');
     });
 
-    it('skips the poster and autoplays the iframe for a poster with ?autoplay=true', async () => {
+    describe('authored ?autoplay=true on load', () => {
+      const setup = async (selector, position) => {
+        const wrapper = document.querySelector(selector);
+        wrapper.style.cssText = `position: fixed; left: 0; width: 300px; top: ${position}`;
+        await init(wrapper.querySelector('a'));
+        const iframe = wrapper.querySelector('iframe');
+        // Same-origin document so postMessage can be spied on.
+        const loaded = new Promise((r) => { iframe.addEventListener('load', r, { once: true }); });
+        iframe.src = 'about:blank';
+        await loaded;
+        const postMessage = stub(iframe.contentWindow, 'postMessage');
+        await new Promise((r) => { setTimeout(r, 100); });
+        window.dispatchEvent(new MessageEvent('message', {
+          origin: 'https://video.tv.adobe.com',
+          source: iframe.contentWindow,
+          data: { type: 'mpcStatus', state: 'load' },
+        }));
+        return { wrapper, iframe, postMessage };
+      };
+
+      it('plays a player that is in view when it loads', async () => {
+        const { iframe, postMessage } = await setup('#mpcPlayerQueryAutoplay', '0');
+        expect(iframe.dataset.autoplayPending).to.be.undefined;
+        expect(postMessage.calledWith({ type: 'mpcAction', action: 'play' })).to.be.true;
+      });
+
+      it('leaves a player paused when it loads out of view, even after scrolling in', async () => {
+        const { wrapper, iframe, postMessage } = await setup('#mpcPlayerPosterQueryAutoplay', '-2000px');
+        expect(iframe.dataset.autoplayPending).to.be.undefined;
+        wrapper.style.cssText = 'position: fixed; left: 0; width: 300px; top: 0';
+        await new Promise((r) => { setTimeout(r, 100); });
+        expect(postMessage.called).to.be.false;
+      });
+    });
+
+    it('skips the poster for a poster with ?autoplay=true and waits for view to play', async () => {
       const wrapper = document.querySelector('#mpcPlayerPosterQueryAutoplay');
       await init(wrapper.querySelector('a'));
       expect(wrapper.querySelector('.mpc-poster')).to.be.null;
       expect(wrapper.querySelector('video')).to.be.null;
       const iframe = wrapper.querySelector('iframe');
-      expect(iframe.src).to.equal('https://video.tv.adobe.com/v/888888?autoplay=true&end=replay');
+      expect(iframe.src).to.equal('https://video.tv.adobe.com/v/888888?end=replay');
       expect(iframe.getAttribute('allow')).to.include('autoplay');
+      expect(iframe.dataset.autoplayPending).to.equal('true');
       expect(document.activeElement).to.not.equal(iframe);
     });
 

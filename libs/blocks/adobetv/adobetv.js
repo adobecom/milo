@@ -19,8 +19,33 @@ const updateCaptionsLang = (url, geo, captionsLangMap) => {
   return url.toString();
 };
 
-export const pauseMpcPlayer = (iframe) => {
-  iframe.contentWindow?.postMessage({ type: 'mpcAction', action: 'pause' }, iframe.src);
+const sendMpcAction = (iframe, action) => {
+  iframe.contentWindow?.postMessage({ type: 'mpcAction', action }, iframe.src);
+};
+
+export const pauseMpcPlayer = (iframe) => sendMpcAction(iframe, 'pause');
+
+// A WeakSet rather than a data attribute so carousel clones don't inherit the state.
+const inViewPlayers = new WeakSet();
+let autoplayObserver;
+
+// Autoplay is decided once, on load: off-screen players stay paused like any other player.
+const resolvePendingAutoplay = (iframe) => {
+  if (!iframe.dataset.autoplayPending) return;
+  delete iframe.dataset.autoplayPending;
+  autoplayObserver?.unobserve(iframe);
+  if (inViewPlayers.has(iframe)) sendMpcAction(iframe, 'play');
+};
+
+const getAutoplayObserver = () => {
+  // Same visibility rule as native viewportplay video.
+  autoplayObserver ??= new IntersectionObserver((entries) => {
+    entries.forEach(({ intersectionRatio, target }) => {
+      if (intersectionRatio > 0.8) inViewPlayers.add(target);
+      else inViewPlayers.delete(target);
+    });
+  }, { threshold: [0.8] });
+  return autoplayObserver;
 };
 
 let playerObserver;
@@ -37,23 +62,28 @@ const getPlayerObserver = () => {
 const onPlayerMessage = (event) => {
   if (event.origin !== 'https://video.tv.adobe.com' || !event.source) return;
   const { state } = event.data || {};
-  if (!['play', 'pause'].includes(state)) return;
+  if (!['load', 'play', 'pause'].includes(state)) return;
   const iframe = [...document.querySelectorAll('iframe.adobetv')]
     .find((f) => f.contentWindow === event.source);
   if (!iframe) return;
+  if (state === 'load') {
+    resolvePendingAutoplay(iframe);
+    return;
+  }
   iframe.setAttribute('data-playing', state === 'play');
   getPlayerObserver().observe(iframe);
 };
 let playerListenerAdded = false;
 
-const createIframe = (a, href, { autoplay = false, focus = false } = {}) => {
+const createIframe = (a, href, opts = {}) => {
+  const { autoplay = false, autoplayInView = false, focus = false } = opts;
   const videoHref = href || a.href;
 
   const iframe = createTag('iframe', {
     src: videoHref,
     class: 'adobetv',
     scrolling: 'no',
-    allow: `${autoplay ? 'autoplay; ' : ''}encrypted-media; fullscreen`,
+    allow: `${autoplay || autoplayInView ? 'autoplay; ' : ''}encrypted-media; fullscreen`,
     title: 'Adobe Video Publishing Cloud Player',
     loading: 'lazy',
   });
@@ -77,6 +107,10 @@ const createIframe = (a, href, { autoplay = false, focus = false } = {}) => {
     playerListenerAdded = true;
   }
   getPlayerObserver().observe(iframe);
+  if (autoplayInView) {
+    iframe.dataset.autoplayPending = 'true';
+    getAutoplayObserver().observe(iframe);
+  }
 
   a.remove();
   if (focus) iframe.focus();
@@ -102,7 +136,9 @@ const createIframeWithCaptions = (a, url, geo, opts) => {
 
 const embedPlayer = (a, opts = {}) => {
   const url = new URL(a.href);
-  if (opts.autoplay) url.searchParams.set('autoplay', 'true');
+  // Load paused; it only starts if mostly in view when the player loads.
+  if (opts.autoplayInView) url.searchParams.delete('autoplay');
+  else if (opts.autoplay) url.searchParams.set('autoplay', 'true');
   const { atvCaptionsKey, locale } = getConfig();
   const geo = (locale?.prefix || '').replace('/langstore', '').replace('/', '');
   const federalCR = atvCaptionsKey && getFederatedContentRoot();
@@ -179,7 +215,7 @@ export default function init(a) {
     if (a.dataset.videoPoster && getMpcPlayerId(a.href) && !queryAutoplay) {
       createPosterPlayer(a);
     } else {
-      embedPlayer(a, { autoplay: queryAutoplay });
+      embedPlayer(a, { autoplayInView: queryAutoplay });
     }
   }
 }
