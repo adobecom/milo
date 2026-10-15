@@ -21,6 +21,7 @@ describe('Chat link startup selection', () => {
     document.head.append(Object.assign(document.createElement('meta'), { name: 'acom-assistant', content }));
   };
   const BC_IDENTITY = { appid: 'homepage_loggedout_default', appver: '2.0' };
+  const FOOTER_IDENTITY = { appid: 'footer-jarvis', appver: '9.0' };
 
   before(() => {
     originalClient = window.AdobeMessagingExperienceClient;
@@ -140,18 +141,21 @@ describe('Chat link startup selection', () => {
     expect(initializedConfig.appver).to.equal(getConfig().jarvis.version);
     expect(initializedConfig.componentid).to.equal('brand-concierge');
     expect(client.openMessagingWindow.calledOnceWith({ sourceType: 'a', sourceText: 'Contact us' })).to.be.true;
-    expect(openContexts).to.deep.equal([BC_IDENTITY]);
+    expect(openContexts).to.deep.equal([FOOTER_IDENTITY]);
   });
 
-  it('opens BC from a footer Jarvis link, ignoring its Jarvis surface config', async () => {
+  it('reports the footer link surface config for that open only', async () => {
     setAssistantFlag('on');
     getMetadata.withArgs('foundation').returns('c2');
+    document.body.insertAdjacentHTML('beforeend', '<nav><a href="#open-jarvis-chat">Message us</a></nav>');
     await initChatLinks(getConfig(), loadScript, loadStyle, getMetadata);
-    document.querySelector('a').click();
-    await waitFor(() => client.openMessagingWindow.called);
+    document.querySelector('.global-footer a').click();
+    await waitFor(() => client.openMessagingWindow.calledOnce);
+    document.querySelector('nav a').click();
+    await waitFor(() => client.openMessagingWindow.calledTwice);
     expect(client.initialize.called).to.be.false;
     expect(client.reinitialize.called).to.be.false;
-    expect(openContexts).to.deep.equal([BC_IDENTITY]);
+    expect(openContexts).to.deep.equal([FOOTER_IDENTITY, BC_IDENTITY]);
     expect(document.querySelector('a').getAttribute('href')).to.equal('#open-jarvis-chat');
   });
 
@@ -161,7 +165,7 @@ describe('Chat link startup selection', () => {
     document.querySelector('a').click();
     await waitFor(() => client.openMessagingWindow.called);
     expect(client.openMessagingWindow.calledOnce).to.be.true;
-    expect(openContexts).to.deep.equal([BC_IDENTITY]);
+    expect(openContexts).to.deep.equal([FOOTER_IDENTITY]);
   });
 
   it('opens BC from links without any Jarvis configuration', async () => {
