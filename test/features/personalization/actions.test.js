@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleCommands } from '../../../libs/features/personalization/personalization.js';
+import { init, handleCommands, getBreakpointRows } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -440,5 +440,218 @@ describe('handleCommands with invalid selector', () => {
       error = e;
     }
     expect(error).to.be.undefined;
+  });
+});
+
+describe('remove action with #_all-breakpoints', () => {
+  it('removes the matched slide from every breakpoint', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="router-marquee">
+      <div><div>mobile</div></div>
+      <div><div><a href="https://mas.adobe.com/x#query=keep">a</a></div><div></div></div>
+      <div><div><a href="https://mas.adobe.com/x#query=drop">b</a></div><div></div></div>
+      <div><div>tablet</div></div>
+      <div><div>tablet-keep</div><div></div></div>
+      <div><div></div><div>tablet-drop</div></div>
+    </div>`;
+    const commands = [{
+      action: 'remove',
+      content: 'true',
+      selector: 'router-marquee row:has(a[href*="drop"]) #_all-breakpoints',
+    }];
+    await handleCommands(commands, rootEl, false, true);
+    const rows = rootEl.querySelectorAll('.router-marquee > div');
+    expect(rows.length).to.equal(4);
+    expect(rootEl.querySelector('a[href*="drop"]')).to.be.null;
+    expect(rootEl.textContent).to.not.include('tablet-drop');
+    expect(rootEl.textContent).to.include('tablet-keep');
+  });
+
+  it('removes only the matched row without the flag', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="router-marquee">
+      <div><div>mobile</div></div>
+      <div><div><a href="https://mas.adobe.com/x#query=drop">b</a></div><div></div></div>
+      <div><div>tablet</div></div>
+      <div><div></div><div>tablet-drop</div></div>
+    </div>`;
+    const commands = [{
+      action: 'remove',
+      content: 'true',
+      selector: 'router-marquee row:has(a[href*="drop"])',
+    }];
+    await handleCommands(commands, rootEl, false, true);
+    expect(rootEl.querySelectorAll('.router-marquee > div').length).to.equal(3);
+    expect(rootEl.textContent).to.include('tablet-drop');
+  });
+});
+
+describe('replace action with #_all-breakpoints', () => {
+  const markup = `<div class="router-marquee">
+    <div><div>mobile</div></div>
+    <div><div><a href="https://mas.adobe.com/x#query=keep">a</a></div><div></div></div>
+    <div><div><a href="https://mas.adobe.com/x#query=swap">b</a></div><div></div></div>
+    <div><div>tablet</div></div>
+    <div><div>tablet-keep</div><div></div></div>
+    <div><div></div><div>tablet-swap</div></div>
+  </div>`;
+  const selector = 'router-marquee row:has(a[href*="swap"]) #_all-breakpoints';
+
+  it('replaces the matched slide with html in every breakpoint', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'replace', content: '<div>new-slide</div>', selector }];
+    await handleCommands(commands, rootEl, false, true);
+    const rows = rootEl.querySelectorAll('.router-marquee > div');
+    expect(rows.length).to.equal(6);
+    expect(rows[2].textContent).to.equal('new-slide');
+    expect(rows[5].textContent).to.equal('new-slide');
+    expect(rows[4].textContent).to.include('tablet-keep');
+  });
+
+  it('replaces the matched slide with a fragment in every breakpoint', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'replace', content: '/fragments/new-slide', selector }];
+    await handleCommands(commands, rootEl, false, true);
+    const rows = rootEl.querySelectorAll('.router-marquee > div');
+    expect(rows.length).to.equal(6);
+    expect(rows[2].querySelector('a[href="/fragments/new-slide"]')).to.exist;
+    expect(rows[5].querySelector('a[href="/fragments/new-slide"]')).to.exist;
+    expect(rootEl.textContent).to.not.include('tablet-swap');
+  });
+});
+
+describe('create actions with #_all-breakpoints', () => {
+  const markup = `<div class="router-marquee">
+    <div><div>mobile</div></div>
+    <div><div><a href="https://mas.adobe.com/x#query=keep">a</a></div><div></div></div>
+    <div><div><a href="https://mas.adobe.com/x#query=target">b</a></div><div></div></div>
+    <div><div>tablet</div></div>
+    <div><div>tablet-keep</div><div></div></div>
+    <div><div></div><div>tablet-target</div></div>
+  </div>`;
+  const selector = 'router-marquee row:has(a[href*="target"]) #_all-breakpoints';
+
+  ['insertafter', 'insertbefore', 'prepend', 'append'].forEach((action) => {
+    it(`${action} adds content to the matched slide in every breakpoint`, async () => {
+      const rootEl = document.createElement('div');
+      rootEl.innerHTML = markup;
+      const commands = [{ action, content: '/fragments/new-content', selector }];
+      await handleCommands(commands, rootEl, false, true);
+      const added = rootEl.querySelectorAll('a[href="/fragments/new-content"]');
+      expect(added.length).to.equal(2);
+      expect(rootEl.textContent).to.include('tablet-target');
+    });
+  });
+
+  it('insertafter adds a slide after the matched slide in every breakpoint', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertafter', content: '/fragments/new-content', selector }];
+    await handleCommands(commands, rootEl, false, true);
+    const rows = rootEl.querySelectorAll('.router-marquee > div');
+    expect(rows.length).to.equal(8);
+    expect(rows[3].querySelector('a[href="/fragments/new-content"]')).to.exist;
+    expect(rows[7].querySelector('a[href="/fragments/new-content"]')).to.exist;
+  });
+
+  it('tags fragment links with the breakpoint of the row they target', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertafter', content: '/fragments/new-content', selector }];
+    await handleCommands(commands, rootEl, false, true);
+    const links = [...rootEl.querySelectorAll('a[href="/fragments/new-content"]')];
+    expect(links.map((a) => a.dataset.mepBreakpoint)).to.deep.equal(['mobile', 'tablet']);
+  });
+
+  it('does not tag fragment links without the flag', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertafter', content: '/fragments/new-content', selector: 'router-marquee row:has(a[href*="target"])' }];
+    await handleCommands(commands, rootEl, false, true);
+    const link = rootEl.querySelector('a[href="/fragments/new-content"]');
+    expect(link.dataset.mepBreakpoint).to.be.undefined;
+  });
+});
+
+describe('#_all with #_all-breakpoints', () => {
+  const markup = `<div class="router-marquee">
+    <div><div>mobile</div></div>
+    <div><div>slide</div><div><picture></picture></div></div>
+    <div><div>tablet</div></div>
+    <div><div></div><div><picture></picture></div></div>
+  </div>`;
+  const selector = 'router-marquee row:has(picture) #_all #_all-breakpoints';
+
+  it('inserts once per breakpoint when matches span breakpoints', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertafter', content: '/fragments/new-content', selector }];
+    await handleCommands(commands, rootEl, false, true);
+    expect(rootEl.querySelectorAll('a[href="/fragments/new-content"]').length).to.equal(2);
+    expect(rootEl.querySelectorAll('.router-marquee > div').length).to.equal(6);
+  });
+
+  it('replaces once per breakpoint when matches span breakpoints', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'replace', content: '/fragments/new-content', selector }];
+    await handleCommands(commands, rootEl, false, true);
+    expect(rootEl.querySelectorAll('a[href="/fragments/new-content"]').length).to.equal(2);
+    expect(rootEl.querySelector('picture')).to.be.null;
+  });
+});
+
+describe('#_all-breakpoints on breakpoint label rows', () => {
+  const markup = `<div class="router-marquee">
+    <div><div>mobile</div></div>
+    <div><div>m1</div><div></div></div>
+    <div><div>tablet</div></div>
+    <div><div>t1</div><div></div></div>
+  </div>`;
+
+  it('insertafter on the first label row inserts a first slide in every breakpoint', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertafter', content: '/fragments/new-content', selector: 'router-marquee row1 #_all-breakpoints' }];
+    await handleCommands(commands, rootEl, false, true);
+    const rows = rootEl.querySelectorAll('.router-marquee > div');
+    expect(rows.length).to.equal(6);
+    expect(rows[1].querySelector('a[href="/fragments/new-content"]').dataset.mepBreakpoint).to.equal('mobile');
+    expect(rows[4].querySelector('a[href="/fragments/new-content"]').dataset.mepBreakpoint).to.equal('tablet');
+    expect(rows[2].textContent).to.include('m1');
+    expect(rows[5].textContent).to.include('t1');
+  });
+
+  it('ignores the flag on label rows for actions other than insertafter', async () => {
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = markup;
+    const commands = [{ action: 'insertbefore', content: '/fragments/new-content', selector: 'router-marquee row1 #_all-breakpoints' }];
+    await handleCommands(commands, rootEl, false, true);
+    expect(rootEl.querySelectorAll('a[href="/fragments/new-content"]').length).to.equal(1);
+  });
+});
+
+describe('getBreakpointRows', () => {
+  const toRows = (html) => {
+    const el = document.createElement('div');
+    el.innerHTML = html;
+    return [...el.children];
+  };
+
+  it('returns only rows under the given breakpoint label', () => {
+    const rows = toRows('<div><div>mobile</div></div><div><div>m1</div></div><div><div>tablet-viewport</div></div><div><div>t1</div></div><div><div>t2</div></div>');
+    expect(getBreakpointRows(rows, 'tablet').map((r) => r.textContent)).to.deep.equal(['t1', 't2']);
+  });
+
+  it('returns all rows when there are no breakpoint labels', () => {
+    const rows = toRows('<div><div>a</div></div><div><div>b</div></div>');
+    expect(getBreakpointRows(rows, 'tablet').length).to.equal(2);
+  });
+
+  it('returns all rows when the requested breakpoint is missing', () => {
+    const rows = toRows('<div><div>mobile</div></div><div><div>m1</div></div>');
+    expect(getBreakpointRows(rows, 'tablet')).to.deep.equal(rows);
   });
 });

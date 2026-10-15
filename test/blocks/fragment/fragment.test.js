@@ -145,6 +145,43 @@ describe('Fragments', () => {
     parent.remove();
   });
 
+  it('Only inserts rows from the matching breakpoint when data-mep-breakpoint is set', async () => {
+    const parent = document.createElement('div');
+    const rowContainer = document.createElement('div');
+    rowContainer.setAttribute('data-mep-replace-type', 'row');
+    const a = document.createElement('a');
+    a.href = '/test/blocks/fragment/mocks/fragments/breakpoint-rows#_inline';
+    a.dataset.mepBreakpoint = 'tablet';
+    rowContainer.appendChild(a);
+    parent.appendChild(rowContainer);
+    document.body.appendChild(parent);
+
+    const fetchStub = stub(window, 'fetch').callsFake((url) => {
+      if (String(url).includes('/breakpoint-rows.plain.html')) {
+        return Promise.resolve(new Response(
+          `<div><div class="router-marquee">
+            <div><div>mobile</div></div>
+            <div><div>mobile-slide</div><div></div></div>
+            <div><div>tablet</div></div>
+            <div><div>tablet-slide</div><div></div></div>
+          </div></div>`,
+          { status: 200 },
+        ));
+      }
+      return originalFetch(url);
+    });
+
+    await getFragment(a);
+    fetchStub.restore();
+
+    const rows = parent.querySelectorAll(':scope > div');
+    expect(rows.length).to.equal(1);
+    expect(rows[0].textContent).to.include('tablet-slide');
+    expect(parent.textContent).to.not.include('mobile');
+
+    parent.remove();
+  });
+
   it('Stops circular references across nested row inserts', async () => {
     window.lana.log.resetHistory();
     const parent = document.createElement('div');
