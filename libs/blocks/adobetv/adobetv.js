@@ -1,5 +1,6 @@
 import { decorateAnchorVideo, getMpcPlayerId } from '../../utils/decorate.js';
-import { createTag, getConfig, getFederatedContentRoot, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedContentRoot, getFedsPlaceholderConfig, loadStyle } from '../../utils/utils.js';
+import { PLAY_ICON_SVG } from '../../utils/image-video-link.js';
 
 let captionsLangMapPromise = null;
 
@@ -159,8 +160,6 @@ const embedPlayer = (a, opts = {}) => {
   }
 };
 
-const PLAY_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="42" viewBox="0 0 40 42" fill="none" class="play-icon" aria-hidden="true"><path d="M36.8084 15.6746L8.93018 0.728828C4.89238 -1.43591 0 1.48158 0 6.05422V35.9458C0 40.5184 4.89238 43.4359 8.93018 41.2712L36.8084 26.3253C41.0639 24.0439 41.0638 17.956 36.8084 15.6746Z" fill="white"/></svg>';
-
 // Delegated so posters in cloned nodes (e.g. carousel slide clones) still play.
 const onPosterPlay = (e) => {
   const poster = e.target.closest?.('.mpc-poster');
@@ -178,11 +177,16 @@ const createPosterPlayer = (a) => {
   loadStyle(`${miloLibs || codeRoot}/styles/consonant-play-button.css`);
   const poster = createTag('div', { class: 'mpc-poster modal-img-link' }, a.dataset.videoPoster);
   const alt = poster.querySelector('img')?.alt;
+  const withAlt = (label) => `${label}${alt ? ` ${alt}` : ''}`;
   const button = createTag('button', {
     type: 'button',
     class: 'consonant-play-btn btn-large',
-    'aria-label': `Play${alt ? ` ${alt}` : ''}`,
-  }, createTag('span', { class: 'play-icon-container' }, PLAY_ICON));
+    'aria-label': withAlt('Play'),
+  }, createTag('span', { class: 'play-icon-container' }, PLAY_ICON_SVG));
+  import('../../features/placeholders.js')
+    .then(({ replaceKey }) => replaceKey('play-motion', getFedsPlaceholderConfig()))
+    .then((label) => button.setAttribute('aria-label', withAlt(label)))
+    .catch((e) => logError('Could not get play label', e));
   poster.append(button);
   a.hidden = true;
   a.after(poster);

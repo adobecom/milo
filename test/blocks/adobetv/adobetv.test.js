@@ -125,6 +125,8 @@ describe('adobetv autoblock', () => {
       expect(wrapper.querySelector('.mpc-poster img').getAttribute('src')).to.equal('poster.jpg');
       const button = wrapper.querySelector('.mpc-poster button.consonant-play-btn');
       expect(button.getAttribute('aria-label')).to.equal('Play Demo video');
+      await new Promise((r) => { setTimeout(r, 100); });
+      expect(button.getAttribute('aria-label')).to.equal('play motion Demo video');
     });
 
     it('swaps the poster for an autoplaying MPC iframe on play', async () => {
