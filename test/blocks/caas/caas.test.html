@@ -35,7 +35,7 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
-    import init from '../../../libs/blocks/caas/caas.js';
+    import init, { loadCaas } from '../../../libs/blocks/caas/caas.js';
     import { loadScript, loadStyle } from '../../../libs/utils/utils.js';
     import { delay, waitForElement } from '../../helpers/waitfor.js';
 
@@ -108,6 +108,44 @@
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
+        });
+
+        it('defers authored sidebar collection links until the sidebar mounts them', async () => {
+          const block = document.createElement('div');
+          block.className = 'blog-related-content';
+          block.innerHTML = '<a href="https://milo.adobe.com/tools/caas#encoded">Collection (no-lazy)</a>';
+          document.body.append(block);
+          try {
+            await init(block.querySelector('a'));
+            expect(loadScript.called).to.equal(false);
+            expect(caasEl).to.equal(null);
+          } finally {
+            block.remove();
+          }
+        });
+
+        it('applies sidebar overrides while retaining native collection initialization', async () => {
+          const link = document.createElement('a');
+          link.href = 'https://milo.adobe.com/tools/caas#encoded';
+          document.body.append(link);
+          try {
+            await loadCaas(link, {
+              cardStyle: 'horizontal-card',
+              totalCardsToShow: 3,
+              collectionSize: 3,
+              resultsPerPage: 3,
+              showFilters: false,
+              showSearch: false,
+            });
+            expect(config.collection.cardStyle).to.equal('horizontal-card');
+            expect(config.collection.totalCardsToShow).to.equal(3);
+            expect(config.collection.resultsPerPage).to.equal(3);
+            expect(config.collection.endpoint).to.contain('&size=3');
+            expect(config.filterPanel.enabled).to.equal(false);
+            expect(config.search.enabled).to.equal(false);
+          } finally {
+            link.remove();
+          }
         });
 
       });

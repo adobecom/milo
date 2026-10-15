@@ -1,4 +1,4 @@
-import { createTag, getConfig, scrollToHashedElement } from '../../utils/utils.js';
+import { createTag, getConfig, loadBlock, scrollToHashedElement } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const sectionTrackers = new WeakMap();
@@ -193,11 +193,21 @@ export default async function init(block) {
   });
 
   const cleanupControls = addCollapseControl(list, label);
+  const relatedContent = main.querySelector('.blog-related-content');
   nav.append(createTag('p', null, createTag('strong', null, label)), list);
   block.replaceChildren(nav);
   block.hidden = false;
   createLayout(block, main);
   trackActiveSection(block, headings, cleanupControls);
+  if (relatedContent) {
+    block.append(relatedContent);
+    loadBlock(relatedContent).catch((error) => {
+      window.lana?.log(`Blog related content failed to initialize: ${error.message}`, {
+        tags: 'blog-related-content',
+        severity: 'error',
+      });
+    });
+  }
   if (headings.some((heading) => window.location.hash === `#${heading.id}`)) {
     await scrollToSection(window.location.hash);
   }

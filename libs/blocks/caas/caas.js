@@ -41,12 +41,13 @@ const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   resolve({});
 });
 
-const loadCaas = async (a) => {
+export const loadCaas = async (a, overrides = {}) => {
   const encodedConfig = a.href.split('#')[1];
   // ~~ indicates the new compressed string format
   const state = encodedConfig.startsWith('~~')
     ? await decodeCompressedString(encodedConfig.substring(2))
     : parseEncodedConfig(encodedConfig);
+  Object.assign(state, overrides);
 
   const [caasStrs] = await Promise.all([
     getCaasStrings(state.placeholderUrl),
@@ -98,10 +99,11 @@ const loadCaas = async (a) => {
 
   state.endpoint = chimeraEndpoint;
 
-  initCaas(state, caasStrs, block);
+  await initCaas(state, caasStrs, block);
 };
 
 export default async function init(link) {
+  if (link.closest('.blog-related-content')) return;
   if (link.textContent.includes('no-lazy') || isBot()) {
     loadCaas(link);
   } else {

@@ -17,6 +17,7 @@ const C1_BLOCKS = [
   'aside',
   'author-header',
   'blog-author',
+  'blog-related-content',
   'blog-side-navigation',
   'blog-header',
   'brand-concierge',
