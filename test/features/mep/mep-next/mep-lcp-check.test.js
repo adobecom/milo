@@ -450,6 +450,18 @@ describe('mep-lcp-check', () => {
       expect(findHiddenHeroImages(['media_aaa111.png'], original)).to.deep.equal([]);
     });
 
+    it('does not count the checker hash fetch as a page download', () => {
+      const url = new URL(`${MOCKS}/media_ccc444.png`, window.location.href).href;
+      const entries = sinon.stub(performance, 'getEntriesByType')
+        .returns([{ name: `${url}?width=64&format=png&optimize=medium` }]);
+      expect(findHiddenHeroImages(['media_ccc444.png'], original)).to.deep.equal([]);
+      entries.returns([{ name: url }]);
+      const findings = findHiddenHeroImages(['media_ccc444.png'], original);
+      sinon.restore();
+      expect(findings).to.have.length(1);
+      expect(getMediaName(findings[0].image)).to.equal('media_ccc444.png');
+    });
+
     it('only scans the first section when the original section is gone', () => {
       expect(findHiddenHeroImages([], document.createElement('div'))).to.deep.equal([]);
     });

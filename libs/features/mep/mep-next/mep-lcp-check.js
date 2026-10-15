@@ -455,8 +455,17 @@ export async function findNearDuplicates(experiments, snapshot) {
 
 const isRendered = (el) => el.getClientRects().length > 0;
 
+const isHashRequest = (url) => {
+  try {
+    return new URL(url).search === `?${HASH_IMAGE_PARAMS}`;
+  } catch {
+    return false;
+  }
+};
+
+// skip the checker's own hash fetches so they don't count as page downloads
 const wasRequested = (name) => performance.getEntriesByType('resource')
-  .some((entry) => getMediaName(entry.name) === name);
+  .some((entry) => !isHashRequest(entry.name) && getMediaName(entry.name) === name);
 
 const getLcpAreaSections = (originalSection) => {
   const sections = [...document.querySelectorAll('body > main > div')];
