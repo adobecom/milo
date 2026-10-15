@@ -84,9 +84,9 @@ export function computeDHash(img) {
 export const getHammingDistance = (a, b) => a
   .reduce((sum, bit, i) => sum + (bit !== b[i] ? 1 : 0), 0);
 
-export function getHashUrl(src) {
+export function getHashUrl(src, { rehost = true } = {}) {
   const url = new URL(src, window.location.href);
-  if (/\.(aem|hlx)\.(page|live)$/.test(url.hostname) && url.origin !== window.location.origin) {
+  if (rehost && /\.(aem|hlx)\.(page|live)$/.test(url.hostname) && url.origin !== window.location.origin) {
     url.host = window.location.host;
     url.protocol = window.location.protocol;
   }
@@ -94,6 +94,11 @@ export function getHashUrl(src) {
   url.hash = '';
   return url.href;
 }
+
+// the page host avoids aem.page auth, but images from another repo only exist on their own host
+export const getHashUrls = (src) => [
+  ...new Set([getHashUrl(src), getHashUrl(src, { rehost: false })]),
+];
 
 const loadImage = (src) => new Promise((resolve, reject) => {
   const img = new Image();
@@ -103,12 +108,21 @@ const loadImage = (src) => new Promise((resolve, reject) => {
   img.src = src;
 });
 
+async function hashFirstLoadable([url, ...rest]) {
+  try {
+    return computeDHash(await loadImage(url));
+  } catch (e) {
+    if (!rest.length) throw e;
+    return hashFirstLoadable(rest);
+  }
+}
+
 export function getImageHash(src) {
   const key = getMediaName(src) || src;
   if (!hashCache.has(key)) {
     hashCache.set(key, limit(async () => {
       try {
-        return { hash: computeDHash(await loadImage(getHashUrl(src))) };
+        return { hash: await hashFirstLoadable(getHashUrls(src)) };
       } catch (e) {
         return { error: e.message };
       }
@@ -351,7 +365,7 @@ export async function compareImages(fragmentImage, pageImages) {
 
 // variant names use MEP syntax: "," is OR, "&" is AND, "not " negates
 export function getVariantViewports(variant = '') {
-  if (variant.startsWith('target-')) return VIEWPORTS;
+  if (variant.toLowerCase().startsWith('target-')) return VIEWPORTS;
   const viewports = new Set();
   variant.split(/,(?![^(]*\))/).forEach((term) => {
     let allowed = VIEWPORTS;
@@ -424,12 +438,13 @@ async function compareAnyImage(root, fragmentUrl, pageImages) {
 export async function findNearDuplicates(experiments, snapshot) {
   const findings = [];
   const unable = new Set();
+  const candidates = experiments.flatMap((exp) => getHeroCandidates(exp, snapshot.fragments));
+  if (!candidates.length) return { findings, unable: [] };
   const [pageImages, pageHero] = await Promise.all([
     getPageLcpImages(snapshot),
     getPageHero(snapshot),
   ]);
-  if (!pageImages.length) return { findings, unable: [] };
-  const candidates = experiments.flatMap((exp) => getHeroCandidates(exp, snapshot.fragments));
+  if (!pageImages.length) return { findings, unable: [], pageImages };
   await Promise.all(candidates.map(async (candidate) => {
     const { variant, action, selector, fragmentUrl, manifestPath } = candidate;
     const root = await getCandidateRoot(candidate);
@@ -450,7 +465,7 @@ export async function findNearDuplicates(experiments, snapshot) {
       ...match,
     }));
   }));
-  return { findings, unable: [...unable] };
+  return { findings, unable: [...unable], pageImages };
 }
 
 const isRendered = (el) => el.getClientRects().length > 0;
@@ -627,8 +642,9 @@ export default async function init() {
   await whenIdle();
   mep.lcpSnapshot ??= getLcpSnapshot(mep.lcpSection);
   const result = await findNearDuplicates(experiments, mep.lcpSnapshot);
-  const pageImageNames = (await getPageLcpImages(mep.lcpSnapshot)).map(getMediaName);
   if (await whenLcpAreaSettled(mep.lcpSnapshot.section)) {
+    const pageImages = result.pageImages || await getPageLcpImages(mep.lcpSnapshot);
+    const pageImageNames = pageImages.map(getMediaName);
     result.findings.push(...findHiddenHeroImages(pageImageNames, mep.lcpSnapshot.section));
   }
   mep.lcpFindings = [...(mep.lcpFindings || []), ...result.findings];

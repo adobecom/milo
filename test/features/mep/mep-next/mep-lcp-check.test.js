@@ -10,6 +10,7 @@ const {
   getHammingDistance,
   getMediaName,
   getHashUrl,
+  getHashUrls,
   getImageHash,
   isHeroSelector,
   getHeroCandidates,
@@ -93,6 +94,14 @@ describe('mep-lcp-check', () => {
       expect(url.pathname).to.equal('/products/media_1.png');
       expect(url.searchParams.get('width')).to.equal('64');
       expect(url.hash).to.equal('');
+    });
+
+    it('falls back to the original host for images from another repo', () => {
+      const src = 'https://main--federal--adobecom.aem.page/federal/media_1.png';
+      const [rehosted, original] = getHashUrls(src);
+      expect(new URL(rehosted).origin).to.equal(window.location.origin);
+      expect(new URL(original).origin).to.equal('https://main--federal--adobecom.aem.page');
+      expect(getHashUrls(`${window.location.origin}/media_1.png`)).to.have.length(1);
     });
 
     it('caps concurrency', async () => {
@@ -230,6 +239,16 @@ describe('mep-lcp-check', () => {
       const result = await findNearDuplicates(experiments, { images: [], fragments: [] });
       expect(result.findings).to.deep.equal([]);
     });
+
+    it('skips page fetches when no variant touches the hero', async () => {
+      const fetchSpy = sinon.spy(window, 'fetch');
+      const offHero = [makeExperiment({ phone: { commands: [{ action: 'replace', selector: 'section3', content: `${MOCKS}/hero-near` }], fragments: [] } })];
+      const result = await findNearDuplicates(offHero, { images: [], fragments: [abs(`${MOCKS}/fragments/page-hero`)] });
+      sinon.restore();
+      expect(result.findings).to.deep.equal([]);
+      expect(result.pageImages).to.be.undefined;
+      expect(fetchSpy.called).to.be.false;
+    });
   });
 
   describe('getViewportImages', () => {
@@ -304,6 +323,7 @@ describe('mep-lcp-check', () => {
       expect(getVariantViewports('mobile-device & not phone')).to.deep.equal(['tablet']);
       expect(getVariantViewports('phone, cc-photo')).to.deep.equal(['phone', 'tablet', 'desktop']);
       expect(getVariantViewports('target-phone')).to.deep.equal(['phone', 'tablet', 'desktop']);
+      expect(getVariantViewports('Target-phone')).to.deep.equal(['phone', 'tablet', 'desktop']);
       expect(getVariantViewports()).to.deep.equal(['phone', 'tablet', 'desktop']);
     });
   });

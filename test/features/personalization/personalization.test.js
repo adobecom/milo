@@ -492,6 +492,17 @@ describe('Functional Test', () => {
     window.console.log.reset();
   });
 
+  it('keeps variants and a pre-decoration LCP section clone for the LCP check in preview', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
+    const firstSection = document.querySelector('body > main > div');
+    await init(mepSettingsPreview);
+    const { lcpExperiments, lcpSection } = getConfig().mep;
+    expect(Object.keys(lcpExperiments[0].variants)).to.not.be.empty;
+    expect(lcpSection.original).to.equal(firstSection);
+    expect(lcpSection.clone).to.not.equal(firstSection);
+    expect(lcpSection.clone.tagName).to.equal(firstSection.tagName);
+  });
+
   it('updateMetadata should be able to add and change metadata', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateMetadata.json' });
     manifestJson = JSON.parse(manifestJson);
