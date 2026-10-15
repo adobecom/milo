@@ -11,45 +11,57 @@ function scrollToSection(hash) {
 
 function trackActiveSection(block, headings, cleanupControls) {
   const links = [...block.querySelectorAll('nav > ul > li > a')];
+  const navigation = document.querySelector('.global-navigation');
   let currentIndex = -1;
   let frame = 0;
+  let measure = true;
+  let headingTops = [];
+  let scrollMargin = 0;
   const update = () => {
     frame = 0;
     if (!block.isConnected) {
       sectionTrackers.get(block)?.();
       return;
     }
-    const navigationBottom = document.querySelector('.global-navigation')
-      ?.getBoundingClientRect().bottom || 0;
-    const scrollMargin = parseFloat(getComputedStyle(headings[0]).scrollMarginTop) || 0;
-    const offset = Math.max(navigationBottom, scrollMargin) + 1;
+    const scrollTop = window.scrollY;
+    if (measure) {
+      headingTops = headings.map((heading) => heading.getBoundingClientRect().top + scrollTop);
+      scrollMargin = parseFloat(getComputedStyle(headings[0]).scrollMarginTop) || 0;
+      measure = false;
+    }
+    const navigationBottom = navigation?.getBoundingClientRect().bottom || 0;
+    const offset = scrollTop + Math.max(navigationBottom, scrollMargin) + 1;
     let activeIndex = 0;
-    headings.forEach((heading, index) => {
-      if (heading.getBoundingClientRect().top <= offset) activeIndex = index;
+    headingTops.forEach((top, index) => {
+      if (top <= offset) activeIndex = index;
     });
     if (activeIndex === currentIndex) return;
-    links.forEach((link, index) => {
-      if (index === activeIndex) link.setAttribute('aria-current', 'location');
-      else link.removeAttribute('aria-current');
-    });
+    links[currentIndex]?.removeAttribute('aria-current');
+    links[activeIndex].setAttribute('aria-current', 'location');
     currentIndex = activeIndex;
   };
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(update);
   };
-  const observer = new ResizeObserver(schedule);
+  const invalidate = () => {
+    measure = true;
+    schedule();
+  };
+  const observer = new ResizeObserver(invalidate);
   sectionTrackers.set(block, () => {
     window.removeEventListener('scroll', schedule);
-    window.removeEventListener('resize', schedule);
+    window.removeEventListener('resize', invalidate);
     observer.disconnect();
     cancelAnimationFrame(frame);
     cleanupControls?.();
     sectionTrackers.delete(block);
   });
   window.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', schedule);
-  observer.observe(block.closest('.blog-article-layout') || block.closest('main'));
-  const navigation = document.querySelector('.global-navigation');
+  window.addEventListener('resize', invalidate);
+  const main = block.closest('main');
+  const article = block.closest('.blog-article-layout') || main;
+  observer.observe(article);
+  if (article !== main) observer.observe(main);
   if (navigation) observer.observe(navigation);
   update();
 }

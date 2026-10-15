@@ -319,8 +319,10 @@ describe('blog-side-navigation section list', () => {
   it('tracks sections in both scroll directions without moving focus, scrolling, or changing the URL', async () => {
     const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2>');
     let positions = [20, 200, 400];
+    let scrollTop = 0;
+    const scrollPosition = stub(window, 'scrollY').get(() => scrollTop);
     const rectangles = [...main.querySelectorAll('h2')].map((heading, index) => (
-      stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] }))
+      stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] - scrollTop }))
     ));
     try {
       await init(block);
@@ -329,12 +331,12 @@ describe('blog-side-navigation section list', () => {
       expect(current()).to.deep.equal([links[0]]);
       links[0].focus({ preventScroll: true });
       const url = window.location.href;
-      for (const [tops, activeIndex] of [
-        [[-200, -20, 200], 1],
-        [[-400, -200, -20], 2],
-        [[20, 200, 400], 0],
+      for (const [position, activeIndex] of [
+        [220, 1],
+        [420, 2],
+        [0, 0],
       ]) {
-        positions = tops;
+        scrollTop = position;
         window.dispatchEvent(new Event('scroll'));
         await new Promise(requestAnimationFrame);
         expect(current()).to.deep.equal([links[activeIndex]]);
@@ -342,27 +344,94 @@ describe('blog-side-navigation section list', () => {
         expect(window.location.href).to.equal(url);
         expect(scrollStub.called).to.equal(false);
       }
-      positions = [-200, -20, 200];
+      positions = [20, 100, 400];
+      scrollTop = 150;
       window.dispatchEvent(new Event('resize'));
       await new Promise(requestAnimationFrame);
       expect(current()).to.deep.equal([links[1]]);
     } finally {
       rectangles.forEach((rectangle) => rectangle.restore());
+      scrollPosition.restore();
+    }
+  });
+
+  it('caches heading geometry during scrolling and refreshes it after layout changes', async () => {
+    const { main, block } = buildArticle(
+      Array.from({ length: 100 }, (_, index) => `<h2>Section ${index}</h2>`).join(''),
+    );
+    const navigation = document.createElement('div');
+    navigation.className = 'global-navigation';
+    main.prepend(navigation);
+    let navigationBottom = 64;
+    let scrollTop = 0;
+    let onResize;
+    const positions = Array.from({ length: 100 }, (_, index) => (index + 1) * 100);
+    const headings = [...main.querySelectorAll('h2')];
+    const rectangles = headings.map((heading, index) => (
+      stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] - scrollTop }))
+    ));
+    const scrollPosition = stub(window, 'scrollY').get(() => scrollTop);
+    const navigationRectangle = stub(navigation, 'getBoundingClientRect')
+      .callsFake(() => ({ bottom: navigationBottom }));
+    const computedStyle = stub(window, 'getComputedStyle').callThrough();
+    const observer = { observe: stub(), disconnect: stub() };
+    const resizeObserver = stub(window, 'ResizeObserver').callsFake((callback) => {
+      onResize = callback;
+      return observer;
+    });
+    try {
+      await init(block);
+      const links = [...block.querySelectorAll('a')];
+      for (const [position, activeIndex] of [[180, 1], [9800, 97], [0, 0]]) {
+        scrollTop = position;
+        window.dispatchEvent(new Event('scroll'));
+        await new Promise(requestAnimationFrame);
+        expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
+      }
+      scrollTop = 110;
+      for (const [bottom, activeIndex] of [[100, 1], [0, 0]]) {
+        navigationBottom = bottom;
+        window.dispatchEvent(new Event('scroll'));
+        await new Promise(requestAnimationFrame);
+        expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
+      }
+      expect(rectangles.every((rectangle) => rectangle.calledOnce)).to.equal(true);
+      expect(computedStyle.withArgs(headings[0]).calledOnce).to.equal(true);
+      positions[1] = 150;
+      headings[0].style.scrollMarginTop = '100px';
+      onResize();
+      await new Promise(requestAnimationFrame);
+      expect(links[1].getAttribute('aria-current')).to.equal('location');
+      expect(rectangles.every((rectangle) => rectangle.calledTwice)).to.equal(true);
+      expect(computedStyle.withArgs(headings[0]).calledTwice).to.equal(true);
+      expect(observer.observe.calledWith(main)).to.equal(true);
+      block.remove();
+      window.dispatchEvent(new Event('scroll'));
+      await new Promise(requestAnimationFrame);
+      expect(observer.disconnect.calledOnce).to.equal(true);
+    } finally {
+      rectangles.forEach((rectangle) => rectangle.restore());
+      scrollPosition.restore();
+      navigationRectangle.restore();
+      computedStyle.restore();
+      resizeObserver.restore();
     }
   });
 
   it('replaces section tracking when the navigation is reinitialized', async () => {
     const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2>');
-    let positions = [20, 200];
+    let scrollTop = 0;
+    const scrollPosition = stub(window, 'scrollY').get(() => scrollTop);
+    const positions = [20, 200];
     const rectangles = [...main.querySelectorAll('h2')].map((heading, index) => (
-      stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] }))
+      stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] - scrollTop }))
     ));
     try {
       await init(block);
       const oldLinks = [...block.querySelectorAll('a')];
       await init(block);
       const links = [...block.querySelectorAll('a')];
-      positions = [-200, -20];
+      scrollTop = 220;
       window.dispatchEvent(new Event('scroll'));
       await new Promise(requestAnimationFrame);
       expect(links[1].getAttribute('aria-current')).to.equal('location');
@@ -370,6 +439,7 @@ describe('blog-side-navigation section list', () => {
       expect(oldLinks[1].hasAttribute('aria-current')).to.equal(false);
     } finally {
       rectangles.forEach((rectangle) => rectangle.restore());
+      scrollPosition.restore();
     }
   });
 
