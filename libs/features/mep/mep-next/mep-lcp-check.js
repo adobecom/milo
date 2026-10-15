@@ -16,6 +16,12 @@ const HIDDEN_MEDIA_CLASSES = {
   tablet: 'media-hidden-tablet',
   desktop: 'media-hidden-desktop',
 };
+const DEVICE_VIEWPORTS = {
+  phone: ['phone'],
+  tablet: ['tablet'],
+  desktop: ['desktop'],
+  'mobile-device': ['phone', 'tablet'],
+};
 const MAX_CONCURRENT = 4;
 const MAX_FRAGMENT_DEPTH = 2;
 const HASH_IMAGE_PARAMS = 'width=64&format=png&optimize=medium';
@@ -343,9 +349,25 @@ export async function compareImages(fragmentImage, pageImages) {
   return { unable };
 }
 
-async function compareByViewport(fragmentBlock, fragmentUrl, pageHero) {
+// variant names use MEP syntax: "," is OR, "&" is AND, "not " negates
+export function getVariantViewports(variant = '') {
+  if (variant.startsWith('target-')) return VIEWPORTS;
+  const viewports = new Set();
+  variant.split(/,(?![^(]*\))/).forEach((term) => {
+    let allowed = VIEWPORTS;
+    term.split('&').map((token) => token.trim().toLowerCase()).forEach((token) => {
+      const negated = token.startsWith('not ');
+      const device = DEVICE_VIEWPORTS[negated ? token.slice(4).trim() : token];
+      if (device) allowed = allowed.filter((vp) => device.includes(vp) !== negated);
+    });
+    allowed.forEach((vp) => viewports.add(vp));
+  });
+  return VIEWPORTS.filter((vp) => viewports.has(vp));
+}
+
+async function compareByViewport(fragmentBlock, candidate, pageHero) {
   const pageByViewport = getViewportImages(pageHero.block, pageHero.baseUrl);
-  const fragByViewport = getViewportImages(fragmentBlock, `${fragmentUrl}.plain.html`);
+  const fragByViewport = getViewportImages(fragmentBlock, `${candidate.fragmentUrl}.plain.html`);
   const pageLayout = getHeroLayout(pageHero.block);
   const fragmentLayout = getHeroLayout(fragmentBlock);
   const layout = pageLayout === fragmentLayout
@@ -353,28 +375,32 @@ async function compareByViewport(fragmentBlock, fragmentUrl, pageHero) {
     : { page: pageLayout, fragment: fragmentLayout };
   const matches = new Map();
   const unable = [];
-  await Promise.all(VIEWPORTS.flatMap((vp) => fragByViewport[vp].map(async (fragImg) => {
-    const pageImages = pageByViewport[vp];
-    if (!pageImages.length) return;
-    const result = await compareImages(fragImg.src, pageImages.map(({ src }) => src));
-    if (!result) return;
-    unable.push(...result.unable);
-    if (result.distance === undefined) return;
-    const pageImg = pageImages.find(({ src }) => src === result.pageImage);
-    const key = `${fragImg.name}|${fragImg.role}|${pageImg.name}|${pageImg.role}`;
-    if (!matches.has(key)) {
-      matches.set(key, {
-        fragmentImage: fragImg.src,
-        fragmentRole: fragImg.role,
-        pageImage: pageImg.src,
-        pageRole: pageImg.role,
-        distance: result.distance,
-        viewports: [],
-        layout,
-      });
-    }
-    matches.get(key).viewports.push(vp);
-  })));
+  await Promise.all(getVariantViewports(candidate.variant).flatMap((vp) => fragByViewport[vp]
+    .map(async (fragImg) => {
+      const pageImages = pageByViewport[vp];
+      if (!pageImages.length) return;
+      const result = await compareImages(fragImg.src, pageImages.map(({ src }) => src));
+      if (!result) return;
+      unable.push(...result.unable);
+      if (result.distance === undefined) return;
+      const pageImg = pageImages.find(({ src }) => src === result.pageImage);
+      // a page may reuse one file in several cells (e.g. tablet background + desktop foreground)
+      const key = `${fragImg.name}|${fragImg.role}|${pageImg.name}`;
+      if (!matches.has(key)) {
+        matches.set(key, {
+          fragmentImage: fragImg.src,
+          fragmentRole: fragImg.role,
+          pageImage: pageImg.src,
+          pageRoles: [],
+          distance: result.distance,
+          viewports: [],
+          layout,
+        });
+      }
+      const match = matches.get(key);
+      match.viewports.push(vp);
+      if (!match.pageRoles.includes(pageImg.role)) match.pageRoles.push(pageImg.role);
+    })));
   const byOrder = (a, b) => VIEWPORTS.indexOf(a) - VIEWPORTS.indexOf(b);
   matches.forEach((match) => match.viewports.sort(byOrder));
   return { matches: [...matches.values()], unable };
@@ -409,7 +435,7 @@ export async function findNearDuplicates(experiments, snapshot) {
     const root = await getCandidateRoot(candidate);
     const fragmentBlock = findHeroBlock(root);
     const { matches, unable: missed } = pageHero && fragmentBlock
-      ? await compareByViewport(fragmentBlock, fragmentUrl, pageHero)
+      ? await compareByViewport(fragmentBlock, candidate, pageHero)
       : await compareAnyImage(root, fragmentUrl, pageImages);
     missed.forEach((msg) => unable.add(msg));
     matches.forEach((match) => findings.push({
@@ -507,10 +533,11 @@ const describeNearDuplicate = (f) => {
     );
     return lines.join('\n');
   }
+  const pageRoles = f.pageRoles.join(' and ');
   lines.push(
     `  ${f.viewports.join(', ')}: fragment ${f.fragmentRole} ${fragName} is a ${verdict}`,
-    `    of page ${f.pageRole} ${pageName}`,
-    `  fix: copy the image from the page hero ${f.pageRole} into the fragment hero ${f.fragmentRole} so both use ${pageName}`,
+    `    of page ${pageRoles} ${pageName}`,
+    `  fix: copy the image from the page hero ${f.pageRoles[0]} into the fragment hero ${f.fragmentRole} so both use ${pageName}`,
   );
   if (f.layout) {
     lines.push(

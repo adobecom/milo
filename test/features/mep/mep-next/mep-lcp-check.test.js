@@ -16,6 +16,7 @@ const {
   getViewportImages,
   getHeroLayout,
   getPageHero,
+  getVariantViewports,
   findHiddenHeroImages,
   logFindings,
   whenLcpAreaSettled,
@@ -257,14 +258,27 @@ describe('mep-lcp-check', () => {
     });
   });
 
+  describe('getVariantViewports', () => {
+    it('maps MEP device audiences to viewports', () => {
+      expect(getVariantViewports('phone')).to.deep.equal(['phone']);
+      expect(getVariantViewports('mobile-device')).to.deep.equal(['phone', 'tablet']);
+      expect(getVariantViewports('phone, desktop')).to.deep.equal(['phone', 'desktop']);
+      expect(getVariantViewports('not desktop & loggedin')).to.deep.equal(['phone', 'tablet']);
+      expect(getVariantViewports('mobile-device & not phone')).to.deep.equal(['tablet']);
+      expect(getVariantViewports('phone, cc-photo')).to.deep.equal(['phone', 'tablet', 'desktop']);
+      expect(getVariantViewports('target-phone')).to.deep.equal(['phone', 'tablet', 'desktop']);
+      expect(getVariantViewports()).to.deep.equal(['phone', 'tablet', 'desktop']);
+    });
+  });
+
   describe('findNearDuplicates by viewport', () => {
     const pageSnapshot = { images: [], fragments: [abs(`${MOCKS}/hero-cells-page`)] };
-    const run = (fragment) => findNearDuplicates([makeExperiment({
-      phone: {
+    const run = (fragment, variant = 'phone', snapshot = pageSnapshot) => findNearDuplicates([makeExperiment({
+      [variant]: {
         commands: [{ action: 'replace', selector: 'marquee', content: `${MOCKS}/${fragment}` }],
         fragments: [],
       },
-    })], pageSnapshot);
+    })], snapshot);
 
     it('finds the page hero in a page fragment', async () => {
       const hero = await getPageHero(pageSnapshot);
@@ -279,11 +293,25 @@ describe('mep-lcp-check', () => {
       expect(findings[0]).to.include({
         match: 'near-duplicate',
         fragmentRole: 'background cell 1 of 2',
-        pageRole: 'background cell 1 of 2',
         layout: null,
       });
+      expect(findings[0].pageRoles).to.deep.equal(['background cell 1 of 2']);
       expect(findings[0].viewports).to.deep.equal(['phone']);
       expect(getMediaName(findings[0].pageImage)).to.equal('media_aaa111.png');
+    });
+
+    it('only checks viewports the variant can run on', async () => {
+      expect((await run('hero-cells-near', 'desktop')).findings).to.deep.equal([]);
+      expect((await run('hero-cells-near', 'not desktop & loggedin')).findings).to.have.length(1);
+    });
+
+    it('merges one page file reused in several cells into one finding', async () => {
+      const snapshot = { images: [], fragments: [abs(`${MOCKS}/hero-cells-page-reuse`)] };
+      const { findings } = await run('hero-cells-swapped', 'all', snapshot);
+      expect(findings).to.have.length(1);
+      expect(findings[0].viewports).to.deep.equal(['tablet', 'desktop']);
+      expect(findings[0].pageRoles).to.deep.equal(['background cell 2 of 3', 'foreground image']);
+      expect(findings[0].fragmentRole).to.equal('background cell 2 of 2');
     });
 
     it('ignores look-alikes that never show at the same viewport', async () => {
