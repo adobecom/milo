@@ -24,6 +24,23 @@ describe('Explore Card', () => {
     expect(icon.getAttribute('src')).to.equal('https://main--federal--adobecom.aem.page/federal/icons/prod.svg');
   });
 
+  it('forwards container hover to a hoverplay background video', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.explore-card');
+    init(block);
+
+    const container = block.querySelector('.explore-card-container');
+    const video = document.createElement('video');
+    video.setAttribute('data-hoverplay', '');
+    container.querySelector('.explore-card-background').append(video);
+    const received = [];
+    ['mouseenter', 'mouseleave'].forEach((type) => video.addEventListener(type, () => received.push(type)));
+
+    container.dispatchEvent(new Event('mouseenter'));
+    container.dispatchEvent(new Event('mouseleave'));
+    expect(received).to.deep.equal(['mouseenter', 'mouseleave']);
+  });
+
   it('decorates the heading at level 5', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.explore-card');
