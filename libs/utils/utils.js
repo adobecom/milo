@@ -3128,6 +3128,8 @@ async function processSection(section, config, lcpSectionId) {
   return section.blocks;
 }
 
+const LCP_TAB_PANEL_TIMEOUT = 3000;
+
 // The first section of a visible tab panel is the panel's above-the-fold content.
 function isFirstInVisibleTabPanel(el) {
   const panel = el?.parentElement;
@@ -3216,6 +3218,11 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   let lcpSectionId = null;
   let inLcpChain = false;
+  let postLcpPromise;
+  const runPostLCP = () => {
+    postLcpPromise ??= loadPostLCP(config);
+    return postLcpPromise;
+  };
 
   for (const [i, htmlSection] of htmlSections.entries()) {
     const section = await decorateSection(htmlSection, i);
@@ -3234,9 +3241,14 @@ export async function loadArea(area = document) {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
 
-    if (inLcpChain && !isFirstInVisibleTabPanel(htmlSections[i + 1])) {
-      inLcpChain = false;
-      await loadPostLCP(config);
+    if (inLcpChain) {
+      if (!isFirstInVisibleTabPanel(htmlSections[i + 1])) {
+        inLcpChain = false;
+        await runPostLCP();
+      } else if (section.idx === lcpSectionId) {
+        // Slow or failing tab content must not hold back gnav and martech indefinitely.
+        setTimeout(runPostLCP, LCP_TAB_PANEL_TIMEOUT);
+      }
     }
   }
 
