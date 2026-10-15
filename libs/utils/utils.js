@@ -391,16 +391,22 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
-export const AUP_SELECT_MODES = Object.freeze({ ON: 'on', UCV3_IN_IFRAME: 'ucv3_in_iframe' });
+const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
+const AUP_SELECT_UCV3_IN_IFRAME_VALUES = ['on', 'ucv3_in_iframe'];
 
-export function getAupSelectMode() {
+export function getAupSelectValue() {
   const value = new URLSearchParams(window.location.search).get('aup-select')
     ?? getMetadata('aup-select');
-  return Object.values(AUP_SELECT_MODES).includes(value) ? value : null;
+  const normalized = value?.trim().toLowerCase();
+  return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
+}
+
+export function isAupUcv3InIframe() {
+  return AUP_SELECT_UCV3_IN_IFRAME_VALUES.includes(getAupSelectValue());
 }
 
 export function isAupEnabled(useUniversalNav = false) {
-  return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectMode());
+  return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectValue());
 }
 
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();

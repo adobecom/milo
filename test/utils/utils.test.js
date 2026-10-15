@@ -119,40 +119,42 @@ describe('Utils', () => {
       }
     });
 
-    const modes = ['on', 'ucv3_in_iframe'];
-    const expectedMode = (value) => (modes.includes(value) ? value : null);
+    const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
+    const flagged = ['on', 'ucv3_in_iframe', 'ON', 'UCV3_IN_IFRAME'];
 
-    ['on', 'ucv3_in_iframe', 'off', '', 'ON', 'UCV3_IN_IFRAME', 'true'].forEach((value) => {
-      it(`requires an exact mode for metadata "${value}"`, () => {
+    ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
+      const enabled = !disabled.includes(value);
+      const flag = flagged.includes(value);
+
+      it(`reads metadata "${value}"`, () => {
         meta.content = value;
         document.head.append(meta);
-        expect(utils.getAupSelectMode()).to.equal(expectedMode(value));
-        expect(utils.isAupEnabled()).to.equal(modes.includes(value));
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupUcv3InIframe()).to.equal(flag);
       });
 
-      it(`reads query "${value}" with and without metadata`, () => {
+      it(`reads query "${value}" over metadata`, () => {
         const url = new URL(window.location.href);
         url.searchParams.set('aup-select', value);
         window.history.replaceState(null, '', url);
-        expect(utils.getAupSelectMode()).to.equal(expectedMode(value));
-        expect(utils.isAupEnabled()).to.equal(modes.includes(value));
-        meta.content = value === 'on' ? 'ucv3_in_iframe' : 'on';
+        meta.content = value === 'enabled' ? 'on' : 'enabled';
         document.head.append(meta);
-        expect(utils.getAupSelectMode()).to.equal(expectedMode(value));
-        expect(utils.isAupEnabled()).to.equal(modes.includes(value));
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupUcv3InIframe()).to.equal(flag);
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
-        expect(utils.getAupSelectMode()).to.equal(meta.content);
         expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.isAupUcv3InIframe()).to.equal(meta.content === 'on');
       });
     });
 
-    it('does not report a mode for signed-in Universal Nav users without aup-select', () => {
+    it('does not report a value for signed-in Universal Nav users without aup-select', () => {
       const { adobeIMS } = window;
       try {
         window.adobeIMS = { isSignedInUser: () => true };
         expect(utils.isAupEnabled(true)).to.be.true;
-        expect(utils.getAupSelectMode()).to.be.null;
+        expect(utils.getAupSelectValue()).to.be.null;
+        expect(utils.isAupUcv3InIframe()).to.be.false;
       } finally {
         window.adobeIMS = adobeIMS;
       }

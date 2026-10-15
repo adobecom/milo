@@ -1633,6 +1633,8 @@ describe('Merch Block', () => {
       { content: 'off', lateContent: 'ucv3_in_iframe', aup: true },
       { content: 'off', query: 'on', aup: true },
       { content: 'on', query: 'off', legacy: true },
+      { content: 'enabled', aup: true },
+      { content: 'false', legacy: true },
       { content: 'off', legacy: true },
       { content: 'off', commercePreload: 'off' },
       { content: 'on', commercePreload: 'off' },

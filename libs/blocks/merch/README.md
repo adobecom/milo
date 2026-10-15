@@ -3,15 +3,15 @@
 ## AUP Select modes
 
 The `aup-select` metadata (or the `?aup-select=` query parameter, which takes precedence) routes
-CTAs through the AUP SDK:
+CTAs through the AUP SDK for any value except an empty value, `off`, or `false` (case-insensitive):
 
 | Value | Behavior |
 |---|---|
-| `ucv3_in_iframe` | AUP SDK with the current 3-in-1 modals (`tmp_aupsdk_ucv3_in_iframe` is added to `miniAppContext.features`) |
-| `on` | AUP SDK with the true Select experience (no `tmp_aupsdk_ucv3_in_iframe`) |
-| absent / other | AUP SDK routing disabled |
+| `on`, `ucv3_in_iframe` | AUP SDK with the current 3-in-1 modals (`tmp_aupsdk_ucv3_in_iframe` is added to `miniAppContext.features`) |
+| `enabled` (or any other value) | AUP SDK with the true Select experience (no `tmp_aupsdk_ucv3_in_iframe`) |
+| absent / empty / `off` / `false` | AUP SDK routing disabled |
 
-`ucv3_in_iframe` is temporary until the full switch to the true Select experience.
+`on` and `ucv3_in_iframe` are temporary until the full switch to the true Select experience.
 
 ## AUP Select environments
 
