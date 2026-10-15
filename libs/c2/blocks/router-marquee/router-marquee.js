@@ -401,7 +401,15 @@ const decorateSlide = (slide, isLight) => {
   decorateCtas(textCol, isLight);
 };
 
-const titleLabelCards = new WeakSet();
+// The card's name, derived from its slide; re-run when MAS content lands late.
+const syncCard = (card, slide) => {
+  const labelEl = card.querySelector('.rm-card-label');
+  labelEl.querySelectorAll('a').forEach((a) => a.replaceWith(...a.childNodes));
+  const labelText = labelEl.textContent.trim();
+  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
+  card.setAttribute('aria-label', [eyebrowText, labelText].filter(Boolean).join(', '));
+  card.querySelector('.rm-card-icon')?.setAttribute('alt', labelText);
+};
 
 const buildCard = (slide) => {
   const icon = [...slide.querySelectorAll('p')]
@@ -410,8 +418,6 @@ const buildCard = (slide) => {
   const iconSrc = icon && getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
   const labelText = (label?.textContent ?? slide.querySelector('.rm-title')?.textContent ?? '').trim();
   const href = label?.querySelector('a')?.getAttribute('href') || '';
-  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
-  const ariaLabel = [eyebrowText, labelText].filter(Boolean).join(', ');
   const labelField = label?.querySelector('mas-field');
   const pendingLabel = labelField && isPendingField(labelField) ? labelField : null;
 
@@ -421,13 +427,11 @@ const buildCard = (slide) => {
   const card = createTag('a', {
     class: 'rm-card',
     href,
-    'aria-label': ariaLabel,
     role: 'tab',
     'aria-selected': 'false',
   });
-  if (!label) titleLabelCards.add(card);
   card.replaceChildren(
-    ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' })] : []),
+    ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, loading: 'lazy' })] : []),
     createTag('div', { class: 'rm-card-content' }, [
       createTag('span', { class: 'rm-card-label' }, pendingLabel ?? labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
@@ -436,26 +440,16 @@ const buildCard = (slide) => {
       createTag('div', { class: 'rm-card-progress-bar' }),
     ]),
   );
+  syncCard(card, slide);
   return card;
 };
 
-// Re-derives what buildCard and setAnalytics captured, after late MAS content.
-const refreshCard = (card, slide, index) => {
-  const labelEl = card.querySelector('.rm-card-label');
-  if (titleLabelCards.has(card)) {
-    labelEl.textContent = slide.querySelector('.rm-title')?.textContent.trim() ?? '';
-  }
-  labelEl.querySelectorAll('a').forEach((a) => a.replaceWith(...a.childNodes));
-  const labelText = labelEl.textContent.trim();
-  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
-  card.setAttribute('aria-label', [eyebrowText, labelText].filter(Boolean).join(', '));
-  card.querySelector('.rm-card-icon')?.setAttribute('alt', labelText);
-
+// setAnalytics captured the title on init; martech trims on-time labels before this runs.
+const syncCardAnalytics = (card, slide, index) => {
   const analytics = SLIDE_ANALYTICS[getViewport(slide)]?.[index];
   const title = slide.querySelector('.rm-title')?.textContent;
   if (!analytics || analytics.label === title) return;
   analytics.label = title;
-  // martech trims on-time labels before this runs
   card.setAttribute('daa-ll', cardDaaLl(index, title, getConfig()).trim());
 };
 
@@ -1098,7 +1092,10 @@ export default function init(el) {
       lateContentFrame = null;
       containers.forEach((container) => {
         const cards = container.querySelectorAll('.rm-card');
-        container.querySelectorAll('.rm-slide').forEach((slide, i) => refreshCard(cards[i], slide, i));
+        container.querySelectorAll('.rm-slide').forEach((slide, i) => {
+          syncCard(cards[i], slide);
+          syncCardAnalytics(cards[i], slide, i);
+        });
       });
       // merch.js reveals a resolved promo slide and its nav card. If the authored first slide
       // was skipped while pending, make it active once the promotion resolves.
