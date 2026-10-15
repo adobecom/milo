@@ -30,7 +30,7 @@ const NON_CONTENT_ACTIONS = ['remove', 'updateattribute'];
 const LOG_TITLE = 'MEP LCP image checks';
 const FIRST_SECTION_RE = /^main>div(:first-child|:first-of-type|:nth-child\(1\)|:nth-of-type\(1\))?(?=$|[\s>])/;
 
-const checkedManifests = new Set();
+const checkedVariants = new Set();
 const reportedHidden = new Set();
 const fragmentCache = new Map();
 const hashCache = new Map();
@@ -573,14 +573,31 @@ const whenIdle = () => new Promise((resolve) => {
   else window.addEventListener('load', run, { once: true });
 });
 
+const isFromTargetOrAjo = (exp) => !!exp.source?.some((src) => src === 'target' || src === 'ajo');
+
+// target- variants only run when Target/AJO or a ?mep= override picks them
+export function getVariantsToCheck(experiments = [], variantOverride = {}) {
+  const byPath = new Map();
+  experiments.forEach((exp) => {
+    if (!exp?.variants || !exp.manifestPath) return;
+    const fromTarget = isFromTargetOrAjo(exp);
+    const forced = variantOverride?.[exp.manifestPath];
+    Object.entries(exp.variants).forEach(([name, info]) => {
+      if (!fromTarget && name.toLowerCase().startsWith('target-') && name !== forced) return;
+      const key = `${exp.manifestPath}|${name}`;
+      if (checkedVariants.has(key)) return;
+      checkedVariants.add(key);
+      if (!byPath.has(exp.manifestPath)) byPath.set(exp.manifestPath, { ...exp, variants: {} });
+      byPath.get(exp.manifestPath).variants[name] = info;
+    });
+  });
+  return [...byPath.values()];
+}
+
 export default async function init() {
   const { mep } = getConfig();
   if (!mep?.preview || !mep.lcpSection) return [];
-  const experiments = (mep.lcpExperiments || []).filter((exp) => {
-    if (!exp?.variants || checkedManifests.has(exp.manifestPath)) return false;
-    checkedManifests.add(exp.manifestPath);
-    return true;
-  });
+  const experiments = getVariantsToCheck(mep.lcpExperiments, mep.variantOverride);
   if (!experiments.length) return mep.lcpFindings || [];
   await whenIdle();
   mep.lcpSnapshot ??= getLcpSnapshot(mep.lcpSection);

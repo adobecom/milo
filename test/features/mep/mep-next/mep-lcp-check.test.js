@@ -17,6 +17,7 @@ const {
   getHeroLayout,
   getPageHero,
   getVariantViewports,
+  getVariantsToCheck,
   findHiddenHeroImages,
   logFindings,
   whenLcpAreaSettled,
@@ -255,6 +256,42 @@ describe('mep-lcp-check', () => {
       const one = parse(`<div class="marquee"><div><div><img alt="" src="./media_a1.png"></div></div>
         <div><div><img alt="" src="./media_b2.png"></div></div></div>`);
       expect(getHeroLayout(one)).to.equal('phone: background cell 1 of 1, foreground image; tablet: background cell 1 of 1, foreground image; desktop: background cell 1 of 1, foreground image');
+    });
+  });
+
+  describe('getVariantsToCheck', () => {
+    const variants = (...names) => Object.fromEntries(names.map((n) => [n, { commands: [n] }]));
+    const summarize = (list) => list.map((exp) => [exp.manifestPath, Object.keys(exp.variants)]);
+
+    it('skips target- variants on page copies and keeps them on Target/AJO copies', () => {
+      const result = getVariantsToCheck([
+        null,
+        { manifestPath: '/v/default.json' },
+        { manifestPath: '/v/a.json', source: ['pzn'], variants: variants('phone', 'target-x', 'Target-Y') },
+        { manifestPath: '/v/a.json', source: ['target'], variants: variants('phone', 'target-x') },
+        { manifestPath: '/v/b.json', source: ['ajo'], variants: variants('target-z') },
+      ]);
+      expect(summarize(result)).to.deep.equal([
+        ['/v/a.json', ['phone', 'target-x']],
+        ['/v/b.json', ['target-z']],
+      ]);
+      expect(result[0].source).to.deep.equal(['pzn']);
+    });
+
+    it('keeps a target- variant forced by a ?mep= override', () => {
+      const result = getVariantsToCheck(
+        [{ manifestPath: '/v/c.json', source: ['mep param'], variants: variants('target-x', 'target-y') }],
+        { '/v/c.json': 'target-y' },
+      );
+      expect(summarize(result)).to.deep.equal([['/v/c.json', ['target-y']]]);
+    });
+
+    it('checks Target variants that arrive in a later pass', () => {
+      const page = { manifestPath: '/v/d.json', source: ['pzn'], variants: variants('phone', 'target-x') };
+      expect(summarize(getVariantsToCheck([page]))).to.deep.equal([['/v/d.json', ['phone']]]);
+      const target = { ...page, source: ['target'] };
+      expect(summarize(getVariantsToCheck([target]))).to.deep.equal([['/v/d.json', ['target-x']]]);
+      expect(getVariantsToCheck([target])).to.deep.equal([]);
     });
   });
 
