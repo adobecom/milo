@@ -200,9 +200,9 @@ export default function init(a) {
   const isMp4 = a.href.includes('.mp4');
   const inBgBlock = bgBlocks.some((b) => a.closest(`.${b}`));
   const hasPlaybackHash = PLAYBACK_HASH.test(a.hash);
-  // MPC player URLs stay the iframe unless a Milo video hash or a background block asks for native.
+  // MPC player URLs stay the iframe player (sound, captions, controls) unless a Milo hash opts in.
   const isNativeVideo = (isMp4 && (inBgBlock || hasPlaybackHash || !!a.dataset.videoPoster))
-    || (!!getMpcPlayerId(a.href) && (inBgBlock || hasPlaybackHash));
+    || (!!getMpcPlayerId(a.href) && hasPlaybackHash);
   if (isNativeVideo) {
     a.classList.add('hide');
     if (!a.parentNode) return;

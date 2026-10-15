@@ -235,11 +235,11 @@ describe('adobetv autoblock', () => {
       expect(video.hasAttribute('loop')).to.be.true;
     });
 
-    it('renders an MPC player URL in a background block as a native video', async () => {
+    it('keeps an MPC player URL without a playback hash in a marquee as the MPC player', async () => {
       const wrapper = document.querySelector('#mpcPlayerMarquee');
       await init(wrapper.querySelector('a'));
-      expect(wrapper.querySelector('iframe')).to.be.null;
-      expect(wrapper.querySelector('video').hasAttribute('autoplay')).to.be.true;
+      expect(wrapper.querySelector('video')).to.be.null;
+      expect(wrapper.querySelector('iframe').src).to.equal('https://video.tv.adobe.com/v/777777');
     });
 
     it('fetches MPC data once per video id', async () => {
