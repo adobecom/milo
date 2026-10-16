@@ -1,4 +1,4 @@
-import { getCookie, getMetadata } from '../../utils/utils.js';
+import { getCookie, getMetadata, isTrustedUrl } from '../../utils/utils.js';
 
 const COOKIE_NAME = 'dynamicNav';
 const EXPIRY_SECONDS = 30 * 60; // 30-minute inactivity expiry, refreshed on use.
@@ -19,29 +19,36 @@ export function foundDisableValues() {
   return foundValues.length ? foundValues : false;
 }
 
+let cookieAvailability;
+
+export function resetCookieAvailability() {
+  cookieAvailability = undefined;
+}
+
 export function cookiesAvailable() {
-  let available = false;
+  if (cookieAvailability !== undefined) return cookieAvailability;
   try {
     // eslint-disable-next-line compat/compat
-    available = window.navigator.cookieEnabled === true;
+    cookieAvailability = window.navigator.cookieEnabled === true;
   } catch (e) {
-    available = false;
+    cookieAvailability = false;
   }
-  if (!available) {
+  if (!cookieAvailability) {
     window.lana?.log('Dynamic nav: cookies unavailable, using authored navigation', { tags: 'dynamic-nav', severity: 'info' });
   }
-  return available;
+  return cookieAvailability;
 }
 
 function sanitizeSource(source) {
   if (typeof source !== 'string' || !source) return null;
+  let parsed;
   try {
-    const { protocol } = new URL(source);
-    if (protocol !== 'https:' && protocol !== 'http:') return null;
-    return source;
+    parsed = new URL(source, window.location.origin);
   } catch (e) {
     return null;
   }
+  if (parsed.origin === window.location.origin || isTrustedUrl(source)) return source;
+  return null;
 }
 
 export function getCookieEnvironment(
@@ -111,14 +118,10 @@ export function readState() {
   }
 }
 
-// Strict, case-insensitive grouping: grouped follows same group only, ungrouped
-// follows ungrouped only. No group on either side is treated as ungrouped.
 export function groupsMatch(pageGroup, storedGroup) {
   return (pageGroup || '').toLowerCase() === (storedGroup || '').toLowerCase();
 }
 
-// Centralized view of the effective dynamic-nav state for this page, shared by
-// the gnav source resolver, breadcrumb suppression, and the status widget.
 export function getDynamicNavState() {
   const setting = getMetadata('dynamic-nav');
   const group = getMetadata('dynamic-nav-group') || '';
