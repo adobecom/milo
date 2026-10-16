@@ -22,7 +22,7 @@ const updateCaptionsLang = (url, geo, captionsLangMap) => {
   return url.toString();
 };
 
-const pauseMpcPlayer = (iframe) => {
+export const pauseMpcPlayer = (iframe) => {
   iframe.contentWindow?.postMessage({ type: 'mpcAction', action: 'pause' }, iframe.src);
 };
 
