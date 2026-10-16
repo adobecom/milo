@@ -30,6 +30,11 @@
       width: 100%;
     }
 
+    /* Native video controls sit above the card link. */
+    video[controls] {
+      pointer-events: auto;
+    }
+
     /* MPC iframe fills the card's media box and sits above the card link. */
     .milo-video {
       height: auto;
