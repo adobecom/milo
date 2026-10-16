@@ -3105,7 +3105,12 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-async function processSection(section, config, lcpSectionId) {
+function revealSection(el) {
+  delete el.dataset.status;
+  delete el.dataset.idx;
+}
+
+async function processSection(section, config, lcpSectionId, { reveal = true } = {}) {
   await resolveHighPriorityFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
@@ -3128,8 +3133,7 @@ async function processSection(section, config, lcpSectionId) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
-  delete section.el.dataset.status;
-  delete section.el.dataset.idx;
+  if (reveal) revealSection(section.el);
   return section.blocks;
 }
 
@@ -3143,6 +3147,11 @@ function isFirstInVisibleTabPanel(el) {
 }
 
 const hasTabsBlock = (el) => !!el?.querySelector(':scope > .tabs');
+
+// Authors opt sections in with a `load: parallel` section-metadata row.
+const isParallelSection = (el) => [...(el.querySelector(':scope > .section-metadata')?.children ?? [])]
+  .some(({ children: [key, value] }) => key?.textContent.trim().toLowerCase() === 'load'
+    && value?.textContent.trim().toLowerCase() === 'parallel');
 
 // Resolves when the first section of a fragment in el has loaded, or when el has fully loaded.
 function firstFragmentSectionLoaded(el, sectionLoaded) {
@@ -3242,8 +3251,21 @@ export async function loadArea(area = document) {
     return postLcpPromise;
   };
 
+  // Sections flagged `load: parallel` start loading alongside the first section with LCP
+  // priority, but are still revealed in page order by the loop below.
+  const parallelLoads = new Map();
+  const startParallelLoads = () => htmlSections.forEach((htmlSection, i) => {
+    if (i === 0 || !isParallelSection(htmlSection)) return;
+    const decorated = decorateSection(htmlSection, i);
+    const loaded = decorated
+      .then((section) => processSection(section, config, section.idx, { reveal: false }));
+    parallelLoads.set(i, { decorated, loaded });
+  });
+
   for (const [i, htmlSection] of htmlSections.entries()) {
-    const section = await decorateSection(htmlSection, i);
+    const parallelLoad = parallelLoads.get(i);
+    const section = await (parallelLoad?.decorated ?? decorateSection(htmlSection, i));
+    if (isDoc && i === 0) startParallelLoads();
     const isLastSection = section.idx === htmlSections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
@@ -3253,13 +3275,14 @@ export async function loadArea(area = document) {
     const lcpIdForSection = inLcpChain ? section.idx : lcpSectionId;
     const endsChainAtFragment = inLcpChain && isFirstInVisibleTabPanel(htmlSection)
       && !hasTabsBlock(htmlSection) && !!htmlSection.querySelector('a.fragment');
-    const sectionLoaded = processSection(section, config, lcpIdForSection);
+    const sectionLoaded = parallelLoad?.loaded ?? processSection(section, config, lcpIdForSection);
     // Only the fragment's first section (e.g. the cards) is above the fold, so gnav and martech
     // don't wait for the rest of it.
     if (endsChainAtFragment) {
       firstFragmentSectionLoaded(htmlSection, sectionLoaded).then(runPostLCP);
     }
     const sectionBlocks = await sectionLoaded;
+    if (parallelLoad) revealSection(htmlSection);
     areaBlocks.push(...sectionBlocks);
     if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
@@ -3270,7 +3293,7 @@ export async function loadArea(area = document) {
     if (inLcpChain) {
       const next = htmlSections[i + 1];
       // A tabs block right after the LCP section is above the fold too.
-      const continuesChain = isFirstInVisibleTabPanel(next)
+      const continuesChain = isFirstInVisibleTabPanel(next) || parallelLoads.has(i + 1)
         || (section.idx === lcpSectionId && hasTabsBlock(next));
       if (!continuesChain) {
         inLcpChain = false;
