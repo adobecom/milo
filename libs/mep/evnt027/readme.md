@@ -32,9 +32,8 @@ Content remains authored, not hardcoded by the block. The Post Event Figma copy 
 | Primary CTA | Sign up |
 
 Use a separate post-event fragment rather than replacing the live fragment.
-The primary CTA still uses its authored URL; the charter has not yet confirmed
-the post-event IMS destination or parameters. The URL in the post-event test
-fixture is a placeholder, not a launch destination.
+The primary CTA still uses its authored URL; configure its destination in the
+fragment, not in the block.
 
 The approved post-event layout follows Figma's single-CTA design despite the
 charter's generic guest-click tracking entry. X, backdrop, and Escape still
@@ -64,7 +63,7 @@ it does not automatically create a dialog.
 The [EVNT027 MAX charter](https://wiki.corp.adobe.com/spaces/adobedotcom/pages/4015271457/EVNT027+-+MAX+2026+Login+Prompt+Modal)
 supersedes the earlier Summit requirements.
 The latest page-specific requirements specify two minutes on the homepage and
-session guide, and a scroll boundary on individual session pages. The general
+session guide, and reaching an authored target on individual session pages. The general
 inactivity-based proposal is not implemented: it has no confirmed duration.
 CTA destinations remain authored; AA tracking identifiers are still pending.
 Do not use the old three-second delay or Summit sign-in parameters.
@@ -73,41 +72,40 @@ Do not use the old three-second delay or Summit sign-in parameters.
 
 Add an `insertScript` action pointing to
 `/libs/mep/evnt027/insertScript.js` **only in the treatment manifest**, alongside
-the block mapping above. The control must not load this script. Configure parent
-page metadata (directly or with the manifest's `updateMetadata` action):
+the block mapping above. The control must not load this script. Adobe Target owns
+audience eligibility, signed-in exclusions, and page targeting. This script
+does not load IMS, check login status, or restrict page paths.
+Configure parent-page metadata (directly or with the manifest's `updateMetadata` action):
 
 | Metadata | Value |
 | --- | --- |
 | `max26-login-prompt` | The live or post-event fragment URL, without a modal hash |
-| `max26-login-prompt-scroll-target` | CSS selector matching the full marquee/player container that must be scrolled past |
+| `max26-login-prompt-scroll-target` | Optional target section selector, for example `#session-details` |
+| `max26-login-prompt-delay` | Optional delay in seconds since navigation; defaults to `120` without a target, or `0` with a target |
 
-The fragment URL is required. The scroll selector is required for individual
-session pages, and must also be configured on the homepage when a livestream
-player is present. Use a stable authored ID or class on the actual page; a
-missing or hidden target prevents opening rather than guessing a scroll position.
-The boundary is passed only when its bottom is at or above the viewport top.
-All matches must be passed. On homepages and individual session pages,
-visible-layout native videos and embedded iframes in `main` also gate opening
-until fully passed, conservatively treating every iframe as a potential player.
-Include custom players without a video/iframe in the authored scroll selector.
+The fragment URL is required. For scroll triggering, target the safe section
+after the marquee/player, not the marquee/player itself. Use a stable authored
+element ID on the actual page; a missing or hidden target prevents opening.
+The first matching target is reached when its top enters the viewport from below.
+A target already above the viewport also qualifies, including restored scroll
+positions and fast scrolling. There is no separate marquee/player detection:
+authors must choose a target position where the modal will not cover the player.
 
-| Page | Trigger |
+| Desired behavior | Configuration |
 | --- | --- |
-| `/max.html`, `/max-new.html` | Two minutes since navigation, plus passing any configured player boundary |
-| `/max/2026/sessions.html` | Two minutes since navigation |
-| `/max/2026/sessions/<session>.html` | Scroll past the configured marquee/player boundary; no timer |
+| Two-minute delay | Fragment URL only; no scroll target |
+| Target section in view, no delay | Fragment URL and `max26-login-prompt-scroll-target: #session-details` |
+| Two-minute delay AND target reached | Fragment URL, scroll target, and `max26-login-prompt-delay: 120` |
 
-Use individual session targeting only in the live-event manifest; the charter
-does not currently include those pages in the post-event scope. Broadcast and
-other paths are not targeted. Timing is not restarted when this script loads
-late. Hidden tabs and other open dialogs defer opening; eligibility is rechecked
-after fragment loading. The script waits for IMS readiness and checks signed-in
-status again before opening.
+Adobe Target must apply the appropriate configuration to each page and event
+phase. Timing is not restarted when this script loads late. Hidden tabs and
+other open dialogs defer opening; trigger conditions and dismissal are rechecked
+after fragment loading.
 
 X, Escape, backdrop, and Continue as guest persist dismissal in
 `localStorage` under `evnt027-login-prompt-dismissed`, shared by live/post
 variants and all scoped pages on the same origin. It has no expiry; clearing
-browser storage resets it. Storage/IMS/fragment failures are reported and
+browser storage resets it. Storage/fragment failures are reported and
 do not open a broken prompt. Repeated script initialization is guarded.
 The post-event fragment is authored separately, not created by the script.
 

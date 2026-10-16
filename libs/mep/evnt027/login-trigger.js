@@ -1,30 +1,25 @@
-import { createTag, getMetadata, loadIms } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import loadFragment from '../../blocks/fragment/fragment.js';
 import { getModal } from '../../c2/blocks/modal/modal.js';
 
 const DISMISSED_KEY = 'evnt027-login-prompt-dismissed';
 const MODAL_ID = 'max26-login-prompt';
-const DELAY = 120000;
 let activeTrigger;
 
-export default async function init() {
+export default function init() {
   if (activeTrigger) return activeTrigger;
-  const { pathname } = window.location;
-  const isSession = /^\/max\/2026\/sessions\/[^/]+\.html$/.test(pathname);
-  const isTimed = ['/max.html', '/max-new.html', '/max/2026/sessions.html'].includes(pathname);
-  if ((!isSession && !isTimed) || localStorage.getItem(DISMISSED_KEY)) return null;
+  if (localStorage.getItem(DISMISSED_KEY)) return null;
 
   const path = getMetadata('max26-login-prompt');
-  const boundarySelector = getMetadata('max26-login-prompt-scroll-target');
+  const targetSelector = getMetadata('max26-login-prompt-scroll-target');
+  const delayValue = getMetadata('max26-login-prompt-delay') ?? (targetSelector ? '0' : '120');
+  const delay = Number(delayValue) * 1000;
   if (!path) throw new Error('Missing max26-login-prompt fragment metadata.');
-  if (isSession && !boundarySelector) {
-    throw new Error('Individual session pages require max26-login-prompt-scroll-target metadata.');
+  if (!delayValue.trim() || !Number.isFinite(delay) || delay < 0) {
+    throw new Error('max26-login-prompt-delay must be a non-negative number of seconds.');
   }
   // Validate authored selectors before installing event handlers.
-  if (boundarySelector) document.querySelectorAll(boundarySelector);
-  if (!window.adobeIMS?.initialized) await loadIms();
-  if (window.adobeIMS.isSignedInUser()) return null;
-  if (activeTrigger) return activeTrigger;
+  if (targetSelector) document.querySelector(targetSelector);
 
   let stopped = false;
   let preparing = false;
@@ -41,32 +36,25 @@ export default async function init() {
     if (activeTrigger === stop) activeTrigger = null;
   };
 
-  const hasPassed = (element) => element.getClientRects().length > 0
-    && element.getBoundingClientRect().bottom <= 0;
-
-  const eligible = () => {
+  const canOpen = () => {
     if (stopped || document.visibilityState !== 'visible'
-      || window.adobeIMS.isSignedInUser()
       || localStorage.getItem(DISMISSED_KEY)
       || document.querySelector('.dialog-modal, .modal-curtain')
-      || (isTimed && performance.now() < DELAY)) return false;
-    const boundaries = boundarySelector ? [...document.querySelectorAll(boundarySelector)] : [];
-    if (boundarySelector && (!boundaries.length || !boundaries.every(hasPassed))) return false;
-    if (pathname === '/max/2026/sessions.html') return true;
-    // Treat embedded frames conservatively: never cover a player or open before passing it.
-    const players = [...document.querySelectorAll('main video, main iframe')]
-      .filter((element) => element.getClientRects().length > 0);
-    return players.every(hasPassed);
+      || performance.now() < delay) return false;
+    if (!targetSelector) return true;
+    const target = document.querySelector(targetSelector);
+    return !!target && target.getClientRects().length > 0
+      && target.getBoundingClientRect().top < window.innerHeight;
   };
 
   async function check() {
     if (preparing || stopped) return;
     try {
-      if (localStorage.getItem(DISMISSED_KEY) || window.adobeIMS.isSignedInUser()) {
+      if (localStorage.getItem(DISMISSED_KEY)) {
         stop();
         return;
       }
-      if (!eligible()) return;
+      if (!canOpen()) return;
       preparing = true;
       if (!content) {
         content = createTag('div');
@@ -78,8 +66,8 @@ export default async function init() {
           throw new Error(`Could not load MAX login prompt fragment: ${path}`);
         }
       }
-      // Loading the fragment can outlive a scroll, sign-in, dismissal, or another modal.
-      if (!eligible()) return;
+      // Loading the fragment can outlive a scroll, dismissal, or another modal.
+      if (!canOpen()) return;
       const heading = content.querySelector('h1, h2, h3, h4, h5, h6');
       await getModal(null, {
         id: MODAL_ID,
@@ -120,6 +108,6 @@ export default async function init() {
     observer.observe(document.querySelector('main'), { childList: true, subtree: true });
   }
   activeTrigger = stop;
-  timer = setTimeout(check, isTimed ? Math.max(0, DELAY - performance.now()) : 0);
+  timer = setTimeout(check, Math.max(0, delay - performance.now()));
   return stop;
 }
