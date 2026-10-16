@@ -61,14 +61,54 @@ it does not automatically create a dialog.
 ## Launch requirements still pending
 
 The [EVNT027 MAX charter](https://wiki.corp.adobe.com/spaces/adobedotcom/pages/4015271457/EVNT027+-+MAX+2026+Login+Prompt+Modal)
-supersedes the earlier Summit requirements. MAX has no livestream player.
-The scroll threshold and inactivity duration, live registration destination,
-post-event IMS destination, and AA tracking identifiers are not yet finalized.
+supersedes the earlier Summit requirements.
+The latest page-specific requirements specify two minutes on the homepage and
+session guide, and a scroll boundary on individual session pages. The general
+inactivity-based proposal is not implemented: it has no confirmed duration.
+CTA destinations remain authored; AA tracking identifiers are still pending.
 Do not use the old three-second delay or Summit sign-in parameters.
 
-This block only decorates authored modal content. Automatic triggering,
-signed-out targeting, and permanent dismissal suppression across
-`/max.html`, `/max/2026/sessions.html`, and `/max/2026/broadcast.html` belong to the
-experiment's trigger integration and are not implemented here.
+## Automatic triggering
+
+Add an `insertScript` action pointing to
+`/libs/mep/evnt027/insertScript.js` **only in the treatment manifest**, alongside
+the block mapping above. The control must not load this script. Configure parent
+page metadata (directly or with the manifest's `updateMetadata` action):
+
+| Metadata | Value |
+| --- | --- |
+| `max26-login-prompt` | The live or post-event fragment URL, without a modal hash |
+| `max26-login-prompt-scroll-target` | CSS selector matching the full marquee/player container that must be scrolled past |
+
+The fragment URL is required. The scroll selector is required for individual
+session pages, and must also be configured on the homepage when a livestream
+player is present. Use a stable authored ID or class on the actual page; a
+missing or hidden target prevents opening rather than guessing a scroll position.
+The boundary is passed only when its bottom is at or above the viewport top.
+All matches must be passed. On homepages and individual session pages,
+visible-layout native videos and embedded iframes in `main` also gate opening
+until fully passed, conservatively treating every iframe as a potential player.
+Include custom players without a video/iframe in the authored scroll selector.
+
+| Page | Trigger |
+| --- | --- |
+| `/max.html`, `/max-new.html` | Two minutes since navigation, plus passing any configured player boundary |
+| `/max/2026/sessions.html` | Two minutes since navigation |
+| `/max/2026/sessions/<session>.html` | Scroll past the configured marquee/player boundary; no timer |
+
+Use individual session targeting only in the live-event manifest; the charter
+does not currently include those pages in the post-event scope. Broadcast and
+other paths are not targeted. Timing is not restarted when this script loads
+late. Hidden tabs and other open dialogs defer opening; eligibility is rechecked
+after fragment loading. The script waits for IMS readiness and checks signed-in
+status again before opening.
+
+X, Escape, backdrop, and Continue as guest persist dismissal in
+`localStorage` under `evnt027-login-prompt-dismissed`, shared by live/post
+variants and all scoped pages on the same origin. It has no expiry; clearing
+browser storage resets it. Storage/IMS/fragment failures are reported and
+do not open a broken prompt. Repeated script initialization is guarded.
+The post-event fragment is authored separately, not created by the script.
+
 X, Escape, backdrop, focus handling, and baseline modal analytics use the shared
 C2 Modal implementation.
