@@ -114,6 +114,7 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'base-card',
   'brand-concierge',
+  'brand-concierge-global',
   'card-metadata',
   'carousel-c2',
   'comparison-table-c2',
@@ -458,6 +459,13 @@ export const [setConfig, updateConfig, getConfig] = (() => {
     () => config,
   ];
 })();
+
+// TODO: ?acom-assistant=off on stage is a temporary QE override; remove after rollout.
+export function isAcomAssistantEnabled() {
+  const isStage = getConfig().env?.name === 'stage';
+  if (isStage && PAGE_URL.searchParams.get('acom-assistant') === 'off') return false;
+  return getMetadata('acom-assistant') === 'on';
+}
 
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
@@ -2363,11 +2371,32 @@ export function preloadLcpCodeFiles(area = document) {
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const blocks = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')]
+  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
+
+  const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
+    && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
+      || [...autoNames].some(isCommerceBlock));
+  if (hasCommerceContent) {
+    // Target previews must apply their AUP config before the service initializes.
+    const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
+    import(`${base}/blocks/merch/merch.js`)
+      .then((mod) => {
+        if (skipInit) return undefined;
+        return mod.initService().catch((e) => {
+          mod.initService.promise = undefined;
+          window.lana?.log(
+            `MAS: eager initService failed, falling back to lazy init - ${e}`,
+            { severity: 'info', tags: 'mas-lcp' },
+          );
+        });
+      })
+      .catch(() => {});
+  }
 
   if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
@@ -2497,6 +2526,17 @@ function initModalEventListener() {
   });
 }
 
+function shouldSkipLenis() {
+  if (navigator.connection?.saveData
+    || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+  if (window.matchMedia('(width < 768px) and (pointer: coarse) and (hover: none)').matches) return true;
+  const { deviceMemory, hardwareConcurrency: cores, userAgentData, userAgent } = navigator;
+  const isWindows = (userAgentData?.platform || userAgent).includes('Windows');
+  return isWindows
+    ? deviceMemory <= 4 || cores <= 4
+    : deviceMemory <= 4 && cores <= 4;
+}
+
 let fontsPromise;
 function importFonts(locale = getConfig().locale) {
   fontsPromise ??= import('./fonts.js')
@@ -2555,37 +2595,68 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    await Promise.all([
-      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
-      loadScript(`${config.base}/deps/lenis.min.js`),
-    ]);
-    const lerp = 0.06;
-    const fsThreshold = 110;
-    const fsFactor = 0.11;
-    const fsDelay = 700;
-    const lenisPreventSelectors = [
-      '.dialog-modal',
-      '.ot-sdk-container',
-      'div[data-testid="main-content-area"]',
-    ];
-    window.lenis = new window.Lenis({
-      autoRaf: true,
-      lerp,
-      wheelMultiplier: 0.7,
-      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
-    });
-    if (document.querySelector('.modal-curtain.is-open')) {
-      window.lenis.stop();
-    }
-    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-    let fsScrollTimer;
-    window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > fsThreshold) {
-        window.lenis.options.lerp = fsFactor;
-        clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+    if (!shouldSkipLenis()) {
+      await Promise.all([
+        new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+        loadScript(`${config.base}/deps/lenis.min.js`),
+      ]);
+      const lerp = 0.06;
+      const fsThreshold = 110;
+      const fsFactor = 0.11;
+      const fsDelay = 700;
+      const lenisPreventSelectors = [
+        '.dialog-modal',
+        '.ot-sdk-container',
+        'div[data-testid="main-content-area"]',
+      ];
+      // Drive rAF manually so it pauses when idle and saves CPU
+      window.lenis = new window.Lenis({
+        autoRaf: false,
+        lerp,
+        wheelMultiplier: 0.7,
+        prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
+      });
+      let lenisRaf = null;
+      const runLenisFrame = (time) => {
+        window.lenis.raf(time);
+        lenisRaf = window.lenis.isScrolling ? requestAnimationFrame(runLenisFrame) : null;
+      };
+      const startLenisRaf = () => {
+        if (lenisRaf !== null) return;
+        // Lenis keeps the last frame's timestamp, so after idling the first delta would span the
+        // whole idle gap and finish the animation in one frame. Rebase its clock (delta = 0).
+        window.lenis.time = 0;
+        lenisRaf = requestAnimationFrame(runLenisFrame);
+      };
+
+      const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ', 'Spacebar'];
+      const onScrollKey = (e) => {
+        if (!scrollKeys.includes(e.key)) return;
+        if (document.activeElement?.matches?.('input, textarea, select, [contenteditable="true"]')) return;
+        startLenisRaf();
+      };
+      window.addEventListener('keydown', onScrollKey, { passive: true });
+
+      ['wheel', 'touchstart', 'touchmove', 'scroll'].forEach((evt) => {
+        window.addEventListener(evt, startLenisRaf, { passive: true });
+      });
+
+      const lenisScrollTo = window.lenis.scrollTo.bind(window.lenis);
+      window.lenis.scrollTo = (...args) => { startLenisRaf(); return lenisScrollTo(...args); };
+
+      if (document.querySelector('.modal-curtain.is-open')) {
+        window.lenis.stop();
       }
-    }, { passive: true });
+      // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+      let fsScrollTimer;
+      window.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > fsThreshold) {
+          window.lenis.options.lerp = fsFactor;
+          clearTimeout(fsScrollTimer);
+          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        }
+      }, { passive: true });
+    }
 
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

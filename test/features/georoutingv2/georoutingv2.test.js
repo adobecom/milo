@@ -710,6 +710,79 @@ describe('GeoRouting', () => {
     });
   });
 
+  ['', '#category=photo&types=desktop'].forEach((hash) => {
+    it(`removes the AUP deep link before restoring the page hash ${hash || '(empty)'}`, async () => {
+      const previousUrl = window.location.href;
+      window.history.replaceState(null, '', '#modal-test');
+      stubHeadRequestToReturnVal('/ch_de', true);
+      stubHeadRequestToReturnVal('/ch_it', true);
+      stubHeadRequestToReturnVal('/ch_fr', true);
+      const aupDialog = document.createElement('div');
+      aupDialog.id = 'aup-workflow-dialog';
+      aupDialog.className = 'dialog-modal aup-modal';
+      try {
+        await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+        const geoModal = document.querySelector('#locale-modal-v2');
+        const stayLink = geoModal.querySelector('.link-wrapper a:not(.con-button)');
+        expect(stayLink.hash).to.equal('#modal-test');
+
+        document.body.append(aupDialog);
+        window.dispatchEvent(new CustomEvent(
+          'milo:modal:closed',
+          { detail: { id: aupDialog.id, hash: '#modal-test' } },
+        ));
+        aupDialog.remove();
+        window.history.pushState(null, '', `${window.location.pathname}${window.location.search}${hash}`);
+
+        expect(stayLink.hash).to.equal('');
+        expect(document.querySelector('#locale-modal-v2')).to.equal(geoModal);
+        stayLink.dispatchEvent(new Event('click'));
+
+        expect(document.querySelector('#locale-modal-v2')).to.be.null;
+        expect(window.location.hash).to.equal(hash);
+      } finally {
+        aupDialog.remove();
+        window.history.replaceState(null, '', previousUrl);
+      }
+    });
+  });
+
+  it('removes a closed AUP modal hash from a region picker link before switching', async () => {
+    const previousUrl = window.location.href;
+    window.history.replaceState(null, '', '#modal-test');
+    stubHeadRequestToReturnVal('/ch_de', true);
+    stubHeadRequestToReturnVal('/ch_it', true);
+    stubHeadRequestToReturnVal('/ch_fr', true);
+    const aupDialog = document.createElement('div');
+    aupDialog.id = 'aup-workflow-dialog';
+    aupDialog.className = 'dialog-modal aup-modal';
+    try {
+      await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+      const geoModal = document.querySelector('#locale-modal-v2');
+      geoModal.querySelector('.link-wrapper .con-button').click();
+      const pickerLink = geoModal.querySelector('.picker a');
+      expect(pickerLink.hash).to.equal('#modal-test');
+      const { pathname } = new URL(pickerLink.href);
+
+      document.body.append(aupDialog);
+      window.history.pushState(null, '', '#replacement-modal');
+      window.dispatchEvent(new CustomEvent(
+        'milo:modal:closed',
+        { detail: { id: aupDialog.id, hash: '#modal-test' } },
+      ));
+      aupDialog.remove();
+      expect(pickerLink.hash).to.equal('');
+      pickerLink.dispatchEvent(new Event('click'));
+
+      expect(pickerLink.hash).to.equal('');
+      expect(new URL(pickerLink.href).pathname).to.equal(pathname);
+      expect(document.querySelector('#locale-modal-v2')).to.be.null;
+    } finally {
+      aupDialog.remove();
+      window.history.replaceState(null, '', previousUrl);
+    }
+  });
+
   describe('ArrowKey navigation for georouting modal', () => {
     let links = null;
 

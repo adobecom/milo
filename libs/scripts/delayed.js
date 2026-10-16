@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import { isAcomAssistantEnabled } from '../utils/utils.js';
+
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat')?.toLowerCase();
@@ -19,6 +21,14 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
   if (jarvis === 'mobile' && desktopViewport) return;
   if (jarvis === 'desktop' && !desktopViewport) return;
+
+  const hasBrandConcierge = getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on'
+    || !!document.querySelector('.brand-concierge');
+  if (isAcomAssistantEnabled() && hasBrandConcierge) {
+    const { default: initChatLinks } = await import('../features/acom-assistant-gnav-link.js');
+    await initChatLinks(config, loadScript, loadStyle, getMetadata);
+    return;
+  }
 
   const { initJarvisChat } = await import('../features/jarvis-chat.js');
   initJarvisChat(config, loadScript, loadStyle, getMetadata);
@@ -110,15 +120,24 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 
 export const loadPreflightResults = async () => {
   const { hostname } = window.location;
-  if (!hostname.endsWith('.aem.page') && !hostname.endsWith('.aem.live')) return;
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isPreview = hostname.endsWith('.aem.page');
+  const isLive = hostname.endsWith('.aem.live');
+  if (!isLocal && !isPreview && !isLive) return;
 
   const run = async () => {
-    const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
-    await showPreflightNotification();
+    if (isLocal || isPreview) {
+      const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
+      await autoHighlightUnpublished();
+    }
+    if (!isLocal) {
+      const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
+      await showPreflightNotification();
+    }
   };
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
-  if (sk) {
+  if (sk || isLocal) {
     await run();
   } else {
     document.addEventListener('sidekick-ready', run, { once: true });

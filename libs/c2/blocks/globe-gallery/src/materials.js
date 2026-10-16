@@ -1,4 +1,4 @@
-import * as THREE from '../three.module.min.js';
+import * as THREE from '../../../../deps/three.js';
 import {
   CARD_VERT, CARD_DISPERSE_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG,
 } from './shaders.js';

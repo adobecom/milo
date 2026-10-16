@@ -1,6 +1,6 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, getMetadata, loadScript } from '../../utils/utils.js';
-import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
+import { getBetaLabel, waitForCondition, expandIcon, isC2, isC2Nav } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -25,6 +25,13 @@ export function isMobile() {
 
 export function sideOverlayTop() {
   const gnav = document.querySelector('header.global-navigation');
+  const navElement = gnav?.querySelector('nav');
+  let navMargin = 0;
+
+  if (navElement) {
+    const navStyles = getComputedStyle(navElement);
+    navMargin = parseFloat(navStyles.marginBottom);
+  }
 
   if (!gnav) return;
   const gnavTop = gnav.getBoundingClientRect().top;
@@ -33,12 +40,13 @@ export function sideOverlayTop() {
   const isCompact = gnav.classList.contains('is-compact');
 
   const rootStyles = getComputedStyle(document.documentElement);
-  const gnavHeight = Number(rootStyles.getPropertyValue('--global-height-nav').trim().slice(0, -2));
+  const gnavHeight = gnav.offsetHeight;
   const localNavHeight = Number(rootStyles.getPropertyValue('--feds-localnav-height').trim().slice(0, -2));
   const breadcrumbHeight = Number(rootStyles.getPropertyValue('--global-height-breadcrumbs').trim().slice(0, -2));
+  const gnavMargin = (isC2Nav || (isC2 && isC2Nav)) && window.scrollY > 20 ? navMargin : 0;
 
   const gnavMeasure = ((
-    window.scrollY > gnavHeight && isCompact && hasLocalNav) ? 0 : gnavTop + gnavHeight
+    window.scrollY > gnavHeight && isCompact && hasLocalNav) ? 0 : gnavTop + gnavHeight - gnavMargin
   );
   const localNavMeasure = hasLocalNav && isCompact ? localNavHeight : 0;
   const breadcrumbMeasure = hasBreadcrumbs && !isCompact ? breadcrumbHeight : 0;
@@ -442,7 +450,7 @@ export async function openSideModal(initialMessage, bootstrap) {
 
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
-    class: 'opening',
+    class: !(localStorage.getItem('bc-side-overlay') === 'open') ? 'opening' : '',
     id: 'brand-concierge-side',
     content: innerModal,
     closeCallback: async () => {
@@ -461,6 +469,7 @@ export async function openSideModal(initialMessage, bootstrap) {
 
   setTimeout(() => {
     modal.classList.remove('opening');
+    window?.lenis?.start();
   }, animationMs);
 
   if (susiListener !== 'signIn:decorateNav') {

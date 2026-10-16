@@ -1,5 +1,6 @@
 /* eslint-disable import/no-relative-packages */
 import { createTag, getConfig } from '../../utils/utils.js';
+import { setForegroundTimeout, clearForegroundTimeout } from './merch.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
@@ -21,6 +22,22 @@ export const LANA_OPTIONS = {
   tags: 'three-in-one',
 };
 
+// Pending checkout-load timer per iframe (initial load or retry), cleared on load or close.
+const loadTimeouts = new WeakMap();
+
+const clearLoadTimeout = (iframe) => {
+  if (!iframe) return;
+  clearForegroundTimeout(loadTimeouts.get(iframe));
+  loadTimeouts.delete(iframe);
+};
+
+// Foreground-time budget: a frozen webview must not burn the deadline while suspended
+// and show the checkout error UI the moment it resumes.
+const startLoadTimeout = (iframe, handleTimeoutError) => {
+  clearLoadTimeout(iframe);
+  loadTimeouts.set(iframe, setForegroundTimeout(handleTimeoutError, 15000));
+};
+
 export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) => {
   if (!msgWrapper || !iframe || !theme || !handleTimeoutError) return;
   msgWrapper.remove();
@@ -30,7 +47,7 @@ export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) 
   iframe.src = iframe.src;
   iframe.classList.add('loading');
   theme.style.display = 'block';
-  setTimeout(handleTimeoutError, 15000);
+  startLoadTimeout(iframe, handleTimeoutError);
 };
 
 export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
@@ -81,6 +98,7 @@ export const handle3in1IFrameEvents = ({ data: msgData, origin }) => {
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
       iframe?.setAttribute('data-pageloaded', 'true');
+      clearLoadTimeout(iframe);
       iframe?.classList.remove('loading');
       threeInOne.querySelector('sp-theme')?.remove();
       if (closeBtn) {
@@ -156,24 +174,34 @@ export function createContent(iframeUrl) {
   return content;
 }
 
+export function getIframeUrl(el) {
+  const href = el?.getAttribute('href');
+  if (href && !href.startsWith('#')) return el.href;
+  // MAS keeps href="#" on AUP checkout links and stores the real checkout URL in checkoutUrl.
+  const checkoutUrl = el?.checkoutUrl;
+  return checkoutUrl && !checkoutUrl.startsWith('#') ? checkoutUrl : undefined;
+}
+
 export default async function openThreeInOneModal(el) {
-  const iframeUrl = el?.href;
+  const iframeUrl = getIframeUrl(el);
   const modalType = el?.getAttribute('data-modal');
   const id = el?.getAttribute('data-modal-id');
   if (!modalType || !iframeUrl) return undefined;
   const { getModal } = await import('../modal/modal.js');
   const content = createContent(iframeUrl);
-  const timeoutId = setTimeout(handleTimeoutError, 15000);
-  const clearTimeoutOnClose = () => {
-    clearTimeout(timeoutId);
-    window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
-  };
-  window.addEventListener('milo:modal:closed', clearTimeoutOnClose);
-  return getModal(null, {
-    id,
-    content,
-    closeEvent: 'closeModal',
-    class: 'three-in-one',
-    title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
-  });
+  const iframe = content.querySelector('iframe');
+  startLoadTimeout(iframe, handleTimeoutError);
+  try {
+    return await getModal(null, {
+      id,
+      content,
+      closeEvent: 'closeModal',
+      closeCallback: () => clearLoadTimeout(iframe),
+      class: 'three-in-one',
+      title: el?.getAttribute('aria-label')?.trim() || el?.textContent?.trim() || '',
+    });
+  } catch (error) {
+    clearLoadTimeout(iframe);
+    throw error;
+  }
 }

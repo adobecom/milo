@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { readFile, setViewport } from '@web/test-runner-commands';
+import { readFile, setViewport, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForRemoval } from '../../helpers/waitfor.js';
@@ -115,6 +115,38 @@ describe('Modal (c2)', () => {
       expect(document.getElementById('c2-close')).to.be.null;
       expect(document.querySelector('.modal-curtain')).to.be.null;
       expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
+    });
+
+    it('applies a close-button-circle breakpoint modifier verbatim, with no JS translation', async () => {
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, {
+        id: 'c2-circle',
+        content,
+        title: 'Modal: Circle',
+        class: 'close-button-circle-mobile',
+      });
+
+      expect(modal.classList.contains('close-button-circle-mobile')).to.be.true;
+      expect(modal.classList.contains('close-button-circle')).to.be.false;
+    });
+
+    it('tags the close button with escapeClose analytics and closes on Escape', async () => {
+      const closeCallback = sinon.spy();
+      const content = createTag('div', {}, 'Body');
+      window.location.hash = '#c2-escape';
+      const modal = await getModal(null, { id: 'c2-escape', content, title: 'Modal: Escape', closeCallback });
+      const close = modal.querySelector('button.dialog-close');
+      const clicked = sinon.spy();
+      close.addEventListener('click', () => clicked(close.getAttribute('daa-ll')));
+
+      expect(close.getAttribute('daa-ll')).to.equal('c2-escape:modalClose:buttonClose');
+      close.focus();
+      await sendKeys({ press: 'Escape' });
+      await waitForRemoval('#c2-escape');
+
+      expect(clicked.calledOnceWith('c2-escape:modalClose:escapeClose')).to.be.true;
+      expect(closeCallback.calledOnce).to.be.true;
+      expect(document.querySelector('.modal-curtain')).to.be.null;
     });
   });
 

@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -6,6 +6,8 @@ import {
   updateReplicatedValue,
   handleConsent,
   hasChatCookie,
+  isC2,
+  isC2Nav,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
@@ -18,6 +20,7 @@ import {
 import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 
 let stayActive = false;
+let useAcomAssistant = false;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -67,9 +70,15 @@ function promptUp() {
   stayActive = false;
 }
 
-function decorateGnav(cards, input, topNav, el) {
+async function decorateGnav(cards, input, topNav, el) {
+  if (useAcomAssistant) {
+    const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
+    decorateNavWithAssistant(cards, topNav);
+    return;
+  }
+
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
-  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}` });
+  const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''}${isC2() ? 'is-c2' : ''}${isC2Nav() ? ' is-c2-nav' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');
   const gnavButtonSection = createTag('section', { class: `bc-gnav-button${hasNoMobile ? ' no-gnav-mobile' : ''}` });
   const gnavButton = createTag('button', { class: 'gnav-button' }, `${aiIcon('gb-ai-icon', 'gnav-button-icon', 'Ask', 20)}`);
@@ -134,21 +143,25 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
+  useAcomAssistant = isAcomAssistantEnabled();
+
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
-  window.addEventListener('feds:signOut', () => {
-    if (!window.adobe?.concierge?.clearHistory) {
-      loadWebclient();
-    }
-    if (window.adobe?.concierge?.clearHistory) {
-      if (document.body.classList.contains('bc-side-open')) {
-        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-        closeButton.click();
+  if (!useAcomAssistant) {
+    window.addEventListener('feds:signOut', () => {
+      if (!window.adobe?.concierge?.clearHistory) {
+        loadWebclient();
       }
-      window.adobe.concierge.clearHistory();
-    }
-  });
+      if (window.adobe?.concierge?.clearHistory) {
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
+        window.adobe.concierge.clearHistory();
+      }
+    });
+  }
 
   initAnalytics('BC-GNav-shown');
 
@@ -156,10 +169,12 @@ export default function init(el) {
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
   const navCheck = setInterval(() => {
-    const topNav = document.querySelector('header.global-navigation nav.feds-topnav');
+    const topNav = document.querySelector('header.global-navigation nav');
     if (topNav) {
       clearInterval(navCheck);
-      decorateGnav(cards, input, topNav, el);
+      decorateGnav(cards, input, topNav, el).catch((error) => {
+        window.lana?.log?.(`AcomAssistant: failed to load GNav (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+      });
     }
   }, 100);
 
@@ -167,6 +182,7 @@ export default function init(el) {
     el.removeChild(row);
   });
 
+  if (useAcomAssistant) return;
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');

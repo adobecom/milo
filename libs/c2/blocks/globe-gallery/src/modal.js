@@ -1,4 +1,4 @@
-import * as THREE from '../three.module.min.js';
+import * as THREE from '../../../../deps/three.js';
 import { createModalMaterial } from './materials.js';
 import {
   easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,

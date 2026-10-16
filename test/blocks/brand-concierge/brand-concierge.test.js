@@ -1,8 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { waitFor, waitForElement } from '../../helpers/waitfor.js';
+import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
@@ -629,5 +629,173 @@ describe('Brand Concierge back-navigation analytics', () => {
       expect(state.bcDestinationPage).to.equal('');
     });
   });
+
+  describe('card analytics formatting', () => {
+    it('formats nested product fields and keeps login status only for Firefly clicks', () => {
+      const track = sinon.spy();
+      window._satellite = { track };
+
+      bcAnalytics({
+        eventType: 'cards:rendered',
+        data: {
+          element: [{
+            cardType: 'acomProduct',
+            entity_info: {
+              productName: 'Acrobat',
+              productPageURL: 'https://acrobat.adobe.com/pdf-editor',
+            },
+          }],
+          displayMode: 'single',
+        },
+      });
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: {
+          element: { cardType: 'acomProduct', loginStatus: 'logged-in', entity_info: { productName: 'Acrobat' } },
+          destinationUrl: 'https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card',
+        },
+      });
+      bcAnalytics({
+        eventType: 'card:clicked',
+        data: {
+          element: {
+            type: 'firefly-community-gallery',
+            cardType: 'firefly-community-gallery',
+            productName: 'Firefly',
+            loginStatus: 'logged-in',
+          },
+          destinationUrl: 'https://firefly.adobe.com',
+        },
+      });
+
+      const impressionData = track.firstCall.args[1].data;
+      const impressions = impressionData._adobe_corpnew.digitalData.primaryEvent.eventInfo
+        .interaction.additionalImpressions;
+      expect(impressions)
+        .to.equal('BC-card|acomProduct|Acrobat|https://acrobat.adobe.com/pdf-editor');
+      const productData = track.secondCall.args[1].data;
+      expect(productData.web.webInteraction.name).to.equal('BC-card_clicked|acomProduct|Acrobat');
+      const productClick = productData._adobe_corpnew.digitalData.primaryEvent.eventInfo
+        .interaction.click;
+      expect(productClick)
+        .to.equal('BC-card|acomProduct|Acrobat|https://acrobat.adobe.com/pdf-editor?adobe_brand_concierge_source=bc-adobe-product-card');
+      const fireflyData = track.thirdCall.args[1].data;
+      expect(fireflyData.web.webInteraction.name)
+        .to.equal('BC-card_clicked|firefly-community-gallery|Firefly|loginStatus:logged-in');
+    });
+  });
 });
 /* eslint-enable no-underscore-dangle */
+
+describe('Brand Concierge - AcomAssistant flag', () => {
+  let sendUserMessageSpy;
+  let openMessagingWindowSpy;
+  let capturedInitConfig;
+  let originalClient;
+  let clientScript;
+  let pageMetadata;
+  let originalConfig;
+
+  before(() => {
+    originalConfig = getConfig();
+    setConfig({ ...originalConfig, jarvis: { id: 'brand-concierge-jarvis', version: '3.0' } });
+    pageMetadata = document.createElement('div');
+    pageMetadata.innerHTML = `
+      <meta property="og:title" content="Explore Adobe apps">
+      <meta property="og:description" content="Find the right creative tools for you.">
+      <meta name="acom-assistant-id" content="unused-assistant-id">
+      <meta name="acom-assistant-version" content="unused-assistant-version">
+    `;
+    pageMetadata = [...pageMetadata.children];
+    document.head.append(...pageMetadata);
+    originalClient = window.AdobeMessagingExperienceClient;
+    clientScript = document.createElement('script');
+    clientScript.type = 'javascript/blocked';
+    clientScript.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    clientScript.dataset.loaded = 'true';
+    document.head.append(clientScript);
+    window.AdobeMessagingExperienceClient = {
+      initialize: (cfg) => {
+        capturedInitConfig = cfg;
+        cfg.callbacks?.onReadyCallback?.();
+      },
+      reinitialize: () => {},
+      sendUserMessage: () => {},
+      openMessagingWindow: () => {},
+    };
+  });
+
+  after(() => {
+    pageMetadata.forEach((meta) => meta.remove());
+    clientScript.remove();
+    window.AdobeMessagingExperienceClient = originalClient;
+    setConfig(originalConfig);
+  });
+
+  beforeEach(() => {
+    sendUserMessageSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'sendUserMessage');
+    openMessagingWindowSpy = sinon.spy(window.AdobeMessagingExperienceClient, 'openMessagingWindow');
+  });
+
+  afterEach(() => {
+    sendUserMessageSpy.restore();
+    openMessagingWindowSpy.restore();
+    document.head.querySelector('meta[name="acom-assistant"]')?.remove();
+    document.getElementById('brand-concierge-modal')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+  });
+
+  it('routes typed input through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    const input = block.querySelector('.bc-input-field textarea');
+    input.value = 'Hello acom';
+    input.dispatchEvent(new Event('input'));
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+
+    await waitFor(() => sendUserMessageSpy.calledWith({ label: 'Hello acom' }));
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith({ label: 'Hello acom' })).to.be.true;
+    expect(openMessagingWindowSpy.called).to.be.true;
+
+    expect(capturedInitConfig.appid).to.equal(getConfig().jarvis.id);
+    expect(capturedInitConfig.appver).to.equal(getConfig().jarvis.version);
+    expect(capturedInitConfig.pageTitle).to.equal('Explore Adobe apps');
+    expect(capturedInitConfig.pageDescription).to.equal('Find the right creative tools for you.');
+    const context = capturedInitConfig.callbacks.getContextCallback();
+    expect(context.appid).to.equal(getConfig().jarvis.id);
+    expect(context.appver).to.equal(getConfig().jarvis.version);
+  });
+
+  it('routes a marquee suggested-prompt-card click through AcomAssistant instead of the legacy modal when the flag is on', async () => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'acom-assistant');
+    meta.setAttribute('content', 'on');
+    document.head.appendChild(meta);
+
+    document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+    const block = document.querySelector('.brand-concierge.marquee');
+    await init(block);
+
+    const button = block.querySelector('.prompt-card-button');
+    const cardText = button.querySelector('.prompt-card-text').textContent.trim();
+    button.click();
+
+    const expected = {
+      label: cardText,
+      action: { click_analytics: `BC-suggested_prompt_clicked|inline|${cardText}` },
+    };
+    await waitFor(() => sendUserMessageSpy.calledWith(expected));
+
+    expect(document.getElementById('brand-concierge-modal')).to.not.exist;
+    expect(sendUserMessageSpy.calledWith(expected)).to.be.true;
+  });
+});

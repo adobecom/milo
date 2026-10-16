@@ -1,5 +1,5 @@
 // Pointer interaction for the globe.
-import * as THREE from '../three.module.min.js';
+import * as THREE from '../../../../deps/three.js';
 import { FRAME_MS } from './timeline.js';
 
 const VEL_SMOOTH_MS = 35; // EMA time constant

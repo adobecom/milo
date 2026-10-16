@@ -71,13 +71,10 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the retirement fade, `isActive()` gating interaction's cursor. No-op on touch and on the barrel. |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
-| `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
-| `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
-| `package.json` | Local mini build. `npm install && npm run build` regenerates `three.module.min.js`. |
 
 Experimental block: loaded via MEP from `libs/c2/blocks/globe-gallery/` — **not** registered in
-`C2_BLOCKS` (`libs/utils/utils.js`). `three.module.min.js` and `src/three-src.js` are eslint-ignored
-(the compat config skips them — the tree-shaken bundle and the bare `three` build-entry import).
+`C2_BLOCKS` (`libs/utils/utils.js`). Three.js is the shared `libs/deps/three.js` (r160), the same
+module `firefly-globe` imports.
 
 ### Module layout
 
@@ -133,13 +130,12 @@ injected with live-state getters: `materials.js`, the a11y widget, the modal, `i
 globe controls, and `cursor.js`. The modal owns its canvas/scene + the `MODAL_PHASE` state machine and reaches the sphere
 only through the shared `sphereRotQuat` / `snapToSphereSlot` / `requestNavNudge` callbacks.
 
-## Rebuilding Three.js
+## Three.js
 
-After adding a new `THREE.*` call, add the symbol to `src/three-src.js`, then
-`cd libs/c2/blocks/globe-gallery && npm install && npm run build`.
-
-`three.module.min.js` is tree-shaken, so most of the library is simply absent — no `Frustum`,
-`Sphere` or `Box3`. Check the bundle exports the symbol before writing against it.
+`libs/deps/three.js` exports only the symbols listed in `build/three.js`; a missing one is
+`undefined` at runtime, not a build error. After adding a new `THREE.*` call, add the symbol to
+`build/three.js` and run `npm run build:three` from the repo root. The build is tree-shaken, so most
+of the library is simply absent — no `Frustum`, `Sphere` or `Box3`.
 
 ## Authoring contract
 
@@ -3023,27 +3019,6 @@ bare names — are:
 
 Known follow-ups, not blocking this integration branch:
 
-- **Bundle-drift isn't CI-checked.** `three.module.min.js` is built manually
-  (`npm run build`: esbuild over `src/three-src.js` + the pinned `three`), and nothing in CI or lint
-  verifies the committed artifact still matches its source — the file is in `.eslintrc.js`'s ignore
-  list, and no workflow builds this block. **Re-run `npm run build` and commit the result whenever
-  `src/three-src.js` or the `three` pin changes.** The check that belongs in CI is:
-
-  ```sh
-  cd libs/c2/blocks/globe-gallery && npm ci --silent && npm run build
-  git diff --exit-code -- three.module.min.js   # non-zero = the committed bundle is stale
-  ```
-
-  **The `.eslintrc.js` ignore entry for this file is load-bearing.** Running `eslint --fix` over the
-  bundle (a repo-wide fix, or an editor doing it on save) re-inflates it by ~72KB with no error:
-  `one-var` splits esbuild's merged declarators, `prefer-const` rewrites `var`→`const`, and
-  `space-infix-ops` pads the `=`. The output still works, so nothing catches it.
-
-  Adding a `THREE.*` symbol to the code without adding it to `src/three-src.js` gives `undefined` at
-  runtime, not a build error, so it is worth cross-checking the two lists when either moves. Note
-  that trimming *unused* exports is not worth doing for size: dropping all four currently-unused
-  ones (`LinearFilter`, `LinearMipmapLinearFilter`, `MeshBasicMaterial`, `Texture`) saves 88 bytes,
-  because `Texture` is `CanvasTexture`'s base class and the filter names are numeric constants.
 - **No automated tests.** The block ships without unit or Nala E2E coverage. The initial pass leans
   on the planned VQA; a test suite (at least the authoring/parse paths, the N=0/N=1 edge cases, and
   a modal open/nav/close smoke) should land before it graduates from the experimental wave.
