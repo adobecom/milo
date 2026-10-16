@@ -768,6 +768,13 @@ describe('hub-hero block', () => {
       expectCenteredStack(stack);
     });
 
+    it('centers the portrait stack when XL media reaches its 392px width cap', async () => {
+      const stack = await loadResolvedStack();
+      await setViewport({ width: 1920, height: 1200 });
+      await new Promise((resolve) => { setTimeout(resolve, 350); });
+      expectCenteredStack(stack);
+    });
+
     it('measures the final heading stack without observing its animated gap', async () => {
       const observe = sinon.spy(ResizeObserver.prototype, 'observe');
       const stack = await loadResolvedStack();
