@@ -21,6 +21,7 @@ const PRIMARY_TYPES = new Set([
   'Article', 'NewsArticle',
   'SoftwareApplication', 'WebApplication', 'MobileApplication', 'VideoGame',
 ]);
+const APPLICATION_TYPES = new Set(['SoftwareApplication', 'WebApplication', 'MobileApplication', 'VideoGame']);
 
 // Mirrors aggregaterating-min-rating-* in rules.yaml.
 const AGGREGATE_RATING_MIN_VALUE = 4.0;
@@ -50,7 +51,15 @@ function buildContext(graph) {
     }
   }
   const typed = (...types) => types.flatMap((t) => byType.get(t) ?? []);
-  return { wrapper, nodes, byType, ids, typed };
+  const applications = nodes.filter((node) => APPLICATION_TYPES.has(node['@type']));
+  const ratings = [
+    ...typed('AggregateRating'),
+    ...applications.flatMap((app) => [app.aggregateRating].flat())
+      .filter((rating) => rating?.['@type'] === 'AggregateRating'),
+  ];
+  return {
+    wrapper, nodes, byType, ids, typed, applications, ratings,
+  };
 }
 
 // Each predicate returns an array of { message, nodeId? } for its rule.
@@ -121,6 +130,23 @@ const PREDICATES = {
   'aggregaterating-singleton': ({ typed }) => (typed('AggregateRating').length > 1
     ? [{ message: `expected at most one AggregateRating, found ${typed('AggregateRating').length}` }] : []),
 
+  'softwareapplication-nested-entities': ({ applications, nodes }) => {
+    const out = [];
+    for (const app of applications) {
+      for (const [prop, type] of Object.entries({ offers: 'Offer', aggregateRating: 'AggregateRating' })) {
+        const values = [app[prop]].flat().filter(isObject);
+        for (const value of values) {
+          const target = nodes.find((node) => node['@id'] === value['@id']);
+          if ((value['@type'] === type || target?.['@type'] === type)
+            && ('@id' in value || '@context' in value)) {
+            out.push({ nodeId: app['@id'], message: `${prop} must be nested without @id or @context` });
+          }
+        }
+      }
+    }
+    return out;
+  },
+
   'webpage-publisher-link': ({ typed }) => typed('WebPage')
     .filter((wp) => !isPureRef(wp.publisher))
     .map((wp) => ({ nodeId: wp['@id'], message: 'WebPage is missing a publisher { @id } link' })),
@@ -137,11 +163,11 @@ const PREDICATES = {
     .filter((bc) => !isPureRef(bc.isPartOf))
     .map((bc) => ({ nodeId: bc['@id'], message: 'BreadcrumbList is missing an isPartOf { @id } link' })),
 
-  'aggregaterating-min-rating-value': ({ typed }) => typed('AggregateRating')
+  'aggregaterating-min-rating-value': ({ ratings }) => ratings
     .filter((ar) => !(Number(ar.ratingValue) >= AGGREGATE_RATING_MIN_VALUE))
     .map((ar) => ({ nodeId: ar['@id'], message: `ratingValue ${ar.ratingValue} is below ${AGGREGATE_RATING_MIN_VALUE}` })),
 
-  'aggregaterating-min-rating-count': ({ typed }) => typed('AggregateRating')
+  'aggregaterating-min-rating-count': ({ ratings }) => ratings
     .filter((ar) => !(Number(ar.ratingCount) >= AGGREGATE_RATING_MIN_COUNT))
     .map((ar) => ({ nodeId: ar['@id'], message: `ratingCount ${ar.ratingCount} is below ${AGGREGATE_RATING_MIN_COUNT}` })),
 };

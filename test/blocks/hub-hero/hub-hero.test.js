@@ -448,6 +448,68 @@ describe('hub-hero block', () => {
       expect(container.classList.contains('stick-right')).to.be.true;
     });
 
+    it('ignores layout-retargeted row movement without canceling a real blank-space leave', () => {
+      containerWidth = 1500;
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const move = (target, x) => target.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true,
+        clientX: x,
+        clientY: 10,
+      }));
+      move(slides[0].querySelector('img'), 10);
+      move(container, 10);
+      clock.tick(20);
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      const carousel = block.querySelector('.hub-hero-carousel');
+      move(carousel, 20);
+      move(carousel, 20);
+      clock.tick(20);
+      expect(slides[0].classList.contains('hovered')).to.be.false;
+      expect(container.classList.contains('stick-left')).to.be.false;
+    });
+
+    [0, 3].forEach((index) => {
+      it(`clears slide ${index + 1} hover in the outside margin of a fitting row`, () => {
+        container.getBoundingClientRect.callsFake(() => new DOMRect(200, 0, 984, 480));
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        enterCard(slides[index]);
+        block.querySelector('.hub-hero-carousel').dispatchEvent(new MouseEvent('mousemove', {
+          bubbles: true,
+          clientX: index === 0 ? 100 : 1300,
+          clientY: 10,
+        }));
+        clock.tick(20);
+        expect(slides[index].classList.contains('hovered')).to.be.false;
+        expect(container.classList.contains('stick-left')).to.be.false;
+        expect(container.classList.contains('stick-right')).to.be.false;
+      });
+    });
+
+    it('recenters both edge cards on wheel without reactivating a stationary pointer', () => {
+      containerWidth = 1500;
+      for (const index of [0, 3]) {
+        enterCard(slides[index]);
+        expect(container.classList.contains(index === 0 ? 'stick-left' : 'stick-right')).to.be.true;
+        window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+        expect(slides[index].classList.contains('hovered')).to.be.false;
+        expect(container.classList.contains('stick-left')).to.be.false;
+        expect(container.classList.contains('stick-right')).to.be.false;
+        enterCard(slides[index]);
+        expect(slides[index].classList.contains('hovered')).to.be.false;
+      }
+    });
+
+    it('reuses carousel context instead of querying slide ancestors during hover and focus', () => {
+      const closest = sinon.spy(slides[0], 'closest');
+      const styles = sinon.spy(window, 'getComputedStyle');
+      slides[0].querySelector('img')
+        .dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 10, clientY: 10 }));
+      slides[0].dispatchEvent(new FocusEvent('focus'));
+      expect(closest.calledWith('.hub-hero')).to.be.false;
+      expect(closest.calledWith('.hub-hero-carousel')).to.be.false;
+      expect(styles.calledWith(block)).to.be.false;
+    });
+
     it('batches repeated viewport resize updates into one frame', async () => {
       await settleLayout();
       enterCard(slides[0]);
@@ -770,7 +832,7 @@ describe('hub-hero block', () => {
           document.documentElement.setAttribute('dir', direction);
           await setViewport({ width: 1470, height: 770 });
           const { block, carousel, row, cards } = await loadAssembledCarousel(slideCount);
-          for (const width of [1470, 1100, 800]) {
+          for (const width of [1920, 1470, 1100, 800]) {
             await setViewport({ width, height: 770 });
             for (const side of ['left', 'right']) {
               await sendMouse({ type: 'move', position: [Math.round(width / 2), 700] });
@@ -783,6 +845,9 @@ describe('hub-hero block', () => {
                 : Math.min(width - 1, Math.floor(rect.right) - 1);
               const y = Math.round(rect.top + rect.height / 2);
               const rowWidth = row.getBoundingClientRect().width;
+              const carouselBounds = carousel.getBoundingClientRect();
+              expect(row.getBoundingClientRect().left + rowWidth / 2)
+                .to.be.closeTo(carouselBounds.left + carouselBounds.width / 2, 0.1);
               const overflowing = rowWidth > width;
               const enteringPositions = [row.getBoundingClientRect().left];
               await sendMouse({ type: 'move', position: [x, y] });
@@ -832,6 +897,13 @@ describe('hub-hero block', () => {
                   expect(row.classList.contains(`stick-${side}`)).to.be.true;
                   expect(card.getBoundingClientRect().width).to.equal(expandedWidth);
                 }
+              } else {
+                const hovered = card.getBoundingClientRect();
+                const outsideX = side === 'left' ? Math.floor(hovered.left) - 2
+                  : Math.ceil(hovered.right) + 2;
+                await sendMouse({ type: 'move', position: [outsideX, y] });
+                await new Promise((resolve) => { setTimeout(resolve, 30); });
+                expect(card.classList.contains('hovered')).to.be.false;
               }
               const leavingPositions = [row.getBoundingClientRect().left];
               await sendMouse({ type: 'move', position: [Math.round(width / 2), 700] });
@@ -849,7 +921,39 @@ describe('hub-hero block', () => {
               expect(row.classList.contains('stick-right')).to.be.false;
             }
           }
-        }).timeout(15000);
+        }).timeout(20000);
+
+        it(`recenters ${slideCount}-slide ${direction} edge cards on wheel with a stationary pointer`, async () => {
+          document.documentElement.setAttribute('dir', direction);
+          await setViewport({ width: 800, height: 770 });
+          const { row, cards } = await loadAssembledCarousel(slideCount);
+          expect(row.getBoundingClientRect().width).to.be.above(800);
+          for (const side of ['left', 'right']) {
+            await sendMouse({ type: 'move', position: [400, 700] });
+            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            const restingLeft = row.getBoundingClientRect().left;
+            const index = side === 'left' ? 0 : cards.length - 1;
+            const card = cards[direction === 'ltr' ? index : cards.length - 1 - index];
+            const rect = card.getBoundingClientRect();
+            const x = side === 'left' ? Math.max(1, Math.ceil(rect.left) + 1)
+              : Math.min(799, Math.floor(rect.right) - 1);
+            const y = Math.round(rect.top + rect.height / 2);
+            await sendMouse({ type: 'move', position: [x, y] });
+            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            expect(row.classList.contains(`stick-${side}`)).to.be.true;
+            await sendMouse({ type: 'move', position: [side === 'left' ? 1 : 799, y] });
+            expect(card.classList.contains('hovered')).to.be.true;
+            window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+            for (let frame = 0; frame < 30; frame += 1) {
+              await new Promise((resolve) => { requestAnimationFrame(resolve); });
+              expect(card.classList.contains('hovered')).to.be.false;
+              expect(row.classList.contains('stick-left')).to.be.false;
+              expect(row.classList.contains('stick-right')).to.be.false;
+            }
+            await finishRowTransition(row);
+            expect(row.getBoundingClientRect().left).to.be.closeTo(restingLeft, 0.1);
+          }
+        }).timeout(5000);
 
         it(`sizes ${slideCount}-slide ${direction} cards monotonically during hover handoffs`, async () => {
           document.documentElement.setAttribute('dir', direction);

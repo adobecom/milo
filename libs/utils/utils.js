@@ -11,11 +11,13 @@ const C1_BLOCKS = [
   'action-item',
   'action-scroller',
   'adobetv',
+  'ai-summary',
   'article-feed',
   'article-header',
   'aside',
   'author-header',
   'blog-author',
+  'blog-header',
   'brand-concierge',
   'brand-concierge-global',
   'brick',
@@ -77,10 +79,12 @@ const C1_BLOCKS = [
   'notification',
   'nps-csat-form',
   'pdf-viewer',
+  'project-tracking',
   'quote',
   'read-more',
   'recommended-articles',
   'region-nav',
+  'related-content-card',
   'review',
   'section-metadata',
   'slideshare',
@@ -459,6 +463,13 @@ export const [setConfig, updateConfig, getConfig] = (() => {
     () => config,
   ];
 })();
+
+// TODO: ?acom-assistant=off on stage is a temporary QE override; remove after rollout.
+export function isAcomAssistantEnabled() {
+  const isStage = getConfig().env?.name === 'stage';
+  if (isStage && PAGE_URL.searchParams.get('acom-assistant') === 'off') return false;
+  return getMetadata('acom-assistant') === 'on';
+}
 
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
@@ -1537,7 +1548,8 @@ export const isValidHtmlUrl = (url) => {
 
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
-  if (!images.length) return;
+  if (!images.length) return [];
+  const imageVideoLinkPromises = [];
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
@@ -1555,15 +1567,22 @@ export function decorateImageLinks(el) {
         const aTag = createTag('a', { href, class: 'image-link' });
         picParent.insertBefore(aTag, pic);
         if (icon) {
-          import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+          imageVideoLinkPromises.push(
+            import('./image-video-link.js')
+              .then((mod) => mod.default(picParent, aTag, icon))
+              .catch((e) => {
+                window.lana?.log(`Failed to decorate image video link '${source.trim()}': ${e.message}`, { tags: 'utils', severity: 'error' });
+              }),
+          );
         } else {
           aTag.append(pic);
         }
       }
     } catch (e) {
-      console.log('Error:', `${e.message} '${source.trim()}'`);
+      window.lana?.log(`Failed to decorate image link '${source.trim()}': ${e.message}`, { tags: 'utils', severity: 'error' });
     }
   });
+  return imageVideoLinkPromises;
 }
 
 export function isTrustedAutoBlock(autoBlock, url) {
@@ -1771,16 +1790,16 @@ function processLinkDecoration(a, config, hasDnt) {
 
 function setupLinksDecoration(el) {
   const config = getConfig();
-  decorateImageLinks(el);
+  const imageVideoLinkPromises = decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
-  return { config, anchors, hostname, href };
+  return { config, anchors, hostname, href, imageVideoLinkPromises };
 }
 
 const decoratedLinks = new WeakSet();
 
 export async function decorateLinksAsync(el) {
-  const { config, anchors, hostname, href } = setupLinksDecoration(el);
+  const { config, anchors, hostname, href, imageVideoLinkPromises } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
     if (decoratedLinks.has(a)) {
@@ -1802,6 +1821,7 @@ export async function decorateLinksAsync(el) {
   });
 
   const links = (await Promise.all(linksPromises)).filter(Boolean);
+  if (imageVideoLinkPromises?.length) await Promise.all(imageVideoLinkPromises);
   convertStageLinks({ anchors, config, hostname, href });
   return links;
 }
@@ -2375,14 +2395,19 @@ export function preloadLcpCodeFiles(area = document) {
     && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...autoNames].some(isCommerceBlock));
   if (hasCommerceContent) {
+    // Target previews must apply their AUP config before the service initializes.
+    const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
     import(`${base}/blocks/merch/merch.js`)
-      .then((mod) => mod.initService().catch((e) => {
-        mod.initService.promise = undefined;
-        window.lana?.log(
-          `MAS: eager initService failed, falling back to lazy init - ${e}`,
-          { severity: 'info', tags: 'mas-lcp' },
-        );
-      }))
+      .then((mod) => {
+        if (skipInit) return undefined;
+        return mod.initService().catch((e) => {
+          mod.initService.promise = undefined;
+          window.lana?.log(
+            `MAS: eager initService failed, falling back to lazy init - ${e}`,
+            { severity: 'info', tags: 'mas-lcp' },
+          );
+        });
+      })
       .catch(() => {});
   }
 

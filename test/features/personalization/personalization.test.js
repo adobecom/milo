@@ -6,7 +6,7 @@ import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '..
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  fetchData, DATA_TYPE, categorizeActions,
+  fetchData, DATA_TYPE, categorizeActions, replaceInner, deleteMarkedEls,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -718,6 +718,63 @@ describe('matchGlob function', () => {
     expect(anchor.closest('.hide-block')).to.not.be.null;
     wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
     expect(anchor.closest('.hide-block')).to.not.be.null;
+  });
+  describe('removed media', () => {
+    let prevMep;
+    beforeEach(() => {
+      const config = getConfig();
+      prevMep = config.mep;
+      config.mep = {};
+    });
+    afterEach(() => { getConfig().mep = prevMep; });
+
+    it('records media of elements MEP deletes', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div class="p13n-deleted"><picture><source srcset="./media_1a.png?width=750"><source srcset="./media_1a.png?width=2000 1x"><img src="./media_1a.png?width=750"></picture><img src="/other.png"></div><img class="p13n-deleted" src="./media_1b.png">';
+      deleteMarkedEls(root);
+      expect(root.children.length).to.equal(0);
+      expect([...getConfig().mep.removedMedia]).to.deep.equal([
+        './media_1a.png?width=750',
+        './media_1a.png?width=2000 1x',
+        './media_1b.png',
+      ]);
+    });
+
+    it('does not record images that failed to load', async () => {
+      const root = document.createElement('div');
+      document.body.append(root);
+      try {
+        await new Promise((resolve) => {
+          root.innerHTML = '<div class="p13n-deleted"><img src="/does-not-exist/media_1broken.png"><picture><source srcset="/does-not-exist/media_1broken.png?w=2"><img src="/does-not-exist/media_1broken.png?w=1"></picture></div>';
+          const imgs = [...root.querySelectorAll('img')];
+          let pending = imgs.length;
+          imgs.forEach((img) => img.addEventListener('error', () => { pending -= 1; if (!pending) resolve(); }, { once: true }));
+        });
+        deleteMarkedEls(root);
+        expect(getConfig().mep.removedMedia).to.be.undefined;
+      } finally {
+        root.remove();
+      }
+    });
+
+    it('records the original page media on replacePage', async () => {
+      const main = document.createElement('div');
+      main.innerHTML = '<div><picture><img src="./media_1rp.png?width=750"></picture></div>';
+      setFetchResponse('<div><a href="/fragments/hero">frag</a></div>', 'text');
+      expect(await replaceInner('/products/replacement', main)).to.be.true;
+      expect([...getConfig().mep.removedMedia]).to.deep.equal(['./media_1rp.png?width=750']);
+    });
+
+    it('records nothing for deleted elements without media or when MEP is off', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div class="p13n-deleted"><p>no media</p></div>';
+      deleteMarkedEls(root);
+      expect(getConfig().mep.removedMedia).to.be.undefined;
+      getConfig().mep = undefined;
+      root.innerHTML = '<img class="p13n-deleted" src="./media_1c.png">';
+      expect(() => deleteMarkedEls(root)).to.not.throw();
+      expect(root.children.length).to.equal(0);
+    });
   });
 });
 

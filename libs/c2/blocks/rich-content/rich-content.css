@@ -252,24 +252,23 @@
     }
   }
 
-  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    .foreground {
-      animation-range: cover -10% cover 90%;
-
-      p.body-lg a {
-        scroll-margin-bottom: calc(100vh - 200px);
-      }
-    }
-  }
-
   &:has(.rich-content.merch-moment) {
     display: grid;
     grid-template-rows: auto auto;
     box-sizing: border-box;
     height: auto;
 
-    .rich-content.merch-moment {
+    & > :not(.section-background):not(.section-metadata) {
       grid-row: 1;
+      height: auto;
+    }
+
+    .foreground :is(a, button) {
+      scroll-margin-top: calc(var(--rc-nav-height, 0px) + var(--s2a-spacing-lg));
+    }
+
+    .foreground p.body-lg a {
+      scroll-margin-bottom: calc(100vh - 200px);
     }
 
     p:has(span[is="inline-price"]) {
@@ -277,11 +276,18 @@
     }
 
     &.has-background .section-background {
+      --merch-bg-img-h: calc(100vw * 434 / 375);
+      --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.08);
+
+      @media (width >= 1280px) {
+        --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
+      }
 
       &,
       & > * {
         position: relative;
         inset: unset;
+        width: 100%;
       }
 
       img {
@@ -290,7 +296,6 @@
         aspect-ratio: 375 / 434;
         object-fit: cover;
         object-position: center top;
-        animation: unset;
       }
     }
   }
@@ -336,10 +341,14 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background {
+    --merch-bg-img-h: calc(min(100vw, 1612px) * 1361 / 1612);
+  }
+
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
-    aspect-ratio: unset;
+    aspect-ratio: 1612 / 1361;
     display: block;
   }
 
@@ -752,6 +761,13 @@
 }
 
 @media (width < 768px) {
+  .section.bento.stack-mobile > .rich-content {
+    position: static;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
   .section.bento.stack-mobile:where(.bento-stack-ready) > .rich-content {
     --parallax-translate-y: -60px;
     --scrollport-h: min(var(--phone-h), 100svh);
@@ -759,17 +775,24 @@
     --title-release-offset: max(0px, calc(var(--scrollport-h) - var(--stack-pin-top) - var(--title-height)));
     --title-catchup: calc(var(--card-front-y) + var(--card-height) - var(--stack-pin-top) - var(--title-height));
 
-    position: sticky;
     top: var(--stack-pin-top);
     z-index: 1;
     margin: 0;
     line-height: 1;
     will-change: opacity, transform, translate;
-    animation:
-      stack-title-stagger var(--parallax-easing) both,
-      stack-title-card-match var(--parallax-easing) both;
-    animation-timeline: --stack-title-vt, --section-vt;
-    animation-range: cover 0% cover 30%, exit var(--cards-release-offset) exit var(--title-release-offset);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .section.bento.stack-mobile:where(.bento-stack-ready:not(.bento-stack-static)) > .rich-content {
+        position: sticky;
+        animation:
+          stack-title-stagger var(--parallax-easing) both,
+          stack-title-card-match var(--parallax-easing) both;
+        animation-timeline: --stack-title-vt, --section-vt;
+        animation-range: cover 0% cover 30%, exit var(--cards-release-offset) exit var(--title-release-offset);
+      }
+    }
   }
 }
 
@@ -874,26 +897,6 @@
   .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-pull-offset: 70px;
     --rc-sweep-offset: 280px;
-  }
-}
-
-@supports not (animation-timeline: view()) {
-  @media (width < 768px) {
-    .section.bento.stack-mobile > .rich-content {
-      position: static;
-      transform: none;
-      opacity: 1;
-      animation: none;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) and (width < 768px) {
-  .section.bento.stack-mobile > .rich-content {
-    position: static;
-    transform: none;
-    opacity: 1;
-    animation: none;
   }
 }
 

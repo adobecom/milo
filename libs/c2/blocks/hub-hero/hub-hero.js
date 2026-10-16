@@ -283,7 +283,7 @@ const removeHovered = (carousel) => {
 
 const clearCarouselAnchoring = (container) => container.classList.remove('stick-left', 'stick-right');
 
-const updateCarouselAnchoring = (container) => {
+const updateCarouselAnchoring = ({ container, maxIndex }) => {
   const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
     || container.querySelector('.hub-hero-carousel-item:focus-visible');
   if (!slideEl) {
@@ -291,10 +291,7 @@ const updateCarouselAnchoring = (container) => {
     return;
   }
 
-  const hubHero = slideEl.closest('.hub-hero');
   const slideIndex = Number(slideEl.dataset.index);
-  const slideCount = parseInt(getComputedStyle(hubHero).getPropertyValue('--slides'), 10) || 0;
-  const maxIndex = hubHero.classList.contains('slides-3') ? 3 : slideCount;
   const rtl = isRtl();
   // Viewport height can shrink the rendered row below its authored width cap.
   const viewportWidth = document.documentElement.clientWidth;
@@ -318,37 +315,41 @@ const isInCarouselEdgeGap = (container, event) => {
   return inLeftGap || inRightGap;
 };
 
-const onCarouselLeave = (event) => {
-  const carouselContainer = event.currentTarget.querySelector('.hub-hero-carousel-container')
-    || event.currentTarget;
+const clearCarouselState = ({ container, carousel }) => {
+  clearTimeout(leaveTimeouts.get(container));
+  clearCarouselAnchoring(container);
+  removeHovered(carousel);
+};
+
+const onCarouselLeave = (event, context) => {
+  const { container: carouselContainer } = context;
   if (event.currentTarget === carouselContainer
     && isInCarouselEdgeGap(carouselContainer, event)) return;
 
   clearTimeout(leaveTimeouts.get(carouselContainer));
   leaveTimeouts.set(carouselContainer, setTimeout(() => {
     hoverPositions.delete(carouselContainer);
-    clearCarouselAnchoring(carouselContainer);
-    removeHovered(carouselContainer.closest('.hub-hero-carousel'));
+    clearCarouselState(context);
   }, 10));
 };
 
-const onHover = (event) => {
+const onHover = (event, context) => {
+  const { container: carouselContainer, carousel, isThreeSlides } = context;
   const isFocus = event.type === 'focus';
   const slideEl = isFocus ? event.currentTarget
     : event.target.closest('.hub-hero-carousel-item[data-index]');
-  const carouselContainer = isFocus ? slideEl.closest('.hub-hero-carousel-container')
-    : event.currentTarget.querySelector('.hub-hero-carousel-container');
-  if (!carouselContainer) return;
-  clearTimeout(leaveTimeouts.get(carouselContainer));
   if (!isFocus) {
     const previous = hoverPositions.get(carouselContainer);
     hoverPositions.set(carouselContainer, { x: event.clientX, y: event.clientY });
     // Layout changes can retarget mouse events without the pointer moving.
-    if (slideEl && previous?.x === event.clientX && previous?.y === event.clientY) return;
+    if (previous?.x === event.clientX && previous?.y === event.clientY) {
+      if (slideEl) clearTimeout(leaveTimeouts.get(carouselContainer));
+      return;
+    }
   }
+  clearTimeout(leaveTimeouts.get(carouselContainer));
   if (!slideEl) {
-    const bounds = carouselContainer.getBoundingClientRect();
-    if (event.clientY < bounds.top || event.clientY >= bounds.bottom) onCarouselLeave(event);
+    if (!isInCarouselEdgeGap(carouselContainer, event)) onCarouselLeave(event, context);
     return;
   }
 
@@ -363,18 +364,14 @@ const onHover = (event) => {
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.delete(video);
 
-  const container = slideEl.parentElement;
-  if (!container) return;
-
-  const isThreeSlides = slideEl.closest('.hub-hero')?.classList.contains('slides-3');
   if (video && !isThreeSlides) {
     stopRewind(video);
     video.play().catch(() => { });
   }
 
-  removeHovered(slideEl.closest('.hub-hero-carousel'));
+  removeHovered(carousel);
   slideEl.classList.add(isFocus ? 'focused' : 'hovered');
-  updateCarouselAnchoring(container);
+  updateCarouselAnchoring(context);
 
   if (hoverTracked) return;
 
@@ -416,7 +413,10 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
   const titleId = `hub-hero-slide-${index + 1}-title`;
   const descId = `hub-hero-slide-${index + 1}-desc`;
   if (eyebrow) eyebrow.id = titleId;
-  if (heading) heading.id = descId;
+  if (heading) {
+    heading.id = descId;
+    heading.classList.add('hub-hero-carousel-item-footer-text');
+  }
 
   const content = `
     <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-slide-${index + 1}'>
@@ -470,7 +470,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
   }
 
   slideEl.addEventListener('mouseleave', onSlideLeave);
-  slideEl.addEventListener('focus', onHover);
   return slideEl;
 };
 
@@ -509,26 +508,35 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   const slides = isThreeSlides ? slds : [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
-  decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
-  decoratedCarousel.addEventListener('mouseleave', onCarouselLeave);
-  decoratedCarousel.addEventListener('mousemove', onHover);
+  const carouselContainer = decoratedCarousel.querySelector('.hub-hero-carousel-container');
+  const context = {
+    container: carouselContainer,
+    carousel: decoratedCarousel,
+    isThreeSlides,
+    maxIndex: slds.length,
+  };
+  const hover = (event) => onHover(event, context);
+  const leave = (event) => onCarouselLeave(event, context);
+  carouselContainer.addEventListener('mouseleave', leave);
+  decoratedCarousel.addEventListener('mouseleave', leave);
+  decoratedCarousel.addEventListener('mousemove', hover);
+  carouselContainer.querySelectorAll('[data-index]').forEach((slide) => slide.addEventListener('focus', hover));
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
-  const carouselContainer = decoratedCarousel.querySelector('.hub-hero-carousel-container');
   let anchoringFrame = 0;
   const scheduleAnchoring = () => {
     if (anchoringFrame || scrollController.signal.aborted) return;
     if (!carouselContainer.querySelector('.hovered, .focused, :focus-visible')) return;
     anchoringFrame = requestAnimationFrame(() => {
       anchoringFrame = 0;
-      updateCarouselAnchoring(carouselContainer);
+      updateCarouselAnchoring(context);
     });
   };
   const carouselResizeObserver = new ResizeObserver(scheduleAnchoring);
   carouselResizeObserver.observe(carouselContainer);
   // The viewport can cross the overflow threshold without changing the row's width.
   window.addEventListener('resize', scheduleAnchoring, { signal: scrollController.signal });
-  window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
+  window.addEventListener('wheel', () => clearCarouselState(context), { signal: scrollController.signal });
   initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
@@ -712,6 +720,30 @@ const initElasticFirstSlideOffset = (hubHero, grid, elasticCarousel) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
+const initCarouselSizes = (hubHero, header, grid, carousel) => {
+  const slides = [...carousel.querySelectorAll('.hub-hero-carousel-item[data-index]')];
+  const resizeObserver = new ResizeObserver((entries) => {
+    const heights = entries.filter(({ target }) => target.matches('.hub-hero-carousel-item'))
+      .map(({ target, borderBoxSize }) => ({ target, height: borderBoxSize[0].blockSize }));
+    const carouselStyle = getComputedStyle(carousel);
+    const headerHeight = getComputedStyle(header).position === 'fixed' ? 0 : header.offsetHeight;
+    const contentHeight = headerHeight + grid.offsetHeight + carousel.offsetHeight
+      + parseFloat(carouselStyle.marginBlockStart) + parseFloat(carouselStyle.marginBlockEnd);
+
+    heights.forEach(({ target, height }) => {
+      target.style.setProperty('--slide-content-height', `${height}px`);
+    });
+    hubHero.style.setProperty('--hub-hero-content-height', `${contentHeight}px`);
+  });
+  [header, grid, carousel, ...slides].forEach((target) => resizeObserver.observe(target));
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      resizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
 
 export default async function init(el) {
@@ -740,6 +772,7 @@ export default async function init(el) {
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
 
+  initCarouselSizes(el, heroHeader, grid, elasticCarousel);
   initElasticFirstSlideOffset(el, grid, elasticCarousel);
 
   initCarouselPosition(el);
