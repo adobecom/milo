@@ -15,9 +15,7 @@ const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
   if (row.children) {
     const [key, value] = row.children;
     if (key && value) {
-      attr[key.textContent.trim().toLowerCase()] = value.textContent
-        .trim()
-        .toLowerCase();
+      attr[key.textContent.trim().toLowerCase()] = value.textContent.trim();
     }
   }
   return attr;
@@ -55,11 +53,11 @@ export function hideNavigation(el) {
   return elHasWidth ? horizontalScroll : scrollWidth < screenWidth;
 }
 
-function setBlockProps(el, columns) {
-  const attrs = getBlockProps(el);
+function setBlockProps(el, attrs, columns) {
   const itemWidth = attrs['item width'] ?? defaultItemWidth;
   const overrides = attrs.style
     ? attrs.style
+      .toLowerCase()
       .split(', ')
       .map((style) => style.replaceAll(' ', '-'))
       .join(' ')
@@ -101,21 +99,12 @@ function handleNavigation(el) {
   return buttons;
 }
 
-const NAV_LABEL_ROWS = ['previous button label', 'next button label'];
-
-function getAuthoredNavLabels(el) {
-  const rows = [...el.children].map((row) => [...row.children]);
-  return NAV_LABEL_ROWS.map((key) => {
-    const [, value] = rows.find(([k, v]) => v && k.textContent.trim().toLowerCase() === key) ?? [];
-    return value?.textContent.trim() || undefined;
-  });
-}
-
-function setNavLabels(el, labels) {
-  ['.previous-button', '.next-button'].forEach((selector, i) => {
-    const button = el.querySelector(selector);
-    if (!button || !labels[i]) return;
-    button.setAttribute('aria-label', labels[i]);
+function setNavLabels(el, attrs) {
+  ['previous', 'next'].forEach((dir) => {
+    const label = attrs[`${dir} button label`];
+    const button = el.querySelector(`.${dir}-button`);
+    if (!button || !label) return;
+    button.setAttribute('aria-label', label);
     button.querySelector('img')?.setAttribute('alt', '');
   });
 }
@@ -131,14 +120,14 @@ let attachedResize = false;
 export default function init(el) {
   const hasNav = el.classList.contains(NAV);
   const actions = el.parentElement.querySelectorAll('.action-item');
-  const style = setBlockProps(el, actions.length);
-  const authoredLabels = hasNav ? getAuthoredNavLabels(el) : [];
+  const attrs = getBlockProps(el);
+  const style = setBlockProps(el, attrs, actions.length);
   const items = createTag('div', { class: style }, null);
   const buttons = hasNav ? handleNavigation(items) : [];
   items.append(...actions);
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
-    setNavLabels(el, authoredLabels);
+    setNavLabels(el, attrs);
     handleBtnState(items, buttons);
     if (!items.querySelectorAll('a').length) items.setAttribute('aria-hidden', 'true');
     allActionScrollers.push({ scroller: items, buttons });

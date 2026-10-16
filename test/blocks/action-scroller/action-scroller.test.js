@@ -65,8 +65,11 @@ describe('action scrollers', () => {
   });
 
   describe('action scroller nav labels', () => {
+    let section;
+    afterEach(() => section?.remove());
+
     it('uses authored labels and keeps the default for missing rows', () => {
-      const section = document.createElement('div');
+      section = document.createElement('div');
       section.innerHTML = `<div class="action-scroller navigation">
         <div><div>Item width</div><div>100</div></div>
         <div><div>Previous Button Label</div><div>Previous company logos</div></div>
@@ -79,7 +82,6 @@ describe('action scrollers', () => {
       expect(prevBtn.querySelector('img').getAttribute('alt')).to.equal('');
       expect(nextBtn.hasAttribute('aria-label')).to.be.false;
       expect(nextBtn.querySelector('img').getAttribute('alt')).to.equal('Next icon');
-      section.remove();
     });
   });
 
