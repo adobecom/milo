@@ -254,6 +254,35 @@
   );
 }
 
+@support (animate-timeline: view()) {
+  .global-footer {
+    timeline-scope: --feds-footer-content;
+  }
+
+  .global-footer .feds-footer-wrapper {
+    view-timeline: --feds-footer-content block; 
+  }
+
+  .global-footer .feds-footer-logo img {
+    transform: none;
+    animation: feds-footer-logo-rise linear both;
+    animation-timeline: --feds-footer-content;
+    animation-range: exit-crossing 0% exit-crossing var(--feds-footer-logo-h, 20vw);
+  }
+
+  @keyframes feds-footer-logo-rise {
+    from { transform: translateY(50%);}
+    to { transform: translateY(0%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .global-footer .feds-footer-logo img {
+      animation: none;
+      transform: none;
+    }
+  }
+}
+
 @media (min-width: 1920px) {
   .global-footer .feds-footer-logo img {
     width: 100%;

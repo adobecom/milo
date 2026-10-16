@@ -146,6 +146,7 @@ class Footer {
     this.logoScrollHandler = null;
     this.logoResizeHandler = null;
     this.logoResizeRaf = null;
+    this.logoSizeObserver = null;
     this.init();
     this.initFooterInViewBackground();
   }
@@ -182,6 +183,14 @@ class Footer {
 
   animateLogo = (logo) => {
     if (!logo) return;
+    if(window.CSS?.supports?.('animation-timeline: view()')) {
+      const setLogoHeight = () => logo.style.setProperty('--feds-footer-logo-h', `${logo.offsetHeight}px`);
+      this.logoSizeObserver?.disconnect();
+      this.logoSizeObserver = new ResizeObserver(setLogoHeight);
+      this.logoSizeObserver.observe(logo);
+      setLogoHeight();
+      return;
+    }
     if (this.logoScrollHandler) {
       window.removeEventListener('scroll', this.logoScrollHandler);
     }
@@ -265,6 +274,8 @@ class Footer {
       window.cancelAnimationFrame(this.logoResizeRaf);
       this.logoResizeRaf = null;
     }
+    this.logoSizeObserver?.disconnect();
+    this.logoSizeObserver = null;
     document.documentElement.classList.remove(FOOTER_IN_VIEW_CLASS);
   };
 
