@@ -25,6 +25,6 @@ export default function acomAssistantAnalyticsAdapter(eventsData) {
 
   window.lana?.log(
     `AcomAssistant analytics: unmapped event ${data['event.workflow']}/${data['event.type']}`,
-    { tags: 'brand-concierge', severity: 'info', sampleRate: 5 },
+    { tags: 'acom-assistant', severity: 'info', sampleRate: 5 },
   );
 }
