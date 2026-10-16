@@ -3148,10 +3148,11 @@ function isFirstInVisibleTabPanel(el) {
 
 const hasTabsBlock = (el) => !!el?.querySelector(':scope > .tabs');
 
-// Authors opt sections in with a `load: parallel` section-metadata row.
-const isParallelSection = (el) => [...(el.querySelector(':scope > .section-metadata')?.children ?? [])]
-  .some(({ children: [key, value] }) => key?.textContent.trim().toLowerCase() === 'load'
-    && value?.textContent.trim().toLowerCase() === 'parallel');
+// `parallel-sections` page metadata: how many sections from the top load in parallel.
+function getParallelSectionCount() {
+  const count = parseInt(getMetadata('parallel-sections'), 10);
+  return Number.isInteger(count) && count > 1 ? count : 0;
+}
 
 // Resolves when the first section of a fragment in el has loaded, or when el has fully loaded.
 function firstFragmentSectionLoaded(el, sectionLoaded) {
@@ -3251,16 +3252,17 @@ export async function loadArea(area = document) {
     return postLcpPromise;
   };
 
-  // Sections flagged `load: parallel` start loading alongside the first section with LCP
-  // priority, but are still revealed in page order by the loop below.
+  // The first `parallel-sections` sections start loading together with LCP priority, but are
+  // still revealed in page order by the loop below.
   const parallelLoads = new Map();
-  const startParallelLoads = () => htmlSections.forEach((htmlSection, i) => {
-    if (i === 0 || !isParallelSection(htmlSection)) return;
-    const decorated = decorateSection(htmlSection, i);
-    const loaded = decorated
-      .then((section) => processSection(section, config, section.idx, { reveal: false }));
-    parallelLoads.set(i, { decorated, loaded });
-  });
+  const startParallelLoads = () => htmlSections.slice(1, getParallelSectionCount())
+    .forEach((htmlSection, idx) => {
+      const i = idx + 1;
+      const decorated = decorateSection(htmlSection, i);
+      const loaded = decorated
+        .then((section) => processSection(section, config, section.idx, { reveal: false }));
+      parallelLoads.set(i, { decorated, loaded });
+    });
 
   for (const [i, htmlSection] of htmlSections.entries()) {
     const parallelLoad = parallelLoads.get(i);
