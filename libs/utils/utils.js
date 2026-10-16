@@ -3132,7 +3132,7 @@ async function processSection(section, config, lcpSectionId) {
   return section.blocks;
 }
 
-const LCP_TAB_PANEL_TIMEOUT = 3000;
+const LCP_TAB_PANEL_TIMEOUT = 10000;
 
 // The first section of a visible tab panel is the panel's above-the-fold content.
 function isFirstInVisibleTabPanel(el) {
