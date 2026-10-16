@@ -96,7 +96,6 @@ export default async function init(el) {
     document.body.classList.add('bc-side-open');
     localStorage.setItem('bc-side-overlay', 'open');
   });
-  // remove the has-chat-history class if the overlay is closed before chat history is written
   window.addEventListener('bc:side-modal-close', () => {
     document.body.classList.remove('bc-side-open');
     localStorage.setItem('bc-side-overlay', 'closed');
