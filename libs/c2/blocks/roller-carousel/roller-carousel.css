@@ -58,6 +58,12 @@
     background: var(--s2a-color-transparent-black-64);
   }
 
+  .rcc-bg-light .rcc-bg-overlay {
+    background:
+      linear-gradient(rgb(0 0 0 / 15%), rgb(0 0 0 / 15%)),
+      var(--s2a-color-transparent-black-64);
+  }
+
   .rcc-content {
     position: relative;
     z-index: 1;
@@ -135,7 +141,7 @@
   .rcc-item {
     font-weight: var(--s2a-font-weight-body);
     color: var(--s2a-color-content-knockout);
-    opacity: 0.12;
+    opacity: 0.48;
     transition: opacity 0.3s ease;
     cursor: default;
     user-select: none;
