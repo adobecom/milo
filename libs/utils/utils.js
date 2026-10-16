@@ -2542,7 +2542,7 @@ function initModalEventListener() {
 function shouldSkipLenis() {
   if (navigator.connection?.saveData
     || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-  if (window.matchMedia('(width < 768px) and (pointer: coarse) and (hover: none)').matches) return true;
+  if (window.matchMedia('(pointer: coarse) and (hover: none)').matches) return true;
   const { deviceMemory, hardwareConcurrency: cores, userAgentData, userAgent } = navigator;
   const isWindows = (userAgentData?.platform || userAgent).includes('Windows');
   return isWindows

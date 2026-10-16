@@ -837,9 +837,3 @@ span.feds-footer-privacyLink-divider {
     row-gap: var(--s2a-spacing-2xl);
   }
 }
-
-@media (hover: none) and (pointer: coarse) {
-  .global-footer .feds-footer-wrapper {
-    will-change: transform;
-  }
-}
