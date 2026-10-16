@@ -101,6 +101,25 @@ function handleNavigation(el) {
   return buttons;
 }
 
+const NAV_LABEL_ROWS = ['previous button label', 'next button label'];
+
+function getAuthoredNavLabels(el) {
+  const rows = [...el.children].map((row) => [...row.children]);
+  return NAV_LABEL_ROWS.map((key) => {
+    const [, value] = rows.find(([k, v]) => v && k.textContent.trim().toLowerCase() === key) ?? [];
+    return value?.textContent.trim() || undefined;
+  });
+}
+
+function setNavLabels(el, labels) {
+  ['.previous-button', '.next-button'].forEach((selector, i) => {
+    const button = el.querySelector(selector);
+    if (!button || !labels[i]) return;
+    button.setAttribute('aria-label', labels[i]);
+    button.querySelector('img')?.setAttribute('alt', '');
+  });
+}
+
 const allActionScrollers = [];
 function handleResize() {
   allActionScrollers.forEach(({ scroller, buttons }) => {
@@ -113,11 +132,13 @@ export default function init(el) {
   const hasNav = el.classList.contains(NAV);
   const actions = el.parentElement.querySelectorAll('.action-item');
   const style = setBlockProps(el, actions.length);
+  const authoredLabels = hasNav ? getAuthoredNavLabels(el) : [];
   const items = createTag('div', { class: style }, null);
   const buttons = hasNav ? handleNavigation(items) : [];
   items.append(...actions);
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
+    setNavLabels(el, authoredLabels);
     handleBtnState(items, buttons);
     if (!items.querySelectorAll('a').length) items.setAttribute('aria-hidden', 'true');
     allActionScrollers.push({ scroller: items, buttons });
