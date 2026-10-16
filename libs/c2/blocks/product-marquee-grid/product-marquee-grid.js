@@ -56,12 +56,16 @@ function buildMerchCard(col) {
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
-  const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  cardContent.querySelectorAll(':scope > .action-area').forEach((area) => ctaWrapper.append(area));
+  // Group the CTAs in place so any content authored after them still renders after.
+  const actionAreas = [...cardContent.querySelectorAll(':scope > .action-area')];
+  if (actionAreas.length) {
+    const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
+    actionAreas[0].replaceWith(ctaWrapper);
+    actionAreas.forEach((area) => ctaWrapper.append(area));
+  }
 
   const merchCard = createTag('div', { class: 'pm-merch-card' });
   merchCard.append(cardContent);
-  if (ctaWrapper.children.length) merchCard.append(ctaWrapper);
   return merchCard;
 }
 
