@@ -137,6 +137,7 @@
     display: flex;
     gap: var(--s2a-spacing-xs);
     margin-top: var(--s2a-spacing-xs);
+    align-self: stretch;
 
     > p {
       display: flex;
