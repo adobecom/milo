@@ -3105,12 +3105,7 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-function revealSection(el) {
-  delete el.dataset.status;
-  delete el.dataset.idx;
-}
-
-async function processSection(section, config, lcpSectionId, { reveal = true } = {}) {
+async function processSection(section, config, isDoc, lcpSectionId, revealAfter) {
   await resolveHighPriorityFragments(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
@@ -3133,36 +3128,11 @@ async function processSection(section, config, lcpSectionId, { reveal = true } =
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
-  if (reveal) revealSection(section.el);
+  await revealAfter;
+  delete section.el.dataset.status;
+  if (isDoc && isLcpSection) await loadPostLCP(config);
+  delete section.el.dataset.idx;
   return section.blocks;
-}
-
-const LCP_TAB_PANEL_TIMEOUT = 10000;
-
-// The first section of a visible tab panel is the panel's above-the-fold content.
-function isFirstInVisibleTabPanel(el) {
-  const panel = el?.parentElement;
-  if (!panel?.classList.contains('tabpanel') || el.closest('.tabpanel[hidden]')) return false;
-  return panel.querySelector(':scope > .section') === el;
-}
-
-const hasTabsBlock = (el) => !!el?.querySelector(':scope > .tabs');
-
-// `parallel-sections` page metadata: how many sections from the top load in parallel.
-function getParallelSectionCount() {
-  const count = parseInt(getMetadata('parallel-sections'), 10);
-  return Number.isInteger(count) && count > 1 ? count : 0;
-}
-
-// Resolves when the first section of a fragment in el has loaded, or when el has fully loaded.
-function firstFragmentSectionLoaded(el, sectionLoaded) {
-  let observer;
-  return new Promise((resolve) => {
-    const isLoaded = () => !!el.querySelector('.fragment > .section:not([data-status])');
-    observer = new MutationObserver(() => { if (isLoaded()) resolve(); });
-    observer.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-status'] });
-    sectionLoaded.then(resolve, resolve);
-  }).finally(() => observer.disconnect());
 }
 
 function loadLingoIndexes(area = document) {
@@ -3244,67 +3214,36 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  let lcpSectionId = null;
-  let inLcpChain = false;
-  let postLcpPromise;
-  const runPostLCP = () => {
-    postLcpPromise ??= loadPostLCP(config);
-    return postLcpPromise;
-  };
+  const parallelCount = isDoc ? parseInt(getMetadata('parallel-sections'), 10) || 0 : 0;
+  let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
+  const parallelSections = [];
+  htmlSections.slice(0, parallelCount).forEach((el, idx) => {
+    parallelSections[idx] = decorateSection(el, idx).then((section) => processSection(
+      section,
+      config,
+      idx === lcpSectionId,
+      idx,
+      parallelSections[idx - 1],
+    ));
+  });
 
-  // The first `parallel-sections` sections start loading together with LCP priority, but are
-  // still revealed in page order by the loop below.
-  const parallelLoads = new Map();
-  const startParallelLoads = () => htmlSections.slice(1, getParallelSectionCount())
-    .forEach((htmlSection, idx) => {
-      const i = idx + 1;
-      const decorated = decorateSection(htmlSection, i);
-      const loaded = decorated
-        .then((section) => processSection(section, config, section.idx, { reveal: false }));
-      parallelLoads.set(i, { decorated, loaded });
-    });
-
-  for (const [i, htmlSection] of htmlSections.entries()) {
-    const parallelLoad = parallelLoads.get(i);
-    const section = await (parallelLoad?.decorated ?? decorateSection(htmlSection, i));
-    if (isDoc && i === 0) startParallelLoads();
-    const isLastSection = section.idx === htmlSections.length - 1;
-    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx;
-      inLcpChain = isDoc;
+  for (const htmlSection of htmlSections) {
+    const idx = htmlSections.indexOf(htmlSection);
+    let sectionBlocks = await parallelSections[idx];
+    if (!sectionBlocks) {
+      const section = await decorateSection(htmlSection, idx);
+      const isLastSection = section.idx === htmlSections.length - 1;
+      if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
+        lcpSectionId = section.idx;
+      }
+      sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     }
-    // Tab panel sections chained to the LCP section load with LCP priority.
-    const lcpIdForSection = inLcpChain ? section.idx : lcpSectionId;
-    const endsChainAtFragment = inLcpChain && isFirstInVisibleTabPanel(htmlSection)
-      && !hasTabsBlock(htmlSection) && !!htmlSection.querySelector('a.fragment');
-    const sectionLoaded = parallelLoad?.loaded ?? processSection(section, config, lcpIdForSection);
-    // Only the fragment's first section (e.g. the cards) is above the fold, so gnav and martech
-    // don't wait for the rest of it.
-    if (endsChainAtFragment) {
-      firstFragmentSectionLoaded(htmlSection, sectionLoaded).then(runPostLCP);
-    }
-    const sectionBlocks = await sectionLoaded;
-    if (parallelLoad) revealSection(htmlSection);
     areaBlocks.push(...sectionBlocks);
-    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
+    if (isDoc && idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
-
-    if (inLcpChain) {
-      const next = htmlSections[i + 1];
-      // A tabs block right after the LCP section is above the fold too.
-      const continuesChain = isFirstInVisibleTabPanel(next) || parallelLoads.has(i + 1)
-        || (section.idx === lcpSectionId && hasTabsBlock(next));
-      if (!continuesChain) {
-        inLcpChain = false;
-        await runPostLCP();
-      } else if (section.idx === lcpSectionId) {
-        // Slow or failing tab content must not hold back gnav and martech indefinitely.
-        setTimeout(runPostLCP, LCP_TAB_PANEL_TIMEOUT);
-      }
-    }
   }
 
   if (isDoc) scheduleJsonLdInit();
