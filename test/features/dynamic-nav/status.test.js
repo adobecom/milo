@@ -2,6 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { getConfig, setConfig, createTag, loadDeferred } from '../../../libs/utils/utils.js';
 import status, { tooltipInfo, ACTIVE, INACTIVE, ENABLED, RESET } from '../../../libs/features/dynamic-navigation/status.js';
+import { resetCookieAvailability } from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
 
 const COOKIE = 'dynamicNav';
 const GNAV_SOURCE = 'https://main--milo--adobecom.aem.live/some-source-string';
@@ -32,6 +33,7 @@ describe('Dynamic Nav Status', () => {
     document.body.innerHTML = await readFile({ path: './mocks/status.html' });
     document.head.innerHTML = '<meta name="dynamic-nav" content=""><meta name="gnav-source" content="">';
     clearCookie();
+    resetCookieAvailability();
     setConfig({ dynamicNavKey: 'bacom' });
   });
 

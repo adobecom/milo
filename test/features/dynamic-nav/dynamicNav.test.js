@@ -1,7 +1,14 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
-import dynamicNav, { readState, groupsMatch, cookiesAvailable, getCookieEnvironment, cookieAttributes } from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
+import dynamicNav, {
+  readState,
+  groupsMatch,
+  cookiesAvailable,
+  getCookieEnvironment,
+  cookieAttributes,
+  resetCookieAvailability,
+} from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
 
 const COOKIE = 'dynamicNav';
 const EXTERNAL_SOURCE = 'https://main--bacom--adobecom.aem.live/some/nav';
@@ -20,6 +27,7 @@ const addGroupMeta = (group) => {
 describe('Dynamic nav (cookie based)', () => {
   beforeEach(() => {
     setConfig({ dynamicNavKey: 'bacom' });
+    resetCookieAvailability();
     clearCookie();
   });
 
@@ -258,6 +266,7 @@ describe('Dynamic nav cookie writes', () => {
 
   beforeEach(() => {
     setConfig({ dynamicNavKey: 'bacom' });
+    resetCookieAvailability();
     writes = [];
     getterValue = '';
     Object.defineProperty(document, 'cookie', {
