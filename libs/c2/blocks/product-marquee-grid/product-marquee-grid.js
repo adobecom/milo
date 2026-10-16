@@ -57,11 +57,16 @@ function buildMerchCard(col) {
   decorateMasField(cardContent);
 
   // Group the CTAs in place so any content authored after them still renders after.
-  const actionAreas = [...cardContent.querySelectorAll(':scope > .action-area')];
-  if (actionAreas.length) {
+  // Detect CTAs by their stable markup (resolved buttons, commerce links, or a headless
+  // `ctas` mas-field) rather than the `.action-area` class: merch.js stamps `.action-area`
+  // asynchronously once a headless mas-field CTA resolves -- after this runs -- so keying
+  // off it would miss late CTAs and never build the wrapper.
+  const isCtaPara = (el) => !!el.querySelector('.con-button, a[data-wcs-osi], mas-field[field^="ctas"]');
+  const ctaParas = [...cardContent.children].filter(isCtaPara);
+  if (ctaParas.length) {
     const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-    actionAreas[0].replaceWith(ctaWrapper);
-    actionAreas.forEach((area) => ctaWrapper.append(area));
+    ctaParas[0].replaceWith(ctaWrapper);
+    ctaParas.forEach((area) => ctaWrapper.append(area));
   }
 
   const merchCard = createTag('div', { class: 'pm-merch-card' });
