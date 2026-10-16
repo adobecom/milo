@@ -4,7 +4,7 @@ import {
   getConfig,
   getMetadata,
   isAupEnabled,
-  isAupUcv3InIframe,
+  isAupSelectOn,
   loadIms,
   loadStyle,
   loadLana,
@@ -1367,7 +1367,7 @@ class Gnav {
     });
 
     const features = ['useToasts'];
-    if (isAupUcv3InIframe()) features.push('tmp_aupsdk_ucv3_in_iframe');
+    if (isAupSelectOn()) features.push('tmp_aupsdk_ucv3_in_iframe');
     await window.aupsdk.updateConfig({ miniAppContext: { features } });
     window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
     return window.aupsdk;

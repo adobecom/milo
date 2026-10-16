@@ -120,7 +120,7 @@ describe('Utils', () => {
     });
 
     const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
-    const flagged = ['on', 'ucv3_in_iframe', 'ON', 'UCV3_IN_IFRAME'];
+    const flagged = ['on', 'ON'];
 
     ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
       const enabled = !disabled.includes(value);
@@ -130,7 +130,7 @@ describe('Utils', () => {
         meta.content = value;
         document.head.append(meta);
         expect(utils.isAupEnabled()).to.equal(enabled);
-        expect(utils.isAupUcv3InIframe()).to.equal(flag);
+        expect(utils.isAupSelectOn()).to.equal(flag);
       });
 
       it(`reads query "${value}" over metadata`, () => {
@@ -140,11 +140,11 @@ describe('Utils', () => {
         meta.content = value === 'enabled' ? 'on' : 'enabled';
         document.head.append(meta);
         expect(utils.isAupEnabled()).to.equal(enabled);
-        expect(utils.isAupUcv3InIframe()).to.equal(flag);
+        expect(utils.isAupSelectOn()).to.equal(flag);
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
         expect(utils.isAupEnabled()).to.be.true;
-        expect(utils.isAupUcv3InIframe()).to.equal(meta.content === 'on');
+        expect(utils.isAupSelectOn()).to.equal(meta.content === 'on');
       });
     });
 
@@ -154,7 +154,7 @@ describe('Utils', () => {
         window.adobeIMS = { isSignedInUser: () => true };
         expect(utils.isAupEnabled(true)).to.be.true;
         expect(utils.getAupSelectValue()).to.be.null;
-        expect(utils.isAupUcv3InIframe()).to.be.false;
+        expect(utils.isAupSelectOn()).to.be.false;
       } finally {
         window.adobeIMS = adobeIMS;
       }

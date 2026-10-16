@@ -164,11 +164,10 @@ describe('AUP', () => {
       { name: 'signed-out legacy nav', signedIn: false, unav: false, expected: false },
       { name: 'signed-out Universal Nav', signedIn: false, unav: true, expected: false },
       { name: 'metadata on', unav: false, content: 'on', expected: true },
-      { name: 'metadata ucv3_in_iframe', unav: false, content: 'ucv3_in_iframe', expected: true },
       { name: 'metadata enabled', unav: false, content: 'enabled', expected: true },
       { name: 'metadata false', unav: true, content: 'false', expected: false },
       { name: 'query on overrides metadata off', unav: true, content: 'off', query: 'on', expected: true },
-      { name: 'query ucv3_in_iframe overrides metadata off', unav: true, content: 'off', query: 'ucv3_in_iframe', expected: true },
+      { name: 'query enabled overrides metadata off', unav: true, content: 'off', query: 'enabled', expected: true },
       { name: 'query off overrides metadata on', unav: false, content: 'on', query: 'off', expected: false },
       { name: 'empty query overrides metadata on', unav: true, content: 'on', query: '', expected: false },
       { name: 'metadata off', unav: true, content: 'off', expected: false },
@@ -192,7 +191,6 @@ describe('AUP', () => {
     });
 
     [
-      { select: 'ucv3_in_iframe', features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] },
       { select: 'on', features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] },
       { select: 'enabled', features: ['useToasts'] },
     ].forEach(({ select, features }) => {

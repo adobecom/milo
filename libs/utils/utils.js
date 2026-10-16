@@ -392,7 +392,6 @@ export function getMetadata(name, doc = document) {
 }
 
 const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
-const AUP_SELECT_UCV3_IN_IFRAME_VALUES = ['on', 'ucv3_in_iframe'];
 
 export function getAupSelectValue() {
   const value = new URLSearchParams(window.location.search).get('aup-select')
@@ -401,8 +400,8 @@ export function getAupSelectValue() {
   return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
 }
 
-export function isAupUcv3InIframe() {
-  return AUP_SELECT_UCV3_IN_IFRAME_VALUES.includes(getAupSelectValue());
+export function isAupSelectOn() {
+  return getAupSelectValue() === 'on';
 }
 
 export function isAupEnabled(useUniversalNav = false) {
