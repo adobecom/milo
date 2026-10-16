@@ -24,8 +24,17 @@
       "@type": "SoftwareApplication",
       "name": "Adobe Photoshop",
       "applicationCategory": "DesignApplication",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "ratingCount": "200"
+      },
       "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication",
-      "offers": [{ "@id": "https://www.adobe.com/products/photoshop.html#offer" }],
+      "offers": [{
+        "@type": "Offer",
+        "price": "0",
+        "availability": "https://schema.org/InStock"
+      }],
       "isPartOf": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
       "mainEntityOfPage": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
       "provider": { "@id": "https://www.adobe.com/#organization" }
@@ -37,12 +46,6 @@
       ],
       "@id": "https://www.adobe.com/products/photoshop.html#breadcrumb",
       "isPartOf": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" }
-    },
-    {
-      "@type": "Offer",
-      "@id": "https://www.adobe.com/products/photoshop.html#offer",
-      "price": "0",
-      "availability": "https://schema.org/InStock"
     }
   ]
 }
