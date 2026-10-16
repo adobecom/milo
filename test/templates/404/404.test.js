@@ -29,6 +29,39 @@ describe('Feds 404', () => {
   });
 });
 
+describe('Feds 404 - geo (Lingo) resolution', () => {
+  afterEach(() => {
+    sessionStorage.removeItem('akamai');
+    const miloConfig = getConfig();
+    delete miloConfig.locale.regions;
+  });
+
+  it('Uses the resolved geo region prefix when lingo is active and a region matches', async () => {
+    const miloConfig = getConfig();
+    miloConfig.locale.regions = { th_en: { prefix: '/th_en', region: 'th' } };
+    sessionStorage.setItem('akamai', 'th');
+
+    document.head.innerHTML = await readFile({ path: './mocks/head-feds-geo.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await init();
+
+    expect(document.querySelector('a').href.includes('/th_en/fragments/404')).to.be.true;
+  });
+
+  it('Falls back to the path-derived locale when no geo region matches', async () => {
+    const miloConfig = getConfig();
+    miloConfig.locale.regions = { th_en: { prefix: '/th_en', region: 'th' } };
+    sessionStorage.setItem('akamai', 'fr');
+
+    document.head.innerHTML = await readFile({ path: './mocks/head-feds-geo.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await init();
+
+    expect(document.querySelector('a').href.includes('/libs/')).to.be.true;
+    expect(document.querySelector('a').href.includes('/th_en/')).to.be.false;
+  });
+});
+
 describe('Local 404', () => {
   before(async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-local.html' });
