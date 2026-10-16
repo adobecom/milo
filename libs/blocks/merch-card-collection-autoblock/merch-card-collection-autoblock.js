@@ -58,32 +58,38 @@ async function loadDependencies(options) {
     throw new Error('Failed to initialize mas commerce service');
   }
 
-  const { base } = getConfig();
   const dependencyPromises = [
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
     loadMasComponent(MAS_MERCH_CARD_COLLECTION),
-    import(`${base}/features/spectrum-web-components/dist/theme.js`),
-    import(`${base}/features/spectrum-web-components/dist/button.js`),
-    import(`${base}/features/spectrum-web-components/dist/action-button.js`),
-    import(`${base}/features/spectrum-web-components/dist/action-menu.js`),
-    import(`${base}/features/spectrum-web-components/dist/search.js`),
-    import(`${base}/features/spectrum-web-components/dist/menu.js`),
-    import(`${base}/features/spectrum-web-components/dist/overlay.js`),
-    import(`${base}/features/spectrum-web-components/dist/tray.js`),
   ];
-  if (options.sidenav) {
-    dependencyPromises.push(...[
-      loadMasComponent(MAS_MERCH_SIDENAV),
-      import(`${base}/features/spectrum-web-components/dist/base.js`),
-      import(`${base}/features/spectrum-web-components/dist/shared.js`),
-      import(`${base}/features/spectrum-web-components/dist/sidenav.js`),
-      import(`${base}/features/spectrum-web-components/dist/checkbox.js`),
-      import(`${base}/features/spectrum-web-components/dist/dialog.js`),
-      import(`${base}/features/spectrum-web-components/dist/link.js`),
-    ]);
-  }
+  if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
   await Promise.all(dependencyPromises);
+}
+
+// The sidenav, and the header it brings (search, filters, sort), are the only
+// Spectrum consumers of a collection, so Spectrum loads only when one renders.
+const SPECTRUM_COMMON_DEPS = ['base', 'shared', 'theme'];
+const SPECTRUM_COLLECTION_DEPS = [
+  'button',
+  'action-button',
+  'action-menu',
+  'search',
+  'menu',
+  'overlay',
+  'tray',
+];
+const SPECTRUM_SIDENAV_DEPS = [
+  'sidenav',
+  'checkbox',
+  'dialog',
+  'link',
+];
+
+function loadSpectrumDependencies() {
+  const { base } = getConfig();
+  const deps = [...SPECTRUM_COMMON_DEPS, ...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS];
+  return Promise.all(deps.map((dep) => import(`${base}/features/spectrum-web-components/dist/${dep}.js`)));
 }
 
 function localizeIconPath(iconPath) {
@@ -680,7 +686,7 @@ async function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
-
+  await loadSpectrumDependencies();
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
