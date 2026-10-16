@@ -405,7 +405,10 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
   const titleId = `hub-hero-slide-${index + 1}-title`;
   const descId = `hub-hero-slide-${index + 1}-desc`;
   if (eyebrow) eyebrow.id = titleId;
-  if (heading) heading.id = descId;
+  if (heading) {
+    heading.id = descId;
+    heading.classList.add('hub-hero-carousel-item-footer-text');
+  }
 
   const content = `
     <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-slide-${index + 1}'>
@@ -709,6 +712,30 @@ const initElasticFirstSlideOffset = (hubHero, grid, elasticCarousel) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
+const initCarouselSizes = (hubHero, header, grid, carousel) => {
+  const slides = [...carousel.querySelectorAll('.hub-hero-carousel-item[data-index]')];
+  const resizeObserver = new ResizeObserver((entries) => {
+    const heights = entries.filter(({ target }) => target.matches('.hub-hero-carousel-item'))
+      .map(({ target, borderBoxSize }) => ({ target, height: borderBoxSize[0].blockSize }));
+    const carouselStyle = getComputedStyle(carousel);
+    const headerHeight = getComputedStyle(header).position === 'fixed' ? 0 : header.offsetHeight;
+    const contentHeight = headerHeight + grid.offsetHeight + carousel.offsetHeight
+      + parseFloat(carouselStyle.marginBlockStart) + parseFloat(carouselStyle.marginBlockEnd);
+
+    heights.forEach(({ target, height }) => {
+      target.style.setProperty('--slide-content-height', `${height}px`);
+    });
+    hubHero.style.setProperty('--hub-hero-content-height', `${contentHeight}px`);
+  });
+  [header, grid, carousel, ...slides].forEach((target) => resizeObserver.observe(target));
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      resizeObserver.disconnect();
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
 
 export default async function init(el) {
@@ -737,6 +764,7 @@ export default async function init(el) {
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
 
+  initCarouselSizes(el, heroHeader, grid, elasticCarousel);
   initElasticFirstSlideOffset(el, grid, elasticCarousel);
 
   initCarouselPosition(el);

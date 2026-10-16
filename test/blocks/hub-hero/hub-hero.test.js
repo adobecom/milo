@@ -832,7 +832,7 @@ describe('hub-hero block', () => {
           document.documentElement.setAttribute('dir', direction);
           await setViewport({ width: 1470, height: 770 });
           const { block, carousel, row, cards } = await loadAssembledCarousel(slideCount);
-          for (const width of [1470, 1100, 800]) {
+          for (const width of [1920, 1470, 1100, 800]) {
             await setViewport({ width, height: 770 });
             for (const side of ['left', 'right']) {
               await sendMouse({ type: 'move', position: [Math.round(width / 2), 700] });
@@ -845,6 +845,9 @@ describe('hub-hero block', () => {
                 : Math.min(width - 1, Math.floor(rect.right) - 1);
               const y = Math.round(rect.top + rect.height / 2);
               const rowWidth = row.getBoundingClientRect().width;
+              const carouselBounds = carousel.getBoundingClientRect();
+              expect(row.getBoundingClientRect().left + rowWidth / 2)
+                .to.be.closeTo(carouselBounds.left + carouselBounds.width / 2, 0.1);
               const overflowing = rowWidth > width;
               const enteringPositions = [row.getBoundingClientRect().left];
               await sendMouse({ type: 'move', position: [x, y] });
@@ -918,7 +921,7 @@ describe('hub-hero block', () => {
               expect(row.classList.contains('stick-right')).to.be.false;
             }
           }
-        }).timeout(15000);
+        }).timeout(20000);
 
         it(`recenters ${slideCount}-slide ${direction} edge cards on wheel with a stationary pointer`, async () => {
           document.documentElement.setAttribute('dir', direction);
