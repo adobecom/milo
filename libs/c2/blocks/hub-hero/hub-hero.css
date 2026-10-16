@@ -5,6 +5,7 @@
   --hub-hero-height: 4000px;
   --slide-header-h: 64px;
   --slide-footer-h: 96px;
+  --footer-icon-size: calc(var(--s2a-font-size-sm) + 2 * var(--s2a-spacing-md) + 2 * var(--s2a-border-width-sm));
   --media-mobile-max-width: 500px;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
   --hub-hero-carousel-container-height: min(60vh, 548px);
@@ -50,6 +51,7 @@
   position: relative;
   z-index: 5;
   height: var(--hub-hero-height);
+  min-height: var(--hub-hero-content-height, 0);
   margin-inline: auto;
   view-timeline-name: --hub-hero;
   view-timeline-axis: block;
@@ -241,11 +243,6 @@
   transform: translateX(-50%);
 }
 
-[dir="rtl"] .hub-hero.slides-3 .hub-hero-carousel-container {
-  right: 50%;
-  transform: translateX(50%);
-}
-
 .hub-hero-carousel-item {
   display: flex;
   pointer-events: none;
@@ -305,9 +302,13 @@
   padding: var(--s2a-spacing-lg);
 }
 
-.hub-hero-carousel-item-footer p {
+.hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
   flex: 1;
-  max-width: 80%;
+  min-width: 0;
+  max-width: 100%;
+  line-height: max(var(--s2a-typography-line-height-eyebrow), 1.5em);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .hub-hero-carousel-item-footer span {
@@ -319,6 +320,7 @@
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
   background: var(--s2a-color-transparent-white-12);
   max-width: 0%;
+  overflow: hidden;
 }
 
 .hub-hero-carousel-item-footer span svg {
@@ -335,12 +337,6 @@
   text-align: start;
   transition: color .1s var(--paralax-easing);
   display: block;
-  line-clamp: 1;
-  box-orient: vertical;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /** dark variant */
@@ -408,6 +404,7 @@
 
 .hub-hero.slides-3 {
   --slides: 3;
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--slide-max-width)) + ((var(--slides) - 1) * var(--end-gap)));
 
   .hub-hero-carousel-item-media {
     position: relative;
@@ -516,6 +513,14 @@
     .hub-hero-carousel-container {
       animation-name: carouselGapShrink;
       animation-range: contain 7% contain 45%;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+        .hub-hero-carousel-container {
+          animation-name: carousel-slides-three-assemble;
+        }
+      }
     }
 
     .hub-hero-image-grid-container-col:nth-child(1) {
@@ -743,7 +748,7 @@
     --expand-fade-range: 0.05;
 
     margin-top: var(--elastic-mobile-first-slide-offset);
-    height: 100%;
+    height: auto;
     position: relative;
     flex-direction: column;
     display: grid;
@@ -758,7 +763,7 @@
   .hub-hero-carousel-item {
     position: sticky;
     overflow: visible;
-    top: var(--carousel-items-top);
+    top: min(var(--carousel-items-top), calc(100dvh - var(--slide-content-height, 0px) - var(--s2a-spacing-lg)));
     width: 100%;
     max-width: var(--media-mobile-max-width);
     color: var(--s2a-color-gray-25);
@@ -797,7 +802,7 @@
   .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-footer {
     bottom: 0;
     animation: none;
-    transform: translateY(var(--slide-footer-h));
+    transform: none;
     opacity: max(0, min(1, (var(--expand-progress) - var(--expand-end)) / var(--expand-fade-range)));
   }
 
@@ -886,10 +891,10 @@
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
     box-sizing: border-box;
-    overflow: hidden;
+    position: relative;
     background-color: var(--s2a-color-gray-1000);
-    z-index: -1;
-    bottom: calc(var(--slide-footer-h) * -1);
+    z-index: 1;
+    bottom: auto;
     border-bottom-left-radius: var(--s2a-border-radius-md);
     border-bottom-right-radius: var(--s2a-border-radius-md);
     width: 100%;
@@ -902,16 +907,42 @@
   }
 
   .hub-hero-carousel-item-footer *:not(svg) {
-    display: block;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
     margin: var(--s2a-spacing-md) 0 0 0;
   }
+
 }
 
 /** tablet up */
 @media (width >= 768px) {
+  .hub-hero-carousel-item-footer {
+    box-sizing: border-box;
+    min-height: var(--slide-footer-h);
+  }
+
+  @media (hover: hover) {
+    .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+      /* stylelint-disable-next-line value-no-vendor-prefix -- Required by -webkit-line-clamp. */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+  }
+
+  .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+  }
+
+  @media (hover: none) {
+    .hub-hero-carousel-item {
+      --slide-max-height: none;
+
+      align-self: flex-start;
+    }
+  }
+
   .hub-hero {
     --hub-hero-top-spacing: 184px;
     --header-animation-range: contain 30% contain 42%;
@@ -992,7 +1023,20 @@
     pointer-events: none;
   }
 
+  .hub-hero-carousel {
+    height: auto;
+    min-height: var(--hub-hero-carousel-container-height);
+  }
+
+  .hub-hero-carousel-scroll {
+    display: flex;
+    justify-content: left;
+  }
+
   .hub-hero-carousel-container {
+    position: relative;
+    flex-shrink: 0;
+    max-height: none;
     contain: layout;
     animation: carouselGapShrinkWidthGrowth var(--gap-shrink-timeline) both;
     animation-timeline: --hub-hero;
@@ -1004,6 +1048,8 @@
   }
 
   .hub-hero-carousel-item {
+    /* Keep a stable flex basis large enough for either assembly endpoint. */
+    width: max(var(--grid-img-width), var(--slide-max-width));
     max-width: var(--slide-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
 
@@ -1048,7 +1094,7 @@
     .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span, svg),
     .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *:not(span, svg),
     .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span, svg) {
-      max-width: 80%;
+      max-width: calc(100% - var(--footer-icon-size) - var(--s2a-spacing-xs));
     }
 
     .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span,
@@ -1057,6 +1103,44 @@
       opacity: 1;
       max-width: 20%;
       padding-inline: var(--s2a-spacing-md);
+    }
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+      .hub-hero-carousel-item-footer {
+        box-sizing: border-box;
+        min-height: calc(var(--footer-icon-size) + 2 * var(--s2a-spacing-lg));
+      }
+
+      .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+        min-width: 0;
+        max-width: calc(max(var(--slide-max-width), var(--hub-hero-carousel-item-min-width)) - 2 * var(--s2a-spacing-lg));
+        transition: max-width .3s var(--paralax-easing), color .1s var(--paralax-easing);
+      }
+
+      .hub-hero-carousel-item-footer span {
+        position: absolute;
+        inset-inline-end: var(--s2a-spacing-lg);
+        top: 50%;
+        transform: translateY(-50%);
+        box-sizing: border-box;
+        width: var(--footer-icon-size);
+        height: var(--footer-icon-size);
+        max-width: none;
+        padding: var(--s2a-spacing-md);
+        transition: opacity .1s ease-out, color .1s var(--paralax-easing);
+      }
+
+      .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+        max-width: calc(var(--hover-w) - 2 * var(--s2a-spacing-lg) - var(--footer-icon-size) - var(--s2a-spacing-xs));
+      }
+
+      .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer span {
+        opacity: 1;
+        max-width: none;
+        transition: opacity .1s ease-out .3s, color .1s var(--paralax-easing);
+      }
     }
   }
 
@@ -1106,8 +1190,10 @@
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer {
-    bottom: 0;
-    transform: translateY(calc(var(--slide-footer-h)));
+    /* Keep the footer in flow so revealing full text also grows the card. */
+    position: relative;
+    bottom: auto;
+    transform: none;
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-header {
@@ -1120,12 +1206,38 @@
     top: 0;
     transform: translateY(-100%);
   }
-  .hub-hero .hub-hero-carousel-container.stick-left {
-    transform: translateX(calc(-50vw + var(--s2a-spacing-xs)));
+
+  .hub-hero-carousel-item[data-index]:is(.hovered, .focused, :focus-visible) {
+    /* Expanded text must not inherit the scroll animation's card-height cap. */
+    --slide-max-height: none;
+
+    align-self: flex-start;
   }
 
-  .hub-hero .hub-hero-carousel-container.stick-right {
-    transform: translateX(calc(50vw - 100% - var(--s2a-spacing-xs)));
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+      .hub-hero {
+        --carousel-nav-height: var(--hub-hero-nav-h, calc(var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px)));
+        --carousel-heading-height: var(--hub-hero-carousel-header-height, 0px);
+        --carousel-card-height: calc(var(--carousel-item-media-height) + var(--slide-header-h) + var(--slide-footer-h));
+        --carousel-items-top: max(
+          calc(var(--carousel-nav-height) + var(--carousel-heading-height) + var(--s2a-spacing-2xl)),
+          calc((100dvh - var(--carousel-card-height) + var(--carousel-nav-height) + var(--carousel-heading-height) + var(--s2a-spacing-2xl)) / 2)
+        );
+      }
+    }
+
+    .hub-hero-carousel-container {
+      transition: transform .3s var(--paralax-easing);
+    }
+
+    .hub-hero .hub-hero-carousel-container.stick-left {
+      transform: translateX(calc(var(--carousel-viewport-width, 100vw) / -2 + var(--s2a-spacing-xs)));
+    }
+
+    .hub-hero .hub-hero-carousel-container.stick-right {
+      transform: translateX(calc(var(--carousel-viewport-width, 100vw) / 2 - 100% - var(--s2a-spacing-xs)));
+    }
   }
 }
 
@@ -1142,7 +1254,6 @@
 /** custom media rule 4 slides (default) */
 @media (768px <=width <=1200px) {
   .hub-hero-carousel-container {
-    transition: all .3s var(--paralax-easing);
     gap: var(--end-gap);
   }
 }
@@ -1192,7 +1303,7 @@
   .hub-hero.touch-scroll .hub-hero-carousel-scroll {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
@@ -1203,6 +1314,7 @@
 
   .hub-hero.touch-scroll.carousel-locked .hub-hero-carousel-scroll {
     overflow-x: auto;
+    justify-content: flex-start;
   }
 
   .hub-hero.touch-scroll.carousel-locked .hub-hero-image-grid-container {
@@ -1245,11 +1357,21 @@
 @media (1440px <= width) {
   .hub-hero {
     --slide-width: 392px;
+    --carousel-item-media-height: calc(var(--slide-max-width) / 0.75);
     --grid-col-two-offset: 184px;
     --grid-col-three-offset: 292px;
     --grid-col-four-offset: 184px;
     --hub-hero-carousel-item-max-width: min(392px, calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
     --hub-hero-carousel-container-height: min(60vh, 690px);
+  }
+
+  @media (hover: hover) {
+    .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) {
+      --hover-w: max(
+        calc(var(--slide-max-width) + var(--footer-icon-size) + var(--s2a-spacing-xs)),
+        min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5))
+      );
+    }
   }
 
 }
@@ -1331,13 +1453,22 @@
     pointer-events: all;
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
-    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 0;
+
+    @media (width >= 1440px) {
+      max-width: var(--slide-max-width);
+      min-width: min(var(--grid-img-width-min), var(--slide-max-width));
+    }
   }
 
   .hub-hero:not(.slides-3) .hub-hero-carousel-item:nth-child(3) {
     max-width: 0;
     min-width: 0;
     visibility: hidden;
+
+    @media (width >= 1440px) {
+      margin-inline: calc(var(--end-gap) / -2);
+    }
   }
 
   .hub-hero-carousel-item.hovered,
@@ -1345,8 +1476,18 @@
   .hub-hero-carousel-item:focus-visible {
     width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
+
+    @media (width >= 1440px) {
+      width: max(var(--grid-img-width), var(--slide-max-width));
+    }
   }
 
+}
+
+@media (prefers-reduced-motion: reduce) and (width >= 768px) {
+  .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+    max-width: calc(100% - var(--footer-icon-size) - var(--s2a-spacing-xs));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) and (width < 768px) {
@@ -1414,7 +1555,7 @@
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
-    height: var(--slide-footer-h);
+    min-height: var(--slide-footer-h);
   }
 }
 
@@ -1449,6 +1590,18 @@
   }
 
   100% {
+    gap: var(--end-gap);
+  }
+}
+
+@keyframes carousel-slides-three-assemble {
+  0% {
+    width: calc((var(--slides) * max(var(--grid-img-width), var(--grid-img-width-min))) + ((var(--slides) - 1) * var(--start-gap)));
+    gap: var(--start-gap);
+  }
+
+  100% {
+    width: var(--hub-hero-carousel-container-width);
     gap: var(--end-gap);
   }
 }
@@ -1973,7 +2126,7 @@
   }
 
   100% {
-    max-height: var(--hub-hero-carousel-container-height);
+    max-height: var(--slide-max-height, var(--hub-hero-carousel-container-height));
     max-width: var(--slide-max-width);
     min-width: var(--slide-min-w, var(--hub-hero-carousel-item-min-width));
   }
@@ -1991,7 +2144,7 @@
   }
 
   50% {
-    padding: var(--slide-header-h) 0 var(--slide-footer-h) 0;
+    padding: var(--slide-header-h) 0 0;
     pointer-events: none;
   }
 
@@ -2000,7 +2153,7 @@
   }
 
   100% {
-    padding: var(--slide-header-h) 0 var(--slide-footer-h) 0;
+    padding: var(--slide-header-h) 0 0;
     pointer-events: all;
   }
 }
@@ -2142,7 +2295,7 @@
     }
 
     .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
-      height: var(--slide-footer-h);
+      min-height: var(--slide-footer-h);
     }
   }
 }
