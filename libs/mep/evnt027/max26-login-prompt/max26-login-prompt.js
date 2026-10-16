@@ -3,16 +3,20 @@ import { decorateBlockBg, decorateBlockText, decorateViewportContent } from '../
 import { closeModal } from '../../../c2/blocks/modal/modal.js';
 
 function decorate(block, root) {
-  const isPost = root.classList.contains('post');
   const [background, contentRow] = block.children;
   const content = contentRow?.firstElementChild;
   const logo = content?.querySelector(':scope > p:has(picture)');
   const heading = content?.querySelector('h1, h2, h3, h4, h5, h6');
-  const [signInRow, guestRow] = [...(content?.children ?? [])].slice(isPost ? -1 : -2);
+  const rows = [...(content?.children ?? [])];
+  const lastRow = rows.at(-1);
+  const previousRow = rows.at(-2);
+  const hasGuest = !!previousRow?.querySelector('a') && !!lastRow?.querySelector('a');
+  const signInRow = hasGuest ? previousRow : lastRow;
+  const guestRow = hasGuest ? lastRow : null;
   const signIn = signInRow?.querySelector('a');
   const guest = guestRow?.querySelector('a');
-  if (!background?.querySelector('picture') || !logo || !heading || !signIn || (!isPost && !guest)) {
-    throw new Error('max26-login-prompt requires background artwork, a logo, a heading, and a primary link, plus a guest link for the live variant.');
+  if (!background?.querySelector('picture') || !logo || !heading || !signIn) {
+    throw new Error('max26-login-prompt requires background artwork, a logo, a heading, and a primary link.');
   }
 
   // Authors supply desktop artwork first; the shared background helper is mobile-first.
@@ -30,7 +34,7 @@ function decorate(block, root) {
     child !== logo && child !== signInRow && child !== guestRow
   )));
   const actions = createTag('div', { class: 'max26-login-prompt-actions' });
-  actions.append(...(isPost ? [signInRow] : [signInRow, guestRow]));
+  actions.append(...(guestRow ? [signInRow, guestRow] : [signInRow]));
   const body = createTag('div', { class: 'max26-login-prompt-body' }, [copy, actions]);
   content.replaceChildren(logo, body);
   block.replaceChildren(background, content);

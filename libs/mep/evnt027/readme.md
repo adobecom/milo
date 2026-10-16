@@ -1,7 +1,7 @@
 # MAX 2026 login prompt
 
-`max26-login-prompt` is an experiment-only C2 block. The default content is the
-live-event variant; add `post` for the post-event variant.
+`max26-login-prompt` is an experiment-only C2 block. Live and post-event content
+use separate fragments with the same block; no `post` variant is needed.
 The shared C2 Tour and Modal blocks are not modified.
 
 ## Authoring
@@ -11,7 +11,7 @@ Set page metadata `foundation: c2`. Author `max26-login-prompt (dark)` with:
 1. A background row containing desktop artwork in the first cell and mobile
    artwork in the second cell.
 2. A single-cell content row containing the MAX logo, heading, body paragraphs,
-   a primary sign-in link, and a final Continue as guest link.
+   a primary sign-in link, and an optional final Continue as guest link.
 
 Content is supplied by
 `https://main--upp--adobecom.aem.live/homepage/fragments/mep/max2026/login-modal`.
@@ -20,8 +20,9 @@ that closes the enclosing shared C2 dialog, without navigating.
 
 ### Post-event authoring
 
-Author `max26-login-prompt (dark, post)` with the same two-row structure and
+Author `max26-login-prompt (dark)` with the same two-row structure and
 artwork/logo, but end the content row with **one primary link and no guest link**.
+The single-CTA layout is selected automatically when no guest link is authored.
 Content remains authored, not hardcoded by the block. The Post Event Figma copy is:
 
 | Element | Content |
