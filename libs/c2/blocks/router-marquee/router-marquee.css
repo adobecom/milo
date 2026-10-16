@@ -581,7 +581,6 @@
   display: inline;
 }
 
-/* pending CTA slot */
-.router-marquee .rm-ctas > em {
+.router-marquee .rm-cta-slot {
   display: none;
 }

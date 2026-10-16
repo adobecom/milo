@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { waitFor } from '../../helpers/waitfor.js';
 
 import init from '../../../libs/c2/blocks/router-marquee/router-marquee.js';
 
@@ -309,13 +310,29 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
     expect(card.querySelector('.rm-card-icon').getAttribute('alt')).to.equal('Creativity and design');
   });
 
-  it('never nests a link inside the card when a late label renders one', async () => {
+  it('fills a card that falls back to the slide title once the title resolves late', async () => {
+    // no authored card label: the icon paragraph is the slide's last
+    block.querySelector('p:has(mas-field[field="callout"])').remove();
+    init(block);
+    const vp = mobileVp(block);
+    const card = vp.querySelector('.rm-card');
+    expect(card.querySelector('.rm-card-label').textContent).to.equal('');
+
+    resolveLate(vp.querySelector('.rm-slide .rm-title mas-field'), 'Create at the highest level.');
+    await afterFrame();
+    expect(card.querySelector('.rm-card-label').textContent).to.equal('Create at the highest level.');
+    expect(card.getAttribute('aria-label')).to.equal('Create at the highest level.');
+    expect(card.querySelector('.rm-card-icon').getAttribute('alt')).to.equal('Create at the highest level.');
+  });
+
+  it('takes the card link from a late label link, without nesting it', async () => {
     init(block);
     const card = mobileVp(block).querySelector('.rm-card');
     resolveLate(card.querySelector('mas-field[field="callout"]'), '<a href="/design">Creativity</a> and design');
     await afterFrame();
 
     expect(card.querySelector('a')).to.not.exist;
+    expect(card.getAttribute('href')).to.equal('/design');
     expect(card.querySelector('.rm-card-label').textContent.trim()).to.equal('Creativity and design');
   });
 
@@ -355,7 +372,7 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
     style.href = '/libs/c2/blocks/router-marquee/router-marquee.css';
     await new Promise((resolve) => { style.onload = resolve; document.head.append(style); });
     init(block);
-    const slot = mobileVp(block).querySelector('.rm-slide .rm-ctas > em');
+    const slot = mobileVp(block).querySelector('.rm-slide .rm-cta-slot');
     resolveLate(slot.querySelector('mas-field'), '');
     await flushMutations();
     expect(slot.isConnected).to.be.true;
@@ -370,6 +387,26 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
     const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
     expect(ctas.children.length).to.equal(1);
     expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
+  });
+
+  it('keeps both CTAs when a primary and a secondary field share one <em>', async () => {
+    const field = (name) => `<mas-field field="${name}"><aem-fragment fragment="frag-one"></aem-fragment><span data-role="mas-field-content"></span></mas-field>`;
+    block.querySelector('p:has(> em)').innerHTML = `<em><strong>${field('ctas[buy]')}</strong> ${field('ctas[learn]')}</em>`;
+    init(block);
+    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
+
+    hoistLateCta(ctas.querySelector('mas-field[field="ctas[learn]"]'), '<a href="https://www.adobe.com/learn">Learn more</a>');
+    await flushMutations();
+    hoistLateCta(ctas.querySelector('mas-field[field="ctas[buy]"]'), '<a href="https://www.adobe.com/buy">Buy now</a>');
+    await flushMutations();
+
+    // same as when both resolve before decoration: primary first, then secondary
+    const [primary, secondary] = ctas.children;
+    expect(ctas.children.length).to.equal(2);
+    expect(primary.matches('a.con-button.rm-cta-primary.fill.outline')).to.be.true;
+    expect(primary.textContent).to.equal('Buy now');
+    expect(secondary.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
+    expect(secondary.textContent).to.equal('Learn more');
   });
 
   describe('a slot shared by several CTA fields', () => {
@@ -918,5 +955,34 @@ describe('router-marquee light variant, ctas and foreground media', () => {
     mobileVp(block).querySelectorAll('.rm-slide').forEach((slide) => {
       expect(slide.querySelector('.rm-foreground')).to.not.exist;
     });
+  });
+});
+
+// Runs merch.js' real late-CTA hoist, so a change to it that would strand a CTA slot fails here.
+describe('router-marquee with merch.js hoisting a late CTA', () => {
+  before(async () => {
+    const { setConfig } = await import('../../../libs/utils/utils.js');
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+    const { initMasField } = await import('../../../libs/blocks/merch/merch.js');
+    const probe = document.createElement('a');
+    probe.href = 'https://mas.adobe.com/studio.html#';
+    await initMasField(probe);
+  });
+
+  it('settles both CTA slots into decorated links', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/pending-fields.html' });
+    const block = document.querySelector('.router-marquee');
+    init(block);
+    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
+    resolveLate(ctas.querySelector('mas-field[field="ctas[primary]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
+    resolveLate(ctas.querySelector('mas-field[field="ctas[secondary]"]'), '<a href="https://www.adobe.com/buy">Buy now</a>');
+
+    await waitFor(() => !ctas.querySelector('.rm-cta-slot'), 2000, 20);
+    const [primary, secondary] = ctas.children;
+    expect(ctas.children.length).to.equal(2);
+    expect(primary.matches('a.rm-cta-primary')).to.be.true;
+    expect(primary.textContent).to.equal('Free trial');
+    expect(secondary.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
+    expect(secondary.textContent).to.equal('Buy now');
   });
 });

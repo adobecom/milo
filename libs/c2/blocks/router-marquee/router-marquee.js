@@ -194,8 +194,24 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
-const PRIMARY_CTA_CLASSES = ['con-button', 'rm-cta-primary', 'fill', 'outline'];
-const SECONDARY_CTA_CLASSES = ['con-button', 'outline'];
+// `link` picks an on-time CTA, `field` a pending one; `slotLink` finds its link once hoisted.
+const CTA_ROLES = [
+  {
+    link: 'em > strong a',
+    field: 'em > strong mas-field',
+    slotLink: ':scope > strong a:not(mas-field a)',
+    classes: ['con-button', 'rm-cta-primary', 'fill', 'outline'],
+    place: 'prepend',
+  },
+  {
+    link: 'em > a',
+    field: 'em > mas-field',
+    slotLink: ':scope > a',
+    classes: ['con-button', 'outline'],
+    place: 'append',
+  },
+];
+const ctaSlotRoles = new WeakMap();
 
 const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
@@ -203,28 +219,37 @@ const decorateCtas = (textCol, isLight) => {
   cta.classList.add('rm-ctas', 'action-area');
   cta.classList.toggle('dark', !isLight);
   // A pending CTA field keeps its <em> as a slot
-  const pick = (linkSel, fieldSel) => cta.querySelector(linkSel)
-    ?? [...cta.querySelectorAll(fieldSel)].find(isPendingField);
-  const primary = pick('em > strong a', 'em > strong mas-field');
-  const secondary = pick('em > a', 'em > mas-field');
-  if (primary?.tagName === 'A') primary.classList.add(...PRIMARY_CTA_CLASSES);
-  if (secondary?.tagName === 'A') secondary.classList.add(...SECONDARY_CTA_CLASSES);
-  const ctas = [primary, secondary]
-    .map((node) => (node?.tagName === 'MAS-FIELD' ? node.closest('em') : node))
-    .filter((node) => node && (node.tagName === 'EM' || !shouldBlockFreeTrialLinks(node)));
-  cta.replaceChildren(...new Set(ctas));
+  const ctas = CTA_ROLES.map((role) => {
+    const link = cta.querySelector(role.link);
+    if (link) {
+      link.classList.add(...role.classes);
+      return shouldBlockFreeTrialLinks(link) ? null : link;
+    }
+    const slot = [...cta.querySelectorAll(role.field)].find(isPendingField)?.closest('em');
+    if (!slot) return null;
+    slot.classList.add('rm-cta-slot');
+    ctaSlotRoles.set(slot, [...(ctaSlotRoles.get(slot) ?? []), role]);
+    return slot;
+  });
+  cta.replaceChildren(...new Set(ctas.filter(Boolean)));
 };
 
 // merch.js hoists a late CTA's link only inside em/strong; a link still in the field is mid-hoist
 const settleCtaSlot = (slot, onSettle) => {
+  const cta = slot.parentElement;
+  const roles = new Set(ctaSlotRoles.get(slot));
   const observer = new MutationObserver(() => {
-    const link = slot.querySelector('a:not(mas-field a)');
-    if (!link) return;
+    roles.forEach((role) => {
+      const link = slot.querySelector(role.slotLink);
+      if (!link) return;
+      roles.delete(role);
+      link.classList.add(...role.classes);
+      if (!shouldBlockFreeTrialLinks(link)) cta[role.place](link);
+      onSettle();
+    });
+    if (roles.size) return;
     observer.disconnect();
-    link.classList.add(...(link.closest('em > strong') ? PRIMARY_CTA_CLASSES : SECONDARY_CTA_CLASSES));
-    if (shouldBlockFreeTrialLinks(link)) slot.remove();
-    else slot.replaceWith(link);
-    onSettle();
+    slot.remove();
   });
   observer.observe(slot, { childList: true, subtree: true });
 };
@@ -401,9 +426,17 @@ const decorateSlide = (slide, isLight) => {
   decorateCtas(textCol, isLight);
 };
 
+// Cards without an authored label use the slide title.
+const titleLabelCards = new WeakSet();
+
 // The card's name, derived from its slide; re-run when MAS content lands late.
 const syncCard = (card, slide) => {
   const labelEl = card.querySelector('.rm-card-label');
+  if (titleLabelCards.has(card)) {
+    labelEl.textContent = slide.querySelector('.rm-title')?.textContent.trim() ?? '';
+  }
+  const labelLink = labelEl.querySelector('a');
+  if (labelLink && !card.getAttribute('href')) card.setAttribute('href', labelLink.getAttribute('href'));
   labelEl.querySelectorAll('a').forEach((a) => a.replaceWith(...a.childNodes));
   const labelText = labelEl.textContent.trim();
   const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
@@ -430,6 +463,7 @@ const buildCard = (slide) => {
     role: 'tab',
     'aria-selected': 'false',
   });
+  if (!label) titleLabelCards.add(card);
   card.replaceChildren(
     ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, loading: 'lazy' })] : []),
     createTag('div', { class: 'rm-card-content' }, [
@@ -1104,7 +1138,7 @@ export default function init(el) {
     });
   };
   el.addEventListener('mas:ready', onLateContent);
-  el.querySelectorAll('.rm-ctas > em').forEach((slot) => settleCtaSlot(slot, onLateContent));
+  el.querySelectorAll('.rm-cta-slot').forEach((slot) => settleCtaSlot(slot, onLateContent));
   retryFailedFields(el);
 
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
