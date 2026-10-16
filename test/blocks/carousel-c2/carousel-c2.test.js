@@ -122,6 +122,65 @@ describe('Carousel C2', () => {
     expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 3');
   });
 
+  it('pauses a playing MPC player when its slide stops being active', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const next = block.querySelector('button.next');
+    next.click();
+    await new Promise((resolve) => { setTimeout(resolve, 150); });
+
+    const slide = block.querySelector('.carousel-wrapper .active-clone');
+    const iframe = document.createElement('iframe');
+    iframe.className = 'adobetv';
+    iframe.dataset.playing = 'true';
+    slide.append(iframe);
+    const messages = [];
+    iframe.contentWindow.postMessage = (msg) => messages.push(msg);
+
+    next.click();
+    await import('../../../libs/blocks/adobetv/adobetv.js');
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(messages).to.deep.equal([{ type: 'mpcAction', action: 'pause' }]);
+  });
+
+  it('does not start a drag when a button inside a slide is pressed', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const button = document.createElement('button');
+    wrapper.querySelector('.carousel-slide').append(button);
+
+    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+    expect(wrapper.classList.contains('grabbing')).to.be.false;
+  });
+
+  it('keeps the real slides attached when cloning on the first move', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const realSlides = [...wrapper.querySelectorAll('.carousel-slide:not([data-cloned])')];
+    const removed = [];
+    const observer = new MutationObserver((records) => {
+      records.forEach((r) => removed.push(...r.removedNodes));
+    });
+    observer.observe(wrapper, { childList: true });
+
+    block.querySelector('button.next').click();
+    await Promise.resolve();
+    observer.disconnect();
+
+    expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
+    const realChildren = [...wrapper.children].filter((node) => !node.hasAttribute('data-cloned'));
+    expect(removed.filter((node) => realSlides.includes(node)).length).to.equal(0);
+    expect(realChildren.length).to.equal(realSlides.length);
+    expect(realChildren.every((node, i) => node === realSlides[i])).to.be.true;
+  });
+
   it('does not pad the wrapper when there are three or more slides', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.carousel-c2');

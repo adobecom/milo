@@ -1546,6 +1546,9 @@ export const isValidHtmlUrl = (url) => {
   return regex.test(url);
 };
 
+const isMpcPlayerUrl = (url) => /^(stage-)?video\.tv\.adobe\.com$/.test(url.hostname)
+  && /^\/v\/\d+/.test(url.pathname);
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return [];
@@ -1559,7 +1562,7 @@ export function decorateImageLinks(el) {
       img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      if (href.includes('.mp4')) {
+      if (href.includes('.mp4') || (!icon && isMpcPlayerUrl(url))) {
         const a = createTag('a', { href: url, 'data-video-poster': pic.outerHTML });
         a.innerHTML = url;
         pic.replaceWith(a);
@@ -2379,6 +2382,7 @@ export function preloadLcpCodeFiles(area = document) {
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
     autoNames.add('video');
   }
+  if (firstSection.querySelector('img[alt*="tv.adobe.com"]')) autoNames.add('adobetv');
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {

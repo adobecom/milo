@@ -242,6 +242,13 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
     });
 
+    it('preloads adobetv for an MPC URL in a first-section image alt', () => {
+      document.body.innerHTML = '<main><div><img alt="https://video.tv.adobe.com/v/332632?autoplay=true | poster"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/adobetv/adobetv.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preconnect"][href*="tv.adobe.com"]')).to.not.exist;
+    });
+
     it('preloads placeholders.js when the first section uses {{ }} tokens', () => {
       document.body.innerHTML = '<main><div>{{buy-now}}</div></main>';
       utils.preloadLcpCodeFiles();

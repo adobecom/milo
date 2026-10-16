@@ -24,6 +24,25 @@
       display: flex;
     }
 
+    /* MPC MP4 renditions top out at 960px wide, so don't rely on intrinsic width. */
+    .video-container,
+    video {
+      width: 100%;
+    }
+
+    /* Native video controls sit above the card link. */
+    video[controls] {
+      pointer-events: auto;
+    }
+
+    /* MPC iframe fills the card's media box and sits above the card link. */
+    .milo-video {
+      height: auto;
+      padding-bottom: 0;
+      aspect-ratio: 4/3;
+      pointer-events: auto;
+    }
+
     .icon {
       height: 24px;
       width: 24px;
@@ -152,7 +171,8 @@
         }
       }
 
-      .media picture:not(.icon) img {
+      .media picture:not(.icon) img,
+      .media .milo-video {
         aspect-ratio: 2.2/1;
       }
     }

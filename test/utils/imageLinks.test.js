@@ -63,4 +63,17 @@ describe('Image Link', () => {
     const url = new URL(p.querySelector('a').href);
     expect(url.search).to.equal('?form=off');
   });
+
+  it('Converts an MPC player URL alt into a video anchor with a poster', () => {
+    const a = document.querySelector('#mpc-player-video a');
+    expect(a.href).to.equal('https://video.tv.adobe.com/v/332632#_autoplay');
+    expect(a.dataset.videoPoster).to.include('<picture>');
+    expect(document.querySelector('#mpc-player-video > picture')).to.be.null;
+  });
+
+  it('Keeps an MPC player URL alt with a play icon as an image link', () => {
+    const a = document.querySelector('#mpc-player-play a');
+    expect(a.classList.contains('image-link')).to.be.true;
+    expect(a.dataset.videoPoster).to.be.undefined;
+  });
 });
