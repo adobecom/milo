@@ -3141,6 +3141,19 @@ function isFirstInVisibleTabPanel(el) {
   return panel.querySelector(':scope > .section') === el;
 }
 
+const hasTabsBlock = (el) => !!el?.querySelector(':scope > .tabs');
+
+// Resolves when the first section of a fragment in el has loaded, or when el has fully loaded.
+function firstFragmentSectionLoaded(el, sectionLoaded) {
+  let observer;
+  return new Promise((resolve) => {
+    const isLoaded = () => !!el.querySelector('.fragment > .section:not([data-status])');
+    observer = new MutationObserver(() => { if (isLoaded()) resolve(); });
+    observer.observe(el, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-status'] });
+    sectionLoaded.then(resolve, resolve);
+  }).finally(() => observer.disconnect());
+}
+
 function loadLingoIndexes(area = document) {
   const config = getConfig();
   const { locale } = config || {};
@@ -3237,7 +3250,15 @@ export async function loadArea(area = document) {
     }
     // Tab panel sections chained to the LCP section load with LCP priority.
     const lcpIdForSection = inLcpChain ? section.idx : lcpSectionId;
-    const sectionBlocks = await processSection(section, config, lcpIdForSection);
+    const endsChainAtFragment = inLcpChain && isFirstInVisibleTabPanel(htmlSection)
+      && !hasTabsBlock(htmlSection) && !!htmlSection.querySelector('a.fragment');
+    const sectionLoaded = processSection(section, config, lcpIdForSection);
+    // Only the fragment's first section (e.g. the cards) is above the fold, so gnav and martech
+    // don't wait for the rest of it.
+    if (endsChainAtFragment) {
+      firstFragmentSectionLoaded(htmlSection, sectionLoaded).then(runPostLCP);
+    }
+    const sectionBlocks = await sectionLoaded;
     areaBlocks.push(...sectionBlocks);
     if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
@@ -3246,7 +3267,11 @@ export async function loadArea(area = document) {
     });
 
     if (inLcpChain) {
-      if (!isFirstInVisibleTabPanel(htmlSections[i + 1])) {
+      const next = htmlSections[i + 1];
+      // A tabs block right after the LCP section is above the fold too.
+      const continuesChain = isFirstInVisibleTabPanel(next)
+        || (section.idx === lcpSectionId && hasTabsBlock(next));
+      if (!continuesChain) {
         inLcpChain = false;
         await runPostLCP();
       } else if (section.idx === lcpSectionId) {
