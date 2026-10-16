@@ -17,6 +17,7 @@ const C1_BLOCKS = [
   'aside',
   'author-header',
   'blog-author',
+  'blog-side-navigation',
   'blog-header',
   'brand-concierge',
   'brand-concierge-global',
@@ -2684,7 +2685,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export async function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash, area = document, behavior = 'smooth') {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2696,7 +2697,7 @@ export async function scrollToHashedElement(hash) {
       severity: 'error',
     });
   }
-  if (!targetElement) return;
+  if (!targetElement || !area.contains(targetElement)) return;
 
   let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
@@ -2708,7 +2709,7 @@ export async function scrollToHashedElement(hash) {
   const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
-    behavior: 'smooth',
+    behavior,
   });
 }
 
@@ -3232,7 +3233,7 @@ export async function loadArea(area = document) {
   if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
-    scrollToHashedElement(currentHash);
+    scrollToHashedElement(currentHash, area);
   }
 
   if (isDoc) await documentPostSectionLoading(config);
