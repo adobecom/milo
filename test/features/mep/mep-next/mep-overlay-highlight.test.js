@@ -29,8 +29,8 @@ const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep
 after(() => fetchStub.restore());
 
 describe('HIGHLIGHT_KEYS', () => {
-  it('has mep, caas, mas, and other keys', () => {
-    expect(HIGHLIGHT_KEYS).to.have.keys('mep', 'caas', 'mas', 'other');
+  it('has mep, lingo, caas, mas, and other keys', () => {
+    expect(HIGHLIGHT_KEYS).to.have.keys('mep', 'lingo', 'caas', 'mas', 'other');
   });
 
   it('mep key maps to "mepHighlight"', () => {
@@ -39,6 +39,10 @@ describe('HIGHLIGHT_KEYS', () => {
 
   it('caas key maps to "mepCaasHighlight"', () => {
     expect(HIGHLIGHT_KEYS.caas).to.equal('mepCaasHighlight');
+  });
+
+  it('lingo key maps to "mepLingoHighlight"', () => {
+    expect(HIGHLIGHT_KEYS.lingo).to.equal('mepLingoHighlight');
   });
 
   it('mas key maps to "mepMasHighlight"', () => {
@@ -51,8 +55,8 @@ describe('HIGHLIGHT_KEYS', () => {
 });
 
 describe('TOGGLE_KEYS', () => {
-  it('has mep, caas, mas, and other keys', () => {
-    expect(TOGGLE_KEYS).to.have.keys('mep', 'caas', 'mas', 'other');
+  it('has mep, lingo, caas, mas, and other keys', () => {
+    expect(TOGGLE_KEYS).to.have.keys('mep', 'lingo', 'caas', 'mas', 'other');
   });
 
   it('mep key maps to "toggle-mep"', () => {
@@ -61,6 +65,10 @@ describe('TOGGLE_KEYS', () => {
 
   it('caas key maps to "toggle-caas"', () => {
     expect(TOGGLE_KEYS.caas).to.equal('toggle-caas');
+  });
+
+  it('lingo key maps to "toggle-mep-lingo"', () => {
+    expect(TOGGLE_KEYS.lingo).to.equal('toggle-mep-lingo');
   });
 
   it('mas key maps to "toggle-mas"', () => {
@@ -80,6 +88,7 @@ describe('getParameters', () => {
     const params = getParameters();
     expect(params.mepAkamaiLocale).to.be.null;
     expect(params.mepHighlight).to.be.null;
+    expect(params.mepLingoHighlight).to.be.null;
     expect(params.mepCaasHighlight).to.be.null;
     expect(params.mepMasHighlight).to.be.null;
     expect(params.mepOtherHighlight).to.be.null;
@@ -93,6 +102,11 @@ describe('getParameters', () => {
   it('returns mepHighlight from the mepHighlight URL param', () => {
     window.history.replaceState({}, '', '/?mepHighlight=true');
     expect(getParameters().mepHighlight).to.equal('true');
+  });
+
+  it('returns mepLingoHighlight from the mepLingoHighlight URL param', () => {
+    window.history.replaceState({}, '', '/?mepLingoHighlight=true');
+    expect(getParameters().mepLingoHighlight).to.equal('true');
   });
 
   it('returns mepCaasHighlight from the mepCaasHighlight URL param', () => {
@@ -125,6 +139,7 @@ describe('toggleHighlight', () => {
 
   afterEach(() => {
     delete document.body.dataset.mepHighlight;
+    delete document.body.dataset.mepLingoHighlight;
     delete document.body.dataset.otherHighlight;
     delete document.body.dataset.mepCaasHighlight;
     delete document.body.dataset.mepMasHighlight;
@@ -138,6 +153,16 @@ describe('toggleHighlight', () => {
   it('sets document.body.dataset.mepHighlight to "false" when mep checkbox is unchecked', () => {
     toggleHighlight(makeEvent(TOGGLE_KEYS.mep, false));
     expect(document.body.dataset.mepHighlight).to.equal('false');
+  });
+
+  it('sets document.body.dataset.mepLingoHighlight to "true" when lingo checkbox is checked', () => {
+    toggleHighlight(makeEvent(TOGGLE_KEYS.lingo, true));
+    expect(document.body.dataset.mepLingoHighlight).to.equal('true');
+  });
+
+  it('sets document.body.dataset.mepLingoHighlight to "false" when lingo checkbox is unchecked', () => {
+    toggleHighlight(makeEvent(TOGGLE_KEYS.lingo, false));
+    expect(document.body.dataset.mepLingoHighlight).to.equal('false');
   });
 
   it('sets document.body.dataset.otherHighlight to "true" when other checkbox is checked', () => {
@@ -188,6 +213,10 @@ describe('getPageUpdates', () => {
     expect(getPageUpdates('MEP')).to.equal('0 Page Updates');
   });
 
+  it('returns "0 Page Updates" for Lingo label when no Lingo elements exist', () => {
+    expect(getPageUpdates('MEP Lingo')).to.equal('0 Page Updates');
+  });
+
   it('returns "0 Page Updates" for Caas label when no Caas elements exist', () => {
     expect(getPageUpdates('Caas')).to.equal('0 Page Updates');
   });
@@ -205,6 +234,15 @@ describe('getPageUpdates', () => {
     el.setAttribute('data-manifest-id', 'test-manifest');
     document.body.append(el);
     expect(getPageUpdates('MEP')).to.equal('1 Page Updates');
+  });
+
+  it('counts [data-mep-lingo-roc] and [data-mep-lingo-fallback] elements for the Lingo label', () => {
+    const roc = document.createElement('div');
+    roc.setAttribute('data-mep-lingo-roc', '/roc/test');
+    const fallback = document.createElement('div');
+    fallback.setAttribute('data-mep-lingo-fallback', '/fallback/test');
+    document.body.append(roc, fallback);
+    expect(getPageUpdates('MEP Lingo')).to.equal('2 Page Updates');
   });
 
   it('counts [data-caas-block] elements for the Caas label', () => {
