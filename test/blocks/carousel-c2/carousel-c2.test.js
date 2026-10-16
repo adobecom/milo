@@ -145,6 +145,19 @@ describe('Carousel C2', () => {
     expect(messages).to.deep.equal([{ type: 'mpcAction', action: 'pause' }]);
   });
 
+  it('does not start a drag when a button inside a slide is pressed', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const button = document.createElement('button');
+    wrapper.querySelector('.carousel-slide').append(button);
+
+    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+    expect(wrapper.classList.contains('grabbing')).to.be.false;
+  });
+
   it('keeps the real slides attached when cloning on the first move', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.carousel-c2');
@@ -162,9 +175,10 @@ describe('Carousel C2', () => {
     observer.disconnect();
 
     expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
-    expect(removed.filter((node) => realSlides.includes(node))).to.be.empty;
-    expect([...wrapper.children].filter((node) => !node.hasAttribute('data-cloned')))
-      .to.deep.equal(realSlides);
+    const realChildren = [...wrapper.children].filter((node) => !node.hasAttribute('data-cloned'));
+    expect(removed.filter((node) => realSlides.includes(node)).length).to.equal(0);
+    expect(realChildren.length).to.equal(realSlides.length);
+    expect(realChildren.every((node, i) => node === realSlides[i])).to.be.true;
   });
 
   it('does not pad the wrapper when there are three or more slides', async () => {
