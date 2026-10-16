@@ -366,15 +366,13 @@ const buildMarkup = (gid, labels) => `
   </div>
 
   <div class="globe-gallery-pullquote-pin">
-    <div class="globe-gallery-pullquote-rail">
-      <figure class="globe-gallery-pullquote">
-        <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
-        <figcaption class="globe-gallery-pullquote-attribution">
-          <p class="globe-gallery-pullquote-name body-lg"></p>
-          <p class="globe-gallery-pullquote-role body-lg"></p>
-        </figcaption>
-      </figure>
-    </div>
+    <figure class="globe-gallery-pullquote">
+      <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
+      <figcaption class="globe-gallery-pullquote-attribution">
+        <p class="globe-gallery-pullquote-name body-lg"></p>
+        <p class="globe-gallery-pullquote-role body-lg"></p>
+      </figcaption>
+    </figure>
   </div>
 
   <div class="globe-gallery-modal" aria-hidden="true">

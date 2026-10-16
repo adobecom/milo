@@ -338,24 +338,14 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Ends half a quote box above the runway end, so the rail lets go as the next section's top reaches
-   the quote's bottom edge. Clamped to the reveal point; unmeasured falls back past that ceiling. */
+/* The world's sticky geometry, overlaid on it, so the quote pins and lets go with the canvas the
+   particles land in. A sibling rather than a child keeps it after the arc copy in reading order. */
 .globe-gallery-pullquote-pin {
-  position: absolute;
-  top: var(--gg-formation-vh);
-  bottom: clamp(0px, var(--gg-pq-half-box, var(--gg-runway-height)), calc(
-    (1 - var(--gg-pq-appear-t, 0.42)) * (var(--gg-runway-height) - var(--gg-formation-vh))
-      - var(--gg-optical-center)
-  ));
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-
-.globe-gallery-pullquote-rail {
   position: sticky;
-  top: var(--gg-optical-center);
-  height: 0;
+  top: 0;
+  height: 100vh;
+  margin-top: -100vh;
+  pointer-events: none;
 }
 
 .globe-gallery-pullquote {
@@ -364,15 +354,10 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   /* Yields on short viewports so a long quote can't outgrow the band. */
   --gg-pq-gap: min(var(--gg-pq-ideal-gap), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
-  --gg-pq-copy-rise: 14px;
-  --gg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
-  --gg-pq-line-wave: 20%;
-  --gg-pq-line-fade-from: 0.6;
-  --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
 
   position: absolute;
-  top: 0;
+  top: var(--gg-optical-center);
   inset-inline: 0;
   box-sizing: border-box;
   max-width: var(--gg-copy-max);
@@ -451,33 +436,25 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* Written by the split. Flex so the lines' negative bleed margins meet without collapsing. */
+/* Opacity only, never visibility: the copy stays in the a11y tree. JS cross-fades it with the
+   particles; the 1 fallback is the rest state (RM, no JS). */
+.globe-gallery-pullquote-quote,
+.globe-gallery-pullquote-attribution {
+  opacity: var(--gg-pq-text-o, 1);
+}
+
+/* Written by the split; one block per rendered line. */
 .globe-gallery-pullquote-lines {
   display: flex;
   flex-direction: column;
 }
 
-/* One mask per rendered line, so each rolls up into place from under it. JS writes
-   --gg-pq-line-v per line, already eased and staggered; the 1 fallbacks are the rest state. */
 .globe-gallery-pullquote-line {
   display: block;
-  overflow: hidden;
-  transform: translate3d(0, calc(
-    (1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-rank, 0) * var(--gg-pq-line-wave)
-  ), 0);
-
-  /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
-  padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
-  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-hang-max) * -1);
 }
 
 .globe-gallery-pullquote-line-inner {
   display: inline-block;
-  opacity: calc(
-    var(--gg-pq-line-fade-from)
-    + (1 - var(--gg-pq-line-fade-from)) * var(--gg-pq-line-o, 1)
-  );
-  transform: translate3d(0, calc((1 - var(--gg-pq-line-v, 1)) * var(--gg-pq-line-start)), 0);
 }
 
 .globe-gallery-pullquote-sr {
@@ -486,16 +463,12 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 
 .globe-gallery-pullquote-name {
-  opacity: var(--gg-pq-copy-n, 1);
-  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-n, 1))));
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-25);
   margin: 0;
 }
 
 .globe-gallery-pullquote-role {
-  opacity: var(--gg-pq-copy-r, 1);
-  transform: translateY(calc(var(--gg-pq-copy-rise) * (1 - var(--gg-pq-copy-r, 1))));
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-400);
   margin: 0;
@@ -985,11 +958,11 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   display: none;
 }
 
-/* Flows normally after the globe: no pin/rail/sticky, static with a gap above. */
-.globe-gallery-reduced .globe-gallery-pullquote-pin,
-.globe-gallery-reduced .globe-gallery-pullquote-rail {
+/* Flows normally after the globe: no pin, static with a gap above. */
+.globe-gallery-reduced .globe-gallery-pullquote-pin {
   position: static;
   height: auto;
+  margin-top: 0;
   pointer-events: auto;
 }
 
@@ -1008,13 +981,6 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 .globe-gallery-reduced .globe-gallery-pullquote::after {
   -webkit-mask-image: none;
   mask-image: none;
-}
-
-/* RM can be toggled after the lines already carry a written progress var. */
-.globe-gallery-reduced .globe-gallery-pullquote-line,
-.globe-gallery-reduced .globe-gallery-pullquote-line-inner {
-  opacity: 1;
-  transform: none;
 }
 
 @media (height <= 460px) {

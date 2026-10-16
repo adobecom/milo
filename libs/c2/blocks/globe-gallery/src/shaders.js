@@ -249,3 +249,57 @@ export const TEXT_FRAG = [
   '  gl_FragColor = vec4(srgb, a * uOpacity * fadeX * fadeY * exitFade);',
   '}',
 ].join('\n');
+
+// Pull-quote particles. Positions are CSS px in viewport space (y down), mapped straight to clip
+// space, so no camera is involved. `position` holds the text target; the source is rebuilt per
+// frame from the card's projected quad (uCardA/B) so pixels leave the card where it dissolves.
+export const QUOTE_PARTICLE_VERT = [
+  'attribute vec3 aCard;', // x = card slot, yz = uv on the card (v down)
+  'attribute vec3 aSrcColor;',
+  'attribute vec3 aDstColor;',
+  'attribute vec4 aSeed;', // x = dissolve threshold, y = flight delay, z = angle, w = magnitude
+  'uniform vec4 uCardA[MAX_CARDS];', // centre.xy, half-width axis.xy
+  'uniform vec4 uCardB[MAX_CARDS];', // half-height axis.xy (down), dissolve 0..1, unused
+  'uniform vec2 uViewport;',
+  'uniform float uDpr;',
+  'uniform float uPinTop;',
+  'uniform float uFly;',
+  'uniform float uFade;',
+  'uniform float uSize;',
+  'varying vec3 vColor;',
+  'varying float vAlpha;',
+  'void main() {',
+  '  int k = int(aCard.x + 0.5);',
+  '  vec4 a = uCardA[k];',
+  '  vec4 b = uCardB[k];',
+  '  vec2 src = a.xy + (aCard.y * 2.0 - 1.0) * a.zw + (aCard.z * 2.0 - 1.0) * b.xy;',
+  '  float emerge = clamp((b.z - aSeed.x * 0.8) / 0.2, 0.0, 1.0);',
+  // Burst outward from the view centre, as the camera's forward travel would carry it.
+  '  vec2 away = src - uViewport * 0.5;',
+  '  vec2 jitter = vec2(cos(aSeed.z), sin(aSeed.z)) * aSeed.w * uViewport.y * 0.14;',
+  '  vec2 scattered = src + (away * 0.3 + jitter) * emerge;',
+  '  float f = clamp((uFly - aSeed.y * 0.45) / 0.55, 0.0, 1.0);',
+  '  float fe = f < 0.5 ? 4.0 * f * f * f : 1.0 - pow(-2.0 * f + 2.0, 3.0) * 0.5;',
+  '  vec2 dst = position.xy + vec2(0.0, uPinTop);',
+  '  vec2 path = dst - scattered;',
+  '  vec2 bend = vec2(-path.y, path.x) * (aSeed.w - 0.5) * 0.35 * sin(fe * 3.14159);',
+  '  vec2 p = mix(scattered, dst, fe) + bend;',
+  '  vColor = mix(aSrcColor, aDstColor, smoothstep(0.35, 1.0, f));',
+  '  vAlpha = max(emerge, smoothstep(0.0, 0.15, f)) * uFade;',
+  '  float size = mix(uSize * (1.4 + 1.6 * aSeed.w), uSize, fe);',
+  '  gl_PointSize = max(1.0, size * uDpr);',
+  '  gl_Position = vec4(p.x / uViewport.x * 2.0 - 1.0, 1.0 - p.y / uViewport.y * 2.0, 0.0, 1.0);',
+  '}',
+].join('\n');
+
+export const QUOTE_PARTICLE_FRAG = [
+  'varying vec3 vColor;',
+  'varying float vAlpha;',
+  'void main() {',
+  '  vec2 c = gl_PointCoord - 0.5;',
+  '  float edge = 1.0 - smoothstep(0.3, 0.5, length(c));',
+  '  float alpha = vAlpha * edge;',
+  '  if (alpha < 0.01) discard;',
+  '  gl_FragColor = vec4(vColor, alpha);',
+  '}',
+].join('\n');
