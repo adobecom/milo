@@ -2318,6 +2318,7 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
   ],
+  tabs: [() => `${getConfig().base}/martech/attributes.js`],
 };
 
 const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
