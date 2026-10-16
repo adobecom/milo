@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
-import showDraftStatus, { summarize } from '../../../libs/features/preflight/draft-status.js';
+import showDraftStatus, { summarize, RECHECK_DEBOUNCE_MS } from '../../../libs/features/preflight/draft-status.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
 describe('summarize', () => {
@@ -25,17 +25,21 @@ describe('showDraftStatus', () => {
   const bar = () => document.documentElement.querySelector(':scope > .draft-status');
   const result = () => waitFor(() => bar().dataset.status !== 'checking', 5000, 50);
   const settle = () => new Promise((resolve) => { setTimeout(resolve, 100); });
+  const pastDebounce = () => new Promise((resolve) => {
+    setTimeout(resolve, RECHECK_DEBOUNCE_MS + 200);
+  });
   const rerender = () => document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
   const issueCount = () => Number(bar().textContent.match(/(\d+) issues?/)?.[1] ?? 0);
   const checksRun = () => window.fetch.getCalls()
     .filter(({ args }) => String(args[0]).includes('preflight-exclusions')).length;
+  const respond = async (url) => (String(url).includes('/.milo/config.json')
+    ? { ok: false, status: 404 }
+    : { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' });
   let main;
 
   before(() => {
     setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
-    sinon.stub(window, 'fetch').callsFake(async (url) => (String(url).includes('/.milo/config.json')
-      ? { ok: false, status: 404 }
-      : { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' }));
+    sinon.stub(window, 'fetch').callsFake(respond);
     main = document.createElement('main');
     main.innerHTML = '<div><h1>Draft</h1><p>First paragraph</p></div>';
     document.body.append(main);
@@ -61,12 +65,13 @@ describe('showDraftStatus', () => {
     const checksBefore = window.fetch.callCount;
     main.querySelector('p').insertAdjacentHTML('afterbegin', '<span id="da-cursor-position"></span>');
     rerender();
-    await settle();
+    await pastDebounce();
     expect(window.fetch.callCount).to.equal(checksBefore);
     expect(bar().dataset.status).to.not.equal('checking');
   });
 
-  it('re-checks when the draft content changes, keeping the last result visible', async () => {
+  it('re-checks when the draft content changes, keeping the last result visible', async function test() {
+    this.timeout(10000);
     const issuesBefore = issueCount();
     main.querySelector('p').textContent = 'Lorem ipsum dolor sit amet';
     rerender();
@@ -74,14 +79,45 @@ describe('showDraftStatus', () => {
     await waitFor(() => issueCount() === issuesBefore + 1, 5000, 50);
   });
 
-  it('re-checks edits to an image that holds the DA cursor', async () => {
+  it('re-checks edits to an image that holds the DA cursor', async function test() {
+    this.timeout(10000);
+    const runsBeforeAdd = checksRun();
     main.querySelector('p').insertAdjacentHTML('afterend', '<img id="da-cursor-position" alt="">');
     rerender();
+    await waitFor(() => checksRun() > runsBeforeAdd, 5000, 20);
     await settle();
     const runsBefore = checksRun();
     main.querySelector('img').alt = 'Team photo';
     rerender();
-    await waitFor(() => checksRun() > runsBefore, 2000, 20);
+    await waitFor(() => checksRun() > runsBefore, 5000, 20);
+  });
+
+  it('runs one check for a burst of edits', async function test() {
+    this.timeout(10000);
+    await settle();
+    const runsBefore = checksRun();
+    ['One', 'Two', 'Three'].forEach((text) => {
+      main.querySelector('p').textContent = text;
+      rerender();
+    });
+    await pastDebounce();
+    await settle();
+    expect(checksRun()).to.equal(runsBefore + 1);
+  });
+
+  it('shows an error and logs it when the checks cannot run', async function test() {
+    this.timeout(10000);
+    window.lana = { log: sinon.stub() };
+    window.fetch.callsFake(async (url) => (String(url).includes('preflight-exclusions')
+      ? { ok: true, json: async () => ({ data: 'not-a-list' }) }
+      : respond(url)));
+    main.querySelector('p').textContent = 'Checks will fail';
+    rerender();
+    await waitFor(() => bar().dataset.status === 'error', 5000, 50);
+    expect(window.lana.log.calledWith(sinon.match('Preflight draft status failed'), { tags: 'preflight' }))
+      .to.equal(true);
+    window.fetch.callsFake(respond);
+    delete window.lana;
   });
 
   it('opens one report outside the body so it survives edits, and closes it', async () => {
@@ -145,13 +181,13 @@ describe('showDraftStatus', () => {
     setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
   });
 
-  it('stops checking once closed', async () => {
-    bar().querySelector('.notification-close').click();
-    await settle();
-    const checksBefore = window.fetch.callCount;
-    main.querySelector('p').textContent = 'Edited after closing';
+  it('stops checking once closed, even for an edit still waiting to be checked', async () => {
+    main.querySelector('p').textContent = 'Edited as it closes';
     rerender();
-    await settle();
+    bar().querySelector('.notification-close').click();
+    const checksBefore = window.fetch.callCount;
+    rerender();
+    await pastDebounce();
     expect(bar()).to.equal(null);
     expect(window.fetch.callCount).to.equal(checksBefore);
   });

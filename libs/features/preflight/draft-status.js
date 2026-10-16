@@ -8,6 +8,7 @@ import { debounce } from '../../utils/action.js';
 
 const MERCH_HYDRATION_MS = 1000;
 const HEADER_FOOTER_TIMEOUT_MS = 5000;
+export const RECHECK_DEBOUNCE_MS = 1000;
 const DA_CURSOR = '#da-cursor-position';
 const CHECKING = { status: 'checking', text: 'Preflight is checking this page…' };
 const FAILED = { status: 'error', text: 'Preflight checks could not run' };
@@ -67,9 +68,12 @@ async function refreshOpenReport(draft) {
   const report = document.querySelector('#preflight .preflight');
   if (!report) return;
   const freshReport = await loadReport();
-  const isNewest = draft === checkedDraft;
-  render(null, isNewest ? report : freshReport);
-  if (isNewest) report.replaceWith(freshReport);
+  if (draft !== checkedDraft) {
+    render(null, freshReport);
+    return;
+  }
+  render(null, report);
+  report.replaceWith(freshReport);
 }
 
 function show({ status, text }) {
@@ -77,22 +81,29 @@ function show({ status, text }) {
   bar.querySelector('.notification-message').textContent = text;
 }
 
+const logFailure = (e) => window.lana?.log?.(`Preflight draft status failed: ${e}`, { tags: 'preflight' });
+
 async function check() {
+  if (!bar.isConnected) return; // a debounced re-check can fire after close
   const draft = draftWithoutCursor();
   if (draft === checkedDraft) return;
   checkedDraft = draft;
   await waitForHeaderAndFooter();
   clearPreflightCache();
   clearLocalizationCache();
-  const counts = await getIssueCounts({ merchDelayMs: MERCH_HYDRATION_MS }).catch(() => null);
+  const counts = await getIssueCounts({ merchDelayMs: MERCH_HYDRATION_MS })
+    .catch((e) => { logFailure(e); return null; });
   if (draft !== checkedDraft) return;
   show(counts ? summarize(counts) : FAILED);
   await refreshOpenReport(draft);
 }
 
+const runCheck = () => check().catch(logFailure);
+const checkAfterEdits = debounce(runCheck, RECHECK_DEBOUNCE_MS);
+
 function close() {
   bar.remove();
-  document.removeEventListener(MILO_EVENTS.DEFERRED, check);
+  document.removeEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits);
 }
 
 export default function showDraftStatus() {
@@ -101,9 +112,9 @@ export default function showDraftStatus() {
   bar = createTag('div', { class: 'milo-preflight-overlay draft-status' }, BAR);
   bar.querySelector('.preflight-review-link').addEventListener('click', debounce(openReport));
   bar.querySelector('.notification-close').addEventListener('click', close);
-  document.addEventListener(MILO_EVENTS.DEFERRED, check);
+  document.addEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits);
   keepAcrossEdits(bar);
   setLikelyLcp();
   show(CHECKING);
-  check();
+  runCheck();
 }
