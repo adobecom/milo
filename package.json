@@ -61,7 +61,7 @@
     "commander": "^12.1.0",
     "echarts": "^6.1.0",
     "eslint": "8.11.0",
-    "lighthouse": "^13.1.0",
+    "lighthouse": "^13.5.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-nibble": "^8.1.0",
     "eslint-plugin-chai-friendly": "^0.7.2",
