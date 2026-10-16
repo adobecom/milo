@@ -1,6 +1,13 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
+import loadDelayed, {
+  loadPrivacy,
+  loadJarvisChat,
+  loadGoogleLogin,
+  addRUMCampaignTrackingParameters,
+  loadPreflightResults,
+  isDaPreview,
+} from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
@@ -160,6 +167,39 @@ describe('loadPreflightResults', () => {
     await loading;
     expect(settledBeforeFetch).to.equal(false);
     expect(settled).to.equal(true);
+  });
+
+  it('shows only the draft status bar in DA Live Preview', async () => {
+    const url = window.location.href;
+    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+    window.history.replaceState(null, '', '?dapreview=local');
+    await loadPreflightResults();
+    window.history.replaceState(null, '', url);
+    const bar = document.documentElement.querySelector(':scope > .draft-status');
+    const diffFetched = fetchStub.getCalls().some(({ args }) => String(args[0]).includes('.plain.html'));
+    bar?.querySelector('.notification-close').click();
+    expect(bar !== null).to.equal(true);
+    expect(diffFetched).to.equal(false);
+  });
+});
+
+describe('isDaPreview', () => {
+  [
+    ['main--da-bacom--adobecom.preview.da.live', '?quick-edit=on&controller=parent', true],
+    ['main--cc--adobecom.stage-preview.da.live', '?dapreview=on', true],
+    ['main--milo--adobecom.aem.page', '?quick-edit=on', true],
+    ['localhost', '?dapreview=local', true],
+    ['127.0.0.1', '?quick-edit=on', true],
+    ['main--milo--adobecom.aem.page', '', false],
+    ['localhost', '?quick-edit=', false],
+    ['main--milo--adobecom.aem.live', '?quick-edit=on', false],
+    ['www.adobe.com', '?dapreview=on', false],
+    ['main--milo--adobecom.preview.da.live.evil.com', '?quick-edit=on', false],
+    ['evil-preview.da.live', '?quick-edit=on', false],
+  ].forEach(([hostname, search, expected]) => {
+    it(`${expected ? 'detects' : 'ignores'} ${hostname}${search}`, () => {
+      expect(isDaPreview({ hostname, search })).to.equal(expected);
+    });
   });
 });
 

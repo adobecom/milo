@@ -1,0 +1,194 @@
+import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
+import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
+import showDraftStatus, { summarize, RECHECK_DEBOUNCE_MS } from '../../../libs/features/preflight/draft-status.js';
+import { waitFor } from '../../helpers/waitfor.js';
+
+describe('summarize', () => {
+  it('reports issues and warnings as a failure', () => {
+    expect(summarize({ General: { errors: 2, warnings: 1 }, SEO: { errors: 1, warnings: 0 } }))
+      .to.deep.equal({ status: 'fail', text: 'Preflight found 3 issues, 1 warning' });
+  });
+
+  it('reports warnings only as a warning', () => {
+    expect(summarize({ General: { errors: 0, warnings: 1 }, SEO: { errors: 0, warnings: 0 } }))
+      .to.deep.equal({ status: 'warn', text: 'Preflight found 1 warning' });
+  });
+
+  it('reports a pass when nothing fails', () => {
+    expect(summarize({ General: { errors: 0, warnings: 0 } }))
+      .to.deep.equal({ status: 'pass', text: 'Preflight: no issues' });
+  });
+});
+
+describe('showDraftStatus', () => {
+  const bar = () => document.documentElement.querySelector(':scope > .draft-status');
+  const result = () => waitFor(() => bar().dataset.status !== 'checking', 5000, 50);
+  const settle = () => new Promise((resolve) => { setTimeout(resolve, 100); });
+  const pastDebounce = () => new Promise((resolve) => {
+    setTimeout(resolve, RECHECK_DEBOUNCE_MS + 200);
+  });
+  const rerender = () => document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+  const issueCount = () => Number(bar().textContent.match(/(\d+) issues?/)?.[1] ?? 0);
+  const checksRun = () => window.fetch.getCalls()
+    .filter(({ args }) => String(args[0]).includes('preflight-exclusions')).length;
+  const respond = async (url) => (String(url).includes('/.milo/config.json')
+    ? { ok: false, status: 404 }
+    : { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' });
+  let main;
+
+  before(() => {
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
+    sinon.stub(window, 'fetch').callsFake(respond);
+    main = document.createElement('main');
+    main.innerHTML = '<div><h1>Draft</h1><p>First paragraph</p></div>';
+    document.body.append(main);
+  });
+
+  after(() => {
+    sinon.restore();
+    bar()?.remove();
+    main.remove();
+  });
+
+  it('shows the Preflight result once, outside the body DA replaces', async () => {
+    showDraftStatus();
+    showDraftStatus();
+    expect(document.documentElement.querySelectorAll(':scope > .draft-status').length).to.equal(1);
+    expect(document.body.contains(bar())).to.equal(false);
+    await result();
+    expect(bar().querySelector('[role=status]').textContent).to.match(/^Preflight( found \d+ (issue|warning)|: no issues)/);
+  });
+
+  it('ignores re-renders that only move the DA cursor', async () => {
+    await settle();
+    const checksBefore = window.fetch.callCount;
+    main.querySelector('p').insertAdjacentHTML('afterbegin', '<span id="da-cursor-position"></span>');
+    rerender();
+    await pastDebounce();
+    expect(window.fetch.callCount).to.equal(checksBefore);
+    expect(bar().dataset.status).to.not.equal('checking');
+  });
+
+  it('re-checks when the draft content changes, keeping the last result visible', async function test() {
+    this.timeout(10000);
+    const issuesBefore = issueCount();
+    main.querySelector('p').textContent = 'Lorem ipsum dolor sit amet';
+    rerender();
+    expect(bar().dataset.status).to.not.equal('checking');
+    await waitFor(() => issueCount() === issuesBefore + 1, 5000, 50);
+  });
+
+  it('re-checks edits to an image that holds the DA cursor', async function test() {
+    this.timeout(10000);
+    const runsBeforeAdd = checksRun();
+    main.querySelector('p').insertAdjacentHTML('afterend', '<img id="da-cursor-position" alt="">');
+    rerender();
+    await waitFor(() => checksRun() > runsBeforeAdd, 5000, 20);
+    await settle();
+    const runsBefore = checksRun();
+    main.querySelector('img').alt = 'Team photo';
+    rerender();
+    await waitFor(() => checksRun() > runsBefore, 5000, 20);
+  });
+
+  it('runs one check for a burst of edits', async function test() {
+    this.timeout(10000);
+    await settle();
+    const runsBefore = checksRun();
+    ['One', 'Two', 'Three'].forEach((text) => {
+      main.querySelector('p').textContent = text;
+      rerender();
+    });
+    await pastDebounce();
+    await settle();
+    expect(checksRun()).to.equal(runsBefore + 1);
+  });
+
+  it('shows an error and logs it when the checks cannot run', async function test() {
+    this.timeout(10000);
+    window.lana = { log: sinon.stub() };
+    window.fetch.callsFake(async (url) => (String(url).includes('preflight-exclusions')
+      ? { ok: true, json: async () => ({ data: 'not-a-list' }) }
+      : respond(url)));
+    main.querySelector('p').textContent = 'Checks will fail';
+    rerender();
+    await waitFor(() => bar().dataset.status === 'error', 5000, 50);
+    expect(window.lana.log.calledWith(sinon.match('Preflight draft status failed'), { tags: 'preflight' }))
+      .to.equal(true);
+    window.fetch.callsFake(respond);
+    delete window.lana;
+  });
+
+  it('opens one report outside the body so it survives edits, and closes it', async () => {
+    const review = bar().querySelector('.preflight-review-link');
+    review.click();
+    review.click();
+    await waitFor(() => document.documentElement.querySelector(':scope > #preflight'), 5000, 50);
+    await settle();
+    expect(document.querySelectorAll('#preflight, .modal-curtain').length).to.equal(2);
+    const dialog = document.getElementById('preflight');
+    expect(dialog.nextElementSibling.classList.contains('modal-curtain')).to.equal(true);
+    dialog.querySelector('.dialog-close').click();
+    await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
+  });
+
+  it('unmounts a report once a fresh one replaces it', async function test() {
+    this.timeout(20000);
+    const report = () => document.querySelector('#preflight .preflight');
+    bar().querySelector('.preflight-review-link').click();
+    await waitFor(report, 5000, 50);
+    const oldReport = report();
+    main.querySelector('p').textContent = 'Edited with the report open';
+    rerender();
+    await waitFor(() => report() !== oldReport, 8000, 50);
+
+    report().querySelector('#tab-2').click();
+    await settle();
+
+    expect(oldReport.querySelector('#tab-2')?.getAttribute('aria-selected')).to.not.equal('true');
+    report().querySelector('#tab-1').click();
+    document.querySelector('#preflight .dialog-close').click();
+    await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
+  });
+
+  it('keeps the newest report when an older refresh finishes first', async function test() {
+    this.timeout(20000);
+    setConfig({ codeRoot: '/test/features/preflight/mocks', georouting: { enabled: 'off' }, footerReady: true });
+    const report = () => document.querySelector('#preflight .preflight');
+    bar().querySelector('.preflight-review-link').click();
+    await waitFor(report, 5000, 50);
+    const heldReports = [];
+    window.holdReport = () => new Promise((resolve) => { heldReports.push(resolve); });
+    const editAndWaitForRefresh = async (text) => {
+      const refreshes = heldReports.length;
+      main.querySelector('p').textContent = text;
+      rerender();
+      await waitFor(() => heldReports.length > refreshes, 8000, 20);
+    };
+
+    await editAndWaitForRefresh('Older draft');
+    await editAndWaitForRefresh('Newer draft');
+    heldReports[0]();
+    await settle();
+    heldReports[1]();
+    await settle();
+
+    expect(report().textContent).to.contain('Newer draft');
+    delete window.holdReport;
+    document.querySelector('#preflight .dialog-close').click();
+    await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
+  });
+
+  it('stops checking once closed, even for an edit still waiting to be checked', async () => {
+    main.querySelector('p').textContent = 'Edited as it closes';
+    rerender();
+    bar().querySelector('.notification-close').click();
+    const checksBefore = window.fetch.callCount;
+    rerender();
+    await pastDebounce();
+    expect(bar()).to.equal(null);
+    expect(window.fetch.callCount).to.equal(checksBefore);
+  });
+});
