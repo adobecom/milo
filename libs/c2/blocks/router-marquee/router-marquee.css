@@ -580,3 +580,7 @@
 .router-marquee mas-field > [data-role="mas-field-content"] p {
   display: inline;
 }
+
+.router-marquee .rm-cta-slot {
+  display: none;
+}
