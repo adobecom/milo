@@ -88,4 +88,42 @@ describe('Base Card', () => {
 
     expect(block.closest('.section').classList.contains('base-card-section')).to.be.true;
   });
+
+  describe('video pointer interaction', () => {
+    const hitAtCenter = (el) => {
+      el.scrollIntoView({ block: 'center' });
+      const { left, top, width, height } = el.getBoundingClientRect();
+      return document.elementFromPoint(left + width / 2, top + height / 2);
+    };
+
+    before(async () => {
+      await new Promise((resolve) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/libs/c2/blocks/base-card/base-card.css';
+        link.onload = resolve;
+        document.head.append(link);
+      });
+    });
+
+    beforeEach(async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/video.html' });
+      document.querySelectorAll('.base-card').forEach((block) => init(block));
+    });
+
+    it('lets clicks reach native video controls instead of the card link', () => {
+      const video = document.querySelector('#nativeControls video');
+      expect(hitAtCenter(video) === video, 'click reaches the video').to.be.true;
+    });
+
+    it('lets clicks reach the MPC iframe player instead of the card link', () => {
+      const iframe = document.querySelector('#mpcIframe iframe');
+      expect(hitAtCenter(iframe) === iframe, 'click reaches the iframe').to.be.true;
+    });
+
+    it('keeps the card link clickable over a native video without controls', () => {
+      const video = document.querySelector('#nativeAutoplay video');
+      expect(hitAtCenter(video).closest('a')?.href).to.equal('https://www.adobe.com/card-link');
+    });
+  });
 });
