@@ -80,6 +80,8 @@ export const shouldBlockFreeTrialLinks = () => false;
 export const isAupEnabled = () => false;
 export const decorateLinksAsync = stub().resolves();
 export const loadBlock = stub().resolves();
+export const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+export const getViewportContent = () => ({ delimiterIdx: -1, viewportRows: [] });
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;

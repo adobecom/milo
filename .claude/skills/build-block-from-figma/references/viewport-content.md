@@ -121,8 +121,14 @@ This distinction is critical:
 
 `libs/utils/decorate.js` — three exported functions:
 - `decorateViewportContent` — the main API (convenience wrapper)
-- `parseViewportContent` — parsing + inheritance (used internally)
+- `parseViewportContent` — parsing and grouping by viewport (used internally)
 - `applyViewportContent` — matchMedia switching (used internally)
+
+Empty-cell inheritance does **not** happen here.  It runs earlier, in
+`decorateSection()` (`libs/utils/utils.js`), on the raw authored rows
+before links are decorated, so every inherited copy is decorated on its
+own.  It only applies on `foundation: c2` pages, to blocks whose own
+rows start with the `mobile-viewport` row.
 
 ### Primary API — `decorateViewportContent`
 
@@ -149,7 +155,8 @@ export default function init(el) {
 
 `decorateViewportContent(el, decorateFn)` handles everything:
 
-1. Parses viewport sections and resolves inheritance.
+1. Parses viewport sections (empty cells were already filled in from
+   the lower viewport before `init(el)` ran).
 2. Calls `decorateFn(container, el)` on each viewport's content
    (or `decorateFn(el, el)` if no viewport keywords exist).
 3. Sets up `matchMedia` listeners to swap content at breakpoints.
@@ -235,6 +242,11 @@ levels: the parser swaps children inside the content containers while
 the behavioral layer holds references to outer shell elements
 (wrapper, buttons, etc.) that never leave the DOM.
 
+**Note:** empty-cell inheritance only covers viewport rows that are
+authored as the block's own rows.  If a content container holds
+viewport rows that are not the block's direct rows (built in JS or
+nested deeper), their empty cells are not filled in.
+
 ---
 
 ## Return value
@@ -263,11 +275,11 @@ handles everything.  Use it when a block needs post-decoration
 access to specific viewport data (e.g. reading a background colour
 value from a column).
 
-**Inheritance guarantee**: the parser resolves all inheritance
-before returning.  Every viewport in the returned object is fully
-populated — if tablet was omitted from the authored markup, `tablet`
-still contains mobile's content.  Consuming blocks never need to
-implement inheritance logic themselves.
+**Inheritance guarantee**: empty cells are filled in from the lower
+viewport before block init (in `decorateSection()`, C2 pages only),
+and an omitted viewport is covered by the media queries (e.g. with
+mobile + desktop, mobile's content shows up to 1279 px).  Consuming
+blocks never need to implement inheritance logic themselves.
 
 ### Breakpoints
 
