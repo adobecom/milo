@@ -1,4 +1,4 @@
-import { createTag, isAcomAssistantEnabled } from '../../../utils/utils.js';
+import { createTag, getMetadata, isAcomAssistantEnabled } from '../../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -89,6 +89,12 @@ export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
   useAcomAssistant = isAcomAssistantEnabled();
+  if (useAcomAssistant
+    && getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on'
+    && getMetadata('header') !== 'off'
+    && window.milo?.brandConcierge?.brandConciergeGlobal !== false) {
+    document.documentElement.classList.add('adobe-assistant-gnav-active');
+  }
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));

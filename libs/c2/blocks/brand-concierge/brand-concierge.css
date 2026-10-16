@@ -347,6 +347,10 @@
   opacity: 1;
 }
 
+html.adobe-assistant-gnav-active .bc-floating-element {
+  display: none;
+}
+
 /* floating-button */
 .bc-floating-button {
   bottom: 0;

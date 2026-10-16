@@ -1,9 +1,22 @@
 import { getMetadata, isAcomAssistantEnabled } from '../utils/utils.js';
 
+const GNAV_ACTIVE_CLASS = 'adobe-assistant-gnav-active';
+
 let authoredCards;
 let noGnavMobile = false;
 
+function isDisabledOnMobile() {
+  return noGnavMobile && !window.matchMedia('(min-width: 900px)').matches;
+}
+
+function disableGnavAssistant() {
+  document.documentElement.classList.remove(GNAV_ACTIVE_CLASS);
+  window.milo ||= {};
+  window.milo.brandConcierge = { brandConciergeGlobal: false };
+}
+
 function logInitializationError(error) {
+  disableGnavAssistant();
   window.lana?.log?.(`AcomAssistant: failed to initialize GNav (${error.message})`, {
     tags: 'acom-assistant',
     severity: 'error',
@@ -31,9 +44,16 @@ export function decorateAcomAssistantGnav(el, cards, block) {
   if (!isAcomAssistantEnabled()) return null;
   if (cards) authoredCards = cards;
   if (block !== undefined) noGnavMobile = !!block?.classList.contains('no-gnav-mobile');
-  if (noGnavMobile && !window.matchMedia('(min-width: 900px)').matches) return null;
-  const wrapper = el.querySelector('.feds-bc-wrapper');
-  if (!wrapper) return null;
+  if (isDisabledOnMobile()) {
+    disableGnavAssistant();
+    return null;
+  }
+  const wrapper = el?.querySelector('.feds-bc-wrapper');
+  if (!wrapper) {
+    disableGnavAssistant();
+    return null;
+  }
+  document.documentElement.classList.add(GNAV_ACTIVE_CLASS);
   let mount = wrapper.querySelector('#acomAssistant-gnav-mount');
   if (!mount) {
     mount = document.createElement('div');
@@ -57,6 +77,11 @@ export function decorateAcomAssistantGnavBlock(block) {
   if (cards) authoredCards = cards;
   noGnavMobile = block.classList.contains('no-gnav-mobile');
   block.replaceChildren();
+  if (isDisabledOnMobile()) {
+    disableGnavAssistant();
+  } else {
+    document.documentElement.classList.add(GNAV_ACTIVE_CLASS);
+  }
 
   const topNav = document.querySelector('header.global-navigation nav');
   if (topNav) {

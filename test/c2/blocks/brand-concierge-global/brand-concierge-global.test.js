@@ -61,6 +61,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   afterEach(() => {
     listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
     listenerSpy.restore();
+    document.documentElement.classList.remove('adobe-assistant-gnav-active');
     metadata.remove();
     document.head.querySelectorAll('link[href$="/c2/blocks/brand-concierge-global/brand-concierge-global.css"]')
       .forEach((style) => style.remove());
@@ -78,6 +79,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
 
   it('skips the mobile mount through Federal and its post-render decoration with no-gnav-mobile', async () => {
     await setViewport({ width: 899, height: 900 });
+    document.documentElement.classList.add('adobe-assistant-gnav-active');
     block.classList.add('no-gnav-mobile');
     await loadBrandConcierge(block);
     expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
@@ -85,6 +87,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
 
     expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
     expect(document.querySelector('.bc-gnav')).to.be.null;
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.false;
     expect(block.children).to.have.lengthOf(0);
     expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
     expect(initialize.called).to.be.false;
@@ -97,6 +100,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     await loadAcomAssistantGnav();
 
     expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.false;
     expect(block.children).to.have.lengthOf(0);
     expect(initialize.called).to.be.false;
   });
@@ -107,6 +111,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     await loadBrandConcierge(block);
 
     expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.true;
     expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
   });
 

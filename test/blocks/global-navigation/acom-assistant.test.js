@@ -34,6 +34,7 @@ describe('C1 global navigation authored Assistant entry point', () => {
 
   afterEach(() => {
     sinon.restore();
+    document.documentElement.classList.remove('adobe-assistant-gnav-active');
     document.querySelectorAll('meta[name="acom-assistant"], meta[name="gnav-brand-concierge"]')
       .forEach((meta) => meta.remove());
     document.body.innerHTML = '';
@@ -67,6 +68,7 @@ describe('C1 global navigation authored Assistant entry point', () => {
   });
 
   it('does not mount or initialize Assistant below 900px with no-gnav-mobile authoring', async () => {
+    document.documentElement.classList.add('adobe-assistant-gnav-active');
     document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
     await createFullGlobalNavigation({
       globalNavigation: authoredNav.replace('class="brand-concierge-global"', 'class="brand-concierge-global no-gnav-mobile"'),
@@ -78,6 +80,7 @@ describe('C1 global navigation authored Assistant entry point', () => {
     expect(document.querySelector('.feds-bc-wrapper')).to.exist;
     expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
     expect(document.querySelector('.bc-gnav')).to.be.null;
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.false;
     expect(client.initialize.called).to.be.false;
     expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
   });
@@ -88,6 +91,7 @@ describe('C1 global navigation authored Assistant entry point', () => {
       globalNavigation: authoredNav.replace('class="brand-concierge-global"', 'class="brand-concierge-global no-gnav-mobile"'),
       imsInitialized: true,
     });
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.true;
     await ensureAcomAssistant();
 
     expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);

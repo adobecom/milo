@@ -740,7 +740,9 @@ describe('Brand Concierge - AcomAssistant flag', () => {
   afterEach(() => {
     sendUserMessageSpy.restore();
     openMessagingWindowSpy.restore();
+    document.documentElement.classList.remove('adobe-assistant-gnav-active');
     document.head.querySelector('meta[name="acom-assistant"]')?.remove();
+    document.head.querySelector('meta[name="gnav-brand-concierge"]')?.remove();
     document.getElementById('brand-concierge-modal')?.remove();
     document.querySelector('.modal-curtain')?.remove();
   });
@@ -797,5 +799,19 @@ describe('Brand Concierge - AcomAssistant flag', () => {
 
     expect(document.getElementById('brand-concierge-modal')).to.not.exist;
     expect(sendUserMessageSpy.calledWith(expected)).to.be.true;
+  });
+
+  it('adds adobe-assistant-gnav-active early when gnav-brand-concierge is on before GNav mounts', async () => {
+    document.head.insertAdjacentHTML('beforeend', `
+      <meta name="acom-assistant" content="on">
+      <meta name="gnav-brand-concierge" content="on">
+    `);
+
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    block.classList.add('floating-button');
+    await init(block);
+
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.true;
   });
 });
