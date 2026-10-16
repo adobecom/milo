@@ -75,10 +75,12 @@ describe('Product Marquee Grid', () => {
       expect(commitment.textContent).to.equal('Annual, billed monthly');
     });
 
-    it('moves the ctas into the cta wrapper, not the content', () => {
+    it('groups the ctas into the cta wrapper in place', () => {
       const ctas = content.querySelectorAll('.pm-merch-ctas .con-button');
       expect(ctas.length).to.equal(2);
-      expect(content.querySelector('.pm-merch-content .con-button')).to.be.null;
+      // No CTA is left loose directly under the content; they live in the wrapper.
+      expect(content.querySelector('.pm-merch-content > .action-area')).to.be.null;
+      expect(content.querySelector('.pm-merch-ctas')).to.exist;
     });
   });
 

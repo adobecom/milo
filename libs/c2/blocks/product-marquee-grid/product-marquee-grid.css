@@ -136,10 +136,17 @@
   .pm-merch-ctas {
     display: flex;
     gap: var(--s2a-spacing-xs);
+    margin-top: var(--s2a-spacing-xs);
+    align-self: stretch;
 
-    > .con-button {
+    > p,
+    mas-field {
+      display: flex;
       flex: 1 1 0;
-      justify-content: center;
+    }
+
+    .con-button {
+      flex: 1 1 0;
     }
   }
 
@@ -192,7 +199,7 @@
     .pm-merch-ctas {
       flex-direction: column;
 
-      > .con-button {
+      .con-button {
         flex: none;
         inline-size: 100%;
       }
