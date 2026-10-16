@@ -385,4 +385,52 @@ describe('AcomAssistant shared client lifecycle', () => {
     await Promise.all([updating, opening]);
     expect(client.openMessagingWindow.calledOnce).to.be.true;
   });
+
+  describe('surface identity precedence', () => {
+    const section = { 'jarvis-surface-id': 'section-id', 'jarvis-surface-version': 'section-ver' };
+    let metas = [];
+    const addMeta = (name, content) => {
+      const meta = Object.assign(document.createElement('meta'), { name, content });
+      document.head.append(meta);
+      metas.push(meta);
+    };
+
+    afterEach(() => {
+      metas.forEach((meta) => meta.remove());
+      metas = [];
+    });
+
+    it('prefers page metadata over config', () => {
+      setConfig({ jarvis: { id: 'config-id', version: 'config-ver' } });
+      addMeta('jarvis-surface-id', 'page-id');
+      addMeta('jarvis-surface-version', 'page-ver');
+      expect(assistant.getAcomAssistantIdentity())
+        .to.deep.equal({ appid: 'page-id', appver: 'page-ver' });
+    });
+
+    it('falls back to config', () => {
+      setConfig({ jarvis: { id: 'config-id', version: 'config-ver' } });
+      expect(assistant.getAcomAssistantIdentity())
+        .to.deep.equal({ appid: 'config-id', appver: 'config-ver' });
+    });
+
+    it('logs an error when there is no app ID', () => {
+      setConfig({});
+      expect(assistant.getAcomAssistantIdentity())
+        .to.deep.equal({ appid: undefined, appver: undefined });
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(window.lana.log.firstCall.args[0]).to.include('no app ID');
+    });
+
+    it('reports footer section metadata for a single open', async () => {
+      await assistant.loadAcomAssistant({ appid: 'bc-id', appver: '1.0' }, deps);
+      callbacks.onReadyCallback();
+      client.openMessagingWindow = sinon.spy(() => {
+        expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'section-id', appver: 'section-ver' });
+      });
+      await assistant.openAcomAssistantChat({ sourceType: 'a' }, section);
+      expect(client.openMessagingWindow.calledOnce).to.be.true;
+      expect(callbacks.getContextCallback()).to.deep.equal({ appid: 'bc-id', appver: '1.0' });
+    });
+  });
 });

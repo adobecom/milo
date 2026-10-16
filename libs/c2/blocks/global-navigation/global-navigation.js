@@ -240,7 +240,7 @@ export default async function init(el) {
         const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
         decorateAcomAssistantGnav(el);
       } catch (error) {
-        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', errorType: 'e' });
+        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
       }
     }
   });

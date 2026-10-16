@@ -1,8 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setViewport } from '@web/test-runner-commands';
 import init from '../../../../libs/c2/blocks/brand-concierge-global/brand-concierge-global.js';
 import { loadBrandConcierge } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
-import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
@@ -26,7 +27,8 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     metadata.name = 'acom-assistant';
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await setViewport({ width: 1200, height: 900 });
     setConfig({
       codeRoot: '/libs',
       env: { name: 'stage' },
@@ -74,7 +76,42 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     setConfig(originalConfig);
   });
 
+  it('skips the mobile mount through Federal and its post-render decoration with no-gnav-mobile', async () => {
+    await setViewport({ width: 899, height: 900 });
+    block.classList.add('no-gnav-mobile');
+    await loadBrandConcierge(block);
+    expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+    await loadAcomAssistantGnav();
+
+    expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    expect(document.querySelector('.bc-gnav')).to.be.null;
+    expect(block.children).to.have.lengthOf(0);
+    expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
+    expect(initialize.called).to.be.false;
+  });
+
+  it('also skips the mobile mount when a no-gnav-mobile block loads directly', async () => {
+    await setViewport({ width: 899, height: 900 });
+    block.classList.add('no-gnav-mobile');
+    await init(block);
+    await loadAcomAssistantGnav();
+
+    expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    expect(block.children).to.have.lengthOf(0);
+    expect(initialize.called).to.be.false;
+  });
+
+  it('mounts no-gnav-mobile authoring at exactly 900px', async () => {
+    await setViewport({ width: 900, height: 900 });
+    block.classList.add('no-gnav-mobile');
+    await loadBrandConcierge(block);
+
+    expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+    expect(window.milo.brandConcierge.brandConciergeGlobal).to.be.true;
+  });
+
   it('skips the legacy renderer and styles when Federal loads an Assistant-enabled block', async () => {
+    await setViewport({ width: 899, height: 900 });
     await loadBrandConcierge(block);
     decorateAcomAssistantGnav(document.querySelector('header'));
 

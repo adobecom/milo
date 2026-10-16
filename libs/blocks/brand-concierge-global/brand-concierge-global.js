@@ -73,7 +73,7 @@ function promptUp() {
 async function decorateGnav(cards, input, topNav, el) {
   if (useAcomAssistant) {
     const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
-    decorateNavWithAssistant(cards, topNav);
+    decorateNavWithAssistant(cards, topNav, el);
     return;
   }
 

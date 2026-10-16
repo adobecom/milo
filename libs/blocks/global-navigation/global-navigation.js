@@ -1786,8 +1786,9 @@ class Gnav {
   decorateAcomAssistantGnav = async () => {
     if (!this.useAcomAssistant || !this.elements.topnav.querySelector('.feds-bc-wrapper')) return;
     const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
-    const cards = this.content.querySelector('.brand-concierge-global > div');
-    decorateNavWithAssistant(cards, this.elements.topnav);
+    const block = this.content.querySelector('.brand-concierge-global');
+    const cards = block?.querySelector(':scope > div');
+    decorateNavWithAssistant(cards, this.elements.topnav, block);
   };
 
   decorateMainNav = async () => {

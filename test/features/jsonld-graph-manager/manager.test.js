@@ -19,6 +19,7 @@ import {
   trackedManager,
   resetManager,
   setCanonical,
+  getManagedGraph,
 } from './helpers.js';
 
 setupSuite();
@@ -461,11 +462,13 @@ describe('AggregateRating quality thresholds', () => {
     const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const rating = graph.find((n) => n['@type'] === 'AggregateRating');
-    expect(rating).to.exist;
-    expect(rating['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    expect(graph.find((n) => n['@type'] === 'AggregateRating')).to.not.exist;
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
+    expect(app.aggregateRating).to.deep.equal({
+      '@type': 'AggregateRating',
+      ratingValue: '4.0',
+      ratingCount: '100',
+    });
   });
 });
 
@@ -478,16 +481,14 @@ describe('SoftwareApplication default Offer synthesis', () => {
     const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const offer = graph.find((n) => n['@type'] === 'Offer');
-    expect(offer).to.deep.equal({
+    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{
       '@type': 'Offer',
-      '@id': `${PAGE_URL}#offer`,
       price: '0',
       availability: 'https://schema.org/InStock',
-    });
-    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    }]);
     expect(app['@type']).to.equal('SoftwareApplication');
-    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
     expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.false;
     expect(manager.sources.has(`${PAGE_URL}#offer`)).to.be.false;
     expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.be.undefined;
@@ -503,8 +504,8 @@ describe('SoftwareApplication default Offer synthesis', () => {
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
-    expect(graph.find((n) => n['@id'] === `${PAGE_URL}#offer`)).to.exist;
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '0', availability: 'https://schema.org/InStock' }]);
+    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
     expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.deep.equal([]);
   });
 
@@ -519,8 +520,8 @@ describe('SoftwareApplication default Offer synthesis', () => {
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
     expect(app['@type']).to.equal('WebApplication');
-    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
-    expect(graph.find((n) => n['@id'] === `${PAGE_URL}#offer`)).to.exist;
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '0', availability: 'https://schema.org/InStock' }]);
+    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
   });
 
   it('preserves producer-supplied Offers without generating a fallback', () => {
@@ -539,12 +540,9 @@ describe('SoftwareApplication default Offer synthesis', () => {
     const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const offers = graph.filter((n) => n['@type'] === 'Offer');
-    expect(offers).to.have.length(1);
-    expect(offers[0]['@id']).to.equal(`${PAGE_URL}#paid`);
-    expect(offers[0].price).to.equal('19.99');
+    expect(graph.filter((n) => n['@type'] === 'Offer')).to.have.length(0);
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#paid` }]);
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '19.99', priceCurrency: 'USD' }]);
   });
 
   it('does not generate or attach an Offer when no application exists', () => {
@@ -566,7 +564,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
     expect(graph.find((n) => ['SoftwareApplication', 'WebApplication', 'MobileApplication', 'VideoGame'].includes(n['@type']))).to.not.exist;
   });
 
-  it('preserves and remaps an unrelated node that collides with the fallback Offer ID', () => {
+  it('preserves an unrelated node and its references without a fallback ID collision', () => {
     document.head.append(
       makeScript({
         '@type': 'SoftwareApplication',
@@ -587,14 +585,12 @@ describe('SoftwareApplication default Offer synthesis', () => {
     manager.init();
 
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const fallback = graph.find((n) => n['@id'] === `${PAGE_URL}#offer`);
-    expect(fallback.price).to.equal('0');
     const standalone = graph.find((n) => n.description === 'Standalone event offer');
-    expect(standalone['@id']).to.equal(`${PAGE_URL}#offer-authored`);
+    expect(standalone['@id']).to.equal(`${PAGE_URL}#offer`);
     const event = graph.find((n) => n['@type'] === 'Event');
-    expect(event.offers).to.deep.equal({ '@id': `${PAGE_URL}#offer-authored` });
+    expect(event.offers).to.deep.equal({ '@id': `${PAGE_URL}#offer` });
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '0', availability: 'https://schema.org/InStock' }]);
     expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.true;
     expect(manager.graph.has(`${PAGE_URL}#offer-authored`)).to.be.false;
   });
@@ -622,11 +618,9 @@ describe('SoftwareApplication default Offer synthesis', () => {
     manager.rebuild();
 
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const offers = graph.filter((n) => n['@type'] === 'Offer');
-    expect(offers).to.have.length(1);
-    expect(offers[0]['@id']).to.equal(`${PAGE_URL}#paid`);
+    expect(graph.filter((n) => n['@type'] === 'Offer')).to.have.length(0);
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#paid` }]);
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '19.99', priceCurrency: 'USD' }]);
     expect(manager.graph.has(`${PAGE_URL}#offer`)).to.be.false;
   });
 
@@ -642,16 +636,229 @@ describe('SoftwareApplication default Offer synthesis', () => {
     const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const offers = graph.filter((n) => n['@type'] === 'Offer');
-    expect(offers).to.have.length(2);
-    const ids = offers.map((o) => o['@id']).sort();
-    // Producer fragments preserved; URL prefix canonicalized to current page.
-    expect(ids).to.deep.equal([`${PAGE_URL}#free-trial`, `${PAGE_URL}#paid`]);
+    expect(graph.filter((n) => n['@type'] === 'Offer')).to.have.length(0);
+    expect(manager.graph.has(`${PAGE_URL}#paid`)).to.be.true;
+    expect(manager.graph.has(`${PAGE_URL}#free-trial`)).to.be.true;
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
     expect(app.offers).to.deep.equal([
-      { '@id': `${PAGE_URL}#paid` },
-      { '@id': `${PAGE_URL}#free-trial` },
+      { '@type': 'Offer', price: '19.99', priceCurrency: 'USD' },
+      { '@type': 'Offer', price: '0.00', priceCurrency: 'USD' },
     ]);
+  });
+});
+
+describe('SoftwareApplication nested entities', () => {
+  it('preserves rating arrays and removes child contexts and IDs', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      aggregateRating: [{
+        '@context': 'https://schema.org',
+        '@type': 'AggregateRating',
+        '@id': 'https://producer.example/#rating',
+        ratingValue: '4.5',
+        ratingCount: '200',
+      }],
+      offers: [{
+        '@context': 'https://schema.org',
+        '@type': 'Offer',
+        price: '19.99',
+        priceCurrency: 'USD',
+      }],
+    }));
+    trackedManager().init();
+    const graph = getManagedGraph()['@graph'];
+    const app = graph.find((node) => node['@type'] === 'SoftwareApplication');
+    expect(app.aggregateRating).to.deep.equal([{ '@type': 'AggregateRating', ratingValue: '4.5', ratingCount: '200' }]);
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '19.99', priceCurrency: 'USD' }]);
+    expect(graph.some((node) => ['Offer', 'AggregateRating'].includes(node['@type']))).to.be.false;
+  });
+
+  ['SoftwareApplication', 'Product', 'WebApplication', 'MobileApplication', 'VideoGame'].forEach((type) => {
+    it(`serializes referenced Offer and AggregateRating bodies without IDs for ${type}`, () => {
+      const offerId = 'https://producer.example/#paid';
+      const ratingId = 'https://producer.example/#rating';
+      document.head.appendChild(makeScript({
+        '@graph': [
+          {
+            '@type': type,
+            name: 'Photoshop',
+            offers: { '@id': offerId },
+            aggregateRating: { '@id': ratingId },
+          },
+          {
+            '@type': 'Offer',
+            '@id': offerId,
+            price: '19.99',
+            priceCurrency: 'USD',
+            itemOffered: { '@id': `${PAGE_URL}#softwareapplication` },
+          },
+          {
+            '@type': 'AggregateRating',
+            '@id': ratingId,
+            ratingValue: '4.5',
+            ratingCount: '200',
+            bestRating: '5',
+          },
+        ],
+      }));
+      const manager = trackedManager();
+      manager.init();
+
+      const graph = getManagedGraph()['@graph'];
+      const app = graph.find((node) => node['@id'] === `${PAGE_URL}#softwareapplication`);
+      expect(app.offers).to.deep.equal({
+        '@type': 'Offer',
+        price: '19.99',
+        priceCurrency: 'USD',
+        itemOffered: { '@id': app['@id'] },
+      });
+      expect(app.aggregateRating).to.deep.equal({ '@type': 'AggregateRating', ratingValue: '4.5', ratingCount: '200', bestRating: '5' });
+      expect(graph.some((node) => ['Offer', 'AggregateRating'].includes(node['@type']))).to.be.false;
+      expect(manager.graph.get(app['@id']).offers).to.deep.equal({ '@id': `${PAGE_URL}#paid` });
+      const initial = getManagedGraph();
+      manager.rebuild();
+      expect(getManagedGraph()).to.deep.equal(initial);
+    });
+  });
+
+  it('keeps shared entities addressable outside the application', () => {
+    const offerId = 'https://producer.example/#paid';
+    const ratingId = 'https://producer.example/#rating';
+    document.head.appendChild(makeScript([
+      {
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+        offers: { '@type': 'Offer', '@id': offerId, price: '19.99', priceCurrency: 'USD' },
+        aggregateRating: { '@type': 'AggregateRating', '@id': ratingId, ratingValue: '4.5', ratingCount: '200' },
+      },
+      { '@type': 'Event', name: 'Launch', offers: { '@id': offerId } },
+      { '@type': 'Article', aggregateRating: { '@id': ratingId } },
+    ]));
+    trackedManager().init();
+
+    const graph = getManagedGraph()['@graph'];
+    const app = graph.find((node) => node['@type'] === 'SoftwareApplication');
+    expect(app.offers).to.not.have.property('@id');
+    expect(app.aggregateRating).to.not.have.property('@id');
+    expect(graph.find((node) => node['@type'] === 'Offer')['@id']).to.equal(`${PAGE_URL}#paid`);
+    expect(graph.find((node) => node['@type'] === 'Event').offers).to.deep.equal({ '@id': `${PAGE_URL}#paid` });
+    expect(graph.find((node) => node['@type'] === 'AggregateRating')['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    expect(graph.find((node) => node['@type'] === 'Article').aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
+  });
+
+  it('keeps a root Offer when a typed relationship outside the application references it', () => {
+    const offerId = 'https://producer.example/#paid';
+    document.head.appendChild(makeScript([
+      {
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+        offers: { '@type': 'Offer', '@id': offerId, price: '19.99', priceCurrency: 'USD' },
+      },
+      { '@type': 'Article', about: { '@type': 'Offer', '@id': offerId } },
+    ]));
+    trackedManager().init();
+
+    const graph = getManagedGraph()['@graph'];
+    expect(graph.find((node) => node['@type'] === 'Offer')).to.deep.include({ '@id': `${PAGE_URL}#paid`, price: '19.99', priceCurrency: 'USD' });
+    expect(graph.find((node) => node['@type'] === 'Article').about).to.deep.equal({ '@type': 'Offer', '@id': `${PAGE_URL}#paid` });
+  });
+
+  it('merges untyped reference bodies using runtime source priority', () => {
+    const offerId = `${PAGE_URL}#paid`;
+    const ratingId = `${PAGE_URL}#rating`;
+    const boot = makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      offers: [{ '@id': offerId, price: '19.99', priceCurrency: 'USD' }],
+      aggregateRating: { '@id': ratingId, ratingValue: '4.5', ratingCount: '200' },
+    });
+    const manager = trackedManager();
+    manager.enqueue(boot, 'bootDom');
+    manager.rebuild();
+    const runtime = makeScript({
+      '@type': 'SoftwareApplication',
+      offers: [{ '@id': offerId, price: '24.99', priceCurrency: 'USD' }],
+      aggregateRating: { '@id': ratingId, ratingValue: '4.8', ratingCount: '300' },
+    });
+    manager.enqueue(runtime, 'runtime');
+    manager.rebuild();
+
+    const app = getManagedGraph()['@graph'].find((node) => node['@type'] === 'SoftwareApplication');
+    expect(app.offers).to.deep.equal([{ '@type': 'Offer', price: '24.99', priceCurrency: 'USD' }]);
+    expect(app.aggregateRating).to.deep.equal({ '@type': 'AggregateRating', ratingValue: '4.8', ratingCount: '300' });
+    expect(manager.graph.get(`${PAGE_URL}#softwareapplication`).offers).to.deep.equal([{ '@id': offerId }]);
+  });
+
+  it('removes remapped low-quality rating references, including array values', () => {
+    document.head.appendChild(makeScript([
+      {
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+        aggregateRating: [{ '@id': 'https://producer.example/#rating' }],
+      },
+      {
+        '@type': 'AggregateRating',
+        '@id': 'https://producer.example/#rating',
+        ratingValue: '3.9',
+        ratingCount: '200',
+      },
+    ]));
+    trackedManager().init();
+    const graph = getManagedGraph()['@graph'];
+    expect(graph.find((node) => node['@type'] === 'SoftwareApplication')).to.not.have.property('aggregateRating');
+    expect(graph.some((node) => node['@type'] === 'AggregateRating')).to.be.false;
+  });
+
+  it('removes a low-quality rating body supplied with an aggregateRating reference', () => {
+    document.head.appendChild(makeScript([
+      {
+        '@type': 'SoftwareApplication',
+        name: 'Photoshop',
+        aggregateRating: {
+          '@id': 'https://producer.example/#rating',
+          ratingValue: '3.9',
+          ratingCount: '99',
+        },
+      },
+      {
+        '@type': 'AggregateRating',
+        '@id': 'https://producer.example/#rating',
+        ratingValue: '4.5',
+        ratingCount: '200',
+      },
+    ]));
+    trackedManager().init();
+    const graph = getManagedGraph()['@graph'];
+    expect(graph.find((node) => node['@type'] === 'SoftwareApplication')).to.not.have.property('aggregateRating');
+    expect(graph.some((node) => node['@type'] === 'AggregateRating')).to.be.false;
+  });
+
+  it('does not infer relationships from standalone entities', () => {
+    document.head.appendChild(makeScript([
+      { '@type': 'SoftwareApplication', name: 'Photoshop' },
+      { '@type': 'Offer', '@id': `${PAGE_URL}#paid`, price: '19.99', priceCurrency: 'USD' },
+      { '@type': 'AggregateRating', ratingValue: '4.5', ratingCount: '200' },
+    ]));
+    trackedManager().init();
+    const graph = getManagedGraph()['@graph'];
+    const app = graph.find((node) => node['@type'] === 'SoftwareApplication');
+    expect(app).to.not.have.property('aggregateRating');
+    expect(app.offers[0].price).to.equal('0');
+    expect(graph.filter((node) => ['Offer', 'AggregateRating'].includes(node['@type']))).to.have.length(2);
+  });
+
+  it('preserves unresolved references instead of fabricating child data', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      offers: { '@id': 'https://external.example/#offer' },
+      aggregateRating: { '@id': 'https://external.example/#rating' },
+    }));
+    trackedManager().init();
+    const app = getManagedGraph()['@graph'].find((node) => node['@type'] === 'SoftwareApplication');
+    expect(app.offers).to.deep.equal({ '@id': 'https://external.example/#offer' });
+    expect(app.aggregateRating).to.deep.equal({ '@id': 'https://external.example/#rating' });
   });
 });
 
