@@ -207,13 +207,22 @@ export async function getFragmentImages(fragmentUrl, root, depth = 0) {
 export function getLcpSnapshot(lcpSection) {
   if (!lcpSection?.clone) return null;
   const { clone } = lcpSection;
-  const toUrl = (src) => new URL(src, window.location.href).href;
-  const sources = [...clone.querySelectorAll('source[srcset*="media_"]')]
-    .map((s) => toUrl(s.getAttribute('srcset').split(',')[0].trim().split(/\s+/)[0]));
+  const toUrls = (els, getSrc) => els.map((el) => {
+    try {
+      return new URL(getSrc(el), window.location.href).href;
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+  const imgs = [...clone.querySelectorAll('img[src*="media_"]')];
+  const sources = [...clone.querySelectorAll('source[srcset*="media_"]')];
   return {
     root: clone,
-    images: [...[...clone.querySelectorAll('img[src*="media_"]')].map((img) => toUrl(img.getAttribute('src'))), ...sources],
-    fragments: [...clone.querySelectorAll('a[href*="/fragments/"]')].map((a) => toUrl(a.getAttribute('href'))),
+    images: [
+      ...toUrls(imgs, (img) => img.getAttribute('src')),
+      ...toUrls(sources, (s) => getSrcsetUrl(s.getAttribute('srcset'))),
+    ],
+    fragments: toUrls([...clone.querySelectorAll('a[href*="/fragments/"]')], (a) => a.getAttribute('href')),
   };
 }
 

@@ -23,6 +23,9 @@ const {
   compareImages,
   findNearDuplicates,
   createLimiter,
+  getFragmentUrl,
+  getFragmentImages,
+  getLcpSnapshot,
 } = await import('../../../../libs/features/mep/mep-next/mep-lcp-check.js');
 
 const MOCKS = '/test/features/mep/mep-next/mocks/lcp';
@@ -466,6 +469,46 @@ describe('mep-lcp-check', () => {
       const [msg] = log.firstCall.args;
       expect(msg).to.include('variant "v" | replace "any-marquee action-area", replace "any-marquee-section"');
       expect(msg.match(/tablet: fragment background cell 2 of 3/g)).to.have.length(1);
+    });
+  });
+
+  describe('fragment safety', () => {
+    afterEach(() => sinon.restore());
+
+    const html = (body) => new Response(body, { headers: { 'content-type': 'text/html' } });
+
+    it('rejects fragment URLs from untrusted hosts', () => {
+      expect(getFragmentUrl('https://evil.example.com/fragments/hero')).to.be.null;
+      expect(getFragmentUrl('https://adobe.com.evil.example/fragments/hero')).to.be.null;
+      expect(getFragmentUrl(`${MOCKS}/hero-near.plain.html?x=1#y`)).to.equal(abs(`${MOCKS}/hero-near`));
+    });
+
+    it('ignores fragment responses that are not HTML', async () => {
+      sinon.stub(window, 'fetch').resolves(new Response('<img src="./media_ccc111.png">', { headers: { 'content-type': 'application/json' } }));
+      expect(await getFragmentImages(abs('/test/lcp-safety/not-html'))).to.deep.equal([]);
+    });
+
+    it('stops following nested fragments at MAX_FRAGMENT_DEPTH', async () => {
+      const level = (n) => abs(`/test/lcp-safety/fragments/level${n}`);
+      const fetchStub = sinon.stub(window, 'fetch').callsFake(async (url) => {
+        const n = Number(url.match(/level(\d)/)[1]);
+        return html(`<div><img src="./media_dd${n}.png"><a href="${level(n + 1)}">next</a></div>`);
+      });
+      const images = await getFragmentImages(level(0));
+      expect(images.map(getMediaName)).to.deep.equal(['media_dd0.png', 'media_dd1.png']);
+      expect(fetchStub.callCount).to.equal(2);
+    });
+
+    it('skips unparseable URLs in the LCP snapshot instead of throwing', () => {
+      const clone = document.createElement('div');
+      clone.innerHTML = `
+        <img src="https://[::1/media_bad111.png">
+        <img src="${MOCKS}/media_aaa111.png">
+        <a href="https://[::1/fragments/bad">bad</a>
+        <a href="${MOCKS}/fragments/page-hero">ok</a>`;
+      const snapshot = getLcpSnapshot({ clone });
+      expect(snapshot.images).to.deep.equal([IMG_A]);
+      expect(snapshot.fragments).to.deep.equal([abs(`${MOCKS}/fragments/page-hero`)]);
     });
   });
 

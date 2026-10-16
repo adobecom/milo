@@ -1845,7 +1845,7 @@ export async function init(enablements = {}) {
       if (config.mep.lcpCheck) {
         import('../mep/mep-next/mep-lcp-check.js')
           .then(({ default: checkLcpImages }) => checkLcpImages())
-          .catch((e) => window.lana?.log(`MEP LCP check error: ${e.toString()}`));
+          .catch((e) => log(`MEP LCP check error: ${e.toString()}`));
       }
     }
   } catch (e) {
