@@ -119,25 +119,45 @@ describe('Utils', () => {
       }
     });
 
-    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
-      it(`requires exact on for metadata "${value}"`, () => {
+    const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
+    const flagged = ['on', 'ON'];
+
+    ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
+      const enabled = !disabled.includes(value);
+      const flag = flagged.includes(value);
+
+      it(`reads metadata "${value}"`, () => {
         meta.content = value;
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
       });
 
-      it(`reads query "${value}" with and without metadata`, () => {
+      it(`reads query "${value}" over metadata`, () => {
         const url = new URL(window.location.href);
         url.searchParams.set('aup-select', value);
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
-        meta.content = value === 'on' ? 'off' : 'on';
+        meta.content = value === 'enabled' ? 'on' : 'enabled';
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+        expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.isAupSelectOn()).to.equal(meta.content === 'on');
       });
+    });
+
+    it('does not report a value for signed-in Universal Nav users without aup-select', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled(true)).to.be.true;
+        expect(utils.getAupSelectValue()).to.be.null;
+        expect(utils.isAupSelectOn()).to.be.false;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
     });
   });
 
