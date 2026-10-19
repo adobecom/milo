@@ -2006,6 +2006,10 @@ faces mirrored like the card shader), sized to its cell, and coloured from a 256
 through the card's cover-crop, at the card's own opacity. Across the first `PQ_HANDOFF_P` (6%) of
 the flight nothing moves: the tiles fade in over the card, then the card fades out under them, both
 drawn throughout, so no frame shows neither. Only then do the tiles shrink, round off and break apart.
+Each particle keeps its photo colour for its whole flight and blends to the text colour only over the
+last `1 − QUOTE_INK_FROM` (22%) of its own travel, so the letters visibly assemble from the cards'
+pixels and turn to ink as they land; every particle has landed by `p = 1`, where the DOM cross-fade
+starts, so there is no colour pop.
 The flight progress is purely scroll, so a reversal re-forms the tiles on the cards, the cards fade
 back in under them, and at `p = 0` the cards are back exactly where they were.
 

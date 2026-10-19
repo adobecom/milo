@@ -259,6 +259,9 @@ export const QUOTE_EXPAND_END = 0.3; // share of uP the burst outward takes
 export const QUOTE_FLY_START = 0.08;
 export const QUOTE_FLY_DUR = 0.6;
 export const QUOTE_DELAY_MAX = 0.32; // QUOTE_FLY_START + DELAY + DUR must stay ≤ 1
+// Share of a particle's own travel after which it turns from its photo colour to the text's. Every
+// particle has landed (t = 1) by uP = 1, which is where the DOM cross-fade starts: no colour pop.
+export const QUOTE_INK_FROM = 0.78;
 
 export const QUOTE_PARTICLE_VERT = [
   'attribute vec2 aSrc;',
@@ -294,8 +297,10 @@ export const QUOTE_PARTICLE_VERT = [
   '  float srcSize = mix(aSrcSize, max(2.4, uSize * 1.2), e);',
   '  gl_PointSize = max(1.0, mix(srcSize, uSize, te) * uDpr);',
   '  vRound = e;',
-  // Scattering lifts the photo colours a little, so dark cards still read as they break up.
-  '  vec3 col = mix(mix(aSrcColor.rgb, vec3(1.0), 0.3 * e), aDstColor, smoothstep(0.1, 0.8, te));',
+  // Scattering lifts the photo colours a touch, so dark cards still read as they break up; the
+  // letters assemble in photo colour and take the text's only as each particle lands.
+  '  vec3 photo = mix(aSrcColor.rgb, vec3(1.0), 0.12 * e);',
+  `  vec3 col = mix(photo, aDstColor, smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t));`,
   '  vColor = vec4(col, mix(aSrcColor.a, 1.0, smoothstep(0.0, 0.4, te)) * uFade * uIn);',
   '}',
 ].join('\n');
