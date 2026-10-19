@@ -751,7 +751,7 @@
     margin: 0;
     box-sizing: border-box;
     padding-inline: var(--stack-edge-gap);
-    padding-bottom: calc(var(--slide-footer-h) / 2 + 20px);
+    padding-bottom: 0;
   }
 
   .hub-hero-carousel-container {
@@ -761,6 +761,7 @@
     --expand-fade-range: 0.03;
 
     margin-top: var(--elastic-mobile-first-slide-offset);
+    margin-bottom: calc(var(--offset-adjuster) / -2);
     height: auto;
     position: relative;
     flex-direction: column;
