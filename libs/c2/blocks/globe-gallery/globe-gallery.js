@@ -115,10 +115,10 @@ const PQ_DRAW_V_START = 0.26;
 
 // Particle hand-off (src/quote-particles.js). The flight starts this share of the way to the
 // last-card cue and settles this share of the way from the cue to the pin's release.
-const PQ_FLY_START_FRAC = 0.7;
-const PQ_SETTLE_SHARE = 0.5;
-const PQ_SETTLE_MIN_T = 0.03; // zoomT
-const PQ_SETTLE_MAX_T = 0.1;
+const PQ_FLY_START_FRAC = 0.5;
+const PQ_SETTLE_SHARE = 0.3;
+const PQ_SETTLE_MIN_T = 0.02; // zoomT
+const PQ_SETTLE_MAX_T = 0.06;
 const PQ_BUDGET_SM = 16000;
 const PQ_BUDGET_MD = 48000;
 const PQ_FX_REBUILD_MS = 150;

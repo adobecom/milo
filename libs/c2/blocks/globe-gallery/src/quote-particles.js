@@ -9,7 +9,7 @@ const INK_ALPHA = 128;
 const PALETTE_W = 12;
 const PALETTE_H = 16;
 const GRAY = [0.55, 0.55, 0.55];
-const SIZE_PER_SPACING = 1.3; // dot diameter over mean ink spacing: just enough to read solid
+const SIZE_PER_SPACING = 1.5; // dot diameter over mean ink spacing: just enough to read solid
 const SIZE_MIN = 1.2;
 const SIZE_MAX = 4;
 
