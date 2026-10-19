@@ -71,18 +71,18 @@ function addCollapseControl(list, label) {
 
   list.id = 'blog-side-navigation-sections';
   while (document.getElementById(list.id)) list.id += '-1';
-  const icon = createTag('span', { 'aria-hidden': 'true' }, '+');
+  const icon = createTag('span', { 'aria-hidden': 'true' }, '-');
   const button = createTag('button', {
     class: 'blog-side-navigation-toggle',
     type: 'button',
     'aria-label': label,
     'aria-controls': list.id,
-    'aria-expanded': 'false',
+    'aria-expanded': 'true',
   }, icon);
   const items = [...list.children];
   items[0].append(button);
   const tablet = window.matchMedia('(min-width: 600px)');
-  let expanded = false;
+  let expanded = true;
   const render = () => {
     const open = !tablet.matches || expanded;
     const focusedElement = document.activeElement;

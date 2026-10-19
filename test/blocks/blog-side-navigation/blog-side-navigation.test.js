@@ -236,7 +236,7 @@ describe('blog-side-navigation section list', () => {
     expect(window.location.href).to.equal(originalUrl);
   });
 
-  it('only collapses more than three section links on tablet and desktop', async () => {
+  it('starts expanded and only offers collapse for more than three links on tablet and desktop', async () => {
     const media = mockTablet();
     for (const count of [1, 2, 3, 4]) {
       const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -251,8 +251,9 @@ describe('blog-side-navigation section list', () => {
       } else {
         expect(mediaStub.firstCall.args[0]).to.equal('(min-width: 600px)');
         expect(button.hidden).to.equal(false);
-        expect(button.getAttribute('aria-expanded')).to.equal('false');
-        expect(items.filter((item) => !item.hidden).length).to.equal(1);
+        expect(button.getAttribute('aria-expanded')).to.equal('true');
+        expect(button.textContent).to.equal('-');
+        expect(items.every((item) => !item.hidden)).to.equal(true);
         expect(document.getElementById(button.getAttribute('aria-controls')))
           .to.equal(block.querySelector('ul'));
         expect(button.getAttribute('aria-label')).to.equal('JUMP TO SECTION');
@@ -272,18 +273,19 @@ describe('blog-side-navigation section list', () => {
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
     const url = window.location.href;
-    expect(button.textContent).to.equal('+');
-    button.focus({ preventScroll: true });
-    button.click();
-    expect(button.getAttribute('aria-expanded')).to.equal('true');
     expect(button.textContent).to.equal('-');
+    expect(button.getAttribute('aria-expanded')).to.equal('true');
     expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
-    expect(document.activeElement).to.equal(button);
     links[1].focus({ preventScroll: true });
     button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('false');
     expect(button.textContent).to.equal('+');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+    expect(document.activeElement).to.equal(button);
+    button.click();
+    expect(button.getAttribute('aria-expanded')).to.equal('true');
+    expect(button.textContent).to.equal('-');
+    expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
     expect(document.activeElement).to.equal(button);
     expect(window.location.href).to.equal(url);
     expect(scrollStub.called).to.equal(false);
@@ -295,6 +297,7 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
+    button.click();
     button.focus({ preventScroll: true });
     media.matches = false;
     media.dispatchEvent(new Event('change'));
