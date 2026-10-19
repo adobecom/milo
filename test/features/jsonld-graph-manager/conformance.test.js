@@ -43,6 +43,34 @@ describe('graph conformance', () => {
 // bug the rules exist to prevent (including the dangling-ref regression the
 // Product->SoftwareApplication transform fix addressed).
 describe('validate.js self-check', () => {
+  it('rejects application child references and ID-bearing nested entities', () => {
+    const violations = validate([
+      {
+        '@type': 'SoftwareApplication',
+        '@id': 'https://x.test/p#softwareapplication',
+        offers: [{ '@id': 'https://x.test/p#offer' }],
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          '@id': 'https://x.test/p#rating',
+          ratingValue: '4.5',
+          ratingCount: '200',
+        },
+      },
+      { '@type': 'Offer', '@id': 'https://x.test/p#offer', price: '0' },
+    ], rules).filter((v) => v.rule === 'softwareapplication-nested-entities');
+    expect(violations).to.have.length(2);
+  });
+
+  it('checks quality thresholds on nested application ratings', () => {
+    const flagged = new Set(validate([{
+      '@type': 'WebApplication',
+      '@id': 'https://x.test/p#softwareapplication',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '3.9', ratingCount: '99' },
+    }], rules).map((v) => v.rule));
+    expect(flagged.has('aggregaterating-min-rating-value')).to.be.true;
+    expect(flagged.has('aggregaterating-min-rating-count')).to.be.true;
+  });
+
   it('reports dangling refs, duplicate ids, missing baseline, and missing isPartOf', () => {
     const broken = {
       '@context': 'https://schema.org',

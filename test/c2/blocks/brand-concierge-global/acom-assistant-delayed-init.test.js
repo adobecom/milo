@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setViewport } from '@web/test-runner-commands';
 import { loadBrandConcierge } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
@@ -26,7 +27,8 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     metadata.name = 'acom-assistant';
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await setViewport({ width: 1200, height: 900 });
     setConfig({
       codeRoot: '/libs',
       env: { name: 'stage' },
@@ -72,6 +74,27 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     if (originalOverlay === null) localStorage.removeItem('bc-side-overlay');
     else localStorage.setItem('bc-side-overlay', originalOverlay);
     setConfig(originalConfig);
+  });
+
+  it('retains no-gnav-mobile authoring when Federal supplies the block before navigation mounts', async () => {
+    await setViewport({ width: 899, height: 900 });
+    block.classList.add('no-gnav-mobile');
+    const header = document.querySelector('header');
+    header.remove();
+    const clock = sinon.useFakeTimers();
+    try {
+      await loadBrandConcierge(block);
+      document.body.prepend(header);
+      expect(decorateAcomAssistantGnav(header)).to.be.null;
+      await clock.tickAsync(100);
+      await loadAcomAssistantGnav();
+
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+      expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
+      expect(initialize.called).to.be.false;
+    } finally {
+      clock.restore();
+    }
   });
 
   it('retains authored prompts supplied before navigation mounts for delayed initialization', async () => {
