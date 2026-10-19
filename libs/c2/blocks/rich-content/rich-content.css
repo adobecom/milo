@@ -4,6 +4,16 @@
   position: relative;
   box-sizing: border-box;
 
+  mas-field > [data-role="mas-field-content"] p {
+    display: inline;
+    font: inherit;
+    letter-spacing: inherit;
+
+    & + p::before {
+      content: ' ';
+    }
+  }
+
   &.center {
     text-align: center;
   }

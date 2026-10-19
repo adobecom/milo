@@ -333,7 +333,7 @@ const Input = ({
   `;
 };
 
-const DropdownSelect = ({ label, options, prop }) => {
+const DropdownSelect = ({ label, options, prop, tooltip }) => {
   const { dispatch, state } = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     dispatch({
@@ -349,7 +349,7 @@ const DropdownSelect = ({ label, options, prop }) => {
       options=${options}
       value=${state[prop]}
       label=${label}
-
+      tooltip=${tooltip}
       onChange=${onChange}
     />
   `;
@@ -525,7 +525,12 @@ const TagsPanel = ({ tagsData }) => {
       label="Content Type Tags"
     />
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
-    <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
+    <${DropdownSelect}
+      options=${allTags}
+      prop="excludeTags"
+      label="Tags to Exclude"
+      tooltip="Content is excluded only if it matches ALL of the selected tags (AND logic). To exclude content matching ANY of several tags, use the NOT logic Tags section below instead, which lets you choose OR logic."
+    />
     <label>Complex Queries (Include & Exclude)</label>
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}

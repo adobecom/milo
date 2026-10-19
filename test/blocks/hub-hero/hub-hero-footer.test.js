@@ -79,10 +79,11 @@ describe('hub-hero footer and assembly', () => {
 
     [
       { width: 1280, height: 800, expectedGridWidth: 256, finalWidth: 240 },
-      { width: 1440, height: 760, expectedGridWidth: 288, finalWidth: 392 },
-      { width: 1470, height: 800, expectedGridWidth: 294, finalWidth: 392 },
-      { width: 1470, height: 1100, expectedGridWidth: 294, finalWidth: 392 },
-      { width: 1536, height: 730, expectedGridWidth: 302, finalWidth: 392 },
+      { width: 1440, height: 760, expectedGridWidth: 288, finalWidth: 222 },
+      { width: 1470, height: 800, expectedGridWidth: 294, finalWidth: 240 },
+      { width: 1470, height: 1100, expectedGridWidth: 294, finalWidth: 375 },
+      { width: 1536, height: 730, expectedGridWidth: 302, finalWidth: 208.5 },
+      { width: 1920, height: 1200, expectedGridWidth: 302, finalWidth: 392 },
     ].forEach(({ width: viewportWidth, height, expectedGridWidth, finalWidth }) => {
       ['ltr', 'rtl'].forEach((direction) => {
         it(`matches the grid then assembles smoothly at ${viewportWidth}x${height} in ${direction}`, async () => {
@@ -214,7 +215,7 @@ describe('hub-hero footer and assembly', () => {
     ['p', 'h3'].forEach((footerTag) => {
       [3, 4].forEach((slideCount) => {
         ['ltr', 'rtl'].forEach((direction) => {
-          it(`expands fixed XL ${slideCount}-slide ${direction} ${footerTag} cards in short viewports without narrowing footer text`, async () => {
+          it(`expands proportional XL ${slideCount}-slide ${direction} ${footerTag} cards in short viewports without narrowing footer text`, async () => {
             document.documentElement.setAttribute('dir', direction);
             for (const viewport of [
               { width: 1536, height: 730 },
@@ -232,8 +233,12 @@ describe('hub-hero footer and assembly', () => {
               const icon = card.querySelector('.hub-hero-carousel-item-footer span');
               paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
               await settleLayout();
+              const restingWidth = (viewport.height * 0.6 - 64 - 96) * 0.75;
               row.querySelectorAll('[data-index]').forEach((slide) => {
-                expect(slide.getBoundingClientRect().width).to.be.closeTo(392, 0.1);
+                const media = slide.querySelector('.hub-hero-carousel-item-media');
+                expect(slide.getBoundingClientRect().width).to.be.closeTo(restingWidth, 0.1);
+                expect(media.getBoundingClientRect().width / media.getBoundingClientRect().height)
+                  .to.be.closeTo(3 / 4, 0.001);
               });
               const rowWidth = row.getBoundingClientRect().width;
               const textWidth = paragraph.getBoundingClientRect().width;
@@ -255,15 +260,15 @@ describe('hub-hero footer and assembly', () => {
                   requestAnimationFrame(sample);
                 });
                 samples.forEach((sample) => {
-                  expect(sample.cardWidth).to.be.at.least(392 - 0.1);
+                  expect(sample.cardWidth).to.be.at.least(restingWidth - 0.1);
                   expect(sample.textWidth).to.be.at.least(textWidth - 0.1);
                   expect(sample.rowWidth).to.be.closeTo(rowWidth, 0.1);
                 });
                 expect(card.getBoundingClientRect().width)
-                  .to.be.at.least(392 + icon.getBoundingClientRect().width + gap - 0.1);
+                  .to.be.at.least(restingWidth + icon.getBoundingClientRect().width + gap - 0.1);
                 card.classList.remove(state);
                 await new Promise((resolve) => { setTimeout(resolve, 350); });
-                expect(card.getBoundingClientRect().width).to.be.closeTo(392, 0.1);
+                expect(card.getBoundingClientRect().width).to.be.closeTo(restingWidth, 0.1);
               }
               block.remove();
               window.scrollTo(0, 0);
@@ -423,6 +428,42 @@ describe('hub-hero footer and assembly', () => {
             }
           }).timeout(10000);
         });
+      });
+    });
+
+    [3, 4].forEach((slideCount) => {
+      ['ltr', 'rtl'].forEach((direction) => {
+        it(`preserves the ${slideCount}-slide ${direction} XL portrait ratio and 392px cap on resize`, async () => {
+          await setViewport({ width: 1920, height: 1200 });
+          document.documentElement.setAttribute('dir', direction);
+          const block = await loadCarousel(slideCount, 'h3');
+          const row = block.querySelector('.hub-hero-carousel-container');
+          for (const { width, height, expected } of [
+            { width: 1470, height: 800, expected: 240 },
+            { width: 1470, height: 1100, expected: slideCount === 3 ? 375 : 351.5 },
+            { width: 1920, height: 1200, expected: 392 },
+            { width: 1920, height: 800, expected: 240 },
+            { width: 1920, height: 1200, expected: 392 },
+          ]) {
+            await setViewport({ width, height });
+            await settleLayout();
+            window.scrollTo(0, (block.offsetHeight - window.innerHeight) * 0.95);
+            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            await settleLayout();
+            row.querySelectorAll('[data-index]').forEach((card) => {
+              const bounds = card.getBoundingClientRect();
+              const media = card.querySelector('.hub-hero-carousel-item-media').getBoundingClientRect();
+              expect(bounds.width).to.be.closeTo(expected, 0.1);
+              expect(bounds.width).to.be.at.most(392.1);
+              expect(media.width).to.be.closeTo(expected, 0.1);
+              expect(media.width / media.height).to.be.closeTo(3 / 4, 0.001);
+            });
+            const gap = parseFloat(getComputedStyle(row).gap);
+            expect(row.getBoundingClientRect().width)
+              .to.be.closeTo(slideCount * expected + (slideCount - 1) * gap, 0.1);
+            expect(row.getBoundingClientRect().width).to.be.at.most(width);
+          }
+        }).timeout(5000);
       });
     });
 
