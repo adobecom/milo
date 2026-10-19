@@ -14,6 +14,7 @@ export const tooltipInfo = {
 
 const COOKIE_SCOPE_LABEL = {
   prod: 'Shared across adobe.com',
+  stage: 'Shared across stage.adobe.com',
   preview: 'Host-only (EDS preview/live)',
   local: 'Host-only (local)',
 };

@@ -3,6 +3,7 @@ import { getCookie, getMetadata, isTrustedUrl } from '../../utils/utils.js';
 const COOKIE_NAME = 'dynamicNav';
 const EXPIRY_SECONDS = 30 * 60; // 30-minute inactivity expiry, refreshed on use.
 const PROD_DOMAIN = 'adobe.com';
+const STAGE_DOMAIN = 'stage.adobe.com';
 const PREVIEW_HOST_PATTERN = /\.(?:hlx|aem)\.(?:page|live)$/;
 
 export function foundDisableValues() {
@@ -56,6 +57,9 @@ export function getCookieEnvironment(
   protocol = window.location.protocol,
 ) {
   const secure = protocol === 'https:';
+  if (host === STAGE_DOMAIN || host.endsWith(`.${STAGE_DOMAIN}`)) {
+    return { name: 'stage', shareDomain: STAGE_DOMAIN, secure };
+  }
   if (host === PROD_DOMAIN || host.endsWith(`.${PROD_DOMAIN}`)) {
     return { name: 'prod', shareDomain: PROD_DOMAIN, secure };
   }
@@ -63,6 +67,10 @@ export function getCookieEnvironment(
     return { name: 'preview', shareDomain: null, secure };
   }
   return { name: 'local', shareDomain: null, secure };
+}
+
+function cookieName(env = getCookieEnvironment()) {
+  return env.name === 'stage' ? `${COOKIE_NAME}-stage` : COOKIE_NAME;
 }
 
 export function cookieAttributes(
@@ -92,19 +100,19 @@ function writeState({ source, group }) {
   const value = { s: absoluteSource };
   if (group) value.g = group;
   const encoded = encodeURIComponent(JSON.stringify(value));
-  document.cookie = [`${COOKIE_NAME}=${encoded}`, `Max-Age=${EXPIRY_SECONDS}`, ...cookieAttributes()].join('; ');
+  document.cookie = [`${cookieName()}=${encoded}`, `Max-Age=${EXPIRY_SECONDS}`, ...cookieAttributes()].join('; ');
 }
 
 function clearState() {
   if (!cookiesAvailable()) return;
-  document.cookie = [`${COOKIE_NAME}=`, 'Max-Age=0', ...cookieAttributes()].join('; ');
+  document.cookie = [`${cookieName()}=`, 'Max-Age=0', ...cookieAttributes()].join('; ');
 }
 
 export function readState() {
   const available = cookiesAvailable();
   if (!available) return { available: false, source: null, group: null };
 
-  const raw = getCookie(COOKIE_NAME);
+  const raw = getCookie(cookieName());
   if (!raw) return { available: true, source: null, group: null };
 
   try {

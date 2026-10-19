@@ -178,6 +178,18 @@ describe('Dynamic nav (cookie based)', () => {
       expect(attrs).to.include('Path=/');
     });
 
+    it('scopes the cookie to stage.adobe.com so stage and prod stay isolated', () => {
+      expect(getCookieEnvironment('www.stage.adobe.com', 'https:')).to.deep.equal({ name: 'stage', shareDomain: 'stage.adobe.com', secure: true });
+      expect(getCookieEnvironment('stage.adobe.com', 'https:').name).to.equal('stage');
+      const attrs = cookieAttributes('business.stage.adobe.com', 'https:');
+      expect(attrs).to.include('Domain=stage.adobe.com');
+      expect(attrs).to.include('Secure');
+    });
+
+    it('does not misclassify prod hosts that merely contain "stage"', () => {
+      expect(getCookieEnvironment('backstage.adobe.com', 'https:').name).to.equal('prod');
+    });
+
     it('keeps aem.live EDS hosts host-only (no Domain) with Secure', () => {
       expect(getCookieEnvironment('main--bacom--adobecom.aem.live', 'https:')).to.deep.equal({ name: 'preview', shareDomain: null, secure: true });
       const attrs = cookieAttributes('main--bacom--adobecom.aem.live', 'https:');
