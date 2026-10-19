@@ -8,16 +8,26 @@ const defaultItemWidth = 106;
 const defaultGridGap = 32;
 const defaultPadding = 50;
 
-const PREVBUTTON = `<button class="nav-button previous-button"><img class="previous-icon" alt="Previous icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
-const NEXTBUTTON = `<button class="nav-button next-button"><img class="next-icon" alt="Next icon" src="${base}/blocks/carousel/img/arrow.svg"></button>`;
+const NAV_ICON_ALT = { previous: 'Previous icon', next: 'Next icon' };
+
+function createNavGrad(position, label) {
+  const img = createTag('img', {
+    class: `${position}-icon`,
+    alt: label ? '' : NAV_ICON_ALT[position],
+    src: `${base}/blocks/carousel/img/arrow.svg`,
+  });
+  const button = createTag('button', {
+    class: `nav-button ${position}-button`,
+    ...(label && { 'aria-label': label }),
+  }, img);
+  return createTag('div', { class: `nav-grad ${position}` }, button);
+}
 
 const getBlockProps = (el) => [...el.childNodes].reduce((attr, row) => {
   if (row.children) {
     const [key, value] = row.children;
     if (key && value) {
-      attr[key.textContent.trim().toLowerCase()] = value.textContent
-        .trim()
-        .toLowerCase();
+      attr[key.textContent.trim().toLowerCase()] = value.textContent.trim();
     }
   }
   return attr;
@@ -55,11 +65,11 @@ export function hideNavigation(el) {
   return elHasWidth ? horizontalScroll : scrollWidth < screenWidth;
 }
 
-function setBlockProps(el, columns) {
-  const attrs = getBlockProps(el);
+function setBlockProps(el, attrs, columns) {
   const itemWidth = attrs['item width'] ?? defaultItemWidth;
   const overrides = attrs.style
     ? attrs.style
+      .toLowerCase()
       .split(', ')
       .map((style) => style.replaceAll(' ', '-'))
       .join(' ')
@@ -89,10 +99,10 @@ function handleBtnState(
   );
 }
 
-function handleNavigation(el) {
+function handleNavigation(el, attrs) {
   const isRtl = document.documentElement.dir === 'rtl';
-  const prev = createTag('div', { class: 'nav-grad previous' }, PREVBUTTON);
-  const next = createTag('div', { class: 'nav-grad next' }, NEXTBUTTON);
+  const prev = createNavGrad('previous', attrs['previous button label']);
+  const next = createNavGrad('next', attrs['next button label']);
   const buttons = isRtl ? [next, prev] : [prev, next];
   buttons.forEach((btn) => {
     const button = btn.childNodes[0];
@@ -112,9 +122,10 @@ let attachedResize = false;
 export default function init(el) {
   const hasNav = el.classList.contains(NAV);
   const actions = el.parentElement.querySelectorAll('.action-item');
-  const style = setBlockProps(el, actions.length);
+  const attrs = getBlockProps(el);
+  const style = setBlockProps(el, attrs, actions.length);
   const items = createTag('div', { class: style }, null);
-  const buttons = hasNav ? handleNavigation(items) : [];
+  const buttons = hasNav ? handleNavigation(items, attrs) : [];
   items.append(...actions);
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
