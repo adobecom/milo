@@ -295,6 +295,7 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     max-height: 292px;
     margin: var(--s2a-spacing-xs) 0 0;
     padding: 0;
+    padding-inline-end: var(--s2a-spacing-xs);
     overflow-y: auto;
     overscroll-behavior-y: contain;
     touch-action: pan-y;
