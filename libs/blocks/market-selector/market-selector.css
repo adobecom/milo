@@ -448,4 +448,8 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     min-height: 36vh;
     max-height: 60vh;
   }
+
+  .global-footer .market-selector-popover:hover .market-selector-list {
+    scrollbar-color: var(--s2a-color-transparent-white-64) transparent;
+  }
 }

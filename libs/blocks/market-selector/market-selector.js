@@ -247,7 +247,7 @@ function createDropdown(
   showGlobe,
   analyticsLabel,
   getAnalyticsSelectEventName,
-  { focusOnPointerOpen = true } = {},
+  { focusOnPointerOpen = true, routeWheelToList = false } = {},
 ) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
@@ -299,6 +299,17 @@ function createDropdown(
 
   popover.append(dragHandle, searchContainer, list);
   container.append(button, popover);
+
+  function onPopoverWheel(e) {
+    if (e.ctrlKey || popover.dataset.open !== 'true') return;
+    e.preventDefault();
+    let delta = e.deltaY;
+    if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) delta *= 16;
+    else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) delta *= list.clientHeight;
+    list.scrollTop += delta;
+  }
+
+  if (routeWheelToList) popover.addEventListener('wheel', onPopoverWheel, { passive: false });
 
   const closePopoverElement = (popoverEl) => {
     popoverEl.style.display = 'none';
@@ -640,11 +651,16 @@ function createDropdown(
     cleanup: () => {
       document.removeEventListener('click', onOutsideClick);
       removeDragListeners();
+      if (routeWheelToList) popover.removeEventListener('wheel', onPopoverWheel);
     },
   };
 }
 
-export default async function init(block, { onCleanup, focusOnPointerOpen = true } = {}) {
+export default async function init(block, {
+  onCleanup,
+  focusOnPointerOpen = true,
+  routeWheelToList = false,
+} = {}) {
   const config = await getMarketConfig();
   if (!config || !config.languages?.length) {
     if (onCleanup) throw new Error('Market selector configuration is missing languages');
@@ -701,7 +717,7 @@ export default async function init(block, { onCleanup, focusOnPointerOpen = true
     true,
     'language-selector',
     (item) => `language-switch:${item.value || 'us'}`,
-    { focusOnPointerOpen },
+    { focusOnPointerOpen, routeWheelToList },
   );
 
   const marketDropdown = createDropdown(
@@ -715,7 +731,7 @@ export default async function init(block, { onCleanup, focusOnPointerOpen = true
     false,
     'market-selector',
     (item) => `market-switch:${item.value}`,
-    { focusOnPointerOpen },
+    { focusOnPointerOpen, routeWheelToList },
   );
 
   const wrapper = createTag('div', { class: 'market-selector-wrapper' });

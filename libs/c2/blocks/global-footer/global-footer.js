@@ -518,7 +518,11 @@ class Footer {
         ]);
         this.marketSelectorCleanup?.();
         const onCleanup = (cleanup) => { this.marketSelectorCleanup = cleanup; };
-        await initMarketSelector(selector, { onCleanup, focusOnPointerOpen: false });
+        await initMarketSelector(selector, {
+          onCleanup,
+          focusOnPointerOpen: false,
+          routeWheelToList: true,
+        });
         this.elements.regionPicker = selector;
         return this.elements.regionPicker;
       } catch (error) {
