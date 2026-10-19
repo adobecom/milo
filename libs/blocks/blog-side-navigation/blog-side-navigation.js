@@ -67,7 +67,7 @@ function trackActiveSection(block, headings, cleanupControls) {
 }
 
 function addCollapseControl(list, label) {
-  if (list.children.length <= 3) return undefined;
+  if (list.children.length <= 1) return undefined;
 
   list.id = 'blog-side-navigation-sections';
   while (document.getElementById(list.id)) list.id += '-1';
@@ -82,21 +82,23 @@ function addCollapseControl(list, label) {
   const items = [...list.children];
   items[0].append(button);
   const tablet = window.matchMedia('(min-width: 600px)');
-  let expanded = true;
+  const expanded = { tablet: true, mobile: false };
   const render = () => {
-    const open = !tablet.matches || expanded;
+    const collapsible = items.length > (tablet.matches ? 3 : 1);
+    const open = !collapsible || expanded[tablet.matches ? 'tablet' : 'mobile'];
     const focusedElement = document.activeElement;
-    button.hidden = !tablet.matches;
+    button.hidden = !collapsible;
     if (!open && items.slice(1).some((item) => item.contains(focusedElement))) {
       button.focus({ preventScroll: true });
-    } else if (!tablet.matches && focusedElement === button) {
+    } else if (button.hidden && focusedElement === button) {
       items[0].querySelector('a').focus({ preventScroll: true });
     }
     button.setAttribute('aria-expanded', String(open));
     items.forEach((item, index) => { item.hidden = !open && index > 0; });
   };
   button.addEventListener('click', () => {
-    expanded = !expanded;
+    const viewport = tablet.matches ? 'tablet' : 'mobile';
+    expanded[viewport] = !expanded[viewport];
     render();
   });
   tablet.addEventListener('change', render);

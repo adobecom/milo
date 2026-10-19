@@ -245,8 +245,11 @@ describe('blog-side-navigation section list', () => {
       await init(block);
       const button = block.querySelector('button');
       const items = [...block.querySelectorAll('li')];
-      if (count <= 3) {
+      if (count === 1) {
         expect(button).not.to.exist;
+        expect(items.every((item) => !item.hidden)).to.equal(true);
+      } else if (count <= 3) {
+        expect(button.hidden).to.equal(true);
         expect(items.every((item) => !item.hidden)).to.equal(true);
       } else {
         expect(mediaStub.firstCall.args[0]).to.equal('(min-width: 600px)');
@@ -260,11 +263,43 @@ describe('blog-side-navigation section list', () => {
         expect(button.getAttribute('aria-label')).to.equal('JUMP TO SECTION');
         media.matches = false;
         media.dispatchEvent(new Event('change'));
-        expect(button.hidden).to.equal(true);
-        expect(items.every((item) => !item.hidden)).to.equal(true);
+        expect(button.hidden).to.equal(false);
+        expect(button.getAttribute('aria-expanded')).to.equal('false');
+        expect(items.filter((item) => !item.hidden).length).to.equal(1);
       }
       main.remove();
     }
+  });
+
+  it('starts mobile lists with two or more links collapsed and supports expanding and collapsing', async () => {
+    mockTablet(false);
+    for (const count of [1, 2, 3, 4]) {
+      const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
+        .join('');
+      const { main, block } = buildArticle(content);
+      await init(block);
+      const button = block.querySelector('button');
+      const items = [...block.querySelectorAll('li')];
+      if (count === 1) {
+        expect(button).not.to.exist;
+        expect(items[0].hidden).to.equal(false);
+      } else {
+        expect(button.hidden).to.equal(false);
+        expect(button.getAttribute('aria-expanded')).to.equal('false');
+        expect(items.filter((item) => !item.hidden).length).to.equal(1);
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal('true');
+        expect(items.every((item) => !item.hidden)).to.equal(true);
+        items[1].querySelector('a').focus({ preventScroll: true });
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal('false');
+        expect(items.filter((item) => !item.hidden).length).to.equal(1);
+        expect(document.activeElement).to.equal(button);
+      }
+      main.remove();
+    }
+    expect(window.location.href).to.equal(originalUrl);
+    expect(scrollStub.called).to.equal(false);
   });
 
   it('toggles the full list without navigating and preserves valid keyboard focus on collapse', async () => {
@@ -329,32 +364,58 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('handles breakpoint changes without leaving focus on a hidden control or link', async () => {
+  it('preserves separate mobile and desktop expansion states and moves focus before hiding links', async () => {
     const media = mockTablet();
     const { block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
     await init(block);
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
-    button.click();
-    button.focus({ preventScroll: true });
+    links[1].focus({ preventScroll: true });
     media.matches = false;
     media.dispatchEvent(new Event('change'));
-    expect(button.hidden).to.equal(true);
-    expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
-    expect(document.activeElement).to.equal(links[0]);
+    expect(button.hidden).to.equal(false);
+    expect(button.getAttribute('aria-expanded')).to.equal('false');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+    expect(document.activeElement).to.equal(button);
+    button.click();
     links[1].focus({ preventScroll: true });
     media.matches = true;
     media.dispatchEvent(new Event('change'));
     expect(button.hidden).to.equal(false);
+    expect(button.getAttribute('aria-expanded')).to.equal('true');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+    expect(document.activeElement).to.equal(links[1]);
+    button.click();
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
     expect(document.activeElement).to.equal(button);
-    button.click();
     media.matches = false;
-    media.dispatchEvent(new Event('change'));
-    media.matches = true;
     media.dispatchEvent(new Event('change'));
     expect(button.getAttribute('aria-expanded')).to.equal('true');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+    media.matches = true;
+    media.dispatchEvent(new Event('change'));
+    expect(button.getAttribute('aria-expanded')).to.equal('false');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+  });
+
+  it('keeps keyboard focus visible when short lists gain or lose the mobile-only toggle', async () => {
+    const media = mockTablet();
+    const { block } = buildArticle('<h2>First</h2><h2>Second</h2>');
+    await init(block);
+    const button = block.querySelector('button');
+    const links = [...block.querySelectorAll('a')];
+    expect(button.hidden).to.equal(true);
+    links[1].focus({ preventScroll: true });
+    media.matches = false;
+    media.dispatchEvent(new Event('change'));
+    expect(button.hidden).to.equal(false);
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(1);
+    expect(document.activeElement).to.equal(button);
+    media.matches = true;
+    media.dispatchEvent(new Event('change'));
+    expect(button.hidden).to.equal(true);
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+    expect(document.activeElement).to.equal(links[0]);
   });
 
   it('tracks sections in both scroll directions without moving focus, scrolling, or changing the URL', async () => {
