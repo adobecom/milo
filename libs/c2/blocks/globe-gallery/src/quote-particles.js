@@ -10,10 +10,12 @@ import {
 // which shares its box with the canvas while the quote is on screen. See README (WebGL pull quote).
 
 const INK_ALPHA = 128; // raster alpha that counts as a target pixel
-const GRID_LONG = 32; // card colour lookup resolution, long side
-const SRC_SIZE = 2.4; // point size, CSS px
+const GRID_LONG = 256; // card colour lookup resolution, long side: per tile, not an average
+const SRC_SIZE = 2.4; // point size once the tiles have broken apart, CSS px
+const TILE_MAX = 48; // largest source tile, CSS px
+const PROBE = 12; // grid that finds the on-screen part of each card
 const DST_SIZE = 2;
-const SCATTER_EXPAND = 0.7; // radial blow-out factor at the end of the expand phase
+const SCATTER_EXPAND = 0.5; // radial blow-out factor at the end of the expand phase
 const SCATTER_RADIUS = 0.2; // random scatter, as a share of the viewport's short side
 const RASTER_PAD = 6; // px around the figure so antialiased edges are not clipped
 const LANDED_P = QUOTE_FLY_START + QUOTE_DELAY_MAX + QUOTE_FLY_DUR;
@@ -28,7 +30,7 @@ const smoothstep = (a, b, x) => {
 
 const gridCache = new WeakMap();
 
-// Card photo shrunk to a tiny grid. Rows follow the texture's own v (the bitmaps are uploaded
+// Card photo at lookup resolution. Rows follow the texture's own v (the bitmaps are uploaded
 // pre-flipped), so (u, v) in GL uv space indexes it directly.
 function colorGrid(tex) {
   const img = tex && tex.image;
@@ -187,12 +189,14 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const geo = new THREE.BufferGeometry();
   const dst = new Float32Array(n * 3);
   const src = new Float32Array(n * 2);
+  const srcSize = new Float32Array(n);
   const srcCol = new Float32Array(n * 4);
   const dstCol = new Float32Array(n * 3);
   const rand = new Float32Array(n * 4);
   const attr = (arr, size) => new THREE.BufferAttribute(arr, size).setUsage(THREE.DynamicDrawUsage);
   geo.setAttribute('position', attr(dst, 3));
   geo.setAttribute('aSrc', attr(src, 2));
+  geo.setAttribute('aSrcSize', attr(srcSize, 1));
   geo.setAttribute('aSrcCol', attr(srcCol, 4));
   geo.setAttribute('aDstCol', attr(dstCol, 3));
   geo.setAttribute('aRand', attr(rand, 4));
@@ -200,6 +204,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const pointsMat = new THREE.ShaderMaterial({
     uniforms: {
       uP: { value: 0 },
+      uIn: { value: 0 },
       uView: { value: new THREE.Vector2(1, 1) },
       uDpr: { value: 1 },
       uScatter: { value: new THREE.Vector2(SCATTER_EXPAND, 0) },
@@ -324,60 +329,122 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     return ready;
   }
 
-  // quads: [{ pts: [TLx, TLy, TRx, TRy, BRx, BRy, BLx, BLy], alpha, tex, repeat, offset }] in px.
+  // quads: [{ pts: [TLx, TLy, TRx, TRy, BRx, BRy, BLx, BLy], project(u, v) → [x, y], alpha, tex,
+  // repeat, offset, mirror }] in px, u right and v down the card as seen. Each card gets tiles in
+  // proportion to the on-screen area of its visible part, on a grid so they cover it edge to edge,
+  // each placed through the card's own projection (perspective-correct) and sized to its cell.
   function setSources(quads, W, H) {
-    const weights = quads.map(({ pts }) => {
-      const xs = [pts[0], pts[2], pts[4], pts[6]];
-      const ys = [pts[1], pts[3], pts[5], pts[7]];
-      const w = Math.min(W * 1.25, Math.max(...xs)) - Math.max(-W * 0.25, Math.min(...xs));
-      const h = Math.min(H * 1.25, Math.max(...ys)) - Math.max(-H * 0.25, Math.min(...ys));
-      return Math.max(0, w) * Math.max(0, h);
+    const inView = ([x, y]) => x > -0.05 * W && x < 1.05 * W && y > -0.05 * H && y < 1.05 * H;
+    const windows = quads.map(({ project }) => {
+      let u0 = 1; let u1 = 0; let v0 = 1; let v1 = 0;
+      for (let a = 0; a <= PROBE; a += 1) {
+        for (let b = 0; b <= PROBE; b += 1) {
+          if (inView(project(a / PROBE, b / PROBE))) {
+            u0 = Math.min(u0, a / PROBE); u1 = Math.max(u1, a / PROBE);
+            v0 = Math.min(v0, b / PROBE); v1 = Math.max(v1, b / PROBE);
+          }
+        }
+      }
+      if (u1 < u0) return null;
+      const pad = 1 / PROBE;
+      return {
+        u0: Math.max(0, u0 - pad),
+        u1: Math.min(1, u1 + pad),
+        v0: Math.max(0, v0 - pad),
+        v1: Math.min(1, v1 + pad),
+      };
     });
-    let total = 0;
-    const cum = weights.map((w) => { total += w; return total; });
-    for (let i = 0; i < n; i += 1) {
+    const area = quads.map(({ project }, qi) => {
+      const win = windows[qi];
+      if (!win) return 0;
+      const pts = [[win.u0, win.v0], [win.u1, win.v0], [win.u1, win.v1], [win.u0, win.v1]]
+        .map(([u, v]) => project(u, v));
+      let a2 = 0; // shoelace
+      pts.forEach(([x, y], k) => { const [nx, ny] = pts[(k + 1) % 4]; a2 += x * ny - nx * y; });
+      return Math.abs(a2) / 2;
+    });
+    const total = area.reduce((a, b) => a + b, 0);
+    let i = 0;
+    const put = (q, u, v, cellU, cellV) => {
+      const {
+        project, alpha, tex, repeat, offset, mirror,
+      } = q;
+      const [x, y] = project(u, v);
+      const [xu, yu] = project(u + cellU, v);
+      const [xv, yv] = project(u, v + cellV);
+      src[i * 2] = x;
+      src[i * 2 + 1] = y;
+      // A little overlap, so no seams show between tiles.
+      const cell = Math.max(Math.hypot(xu - x, yu - y), Math.hypot(xv - x, yv - y));
+      srcSize[i] = Math.min(TILE_MAX, 1.2 * cell);
+      const grid = colorGrid(tex);
+      if (grid) {
+        const gu = Math.min(0.999, Math.max(0, (mirror ? 1 - u : u) * repeat.x + offset.x));
+        const gv = Math.min(0.999, Math.max(0, (1 - v) * repeat.y + offset.y));
+        const k = (Math.floor(gv * grid.h) * grid.w + Math.floor(gu * grid.w)) * 4;
+        const c = grid.data;
+        srcCol.set([c[k] / 255, c[k + 1] / 255, c[k + 2] / 255, alpha], i * 4);
+      } else {
+        srcCol.set([0.6, 0.6, 0.6, alpha], i * 4);
+      }
+      i += 1;
+    };
+    if (total > 0) {
+      quads.forEach((q, qi) => {
+        const share = Math.floor((n * area[qi]) / total);
+        const win = windows[qi];
+        if (share < 1 || !win) return;
+        const [ax, ay] = q.project(win.u0, win.v0);
+        const [bx, by] = q.project(win.u1, win.v0);
+        const [cx, cy] = q.project(win.u0, win.v1);
+        const wPx = Math.hypot(bx - ax, by - ay);
+        const hPx = Math.hypot(cx - ax, cy - ay);
+        const cols = Math.max(1, Math.round(Math.sqrt((share * wPx) / Math.max(1, hPx))));
+        const rows = Math.max(1, Math.floor(share / cols));
+        const du = (win.u1 - win.u0) / cols;
+        const dv = (win.v1 - win.v0) / rows;
+        for (let r = 0; r < rows && i < n; r += 1) {
+          for (let c = 0; c < cols && i < n; c += 1) {
+            put(q, win.u0 + (c + 0.5) * du, win.v0 + (r + 0.5) * dv, du, dv);
+          }
+        }
+      });
+    }
+    // Grid rounding leaves a few over: doubled up at random, by area.
+    while (i < n) {
       if (!total) {
         src[i * 2] = Math.random() * W;
         src[i * 2 + 1] = Math.random() * H;
-        srcCol.set([1, 1, 1, 0], i * 4);
+        srcSize[i] = 2;
+        srcCol.set([1, 1, 1, 0], i * 4); // nothing to break up: invisible until it flies
+        i += 1;
       } else {
-        const target = Math.random() * total;
+        let r = Math.random() * total;
         let q = 0;
-        while (cum[q] < target) q += 1;
-        const { pts, alpha, tex, repeat, offset } = quads[q];
-        const u = Math.random();
-        const v = Math.random();
-        const top = [pts[0] + (pts[2] - pts[0]) * u, pts[1] + (pts[3] - pts[1]) * u];
-        const bot = [pts[6] + (pts[4] - pts[6]) * u, pts[7] + (pts[5] - pts[7]) * u];
-        src[i * 2] = top[0] + (bot[0] - top[0]) * v;
-        src[i * 2 + 1] = top[1] + (bot[1] - top[1]) * v;
-        // Screen winding tells the back faces, which the card shader mirrors in u.
-        const cross = (pts[2] - pts[0]) * (pts[5] - pts[1]) - (pts[3] - pts[1]) * (pts[4] - pts[0]);
-        const fu = cross < 0 ? 1 - u : u;
-        const grid = colorGrid(tex);
-        if (grid) {
-          const gu = Math.min(0.999, Math.max(0, fu * repeat.x + offset.x));
-          const gv = Math.min(0.999, Math.max(0, (1 - v) * repeat.y + offset.y));
-          const k = (Math.floor(gv * grid.h) * grid.w + Math.floor(gu * grid.w)) * 4;
-          const c = grid.data;
-          srcCol.set([c[k] / 255, c[k + 1] / 255, c[k + 2] / 255, alpha], i * 4);
-        } else {
-          srcCol.set([0.6, 0.6, 0.6, alpha], i * 4);
-        }
+        while (q < area.length - 1 && (r > area[q] || !windows[q])) { r -= area[q]; q += 1; }
+        const win = windows[q];
+        put(
+          quads[q],
+          win.u0 + Math.random() * (win.u1 - win.u0),
+          win.v0 + Math.random() * (win.v1 - win.v0),
+          0.02,
+          0.02,
+        );
       }
     }
-    geo.attributes.aSrc.needsUpdate = true;
-    geo.attributes.aSrcCol.needsUpdate = true;
+    ['aSrc', 'aSrcSize', 'aSrcCol'].forEach((a) => { geo.attributes[a].needsUpdate = true; });
     version += 1;
   }
 
-  // drawn: false hands the quote to the DOM (forced colours) and keeps the canvas clear of it.
-  function update(p, { W, H, dpr, drawn = true }) {
+  // p is the motion after the hand-off cross-fade; fadeIn is the tiles' share of that cross-fade.
+  // active: false hides the particles (before the hand-off, or forced colours).
+  function update(p, { W, H, dpr, active = true, fadeIn = 1 }) {
     lastP = p;
-    const show = ready && drawn && p > 0;
+    const show = ready && active;
     group.visible = show;
     const u = pointsMat.uniforms;
     u.uP.value = p;
+    u.uIn.value = fadeIn;
     u.uView.value.set(W, H);
     u.uDpr.value = dpr;
     u.uScatter.value.y = SCATTER_RADIUS * Math.min(W, H);
@@ -385,7 +452,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     planeMat.uniforms.uOpacity.value = smoothstep(PLANE_IN[0], PLANE_IN[1], p);
     points.visible = u.uAlpha.value > 0;
     plane.visible = planeMat.uniforms.uOpacity.value > 0;
-    stateKey = `${p}|${show}|${version}|${W}x${H}@${dpr}`;
+    stateKey = `${p}|${fadeIn}|${show}|${version}|${W}x${H}@${dpr}`;
   }
 
   return {

@@ -42,23 +42,31 @@ describe('globe-gallery: quote particles', () => {
     expect(plane.material.uniforms.uMap.value).to.be.instanceOf(THREE.CanvasTexture);
   });
 
-  it('fills sources from card quads, or a viewport spread without any', async () => {
+  it('tiles each card quad edge to edge, or spreads over the viewport without any', async () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
-    const { aSrc, aSrcCol } = fx.object.children[0].geometry.attributes;
+    const { aSrc, aSrcSize, aSrcCol } = fx.object.children[0].geometry.attributes;
+    // A 100 × 200 px card at (100, 100), seen straight on.
+    const project = (u, v) => [100 + 100 * u, 100 + 200 * v];
     fx.setSources([{
       pts: [100, 100, 200, 100, 200, 300, 100, 300],
+      project,
       alpha: 0.5,
       tex: null,
+      mirror: false,
       repeat: { x: 1, y: 1 },
       offset: { x: 0, y: 0 },
     }], 800, 600);
+    let covered = 0;
     for (let i = 0; i < 500; i += 1) {
       expect(aSrc.array[i * 2]).to.be.within(100, 200);
       expect(aSrc.array[i * 2 + 1]).to.be.within(100, 300);
       expect(aSrcCol.array[i * 4 + 3]).to.equal(0.5);
+      covered += aSrcSize.array[i] ** 2;
     }
+    // Tiles overlap a little, so together they cover at least the card.
+    expect(covered).to.be.at.least(100 * 200);
     fx.setSources([], 800, 600);
     expect(aSrcCol.array[3]).to.equal(0);
     expect(aSrc.array[0]).to.be.within(0, 800);
@@ -70,7 +78,7 @@ describe('globe-gallery: quote particles', () => {
     await fx.layout({ dpr: 1 });
     const [points, plane] = fx.object.children;
     const view = { W: 800, H: 600, dpr: 1 };
-    fx.update(0, view);
+    fx.update(0, { ...view, active: false });
     expect(fx.object.visible).to.be.false;
     fx.update(0.3, view);
     expect(fx.object.visible).to.be.true;
@@ -88,7 +96,9 @@ describe('globe-gallery: quote particles', () => {
     fx.markDrawn();
     fx.invalidate();
     expect(fx.isIdle()).to.be.false;
-    fx.update(1, { ...view, drawn: false });
+    fx.update(0.5, { ...view, fadeIn: 0.25 });
+    expect(points.material.uniforms.uIn.value).to.equal(0.25);
+    fx.update(1, { ...view, active: false });
     expect(fx.object.visible).to.be.false;
   });
 

@@ -257,6 +257,7 @@ export const QUOTE_EXPAND_END = 0.3;
 export const QUOTE_FLY_START = 0.08;
 export const QUOTE_FLY_DUR = 0.5;
 export const QUOTE_DELAY_MAX = 0.3;
+export const QUOTE_INK_FROM = 0.78; // share of a particle's own travel after which it turns to ink
 
 const PX_TO_CLIP = [
   'vec4 pxToClip(vec2 p, vec2 view) {',
@@ -266,6 +267,7 @@ const PX_TO_CLIP = [
 
 export const QUOTE_POINTS_VERT = [
   'uniform float uP;',
+  'uniform float uIn;', // the tiles' share of the card → particle cross-fade
   'uniform vec2 uView;',
   'uniform float uDpr;',
   'uniform vec2 uScatter;', // (radial expansion factor, scatter radius in px)
@@ -273,33 +275,43 @@ export const QUOTE_POINTS_VERT = [
   'uniform float uDstSize;',
   'uniform float uAlpha;',
   'attribute vec2 aSrc;',
+  'attribute float aSrcSize;', // the tile's size on its card at the hand-off
   'attribute vec4 aSrcCol;',
   'attribute vec3 aDstCol;',
   'attribute vec4 aRand;',
   'varying vec4 vCol;',
+  'varying float vRound;',
   ...PX_TO_CLIP,
   'void main() {',
   '  vec2 c = uView * 0.5;',
-  `  float e = 1.0 - pow(1.0 - clamp(uP / ${glf(QUOTE_EXPAND_END)}, 0.0, 1.0), 3.0);`,
+  // Ease in and out, so the tiles leave the photo gently rather than all at once.
+  `  float e = smoothstep(0.0, ${glf(QUOTE_EXPAND_END)}, uP);`,
   '  vec2 dir = vec2(cos(aRand.y), sin(aRand.y));',
-  '  vec2 from = c + (aSrc - c) * (1.0 + uScatter.x * e) + dir * aRand.z * uScatter.y * e;',
+  '  vec2 from = aSrc + ((aSrc - c) * uScatter.x + dir * aRand.z * uScatter.y) * e;',
   `  float t = clamp((uP - ${glf(QUOTE_FLY_START)} - aRand.x) / ${glf(QUOTE_FLY_DUR)}, 0.0, 1.0);`,
   '  float te = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(2.0 - 2.0 * t, 3.0) * 0.5;',
   '  vec2 path = position.xy - from;',
   '  vec2 swirl = vec2(-path.y, path.x) * aRand.w * 0.3 * sin(3.14159 * te);',
   '  gl_Position = pxToClip(mix(from, position.xy, te) + swirl, uView);',
-  '  gl_PointSize = mix(uSrcSize * (1.0 + 0.5 * e), uDstSize, te) * uDpr;',
-  // Scattering lifts the photo colours a little, so dark cards still read as they break up.
-  '  vec3 col = mix(mix(aSrcCol.rgb, vec3(1.0), 0.3 * e), aDstCol, smoothstep(0.1, 0.8, te));',
-  '  vCol = vec4(col, mix(aSrcCol.a, 1.0, smoothstep(0.0, 0.4, te)) * uAlpha);',
+  // Tiles shrink as they break apart, then take the text's dot size.
+  '  float srcSize = mix(aSrcSize, uSrcSize, e);',
+  '  gl_PointSize = max(1.0, mix(srcSize, uDstSize, te) * uDpr);',
+  '  vRound = e;',
+  // The photo colour rides the whole flight and turns to the ink only on the particle's own
+  // approach, so the letters visibly assemble from the cards' pixels.
+  `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
+  '  vec3 col = mix(mix(aSrcCol.rgb, vec3(1.0), 0.12 * e), aDstCol, ink * ink);',
+  '  vCol = vec4(col, mix(aSrcCol.a, 1.0, smoothstep(0.0, 0.4, te)) * uAlpha * uIn);',
   '}',
 ].join('\n');
 
 export const QUOTE_POINTS_FRAG = [
   'varying vec4 vCol;',
+  'varying float vRound;',
   'void main() {',
-  '  vec2 d = gl_PointCoord - 0.5;',
-  '  float a = vCol.a * (1.0 - smoothstep(0.16, 0.25, dot(d, d)));',
+  // Square tiles while they still are the photo, round dots once they scatter.
+  '  float dotA = 1.0 - smoothstep(0.16, 0.25, dot(gl_PointCoord - 0.5, gl_PointCoord - 0.5));',
+  '  float a = vCol.a * mix(1.0, dotA, vRound);',
   '  if (a < 0.004) discard;',
   '  gl_FragColor = vec4(vCol.rgb, a);',
   '}',

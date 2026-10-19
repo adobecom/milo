@@ -1967,29 +1967,44 @@ quote's glyphs, then cross-fade into a crisp raster of the same text. There is n
 on the motion path. Reduced motion is unchanged: a static, line-split DOM figure after the globe, no
 particles. Module: `src/quote-particles.js`. Shaders: `QUOTE_*` in `src/shaders.js`.
 
-**Scroll.** `pqStartZoomT` is the zoomT at which the deepest card starts its near-camera fade
-(`-SPHERE_R + NEAR_FADE_START · fadeRefH`, see `publishPqAppearZoomT`). From that scroll position
-(`TL.scrollYAtZoomT`) the flight progress `p` runs 0 → 1 over `PQ_FLY_VH` (0.75) viewport heights.
-It is a pure function of scroll, so it reverses when you scroll back. `.globe-gallery-pq-webgl` adds
-`--gg-pq-hold` (100vh) to the runway. `deriveFrame` takes that `holdPx` back off the zoom tail, so
-the zoom pace is exactly what it was and the extra scroll goes to the flight and the reading hold.
+**Scroll.** `pqStartZoomT` is where the camera crosses the globe's centre (`zoomTAtCamZ(0)`, see
+`publishPqAppearZoomT`). By then every near-side card is behind the camera, and no far-side card in
+view has started a near fade. From that scroll position (`TL.scrollYAtZoomT`), `p` runs 0 → 1 over
+`PQ_FLY_VH` (0.8) viewport heights. It is a pure function of scroll, so it reverses when you scroll
+back. `.globe-gallery-pq-webgl` adds `--gg-pq-hold` (100vh) to the runway. `deriveFrame` takes that
+`holdPx` back off the zoom tail, so the zoom pace is unchanged and the extra scroll goes to the
+flight and the reading hold.
+
+**One resolve, no mosaic on the far side.** While particles are on (`particlesOn()`: not forced
+colours, raster ready), `placeSphereCard` gives cards behind the centre plane (`mesh.position.z < 0`)
+`proxFade = 1`. They never run the stage dissolve or dispersion; the particles are their only
+break-up. Near-side cards keep the stage behaviour exactly.
+
+**Frozen globe.** Over `PQ_SPIN_EASE_T` (0.04 zoomT) before `pqStartZoomT`, `quoteSpinScale` eases
+auto-spin, drag inertia, hover and drag warp to 0. The pointer retires at the start of that window.
+While `quoteOwnsCards()` (p > 0), `updateSphereRotation` returns early with the orientation held, and
+`updateActiveCamera` holds the camera at `pqStartZoomT`. The particles are sampled from that frozen
+state, so scrolling back lands the cards exactly where the particles left them. Spin resumes along
+the same ease. `pq.p` is computed before the camera stage for this reason.
 
 | `p` | What |
 | --- | --- |
-| 0 | Cards render as before. At the first frame past 0, sources are sampled and every card is hidden. |
-| 0 → 0.3 | Expand. Particles blow out radially from the screen centre and scatter, brightening a little. |
-| 0.08 → 0.88 | Fly. Per particle: delay up to 0.3 (reading order: x then y, plus some randomness), 0.5 long, eased in/out, with a sideways swirl. Colour lerps from the photo to the text ink. |
-| 0.84 → 0.96 | The text plane fades in. From 0.9 the points fade out. `QUOTE_LIVE_P` (0.88) marks the DOM figure `is-live`. |
+| 0 | Cards render as before. |
+| 0 → `PQ_HANDOFF_P` (0.06) | Hand-off, nothing moves. Square, perspective-correct tiles fade in over the cards on the cards' own pixels (first half), then the cards fade out under them (second half). Both are drawn throughout, so no frame drops coverage. |
+| after that | The motion runs on `m = (p − 0.06) / 0.94`, described in the rows below. |
+| m 0 → 0.3 | Break up. Tiles shrink from their cell size, round off and blow out from the screen centre. |
+| m 0.08 → 0.88 | Fly. Per particle: delay up to 0.3 (reading order, plus some randomness), 0.5 long, eased in/out, with a sideways swirl. Each particle keeps its photo colour and turns to the ink only over the last 22% of its own travel (`QUOTE_INK_FROM`), eased. |
+| m 0.84 → 0.96 | The text plane fades in. From 0.9 the points fade out. `QUOTE_LIVE_P` (0.88) marks the DOM figure `is-live`. |
 | 1 | Only the text plane remains. Rendering stops (see below). |
 
-**Sources.** `projectCardQuads()` reconstructs the cards as they stand at `pqStartZoomT`, whatever
-the current scroll, using the live sphere rotation and a scratch camera at that zoom's z. A jump
-straight into the flight therefore still has a source. Each visible card becomes a projected px quad
-with its proximity-fade alpha, cover-crop `uRepeat`/`uOffset` and texture. Particles are spread over
-the quads by on-screen area. Colours come from a 32px grid of each card bitmap, drawn once into a 2D
-canvas and cached per image. U is mirrored on back faces, like `CARD_FRAG`. With no visible card the
-sources fall back to a transparent spread over the viewport. Sources are re-sampled on every forward
-crossing of `p = 0`.
+**Sources.** On the first owned frame, `projectCardQuads()` projects every card still drawn through
+its own `matrixWorld` and the held camera. Each card yields a `project(u, v)` closure, an alpha, its
+cover-crop, its texture and a back-face flag. `setSources` finds each card's on-screen uv window with
+a 12×12 probe. It then shares the particle budget by projected area and lays the particles out as a
+grid over that window. Each particle sits at its cell centre and is sized to its projected cell, with
+20% overlap (`aSrcSize`). Its colour is read from a 256px copy of the photo, cached per image, with
+u mirrored on back faces like `CARD_FRAG`. With no visible card, the sources fall back to a
+transparent spread over the viewport. Sources are re-sampled on every forward crossing of `p = 0`.
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
 authored text (`plainQuote`, which also hangs the opening mark), shrinks the font size if the box is
@@ -2014,7 +2029,7 @@ Coordinates are CSS px from the top-left of `.globe-gallery-pullquote-rail`. Bot
 straight to clip space and ignore the scene camera. The layout re-runs whenever the figure width,
 viewport height, nav height or DPR changes, and again on `fonts.ready`.
 
-**Particle counts.** `PQ_PARTICLES_SM` is 16k and `PQ_PARTICLES_MD` is 48k, in one `THREE.Points`
+**Particle counts.** `PQ_PARTICLES_SM` is 24k and `PQ_PARTICLES_MD` is 56k, in one `THREE.Points`
 draw. Attributes: `position` (target), `aSrc`, `aSrcCol`, `aDstCol`, `aRand`.
 
 **Pinning.** There is no separate quote pin any more. Once `p > 0` the canvas swaps from
@@ -2039,7 +2054,7 @@ in the DOM, in reading order after the arc copy. Its text is `color: transparent
 over the drawn text. The VoiceOver cursor and the selection highlight therefore land on the
 rendered glyphs. Once the quote is `is-live` the figure takes the pointer. Selection works and uses
 a translucent white `::selection`. Leaving the quote drops a selection anchored inside it. The
-globe stops being pointer-live (`globeLive`) at `pqStartZoomT`, when the cards turn to particles.
+globe stops being pointer-live (`globeLive`) at `pqStartZoomT − PQ_SPIN_EASE_T`, as the globe eases to rest.
 Keyboard behaviour is unchanged.
 
 **Forced colours / fallback.** WebGL ignores forced colours, so under `(forced-colors: active)` the
@@ -2052,8 +2067,8 @@ repaints even transparent text.
 fit, the measurement and the raster at the new size and DPR.
 
 **Known limitations (PoC).**
-- The source quads ignore the cylinder's partial camera-facing tilt and the dissolve shader's own
-  smear, so the hand-off can be a few px off. It reads as the cards' pixels letting go.
+- The hand-off tiles are flat-coloured cells, so a card reads slightly pixelated for the ~5vh
+  cross-fade, and the tiles' square corners cover the card's rounded ones.
 - Ligatures and kerning come from canvas text shaping, not the DOM. Per-line advance correction
   keeps the boxes aligned, but an individual glyph can differ by a pixel.
 - A CJK or Thai quote is measured by character Ranges, which is correct. The scale correction
