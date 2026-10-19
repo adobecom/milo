@@ -251,8 +251,10 @@ export const TEXT_FRAG = [
 ].join('\n');
 
 // Pull-quote particles. Positions are CSS px in viewport space (y down), mapped straight to clip
-// space, so no camera is involved. `position` is the text target; aSrc is where the pixel sat on a
-// far-side card at the flight's start. uP is the scroll-driven flight: 0 on the card, 1 landed.
+// space, so no camera is involved. `position` is the text target; aSrc is where the pixel sits on a
+// far-side card at the hand-off, drawn as a square of aSrcSize so the cloud reads as the photo.
+// uP is the scroll-driven motion after the cross-fade (0 = on the card, 1 = landed); uIn is the
+// particles' share of the card → particle cross-fade.
 export const QUOTE_EXPAND_END = 0.3; // share of uP the burst outward takes
 export const QUOTE_FLY_START = 0.08;
 export const QUOTE_FLY_DUR = 0.6;
@@ -260,23 +262,27 @@ export const QUOTE_DELAY_MAX = 0.32; // QUOTE_FLY_START + DELAY + DUR must stay 
 
 export const QUOTE_PARTICLE_VERT = [
   'attribute vec2 aSrc;',
-  'attribute vec4 aSrcColor;', // rgb + the card's alpha at the snapshot
+  'attribute float aSrcSize;',
+  'attribute vec4 aSrcColor;', // rgb + the card's opacity at the hand-off
   'attribute vec3 aDstColor;',
   'attribute vec4 aSeed;', // x = flight delay, y = scatter angle, z = scatter share, w = swirl
   'uniform vec2 uViewport;',
   'uniform float uDpr;',
   'uniform float uPinTop;',
   'uniform float uP;',
+  'uniform float uIn;',
   'uniform float uFade;',
   'uniform float uSize;',
   'uniform float uScatter;', // px
   'varying vec4 vColor;',
+  'varying float vRound;',
   'void main() {',
   '  vec2 c = uViewport * 0.5;',
-  `  float e = 1.0 - pow(1.0 - clamp(uP / ${glf(QUOTE_EXPAND_END)}, 0.0, 1.0), 3.0);`,
+  // Ease-in-out, so the tiles leave the photo gently rather than all at once.
+  `  float e = smoothstep(0.0, ${glf(QUOTE_EXPAND_END)}, uP);`,
   '  vec2 dir = vec2(cos(aSeed.y), sin(aSeed.y));',
   // Burst outward from the view centre, as the camera's forward travel would carry it.
-  '  vec2 from = c + (aSrc - c) * (1.0 + 0.5 * e) + dir * aSeed.z * uScatter * e;',
+  '  vec2 from = aSrc + ((aSrc - c) * 0.5 + dir * aSeed.z * uScatter) * e;',
   `  float t = clamp((uP - ${glf(QUOTE_FLY_START)} - aSeed.x) / ${glf(QUOTE_FLY_DUR)}, 0.0, 1.0);`,
   '  float te = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(2.0 - 2.0 * t, 3.0) * 0.5;',
   '  vec2 dst = position.xy + vec2(0.0, uPinTop);',
@@ -284,18 +290,23 @@ export const QUOTE_PARTICLE_VERT = [
   '  vec2 swirl = vec2(-path.y, path.x) * aSeed.w * 0.3 * sin(3.14159 * te);',
   '  vec2 p = mix(from, dst, te) + swirl;',
   '  gl_Position = vec4(p.x / uViewport.x * 2.0 - 1.0, 1.0 - p.y / uViewport.y * 2.0, 0.0, 1.0);',
-  '  gl_PointSize = max(1.0, mix(max(2.4, uSize * 1.2) * (1.0 + 0.5 * e), uSize, te) * uDpr);',
+  // Tiles shrink as they break apart, then take the text's dot size.
+  '  float srcSize = mix(aSrcSize, max(2.4, uSize * 1.2), e);',
+  '  gl_PointSize = max(1.0, mix(srcSize, uSize, te) * uDpr);',
+  '  vRound = e;',
   // Scattering lifts the photo colours a little, so dark cards still read as they break up.
   '  vec3 col = mix(mix(aSrcColor.rgb, vec3(1.0), 0.3 * e), aDstColor, smoothstep(0.1, 0.8, te));',
-  '  vColor = vec4(col, mix(aSrcColor.a, 1.0, smoothstep(0.0, 0.4, te)) * uFade);',
+  '  vColor = vec4(col, mix(aSrcColor.a, 1.0, smoothstep(0.0, 0.4, te)) * uFade * uIn);',
   '}',
 ].join('\n');
 
 export const QUOTE_PARTICLE_FRAG = [
   'varying vec4 vColor;',
+  'varying float vRound;',
   'void main() {',
-  '  vec2 c = gl_PointCoord - 0.5;',
-  '  float alpha = vColor.a * (1.0 - smoothstep(0.3, 0.5, length(c)));',
+  // Square tiles while they still are the photo, round dots once they scatter.
+  '  float dotA = 1.0 - smoothstep(0.3, 0.5, length(gl_PointCoord - 0.5));',
+  '  float alpha = vColor.a * mix(1.0, dotA, vRound);',
   '  if (alpha < 0.01) discard;',
   '  gl_FragColor = vec4(vColor.rgb, alpha);',
   '}',

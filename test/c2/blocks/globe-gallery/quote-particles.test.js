@@ -27,7 +27,7 @@ describe('globe-gallery: quote particles', () => {
     const box = fig.getBoundingClientRect();
     const t = rasterizeQuote(fig, originTop, 5000);
     expect(t).to.exist;
-    expect(t.count).to.be.greaterThan(100).and.at.most(5000);
+    expect(t.count).to.equal(5000);
     expect(t.dst).to.have.length(t.count * 3);
     expect(t.color).to.have.length(t.count * 3);
     for (let i = 0; i < t.count; i += 1) {
@@ -37,13 +37,16 @@ describe('globe-gallery: quote particles', () => {
     expect(t.size).to.be.within(1.2, 4);
   });
 
-  it('caps the target count at the budget and skips sr-only text', () => {
+  it('always fills the budget, cycling the ink when it is short, and skips sr-only text', () => {
     const { fig } = mountFigure();
-    const all = rasterizeQuote(fig, 0, 1e9);
-    const capped = rasterizeQuote(fig, 0, 200);
-    expect(capped.count).to.equal(200);
+    expect(rasterizeQuote(fig, 0, 200).count).to.equal(200);
+    const many = rasterizeQuote(fig, 0, 200000);
+    expect(many.count).to.equal(200000);
+    const before = rasterizeQuote(fig, 0, 5000);
     fig.querySelector('.sr-only').textContent = 'Something much longer that would add a lot of ink';
-    expect(Math.abs(rasterizeQuote(fig, 0, 1e9).count - all.count)).to.be.below(all.count * 0.05);
+    const after = rasterizeQuote(fig, 0, 5000);
+    // The same ink either way: the dot size (ink per particle) is unchanged.
+    expect(after.size).to.be.closeTo(before.size, 0.05);
   });
 
   it('returns null with nothing to draw', () => {
@@ -61,8 +64,8 @@ describe('globe-gallery: quote particles', () => {
     ctx.fillStyle = 'rgb(255, 0, 0)';
     ctx.fillRect(0, 0, 64, 32);
     const grid = colorGrid(c);
-    expect(grid.w).to.equal(32);
-    expect(grid.h).to.equal(16);
+    expect(grid.w).to.equal(256);
+    expect(grid.h).to.equal(128);
     expect(grid.data[0]).to.equal(255);
     expect(grid.data[1]).to.equal(0);
     expect(colorGrid(c)).to.equal(grid);
@@ -87,7 +90,9 @@ describe('globe-gallery: quote particles', () => {
     // Sources set before the build are kept and applied to it.
     const quad = {
       pts: [100, 100, 200, 100, 200, 300, 100, 300],
+      project: (u, v) => [100 + 100 * u, 100 + 200 * v],
       alpha: 0.5,
+      mirror: false,
       image: null,
       repeat: { x: 1, y: 1 },
       offset: { x: 0, y: 0 },
@@ -102,19 +107,24 @@ describe('globe-gallery: quote particles', () => {
     expect(pts.frustumCulled).to.be.false;
     expect(pts.visible).to.be.false;
     const src = pts.geometry.getAttribute('aSrc').array;
+    const size = pts.geometry.getAttribute('aSrcSize').array;
     const col = pts.geometry.getAttribute('aSrcColor').array;
     for (let i = 0; i < targets.count; i += 1) {
       expect(src[i * 2]).to.be.within(100, 200);
       expect(src[i * 2 + 1]).to.be.within(100, 300);
       expect(col[i * 4 + 3]).to.equal(0.5);
+      expect(size[i]).to.be.greaterThan(0);
     }
+    // A grid of tiles: 500 over a 100×200 card is ~16×31 cells of ~6.3px, drawn at 1.2×.
+    expect(size[0]).to.be.within(6, 10);
     // No far-side card left: sources start invisible.
     fx.setSources([], 800, 600);
     expect(pts.geometry.getAttribute('aSrcColor').array[3]).to.equal(0);
     fx.setFrame({
-      p: 0.5, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1,
+      p: 0.5, fadeIn: 1, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1,
     });
     expect(pts.material.uniforms.uP.value).to.equal(0.5);
+    expect(pts.material.uniforms.uIn.value).to.equal(1);
     fx.setVisible(true);
     expect(pts.visible).to.be.true;
     fx.dispose();

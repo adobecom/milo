@@ -1989,24 +1989,31 @@ baseline is the font box centred in the range box, so canvas and DOM agree per w
 reading order. Dot size follows the ink-per-particle spacing. Fonts not yet loaded
 (`document.fonts.check`) are drawn with the fallback and requested once; their load re-rasterises.
 
-**Sources are the far-side cards, frozen at one camera.** `pqStartZoomT` is the zoomT at which the
-deepest cards (centre at `−SPHERE_R`) begin their near fade (`NEAR_FADE_START` card-heights out),
-clamped to `pqAppearZoomT`. By then the near side has fully faded, so the cards still drawn are the far
-side. `projectFarQuads` projects every card that is still visible *at that camera* (whatever the
-scroll is now) to a screen quad, with its fade alpha, texture and cover-crop; particles are spread
-over those quads by on-screen area and take the photo's colour at their uv. Sampling against a fixed
-camera is what makes the flight **deterministic and reversible**: a jump into the middle, a reversal,
-or a fast fling all resolve to the same cards in the same place. Sources are re-sampled on each
-crossing of `p = 0` (the sphere may have spun) and when textures land.
+**One continuous resolve, from intact far-side cards.** `pqStartZoomT` is where the camera crosses
+the globe's centre: every near-side card is behind it (they have run their stage mosaic/dispersion
+fade exactly as on stage), and the far side is still whole. With particles on, a card behind the
+centre plane **skips the stage near-camera fade entirely** (`placeSphereCard`), so the far side is
+broken up only once, by the particles. Spin, drag inertia, hover and drag-warp all ease to zero over
+the `PQ_SPIN_EASE_T` (0.04 zoomT) before the start (`quoteSpinScale`; the pointer retires at its
+beginning), and while the particles own the cards (`quoteOwnsCards`) the orientation is held and the
+camera is held at `pqStartZoomT`. Spin resumes, eased, above that range.
+
+**The hand-off reproduces the cards.** On the first frame of the flight, `projectFarQuads` reads every
+still-drawn card's live mesh (so it matches the frame just drawn), and `setSources` lays the particle
+budget (**30k sm, 60k md**, always full) over the on-screen part of those cards by projected area, as
+a grid of square tiles, each placed through the card's own projection (perspective-correct, back
+faces mirrored like the card shader), sized to its cell, and coloured from a 256px copy of the photo
+through the card's cover-crop, at the card's own opacity. Across the first `PQ_HANDOFF_P` (6%) of
+the flight nothing moves: the tiles fade in over the card, then the card fades out under them, both
+drawn throughout, so no frame shows neither. Only then do the tiles shrink, round off and break apart.
+The flight progress is purely scroll, so a reversal re-forms the tiles on the cards, the cards fade
+back in under them, and at `p = 0` the cards are back exactly where they were.
 
 **One scroll clock.** `p = quoteFlightP()` runs 0 → 1 over `PQ_FLY_VH` (0.4 viewport heights) of
-scroll from `scrollYAtZoomT(pqStartZoomT)`. `p = 0`: the cards draw as on stage and no particle
-exists. `p > 0`: every card is hidden and the particles stand in for them — burst outward, then fly
-to the glyphs. Scrolling back reverses the same path; at `p = 0` the cards reappear exactly where
-the particles left them, so nothing can be stranded. At `p = 1` `advanceReveal` tweens `revealT`
+scroll from `scrollYAtZoomT(pqStartZoomT)`. At `p = 1` `advanceReveal` tweens `revealT`
 0 → 1 over `PQ_REVEAL_IN_MS`: the DOM text fades in (`--gg-pq-text-o`, opacity only) while the
 particles fade by `1 − revealT`; back under `p = 1` it reverses over `PQ_REVEAL_OUT_MS`. The
-crosshair frame draws on `revealT`. The globe controls retire at `pqStartZoomT` (with particles).
+crosshair frame draws on `revealT`.
 
 **Rendering stops once the DOM has taken over** (`p = 1` and `revealT = 1`): the canvas is hidden and
 `renderer.render` skipped. Without particles (no quote, RM, forced colours, targets not built) the
@@ -2033,9 +2040,10 @@ on at `p = 1`, and `dropQuoteSelection` still clears a selection on the way back
 **forced-colors** mode the particles are skipped and the system-coloured DOM text fades in.
 **Reduced motion** never creates the particles: the quote is static after the globe, as before.
 
-**Known limits (PoC).** Source quads are bilinear in screen space (no perspective-correct uv); the
-sphere's auto-spin continues while the particles stand in, so the cards can reappear a few degrees
-on from where they left; particles draw over anything else on the canvas.
+**Known limits (PoC).** The tiles are a resampled copy of the photo (one 256px colour per tile, no
+chromatic-aberration fringe), so the cross-fade is a soft mosaic rather than pixel-identical; a card
+that is far larger than the viewport gets coarse tiles; particles draw over anything else on the
+canvas.
 
 #### Frame mechanics
 
