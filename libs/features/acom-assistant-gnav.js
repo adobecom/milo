@@ -12,7 +12,10 @@ function isDisabledOnMobile() {
 function disableGnavAssistant() {
   document.documentElement.classList.remove(GNAV_ACTIVE_CLASS);
   window.milo ||= {};
-  window.milo.brandConcierge = { brandConciergeGlobal: false };
+  window.milo.brandConcierge = {
+    ...window.milo.brandConcierge,
+    brandConciergeGlobal: false,
+  };
 }
 
 function logInitializationError(error) {
@@ -31,8 +34,17 @@ export async function loadAcomAssistantGnav() {
     || getMetadata('gnav-foundation') === 'c2'
     ? '../c2/blocks/brand-concierge/acom-assistant-bootstrap.js'
     : '../blocks/brand-concierge/acom-assistant-bootstrap.js';
-  const { ensureAcomAssistant } = await import(bootstrapPath);
-  await ensureAcomAssistant(authoredCards);
+  const [{ ensureAcomAssistant }, { waitForAcomAssistantReady }] = await Promise.all([
+    import(bootstrapPath),
+    import('./acom-assistant.js'),
+  ]);
+  try {
+    await ensureAcomAssistant(authoredCards);
+    waitForAcomAssistantReady()?.catch(disableGnavAssistant);
+  } catch (error) {
+    disableGnavAssistant();
+    throw error;
+  }
 }
 
 export const getAuthoredGnavCards = () => authoredCards;
@@ -67,7 +79,10 @@ export function decorateAcomAssistantGnav(el, cards, block) {
 export function decorateNavWithAssistant(cards, topNav, block) {
   if (!decorateAcomAssistantGnav(topNav, cards, block)) return;
   window.milo ||= {};
-  window.milo.brandConcierge = { brandConciergeGlobal: true };
+  window.milo.brandConcierge = {
+    ...window.milo.brandConcierge,
+    brandConciergeGlobal: true,
+  };
 }
 
 /** Federal can supply authored prompts before its navigation has been mounted. */
@@ -77,21 +92,17 @@ export function decorateAcomAssistantGnavBlock(block) {
   if (cards) authoredCards = cards;
   noGnavMobile = block.classList.contains('no-gnav-mobile');
   block.replaceChildren();
-  if (isDisabledOnMobile()) {
-    disableGnavAssistant();
-  } else {
-    document.documentElement.classList.add(GNAV_ACTIVE_CLASS);
-  }
+  if (isDisabledOnMobile()) disableGnavAssistant();
 
   const topNav = document.querySelector('header.global-navigation nav');
   if (topNav) {
-    decorateNavWithAssistant(cards, topNav);
+    decorateNavWithAssistant(cards, topNav, block);
   } else {
     const navCheck = setInterval(() => {
       const nav = document.querySelector('header.global-navigation nav');
       if (!nav) return;
       clearInterval(navCheck);
-      decorateNavWithAssistant(cards, nav);
+      decorateNavWithAssistant(cards, nav, block);
     }, 100);
   }
   return true;

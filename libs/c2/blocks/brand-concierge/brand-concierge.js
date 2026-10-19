@@ -89,9 +89,11 @@ export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
   useAcomAssistant = isAcomAssistantEnabled();
+  const headerMeta = getMetadata('header');
   if (useAcomAssistant
     && getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on'
-    && getMetadata('header') !== 'off'
+    && (!headerMeta || headerMeta === 'global-navigation')
+    && document.querySelector('header')
     && window.milo?.brandConcierge?.brandConciergeGlobal !== false) {
     document.documentElement.classList.add('adobe-assistant-gnav-active');
   }

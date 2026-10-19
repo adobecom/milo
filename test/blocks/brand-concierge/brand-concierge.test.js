@@ -743,6 +743,7 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     document.documentElement.classList.remove('adobe-assistant-gnav-active');
     document.head.querySelector('meta[name="acom-assistant"]')?.remove();
     document.head.querySelector('meta[name="gnav-brand-concierge"]')?.remove();
+    document.head.querySelector('meta[name="header"]')?.remove();
     document.getElementById('brand-concierge-modal')?.remove();
     document.querySelector('.modal-curtain')?.remove();
   });
@@ -801,7 +802,21 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     expect(sendUserMessageSpy.calledWith(expected)).to.be.true;
   });
 
-  it('adds adobe-assistant-gnav-active early when gnav-brand-concierge is on before GNav mounts', async () => {
+  it('adds adobe-assistant-gnav-active early when gnav-brand-concierge is on and a header exists', async () => {
+    document.head.insertAdjacentHTML('beforeend', `
+      <meta name="acom-assistant" content="on">
+      <meta name="gnav-brand-concierge" content="on">
+    `);
+
+    document.body.innerHTML = `<header class="global-navigation"></header>${await readFile({ path: './mocks/default.html' })}`;
+    const block = document.querySelector('.brand-concierge');
+    block.classList.add('floating-button');
+    await init(block);
+
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.true;
+  });
+
+  it('does not add adobe-assistant-gnav-active when no header exists or header is off', async () => {
     document.head.insertAdjacentHTML('beforeend', `
       <meta name="acom-assistant" content="on">
       <meta name="gnav-brand-concierge" content="on">
@@ -812,6 +827,12 @@ describe('Brand Concierge - AcomAssistant flag', () => {
     block.classList.add('floating-button');
     await init(block);
 
-    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.true;
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.false;
+
+    document.head.insertAdjacentHTML('beforeend', '<meta name="header" content="off">');
+    document.body.innerHTML = `<header></header>${await readFile({ path: './mocks/default.html' })}`;
+    await init(document.querySelector('.brand-concierge'));
+
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.false;
   });
 });

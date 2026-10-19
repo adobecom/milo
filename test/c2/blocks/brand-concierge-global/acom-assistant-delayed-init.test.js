@@ -61,6 +61,7 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
   afterEach(() => {
     listenerSpy.getCalls().forEach(({ args }) => window.removeEventListener(...args));
     listenerSpy.restore();
+    document.documentElement.classList.remove('adobe-assistant-gnav-active');
     metadata.remove();
     document.head.querySelectorAll('link[href$="/c2/blocks/brand-concierge-global/brand-concierge-global.css"]')
       .forEach((style) => style.remove());
@@ -102,8 +103,10 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     header.remove();
     await loadBrandConcierge(block);
     expect(initialize.called).to.be.false;
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.false;
     document.body.prepend(header);
     decorateAcomAssistantGnav(header);
+    expect(document.documentElement.classList.contains('adobe-assistant-gnav-active')).to.be.true;
     await waitFor(() => window.milo?.brandConcierge?.brandConciergeGlobal);
 
     const foundation = document.createElement('meta');

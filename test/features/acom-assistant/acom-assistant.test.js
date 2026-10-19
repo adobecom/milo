@@ -190,6 +190,7 @@ describe('AcomAssistant shared client lifecycle', () => {
   it('handles a rejected SDK initialize promise without false readiness', async () => {
     client.initialize = sinon.stub().rejects(new Error('SDK initialization failed'));
     await start();
+    await expectError(assistant.waitForAcomAssistantReady(), 'SDK initialization failed');
     await expectError(assistant.openAcomAssistantChat({}), 'SDK initialization failed');
     expect(client.openMessagingWindow.called).to.be.false;
   });

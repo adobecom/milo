@@ -174,7 +174,10 @@ export default async function init(el) {
     return resolved ? tempAnchor.href : href;
   };
 
-  const { main } = await import(federalGnavUrl);
+  const { main } = await import(federalGnavUrl).catch((error) => {
+    document.documentElement.classList.remove('adobe-assistant-gnav-active');
+    throw error;
+  });
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 

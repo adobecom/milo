@@ -325,6 +325,10 @@ export function getAcomAssistantClient() {
   return resolvedClient;
 }
 
+export function waitForAcomAssistantReady() {
+  return readyPromise;
+}
+
 export async function sendAcomAssistantUserMessage(payload) {
   if (!payload?.label) return;
   const client = await clientPromise;
