@@ -1165,8 +1165,22 @@ describe('Merch Block', () => {
           reject(new Error('error'));
         }, 1);
       });
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      const offers = [{ productArrangement: {} }];
+      const action = await getCheckoutAction(offers, { entitlement: true }, imsSignedInPromise);
       expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: does not wait for IMS when no action needs it', async () => {
+      const action = getCheckoutAction([{ productArrangement: {} }], {}, new Promise(() => {}));
+      const timeout = new Promise((resolve) => { setTimeout(() => resolve('timeout'), 50); });
+      expect(await Promise.race([action, timeout])).to.be.undefined;
+    });
+
+    it('getCheckoutAction: waits for IMS for upgrade CTAs', async () => {
+      const offers = [{ productArrangement: {} }];
+      const action = getCheckoutAction(offers, { upgrade: true }, new Promise(() => {}));
+      const timeout = new Promise((resolve) => { setTimeout(() => resolve('timeout'), 50); });
+      expect(await Promise.race([action, timeout])).to.equal('timeout');
     });
 
     it('getCheckoutAction: returns undefined and does not throw on empty offers', async () => {

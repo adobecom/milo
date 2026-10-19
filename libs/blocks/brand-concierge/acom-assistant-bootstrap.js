@@ -1,5 +1,10 @@
-import { getConfig, getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
-import { initAcomAssistantOnce, sendAcomAssistantUserMessage, openAcomAssistantChat } from '../../features/acom-assistant.js';
+import { getMetadata, loadScript, loadStyle } from '../../utils/utils.js';
+import {
+  initAcomAssistantOnce,
+  sendAcomAssistantUserMessage,
+  openAcomAssistantChat,
+  getAcomAssistantIdentity,
+} from '../../features/acom-assistant.js';
 import acomAssistantAnalyticsAdapter from './acom-assistant-analytics.js';
 
 const chatLabelText = 'Ask';
@@ -19,8 +24,7 @@ function extractCardPrompts(cards) {
  *  the GNav mount, which needs the client initialized as soon as it renders, before
  *  any user input exists. */
 export async function ensureAcomAssistant(cards) {
-  const appid = getConfig().jarvis?.id;
-  const appver = getConfig().jarvis?.version;
+  const { appid, appver } = getAcomAssistantIdentity();
 
   return initAcomAssistantOnce({
     appid,

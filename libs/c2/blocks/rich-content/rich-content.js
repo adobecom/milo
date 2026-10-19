@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
 import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
@@ -29,7 +29,7 @@ function initNavHeight(el) {
 }
 
 function hangOpeningQuote(header) {
-  if (!header) return;
+  if (!header || header.querySelector('mas-field')) return;
   const openingQuotes = /^(\p{Pi}|["„‚「『｢﹁﹃＂⹂])/u;
   const match = header.textContent.match(openingQuotes);
   if (!match) return;
@@ -39,15 +39,23 @@ function hangOpeningQuote(header) {
   header.prepend(span);
 }
 
-function decorateText(el) {
+function decorateMasText(el) {
   decorateBlockText(el);
+  const bodyClass = [...(el.querySelector(':scope > [class*="body-"]')?.classList ?? [])]
+    .find((cls) => cls.startsWith('body-'));
+  normalizeMasFieldText(el, bodyClass?.slice(5) ?? 'md');
+}
+
+function decorateText(el) {
+  decorateMasText(el);
   const firstText = el?.querySelector('h1, h2, h3, h4, h5, h6, p');
   hangOpeningQuote(firstText);
 }
 
 function promoteParagraphHeading(content, headingSize = '2', skipFirst = false) {
   if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
-  const ps = [...content.querySelectorAll('p')];
+  const ps = [...content.querySelectorAll('p, div[class*="body-"]')]
+    .filter((paragraph) => !paragraph.closest('mas-field'));
   const target = skipFirst ? ps[1] : ps[0];
   if (!target) return;
   const bodyClass = [...target.classList].find((c) => c.startsWith('body-'));
@@ -151,7 +159,7 @@ function decorateMediaVariant(container) {
   }
 
   if (ctaCell && ctaCell !== mediaCell && hasCellContent(ctaCell)) {
-    decorateBlockText(ctaCell);
+    decorateMasText(ctaCell);
     ctaCell.classList.add('cta-area');
     container.append(ctaCell);
   }
