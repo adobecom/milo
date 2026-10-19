@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
-import createQuoteParticles, { rasterizeQuote, colorGrid, pendingFonts } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, { rasterizeQuote, pendingFonts } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import { Vector3 } from '../../../../libs/deps/three.js';
 import { buildGlobeDom } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
 
@@ -56,28 +57,12 @@ describe('globe-gallery: quote particles', () => {
     expect(rasterizeQuote(fig, 0, 1000)).to.be.null;
   });
 
-  it('shrinks a card photo to a cached colour grid, and tolerates a missing image', () => {
-    const c = document.createElement('canvas');
-    c.width = 64;
-    c.height = 32;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle = 'rgb(255, 0, 0)';
-    ctx.fillRect(0, 0, 64, 32);
-    const grid = colorGrid(c);
-    expect(grid.w).to.equal(256);
-    expect(grid.h).to.equal(128);
-    expect(grid.data[0]).to.equal(255);
-    expect(grid.data[1]).to.equal(0);
-    expect(colorGrid(c)).to.equal(grid);
-    expect(colorGrid(null)).to.be.null;
-  });
-
   it('reports no pending fonts for a system font', () => {
     const { fig } = mountFigure();
     expect(pendingFonts(fig)).to.be.an('array');
   });
 
-  it('builds a points object, spreads sources over the far-side quads, and disposes', () => {
+  it('lays tiles over the far-side cards in world space, one draw per card, and disposes', () => {
     const { fig } = mountFigure();
     const added = [];
     const scene = {
@@ -87,17 +72,24 @@ describe('globe-gallery: quote particles', () => {
     const fx = createQuoteParticles(scene, 1000);
     expect(fx.isBuilt()).to.be.false;
     const targets = rasterizeQuote(fig, 0, 500);
-    // Sources set before the build are kept and applied to it.
-    const quad = {
-      pts: [100, 100, 200, 100, 200, 300, 100, 300],
-      project: (u, v) => [100 + 100 * u, 100 + 200 * v],
-      alpha: 0.5,
-      mirror: false,
-      image: null,
+    // Two cards: a 100×200 px one and a 50×50 px one, on the z = −10 plane in world space.
+    const card = (x0, y0, w, h) => ({
+      project: (u, v) => [x0 + w * u, y0 + h * v],
+      world: (u, v, out) => out.set(x0 + w * u, -(y0 + h * v), -10),
+      axisU: new Vector3(w, 0, 0),
+      axisV: new Vector3(0, h, 0),
+      depth: 10,
+      texture: { isTexture: true },
       repeat: { x: 1, y: 1 },
       offset: { x: 0, y: 0 },
-    };
-    fx.setSources([quad], 800, 600);
+      aspect: w / h,
+      radius: 0.03,
+      ca: 0,
+      mirror: false,
+      alpha: 0.5,
+    });
+    // Sources set before the build are kept and applied to it.
+    fx.setSources([card(100, 100, 100, 200), card(400, 100, 50, 50)], 800, 600);
     fx.build(targets);
     expect(fx.isBuilt()).to.be.true;
     expect(added).to.have.length(1);
@@ -106,25 +98,38 @@ describe('globe-gallery: quote particles', () => {
     expect(pts.isMesh).to.be.false;
     expect(pts.frustumCulled).to.be.false;
     expect(pts.visible).to.be.false;
-    const src = pts.geometry.getAttribute('aSrc').array;
-    const size = pts.geometry.getAttribute('aSrcSize').array;
-    const col = pts.geometry.getAttribute('aSrcColor').array;
-    for (let i = 0; i < targets.count; i += 1) {
-      expect(src[i * 2]).to.be.within(100, 200);
-      expect(src[i * 2 + 1]).to.be.within(100, 300);
-      expect(col[i * 4 + 3]).to.equal(0.5);
-      expect(size[i]).to.be.greaterThan(0);
+    // One contiguous group per card, sized by on-screen area (20000 : 2500 px²).
+    const { groups } = pts.geometry;
+    expect(fx.getDrawCount()).to.equal(2);
+    expect(groups[0].count + groups[1].count).to.equal(500);
+    expect(groups[0].count).to.be.within(440, 450);
+    expect(pts.material[0].uniforms.uAlpha.value).to.equal(0.5);
+    const w = pts.geometry.getAttribute('aSrcWorld').array;
+    const uv = pts.geometry.getAttribute('aUv').array;
+    const rel = pts.geometry.getAttribute('aRelease').array;
+    for (let i = 0; i < groups[0].count; i += 1) {
+      expect(w[i * 3]).to.be.within(100, 200);
+      expect(-w[i * 3 + 1]).to.be.within(100, 300);
+      expect(w[i * 3 + 2]).to.equal(-10);
+      expect(uv[i * 2]).to.be.within(0, 1);
     }
-    // A grid of tiles: 500 over a 100×200 card is ~16×31 cells of ~6.3px, drawn at 1.2×.
-    expect(size[0]).to.be.within(6, 10);
-    // No far-side card left: sources start invisible.
+    // Edge-first: a rim tile is released before a centre tile.
+    let rimRel = Infinity; let midRel = -Infinity;
+    for (let i = 0; i < groups[0].count; i += 1) {
+      const edge = Math.min(uv[i * 2], 1 - uv[i * 2], uv[i * 2 + 1], 1 - uv[i * 2 + 1]);
+      if (edge < 0.05) rimRel = Math.min(rimRel, rel[i]);
+      if (edge > 0.4) midRel = Math.max(midRel, rel[i]);
+    }
+    expect(rimRel).to.be.below(midRel);
+    // No far-side card left: one invisible stand-in group.
     fx.setSources([], 800, 600);
-    expect(pts.geometry.getAttribute('aSrcColor').array[3]).to.equal(0);
+    expect(fx.getDrawCount()).to.equal(1);
+    expect(pts.material[0].uniforms.uAlpha.value).to.equal(0);
     fx.setFrame({
-      p: 0.5, fadeIn: 1, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1,
+      p: 0.5, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1, zoom: [0.2, 0.1], camZ: [57, -60],
     });
-    expect(pts.material.uniforms.uP.value).to.equal(0.5);
-    expect(pts.material.uniforms.uIn.value).to.equal(1);
+    expect(pts.material[0].uniforms.uP.value).to.equal(0.5);
+    expect(pts.material[0].uniforms.uZoom.value.x).to.equal(0.2);
     fx.setVisible(true);
     expect(pts.visible).to.be.true;
     fx.dispose();

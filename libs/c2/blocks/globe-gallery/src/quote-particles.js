@@ -5,7 +5,6 @@ import { QUOTE_PARTICLE_VERT, QUOTE_PARTICLE_FRAG, QUOTE_DELAY_MAX } from './sha
 // glyphs, laid out by the real DOM. See README (Particle hand-off).
 
 const INK_ALPHA = 128;
-const GRAY = [0.55, 0.55, 0.55];
 const SIZE_PER_SPACING = 1.5; // dot diameter over mean ink spacing: just enough to read solid
 const SIZE_MIN = 1.2;
 const SIZE_MAX = 4;
@@ -99,32 +98,6 @@ export function rasterizeQuote(figureEl, originTop, budget) {
   return { dst, color, count, size };
 }
 
-const GRID_LONG = 256; // card colour lookup resolution, long side: per-particle, not an average
-const gridCache = new WeakMap();
-
-// A card photo at lookup resolution, cached per image. Rows follow the texture's own v (bitmaps
-// are uploaded pre-flipped), so GL uv indexes it directly. Null when the image can't be read.
-export function colorGrid(image) {
-  if (!image || !image.width || !image.height) return null;
-  if (gridCache.has(image)) return gridCache.get(image);
-  let grid = null;
-  try {
-    const k = GRID_LONG / Math.max(image.width, image.height);
-    const w = Math.max(1, Math.round(image.width * k));
-    const h = Math.max(1, Math.round(image.height * k));
-    const c = document.createElement('canvas');
-    c.width = w;
-    c.height = h;
-    const ctx = c.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(image, 0, 0, w, h);
-    grid = { w, h, data: ctx.getImageData(0, 0, w, h).data };
-  } catch (e) {
-    grid = null;
-  }
-  gridCache.set(image, grid);
-  return grid;
-}
-
 // deps/three.js is a tree-shaken subset with no Points, BufferGeometry or BufferAttribute: a
 // stripped PlaneGeometry supplies both, and a Mesh flagged isPoints is drawn as gl.POINTS.
 function createPointGeometry(attrs) {
@@ -165,28 +138,86 @@ function seedFor(dst, count, rtl) {
   return seed;
 }
 
+const QUAD_PROBE = 12;
+
+// The uv window of a card that is on screen (padded a probe step), from a coarse probe grid. Null
+// when none of it is.
+function screenWindow(project, W, H) {
+  const inView = ([x, y]) => x > -0.05 * W && x < 1.05 * W && y > -0.05 * H && y < 1.05 * H;
+  let u0 = 1; let u1 = 0; let v0 = 1; let v1 = 0;
+  for (let a = 0; a <= QUAD_PROBE; a += 1) {
+    for (let b = 0; b <= QUAD_PROBE; b += 1) {
+      if (inView(project(a / QUAD_PROBE, b / QUAD_PROBE))) {
+        u0 = Math.min(u0, a / QUAD_PROBE); u1 = Math.max(u1, a / QUAD_PROBE);
+        v0 = Math.min(v0, b / QUAD_PROBE); v1 = Math.max(v1, b / QUAD_PROBE);
+      }
+    }
+  }
+  if (u1 < u0) return null;
+  const pad = 1 / QUAD_PROBE;
+  return {
+    u0: Math.max(0, u0 - pad),
+    u1: Math.min(1, u1 + pad),
+    v0: Math.max(0, v0 - pad),
+    v1: Math.min(1, v1 + pad),
+  };
+}
+
+function windowArea(project, win) {
+  const pts = [[win.u0, win.v0], [win.u1, win.v0], [win.u1, win.v1], [win.u0, win.v1]]
+    .map(([u, v]) => project(u, v));
+  let a2 = 0;
+  pts.forEach(([x, y], k) => { const [nx, ny] = pts[(k + 1) % 4]; a2 += x * ny - nx * y; });
+  return Math.abs(a2) / 2;
+}
+
 export default function createQuoteParticles(scene, renderOrder) {
-  const uniforms = {
+  // Shared by reference into every per-card material.
+  const shared = {
+    uProj: { value: new THREE.Matrix4() },
+    uZoom: { value: new THREE.Vector2(0, 0) },
+    uCamZ: { value: new THREE.Vector2(0, 0) },
     uViewport: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },
     uPinTop: { value: 0 },
     uP: { value: 0 },
-    uIn: { value: 0 },
     uFade: { value: 1 },
     uSize: { value: 2 },
     uScatter: { value: 0 },
+    uMinDepth: { value: 1.5 },
+    uTargetDepth: { value: 30 },
   };
-  const material = new THREE.ShaderMaterial({
-    uniforms,
+  const makeMaterial = (card) => new THREE.ShaderMaterial({
+    uniforms: {
+      ...shared,
+      uMap: { value: card ? card.texture : null },
+      uRepeat: { value: new THREE.Vector2(card ? card.repeat.x : 1, card ? card.repeat.y : 1) },
+      uOffset: { value: new THREE.Vector2(card ? card.offset.x : 0, card ? card.offset.y : 0) },
+      uAspect: { value: card ? card.aspect : 1 },
+      uRadius: { value: card ? card.radius : 0 },
+      uCA: { value: card ? card.ca : 0 },
+      uMirror: { value: card && card.mirror ? 1 : 0 },
+      uAlpha: { value: card ? card.alpha : 0 },
+      uAxisU: { value: card ? card.axisU.clone() : new THREE.Vector3(1, 0, 0) },
+      uAxisV: { value: card ? card.axisV.clone() : new THREE.Vector3(0, 1, 0) },
+      uCell: { value: new THREE.Vector2(card ? card.cellU : 0.01, card ? card.cellV : 0.01) },
+    },
     vertexShader: QUOTE_PARTICLE_VERT,
     fragmentShader: QUOTE_PARTICLE_FRAG,
     transparent: true,
     depthTest: false,
     depthWrite: false,
+    extensions: { derivatives: true }, // fwidth for the corner AA in WebGL1; no-op in WebGL2
   });
   let points = null;
   let count = 0;
+  let materials = [];
   let lastSources = null;
+
+  function disposeMaterials() {
+    materials.forEach((m) => m.dispose());
+    materials = [];
+  }
 
   function disposeGeometry() {
     if (!points) return;
@@ -195,115 +226,83 @@ export default function createQuoteParticles(scene, renderOrder) {
     points = null;
   }
 
-  // quads: [{ pts: [TLx, TLy, TRx, TRy, BRx, BRy, BLx, BLy], project(u, v) → [x, y], alpha, image,
-  // repeat, offset, mirror }] in viewport px, u right and v down the card as seen. Each card gets
-  // particles in proportion to its on-screen area, on a grid so the tiles cover it edge to edge,
-  // each placed through the card's own projection (perspective-correct) and sized to its cell.
-  function setSources(quads, W, H) {
-    lastSources = { quads, W, H };
+  // cards: [{ project(u, v) → [x, y] px (v down the card as seen), world(u, v, out) → Vector3,
+  // axisU, axisV (world per unit geometry uv), depth, texture, repeat, offset, aspect, radius, ca,
+  // mirror, alpha }]. Particles go to each card by the on-screen area of its visible part, as a
+  // grid of tiles in one contiguous range per card, so each card is one draw with its own texture.
+  function setSources(cards, W, H) {
+    lastSources = { cards, W, H };
     if (!points) return;
-    const src = points.geometry.getAttribute('aSrc');
-    const size = points.geometry.getAttribute('aSrcSize');
-    const col = points.geometry.getAttribute('aSrcColor');
-    // Only the part of each card that is on screen: its uv window, from a coarse probe grid.
-    const inView = ([x, y]) => x > -0.05 * W && x < 1.05 * W && y > -0.05 * H && y < 1.05 * H;
-    const PROBE = 12;
-    const windows = quads.map(({ project }) => {
-      let u0 = 1; let u1 = 0; let v0 = 1; let v1 = 0;
-      for (let a = 0; a <= PROBE; a += 1) {
-        for (let b = 0; b <= PROBE; b += 1) {
-          if (inView(project(a / PROBE, b / PROBE))) {
-            u0 = Math.min(u0, a / PROBE); u1 = Math.max(u1, a / PROBE);
-            v0 = Math.min(v0, b / PROBE); v1 = Math.max(v1, b / PROBE);
-          }
-        }
-      }
-      if (u1 < u0) return null;
-      const pad = 1 / PROBE;
-      return {
-        u0: Math.max(0, u0 - pad),
-        u1: Math.min(1, u1 + pad),
-        v0: Math.max(0, v0 - pad),
-        v1: Math.min(1, v1 + pad),
-      };
-    });
-    const area = quads.map(({ project }, qi) => {
-      const win = windows[qi];
-      if (!win) return 0;
-      const pts = [[win.u0, win.v0], [win.u1, win.v0], [win.u1, win.v1], [win.u0, win.v1]]
-        .map(([u, v]) => project(u, v));
-      // Shoelace: the window's projected area.
-      let a2 = 0;
-      pts.forEach(([x, y], k) => { const [nx, ny] = pts[(k + 1) % 4]; a2 += x * ny - nx * y; });
-      return Math.abs(a2) / 2;
-    });
+    const geo = points.geometry;
+    const srcW = geo.getAttribute('aSrcWorld');
+    const uv = geo.getAttribute('aUv');
+    const rel = geo.getAttribute('aRelease');
+    const windows = cards.map((c) => screenWindow(c.project, W, H));
+    const area = cards.map((c, k) => (windows[k] ? windowArea(c.project, windows[k]) : 0));
     const total = area.reduce((a, b) => a + b, 0);
+    disposeMaterials();
+    geo.clearGroups();
+    const tmp = new THREE.Vector3();
     let i = 0;
-    const put = (q, u, v, cellU, cellV) => {
-      const {
-        project, alpha, image, repeat, offset, mirror,
-      } = q;
-      const [x, y] = project(u, v);
-      const [xu, yu] = project(u + cellU, v);
-      const [xv, yv] = project(u, v + cellV);
-      src.array[i * 2] = x;
-      src.array[i * 2 + 1] = y;
-      const cell = Math.max(Math.hypot(xu - x, yu - y), Math.hypot(xv - x, yv - y));
-      size.array[i] = Math.min(64, 1.2 * cell); // a little overlap, so no seams between tiles
-      const grid = colorGrid(image);
-      if (grid) {
-        // The card shader mirrors u on back faces; GL v runs up the photo.
-        const gu = Math.min(0.999, Math.max(0, (mirror ? 1 - u : u) * repeat.x + offset.x));
-        const gv = Math.min(0.999, Math.max(0, (1 - v) * repeat.y + offset.y));
-        const k = (Math.floor(gv * grid.h) * grid.w + Math.floor(gu * grid.w)) * 4;
-        const d = grid.data;
-        col.array.set([d[k] / 255, d[k + 1] / 255, d[k + 2] / 255, alpha], i * 4);
-      } else {
-        col.array.set([GRAY[0], GRAY[1], GRAY[2], alpha], i * 4);
-      }
-      i += 1;
-    };
     if (total > 0) {
-      quads.forEach((q, qi) => {
-        const share = Math.floor((count * area[qi]) / total);
-        const win = windows[qi];
+      const shares = area.map((a) => Math.floor((count * a) / total));
+      const largest = area.indexOf(Math.max(...area));
+      shares[largest] += count - shares.reduce((a, b) => a + b, 0);
+      const depths = cards.filter((c, k) => shares[k] > 0).map((c) => c.depth);
+      const dMin = Math.min(...depths);
+      const dSpan = Math.max(1e-3, Math.max(...depths) - dMin);
+      cards.forEach((card, k) => {
+        const share = shares[k];
+        const win = windows[k];
         if (share < 1 || !win) return;
-        const [ax, ay] = q.project(win.u0, win.v0);
-        const [bx, by] = q.project(win.u1, win.v0);
-        const [cx, cy] = q.project(win.u0, win.v1);
+        const [ax, ay] = card.project(win.u0, win.v0);
+        const [bx, by] = card.project(win.u1, win.v0);
+        const [cx, cy] = card.project(win.u0, win.v1);
         const wPx = Math.hypot(bx - ax, by - ay);
         const hPx = Math.hypot(cx - ax, cy - ay);
         const cols = Math.max(1, Math.round(Math.sqrt((share * wPx) / Math.max(1, hPx))));
         const rows = Math.max(1, Math.floor(share / cols));
         const du = (win.u1 - win.u0) / cols;
         const dv = (win.v1 - win.v0) / rows;
-        for (let r = 0; r < rows && i < count; r += 1) {
-          for (let c = 0; c < cols && i < count; c += 1) {
-            put(q, win.u0 + (c + 0.5) * du, win.v0 + (r + 0.5) * dv, du, dv);
-          }
+        const start = i;
+        const depthRank = (card.depth - dMin) / dSpan; // nearer cards let go first
+        const put = (u, v) => {
+          // v runs down the card as seen; geometry v runs up.
+          card.world(u, v, tmp);
+          srcW.array.set([tmp.x, tmp.y, tmp.z], i * 3);
+          uv.array.set([u, 1 - v], i * 2);
+          // Edge-first: 0 on the rim, 1 at the centre, in card-height units.
+          const edge = Math.min(Math.min(u, 1 - u) * card.aspect, Math.min(v, 1 - v));
+          const inner = Math.min(1, edge / (0.5 * Math.min(card.aspect, 1)));
+          rel.array[i] = 0.02 + 0.08 * depthRank + 0.1 * inner + 0.06 * Math.random();
+          i += 1;
+        };
+        for (let r = 0; r < rows; r += 1) {
+          for (let c = 0; c < cols; c += 1) put(win.u0 + (c + 0.5) * du, win.v0 + (r + 0.5) * dv);
         }
+        // The grid rounding leaves a few over: doubled up at random in the same window.
+        while (i - start < share) {
+          const ru = win.u0 + Math.random() * (win.u1 - win.u0);
+          put(ru, win.v0 + Math.random() * (win.v1 - win.v0));
+        }
+        materials.push(makeMaterial({ ...card, cellU: du, cellV: dv }));
+        geo.addGroup(start, i - start, materials.length - 1);
       });
     }
-    // The grid rounding leaves a few over: doubled up at random on the largest cards.
-    while (i < count) {
-      if (!total) {
-        src.array.set([Math.random() * W, Math.random() * H], i * 2);
-        size.array[i] = 2;
-        col.array.set([1, 1, 1, 0], i * 4); // nothing left to break up: invisible until it flies
-        i += 1;
-      } else {
-        let r = Math.random() * total;
-        let q = 0;
-        while (q < area.length - 1 && (r > area[q] || !windows[q])) { r -= area[q]; q += 1; }
-        const win = windows[q];
-        const u = win.u0 + Math.random() * (win.u1 - win.u0);
-        const v = win.v0 + Math.random() * (win.v1 - win.v0);
-        put(quads[q], u, v, 0.02, 0.02);
+    if (i < count) {
+      // Nothing left to break up: invisible stand-ins that only show once they have flown.
+      for (; i < count; i += 1) {
+        srcW.array.set([0, 0, -1e3], i * 3);
+        uv.array.set([0.5, 0.5], i * 2);
+        rel.array[i] = 0;
       }
+      materials.push(makeMaterial(null));
+      geo.addGroup(0, count, materials.length - 1);
     }
-    src.needsUpdate = true;
-    size.needsUpdate = true;
-    col.needsUpdate = true;
+    points.material = materials;
+    srcW.needsUpdate = true;
+    uv.needsUpdate = true;
+    rel.needsUpdate = true;
   }
 
   function build(targets, rtl = false) {
@@ -312,37 +311,44 @@ export default function createQuoteParticles(scene, renderOrder) {
     const geo = createPointGeometry({
       position: [targets.dst, 3],
       aDstColor: [targets.color, 3],
-      aSrc: [new Float32Array(count * 2), 2],
-      aSrcSize: [new Float32Array(count), 1],
-      aSrcColor: [new Float32Array(count * 4), 4],
+      aSrcWorld: [new Float32Array(count * 3), 3],
+      aUv: [new Float32Array(count * 2), 2],
+      aRelease: [new Float32Array(count), 1],
       aSeed: [seedFor(targets.dst, count, rtl), 4],
     });
-    points = createPoints(geo, material);
+    disposeMaterials();
+    materials = [makeMaterial(null)];
+    geo.addGroup(0, count, 0);
+    points = createPoints(geo, materials);
     points.frustumCulled = false; // positions are clip-space; the bounds three would test are not
     points.renderOrder = renderOrder;
     points.visible = false;
-    uniforms.uSize.value = targets.size;
+    shared.uSize.value = targets.size;
     scene.add(points);
-    if (lastSources) setSources(lastSources.quads, lastSources.W, lastSources.H);
+    if (lastSources) setSources(lastSources.cards, lastSources.W, lastSources.H);
   }
 
+  // zoom: [zoomT at p = 0, zoomT per unit p]; camZ: [CAM_Z_SPHERE, CAM_Z_END].
   function setFrame({
-    p, fadeIn, fade, pinTop, W, H, dpr,
+    p, fade, pinTop, W, H, dpr, camera, targetDepth, zoom, camZ,
   }) {
-    uniforms.uP.value = p;
-    uniforms.uIn.value = fadeIn;
-    uniforms.uFade.value = fade;
-    uniforms.uPinTop.value = pinTop;
-    uniforms.uViewport.value.set(W, H);
-    uniforms.uDpr.value = dpr;
-    uniforms.uScatter.value = 0.2 * Math.min(W, H);
+    shared.uP.value = p;
+    shared.uFade.value = fade;
+    shared.uPinTop.value = pinTop;
+    shared.uViewport.value.set(W, H);
+    shared.uDpr.value = dpr;
+    shared.uScatter.value = 0.2 * Math.min(W, H);
+    if (camera) shared.uProj.value.copy(camera.projectionMatrix);
+    if (zoom) shared.uZoom.value.set(zoom[0], zoom[1]);
+    if (camZ) shared.uCamZ.value.set(camZ[0], camZ[1]);
+    if (targetDepth) shared.uTargetDepth.value = targetDepth;
   }
 
   function setVisible(v) { if (points) points.visible = v; }
 
   function dispose() {
     disposeGeometry();
-    material.dispose();
+    disposeMaterials();
     lastSources = null;
   }
 
@@ -352,6 +358,7 @@ export default function createQuoteParticles(scene, renderOrder) {
     setFrame,
     setVisible,
     isBuilt: () => !!points,
+    getDrawCount: () => (points ? points.geometry.groups.length : 0),
     dispose,
   };
 }
