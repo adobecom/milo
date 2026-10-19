@@ -308,6 +308,30 @@ describe('Router Marquee', () => {
     rafSpy.restore();
   });
 
+  it('ignores a slide observer firing after a smaller block re-initialized analytics', async () => {
+    const callbacks = [];
+    const RealIO = window.IntersectionObserver;
+    window.IntersectionObserver = function StubIO(cb) {
+      callbacks.push(cb);
+      return { observe() {}, disconnect() {} };
+    };
+    try {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const first = document.querySelector('.router-marquee');
+      init(first);
+      const [, secondSlideCb] = callbacks;
+      const target = first.querySelectorAll('.rm-slide .rm-title')[1];
+      // a later block with a single slide replaces the analytics for the same viewport
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const second = document.querySelector('.router-marquee');
+      second.querySelectorAll(':scope > div')[2].remove();
+      init(second);
+      expect(() => secondSlideCb([{ target, isIntersecting: true }])).to.not.throw();
+    } finally {
+      window.IntersectionObserver = RealIO;
+    }
+  });
+
   it('reorders slides based on the starting-marquee section metadata', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/reorder.html' });
     const block = document.querySelector('.router-marquee');
