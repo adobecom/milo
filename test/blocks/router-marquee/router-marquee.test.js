@@ -441,6 +441,15 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
     style.remove();
   });
 
+  it('keeps a pending CTA field authored after one that already resolved empty', () => {
+    const field = (name, attrs = '') => `<em><strong><mas-field field="${name}"${attrs}><span data-role="mas-field-content"></span></mas-field></strong></em>`;
+    block.querySelector('p:has(> em)').innerHTML = `${field('ctas[kr-only]', ' hidden')} ${field('ctas[trial]')}`;
+    init(block);
+    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
+    expect(ctas.querySelector('.rm-cta-slot mas-field[field="ctas[trial]"]')).to.exist;
+    expect(ctas.querySelector('mas-field[field="ctas[kr-only]"]')).to.not.exist;
+  });
+
   it('prefers a resolved CTA over an earlier empty field, as before', () => {
     // e.g. a region-only CTA that loaded empty, authored ahead of the real one
     block.querySelector('p:has(> em)').innerHTML = '<em><strong><mas-field field="ctas[kr-only]"><span data-role="mas-field-content"></span></mas-field></strong></em> <em><strong><a href="https://www.adobe.com/trial">Free trial</a></strong></em>';

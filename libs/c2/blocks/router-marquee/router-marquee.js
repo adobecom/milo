@@ -98,7 +98,9 @@ const clearInlineStyles = (el, props) => {
 const STAGGER_CHILDREN = ['.rm-eyebrow', '.rm-title', '.rm-body', '.rm-ctas'];
 
 // A field merch.js gave up waiting on still renders in place later, so keep it connected.
-const isPendingField = (mf) => !mf.querySelector(':scope > [data-role="mas-field-content"]')?.hasChildNodes();
+// mas-field hides itself once it resolves empty.
+const isPendingField = (mf) => !mf.hidden
+  && !mf.querySelector(':scope > [data-role="mas-field-content"]')?.hasChildNodes();
 
 // A slide can be authored as a promotion placeholder through a block variant class,
 // `promo-placeholder-slide-<n>` (1-based, e.g. "router-marquee (promo placeholder slide 3)").
