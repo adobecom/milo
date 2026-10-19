@@ -617,6 +617,7 @@ describe('globe-gallery: timeline', () => {
       'blockDocTop',
       'blockHeight',
       'formPx',
+      'holdPx',
       'viewportH',
       'arcScale',
       'entryLeadVh',

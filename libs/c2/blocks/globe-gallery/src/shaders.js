@@ -251,56 +251,52 @@ export const TEXT_FRAG = [
 ].join('\n');
 
 // Pull-quote particles. Positions are CSS px in viewport space (y down), mapped straight to clip
-// space, so no camera is involved. `position` holds the text target; the source is rebuilt per
-// frame from the card's projected quad (uCardA/B) so pixels leave the card where it dissolves.
+// space, so no camera is involved. `position` is the text target; aSrc is where the pixel sat on a
+// far-side card at the flight's start. uP is the scroll-driven flight: 0 on the card, 1 landed.
+export const QUOTE_EXPAND_END = 0.3; // share of uP the burst outward takes
+export const QUOTE_FLY_START = 0.08;
+export const QUOTE_FLY_DUR = 0.6;
+export const QUOTE_DELAY_MAX = 0.32; // QUOTE_FLY_START + DELAY + DUR must stay ≤ 1
+
 export const QUOTE_PARTICLE_VERT = [
-  'attribute vec3 aCard;', // x = card slot, yz = uv on the card (v down)
-  'attribute vec3 aSrcColor;',
+  'attribute vec2 aSrc;',
+  'attribute vec4 aSrcColor;', // rgb + the card's alpha at the snapshot
   'attribute vec3 aDstColor;',
-  'attribute vec4 aSeed;', // x = dissolve threshold, y = flight delay, z = angle, w = magnitude
-  'uniform vec4 uCardA[MAX_CARDS];', // centre.xy, half-width axis.xy
-  'uniform vec4 uCardB[MAX_CARDS];', // half-height axis.xy (down), dissolve 0..1, unused
+  'attribute vec4 aSeed;', // x = flight delay, y = scatter angle, z = scatter share, w = swirl
   'uniform vec2 uViewport;',
   'uniform float uDpr;',
   'uniform float uPinTop;',
-  'uniform float uFly;',
+  'uniform float uP;',
   'uniform float uFade;',
   'uniform float uSize;',
-  'varying vec3 vColor;',
-  'varying float vAlpha;',
+  'uniform float uScatter;', // px
+  'varying vec4 vColor;',
   'void main() {',
-  '  int k = int(aCard.x + 0.5);',
-  '  vec4 a = uCardA[k];',
-  '  vec4 b = uCardB[k];',
-  '  vec2 src = a.xy + (aCard.y * 2.0 - 1.0) * a.zw + (aCard.z * 2.0 - 1.0) * b.xy;',
-  '  float emerge = clamp((b.z - aSeed.x * 0.8) / 0.2, 0.0, 1.0);',
+  '  vec2 c = uViewport * 0.5;',
+  `  float e = 1.0 - pow(1.0 - clamp(uP / ${glf(QUOTE_EXPAND_END)}, 0.0, 1.0), 3.0);`,
+  '  vec2 dir = vec2(cos(aSeed.y), sin(aSeed.y));',
   // Burst outward from the view centre, as the camera's forward travel would carry it.
-  '  vec2 away = src - uViewport * 0.5;',
-  '  vec2 jitter = vec2(cos(aSeed.z), sin(aSeed.z)) * aSeed.w * uViewport.y * 0.14;',
-  '  vec2 scattered = src + (away * 0.3 + jitter) * emerge;',
-  '  float f = clamp((uFly - aSeed.y * 0.35) / 0.65, 0.0, 1.0);',
-  // Gated by emerge: a pixel only flies once its card has let go of it.
-  '  float fe = (f < 0.5 ? 4.0 * f * f * f : 1.0 - pow(-2.0 * f + 2.0, 3.0) * 0.5) * emerge;',
+  '  vec2 from = c + (aSrc - c) * (1.0 + 0.5 * e) + dir * aSeed.z * uScatter * e;',
+  `  float t = clamp((uP - ${glf(QUOTE_FLY_START)} - aSeed.x) / ${glf(QUOTE_FLY_DUR)}, 0.0, 1.0);`,
+  '  float te = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(2.0 - 2.0 * t, 3.0) * 0.5;',
   '  vec2 dst = position.xy + vec2(0.0, uPinTop);',
-  '  vec2 path = dst - scattered;',
-  '  vec2 bend = vec2(-path.y, path.x) * (aSeed.w - 0.5) * 0.35 * sin(fe * 3.14159);',
-  '  vec2 p = mix(scattered, dst, fe) + bend;',
-  '  vColor = mix(aSrcColor, aDstColor, smoothstep(0.35, 1.0, fe));',
-  '  vAlpha = emerge * uFade;',
-  '  float size = mix(uSize * (1.4 + 1.6 * aSeed.w), uSize, fe);',
-  '  gl_PointSize = max(1.0, size * uDpr);',
+  '  vec2 path = dst - from;',
+  '  vec2 swirl = vec2(-path.y, path.x) * aSeed.w * 0.3 * sin(3.14159 * te);',
+  '  vec2 p = mix(from, dst, te) + swirl;',
   '  gl_Position = vec4(p.x / uViewport.x * 2.0 - 1.0, 1.0 - p.y / uViewport.y * 2.0, 0.0, 1.0);',
+  '  gl_PointSize = max(1.0, mix(max(2.4, uSize * 1.2) * (1.0 + 0.5 * e), uSize, te) * uDpr);',
+  // Scattering lifts the photo colours a little, so dark cards still read as they break up.
+  '  vec3 col = mix(mix(aSrcColor.rgb, vec3(1.0), 0.3 * e), aDstColor, smoothstep(0.1, 0.8, te));',
+  '  vColor = vec4(col, mix(aSrcColor.a, 1.0, smoothstep(0.0, 0.4, te)) * uFade);',
   '}',
 ].join('\n');
 
 export const QUOTE_PARTICLE_FRAG = [
-  'varying vec3 vColor;',
-  'varying float vAlpha;',
+  'varying vec4 vColor;',
   'void main() {',
   '  vec2 c = gl_PointCoord - 0.5;',
-  '  float edge = 1.0 - smoothstep(0.3, 0.5, length(c));',
-  '  float alpha = vAlpha * edge;',
+  '  float alpha = vColor.a * (1.0 - smoothstep(0.3, 0.5, length(c)));',
   '  if (alpha < 0.01) discard;',
-  '  gl_FragColor = vec4(vColor, alpha);',
+  '  gl_FragColor = vec4(vColor.rgb, alpha);',
   '}',
 ].join('\n');

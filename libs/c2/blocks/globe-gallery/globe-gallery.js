@@ -113,12 +113,9 @@ const PQ_REVEAL_OUT_MS = 250;
 const PQ_DRAW_H_SPAN = 0.82;
 const PQ_DRAW_V_START = 0.26;
 
-// Particle hand-off (src/quote-particles.js). The flight starts this share of the way to the
-// last-card cue and settles this share of the way from the cue to the pin's release.
-const PQ_FLY_START_FRAC = 0.5;
-const PQ_SETTLE_SHARE = 0.3;
-const PQ_SETTLE_MIN_T = 0.02; // zoomT
-const PQ_SETTLE_MAX_T = 0.06;
+// Particle hand-off (src/quote-particles.js). The flight starts at pqStartZoomT and lasts this
+// many viewport heights of scroll; the hold (--gg-pq-hold) follows it.
+const PQ_FLY_VH = 0.4;
 const PQ_BUDGET_SM = 16000;
 const PQ_BUDGET_MD = 48000;
 const PQ_FX_REBUILD_MS = 150;
@@ -410,6 +407,9 @@ function createGlobeGalleryRuntime(
   let blockHeight = 0; // its full scroll length
   // zoomT the last card leaves the screen at; see publishPqAppearZoomT.
   let pqAppearZoomT = 0.5;
+  // zoomT the deepest (far-side) cards start their near fade at: the particle flight's start.
+  let pqStartZoomT = 0.5;
+  let holdVh = 0; // from --gg-pq-hold: runway past the zoom end that the quote holds through
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let W = 0;
   let H = 0;
@@ -431,7 +431,7 @@ function createGlobeGalleryRuntime(
   let quoteFx = null;
   let quoteFxDirty = false;
   let quoteFxTimer = 0;
-  let cardPalettes = [];
+  const pqFly = { p: 0, sourced: false, pinned: '' };
   const requestedFonts = new Set();
   const forcedColorsMQ = window.matchMedia?.('(forced-colors: active)') ?? null;
 
@@ -626,7 +626,6 @@ function createGlobeGalleryRuntime(
         revealT: textures[i] ? 1 : 0, // eased 0→1 texture-ready un-dissolve
         peelStartRot: null, // set on the first peel frame, cleared back at gpE 0
         morph: null, // the sm masonry re-solve's from/to pair, while one is running
-        dissolve: 0, // near-camera dissolve, 0→1; set by placeSphereCard
       });
     }
     // eslint-disable-next-line no-use-before-define -- hoisted helper defined just below
@@ -967,6 +966,7 @@ function createGlobeGalleryRuntime(
     };
     const vh = cssNum('--gg-formation-vh');
     if (vh !== null) formationVh = vh;
+    holdVh = cssNum('--gg-pq-hold') ?? 0;
     const nav = cssNum('--gg-nav-h');
     if (nav !== null) navH = nav;
   }
@@ -979,6 +979,8 @@ function createGlobeGalleryRuntime(
   function publishPqAppearZoomT() {
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
+    const startZ = -bp.SPHERE_R + bp.NEAR_FADE_START * fadeRefH;
+    pqStartZoomT = Math.min(pqAppearZoomT, TL.zoomTAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
   }
 
   // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
@@ -996,25 +998,37 @@ function createGlobeGalleryRuntime(
 
   const particlesOn = () => !!quoteFx && quoteFx.isBuilt() && !forcedColorsMQ?.matches;
 
-  // zoomT at which the pin (and the world) let go: the block's bottom meets the viewport's.
-  function quoteUnpinZoomT() {
-    const formPx = formedScrollPx();
-    const tailT = clamp01((blockHeight - H - formPx) / Math.max(1, blockHeight - formPx));
-    return clamp01(tailT / TL.ZOOM_TO_TAIL_T);
+  // The hold only exists while the root carries .globe-gallery-pq-particles (set with quoteFx).
+  const holdPx = () => (quoteFx ? (holdVh / 100) * H : 0);
+
+  // Scroll-driven flight: 0 until the far-side cards start to fade, 1 PQ_FLY_VH later.
+  function quoteFlightP(lenisY) {
+    const span = { blockDocTop, blockHeight, formPx: formedScrollPx(), holdPx: holdPx() };
+    const startY = TL.scrollYAtZoomT(pqStartZoomT, span);
+    return clamp01((lenisY - startY) / Math.max(1, PQ_FLY_VH * H));
   }
 
-  // Where the DOM quote takes over: the last-card cue, or where the particles settle after it.
-  function quoteCueZoomT() {
-    if (!particlesOn()) return pqAppearZoomT;
-    const room = (quoteUnpinZoomT() - pqAppearZoomT) * PQ_SETTLE_SHARE;
-    return pqAppearZoomT + Math.min(PQ_SETTLE_MAX_T, Math.max(PQ_SETTLE_MIN_T, room));
-  }
-
-  // The pin's viewport top, from scroll alone (no layout read per frame): sticky at 0, released
-  // with the block's bottom.
+  // The pin's viewport top, from scroll alone: 0 while fixed, the block's bottom less a viewport
+  // once released.
   function pinTopPx() {
     const sy = window.scrollY;
     return Math.min(Math.max(blockDocTop - sy, 0), blockDocTop + blockHeight - H - sy);
+  }
+
+  // A sticky layer under Lenis' scroll writes snaps a pixel differently from frame to frame, which
+  // reads as the held quote wobbling (stage does it too). A fixed layer has no scroll term, so the
+  // pin is fixed while held and absolute either side of it. Runs from the scroll event as well as
+  // tick(), so the swap lands in the same frame as the scroll that caused it.
+  function updatePin() {
+    if (!pinEl || reducedMotion) return;
+    const sy = window.scrollY;
+    let state = 'before';
+    if (sy >= blockDocTop + blockHeight - H) state = 'after';
+    else if (sy >= blockDocTop) state = 'held';
+    if (state === pqFly.pinned) return;
+    pqFly.pinned = state;
+    pinEl.classList.toggle('is-held', state === 'held');
+    pinEl.classList.toggle('is-released', state === 'after');
   }
 
   function rebuildQuoteFx() {
@@ -1033,8 +1047,7 @@ function createGlobeGalleryRuntime(
     const budget = bp.name === 'sm' ? PQ_BUDGET_SM : PQ_BUDGET_MD;
     const targets = QP.rasterizeQuote(pqEl, pinEl.getBoundingClientRect().top, budget);
     if (!targets) return;
-    const palettes = cards.slice(0, QP.MAX_CARDS).map((c, i) => cardPalettes[i] || null);
-    quoteFx.build({ targets, palettes, cardCount: cards.length });
+    quoteFx.build(targets, getComputedStyle(pqEl).direction === 'rtl');
   }
 
   // Debounced; tick() rebuilds at once if the flight is already under way.
@@ -1107,7 +1120,9 @@ function createGlobeGalleryRuntime(
   // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
   // together. sphereFormT saturates at 1 for the whole zoom tail, so the pull-quote cue is what
   // actually ends the pointer-interactive stretch.
-  const globeLive = () => globeFormed() && frameState.zoomT < pqAppearZoomT;
+  // With particles the cards hand over at pqStartZoomT, and the globe goes with them.
+  const globeLive = () => globeFormed()
+    && frameState.zoomT < (quoteFx ? pqStartZoomT : pqAppearZoomT);
 
   controls = createGlobeControls({
     q,
@@ -1176,6 +1191,7 @@ function createGlobeGalleryRuntime(
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
     frameInput.formPx = formedScrollPx();
+    frameInput.holdPx = holdPx();
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
@@ -1361,7 +1377,7 @@ function createGlobeGalleryRuntime(
     // nothing else, so the draw is skipped too. The modal is the exception: its backdrop blurs
     // this canvas, so hiding it would leave the blur with nothing to sample.
     const handedOff = particlesOn()
-      ? zoomT >= quoteCueZoomT() && pq.revealT >= 1
+      ? pqFly.p >= 1 && pq.revealT >= 1
       : zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T;
     canvasHidden = modal.getModalIdx() < 0 && (lenisY < showTrigger || handedOff);
     canvas.style.display = canvasHidden ? 'none' : 'block';
@@ -1426,7 +1442,7 @@ function createGlobeGalleryRuntime(
 
   function updatePullQuote(frame) {
     if (reducedMotion || !pqEl) return;
-    const live = frame.zoomT >= quoteCueZoomT();
+    const live = particlesOn() ? pqFly.p >= 1 : frame.zoomT >= pqAppearZoomT;
     if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
     pqEl.style.pointerEvents = live ? 'auto' : 'none';
     writePullQuoteFrame(advanceReveal(live));
@@ -1482,12 +1498,11 @@ function createGlobeGalleryRuntime(
     // Return early ONLY at depth ≤ 0 — a return leaves the transform stale, which scroll jitter
     // shows as a flash.
     const depth = camera.position.z - (sphGroupZ + mesh.position.z);
-    if (depth <= 0) { mesh.visible = false; card.dissolve = 1; return; }
+    if (depth <= 0) { mesh.visible = false; return; }
     // One band for the whole wall, so the order is purely by depth.
     const fadeEnd = cardVanishDepth();
     const fadeStart = bp.NEAR_FADE_START * fadeRefH;
     const proxFade = clamp01((depth - fadeEnd) / (fadeStart - fadeEnd));
-    card.dissolve = 1 - proxFade; // the quote particles leave the card at this rate
     // Skip the DRAW, not the state updates, once fully faded.
     mesh.visible = proxFade > 0;
     mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
@@ -1797,52 +1812,76 @@ function createGlobeGalleryRuntime(
     if (CA_ENABLED) uniforms.uCA.value = txtWarpEntrance * TEXT_CA_WARP_MUL;
   }
 
-  const quadC = new THREE.Vector3();
-  const quadU = new THREE.Vector3();
-  const quadV = new THREE.Vector3();
-  const toPx = (v) => { v.set((v.x * 0.5 + 0.5) * W, (0.5 - v.y * 0.5) * H, 0); return v; };
+  const snapCam = new THREE.PerspectiveCamera();
+  const snapQuat = new THREE.Quaternion();
+  const snapCentre = new THREE.Vector3();
+  const snapCorner = new THREE.Vector3();
+  const QUAD_CORNERS = [[-1, 1], [1, 1], [1, -1], [-1, -1]]; // TL, TR, BR, BL
 
-  // Each card's live screen quad while it is still drawn; a vanished card keeps its last one, so
-  // its particles burst from where it was last seen.
-  function trackCardQuads() {
-    camera.updateMatrixWorld();
-    sphereGroup.updateMatrixWorld(true);
-    const hw = bp.CARD_W_SPHERE / 2;
-    const hh = bp.CARD_H_SPHERE / 2;
-    const n = Math.min(cards.length, QP.MAX_CARDS);
-    for (let k = 0; k < n; k += 1) {
-      const { mesh, dissolve } = cards[k];
-      quoteFx.setCardDissolve(k, dissolve);
-      if (!mesh.visible) continue; // eslint-disable-line no-continue
-      const m = mesh.matrixWorld;
-      toPx(quadC.set(0, 0, 0).applyMatrix4(m).project(camera));
-      toPx(quadU.set(hw, 0, 0).applyMatrix4(m).project(camera));
-      toPx(quadV.set(0, -hh, 0).applyMatrix4(m).project(camera));
-      quoteFx.setCardQuad(
-        k,
-        quadC.x,
-        quadC.y,
-        quadU.x - quadC.x,
-        quadU.y - quadC.y,
-        quadV.x - quadC.x,
-        quadV.y - quadC.y,
-      );
-    }
+  // The cards still drawn at pqStartZoomT — the far side; the near side has faded by then —
+  // projected to px quads from that camera, wherever the scroll is now. So a jump into the middle
+  // of the flight, or a reversal, always resolves to the same cards in the same place.
+  function projectFarQuads() {
+    const camZ = TL.camZAtZoomT(pqStartZoomT, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
+    snapCam.copy(camera);
+    snapCam.position.set(0, 0, camZ);
+    snapCam.updateMatrixWorld(true);
+    const fadeEnd = cardVanishDepth();
+    const fadeStart = bp.NEAR_FADE_START * fadeRefH;
+    const gs = sphereGroup.scale.x || 1;
+    refreshSphereRotQuat();
+    const quads = [];
+    cards.forEach((card) => {
+      if (!card.hasTexture) return;
+      snapCentre.copy(card.spherePos).applyQuaternion(sphereRotQuat).multiplyScalar(gs);
+      const fade = clamp01((camZ - snapCentre.z - fadeEnd) / Math.max(1e-6, fadeStart - fadeEnd));
+      if (fade <= 0) return;
+      snapQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
+      const pts = [];
+      const inFront = QUAD_CORNERS.every(([sx, sy]) => {
+        snapCorner.set(
+          sx * 0.5 * bp.CARD_W_SPHERE * card.sphereScaleSX,
+          sy * 0.5 * bp.CARD_H_SPHERE * card.sphereScaleSY,
+          0,
+        ).applyQuaternion(snapQuat).multiplyScalar(gs).add(snapCentre);
+        if (camZ - snapCorner.z < 0.5) return false;
+        snapCorner.project(snapCam);
+        pts.push((snapCorner.x + 1) * 0.5 * W, (1 - snapCorner.y) * 0.5 * H);
+        return true;
+      });
+      if (!inFront) return;
+      const u = card.mesh.material.uniforms;
+      quads.push({
+        pts,
+        alpha: (fade ** NEAR_FADE_OPACITY_BIAS) * card.revealT,
+        image: u.uMap.value?.image,
+        repeat: u.uRepeat.value,
+        offset: u.uOffset.value,
+      });
+    });
+    return quads;
   }
 
-  // Scroll-driven, so it reverses for free; the DOM cross-fade is advanced by updatePullQuote.
-  function updateQuoteParticles(frame) {
+  // After the card stage. While p > 0 the particles stand in for the cards; at p = 0 the cards
+  // are back exactly where the particles left them.
+  function updateQuoteParticles() {
     if (!quoteFx) return;
-    const { zoomT } = frame;
-    if (quoteFxDirty && zoomT > 0) rebuildQuoteFx();
-    const on = particlesOn() && zoomT > 0 && !canvasHidden && pq.revealT < 1;
-    quoteFx.setVisible(on);
-    if (!on) return;
-    trackCardQuads();
-    const flyStart = pqAppearZoomT * PQ_FLY_START_FRAC;
-    const cue = quoteCueZoomT();
+    if (quoteFxDirty && pqFly.p > 0) rebuildQuoteFx();
+    const on = particlesOn() && pqFly.p > 0;
+    if (on) {
+      if (!pqFly.sourced) {
+        quoteFx.setSources(projectFarQuads(), W, H);
+        pqFly.sourced = true;
+      }
+      cards.forEach((card) => {
+        if (!modal.isCardManaged(card)) card.mesh.visible = false;
+      });
+    } else {
+      pqFly.sourced = false; // re-sampled on the next crossing, wherever the sphere has spun to
+    }
+    quoteFx.setVisible(on && !canvasHidden && pq.revealT < 1);
     quoteFx.setFrame({
-      fly: clamp01((zoomT - flyStart) / Math.max(1e-4, cue - flyStart)),
+      p: pqFly.p,
       fade: 1 - pq.revealT,
       pinTop: pinTopPx(),
       W,
@@ -1863,6 +1902,8 @@ function createGlobeGalleryRuntime(
     frame.sphereRotActive = updateSphereRotation(frame);
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
+    pqFly.p = quoteFx ? quoteFlightP(frame.lenisY) : 0;
+    updatePin();
     updateCanvasVisibility(frame);
     updatePullQuote(frame);
 
@@ -1871,7 +1912,7 @@ function createGlobeGalleryRuntime(
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateCardTransforms(frame);
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
-    updateQuoteParticles(frame); // same: projects the dissolving cards
+    updateQuoteParticles(); // after card transforms: it hides the cards it stands in for
     updateHintExit(frame);
 
     updateClickDragText(frame);
@@ -2029,7 +2070,7 @@ function createGlobeGalleryRuntime(
     scene = new THREE.Scene();
     if (!reducedMotion && pqEl && pinEl) {
       quoteFx = createQuoteParticles(scene, PQ_PARTICLE_ORDER);
-      quoteFx.scatterCardQuads(W, H);
+      root.classList.add('globe-gallery-pq-particles'); // before the first measure: adds the hold
     }
 
     camera = new THREE.PerspectiveCamera(CAM_FOV, W / H, 0.1, 5000);
@@ -2105,6 +2146,7 @@ function createGlobeGalleryRuntime(
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     resizeHandler = () => doLayout({ fromResize: true });
     window.addEventListener('resize', resizeHandler, { passive: true });
+    window.addEventListener('scroll', updatePin, { passive: true });
 
     // RM can toggle mid-session without a resize.
     detachReducedMotion();
@@ -2174,10 +2216,7 @@ function createGlobeGalleryRuntime(
       }
       textures = loadedTextures;
       cardAspects = loadedAspects;
-      if (quoteFx) {
-        cardPalettes = textures.slice(0, QP.MAX_CARDS).map((t) => QP.sampleCardPalette(t?.image));
-        invalidateQuoteFx();
-      }
+      pqFly.sourced = false; // the photos (and so the source colours) have changed
       if (bp.CYLINDER) resolveMasonryLayout(); // recomputeDragFlip runs when the morph settles
       else recomputeDragFlip();
     };
@@ -2204,6 +2243,7 @@ function createGlobeGalleryRuntime(
     disconnectObservers();
     if (resizeHandler) {
       window.removeEventListener('resize', resizeHandler);
+      window.removeEventListener('scroll', updatePin);
       resizeHandler = null;
     }
     if (textRebuildTimer) { clearTimeout(textRebuildTimer); textRebuildTimer = 0; }
@@ -2247,7 +2287,11 @@ function createGlobeGalleryRuntime(
     clearTimeout(quoteFxTimer);
     quoteFxTimer = 0;
     quoteFxDirty = false;
-    cardPalettes = [];
+    pqFly.p = 0;
+    pqFly.sourced = false;
+    pqFly.pinned = '';
+    if (pinEl) pinEl.classList.remove('is-held', 'is-released');
+    root.classList.remove('globe-gallery-pq-particles');
     hintRetired = false;
     hintExitT = 0;
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }

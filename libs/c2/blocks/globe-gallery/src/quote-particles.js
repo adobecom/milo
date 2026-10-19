@@ -1,13 +1,10 @@
 import * as THREE from '../../../../deps/three.js';
-import { QUOTE_PARTICLE_VERT, QUOTE_PARTICLE_FRAG } from './shaders.js';
+import { QUOTE_PARTICLE_VERT, QUOTE_PARTICLE_FRAG, QUOTE_DELAY_MAX } from './shaders.js';
 
-// Pull-quote particle hand-off: card pixels burst off the dissolving cards and fly into the
-// quote's glyphs, laid out by the real DOM. See README (Pull quote).
+// Pull-quote particle hand-off: the far-side cards' pixels burst off and fly into the quote's
+// glyphs, laid out by the real DOM. See README (Particle hand-off).
 
-export const MAX_CARDS = 64; // compiled into the shader's uniform arrays
 const INK_ALPHA = 128;
-const PALETTE_W = 12;
-const PALETTE_H = 16;
 const GRAY = [0.55, 0.55, 0.55];
 const SIZE_PER_SPACING = 1.5; // dot diameter over mean ink spacing: just enough to read solid
 const SIZE_MIN = 1.2;
@@ -100,31 +97,30 @@ export function rasterizeQuote(figureEl, originTop, budget) {
   return { dst, color, count, size };
 }
 
-let paletteCtx = null;
+const GRID_LONG = 32; // card colour lookup resolution, long side
+const gridCache = new WeakMap();
 
-// A coarse PALETTE_W × PALETTE_H colour grid of a card photo, top row first. Null on failure.
-export function sampleCardPalette(image) {
-  if (!image || !image.width) return null;
+// A card photo shrunk to a tiny grid, cached per image. Rows follow the texture's own v (bitmaps
+// are uploaded pre-flipped), so GL uv indexes it directly. Null when the image can't be read.
+export function colorGrid(image) {
+  if (!image || !image.width || !image.height) return null;
+  if (gridCache.has(image)) return gridCache.get(image);
+  let grid = null;
   try {
-    if (!paletteCtx) {
-      const c = document.createElement('canvas');
-      c.width = PALETTE_W;
-      c.height = PALETTE_H;
-      paletteCtx = c.getContext('2d', { willReadFrequently: true });
-    }
-    paletteCtx.clearRect(0, 0, PALETTE_W, PALETTE_H);
-    paletteCtx.drawImage(image, 0, 0, PALETTE_W, PALETTE_H);
-    const { data } = paletteCtx.getImageData(0, 0, PALETTE_W, PALETTE_H);
-    const out = new Float32Array(PALETTE_W * PALETTE_H * 3);
-    for (let i = 0; i < PALETTE_W * PALETTE_H; i += 1) {
-      out[i * 3] = data[i * 4] / 255;
-      out[i * 3 + 1] = data[i * 4 + 1] / 255;
-      out[i * 3 + 2] = data[i * 4 + 2] / 255;
-    }
-    return out;
+    const k = GRID_LONG / Math.max(image.width, image.height);
+    const w = Math.max(1, Math.round(image.width * k));
+    const h = Math.max(1, Math.round(image.height * k));
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(image, 0, 0, w, h);
+    grid = { w, h, data: ctx.getImageData(0, 0, w, h).data };
   } catch (e) {
-    return null;
+    grid = null;
   }
+  gridCache.set(image, grid);
+  return grid;
 }
 
 // deps/three.js is a tree-shaken subset with no Points, BufferGeometry or BufferAttribute: a
@@ -147,22 +143,37 @@ function createPoints(geo, material) {
   return mesh;
 }
 
+// Arrival sweeps in reading order, loosened by a random share.
+function seedFor(dst, count, rtl) {
+  let x0 = Infinity; let y0 = Infinity; let x1 = -Infinity; let y1 = -Infinity;
+  for (let i = 0; i < count; i += 1) {
+    x0 = Math.min(x0, dst[i * 3]); x1 = Math.max(x1, dst[i * 3]);
+    y0 = Math.min(y0, dst[i * 3 + 1]); y1 = Math.max(y1, dst[i * 3 + 1]);
+  }
+  const seed = new Float32Array(count * 4);
+  for (let i = 0; i < count; i += 1) {
+    const xn = (dst[i * 3] - x0) / Math.max(1, x1 - x0);
+    const yn = (dst[i * 3 + 1] - y0) / Math.max(1, y1 - y0);
+    const order = (rtl ? 1 - xn : xn) * 0.7 + yn * 0.3;
+    seed[i * 4] = (order * 0.75 + Math.random() * 0.25) * QUOTE_DELAY_MAX;
+    seed[i * 4 + 1] = Math.random() * Math.PI * 2;
+    seed[i * 4 + 2] = 0.3 + 0.7 * Math.random();
+    seed[i * 4 + 3] = Math.random() * 2 - 1;
+  }
+  return seed;
+}
+
 export default function createQuoteParticles(scene, renderOrder) {
-  // Flat vec4 arrays: three uploads a Float32Array uniform as-is.
-  const cardA = new Float32Array(MAX_CARDS * 4);
-  const cardB = new Float32Array(MAX_CARDS * 4);
   const uniforms = {
-    uCardA: { value: cardA },
-    uCardB: { value: cardB },
     uViewport: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },
     uPinTop: { value: 0 },
-    uFly: { value: 0 },
+    uP: { value: 0 },
     uFade: { value: 1 },
     uSize: { value: 2 },
+    uScatter: { value: 0 },
   };
   const material = new THREE.ShaderMaterial({
-    defines: { MAX_CARDS },
     uniforms,
     vertexShader: QUOTE_PARTICLE_VERT,
     fragmentShader: QUOTE_PARTICLE_FRAG,
@@ -171,6 +182,8 @@ export default function createQuoteParticles(scene, renderOrder) {
     depthWrite: false,
   });
   let points = null;
+  let count = 0;
+  let lastSources = null;
 
   function disposeGeometry() {
     if (!points) return;
@@ -179,33 +192,67 @@ export default function createQuoteParticles(scene, renderOrder) {
     points = null;
   }
 
-  // palettes[k] is a sampleCardPalette grid (photos are flipY'd bitmaps, so rows run bottom-up).
-  function build({ targets, palettes, cardCount }) {
-    disposeGeometry();
-    const n = targets.count;
-    const slots = Math.max(1, Math.min(MAX_CARDS, cardCount));
-    const card = new Float32Array(n * 3);
-    const srcColor = new Float32Array(n * 3);
-    const seed = new Float32Array(n * 4);
-    for (let i = 0; i < n; i += 1) {
-      const k = i % slots;
-      const u = Math.random();
-      const v = Math.random();
-      card.set([k, u, v], i * 3);
-      const pal = palettes[k];
-      const cell = pal
-        ? (Math.min(PALETTE_H - 1, Math.floor((1 - v) * PALETTE_H)) * PALETTE_W
-          + Math.min(PALETTE_W - 1, Math.floor(u * PALETTE_W))) * 3
-        : -1;
-      srcColor.set(cell >= 0 ? pal.subarray(cell, cell + 3) : GRAY, i * 3);
-      seed.set([Math.random(), Math.random(), Math.random() * Math.PI * 2, Math.random()], i * 4);
+  // quads: [{ pts: [TLx, TLy, TRx, TRy, BRx, BRy, BLx, BLy], alpha, image, repeat, offset }],
+  // in viewport px. Particles are spread over them by on-screen area.
+  function setSources(quads, W, H) {
+    lastSources = { quads, W, H };
+    if (!points) return;
+    const src = points.geometry.getAttribute('aSrc');
+    const col = points.geometry.getAttribute('aSrcColor');
+    const weights = quads.map(({ pts }) => {
+      const xs = [pts[0], pts[2], pts[4], pts[6]];
+      const ys = [pts[1], pts[3], pts[5], pts[7]];
+      const w = Math.min(W * 1.25, Math.max(...xs)) - Math.max(-W * 0.25, Math.min(...xs));
+      const h = Math.min(H * 1.25, Math.max(...ys)) - Math.max(-H * 0.25, Math.min(...ys));
+      return Math.max(0, w) * Math.max(0, h);
+    });
+    let total = 0;
+    const cum = weights.map((w) => { total += w; return total; });
+    for (let i = 0; i < count; i += 1) {
+      if (!total) {
+        // Nothing left to break up: invisible until the flight fades them in.
+        src.array.set([Math.random() * W, Math.random() * H], i * 2);
+        col.array.set([1, 1, 1, 0], i * 4);
+      } else {
+        const r = Math.random() * total;
+        let q = 0;
+        while (cum[q] < r) q += 1;
+        const { pts, alpha, image, repeat, offset } = quads[q];
+        const u = Math.random();
+        const v = Math.random();
+        const tx = pts[0] + (pts[2] - pts[0]) * u;
+        const ty = pts[1] + (pts[3] - pts[1]) * u;
+        const bx = pts[6] + (pts[4] - pts[6]) * u;
+        const by = pts[7] + (pts[5] - pts[7]) * u;
+        src.array.set([tx + (bx - tx) * v, ty + (by - ty) * v], i * 2);
+        // A back face winds the other way on screen, and the card shader mirrors it in u.
+        const cross = (pts[2] - pts[0]) * (pts[5] - pts[1]) - (pts[3] - pts[1]) * (pts[4] - pts[0]);
+        const fu = cross < 0 ? 1 - u : u;
+        const grid = colorGrid(image);
+        if (grid) {
+          const gu = Math.min(0.999, Math.max(0, fu * repeat.x + offset.x));
+          const gv = Math.min(0.999, Math.max(0, (1 - v) * repeat.y + offset.y));
+          const k = (Math.floor(gv * grid.h) * grid.w + Math.floor(gu * grid.w)) * 4;
+          const d = grid.data;
+          col.array.set([d[k] / 255, d[k + 1] / 255, d[k + 2] / 255, alpha], i * 4);
+        } else {
+          col.array.set([GRAY[0], GRAY[1], GRAY[2], alpha], i * 4);
+        }
+      }
     }
+    src.needsUpdate = true;
+    col.needsUpdate = true;
+  }
+
+  function build(targets, rtl = false) {
+    disposeGeometry();
+    count = targets.count;
     const geo = createPointGeometry({
       position: [targets.dst, 3],
       aDstColor: [targets.color, 3],
-      aCard: [card, 3],
-      aSrcColor: [srcColor, 3],
-      aSeed: [seed, 4],
+      aSrc: [new Float32Array(count * 2), 2],
+      aSrcColor: [new Float32Array(count * 4), 4],
+      aSeed: [seedFor(targets.dst, count, rtl), 4],
     });
     points = createPoints(geo, material);
     points.frustumCulled = false; // positions are clip-space; the bounds three would test are not
@@ -213,41 +260,18 @@ export default function createQuoteParticles(scene, renderOrder) {
     points.visible = false;
     uniforms.uSize.value = targets.size;
     scene.add(points);
-  }
-
-  // Screen-space quad (CSS px, y down) a card's pixels leave from; axes are half-extents.
-  function setCardQuad(k, cx, cy, ux, uy, vx, vy) {
-    if (k >= MAX_CARDS) return;
-    cardA.set([cx, cy, ux, uy], k * 4);
-    cardB[k * 4] = vx;
-    cardB[k * 4 + 1] = vy;
-  }
-
-  function setCardDissolve(k, v) {
-    if (k < MAX_CARDS) cardB[k * 4 + 2] = v;
-  }
-
-  // Stand-in quads for cards never seen near the camera (e.g. a jump straight into the hold).
-  function scatterCardQuads(W, H) {
-    const half = H * 0.18;
-    for (let k = 0; k < MAX_CARDS; k += 1) {
-      const a = Math.random() * Math.PI * 2;
-      const r = 0.15 + Math.random() * 0.35;
-      const cx = W / 2 + Math.cos(a) * r * W;
-      const cy = H / 2 + Math.sin(a) * r * H;
-      setCardQuad(k, cx, cy, half * 0.72, 0, 0, half);
-    }
+    if (lastSources) setSources(lastSources.quads, lastSources.W, lastSources.H);
   }
 
   function setFrame({
-    fly, fade, pinTop, W, H, dpr,
+    p, fade, pinTop, W, H, dpr,
   }) {
-    if (!points) return;
-    uniforms.uFly.value = fly;
+    uniforms.uP.value = p;
     uniforms.uFade.value = fade;
     uniforms.uPinTop.value = pinTop;
     uniforms.uViewport.value.set(W, H);
     uniforms.uDpr.value = dpr;
+    uniforms.uScatter.value = 0.2 * Math.min(W, H);
   }
 
   function setVisible(v) { if (points) points.visible = v; }
@@ -255,13 +279,12 @@ export default function createQuoteParticles(scene, renderOrder) {
   function dispose() {
     disposeGeometry();
     material.dispose();
+    lastSources = null;
   }
 
   return {
     build,
-    setCardQuad,
-    setCardDissolve,
-    scatterCardQuads,
+    setSources,
     setFrame,
     setVisible,
     isBuilt: () => !!points,

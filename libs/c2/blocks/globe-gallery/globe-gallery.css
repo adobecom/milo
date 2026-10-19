@@ -14,6 +14,7 @@
 .globe-gallery {
   --gg-hang-max: 0.8em;
   --gg-runway-height: 550vh;
+  --gg-pq-hold: 70vh; /* extra runway the particle quote holds through; see -pq-particles */
   --gg-formation-vh: 380vh;
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
@@ -42,6 +43,11 @@
     height: auto;
     min-height: 0;
   }
+}
+
+/* Set by JS with the particle hand-off: the quote's hold runs past the zoom's end. */
+.globe-gallery.globe-gallery-pq-particles:not(.globe-gallery-reduced, .globe-gallery-empty) {
+  height: calc(var(--gg-runway-height) + var(--gg-pq-hold));
 }
 
 /* Custom cursor (src/cursor.js). */
@@ -338,14 +344,25 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* The world's sticky geometry, overlaid on it, so the quote pins and lets go with the canvas the
-   particles land in. A sibling rather than a child keeps it after the arc copy in reading order. */
+/* A full-viewport layer over the canvas the particles land in. Fixed while held, not sticky: a
+   sticky layer under Lenis' scroll writes snaps a pixel differently frame to frame and the held
+   quote wobbles. JS (updatePin) swaps the states; absolute either side lands on the same pixels at
+   the swap. A sibling of the world keeps the quote after the arc copy in reading order. */
 .globe-gallery-pullquote-pin {
-  position: sticky;
+  position: absolute;
   top: 0;
+  inset-inline: 0;
   height: 100vh;
-  margin-top: -100vh;
   pointer-events: none;
+}
+
+.globe-gallery-pullquote-pin.is-held {
+  position: fixed;
+}
+
+.globe-gallery-pullquote-pin.is-released {
+  top: auto;
+  bottom: 0;
 }
 
 .globe-gallery-pullquote {
@@ -962,7 +979,6 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
 .globe-gallery-reduced .globe-gallery-pullquote-pin {
   position: static;
   height: auto;
-  margin-top: 0;
   pointer-events: auto;
 }
 

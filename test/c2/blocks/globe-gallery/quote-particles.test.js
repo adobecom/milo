@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-import createQuoteParticles, { MAX_CARDS, rasterizeQuote, sampleCardPalette, pendingFonts } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, { rasterizeQuote, colorGrid, pendingFonts } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 import { buildGlobeDom } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
+import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
 
 function mountFigure() {
   document.body.innerHTML = `
@@ -52,18 +53,20 @@ describe('globe-gallery: quote particles', () => {
     expect(rasterizeQuote(fig, 0, 1000)).to.be.null;
   });
 
-  it('samples a card palette, and tolerates a missing image', () => {
+  it('shrinks a card photo to a cached colour grid, and tolerates a missing image', () => {
     const c = document.createElement('canvas');
-    c.width = 24;
+    c.width = 64;
     c.height = 32;
     const ctx = c.getContext('2d');
     ctx.fillStyle = 'rgb(255, 0, 0)';
-    ctx.fillRect(0, 0, 24, 32);
-    const pal = sampleCardPalette(c);
-    expect(pal).to.have.length(12 * 16 * 3);
-    expect(pal[0]).to.be.closeTo(1, 0.01);
-    expect(pal[1]).to.be.closeTo(0, 0.01);
-    expect(sampleCardPalette(null)).to.be.null;
+    ctx.fillRect(0, 0, 64, 32);
+    const grid = colorGrid(c);
+    expect(grid.w).to.equal(32);
+    expect(grid.h).to.equal(16);
+    expect(grid.data[0]).to.equal(255);
+    expect(grid.data[1]).to.equal(0);
+    expect(colorGrid(c)).to.equal(grid);
+    expect(colorGrid(null)).to.be.null;
   });
 
   it('reports no pending fonts for a system font', () => {
@@ -71,7 +74,7 @@ describe('globe-gallery: quote particles', () => {
     expect(pendingFonts(fig)).to.be.an('array');
   });
 
-  it('builds a points object into the scene and disposes it', () => {
+  it('builds a points object, spreads sources over the far-side quads, and disposes', () => {
     const { fig } = mountFigure();
     const added = [];
     const scene = {
@@ -81,8 +84,16 @@ describe('globe-gallery: quote particles', () => {
     const fx = createQuoteParticles(scene, 1000);
     expect(fx.isBuilt()).to.be.false;
     const targets = rasterizeQuote(fig, 0, 500);
-    fx.scatterCardQuads(800, 600);
-    fx.build({ targets, palettes: [null], cardCount: MAX_CARDS + 10 });
+    // Sources set before the build are kept and applied to it.
+    const quad = {
+      pts: [100, 100, 200, 100, 200, 300, 100, 300],
+      alpha: 0.5,
+      image: null,
+      repeat: { x: 1, y: 1 },
+      offset: { x: 0, y: 0 },
+    };
+    fx.setSources([quad], 800, 600);
+    fx.build(targets);
     expect(fx.isBuilt()).to.be.true;
     expect(added).to.have.length(1);
     const pts = added[0];
@@ -90,18 +101,37 @@ describe('globe-gallery: quote particles', () => {
     expect(pts.isMesh).to.be.false;
     expect(pts.frustumCulled).to.be.false;
     expect(pts.visible).to.be.false;
-    const slots = pts.geometry.getAttribute('aCard').array;
-    for (let i = 0; i < targets.count; i += 1) expect(slots[i * 3]).to.be.below(MAX_CARDS);
-    fx.setCardQuad(MAX_CARDS + 1, 0, 0, 0, 0, 0, 0); // out of range: ignored
+    const src = pts.geometry.getAttribute('aSrc').array;
+    const col = pts.geometry.getAttribute('aSrcColor').array;
+    for (let i = 0; i < targets.count; i += 1) {
+      expect(src[i * 2]).to.be.within(100, 200);
+      expect(src[i * 2 + 1]).to.be.within(100, 300);
+      expect(col[i * 4 + 3]).to.equal(0.5);
+    }
+    // No far-side card left: sources start invisible.
+    fx.setSources([], 800, 600);
+    expect(pts.geometry.getAttribute('aSrcColor').array[3]).to.equal(0);
     fx.setFrame({
-      fly: 0.5, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1,
+      p: 0.5, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1,
     });
-    expect(pts.material.uniforms.uFly.value).to.equal(0.5);
+    expect(pts.material.uniforms.uP.value).to.equal(0.5);
     fx.setVisible(true);
     expect(pts.visible).to.be.true;
     fx.dispose();
     expect(added).to.have.length(0);
     expect(fx.isBuilt()).to.be.false;
+  });
+
+  it('maps a zoomT back to scroll, net of the quote hold', () => {
+    const span = { blockDocTop: 1000, blockHeight: 6200, formPx: 3600, holdPx: 700 };
+    const y = TL.scrollYAtZoomT(0.3, span);
+    const frame = TL.createFrame();
+    const input = { ...TL.createFrameInput(), ...span, scrollY: y, viewportH: 1000, arcScale: 1 };
+    TL.deriveFrame(frame, input);
+    expect(frame.zoomT).to.be.closeTo(0.3, 1e-6);
+    input.scrollY = span.blockDocTop + span.blockHeight - span.holdPx + 10;
+    TL.deriveFrame(frame, input);
+    expect(frame.zoomT).to.equal(1);
   });
 
   it('builds the pin as a single sticky wrapper around the figure', () => {
