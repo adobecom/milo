@@ -39,7 +39,9 @@ function addAlloyTracking(lobObject) {
   window.alloy_all.data = window.alloy_all.data || {};
   window.alloy_all.data._adobe_corpnew = window.alloy_all.data._adobe_corpnew || {};
   window.alloy_all.data._adobe_corpnew.event = window.alloy_all.data._adobe_corpnew.event || {};
-  window.alloy_all.data._adobe_corpnew.event.custom = window.alloy_all.data._adobe_corpnew.event.custom || [];
+  window.alloy_all.data._adobe_corpnew.event.custom = (
+    window.alloy_all.data._adobe_corpnew.event.custom || []
+  );
 
   Object.entries(lobObject).forEach(([key, value]) => {
     if (!spectraValues[key]) return;
