@@ -310,7 +310,7 @@ export function decorateCards(
   return cardSection;
 }
 
-export function decorateInput(el, input, inputEvents, iconPrefix = '') {
+export function decorateInput(el, input, inputEvents, iconPrefix = '', analyticsType = '1') {
   const inputId = `bc-input-field-${Math.random().toString(36).substring(2, 9)}`;
   const fieldSection = createTag('section', { class: 'bc-input-field' });
   const fieldLabel = createTag('label', {
@@ -332,7 +332,7 @@ export function decorateInput(el, input, inputEvents, iconPrefix = '') {
     class: 'input-field-button no-track',
     disabled: true,
     'aria-label': 'Send Message',
-    'daa-ll': getAnalyticsLabel('1'),
+    'daa-ll': getAnalyticsLabel(analyticsType),
   }, submitIcon);
   const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
   const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
@@ -425,8 +425,8 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
   }
 
   const floatingInput = createTag('section', { class: 'bc-floating-input' });
-  decorateInput(floatingInput, input, { handle: floatingInputEvents.inputHandle });
-  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
+  decorateInput(floatingInput, input, { handle: floatingInputEvents.inputHandle }, '-bc-fi', 'persistentfooter-bc');
+  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, 'persistentfooter');
   el.append(floatingInput);
 
   const updateLayout = () => updatePillVisibility(floatingInput);
