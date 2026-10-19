@@ -1,6 +1,9 @@
 import { readFile, sendMouse, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { loadStyle } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/hub-hero/hub-hero.js';
 
@@ -18,6 +21,114 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('MEP inline MAS editing', () => {
+    afterEach(() => {
+      unwatchForMasContent();
+      delete document.body.dataset.mepMasHighlight;
+      sinon.restore();
+    });
+
+    it('preserves live MAS fields in the hero and carousel text', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.hub-hero');
+      const slide = block.children[4];
+      const targets = [
+        block.querySelector('h1'), slide.firstElementChild.querySelector('p'),
+        slide.firstElementChild.querySelector('h3'),
+      ];
+      const fields = targets.map((target) => {
+        target.innerHTML = '<mas-field field="cardTitle" data-mas-block="inline"><span data-role="mas-field-content">Creative apps</span></mas-field>';
+        return target.firstElementChild;
+      });
+      const urls = fields.map((field, index) => {
+        const url = `https://mas.adobe.com/studio.html#content-type=merch-card&query=hub-${index}&field=cardTitle`;
+        mepMasStudioUrls.set(field, url);
+        return url;
+      });
+      const readySpies = fields.map((field) => {
+        const spy = sinon.spy();
+        field.addEventListener('mas:ready', spy);
+        return spy;
+      });
+      const media = slide.children[1].firstElementChild;
+      const openStub = sinon.stub(window, 'open');
+      document.body.dataset.mepMasHighlight = 'true';
+      watchForMasContent();
+      await init(block);
+
+      expect(block.querySelector('.hub-hero-header h1 mas-field')).to.equal(fields[0]);
+      const renderedSlide = block.querySelector('.hub-hero-carousel-item[data-index="1"]');
+      expect(renderedSlide.querySelector('.hub-hero-carousel-item-header mas-field')).to.equal(fields[1]);
+      expect(renderedSlide.querySelector('.hub-hero-carousel-item-footer mas-field')).to.equal(fields[2]);
+      expect(renderedSlide.querySelector('.hub-hero-carousel-item-media picture')).to.equal(media);
+      expect(renderedSlide.getAttribute('aria-labelledby'))
+        .to.equal('hub-hero-slide-1-title hub-hero-slide-1-desc');
+      fields.forEach((field, index) => {
+        field.dispatchEvent(new Event('mas:ready'));
+        expect(readySpies[index].calledOnce).to.be.true;
+        sinon.stub(field, 'getBoundingClientRect').returns({ top: 100, right: 400, height: 30 });
+        field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+        expect(openStub.getCall(index).args).to.deep.equal([urls[index], '_blank', 'noopener,noreferrer']);
+      });
+    });
+  });
+
+  describe('MAS hero body copy', () => {
+    let stylesheet;
+    before(async () => {
+      await new Promise((resolve, reject) => {
+        loadStyle('/libs/c2/blocks/hub-hero/hub-hero.css', (status) => {
+          if (status === 'error') reject(new Error('Failed to load Hub Hero styles'));
+          else resolve();
+        });
+      });
+      stylesheet = document.head.querySelector('link[href="/libs/c2/blocks/hub-hero/hub-hero.css"]');
+    });
+    after(() => stylesheet.remove());
+
+    ['before decoration', 'after decoration', 'already unwrapped'].forEach((timing) => {
+      ['lg', 'md'].forEach((size) => {
+        it(`preserves body-${size} for fields resolved ${timing}`, async () => {
+          document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+          const block = document.querySelector('.hub-hero');
+          block.classList.replace('body-lg', `body-${size}`);
+          const paragraph = block.firstElementChild.firstElementChild.querySelector('p');
+          paragraph.innerHTML = '<mas-field field="shortDescription"><span data-role="mas-field-content"></span></mas-field>';
+          const field = paragraph.firstElementChild;
+          const resolve = () => {
+            field.firstElementChild.innerHTML = '<p>Create with <span is="inline-price">US$9.99/mo</span>.</p><p><em>Terms apply.</em> <a href="/terms">See terms</a></p>';
+          };
+          if (timing !== 'after decoration') resolve();
+          if (timing === 'already unwrapped') paragraph.replaceWith(field);
+          await init(block);
+          if (timing === 'after decoration') resolve();
+
+          const body = field.parentElement;
+          expect(body.tagName).to.equal('DIV');
+          expect(body.classList.contains(`body-${size}`)).to.be.true;
+          expect(body.closest('.hub-hero-header')).to.exist;
+          expect(body.parentElement.classList.contains(`body-${size}`)).to.be.true;
+          expect(getComputedStyle(body).maxWidth).to.equal('700px');
+          expect(getComputedStyle(body).display).to.equal('block');
+          body.style.fontSize = '22px';
+          body.style.lineHeight = '30px';
+          expect(field.querySelectorAll('p').length).to.equal(2);
+          field.querySelectorAll('p').forEach((p) => {
+            expect(getComputedStyle(p).display).to.equal('inline');
+            expect(getComputedStyle(p).fontSize).to.equal('22px');
+            expect(getComputedStyle(p).lineHeight).to.equal('30px');
+          });
+          expect(getComputedStyle(field.querySelector('p + p'), '::before').content).to.equal('" "');
+          expect(field.querySelector('a').getAttribute('href')).to.equal('/terms');
+          expect(field.querySelector('em').textContent).to.equal('Terms apply.');
+          expect(field.querySelector('[is="inline-price"]').textContent).to.equal('US$9.99/mo');
+          expect(block.querySelector('.promo-cta').getAttribute('href')).to.equal('https://www.adobe.com/explore');
+          expect(block.querySelectorAll('.hub-hero-carousel-item:not(.placeholder)').length).to.equal(4);
+        });
+      });
+    });
+  });
+
   describe('top-level structure (default.html)', () => {
     let block;
     before(async () => {

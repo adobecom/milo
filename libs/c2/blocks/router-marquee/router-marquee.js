@@ -2,6 +2,7 @@ import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
+import { cloneWithPreviewMetadata } from '../../../utils/decorate.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 let USER_ACTION = false;
@@ -151,7 +152,7 @@ const groupByViewport = (el) => {
   BREAKPOINTS.slice(1).forEach((breakpoint, idx) => {
     const lower = BREAKPOINTS[idx];
     if (!viewports[breakpoint]) {
-      viewports[breakpoint] = viewports[lower].map((s) => s.cloneNode(true));
+      viewports[breakpoint] = viewports[lower].map(cloneWithPreviewMetadata);
       return;
     }
     viewports[breakpoint].forEach((slide, j) => {
@@ -161,7 +162,7 @@ const groupByViewport = (el) => {
       const lowerCols = lowerSlide.querySelectorAll(':scope > div');
       [textCol, imageCol].forEach((col, k) => {
         if (col && !col.children.length && lowerCols[k]) {
-          col.replaceWith(lowerCols[k].cloneNode(true));
+          col.replaceWith(cloneWithPreviewMetadata(lowerCols[k]));
         }
       });
     });

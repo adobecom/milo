@@ -1,4 +1,4 @@
-import { decorateBlockText } from '../../../utils/decorate.js';
+import { decorateBlockText, normalizeMasFieldText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
@@ -410,21 +410,16 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     heading.classList.add('hub-hero-carousel-item-footer-text');
   }
 
-  const content = `
-    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-slide-${index + 1}'>
-      <div class='hub-hero-carousel-item-header'>
-        ${eyebrow?.outerHTML}
-      </div>
-      <div class='hub-hero-carousel-item-media'>
-        ${asset?.outerHTML}
-        ${icon?.outerHTML ?? ''}
-      </div>
-      <div class='hub-hero-carousel-item-footer'>
-        ${heading?.outerHTML}
-        <span aria-hidden='true'>${icons?.add}</span>
-      </div>
-    </div>
-  `;
+  const content = createTag('div', { class: 'hub-hero-carousel-item-container', id: `hub-hero-carousel-slide-${index + 1}` });
+  const slideHeader = createTag('div', { class: 'hub-hero-carousel-item-header' });
+  if (eyebrow) slideHeader.append(eyebrow);
+  const slideMedia = createTag('div', { class: 'hub-hero-carousel-item-media' });
+  if (asset) slideMedia.append(asset);
+  if (icon) slideMedia.append(icon);
+  const slideFooter = createTag('div', { class: 'hub-hero-carousel-item-footer' });
+  if (heading) slideFooter.append(heading);
+  slideFooter.append(createTag('span', { 'aria-hidden': 'true' }, icons?.add));
+  content.append(slideHeader, slideMedia, slideFooter);
 
   const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
   const labelledBy = [eyebrow && titleId, heading && descId].filter(Boolean).join(' ');
@@ -624,7 +619,7 @@ const decorateHubHeroCTA = (heroHeader) => {
   if (relativeSrc?.startsWith('/')) {
     img.src = getFederatedUrl(relativeSrc);
   }
-  const linkEl = heroHeader.querySelector('a');
+  const linkEl = [...heroHeader.querySelectorAll('a')].find((link) => !link.closest('mas-field'));
   const href = linkEl?.href;
   const sourceText = (linkEl ? linkEl.textContent : '').trim();
   const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
@@ -744,12 +739,14 @@ export default async function init(el) {
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
   const isThreeSlides = classes.includes('slides-3');
+  const bodySize = findSize(classes, 'body-') ?? 'lg';
 
   decorateBlockText(heroHeader, {
     heading: findSize(classes, 'heading-') ?? '1',
-    body: findSize(classes, 'body-') ?? 'lg',
+    body: bodySize,
     button: findSize(classes, 'button-') ?? 'lg',
   });
+  [...heroHeader.children].forEach((cell) => normalizeMasFieldText(cell, bodySize));
 
   heroHeader.classList.add('hub-hero-header');
   decorateHubHeroCTA(heroHeader);
