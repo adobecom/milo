@@ -252,7 +252,8 @@ describe('blog-side-navigation section list', () => {
         expect(mediaStub.firstCall.args[0]).to.equal('(min-width: 600px)');
         expect(button.hidden).to.equal(false);
         expect(button.getAttribute('aria-expanded')).to.equal('true');
-        expect(button.textContent).to.equal('-');
+        expect(button.querySelector('.blog-side-navigation-toggle-icon')
+          .getAttribute('aria-hidden')).to.equal('true');
         expect(items.every((item) => !item.hidden)).to.equal(true);
         expect(document.getElementById(button.getAttribute('aria-controls')))
           .to.equal(block.querySelector('ul'));
@@ -273,22 +274,59 @@ describe('blog-side-navigation section list', () => {
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
     const url = window.location.href;
-    expect(button.textContent).to.equal('-');
     expect(button.getAttribute('aria-expanded')).to.equal('true');
     expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
     links[1].focus({ preventScroll: true });
     button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('false');
-    expect(button.textContent).to.equal('+');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
     expect(document.activeElement).to.equal(button);
     button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('true');
-    expect(button.textContent).to.equal('-');
     expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
     expect(document.activeElement).to.equal(button);
     expect(window.location.href).to.equal(url);
     expect(scrollStub.called).to.equal(false);
+  });
+
+  it('centers the plus and minus strokes inside the toggle independently of the font', async () => {
+    mockTablet();
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    document.head.append(style);
+    try {
+      const { block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
+      await init(block);
+      const button = block.querySelector('button');
+      const icon = button.querySelector('.blog-side-navigation-toggle-icon');
+      for (const font of ['Arial', 'serif']) {
+        button.style.fontFamily = font;
+        for (const expanded of [true, false]) {
+          if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
+          const bounds = button.getBoundingClientRect();
+          const iconBounds = icon.getBoundingClientRect();
+          expect(bounds.width).to.equal(32);
+          expect(bounds.height).to.equal(32);
+          const vertical = getComputedStyle(icon, '::after');
+          expect(vertical.display === 'none').to.equal(expanded);
+          for (const pseudo of expanded ? ['::before'] : ['::before', '::after']) {
+            const stroke = getComputedStyle(icon, pseudo);
+            const width = parseFloat(stroke.width);
+            const height = parseFloat(stroke.height);
+            expect(width).to.equal(pseudo === '::before' ? 12 : 2);
+            expect(height).to.equal(pseudo === '::before' ? 2 : 12);
+            const centerX = iconBounds.left + parseFloat(stroke.left)
+              + parseFloat(stroke.marginLeft) + width / 2;
+            const centerY = iconBounds.top + parseFloat(stroke.top)
+              + parseFloat(stroke.marginTop) + height / 2;
+            expect(centerX).to.be.closeTo(bounds.left + bounds.width / 2, 0.1);
+            expect(centerY).to.be.closeTo(bounds.top + bounds.height / 2, 0.1);
+          }
+        }
+      }
+    } finally {
+      style.remove();
+    }
   });
 
   it('handles breakpoint changes without leaving focus on a hidden control or link', async () => {

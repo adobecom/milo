@@ -71,7 +71,7 @@ function addCollapseControl(list, label) {
 
   list.id = 'blog-side-navigation-sections';
   while (document.getElementById(list.id)) list.id += '-1';
-  const icon = createTag('span', { 'aria-hidden': 'true' }, '-');
+  const icon = createTag('span', { class: 'blog-side-navigation-toggle-icon', 'aria-hidden': 'true' });
   const button = createTag('button', {
     class: 'blog-side-navigation-toggle',
     type: 'button',
@@ -93,7 +93,6 @@ function addCollapseControl(list, label) {
       items[0].querySelector('a').focus({ preventScroll: true });
     }
     button.setAttribute('aria-expanded', String(open));
-    icon.textContent = open ? '-' : '+';
     items.forEach((item, index) => { item.hidden = !open && index > 0; });
   };
   button.addEventListener('click', () => {
