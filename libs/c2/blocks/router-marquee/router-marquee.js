@@ -197,64 +197,37 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
-// `link` picks an on-time CTA, `field` a pending one; `slotLink` finds its link once hoisted.
-const CTA_ROLES = [
-  {
-    link: 'em > strong a',
-    field: 'em > strong mas-field',
-    slotLink: ':scope > strong a:not(mas-field a)',
-    classes: ['con-button', 'rm-cta-primary', 'fill', 'outline'],
-    place: 'prepend',
-  },
-  {
-    link: 'em > a',
-    field: 'em > mas-field',
-    slotLink: ':scope > a',
-    classes: ['con-button', 'outline'],
-    place: 'append',
-  },
-];
-const ctaSlotRoles = new WeakMap();
+// mas-field merch.js timed out on. [hidden] ones resolved empty, and ones whose
+// aem-fragment failed (class "error", mas-field sets no attribute) will never resolve.
+const PENDING_FIELDS = 'em mas-field:not([hidden], :has(> aem-fragment.error))';
+
+// A late link replaces its mas-field, or the field hides or fails. Each changes the pending count.
+const onPendingChange = (cta, count, callback) => {
+  const observer = new MutationObserver(() => {
+    if (cta.querySelectorAll(PENDING_FIELDS).length === count) return;
+    observer.disconnect();
+    callback();
+  });
+  observer.observe(cta, { childList: true, subtree: true, attributeFilter: ['hidden', 'class'] });
+};
 
 const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
   cta.classList.add('rm-ctas', 'action-area');
   cta.classList.toggle('dark', !isLight);
-  // A pending CTA field keeps its <em> as a slot
-  const ctas = CTA_ROLES.map((role) => {
-    const link = cta.querySelector(role.link);
-    if (link) {
-      link.classList.add(...role.classes);
-      return shouldBlockFreeTrialLinks(link) ? null : link;
-    }
-    const slot = [...cta.querySelectorAll(role.field)].find(isPendingField)?.closest('em');
-    if (!slot) return null;
-    slot.classList.add('rm-cta-slot');
-    ctaSlotRoles.set(slot, [...(ctaSlotRoles.get(slot) ?? []), role]);
-    return slot;
-  });
-  cta.replaceChildren(...new Set(ctas.filter(Boolean)));
-};
-
-// merch.js hoists a late CTA's link only inside em/strong; a link still in the field is mid-hoist
-const settleCtaSlot = (slot, onSettle) => {
-  const cta = slot.parentElement;
-  const roles = new Set(ctaSlotRoles.get(slot));
-  const observer = new MutationObserver(() => {
-    roles.forEach((role) => {
-      const link = slot.querySelector(role.slotLink);
-      if (!link) return;
-      roles.delete(role);
-      link.classList.add(...role.classes);
-      if (!shouldBlockFreeTrialLinks(link)) cta[role.place](link);
-      onSettle();
-    });
-    if (roles.size) return;
-    observer.disconnect();
-    slot.remove();
-  });
-  observer.observe(slot, { childList: true, subtree: true });
+  const primary = cta.querySelector('em > strong a');
+  const secondary = cta.querySelector('em > a');
+  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
+  secondary?.classList.add('con-button', 'outline');
+  const buttons = [primary, secondary].filter((btn) => btn && !shouldBlockFreeTrialLinks(btn));
+  // Keep pending fields so their late link can arrive, then decorate again.
+  const pending = cta.querySelectorAll(PENDING_FIELDS).length;
+  if (pending) {
+    onPendingChange(cta, pending, () => decorateCtas(textCol, isLight));
+    return;
+  }
+  cta.replaceChildren(...buttons);
 };
 
 const prepareVideo = (imageCol) => {
@@ -1141,7 +1114,6 @@ export default function init(el) {
     });
   };
   el.addEventListener('mas:ready', onLateContent);
-  el.querySelectorAll('.rm-cta-slot').forEach((slot) => settleCtaSlot(slot, onLateContent));
   retryFailedFields(el);
 
   requestAnimationFrame(() => dynamicLayoutUpdates(el));

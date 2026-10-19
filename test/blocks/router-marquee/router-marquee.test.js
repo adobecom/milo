@@ -397,68 +397,6 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
     expect(card.querySelector('.rm-card-label').textContent.trim()).to.equal('Creativity and design');
   });
 
-  it('keeps pending CTA slots, then decorates the links merch.js hoists into them', async () => {
-    init(block);
-    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
-    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['EM', 'EM']);
-
-    hoistLateCta(ctas.querySelector('mas-field[field="ctas[primary]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
-    hoistLateCta(ctas.querySelector('mas-field[field="ctas[secondary]"]'), '<a href="https://www.adobe.com/buy">Buy now</a>');
-    await flushMutations();
-
-    // same shape as a CTA that was already resolved at decoration time
-    const [primary, secondary] = ctas.children;
-    expect(ctas.children.length).to.equal(2);
-    expect(primary.matches('a.con-button.rm-cta-primary.fill.outline')).to.be.true;
-    expect(primary.getAttribute('href')).to.equal('https://www.adobe.com/trial');
-    expect(secondary.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
-    expect(secondary.getAttribute('href')).to.equal('https://www.adobe.com/buy');
-  });
-
-  it('decorates a resolved CTA right away next to a pending one', async () => {
-    init(block);
-    const ctas = mobileVp(block).querySelectorAll('.rm-slide')[1].querySelector('.rm-ctas');
-    expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
-    expect(ctas.firstElementChild.textContent).to.equal('Resolved CTA');
-
-    hoistLateCta(ctas.querySelector('mas-field'), '<a href="https://www.adobe.com/more">Learn more</a>');
-    await flushMutations();
-    expect([...ctas.children].map((a) => a.textContent)).to.deep.equal(['Resolved CTA', 'Learn more']);
-    expect(ctas.lastElementChild.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
-  });
-
-  it('keeps a CTA slot hidden while its field has not produced a link', async () => {
-    const style = document.createElement('link');
-    style.rel = 'stylesheet';
-    style.href = '/libs/c2/blocks/router-marquee/router-marquee.css';
-    await new Promise((resolve) => { style.onload = resolve; document.head.append(style); });
-    init(block);
-    const slot = mobileVp(block).querySelector('.rm-slide .rm-cta-slot');
-    resolveLate(slot.querySelector('mas-field'), '');
-    await flushMutations();
-    expect(slot.isConnected).to.be.true;
-    expect(getComputedStyle(slot).display).to.equal('none');
-    style.remove();
-  });
-
-  it('keeps a pending CTA field authored after one that already resolved empty', () => {
-    const field = (name, attrs = '') => `<em><strong><mas-field field="${name}"${attrs}><span data-role="mas-field-content"></span></mas-field></strong></em>`;
-    block.querySelector('p:has(> em)').innerHTML = `${field('ctas[kr-only]', ' hidden')} ${field('ctas[trial]')}`;
-    init(block);
-    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
-    expect(ctas.querySelector('.rm-cta-slot mas-field[field="ctas[trial]"]')).to.exist;
-    expect(ctas.querySelector('mas-field[field="ctas[kr-only]"]')).to.not.exist;
-  });
-
-  it('prefers a resolved CTA over an earlier empty field, as before', () => {
-    // e.g. a region-only CTA that loaded empty, authored ahead of the real one
-    block.querySelector('p:has(> em)').innerHTML = '<em><strong><mas-field field="ctas[kr-only]"><span data-role="mas-field-content"></span></mas-field></strong></em> <em><strong><a href="https://www.adobe.com/trial">Free trial</a></strong></em>';
-    init(block);
-    const ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
-    expect(ctas.children.length).to.equal(1);
-    expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
-  });
-
   it('keeps both CTAs when a primary and a secondary field share one <em>', async () => {
     const field = (name) => `<mas-field field="${name}"><aem-fragment fragment="frag-one"></aem-fragment><span data-role="mas-field-content"></span></mas-field>`;
     block.querySelector('p:has(> em)').innerHTML = `<em><strong>${field('ctas[buy]')}</strong> ${field('ctas[learn]')}</em>`;
@@ -477,33 +415,6 @@ describe('router-marquee with MAS fields still loading at decoration', () => {
     expect(primary.textContent).to.equal('Buy now');
     expect(secondary.matches('a.con-button.outline:not(.rm-cta-primary)')).to.be.true;
     expect(secondary.textContent).to.equal('Learn more');
-  });
-
-  describe('a slot shared by several CTA fields', () => {
-    const field = (name) => `<mas-field field="${name}"><aem-fragment fragment="frag-three"></aem-fragment><span data-role="mas-field-content"></span></mas-field>`;
-    let ctas;
-
-    beforeEach(() => {
-      // e.g. a free trial next to a region-only buy now that resolves empty elsewhere
-      block.querySelector('p:has(> em)').innerHTML = `<em><strong>${field('ctas[trial]')} ${field('ctas[kr-only]')}</strong></em>`;
-      init(block);
-      ctas = mobileVp(block).querySelector('.rm-slide .rm-ctas');
-    });
-
-    it('settles on the first link to land, without waiting on the other field', async () => {
-      hoistLateCta(ctas.querySelector('mas-field[field="ctas[trial]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
-      await flushMutations();
-      expect(ctas.children.length).to.equal(1);
-      expect(ctas.firstElementChild.matches('a.rm-cta-primary')).to.be.true;
-      expect(ctas.querySelector('mas-field')).to.not.exist;
-    });
-
-    it('does not settle on a link still inside its field, before merch.js hoists it', async () => {
-      resolveLate(ctas.querySelector('mas-field[field="ctas[trial]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
-      await flushMutations();
-      expect(ctas.querySelector('em mas-field a')).to.exist;
-      expect(ctas.querySelector(':scope > a')).to.not.exist;
-    });
   });
 
   it('updates the analytics label once a pending title resolves', async () => {
@@ -1028,7 +939,7 @@ describe('router-marquee light variant, ctas and foreground media', () => {
   });
 });
 
-// Runs merch.js' real late-CTA hoist, so a change to it that would strand a CTA slot fails here.
+// Runs merch.js' real late-CTA hoist, so a change to it that would strand a late CTA fails here.
 describe('router-marquee with merch.js hoisting a late CTA', () => {
   before(async () => {
     const { setConfig } = await import('../../../libs/utils/utils.js');
@@ -1039,7 +950,7 @@ describe('router-marquee with merch.js hoisting a late CTA', () => {
     await initMasField(probe);
   });
 
-  it('settles both CTA slots into decorated links', async () => {
+  it('decorates both late CTAs once merch.js hoists them', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/pending-fields.html' });
     const block = document.querySelector('.router-marquee');
     init(block);
@@ -1047,7 +958,7 @@ describe('router-marquee with merch.js hoisting a late CTA', () => {
     resolveLate(ctas.querySelector('mas-field[field="ctas[primary]"]'), '<a href="https://www.adobe.com/trial">Free trial</a>');
     resolveLate(ctas.querySelector('mas-field[field="ctas[secondary]"]'), '<a href="https://www.adobe.com/buy">Buy now</a>');
 
-    await waitFor(() => !ctas.querySelector('.rm-cta-slot'), 2000, 20);
+    await waitFor(() => !ctas.querySelector('mas-field'), 2000, 20);
     const [primary, secondary] = ctas.children;
     expect(ctas.children.length).to.equal(2);
     expect(primary.matches('a.rm-cta-primary')).to.be.true;
@@ -1131,8 +1042,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     await mount(`${lateField} ${secondary}`);
 
     const ctas = desktop().querySelector('.rm-ctas');
-    expect(ctas.querySelector('a[href="/learn"]').classList.contains('con-button')).to.be.true;
-    expect(ctas.querySelector('.rm-cta-slot mas-field')).to.exist;
+    expect(ctas.querySelector('em > a').classList.contains('con-button')).to.be.true;
   });
 
   it('decorates a CTA that resolved in time exactly as before', async () => {
@@ -1152,26 +1062,34 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
     expect(ctas.firstElementChild.classList.contains('rm-cta-primary')).to.be.true;
   });
 
-  it('keeps only the on-time primary when a second primary field is pending', async () => {
-    // like on-time decoration, which keeps the first primary
+  it('flattens once a pending field resolves empty, keeping the valid button', async () => {
     await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${lateField}`);
 
     const ctas = desktop().querySelector('.rm-ctas');
-    expect(ctas.querySelector('mas-field')).to.not.exist;
+    const field = ctas.querySelector('mas-field');
+    expect(field).to.exist;
+    expect(ctas.querySelector('.rm-cta-primary').parentElement.tagName).to.equal('STRONG');
+
+    // mas-field with no such CTA hides itself, then fires mas:ready
+    field.hidden = true;
+    field.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+    await until(() => !ctas.querySelector('mas-field'));
+
     expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
     expect(ctas.firstElementChild.textContent).to.equal('Buy now');
   });
 
-  it('keeps a failed field in its hidden slot so a retry can still fill it', async () => {
-    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> <em>${lateField.replace(/<\/?(em|strong)>/g, '')}</em>`);
+  it('flattens once a pending field fails to load, keeping the valid button', async () => {
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${lateField}`);
 
     const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector('mas-field')).to.exist;
+
     // aem-fragment marks itself with class "error" before it fires aem:error
     ctas.querySelector('aem-fragment').classList.add('error');
-    await nextFrame();
+    await until(() => !ctas.querySelector('mas-field'));
 
-    expect(ctas.querySelector('.rm-cta-slot mas-field')).to.exist;
-    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A', 'EM']);
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
     expect(ctas.firstElementChild.textContent).to.equal('Buy now');
   });
 
@@ -1205,6 +1123,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
       await mount(`${trial} ${lateField}`);
 
       const ctas = desktop().querySelector('.rm-ctas');
+      expect(ctas.querySelector('mas-field')).to.exist;
       expect(ctas.textContent).to.not.include('Free trial');
       expect(ctas.querySelector('a')).to.not.exist;
     });
