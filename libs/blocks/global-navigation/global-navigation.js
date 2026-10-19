@@ -2300,6 +2300,11 @@ export default async function init(block) {
   const content = await fetchAndProcessPlainHtml({ url, plainHTMLPromise });
   if (!content) {
     document.documentElement.classList.remove('adobe-assistant-gnav-active');
+    window.milo = window.milo || {};
+    window.milo.brandConcierge = {
+      ...window.milo.brandConcierge,
+      brandConciergeGlobal: false,
+    };
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'gnav';
     error.url = url;

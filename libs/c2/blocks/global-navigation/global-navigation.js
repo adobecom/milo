@@ -176,6 +176,11 @@ export default async function init(el) {
 
   const { main } = await import(federalGnavUrl).catch((error) => {
     document.documentElement.classList.remove('adobe-assistant-gnav-active');
+    window.milo = window.milo || {};
+    window.milo.brandConcierge = {
+      ...window.milo.brandConcierge,
+      brandConciergeGlobal: false,
+    };
     throw error;
   });
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
