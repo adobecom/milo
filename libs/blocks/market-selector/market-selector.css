@@ -230,6 +230,8 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     box-shadow: 0 4px 12px rgb(0 0 0 / 8%), 0 2px 6px rgb(0 0 0 / 4%);
     color: var(--s2a-color-content-knockout);
     font-size: var(--s2a-typography-font-size-body-sm);
+    overflow-y: hidden;
+    overscroll-behavior-y: contain;
   }
 
   [dir='rtl'] .global-footer .market-selector-popover {
