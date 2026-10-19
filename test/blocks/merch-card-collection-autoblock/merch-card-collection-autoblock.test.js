@@ -17,6 +17,9 @@ import init, {
   scrollOffset,
   categoryOffTags,
   isCategoryOff,
+  categoryRules,
+  groupsFor,
+  pruneParams,
   isStacked,
   searchWidth,
   fixProductPricingVariant,
@@ -483,6 +486,41 @@ describe('merch-card-collection autoblock', () => {
         expect(defaults({ 'default-types': 'web' })).to.deep.include(['types', 'web']);
         expect(defaults({}).map(([key]) => key)).to.not.include('types');
       });
+    });
+  });
+
+  describe('category rules', () => {
+    const groups = [
+      { deeplink: 'filter', category: true, options: [{ value: 'all' }, { value: 'photo' }] },
+      { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }, { value: 'students' }] },
+    ];
+    const meta = { 'pricing-off-for': { text: 'all' }, 'exclude-in-photo': { text: 'pricing:students' } };
+    const rules = categoryRules(meta, groups);
+
+    it('reads off-for per group and exclude-in per category', () => {
+      expect(rules).to.deep.equal({ off: { pricing: ['all'] }, exclude: { all: [], photo: ['pricing:students'] } });
+      expect(categoryRules({}, [])).to.deep.equal({ off: {}, exclude: {} });
+      const many = categoryRules({ 'exclude-in-photo': { text: 'pricing:individuals, pricing:students' } }, groups);
+      expect(many.exclude.photo).to.deep.equal(['pricing:individuals', 'pricing:students']);
+    });
+
+    it('drops an off group under its category and an excluded option under its own', () => {
+      expect(groupsFor(groups, 'all', rules).map((g) => g.deeplink)).to.deep.equal(['filter']);
+      const photo = groupsFor(groups, 'photo', rules);
+      expect(photo[1].options.map((o) => o.value)).to.deep.equal(['individuals']);
+      expect(groupsFor(groups, null, rules)).to.have.length(2);
+    });
+
+    it('prunes hash values the category rules out and keeps the rest', () => {
+      const prune = (hash, category) => pruneParams(
+        new URLSearchParams(hash),
+        groups,
+        groupsFor(groups, category, rules),
+      ).toString();
+      expect(prune('filter=all&pricing=students', 'all')).to.equal('filter=all');
+      expect(prune('filter=photo&pricing=students', 'photo')).to.equal('filter=photo');
+      expect(prune('filter=photo&pricing=individuals', 'photo')).to.equal('filter=photo&pricing=individuals');
+      expect(prune('filter=photo&pricing=bogus', 'photo')).to.equal('filter=photo&pricing=bogus');
     });
   });
 
@@ -1135,7 +1173,7 @@ describe('merch-card-collection autoblock', () => {
           hierarchy: [{ label: 'All', queryLabel: 'all' }, { label: 'Featured', queryLabel: 'featured' }],
           sidenavSettings: {
             tagFilters: [
-              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }] },
+              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }, { name: 'students', label: 'S' }] },
             ],
           },
         };
@@ -1161,6 +1199,27 @@ describe('merch-card-collection autoblock', () => {
         await delay(50);
         expect(categoryInputs().every((input) => input.disabled)).to.be.true;
         expect(label()).to.equal('All Filters (1)');
+      });
+
+      it('hides the pricing group and strips its value under an off category', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['pricing-off-for', 'all']]);
+        const hiddenPills = () => container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill[hidden]').length;
+        await delay(50);
+        expect(hiddenPills()).to.equal(0);
+        window.location.hash = 'filter=all&pricing=business';
+        await delay(50);
+        expect(params().has('pricing')).to.be.false;
+        expect(hiddenPills()).to.equal(3);
+        expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (0)');
+      });
+
+      it('hides an excluded option, hands the rule to the collection and strips a deep link to it', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['exclude-in-all', 'pricing:students']]);
+        window.location.hash = 'filter=all&pricing=students';
+        await delay(50);
+        expect(params().has('pricing')).to.be.false;
+        const hidden = [...container.querySelectorAll('.product-pricing-drawer .product-pricing-pill[hidden] input')].map((i) => i.value);
+        expect(hidden).to.deep.equal(['students']);
       });
     });
 
