@@ -14,7 +14,7 @@
  * Reference: https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260006/Client+API+Reference
  */
 
-import { getConfig } from '../utils/utils.js';
+import { getConfig, getMetadata } from '../utils/utils.js';
 
 let clientPromise = null;
 let resolvedClient = null;
@@ -26,6 +26,9 @@ let reinitializePromise = null;
 let lifecycleError = null;
 let readyGate;
 const pendingMessages = [];
+// The footer's app ID for the chat that is opening right now (null for any other link).
+// openAcomAssistantChat sets it, getContextCallback reads it once and clears it.
+let footerAppId = null;
 const CLIENT_TIMEOUT = 5000;
 const READINESS_TIMEOUT = 30000;
 
@@ -260,8 +263,18 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           failInitialization(new Error(`init failed (${args[0]})`));
           mergedConfig.callbacks?.initErrorCallback?.(...args);
         },
-        getContextCallback: (...args) => mergedConfig.callbacks?.getContextCallback?.(...args)
-          || { appid: mergedConfig.appid, appver: mergedConfig.appver },
+        getContextCallback: (...args) => {
+          // The chat asks "which app ID?" every time it opens.
+          // Footer link clicked -> footer's app ID, for this one chat only.
+          // Anything else -> the app ID the client started with.
+          // Same as jarvis-chat.js.
+          const footer = footerAppId;
+          footerAppId = null;
+          return mergedConfig.callbacks?.getContextCallback?.(...args) || {
+            appid: footer?.['jarvis-surface-id'] || mergedConfig.appid,
+            appver: footer?.['jarvis-surface-version'] || mergedConfig.appver,
+          };
+        },
       },
     };
     try {
@@ -277,6 +290,20 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
   })();
 
   return clientPromise;
+}
+
+/** Picks the app ID the client starts with. First one found wins (same as jarvis-chat.js):
+ *  1. Page metadata: jarvis-surface-id / jarvis-surface-version
+ *  2. Site config: config.jarvis.id / config.jarvis.version
+ *  Footer links don't change this; they only change the app ID for their own chat
+ *  (see openAcomAssistantChat). */
+export function getAcomAssistantIdentity() {
+  const { jarvis } = getConfig();
+  const appid = getMetadata('jarvis-surface-id') || jarvis?.id;
+  const appver = getMetadata('jarvis-surface-version') || jarvis?.version;
+  // Neither the page nor the site config has an app ID. Log it so it's easy to spot.
+  if (!appid) logError(new Error('no app ID (set jarvis-surface-id metadata or config.jarvis.id)'));
+  return { appid, appver };
 }
 
 let bootstrapPromise = null;
@@ -314,12 +341,22 @@ export async function getAcomAssistantPrompts() {
   return client ? client.getPrompts() : null;
 }
 
-/** Opens the initialized BC experience. Every entry point uses the same BC identity. */
-export async function openAcomAssistantChat(sourceInfo) {
+/** Opens the chat window.
+ *  sectionMeta is only passed for footer links. It holds the footer's app ID,
+ *  which is used for this one chat (see getContextCallback). */
+export async function openAcomAssistantChat(sourceInfo, sectionMeta = null) {
   const client = await clientPromise;
   if (!client) return;
   await readyPromise;
   await reinitializePromise;
   if (lifecycleError) throw lifecycleError;
-  await client.openMessagingWindow(sourceInfo);
+  // Remember the footer app ID so getContextCallback can use it when the window opens.
+  footerAppId = sectionMeta;
+  try {
+    await client.openMessagingWindow(sourceInfo);
+  } catch (error) {
+    // Opening failed, so forget the footer app ID. The next chat should not get it.
+    footerAppId = null;
+    throw error;
+  }
 }

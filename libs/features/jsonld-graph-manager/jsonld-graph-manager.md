@@ -284,22 +284,23 @@ In addition to identity rewrite and merge, the manager applies a small set of ty
 - rewrites `@type` from `Product` to `SoftwareApplication`
 - re-derives `@id` to `{canonicalPageURL}#softwareapplication`
 - preserves `name`, `brand`, `image`, `offers`, and other shared properties
-- hoists nested `Brand` and `Offer` entities to the top-level `@graph` and replaces inline values with `@id` references
+- keeps `Brand` inline and serializes `offers` and `aggregateRating` as nested objects without child `@id`s
 
 This transform is governed by the `product-to-softwareapplication` requirement.
 
-**Offer fallback.** The manager hoists, normalizes, and relates Offers supplied by producers. When a `SoftwareApplication` or supported subtype has missing `offers` or an empty array, the manager adds this exact fallback to serialized output:
+**Nested application entities.** For `SoftwareApplication`, `WebApplication`, `MobileApplication`, and `VideoGame`, the manager serializes `offers` and `aggregateRating` directly inside the application rather than as root nodes referenced by `@id`. This applies both to producer-authored inline objects and to references to separately supplied nodes. Canonical IDs remain internal for deduplication and source-priority merging; serialization copies the merged bodies, removes child `@id` and `@context`, and preserves object/array shape and producer fields. Existing rating quality thresholds run before nesting. Consumed child nodes are omitted from the serialized root graph unless another relationship still references them; shared root entities retain their IDs so other references continue to resolve. Standalone entities are not inferred as belonging to an application, and unresolved references are preserved rather than replaced with fabricated data. Governed by `softwareapplication-nested-entities`.
+
+**Offer fallback.** When a `SoftwareApplication` or supported subtype has missing `offers` or an empty array, the manager adds this exact nested fallback to the application's serialized `offers` array:
 
 ```json
 {
   "@type": "Offer",
-  "@id": "{canonicalPageURL}#offer",
   "price": "0",
   "availability": "https://schema.org/InStock"
 }
 ```
 
-The serialized application references it as `"offers": [{ "@id": "{canonicalPageURL}#offer" }]`. This applies after normalization, so an offer-less producer `Product` is first transformed to `SoftwareApplication` and then receives the fallback. Existing application Offer references are preserved without modification, no fallback is created when the graph has no `SoftwareApplication` or supported subtype, and standalone Offers are never inferred as belonging to an application. If an unrelated node already uses the reserved fallback `#offer` ID, its serialized copy and existing references are moved to a distinct `#offer-authored` ID so both entities remain in the output without attaching the unrelated Offer to the application. The fallback is derived serialized output only: it is not stored in the manager's graph or source maps, so a later runtime producer-authored Offer replaces the fallback on the next rebuild rather than coexisting with stale generated commercial data. Governed by `softwareapplication-offer-provenance`.
+The fallback has no `@id` and is not a root graph node. This applies after normalization, so an offer-less producer `Product` is first transformed to `SoftwareApplication` and then receives the fallback. Authored Offer data is preserved and nested as described above. No fallback is created when the graph has no supported application, and standalone Offers are never inferred as belonging to an application. There is no reserved fallback ID, so unrelated nodes and references need no collision remapping. The fallback is derived serialized output only: it is not stored in the manager's graph or source maps, so a later runtime producer-authored Offer replaces it on the next rebuild rather than coexisting with stale generated commercial data. Governed by `softwareapplication-offer-provenance`.
 
 **SoftwareApplication subtype preservation.** Schema.org defines `WebApplication`, `MobileApplication`, and `VideoGame` as subtypes of `SoftwareApplication`, and Google's Software App rich result explicitly supports them. When a producer supplies one of these subtypes (e.g., team-hardcoded `WebApplication` markup), the manager preserves the more specific `@type`, lands the node at the canonical `#softwareapplication` `@id`, and merges contributions from other producers (e.g., the review block emitting `Product` → `SoftwareApplication`) at the same id. The baseline `Product → SoftwareApplication` transform does NOT rewrite a producer-supplied subtype down to plain `SoftwareApplication`. Governed by `softwareapplication-subtype-allowed`.
 
@@ -307,7 +308,7 @@ The serialized application references it as `"offers": [{ "@id": "{canonicalPage
 
 #### Reference shape
 
-References to other graph nodes are encoded as `{ "@id": "…" }` (see `nodes-referenced-by-id`). Because all referenced entities — including the site-wide `Organization` — are present as top-level nodes in the managed `@graph`, consumers can follow any `@id` to find the full node and its properties. Adding `url` to a reference object would be redundant.
+References to other graph nodes are encoded as `{ "@id": "…" }` (see `nodes-referenced-by-id`). Referenced entities — including the site-wide `Organization` — are present as top-level nodes in the managed `@graph`. Application `offers` and `aggregateRating` are the exception: they contain nested entity bodies without IDs, so consumers do not need to resolve those children.
 
 ### 2.5 Canonical Page Graph Model
 
@@ -345,18 +346,20 @@ graph TD
     SA["SoftwareApplication<br/>#softwareapplication<br/>(transformed from Product)"]
     BC["BreadcrumbList<br/>#breadcrumb"]
     ORG["Adobe Organization"]
-    OFF1["Offer<br/>#offer-paid"]
-    OFF2["Offer<br/>#offer-trial"]
+    OFF1["Nested Offer (paid)<br/>no @id"]
+    OFF2["Nested Offer (trial)<br/>no @id"]
+    AR["Nested AggregateRating<br/>no @id"]
     WP -->|mainEntity| SA
     WP -->|publisher| ORG
     WP -->|breadcrumb| BC
     SA -->|provider| ORG
     SA -->|offers| OFF1
     SA -->|offers| OFF2
+    SA -->|aggregateRating| AR
     BC -->|isPartOf| WP
 ```
 
-For product-oriented pages, `WebPage.mainEntity` points to `SoftwareApplication` rather than `Article`. Producer payloads of `@type: Product` are transformed to `SoftwareApplication` per §2.4. Offers (paid subscription, free trial, etc.) are hoisted to the top-level `@graph` and referenced by `@id`. The page-family-to-primary-entity mapping is owned by the public `tests` dataset.
+For product-oriented pages, `WebPage.mainEntity` points to `SoftwareApplication` rather than `Article`. Producer payloads of `@type: Product` are transformed to `SoftwareApplication` per §2.4. Offers (paid subscription, free trial, etc.) and qualifying aggregate ratings are nested inside the application without child `@id`s, rather than hoisted into the root `@graph`. The page-family-to-primary-entity mapping is owned by the public `tests` dataset.
 
 ## 3. Requirements
 

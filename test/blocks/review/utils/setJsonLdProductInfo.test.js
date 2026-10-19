@@ -24,10 +24,12 @@ describe('setJsonLdProductInfo Util', () => {
         document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
       )['@graph'];
       const app = graph.find((node) => node['@type'] === 'SoftwareApplication');
-      const rating = graph.find((node) => node['@type'] === 'AggregateRating');
+      const rating = app.aggregateRating;
+      expect(rating['@type']).to.equal('AggregateRating');
       expect(rating.ratingValue).to.equal('4.2');
       expect(rating.ratingCount).to.equal('120');
-      expect(app.aggregateRating).to.deep.equal({ '@id': rating['@id'] });
+      expect(rating).to.not.have.property('@id');
+      expect(graph.some((node) => node['@type'] === 'AggregateRating')).to.be.false;
     } finally {
       manager.destroy();
     }
