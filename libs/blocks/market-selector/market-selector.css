@@ -300,6 +300,11 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     margin: 0 0 var(--s2a-spacing-3xs);
   }
 
+  .global-footer .market-selector-item:hover {
+    background: transparent;
+    color: inherit;
+  }
+
   .global-footer .market-selector-link {
     display: flex;
     align-items: center;
