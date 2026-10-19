@@ -127,9 +127,30 @@ export function sampleCardPalette(image) {
   }
 }
 
+// deps/three.js is a tree-shaken subset with no Points, BufferGeometry or BufferAttribute: a
+// stripped PlaneGeometry supplies both, and a Mesh flagged isPoints is drawn as gl.POINTS.
+function createPointGeometry(attrs) {
+  const geo = new THREE.PlaneGeometry(1, 1);
+  const Attr = geo.getAttribute('position').constructor;
+  geo.setIndex(null);
+  ['position', 'normal', 'uv'].forEach((name) => geo.deleteAttribute(name));
+  Object.entries(attrs).forEach(([name, [array, size]]) => {
+    geo.setAttribute(name, new Attr(array, size));
+  });
+  return geo;
+}
+
+function createPoints(geo, material) {
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.isMesh = false;
+  mesh.isPoints = true;
+  return mesh;
+}
+
 export default function createQuoteParticles(scene, renderOrder) {
-  const cardA = Array.from({ length: MAX_CARDS }, () => new THREE.Vector4());
-  const cardB = Array.from({ length: MAX_CARDS }, () => new THREE.Vector4());
+  // Flat vec4 arrays: three uploads a Float32Array uniform as-is.
+  const cardA = new Float32Array(MAX_CARDS * 4);
+  const cardB = new Float32Array(MAX_CARDS * 4);
   const uniforms = {
     uCardA: { value: cardA },
     uCardB: { value: cardB },
@@ -179,13 +200,14 @@ export default function createQuoteParticles(scene, renderOrder) {
       srcColor.set(cell >= 0 ? pal.subarray(cell, cell + 3) : GRAY, i * 3);
       seed.set([Math.random(), Math.random(), Math.random() * Math.PI * 2, Math.random()], i * 4);
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(targets.dst, 3));
-    geo.setAttribute('aDstColor', new THREE.BufferAttribute(targets.color, 3));
-    geo.setAttribute('aCard', new THREE.BufferAttribute(card, 3));
-    geo.setAttribute('aSrcColor', new THREE.BufferAttribute(srcColor, 3));
-    geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 4));
-    points = new THREE.Points(geo, material);
+    const geo = createPointGeometry({
+      position: [targets.dst, 3],
+      aDstColor: [targets.color, 3],
+      aCard: [card, 3],
+      aSrcColor: [srcColor, 3],
+      aSeed: [seed, 4],
+    });
+    points = createPoints(geo, material);
     points.frustumCulled = false; // positions are clip-space; the bounds three would test are not
     points.renderOrder = renderOrder;
     points.visible = false;
@@ -196,13 +218,13 @@ export default function createQuoteParticles(scene, renderOrder) {
   // Screen-space quad (CSS px, y down) a card's pixels leave from; axes are half-extents.
   function setCardQuad(k, cx, cy, ux, uy, vx, vy) {
     if (k >= MAX_CARDS) return;
-    cardA[k].set(cx, cy, ux, uy);
-    cardB[k].x = vx;
-    cardB[k].y = vy;
+    cardA.set([cx, cy, ux, uy], k * 4);
+    cardB[k * 4] = vx;
+    cardB[k * 4 + 1] = vy;
   }
 
   function setCardDissolve(k, v) {
-    if (k < MAX_CARDS) cardB[k].z = v;
+    if (k < MAX_CARDS) cardB[k * 4 + 2] = v;
   }
 
   // Stand-in quads for cards never seen near the camera (e.g. a jump straight into the hold).
