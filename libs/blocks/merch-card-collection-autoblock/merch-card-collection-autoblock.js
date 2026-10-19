@@ -360,7 +360,8 @@ export const isCategoryOff = (params, tags) => tags.some((tag) => {
 const metaList = (meta, key) => (meta[key]?.text ?? '').split(',').map((v) => v.trim()).filter(Boolean);
 
 // `<group>-off-for: all` turns a group off under those categories.
-// `exclude-in-<category>: group:tag` removes a tag's pill and cards under it.
+// `exclude-in-<category>: group:tag` turns a tag off and removes its cards under it.
+// Off pills are greyed in the drawer and hidden in the bar.
 export function categoryRules(meta, groups) {
   const category = groups.find((group) => group.category);
   return {
@@ -658,7 +659,6 @@ export function mountProductPricingFilter(collection, container) {
     const categoryOff = isCategoryOff(params, offTags);
     surfaces.forEach((root) => root.querySelectorAll('.product-pricing-pill input').forEach((input) => {
       const gone = !live.has(`${input.dataset.deeplink}:${input.value}`);
-      input.closest('.product-pricing-pill').hidden = gone;
       const offByCategory = categoryOff && input.dataset.deeplink === categoryDeeplink;
       input.disabled = gone || offByCategory
         || (unavailable.has(`${input.dataset.deeplink}:${input.value}`) && !input.checked);

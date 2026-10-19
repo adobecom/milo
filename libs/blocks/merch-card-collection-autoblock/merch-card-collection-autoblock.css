@@ -266,11 +266,6 @@
   white-space: nowrap;
 }
 
-.product-pricing-pill[hidden],
-.product-pricing-group:not(:has(.product-pricing-pill:not([hidden]))) {
-  display: none;
-}
-
 .product-pricing-pill input {
   position: absolute;
   width: 1px;

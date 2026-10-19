@@ -1201,25 +1201,26 @@ describe('merch-card-collection autoblock', () => {
         expect(label()).to.equal('All Filters (1)');
       });
 
-      it('hides the pricing group and strips its value under an off category', async () => {
+      it('greys the pricing group and strips its value under an off category', async () => {
         const container = withMeta([['default-filter', 'featured'], ['pricing-off-for', 'all']]);
-        const hiddenPills = () => container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill[hidden]').length;
+        const pricing = () => [...container.querySelectorAll('.product-pricing-drawer input[data-deeplink="pricing"]')];
         await delay(50);
-        expect(hiddenPills()).to.equal(0);
+        expect(pricing().some((input) => input.disabled)).to.be.false;
         window.location.hash = 'filter=all&pricing=business';
         await delay(50);
         expect(params().has('pricing')).to.be.false;
-        expect(hiddenPills()).to.equal(3);
+        expect(pricing()).to.have.length(3);
+        expect(pricing().every((input) => input.disabled)).to.be.true;
         expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (0)');
       });
 
-      it('hides an excluded option, hands the rule to the collection and strips a deep link to it', async () => {
+      it('greys an excluded option, hands the rule to the collection and strips a deep link to it', async () => {
         const container = withMeta([['default-filter', 'featured'], ['exclude-in-all', 'pricing:students']]);
         window.location.hash = 'filter=all&pricing=students';
         await delay(50);
         expect(params().has('pricing')).to.be.false;
-        const hidden = [...container.querySelectorAll('.product-pricing-drawer .product-pricing-pill[hidden] input')].map((i) => i.value);
-        expect(hidden).to.deep.equal(['students']);
+        const off = [...container.querySelectorAll('.product-pricing-drawer input[data-deeplink="pricing"]:disabled')].map((i) => i.value);
+        expect(off).to.deep.equal(['students']);
       });
     });
 
