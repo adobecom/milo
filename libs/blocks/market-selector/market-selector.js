@@ -247,6 +247,7 @@ function createDropdown(
   showGlobe,
   analyticsLabel,
   getAnalyticsSelectEventName,
+  { focusOnPointerOpen = true } = {},
 ) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
@@ -390,6 +391,7 @@ function createDropdown(
       button.setAttribute('aria-expanded', 'true');
       searchInput.value = '';
       renderItems(items);
+      const focusActiveLink = focusOnPointerOpen || e.detail === 0;
       requestAnimationFrame(() => {
         const popoverHeight = popover.offsetHeight;
         popover.style.setProperty('--dropdown-initial-height', `${popoverHeight}px`);
@@ -400,7 +402,7 @@ function createDropdown(
         const activeLi = selectedLi || firstLi;
         const activeLink = activeLi?.querySelector('.market-selector-link');
         list.setAttribute('aria-activedescendant', activeLi?.id || '');
-        if (activeLink) activeLink.focus();
+        if (activeLink && focusActiveLink) activeLink.focus();
       });
     }
   });
@@ -642,7 +644,7 @@ function createDropdown(
   };
 }
 
-export default async function init(block, { onCleanup } = {}) {
+export default async function init(block, { onCleanup, focusOnPointerOpen = true } = {}) {
   const config = await getMarketConfig();
   if (!config || !config.languages?.length) {
     if (onCleanup) throw new Error('Market selector configuration is missing languages');
@@ -699,6 +701,7 @@ export default async function init(block, { onCleanup } = {}) {
     true,
     'language-selector',
     (item) => `language-switch:${item.value || 'us'}`,
+    { focusOnPointerOpen },
   );
 
   const marketDropdown = createDropdown(
@@ -712,6 +715,7 @@ export default async function init(block, { onCleanup } = {}) {
     false,
     'market-selector',
     (item) => `market-switch:${item.value}`,
+    { focusOnPointerOpen },
   );
 
   const wrapper = createTag('div', { class: 'market-selector-wrapper' });

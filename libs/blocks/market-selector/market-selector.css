@@ -290,6 +290,7 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
   .global-footer .market-selector-list {
     box-sizing: border-box;
     height: 292px;
+    max-height: 292px;
     margin: var(--s2a-spacing-xs) 0 0;
     padding: 0;
     overflow-y: auto;
