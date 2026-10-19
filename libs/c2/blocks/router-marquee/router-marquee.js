@@ -190,6 +190,20 @@ const decorateText = (textCol) => {
   body.forEach((p) => bodyEl.append(p));
 };
 
+// mas-field merch.js timed out on. [hidden] ones resolved empty, and ones whose
+// aem-fragment failed (class "error", mas-field sets no attribute) will never resolve.
+const PENDING_FIELDS = 'em mas-field:not([hidden], :has(> aem-fragment.error))';
+
+// A late link replaces its mas-field, or the field hides or fails. Each changes the pending count.
+const onPendingChange = (cta, count, callback) => {
+  const observer = new MutationObserver(() => {
+    if (cta.querySelectorAll(PENDING_FIELDS).length === count) return;
+    observer.disconnect();
+    callback();
+  });
+  observer.observe(cta, { childList: true, subtree: true, attributeFilter: ['hidden', 'class'] });
+};
+
 const decorateCtas = (textCol, isLight) => {
   const cta = textCol.querySelector(':scope > p:has(> em)');
   if (!cta) return;
@@ -199,8 +213,14 @@ const decorateCtas = (textCol, isLight) => {
   const secondary = cta.querySelector('em > a');
   primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
   secondary?.classList.add('con-button', 'outline');
-  cta.replaceChildren(...[primary, secondary]
-    .filter((btn) => btn && !shouldBlockFreeTrialLinks(btn)));
+  const buttons = [primary, secondary].filter((btn) => btn && !shouldBlockFreeTrialLinks(btn));
+  // Keep pending fields so their late link can arrive, then decorate again.
+  const pending = cta.querySelectorAll(PENDING_FIELDS).length;
+  if (pending) {
+    onPendingChange(cta, pending, () => decorateCtas(textCol, isLight));
+    return;
+  }
+  cta.replaceChildren(...buttons);
 };
 
 const prepareVideo = (imageCol) => {
