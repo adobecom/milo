@@ -118,6 +118,7 @@ export function createFrameInput() {
     blockDocTop: 0,
     blockHeight: 0,
     formPx: 0,
+    holdPx: 0, // runway past the zoom end that the pull quote holds through
     viewportH: 0,
     arcScale: 1,
     entryLeadVh: 0,
@@ -127,7 +128,7 @@ export function createFrameInput() {
 // No allocation; caller carries frame.lenisY back into input.prevLenisY.
 export function deriveFrame(frame, input) {
   const {
-    reducedMotion, blockDocTop, blockHeight, formPx, viewportH, entryLeadVh,
+    reducedMotion, blockDocTop, blockHeight, formPx, holdPx, viewportH, entryLeadVh,
   } = input;
 
   const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
@@ -145,7 +146,7 @@ export function deriveFrame(frame, input) {
   frame.arcCopyEntryT = arcCopyEntryT;
 
   const rawScroll = lenisY - blockDocTop;
-  const tailPx = Math.max(1, blockHeight - formPx);
+  const tailPx = Math.max(1, blockHeight - (holdPx || 0) - formPx);
   const progress = rawScroll <= formPx
     ? clamp01(rawScroll / Math.max(1, formPx)) * SPHERE_FORMED_PROGRESS
     : SPHERE_FORMED_PROGRESS
@@ -164,6 +165,11 @@ export function deriveFrame(frame, input) {
   frame.arcScale = input.arcScale;
 
   return frame;
+}
+
+// Inverse of the tail mapping: the scroll position at which the zoom reaches zoomT.
+export function scrollYAtZoomT(zoomT, { blockDocTop, blockHeight, formPx, holdPx = 0 }) {
+  return blockDocTop + formPx + zoomT * Math.max(1, blockHeight - holdPx - formPx);
 }
 
 export function cardFoldStartProgress(gpDelay) {

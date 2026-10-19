@@ -69,6 +69,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock**, and fires the injected `onDrag()` once per gesture the first time travel clears `CLICK_MAX_MOVE` (see Behavior notes). Sole owner of the canvas cursor — `none` while the custom cursor is up, then native `grab`/`grabbing`/`pointer`, all written through `applyCursor()` (see Behavior notes). |
 | `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the retirement fade, `isActive()` gating interaction's cursor. No-op on touch and on the barrel. |
+| `quote-particles.js` | `createQuoteParticles({ figureEl, railEl, count })` → `{ object, layout, setSources, update, isReady, isIdle, markDrawn, invalidate, dispose }`. The WebGL pull quote: measures the transparent DOM figure, rasterizes it at DPR, samples particle targets from it, and owns the `Points` + crisp text plane. See **WebGL pull quote**. |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 
@@ -745,14 +746,10 @@ a CSS-only edit. The CSS is **mobile-first**: the base `.globe-gallery` rule is 
 |---|---|---|
 | `--gg-runway-height` | total height = formation + tail | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
 | `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
-| `--gg-pq-half-box` | where the pin ends | **published by JS, not authored** (`publishPqMetrics`) — half the measured quote box, which is the whole of what the pin's bottom edge needs. It does **not** change the reveal, which runs on its own clock |
+| `--gg-pq-hold` | quote hold, added to the runway only under `.globe-gallery-pq-webgl` | lengthens the WebGL quote's flight + reading time; `deriveFrame` subtracts it from the zoom tail, so the zoom pace is unchanged |
 
 > The `vh` figures in this section were taken at a 540 / 304 budget (tail 236). The budget is now split
 > per breakpoint, so read them as worked examples of the formulas, not as current values.
-
-A fourth prop, `--gg-pq-appear-t`, is on the same element but is **not authored** — the runtime
-publishes it, and CSS only declares a `var(…, 0.42)` fallback inline on the pin for the frames before
-the script runs. It is the one prop written from JS.
 
 **No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale literal.
 The zero-box gate means `readCssVars()` always finds the block's properties, so the two rules below
@@ -804,14 +801,9 @@ Two consequences of depending on `fadeRefH`:
 - **The doc snippet can only approximate it**, using `CARD_H_SPHERE` in place of the measured mean,
   landing within ~1vh. For the real number, log `fadeRefH`.
 
-**The pin's release edge rides the same number, which is why nothing is stuck.**
-`publishPqAppearZoomT` writes the value to `--gg-pq-appear-t`, and the pin's bottom edge is
-`(1 − appear-t) × tail − 50vh` above the runway end — so the sticky rail hits the pin's bottom exactly
-as the quote fades in, plus the hold. The quote is revealed dead-centre (the sticky did the centring
-while it was invisible), stays there until the pin's bottom edge arrives, then is
-released. The crosshair draw (see **Crosshair frame → Reveal choreography**) needs a quote that stays
-put, and the hold is what its phase B visualises: change the hold and the affordance's pacing changes
-with it, by construction.
+**The WebGL quote starts a little earlier, at `pqStartZoomT`** — the same derivation with
+`NEAR_FADE_START` in place of `NEAR_FADE_END`, i.e. where the deepest card *starts* fading. Both are
+JS-only now; nothing is published to CSS.
 
 This also bounds the overlap. At the reveal the runway end (= the next section's top) is
 `(1 − appear-t) × tail` down the viewport — **155vh md / 184vh sm** — below the quote's own bottom edge
@@ -858,52 +850,12 @@ stay longer than half the quote box, or the section arrives on top of it.
   just blinks out when the globe stops being live.
 - *Formation (arc/grid/fold) pacing:* the `P_*` constants below — independent of the runway.
 
-#### The hold, and why its length is derived
+#### The hold
 
-**There is no hold variable.** The hold is a residual: the pin ends half a quote box above the runway
-end, so the rail lets go exactly as the next section's top reaches the quote's bottom edge, and
-everything between the reveal and that point is held. Writing the old two-term derivation out against
-the pin's own `bottom` shows why nothing else survives:
-
-```
-bottom = (1 − appear-t)·tail − optical-centre − hold
-hold   = (1 − appear-t)·tail − (optical-centre + box/2)
-       ⇒ bottom = box/2
-```
-
-The tail, the reveal point and the optical centre all cancel, so `publishPqMetrics()` publishes one
-measured number — `--gg-pq-half-box` — and CSS `clamp()`s it to the reveal point, which is the
-no-room case the hold used to floor at `0`. JS no longer re-derives geometry the stylesheet already
-owns, and no longer depends on `blockHeight`, `formationVh`, `navH` or the viewport height at all.
-
-**A fixed hold is not safe here**, because that gap is *authored*, shrinking with the quote's own
-height. It was previously `min(preference, derived)` with the preference at 40vh sm / 45vh md and a
-`band × 0.045` clearance term subtracted off the derived side. Both are gone: whenever the preference
-bound (a short quote on a tall viewport), the unspent remainder surfaced as a variable blank stretch
-between the block and the next section, which is exactly what removing them fixes. The trade is that
-the hold is now unbounded — a short quote spends the whole remaining tail standing still.
-
-md is the tight breakpoint despite having the *later* reveal — `--gg-pq-appear-t` is 0.3433 there
-against sm's 0.2204, which leaves md less tail to spend. Two consequences worth not re-deriving:
-
-- **Tail now buys hold, not gap.** Every vh added to the tail after the reveal is a vh the hold
-  absorbs, so lengthening the runway no longer pushes the next section away from the quote — it only
-  makes the quote sit still for longer. ~0.20 of every vh of tail still lands in the blank stretch
-  *before* the reveal, which is the one thing the runway trades against now. The whole crosshair
-  sequence lives inside the hold and is unaffected either way.
-- **`--gg-pq-half-box` falls back past the clamp's ceiling** (`var(--gg-runway-height)`). Before the
-  first `doLayout` publishes it — or if the JS never runs — the clamp picks the reveal point, so the
-  pin resolves exactly as it did with no hold at all, which is the safe direction. It is re-published
-  on every `doLayout`, including the cheap early-return path, since a reflow that leaves the viewport
-  alone still retypesets the quote — and again on `document.fonts.ready`, for a late webfont.
-- **The runway length is what keeps a long quote inside its section.** At 540vh a five-line quote at
-  390×667 clears comfortably; shortening the runway reopens overflow into the next section regardless of
-  the hold. There is still no `overflow` handling for a pathologically long or localized quote — see
-  **Open questions → Pull-quote pacing and overflow**.
-
-
-The 0-tall rail (see **CSS → Pull-quote box**) is what keeps the box's own height out of the sticky
-clamp, so the centring at the reveal holds for any copy length.
+The quote's reading time is runway, not a residual: `.globe-gallery-pq-webgl` adds `--gg-pq-hold`
+(100vh) to the block height, and `deriveFrame` takes `input.holdPx` back off the zoom tail so the
+zoom keeps its pace. The flight (`PQ_FLY_VH`) starts at `pqStartZoomT`; whatever scroll remains
+before the world un-sticks is the hold. See **CSS → WebGL pull quote**.
 
 ### Zero-box gate
 
@@ -1827,12 +1779,11 @@ a `calc()` — an unregistered prop computes as-specified, so `getPropertyValue`
 stream, and `parseFloat` copes with `304` or `350` but not with `calc(72px + 52px)`. That is also
 why `--gg-modal-anim-ms` is unitless and CSS multiplies it back (`calc(var(--gg-modal-anim-ms) *
 1ms)`) rather than storing `350ms` and having JS strip the unit. **JS
-writes exactly one prop, `--gg-pq-appear-t`** (`publishPqAppearZoomT`, once per `initRuntime`), and the
-narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
+writes no layout props** — the narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
 (`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
-retune stays a CSS-only edit and no magic number is stranded in JS. The pull-quote cue is the one
-value CSS cannot compute — it comes off the WebGL camera curve and the shell radius — so it travels the
-other way, and CSS derives the pin's release edge from it rather than restating it. Anything that
+retune stays a CSS-only edit and no magic number is stranded in JS. The pull-quote cue comes off the WebGL
+camera curve and stays in JS; the quote's pinning is the world's own sticky box (see **WebGL pull
+quote**). Anything that
 *could* be a CSS number must not follow it out of the stylesheet. **No upstream (`--feds-*`)
 property is read either.** The control layer is `fixed` and would otherwise sit under the sticky
 gnav, so the whole nav band has to be reckoned with. **Do not reach for `var(--feds-height-nav, 63px)`
@@ -1975,41 +1926,9 @@ taper the first line lands under the nav no matter where the box is centred. The
 whitespace in the box, so it is what yields. Raising the ceiling above 160px runs the top edge into
 the localnav at lg/xl, so re-check that clearance first.
 
-**Three nested elements, and the middle one is why.** `.globe-gallery-pullquote-pin` (the sticky
-window) → `.globe-gallery-pullquote-rail` (`position: sticky; top: var(--gg-optical-center); height: 0`) →
-`.globe-gallery-pullquote` (`position: absolute; top: 0; transform: translateY(max(-50%, …)) …`).
-The rail is a zero-height line stuck to the viewport middle, and the quote hangs centred on it —
-`-50%` is own-height-relative, so no number is needed anywhere.
-
-Do **not** collapse the rail and stick the quote itself. `transform` is paint-only: a
-`top: var(--gg-optical-center); translateY(-50%)` sticky box still *lays out* starting at the optical centre, so its layout box hangs
-half its own height below where you see it, and sticky position is clamped to the containing block.
-That box therefore reaches the pin's bottom edge **half a box-height early** and gets dragged upward
-for the rest of the pin (~110px off centre by mid-pin at 1440×900, worse the taller the box). A 0-tall
-rail keeps the clamp height-blind, so the quote holds dead-centre across the whole pin. (A
-`height: 100vh; place-items: center` sticky wrapper also works, but it spends ~100vh of pin to hold a
-~600px box — same fix, shorter hold.)
-
-Consequences worth knowing before retuning:
-
-- **The container's `transform` must keep its `translateY(-50%)` term.** That is what centres the
-  quote on the rail; losing it drops the quote half its height. It is written
-  `translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: both terms are negative, so `max()` takes
-  the *less* negative one. A box shorter than the band uses `-50%` and is optically centred exactly
-  as before; once the box exceeds the band, `-band/2` wins and pins the box's top edge to the bottom
-  of the nav, so a quote too long for the taper **overflows downward only** instead of also running
-  up under the chrome. The boundary is exact — at `box === band` both terms agree. The
-  reduced-motion variant deliberately resets `transform: none` — it is `position: relative` and
-  flows, so it must *not* be shifted (and its rail goes `position: static; height: auto` alongside
-  the pin).
-- **The pin centres the quote while it is invisible, and lets go the frame it appears.** The sticky is
-  what guarantees the reveal happens dead-centre whatever the copy length, but it releases on that same
-  frame (pin bottom = reveal + 50vh), so nothing is held and the quote scrolls away with the block —
-  there is no upward drift-out either. Nothing in JS reads the box height, so a copy change is CSS-only
-  — but the tail left after the reveal must stay longer than half the box, or the next section arrives
-  on top of it. See **Scroll model**.
-- No `overflow` handling: a pathologically long quote spills past the viewport rather than scrolling.
-  Adding a scroller here would need `data-lenis-prevent`.
+The figure is centred on `--gg-optical-center` inside the viewport-tall rail by
+`transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: centred while it fits the band,
+top-anchored (overflowing downward only) once it doesn't. See **WebGL pull quote** for pinning.
 
 ### Crosshair frame
 
@@ -2041,169 +1960,106 @@ at the corners, so the runs **cross** and read as a crosshair rather than a clos
 frame tracks the content-sized box, so both follow a copy or `--gg-pq-gap` change with no second number
 to update.
 
-#### Reveal choreography
+### WebGL pull quote (PoC)
 
-The frame is **drawn**, not faded, and each of the four rules is drawn in a different direction so the
-whole thing runs **clockwise**: top →, right ↓, bottom ←, left ↑. It reads as one continuous stroke.
+The pull quote is drawn **in the globe's canvas**. Card pixels break up, scatter and fly into the
+quote's glyphs, then cross-fade into a crisp raster of the same text. There is no visible DOM quote
+on the motion path. Reduced motion is unchanged: a static, line-split DOM figure after the globe, no
+particles. Module: `src/quote-particles.js`. Shaders: `QUOTE_*` in `src/shaders.js`.
 
-**One threshold, one window.** `pqAppearZoomT` is the only thing scroll decides. Crossing it starts the
-reveal, and `updatePullQuote` flips the figure's `pointer-events` to `auto` on the same cue, so the
-quote becomes selectable exactly as the globe stops taking the pointer (`globeLive()` is
-`zoomT < pqAppearZoomT`). `-pin` stays `none` — it is a tall box over the canvas — as do the two
-crosshair pseudo-elements, which span the whole figure and would otherwise block the selection.
+**Scroll.** `pqStartZoomT` is the zoomT at which the deepest card starts its near-camera fade
+(`-SPHERE_R + NEAR_FADE_START · fadeRefH`, see `publishPqAppearZoomT`). From that scroll position
+(`TL.scrollYAtZoomT`) the flight progress `p` runs 0 → 1 over `PQ_FLY_VH` (0.75) viewport heights.
+It is a pure function of scroll, so it reverses when you scroll back. `.globe-gallery-pq-webgl` adds
+`--gg-pq-hold` (100vh) to the runway. `deriveFrame` takes that `holdPx` back off the zoom tail, so
+the zoom pace is exactly what it was and the extra scroll goes to the flight and the reading hold.
 
-Crossing back the other way calls **`dropQuoteSelection`**, which collapses a selection whose anchor
-is inside the figure (and only then — a selection elsewhere on the page is left alone). It has to:
-`layoutQuote` adds `-lines` to the quote element itself, and that rule beats `-quote` at equal
-specificity, so the split quote itself stays at `opacity: 1` while its line inners own the fade and
-roll-up. The glyphs translate out under each line's `overflow: hidden`, but the highlight painted on the
-line blocks does neither, so a leftover selection rides into the globe phase as full-width strips.
-The inline `pointer-events` value is the transition's only state. Everything after the cue is time:
+| `p` | What |
+| --- | --- |
+| 0 | Cards render as before. At the first frame past 0, sources are sampled and every card is hidden. |
+| 0 → 0.3 | Expand. Particles blow out radially from the screen centre and scatter, brightening a little. |
+| 0.08 → 0.88 | Fly. Per particle: delay up to 0.3 (reading order: x then y, plus some randomness), 0.5 long, eased in/out, with a sideways swirl. Colour lerps from the photo to the text ink. |
+| 0.84 → 0.96 | The text plane fades in. From 0.9 the points fade out. `QUOTE_LIVE_P` (0.88) marks the DOM figure `is-live`. |
+| 1 | Only the text plane remains. Rendering stops (see below). |
 
-| Phase | Clock | What |
-| --- | --- | --- |
-| reveal | `0 → 1` over `PQ_REVEAL_IN_MS` (800ms) | the four rules trace clockwise into existence (horizontals lead, verticals follow) **while** the quote's lines rise and fade in a shallow wave and name → role rise 14px and fade |
-| held | the rest of the pinned band | **nothing on screen changes**; the rail stays stuck so the finished quote sits still to be read, then un-sticks |
+**Sources.** `projectCardQuads()` reconstructs the cards as they stand at `pqStartZoomT`, whatever
+the current scroll, using the live sphere rotation and a scratch camera at that zoom's z. A jump
+straight into the flight therefore still has a source. Each visible card becomes a projected px quad
+with its proximity-fade alpha, cover-crop `uRepeat`/`uOffset` and texture. Particles are spread over
+the quads by on-screen area. Colours come from a 32px grid of each card bitmap, drawn once into a 2D
+canvas and cached per image. U is mirrored on back faces, like `CARD_FRAG`. With no visible card the
+sources fall back to a transparent spread over the viewport. Sources are re-sampled on every forward
+crossing of `p = 0`.
 
-The **hold** (the tail between the reveal and the pin's bottom edge) pins the rail — see **The hold, and why its length
-is derived**. It buys reading time; it does not pace the reveal. The frame and the copy share one window
-*and* the clock that runs it (`advanceReveal`), so "the same length" is structural rather than intended.
+**Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
+authored text (`plainQuote`, which also hangs the opening mark), shrinks the font size if the box is
+taller than the band, then calls `layout()`. That waits for `document.fonts.load` on each element's
+computed font, then in one task:
 
-**Nothing starts before `pqAppearZoomT`.** There is no second threshold: if the draw needs more room, it
-needs more hold. Two consequences:
+1. **Measures** one Range per character, grouped into lines by their top. This works for any
+   wrapping, bidi direction or script the browser lays out.
+2. **Rasterizes** each line at `devicePixelRatio` with the element's computed font, letter-spacing,
+   direction and `--gg-pq-ink` colour. The baseline sits one `fontBoundingBoxAscent` below the Range
+   top. The advance is scaled (±10% max) onto the DOM line width, so the drawn text and the hidden
+   text share a box. The crosshair's four 1px rules are drawn into the same raster, from the
+   figure's padding and `--gg-pq-rule-color`, snapped to device pixels.
+3. **Samples targets.** Each ~1 CSS px cell with alpha ≥ 128 is a candidate. N of them are picked
+   at random, or cycled with sub-pixel jitter if there are fewer than N. The candidate pixel's colour
+   is the particle's final colour.
+4. **Builds the text plane.** The same canvas becomes a `CanvasTexture` on a quad with
+   integer-device-pixel corners, one texel per device pixel, so the resting text is as sharp as DOM
+   text.
 
-- **The pre-reveal blank is real and unfilled** — up to ~47vh md / ~18vh sm of tail where the shell has
-  emptied but the quote has not started. It shrinks only with `--gg-runway-height`, which also shrinks
-  the hold, so the two trade directly. This is the open tuning question, not a crosshair bug.
-- **Nothing moves once the reveal has played.** It finishes 800ms after the cue however the reader got
-  there, so the rest of the pinned band is always still.
+Coordinates are CSS px from the top-left of `.globe-gallery-pullquote-rail`. Both shaders map px
+straight to clip space and ignore the scene camera. The layout re-runs whenever the figure width,
+viewport height, nav height or DPR changes, and again on `fonts.ready`.
 
-**The reveal is a tween, not a scrub.** `advanceReveal` is the whole clock: past the cue it steps forward
-by `dtScale · FRAME_MS / PQ_REVEAL_IN_MS`, before it steps back over `PQ_REVEAL_OUT_MS`, clamped to
-`[0, 1]`. Scroll picks the direction and nothing else, so a quote whose viewport leaves no hold at all
-(the clamp hard against the reveal point) plays exactly like any other. On the way out the rules un-draw and the lines drop
-back under their masks together, **bottom line first**.
+**Particle counts.** `PQ_PARTICLES_SM` is 16k and `PQ_PARTICLES_MD` is 48k, in one `THREE.Points`
+draw. Attributes: `position` (target), `aSrc`, `aSrcCol`, `aDstCol`, `aRand`.
 
-`updatePullQuoteCopy` is a pure function of the reveal — **the copy must not get a clock of its own**, or
-the two are free to disagree about when they finish.
+**Pinning.** There is no separate quote pin any more. Once `p > 0` the canvas swaps from
+`position: fixed` to `absolute` inside `.globe-gallery-world`, which is sticky and already stuck by
+then, so the swap is seamless. The canvas also drops `pointer-events`. When the runway ends the world
+un-sticks, and the canvas, with the quote on it, scrolls away with the page. The canvas is hidden
+only once the block has fully left the viewport (`updateCanvasVisibility`). `-pin` is now
+`position: absolute; inset: 0` and `-rail` is `position: sticky; top: 0; height: 100vh`. Together
+they form a viewport-sized layer that mirrors the world, so the transparent figure pins and releases
+on exactly the same frames as the canvas that draws it. Reduced motion still flattens both to
+static.
 
-**The lines composite.** `translate3d` rather than `translateY`, so each line gets its own layer and
-travels on sub-pixel offsets; a 2D translate re-rasterises the glyphs every frame and they shimmer.
+**Render on demand.** The scene is drawn only while something changes. At `p === 1`, once a frame
+with the same progress, layout version and viewport has been drawn (`isIdle`/`markDrawn`),
+`renderScene` skips the draw and the canvas keeps its last frame. Resizing, a re-layout, the canvas
+being re-shown, or the modal opening forces a redraw. Measured: 0 draw calls per second while the
+quote is held.
 
-#### The quote rolls in line by line
+**Accessibility.** The canvas carries no content. The real `figure > blockquote + figcaption` stays
+in the DOM, in reading order after the arc copy. Its text is `color: transparent`, never
+`display: none` or `visibility: hidden`, so it stays in the accessibility tree, and it sits exactly
+over the drawn text. The VoiceOver cursor and the selection highlight therefore land on the
+rendered glyphs. Once the quote is `is-live` the figure takes the pointer. Selection works and uses
+a translucent white `::selection`. Leaving the quote drops a selection anchored inside it. The
+globe stops being pointer-live (`globeLive`) at `pqStartZoomT`, when the cards turn to particles.
+Keyboard behaviour is unchanged.
 
-Each **rendered line** sits in its own `overflow: hidden` mask and starts one line-height *below* it, so
-it rolls up into place. Name and role keep the plain 14px rise; three rolling blocks in a row would be
-noise.
+**Forced colours / fallback.** WebGL ignores forced colours, so under `(forced-colors: active)` the
+figure gets `is-dom`. The particles and the plane are not drawn, and the DOM text, forced to system
+colours, fades in at `is-live`. The same fallback covers a raster that found no ink. A CSS
+forced-colours rule also keeps the figure at `opacity: 0` until it is live, because forced colours
+repaints even transparent text.
 
-Lines are staggered by `PQ_COPY_LINE_STAGGER` of the sweep, capped at `PQ_COPY_LINE_LAG_MAX` for the
-last line, so every line is in flight at once rather than arriving in turn.
+**Zoom / resize.** At 200% zoom the CSS viewport shrinks, and the `doLayout` resize path re-runs the
+fit, the measurement and the raster at the new size and DPR.
 
-Each line carries two vars: `--gg-pq-line-v` for position and `--gg-pq-line-o` for opacity. Position
-uses `easeOutQuart`; opacity is linear over `lag → 1`, the same window the name and role use. The mask
-clips the line for the first part of that window, so an ease-out would be spent before the line clears
-and read as no fade at all. CSS maps the progress onto `--gg-pq-line-fade-from → 1`, so a line enters
-partly visible rather than from nothing.
-
-The quote element itself carries no fade or lift: it is always split, so the lines own the motion.
-`PQ_COPY_PARTS` and the `--gg-pq-copy-rise` lift apply to the name and role only.
-
-**Lines are a layout fact, not authoring.** `layoutQuote` (`authoring.js`) puts every word in a probe
-span, groups the words by the `offsetTop` they landed on, and rebuilds the quote as one block per line.
-It is called **only from the runtime** (`relayoutQuote`), never from `buildGlobeDom` — that runs from
-`init()` before the zero-box gate opens, where every probe measures 0. An unsplit quote is a supported
-state, so the paths that never reach a runtime (`globe-gallery-empty`) render it as plain flow.
-Break points move with the box width and with whichever font resolved, so it is always redone from the
-authored text rather than patched. `relayoutQuote` **gates on the quote box's width**, not the
-viewport's: a scrollbar arriving changes the box without changing `innerWidth`, and a viewport change
-that only alters height leaves the split correct. `fonts.ready` forces one regardless. It drops the copy
-cache and rewrites the current frame straight after, because fresh line elements carry no progress var
-and would otherwise render at rest for a frame. Line text is assigned with `textContent`; `createTag`'s
-third argument parses a string as markup.
-
-**The split is presentational, and AT gets the unsplit text.** Each `.globe-gallery-pullquote-line` is
-`aria-hidden`, and `layoutQuote` appends one `.sr-only.globe-gallery-pullquote-sr` span holding the whole
-quote. Block-level line spans otherwise land in the accessibility tree as one static-text node **per
-visual line**, so a screen reader stops mid-phrase at break points that move with the box width. It
-carries `user-select: none` so selecting the quote copies the visible lines only.
-
-Details that are load-bearing:
-
-- **The split must not change the box.** `publishPqMetrics` measures the quote to derive the pin's bottom edge and the
-  crosshair's edge splits, so any height the split introduced would feed back into the choreography. Each
-  line pads itself by `--gg-pq-line-bleed` and takes the same amount back as a negative margin; the quote
-  is a **flex column** so those negative margins meet without collapsing, and the lines are separated by
-  whitespace text nodes, which generate no flex items.
-- **Those separators are also the text.** Without them `textContent` runs the lines together
-  (`the differentapps.`) for anything reading the quote as a string.
-- **A script that does not break on spaces is one "word"**, so a CJK or Thai quote measures as a single
-  line and rolls as one block.
-- **The mask bleeds sideways too.** `overflow: hidden` clips both axes, and the hung opening mark sits
-  *outside* the line's content box, so the inline bleed is what keeps the mask from cropping it. That
-  bleed is `--gg-hang-max`, shared with the modal description. The vertical bleed is descender headroom,
-  and it is why `--gg-pq-line-start` is 120% rather than 100%: a line waits *below the padded mask*,
-  which needs `0.2 × line-height > bleed`.
-- **The outdent becomes a margin, and only on the first line.** `text-indent` is what `hangOpeningMark`
-  sets while measuring, since the outdent can change where the first line breaks — but it must not
-  survive into the split. It is **inherited**, and each line's inner is an `inline-block`, i.e. its own
-  block container: the line indents the inline-block, then the inline-block re-indents its own first
-  line, hanging the opening mark *and the first letter*. So the first line's inner carries the same
-  distance as `margin-inline-start`, which does not inherit and applies exactly once.
-
-**The wave is distance, not timing.** Every line's inner span uses the same `--gg-pq-line-start`, and
-a line is wholly hidden while its offset exceeds its own height, so each starts revealing as soon as
-its own clock does. The line mask itself is offset by `rank × --gg-pq-line-wave`, where rank is the
-line's index capped at `PQ_COPY_LINE_RANK_CAP` and written as `--gg-pq-line-rank` on each split. The
-mask carries its clip rect with it, so the spacing widens down the stack mid-flight and closes to the
-authored line-height on landing, without delaying lower lines or changing how much of each line is
-visible. `--gg-pq-line-wave` at 0 is a flat lift. JS writes `--gg-pq-line-v`, `--gg-pq-line-o`, and
-`--gg-pq-line-rank`; their fallbacks are the no-JS and reduced-motion rest state.
-
-#### Frame mechanics
-
-- **Every rule is masked to the fraction of itself that is drawn, along its own clockwise direction.**
-  The gradient's direction (`to right` / `to bottom` / `to left` / `to top`) encodes the clockwise sense,
-  so a var never needs to know which edge it is on. There are **two** vars, not four — `--gg-pq-h` for
-  both horizontals, `--gg-pq-v` for both verticals — because horizontals lead verticals and that is the
-  only split the draw makes. JS writes them per frame; the CSS fallbacks are `100%`, so a no-JS or
-  pre-first-frame render is the complete crosshair.
-- **A pair is one element, so the two rules are separated by the mask, not the DOM.** `::before` paints
-  *both* horizontals; give each of its two mask layers **half the box height** and pin it to a diagonal
-  corner, and the `left top` layer can only uncover the top border while the `right bottom` layer can
-  only uncover the bottom one. `::after` is the same with the axes swapped: half the *width*, pinned
-  `right top` / `left top`. Four independent directions, no extra elements.
-- **The halves are 51%, not 50%,** so a subpixel box height can't leave a rule half-masked. They overlap
-  across the middle, where there is nothing to draw; mask layers composite with `add`, so the overlap
-  costs nothing.
-- **Border colour comes from `--gg-pq-rule-color` and width from `--gg-crosshair-width`, never from a
-  second `border:` shorthand** — a shorthand silently resets the `border-block-width` /
-  `border-inline-width` the shared rules already set, and the rule renders as nothing. If a rule
-  vanishes, suspect a shorthand before you suspect the mask.
-- **Style writes are memoised** on the joined interval string (the `arcCopy` pattern), so a frame that
-  moves nothing costs no writes.
-- **The container has no opacity or transform of its own.** The frame is masked to zero-length intervals
-  and the copy vars sit at 0, so there is nothing for a container fade to hide, and a growing box would
-  stretch the rules while they draw. Don't add one.
-- **Name and role each use one 0..1 var** (`--gg-pq-copy-n` / `-r`), already eased and staggered in JS.
-  The CSS is `opacity: var(…, 1)` plus a rise of `--gg-pq-copy-rise * (1 − var)`. Quote lines instead
-  use separate position and opacity vars so their fade stays visible after each line clears its mask.
-
-Reduced-motion constraints:
-
-- The reduced-motion pull-quote is `position: **relative**`, not `static`. Static would drop it as a
-  containing block and the pseudos would resolve against `.globe-gallery`, stretching the frame over the
-  whole runway.
-- Reduced motion kills the draw with `mask-image: none` (a full reveal) and forces both the line masks
-  and line inners to their fully visible, untransformed state. This also covers reduced motion being
-  toggled after progress vars were already written.
-- The block padding lives in `--gg-pq-pad-block`, which feeds both `padding-block` and the `::before`
-  `inset-block`. It holds *two* values, so the reduced-motion variant overrides the one property
-  (`10vh 8vh`) and the crosshair follows — no second rule, and no way to move the padding without the
-  lines moving with it.
-- Widening the padding gives the hanging quote more room, which is what makes the measured hang's fit
-  test breakpoint-dependent — see **Localization → Hanging the opening mark**.
-
-
+**Known limitations (PoC).**
+- The source quads ignore the cylinder's partial camera-facing tilt and the dissolve shader's own
+  smear, so the hand-off can be a few px off. It reads as the cards' pixels letting go.
+- Ligatures and kerning come from canvas text shaping, not the DOM. Per-line advance correction
+  keeps the boxes aligned, but an individual glyph can differ by a pixel.
+- A CJK or Thai quote is measured by character Ranges, which is correct. The scale correction
+  assumes the canvas and the DOM pick the same fallback fonts.
+- There is no reveal choreography for the crosshair beyond the particles: it forms with the text.
+- `--gg-pq-hold` is a fixed 100vh. A very long quote on a short viewport gets less reading time.
 
 ## Analytics
 

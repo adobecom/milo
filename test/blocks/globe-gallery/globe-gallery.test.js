@@ -4,6 +4,7 @@ import init from '../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
 import {
   escapeHtml,
   layoutQuote,
+  plainQuote,
   optimizeImgUrl,
   parseAuthoredContent,
   scatterCards,
@@ -266,6 +267,17 @@ describe('C2 globe gallery', () => {
       const again = layoutQuote(quote);
       expect(again.map((l) => l.textContent)).to.deep.equal(lines.map((l) => l.textContent));
       expect(quote.querySelectorAll('.globe-gallery-pullquote-sr')).to.have.length(1);
+    });
+
+    it('restores a split quote to its plain authored text', async () => {
+      const { block } = await loadBlock('heading-quote');
+      const quote = block.querySelector('.globe-gallery-pullquote-quote');
+      layoutQuote(quote);
+      expect(plainQuote(quote)).to.equal('Creativity connects us.');
+      expect(quote.classList.contains('globe-gallery-pullquote-lines')).to.be.false;
+      expect(quote.children).to.have.length(0);
+      expect(quote.textContent).to.equal('Creativity connects us.');
+      expect(plainQuote(null)).to.equal('');
     });
 
     it('returns no lines for missing or empty quotes', async () => {

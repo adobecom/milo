@@ -164,6 +164,18 @@ export function layoutQuote(quoteEl) {
   return lineEls;
 }
 
+// Undo any split back to the authored text as one plain node, with the opening mark hung by
+// text-indent. The WebGL quote measures and draws from this.
+export function plainQuote(quoteEl) {
+  if (!quoteEl) return '';
+  if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
+  const text = QUOTE_TEXT.get(quoteEl).trim();
+  quoteEl.classList.remove('globe-gallery-pullquote-lines');
+  quoteEl.textContent = text;
+  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.globe-gallery-pullquote')));
+  return text;
+}
+
 function parseArcCopy(row) {
   if (!row) return { title: '', body: [] };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');

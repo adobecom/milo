@@ -1,7 +1,7 @@
 import * as THREE from '../../../deps/three.js';
 import {
   parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
-  optimizeImgUrl, layoutQuote, scatterCards,
+  optimizeImgUrl, layoutQuote, plainQuote, scatterCards,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
@@ -13,8 +13,9 @@ import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
+import createQuoteParticles, { QUOTE_LIVE_P } from './src/quote-particles.js';
 import {
-  easeOutCubic, easeOutQuart, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
+  easeOutCubic, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
@@ -105,16 +106,11 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_REVEAL_IN_MS = 800;
-const PQ_REVEAL_OUT_MS = 250;
-
-// Shares of the reveal window; horizontals lead verticals.
-const PQ_DRAW_H_SPAN = 0.82;
-const PQ_DRAW_V_START = 0.26;
-const PQ_COPY_PARTS = [['n', 0.18], ['r', 0.28]];
-const PQ_COPY_LINE_STAGGER = 0.05;
-const PQ_COPY_LINE_LAG_MAX = 0.2;
-const PQ_COPY_LINE_RANK_CAP = 4;
+// WebGL pull quote: scroll it takes the card pixels to fly into the text, as a share of the
+// viewport height, and how many there are.
+const PQ_FLY_VH = 0.75;
+const PQ_PARTICLES_SM = 16000;
+const PQ_PARTICLES_MD = 48000;
 
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
@@ -402,22 +398,27 @@ function createGlobeGalleryRuntime(
   let blockHeight = 0; // its full scroll length
   // zoomT the last card leaves the screen at; see publishPqAppearZoomT.
   let pqAppearZoomT = 0.5;
+  // zoomT the WebGL quote takes the cards over at: the deepest card starts its near-camera fade.
+  let pqStartZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
+  let holdVh = 0; // from --gg-pq-hold: runway past the zoom end, held by the quote
   let W = 0;
   let H = 0;
   let navH = 0; // --gg-nav-h; see README (The nav band)
 
   const worldEl = q('.globe-gallery-world');
   const pqEl = q('.globe-gallery-pullquote');
-  // The cached strings elide unchanged style writes.
   const pq = {
     quoteEl: q('.globe-gallery-pullquote-quote'),
-    lineEls: [], // one per rendered line
-    splitW: 0, // box width they were split at
-    revealT: 0,
-    frameStr: '',
-    copyStr: '',
+    railEl: q('.globe-gallery-pullquote-rail'),
+    layoutKey: '', // box width × viewport the quote was last laid out at
+    fx: null, // createQuoteParticles instance; motion path only
+    p: 0, // 0 → 1 scroll progress of the card → text flight
+    live: false,
+    sourced: false, // particle sources sampled for the current flight
+    canvasPos: '', // cached inline canvas position / pointer-events
   };
+  const forcedColorsMQ = window.matchMedia?.('(forced-colors: active)') ?? null;
 
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
@@ -643,8 +644,6 @@ function createGlobeGalleryRuntime(
     );
     // eslint-disable-next-line no-use-before-define -- hoisted; both are plain function decls
     publishPqAppearZoomT();
-    // eslint-disable-next-line no-use-before-define -- same
-    publishPqMetrics();
   }
 
   // Read live each frame, so writing these morphs the card into its native shape.
@@ -954,7 +953,10 @@ function createGlobeGalleryRuntime(
     if (vh !== null) formationVh = vh;
     const nav = cssNum('--gg-nav-h');
     if (nav !== null) navH = nav;
+    holdVh = cssNum('--gg-pq-hold') ?? 0;
   }
+
+  const holdPx = () => (pq.fx ? (holdVh / 100) * H : 0);
 
   const measureViewportH = () => Math.max(1, worldEl.offsetHeight);
 
@@ -964,25 +966,8 @@ function createGlobeGalleryRuntime(
   function publishPqAppearZoomT() {
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
-    // CSS pins against the tail, not the zoom span.
-    const tailT = pqAppearZoomT * TL.ZOOM_TO_TAIL_T;
-    root.style.setProperty('--gg-pq-appear-t', tailT.toFixed(4));
-  }
-
-  // Every other term cancels to half the quote box; CSS clamps it to the reveal point. See README.
-  function publishPqMetrics() {
-    if (!pqEl || !pqEl.isConnected) return;
-    const halfBox = pqEl.getBoundingClientRect().height / 2;
-    root.style.setProperty('--gg-pq-half-box', `${halfBox.toFixed(1)}px`);
-  }
-
-  // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
-  function writeFrameVars(h, v) {
-    const str = `${h.toFixed(4)};${v.toFixed(4)}`;
-    if (str === pq.frameStr) return;
-    pq.frameStr = str;
-    pqEl.style.setProperty('--gg-pq-h', `${(h * 100).toFixed(2)}%`);
-    pqEl.style.setProperty('--gg-pq-v', `${(v * 100).toFixed(2)}%`);
+    const startZ = -bp.SPHERE_R + bp.NEAR_FADE_START * fadeRefH;
+    pqStartZoomT = Math.min(pqAppearZoomT, TL.zoomTAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
   }
 
   function formedScrollPx() {
@@ -1051,7 +1036,9 @@ function createGlobeGalleryRuntime(
   // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
   // together. sphereFormT saturates at 1 for the whole zoom tail, so the pull-quote cue is what
   // actually ends the pointer-interactive stretch.
-  const globeLive = () => globeFormed() && frameState.zoomT < pqAppearZoomT;
+  // With the WebGL quote the cards turn to particles at pqStartZoomT, and the globe goes with them.
+  const globeLive = () => globeFormed()
+    && frameState.zoomT < (pq.fx ? pqStartZoomT : pqAppearZoomT);
 
   controls = createGlobeControls({
     q,
@@ -1120,6 +1107,7 @@ function createGlobeGalleryRuntime(
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
     frameInput.formPx = formedScrollPx();
+    frameInput.holdPx = holdPx();
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
@@ -1300,85 +1288,63 @@ function createGlobeGalleryRuntime(
       return;
     }
     const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
-    // Past the reveal every card is prox-faded out and the hint text has finished; the scene
-    // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
-    // blurs this canvas, so hiding it would leave the blur with nothing to sample.
-    canvasHidden = modal.getModalIdx() < 0
-      && (lenisY < showTrigger
-        || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T);
+    // Without a WebGL quote the scene is empty past the reveal, so the draw is skipped. With one,
+    // the canvas carries the quote until the runway has scrolled off. The modal is the exception
+    // either way: its backdrop blurs this canvas, so hiding it would leave nothing to blur.
+    const pastEnd = pq.fx
+      ? lenisY >= blockDocTop + blockHeight
+      : zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T;
+    const hidden = modal.getModalIdx() < 0 && (lenisY < showTrigger || pastEnd);
+    if (canvasHidden && !hidden) pq.fx?.invalidate();
+    canvasHidden = hidden;
     canvas.style.display = canvasHidden ? 'none' : 'block';
+    // Once the quote has the screen the canvas rides the world's sticky box instead of the
+    // viewport, so it lets go with the runway end. The world is stuck by now: a seamless swap.
+    const pos = pq.p > 0 ? 'absolute' : 'fixed';
+    if (pos !== pq.canvasPos) {
+      pq.canvasPos = pos;
+      canvas.style.position = pos;
+      canvas.style.pointerEvents = pq.p > 0 ? 'none' : 'auto';
+    }
   }
 
-  function updatePullQuoteCopy(reveal) {
-    const prog = (lag) => clamp01((reveal - lag) / (1 - lag));
-    const arrive = (lag) => easeOutCubic(prog(lag));
-    const lines = pq.lineEls;
-    const last = lines.length - 1;
-    let str = '';
-    const vals = PQ_COPY_PARTS.map(([, lag]) => arrive(lag));
-    vals.forEach((v) => { str += `${v.toFixed(3)};`; });
-    const lagStep = last > 0 ? Math.min(PQ_COPY_LINE_STAGGER, PQ_COPY_LINE_LAG_MAX / last) : 0;
-    const span = 1 - lagStep * last;
-    const lineVals = lines.map((_, i) => easeOutQuart(clamp01((reveal - lagStep * i) / span)));
-    const lineFades = lines.map((_, i) => prog(lagStep * i));
-    lineVals.forEach((v, i) => { str += `${v.toFixed(3)},${lineFades[i].toFixed(3)};`; });
-    if (str === pq.copyStr) return;
-    pq.copyStr = str;
-    PQ_COPY_PARTS.forEach(([key], i) => {
-      pqEl.style.setProperty(`--gg-pq-copy-${key}`, vals[i].toFixed(3));
-    });
-    lines.forEach((el, i) => {
-      el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3));
-      el.style.setProperty('--gg-pq-line-o', lineFades[i].toFixed(3));
-    });
+  function quoteProgress(lenisY) {
+    const formPx = formedScrollPx();
+    const span = { blockDocTop, blockHeight, formPx, holdPx: holdPx() };
+    const startY = TL.scrollYAtZoomT(pqStartZoomT, span);
+    return clamp01((lenisY - startY) / Math.max(1, PQ_FLY_VH * H));
   }
 
-  function advanceReveal(zoomT) {
-    const fwd = zoomT >= pqAppearZoomT;
-    const step = (frameState.dtScale * TL.FRAME_MS) / (fwd ? PQ_REVEAL_IN_MS : PQ_REVEAL_OUT_MS);
-    pq.revealT = clamp01(pq.revealT + (fwd ? step : -step));
-    return pq.revealT;
+  function fitQuote() {
+    const bandH = H - navH;
+    if (!(bandH > 0) || pqEl.scrollHeight <= bandH) return;
+    const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+    pq.quoteEl.style.letterSpacing = 'normal';
+    for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
+      const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
+      const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
+      if (Math.abs(next - fs) < 0.5) break;
+      pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
+      plainQuote(pq.quoteEl); // the hang is measured in the new size
+    }
   }
 
-  function writePullQuoteFrame(reveal) {
-    const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
-    const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
-    writeFrameVars(hDrawn, vDrawn);
-    updatePullQuoteCopy(reveal);
-  }
-
-  function splitQuote() {
-    pq.lineEls = layoutQuote(pq.quoteEl);
-    pq.lineEls.forEach((el, i) => {
-      el.style.setProperty('--gg-pq-line-rank', Math.min(i, PQ_COPY_LINE_RANK_CAP));
-    });
-  }
-
-  // Fresh line elements carry no progress var, so the cache is dropped and the frame rewritten.
+  // RM splits the quote into lines; the motion path keeps it plain, fits it to the band, and has
+  // the WebGL quote re-measure and re-rasterize it.
   function relayoutQuote(force) {
     if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
-    const w = pqEl.clientWidth;
-    if (!force && w === pq.splitW) return;
-    pq.splitW = w;
+    const key = `${pqEl.clientWidth}x${H}|${navH}|${capDpr()}`;
+    if (!force && key === pq.layoutKey) return;
+    pq.layoutKey = key;
     pq.quoteEl.style.removeProperty('font-size');
     pq.quoteEl.style.removeProperty('letter-spacing');
-    splitQuote();
-    pq.copyStr = '';
-    if (!reducedMotion) {
-      const bandH = H - navH;
-      if (bandH > 0 && pqEl.scrollHeight > bandH) {
-        const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
-        pq.quoteEl.style.letterSpacing = 'normal';
-        for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
-          const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
-          const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
-          if (Math.abs(next - fs) < 0.5) break;
-          pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
-          splitQuote();
-        }
-      }
-      writePullQuoteFrame(pq.revealT);
+    if (reducedMotion || !pq.fx) {
+      layoutQuote(pq.quoteEl);
+      return;
     }
+    plainQuote(pq.quoteEl);
+    fitQuote();
+    pq.fx.layout({ dpr: capDpr() });
   }
 
   function dropQuoteSelection() {
@@ -1386,12 +1352,87 @@ function createGlobeGalleryRuntime(
     if (sel && !sel.isCollapsed && pqEl.contains(sel.anchorNode)) sel.removeAllRanges();
   }
 
+  // The DOM figure is the transparent a11y twin of the drawn quote. It takes the pointer (for
+  // selection) once the text has landed; is-dom hands it the ink when WebGL can't draw it.
   function updatePullQuote(frame) {
-    if (reducedMotion || !pqEl) return;
-    const live = frame.zoomT >= pqAppearZoomT;
-    if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
+    if (reducedMotion || !pq.fx) return;
+    pq.p = quoteProgress(frame.lenisY);
+    const dom = !!forcedColorsMQ?.matches || !pq.fx.isReady();
+    if (dom !== pqEl.classList.contains('is-dom')) pqEl.classList.toggle('is-dom', dom);
+    const live = pq.p >= QUOTE_LIVE_P;
+    if (live === pq.live) return;
+    pq.live = live;
+    if (!live) dropQuoteSelection();
+    pqEl.classList.toggle('is-live', live);
     pqEl.style.pointerEvents = live ? 'auto' : 'none';
-    writePullQuoteFrame(advanceReveal(frame.zoomT));
+  }
+
+  const snapCam = new THREE.PerspectiveCamera();
+  const snapQuat = new THREE.Quaternion();
+  const snapCentre = new THREE.Vector3();
+  const snapCorner = new THREE.Vector3();
+  const QUAD_CORNERS = [[-1, 1], [1, 1], [1, -1], [-1, -1]]; // TL, TR, BR, BL
+
+  // The cards as they stand at pqStartZoomT, projected to px quads — wherever the scroll is now,
+  // so a jump straight into the flight still has a source.
+  function projectCardQuads() {
+    if (!fadeRefH) return [];
+    const camZ = TL.camZAtZoomT(pqStartZoomT, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
+    snapCam.copy(camera);
+    snapCam.position.set(0, 0, camZ);
+    snapCam.updateMatrixWorld(true);
+    const fadeEnd = cardVanishDepth();
+    const fadeStart = bp.NEAR_FADE_START * fadeRefH;
+    const gs = sphereGroup.scale.x || 1;
+    refreshSphereRotQuat();
+    const quads = [];
+    cards.forEach((card) => {
+      if (!card.hasTexture) return;
+      snapCentre.copy(card.spherePos).applyQuaternion(sphereRotQuat).multiplyScalar(gs);
+      const fade = clamp01((camZ - snapCentre.z - fadeEnd) / Math.max(1e-6, fadeStart - fadeEnd));
+      if (fade <= 0) return;
+      snapQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
+      const pts = [];
+      const inFront = QUAD_CORNERS.every(([sx, sy]) => {
+        snapCorner.set(
+          sx * 0.5 * bp.CARD_W_SPHERE * card.sphereScaleSX,
+          sy * 0.5 * bp.CARD_H_SPHERE * card.sphereScaleSY,
+          0,
+        ).applyQuaternion(snapQuat).multiplyScalar(gs).add(snapCentre);
+        if (camZ - snapCorner.z < 0.5) return false;
+        snapCorner.project(snapCam);
+        pts.push((snapCorner.x + 1) * 0.5 * W, (1 - snapCorner.y) * 0.5 * H);
+        return true;
+      });
+      if (!inFront) return;
+      const u = card.mesh.material.uniforms;
+      quads.push({
+        pts,
+        alpha: (fade ** NEAR_FADE_OPACITY_BIAS) * card.revealT,
+        tex: u.uMap.value,
+        repeat: u.uRepeat.value,
+        offset: u.uOffset.value,
+      });
+    });
+    return quads;
+  }
+
+  // After the card stage: the particles take over from the cards for as long as p > 0.
+  function updateQuoteParticles() {
+    if (!pq.fx) return;
+    if (pq.p > 0) {
+      if (!pq.sourced) {
+        pq.fx.setSources(projectCardQuads(), W, H);
+        pq.sourced = true;
+      }
+      cards.forEach((card) => {
+        if (!modal.isCardManaged(card)) card.mesh.visible = false;
+      });
+    } else {
+      pq.sourced = false; // re-sampled on the next crossing, from wherever the sphere has spun to
+    }
+    const drawn = !pqEl.classList.contains('is-dom');
+    pq.fx.update(pq.p, { W, H, dpr: capDpr(), drawn });
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
@@ -1427,8 +1468,13 @@ function createGlobeGalleryRuntime(
     }
   }
 
+  // A settled quote is a still frame: skip the draw and let the canvas keep showing it.
   function renderScene(activeCamera) {
-    if (!canvasHidden) renderer.render(scene, activeCamera);
+    const idle = pq.fx && pq.fx.isIdle() && modal.getModalIdx() < 0;
+    if (!canvasHidden && !idle) {
+      renderer.render(scene, activeCamera);
+      pq.fx?.markDrawn();
+    }
     modal.render();
   }
 
@@ -1770,13 +1816,14 @@ function createGlobeGalleryRuntime(
     frame.sphereRotActive = updateSphereRotation(frame);
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
+    updatePullQuote(frame); // before the canvas stage, which reads the quote progress
     updateCanvasVisibility(frame);
-    updatePullQuote(frame);
 
     renderer.sortObjects = true;
 
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateCardTransforms(frame);
+    updateQuoteParticles();
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
     updateHintExit(frame);
 
@@ -1951,7 +1998,6 @@ function createGlobeGalleryRuntime(
       const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) {
         relayoutQuote(); // the quote box can change width without the viewport doing so
-        publishPqMetrics();
         return;
       }
       W = nextW;
@@ -1996,13 +2042,22 @@ function createGlobeGalleryRuntime(
           }, TEXT_REBUILD_DEBOUNCE_MS);
         }
       }
-      relayoutQuote(); // before the metrics: the split settles the box they measure
-      publishPqMetrics();
+      relayoutQuote();
     }
+    // Before the first layout: the class adds the quote's hold to the runway being measured.
+    if (!reducedMotion && pqEl && pq.railEl) {
+      pq.fx = createQuoteParticles({
+        figureEl: pqEl,
+        railEl: pq.railEl,
+        count: bp.name === 'sm' ? PQ_PARTICLES_SM : PQ_PARTICLES_MD,
+      });
+      scene.add(pq.fx.object);
+    }
+    root.classList.toggle('globe-gallery-pq-webgl', !!pq.fx);
     doLayout();
     // A webfont landing after first layout retypesets the quote.
     if (document.fonts && document.fonts.ready) {
-      const afterFonts = () => { relayoutQuote(true); publishPqMetrics(); };
+      const afterFonts = () => relayoutQuote(true);
       document.fonts.ready.then(afterFonts, afterFonts);
     }
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
@@ -2149,12 +2204,13 @@ function createGlobeGalleryRuntime(
     modal.destroy();
     a11y.teardown();
     if (arcCopy.el) arcCopy.el.style.cssText = '';
+    if (pq.fx) { pq.fx.dispose(); pq.fx = null; }
+    root.classList.remove('globe-gallery-pq-webgl');
     if (pqEl) {
       pqEl.style.cssText = '';
-      pq.frameStr = '';
-      pq.copyStr = '';
-      pq.revealT = 0;
+      pqEl.classList.remove('is-live', 'is-dom');
     }
+    Object.assign(pq, { layoutKey: '', p: 0, live: false, sourced: false, canvasPos: '' });
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     canvasHidden = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
