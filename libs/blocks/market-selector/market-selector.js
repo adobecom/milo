@@ -303,6 +303,7 @@ function createDropdown(
   function onPopoverWheel(e) {
     if (e.ctrlKey || popover.dataset.open !== 'true') return;
     e.preventDefault();
+    e.stopPropagation();
     let delta = e.deltaY;
     if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) delta *= 16;
     else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) delta *= list.clientHeight;
