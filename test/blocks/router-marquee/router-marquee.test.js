@@ -192,6 +192,49 @@ describe('Router Marquee', () => {
     expect(src).to.not.match(/^import .*utils\/action\.js/m);
   });
 
+  it('renders before analytics is ready and fires the first slide impression once', async () => {
+    /* eslint-disable no-underscore-dangle */
+    const originalSatellite = window._satellite;
+    delete window._satellite;
+    const observed = new Map();
+    sinon.stub(window, 'IntersectionObserver').callsFake((callback) => ({
+      observe: (target) => observed.set(target, callback),
+      unobserve() {},
+      disconnect() {},
+    }));
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.router-marquee');
+    const section = block.closest('.section');
+    try {
+      init(block);
+      window.IntersectionObserver.restore();
+
+      // hero DOM is built synchronously, with no analytics available yet
+      const vp = [...block.querySelectorAll('.rm-viewport')]
+        .find((v) => v.querySelector('.rm-slide[daa-lh]'));
+      const title = vp.querySelector('.rm-slide.is-active .rm-title');
+      expect(title.textContent).to.equal('Slide one title');
+      expect(vp.querySelector('.rm-card').getAttribute('daa-ll')).to.equal('rm-nav-1--Slide one title');
+
+      // the first slide is seen before section analytics or Launch are ready
+      observed.get(title)([{ target: title, isIntersecting: true }]);
+      section.setAttribute('daa-lh', 's1');
+      await Promise.resolve();
+      const track = sinon.spy();
+      window._satellite = { track };
+      window.dispatchEvent(new Event('alloy_sendEvent'));
+      window.dispatchEvent(new Event('alloy_sendEvent'));
+      observed.get(title)([{ target: title, isIntersecting: true }]);
+
+      const names = track.getCalls().map((call) => call.args[1].data._adobe_corpnew
+        .digitalData.primaryEvent.eventInfo.eventName);
+      expect(names).to.deep.equal(['auto-slideseen-1--Slide one title|s1|b1']);
+    } finally {
+      sinon.restore();
+      window._satellite = originalSatellite;
+    }
+  });
+
   it('defers every slide video so none is eager-fetched', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/video.html' });
     const block = document.querySelector('.router-marquee');
