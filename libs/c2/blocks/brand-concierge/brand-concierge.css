@@ -347,6 +347,11 @@
   opacity: 1;
 }
 
+/* AcomAssistant window is open (windowStateCallback in features/acom-assistant.js) */
+.acom-assistant-open .bc-floating-element {
+  display: none;
+}
+
 /* floating-button */
 .bc-floating-button {
   bottom: 0;
