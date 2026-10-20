@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import createQuoteParticles, {
-  rasterizeQuote, pendingFonts, readingOrder, readingX, revealFront, coherentOrder, flightWindow,
+  rasterizeQuote, pendingFonts, readingOrder, readingX, revealFront,
+  coherentOrder, softOrder, flightWindow,
 } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 import { Vector3 } from '../../../../libs/deps/three.js';
 import { buildGlobeDom } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
@@ -195,6 +196,29 @@ describe('globe-gallery: quote particles', () => {
     expect(arrive - leave).to.be.closeTo(0.3, 0.001);
     const [early] = flightWindow(0, 1, 0.25);
     expect(early).to.be.at.least(0.29); // never before it has let go of the camera
+  });
+
+  it('soft order stays local but breaks each source region up across the targets', () => {
+    const n = 4000;
+    const sx = new Float32Array(n).map(() => Math.random() * 800);
+    const sy = new Float32Array(n).map(() => Math.random() * 600);
+    const tx = new Float32Array(n).map(() => 100 + Math.random() * 600);
+    const ty = new Float32Array(n).map(() => 150 + Math.random() * 300);
+    const tOrd = coherentOrder(tx, ty, n);
+    const path = (ord) => ord.reduce((sum, src, r) => sum
+      + Math.hypot(tx[tOrd[r]] - sx[src], ty[tOrd[r]] - sy[src]), 0) / n;
+    const soft = softOrder(sx, sy, n);
+    expect(new Set(soft).size).to.equal(n);
+    const random = path(Uint32Array.from({ length: n }, (_, i) => i));
+    expect(path(soft)).to.be.below(random * 0.6);
+    // Sources from one corner region no longer land in one contiguous run of the target order.
+    const band = coherentOrder(sx, sy, n);
+    const corner = (i) => sx[i] < 100 && sy[i] < 150;
+    const runs = (ord) => ord.reduce(
+      (c, src, r) => c + (corner(src) && !(r && corner(ord[r - 1]))),
+      0,
+    );
+    expect(runs(soft)).to.be.above(runs(band) * 3);
   });
 
   it('reveals the text in the same reading-order wave the particles land in', () => {

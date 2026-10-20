@@ -2015,8 +2015,12 @@ them across `PQ_HANDOFF_P` (2%) before any tile moves.
 random: `coherentOrder` ranks a point set by `PAIR_BANDS` (8) equal-count x bands, each read top to
 bottom (a linear counting sort, ~2.5 ms for 30k points), and the r-th source by screen position takes
 the r-th target in the same order, built once with the targets. Left cards feed the left of the
-quote, neighbours stay neighbours and paths don't cross. On the page this halves the mean path
-(desktop ≈ 270 vs 585 px, mobile ≈ 165 vs 320 px; `getStats()`). The sources' screen positions are
+quote, neighbours stay neighbours and paths don't cross. Plain band pairing maps each card's contiguous pixels onto one
+contiguous rectangle of the text, which then lands as a single-colour block with hard seams, so
+the sources are ranked with `softOrder`: the band keys get per-particle noise (±1 band width in x,
+±12% of the height in y), then 20% of particles swap with a rank up to 1/32 of the order away.
+Neighbouring cards interleave and colours dither across the seams, while paths stay short. On the page this halves the mean path
+(soft: desktop ≈ 300 vs 590 px, mobile ≈ 190 vs 320 px; `getStats()`). The sources' screen positions are
 taken on the hand-off frame, but the pairing runs on the **next** frame, so the hand-off frame's cost
 is unchanged; until then every particle is parked at a departure beyond any flight.
 
@@ -2034,8 +2038,11 @@ is unchanged; until then every particle is parked at a departure beyond any flig
 
 **Landing is a reading-order wave, and the text is crisp as it lands.** Arrival is keyed to the
 particle's *target*: a text point at reading-order position `o` (`readingOrder`, mostly along the
-line, a little down the block, RTL-aware) lands at `QUOTE_ARRIVE_FROM + o · QUOTE_ARRIVE_SPREAD`. Each particle keeps its photo colour in flight, turns to the
-text colour over the last `1 − QUOTE_INK_FROM` of its travel, and swells (`QUOTE_LANDED_GROW`) so
+line, a little down the block, RTL-aware) lands at `QUOTE_ARRIVE_FROM + o · QUOTE_ARRIVE_SPREAD`,
+± a per-particle `QUOTE_ARRIVE_JITTER` (0.02) that feathers the wave's leading edge. The reveal
+lag (`QUOTE_REVEAL_LAG`, 0.03) clears that jitter, so a region's crisp DOM text and its particles'
+fade wait for its latest particles. Each particle keeps its photo colour in flight, turns to the
+text colour over the last `1 − QUOTE_INK_FROM` (30%) of its travel, and swells (`QUOTE_LANDED_GROW`) so
 landed dots read solid. `QUOTE_REVEAL_LAG` later that region of the **DOM text** turns crisp over
 `QUOTE_REVEAL_DUR` while its particles fade out over the same window. The DOM can't reveal per
 pixel, so each rendered line (`layoutQuote`'s line inners) and the name and role carry a
@@ -2081,7 +2088,7 @@ on at `p = 1`, and `dropQuoteSelection` still clears a selection on the way back
 **Perf.** The particle program is compiled when the targets are built, and a pool of per-card
 materials is prepared then too, so the hand-off frame only re-aims them. At 4× CPU throttle
 (headless): the hand-off frame is unchanged from before the pairing (~41–47 ms mobile), and the
-pairing adds one ~25 ms frame after it (~45 ms at 60k on desktop).
+pairing adds one ~30 ms frame after it (~60 ms at 60k on desktop).
 
 **Known limits (PoC).** A card partly off screen only gets tiles for its visible part; one draw per
 far card (no atlas); particles draw over anything else on the canvas.

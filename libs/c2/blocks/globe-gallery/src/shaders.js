@@ -262,12 +262,13 @@ export const TEXT_FRAG = [
 //   so only a band of the quote is airborne at once;
 // - reveal: the DOM text over that region turns crisp while the landed dots fade.
 // Arrival is keyed to the TARGET: a text point at reading-order position o lands at
-// ARRIVE_FROM + o · ARRIVE_SPREAD (+ ≤ ARRIVE_JITTER); REVEAL_LAG later the DOM text there turns
+// ARRIVE_FROM + o · ARRIVE_SPREAD (± ARRIVE_JITTER); REVEAL_LAG later the DOM text there turns
 // crisp over REVEAL_DUR (revealFront in quote-particles.js mirrors this).
 export const QUOTE_ARRIVE_FROM = 0.6;
 export const QUOTE_ARRIVE_SPREAD = 0.24;
-export const QUOTE_ARRIVE_JITTER = 0.02;
-export const QUOTE_REVEAL_LAG = 0.025; // ≥ ARRIVE_JITTER: a region is crisp only once it has landed
+export const QUOTE_ARRIVE_JITTER = 0.02; // ± per particle: feathers the landing wave's edge
+// Past the region's latest arrival (base + ARRIVE_JITTER): crisp only once its particles are in.
+export const QUOTE_REVEAL_LAG = 0.03;
 export const QUOTE_REVEAL_DUR = 0.05; // FROM + SPREAD + LAG + DUR must stay ≤ 1
 export const QUOTE_FLY = 0.3; // a flight's length in uP; rim particles fly up to EDGE_FLY longer
 export const QUOTE_EDGE_FLY = 0.5;
@@ -277,7 +278,7 @@ export const QUOTE_DETACH_AT = 0.04; // after its release, a tile stops riding t
 export const QUOTE_DETACH_TAU = 0.05;
 export const QUOTE_RELEASE_MAX = 0.26; // max aRelease
 // Share of a particle's own travel after which it turns from its photo colour to the text's.
-export const QUOTE_INK_FROM = 0.78;
+export const QUOTE_INK_FROM = 0.7;
 
 const PX_FROM_CLIP = [
   'vec2 pxOf(vec4 c, vec2 view) {',

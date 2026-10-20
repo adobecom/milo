@@ -157,6 +157,12 @@ const MATERIAL_POOL = 24; // per-card draws prepared up front; more are added on
 const PENDING = 9; // reading order / departure / arrival before pairing: beyond any flight
 const PAIR_BANDS = 8; // x bands of the 2D quantile order
 const EDGE_LEAD = 0.75; // share of a particle's departure order set by its depth in its card
+// Soft pairing: noise on the band keys and near-rank swaps, so neighbouring cards interleave and
+// colours dither across the seams instead of tiling the text in single-card rectangles.
+const SOFT_X = 1; // ± x key noise, in band widths
+const SOFT_Y = 0.12; // ± y key noise, as a share of the set's height
+const SOFT_SWAP = 0.2; // share of particles swapped with a near rank
+const SOFT_SWAP_SPAN = 1 / 32; // how near, as a share of all ranks
 
 const SORT_BUCKETS = 4096; // key resolution of the counting sort: below a pixel at these extents
 const bucketCounts = new Uint32Array(SORT_BUCKETS + 1);
@@ -197,13 +203,41 @@ export function coherentOrder(xs, ys, count = xs.length) {
   return out;
 }
 
+function extent(v, count) {
+  let lo = Infinity; let hi = -Infinity;
+  for (let i = 0; i < count; i += 1) { lo = Math.min(lo, v[i]); hi = Math.max(hi, v[i]); }
+  return Math.max(0, hi - lo);
+}
+
+// coherentOrder over noisy keys, then a share of near-rank swaps: still local (paths stay short),
+// but no card maps onto one contiguous rectangle of the text.
+export function softOrder(xs, ys, count = xs.length) {
+  const bw = (SOFT_X * extent(xs, count)) / PAIR_BANDS;
+  const bh = SOFT_Y * extent(ys, count);
+  const nx = new Float32Array(count);
+  const ny = new Float32Array(count);
+  for (let i = 0; i < count; i += 1) {
+    nx[i] = xs[i] + (Math.random() * 2 - 1) * bw;
+    ny[i] = ys[i] + (Math.random() * 2 - 1) * bh;
+  }
+  const order = coherentOrder(nx, ny, count);
+  const span = Math.max(1, Math.round(SOFT_SWAP_SPAN * count));
+  for (let r = 0; r < count; r += 1) {
+    if (Math.random() < SOFT_SWAP) {
+      const q = Math.min(count - 1, Math.max(0, r + Math.round((Math.random() * 2 - 1) * span)));
+      [order[r], order[q]] = [order[q], order[r]];
+    }
+  }
+  return order;
+}
+
 // [departure, arrival] uP of a particle released at `release`, `edge` deep in its card (0 rim →
 // 1 centre), paired with a target of reading order `order`: a fixed flight ending at its own
 // arrival, so only a band is airborne at once; rim particles fly longer so they still leave first.
 // Never before it has let go of the camera.
 export function flightWindow(order, edge, release) {
   const arrive = QUOTE_ARRIVE_FROM + order * QUOTE_ARRIVE_SPREAD
-    + Math.random() * QUOTE_ARRIVE_JITTER;
+    + (Math.random() * 2 - 1) * QUOTE_ARRIVE_JITTER;
   const leave = arrive - QUOTE_FLY * (1 + QUOTE_EDGE_FLY * (1 - edge));
   return [Math.min(arrive - 0.5 * QUOTE_FLY, Math.max(release + QUOTE_DETACH_AT, leave)), arrive];
 }
@@ -341,7 +375,7 @@ export default function createQuoteParticles(scene, renderOrder) {
     const col = geo.getAttribute('aDstColor');
     const seed = geo.getAttribute('aSeed');
     const rel = geo.getAttribute('aRelease');
-    const order = coherentOrder(sx, sy, count);
+    const order = softOrder(sx, sy, count);
     let paired = 0;
     let random = 0;
     for (let r = 0; r < count; r += 1) {
