@@ -256,7 +256,7 @@ export const TEXT_FRAG = [
 // texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
 // so at rest the tiles are the card, pixel for pixel. Then, edge first, each particle departs: its
 // own camera eases to a stop (velocity-continuous) and it travels to its text target in px.
-// aRand = (departure p, release p, wobble −1…1, arrival p); converge adds aStage. Sources and
+// aRand = (departure p, release p, wobble −1…1, arrival p). Sources and
 // targets are paired by a 2D quantile order (quote-particles.js), so neighbours stay neighbours.
 // Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
 // together, and the crisp text plane reveals each pixel with that same function: the text goes
@@ -279,9 +279,11 @@ export const QUOTE_MOTIONS = {
   swirl: {
     id: 1, arriveStart: 0.45, arriveSpan: 0.35, release: [0.1, 0.1], fly: 0.3, edgeFly: 0.5,
   },
-  // Two beats: gather into a cloud the size of the quote, then spread into the glyphs.
+  // Early rim-first release, then one long curved flight straight into the glyph: the control
+  // point is pulled `pull` of the way toward the quote's centre and turned `vortex` × the source's
+  // offset from it, so streams sweep in from every side like an inflowing vortex, never pausing.
   converge: {
-    id: 2, arriveStart: 0.6, arriveSpan: 0.2, departMax: 0.25, gather: 0.2, spread: 0.15,
+    id: 2, arriveStart: 0.5, arriveSpan: 0.3, departMax: 0.25, pull: 0.35, vortex: 0.2,
   },
 };
 const QUOTE_WOBBLE = 0.06; // abc: sideways wobble, as a share of the path length
@@ -331,9 +333,7 @@ export const QUOTE_POINTS_VERT = [
   'attribute vec2 aUv;', // u right, v down the card as seen
   'attribute vec4 aRand;',
   'attribute vec3 aDstCol;',
-  '#if PQ_MOTION == 2',
-  'attribute vec2 aStage;', // converge: this particle's place in the cloud, px
-  '#endif',
+  'uniform vec2 uCentre;', // converge: the quote's centre, px
   'varying vec2 vUv;',
   'varying vec4 vJinv;',
   'varying float vSize;',
@@ -379,16 +379,16 @@ export const QUOTE_POINTS_VERT = [
   '    sv = toPx(w + uAxisV * uCell.y, zEff) - s;',
   '  }',
   '  vec2 dst = position.xy;',
-  // `leave` drives the tile → dot change; `t` is the final approach, which drives landing + ink.
-  '#if PQ_MOTION == 2',
-  `  float leave = clamp((uP - aRand.x) / ${glf(QUOTE_MOTIONS.converge.gather)}, 0.0, 1.0);`,
-  `  float spread = ${glf(QUOTE_MOTIONS.converge.spread)};`,
-  '  float t = clamp((uP - aRand.w + spread) / spread, 0.0, 1.0);',
-  '  vec2 pos = mix(mix(s, aStage, smoother(leave)), dst, smoother(t));',
-  '#else',
+  // One leg from the card to the glyph: `t` drives the tile → dot change, landing and ink.
   '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
-  '  float leave = t;',
-  '  float te = smoother(t);',
+  '  float te = smoother(t);', // still at both ends: velocity-continuous at departure and landing
+  '#if PQ_MOTION == 2',
+  `  vec2 ctrl = mix((s + dst) * 0.5, uCentre, ${glf(QUOTE_MOTIONS.converge.pull)});`,
+  '  vec2 away = s - uCentre;',
+  `  ctrl += vec2(-away.y, away.x) * ${glf(QUOTE_MOTIONS.converge.vortex)};`,
+  '  float r = 1.0 - te;',
+  '  vec2 pos = r * r * s + 2.0 * r * te * ctrl + te * te * dst;', // quadratic Bézier
+  '#else',
   '  vec2 pos = mix(s, dst, te);',
   '  float bump = sin(3.14159 * te);', // 0 at both ends: hand-off and landing stay exact
   '#if PQ_MOTION == 1',
@@ -402,7 +402,7 @@ export const QUOTE_POINTS_VERT = [
   '#endif',
   // The bounding square of the projected cell, so neighbouring tiles always overlap.
   '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
-  '  float g = smoothstep(0.0, 0.4, leave);',
+  '  float g = smoothstep(0.0, 0.4, t);',
   // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
   // solid for the moment before the crisp text takes it over.
   '  float land = smoothstep(0.85, 1.0, t);',

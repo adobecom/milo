@@ -203,17 +203,11 @@ describe('globe-gallery: quote particles', () => {
       await fx.setSources([card(0, 400), card(560, 0)], 800, 600);
       const stats = fx.getStats();
       expect(stats.count).to.be.within(2800, 3000);
-      if (motion === 'converge') {
-        // Two beats: the cloud is the quote's size, and each cloud point is near its glyph.
-        expect(stats.meanSpread).to.be.below(stats.meanPathRandom * 0.5);
-      } else {
-        expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
-      }
+      expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
       const draws = fx.object.children.filter((o) => o instanceof THREE.Points);
       expect(draws).to.have.length(2);
       draws.forEach((d) => {
         expect(d.material.defines.PQ_MOTION).to.equal({ abc: 0, swirl: 1, converge: 2 }[motion]);
-        expect(!!d.geometry.attributes.aStage).to.equal(motion === 'converge');
         const { aRand } = d.geometry.attributes;
         for (let i = 0; i < aRand.count; i += 1) {
           const [leave, arrive] = [aRand.array[i * 4], aRand.array[i * 4 + 3]];

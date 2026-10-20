@@ -153,19 +153,26 @@ export function parseMotion(search = '') {
 }
 
 const PENDING = 9; // departure/arrival p before pairing: beyond any flight
-const CLOUD_SIZE = 0.9; // converge: the cloud's ellipse, as a share of the glyphs' core box
 const PAIR_BANDS = 8; // x bands of the 2D quantile order (8 measured best of 4–32)
 
 // Indices of the first `count` points sorted by `key`, via one native typed-array sort of packed
 // (quantized key, index) pairs.
 function sortBy(key, idx) {
   const SLOT = 2 ** 20; // index bits under the key; counts stay well below
+  const m = idx.length;
   let lo = Infinity; let hi = -Infinity;
-  idx.forEach((i) => { lo = Math.min(lo, key[i]); hi = Math.max(hi, key[i]); });
+  for (let j = 0; j < m; j += 1) {
+    const v = key[idx[j]];
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
   const scale = (SLOT - 1) / Math.max(1e-6, hi - lo);
-  const packed = Float64Array.from(idx, (i) => Math.round((key[i] - lo) * scale) * SLOT + i);
+  const packed = new Float64Array(m);
+  for (let j = 0; j < m; j += 1) packed[j] = Math.round((key[idx[j]] - lo) * scale) * SLOT + idx[j];
   packed.sort();
-  return Uint32Array.from(packed, (v) => v % SLOT);
+  const out = new Uint32Array(m);
+  for (let j = 0; j < m; j += 1) out[j] = packed[j] % SLOT;
+  return out;
 }
 
 // A locality-preserving order over the set's own extent: PAIR_BANDS equal-count bands by x, each
@@ -173,7 +180,9 @@ function sortBy(key, idx) {
 // so pairing two sets by rank keeps neighbours together and paths short (a cheap stand-in for
 // optimal transport; about half the random pairing's path on the page, see README).
 export function coherentOrder(xs, ys, count = xs.length) {
-  const byX = sortBy(xs, Uint32Array.from({ length: count }, (_, i) => i));
+  const all = new Uint32Array(count);
+  for (let i = 0; i < count; i += 1) all[i] = i;
+  const byX = sortBy(xs, all);
   const out = new Uint32Array(count);
   for (let b = 0; b < PAIR_BANDS; b += 1) {
     const from = Math.floor((b * count) / PAIR_BANDS);
@@ -194,7 +203,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
   const tCol = new Float32Array(n * 3);
   const tOrder = new Float32Array(n); // reading order 0 → 1
   let tSorted = new Uint32Array(0); // target indices in coherentOrder
-  const stage = new Float32Array(n * 2); // converge: the cloud, in the same coherentOrder
   let stats = {};
   let pairing = null; // the pending pairing frame's token
 
@@ -206,6 +214,7 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     uDstSize: { value: DST_SIZE },
     uAlpha: { value: 1 },
     uZoomT: { value: new THREE.Vector2() },
+    uCentre: { value: new THREE.Vector2() },
     uCamZ: { value: new THREE.Vector2() },
   };
   let draws = []; // [{ points, mat, geo }]
@@ -242,31 +251,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
   let stateKey = '';
   let drawnKey = '';
   let lastP = 0;
-
-  // converge: the cloud. A jittered grid over the glyphs' core box (5th–95th percentile, so the
-  // crosshair rules don't stretch it to the whole figure), stored in coherentOrder so rank j's
-  // cloud point sits where rank j's target does, then pulled halfway to a random point in the
-  // box's ellipse so it reads as one cloud rather than a grid of bands.
-  function writeStage(xs, ys) {
-    const pct = (arr, q) => Float32Array.from(arr).sort()[Math.floor(q * (arr.length - 1))];
-    const [x0, x1, y0, y1] = [pct(xs, 0.05), pct(xs, 0.95), pct(ys, 0.05), pct(ys, 0.95)];
-    const bw = Math.max(1, x1 - x0);
-    const bh = Math.max(1, y1 - y0);
-    const cols = Math.max(1, Math.round(Math.sqrt((n * bw) / bh)));
-    const rows = Math.ceil(n / cols);
-    const gx = new Float32Array(n);
-    const gy = new Float32Array(n);
-    for (let i = 0; i < n; i += 1) {
-      gx[i] = x0 + ((i % cols) + Math.random()) * (bw / cols);
-      gy[i] = y0 + (Math.floor(i / cols) + Math.random()) * (bh / rows);
-    }
-    coherentOrder(gx, gy).forEach((g, rank) => {
-      const a = Math.random() * Math.PI * 2;
-      const r = Math.sqrt(Math.random()) * 0.5 * CLOUD_SIZE;
-      stage[rank * 2] = (gx[g] + x0 + bw * (0.5 + r * Math.cos(a))) / 2;
-      stage[rank * 2 + 1] = (gy[g] + y0 + bh * (0.5 + r * Math.sin(a))) / 2;
-    });
-  }
 
   function writeTargets(r, m, dpr) {
     const { data } = r.ctx.getImageData(0, 0, r.w, r.h);
@@ -310,7 +294,8 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     const ys = new Float32Array(n);
     for (let i = 0; i < n; i += 1) { xs[i] = tDst[i * 2]; ys[i] = tDst[i * 2 + 1]; }
     tSorted = coherentOrder(xs, ys);
-    if (M.gather) writeStage(xs, ys);
+    // converge bends its paths around the quote's centre.
+    shared.uCentre.value.set(xs.reduce((a, v) => a + v, 0) / n, ys.reduce((a, v) => a + v, 0) / n);
     return true;
   }
 
@@ -340,13 +325,13 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
 
   // A particle's release p: where it eases off the camera's dolly. It depends only on how deep it
   // sits in its card (`edge`: 0 rim → 1 centre, loosened), so the cards tear from the rim.
-  const releaseAt = (edge) => (M.gather ? M.departMax * edge : M.release[0] + M.release[1] * edge);
+  const releaseAt = (edge) => (M.release ? M.release[0] + M.release[1] * edge : M.departMax * edge);
 
   // [departure, arrival] p once the particle is paired with a target of reading order `order`.
   function flight(order, edge) {
     const arrive = M.arriveStart + M.arriveSpan * order;
     const release = releaseAt(edge);
-    if (M.gather) return [release, arrive];
+    if (!M.fly) return [release, arrive]; // converge: one long leg, straight from the release
     // A fixed flight ending at the particle's own arrival, so only a band is airborne at once;
     // rim particles fly longer so they still leave first. Never before the release.
     const leave = arrive - M.fly * (1 + M.edgeFly * (1 - edge));
@@ -368,7 +353,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
       edge[j] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random();
       rand.set([PENDING, releaseAt(edge[j]), Math.random() * 2 - 1, PENDING], j * 4);
     }
-    if (M.gather) geo.setAttribute('aStage', new THREE.BufferAttribute(new Float32Array(k * 2), 2));
     geo.setAttribute('position', new THREE.BufferAttribute(dst, 3));
     geo.setAttribute('aUv', new THREE.BufferAttribute(uvs, 2));
     geo.setAttribute('aDstCol', new THREE.BufferAttribute(new Float32Array(k * 3), 3));
@@ -403,41 +387,30 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     draws.push({ points, mat, geo, count: k, edge });
   }
 
-  // A draw's targets (and converge's cloud points) from the coherent rank each particle took.
+  // A draw's targets from the coherent rank each particle took.
   function fillDraw({ geo, edge }, ranks) {
     const { position, aDstCol, aRand } = geo.attributes;
-    const st = geo.attributes.aStage;
     for (let j = 0; j < ranks.length; j += 1) {
       const i = tSorted[ranks[j]];
       position.array.set([tDst[i * 2], tDst[i * 2 + 1]], j * 3);
       aDstCol.array.set([tCol[i * 3], tCol[i * 3 + 1], tCol[i * 3 + 2]], j * 3);
-      if (st) st.array.set([stage[ranks[j] * 2], stage[ranks[j] * 2 + 1]], j * 2);
       const [leave, arrive] = flight(tOrder[i], edge[j]);
       aRand.array[j * 4] = leave;
       aRand.array[j * 4 + 3] = arrive;
     }
-    [position, aDstCol, aRand, st].forEach((a) => { if (a) a.needsUpdate = true; });
+    [position, aDstCol, aRand].forEach((a) => { a.needsUpdate = true; });
   }
 
-  // Mean screen path of the pairing (through the cloud for converge), against the old random one.
+  // Mean straight-line path of the pairing, against the old random one.
   function pathStats(sx, sy, ranks, k) {
-    let paired = 0; let random = 0; let spread = 0;
+    let paired = 0; let random = 0;
     for (let i = 0; i < k; i += 1) {
       const t = tSorted[ranks[i]];
-      const [tx, ty] = [tDst[t * 2], tDst[t * 2 + 1]];
-      if (M.gather) {
-        const [gx, gy] = [stage[ranks[i] * 2], stage[ranks[i] * 2 + 1]];
-        spread += Math.hypot(tx - gx, ty - gy);
-        paired += Math.hypot(gx - sx[i], gy - sy[i]) + Math.hypot(tx - gx, ty - gy);
-      } else {
-        paired += Math.hypot(tx - sx[i], ty - sy[i]);
-      }
+      paired += Math.hypot(tDst[t * 2] - sx[i], tDst[t * 2 + 1] - sy[i]);
       const q = i % n;
       random += Math.hypot(tDst[q * 2] - sx[i], tDst[q * 2 + 1] - sy[i]);
     }
-    const per = (v) => v / Math.max(1, k);
-    const meanPath = per(paired);
-    return { count: k, meanPath, meanPathRandom: per(random), meanSpread: per(spread) };
+    return { count: k, meanPath: paired / Math.max(1, k), meanPathRandom: random / Math.max(1, k) };
   }
 
   // cards: [{ project(u, v) → [x, y] px now, origin, axisU, axisV (world), tex, repeat, offset,
@@ -548,24 +521,31 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     stats = { count: k, handoffMs: performance.now() - t0 };
     performance.measure?.('globe-gallery pq sources', { start: t0, detail: { motion, ...stats } });
     version += 1;
-    // The pairing (the sort) waits a frame, off the hand-off frame: nothing departs before its
-    // release, many frames of scroll later.
+    // The pairing waits, off the hand-off frame, and is split in two: the sort on the next frame,
+    // the buffer fill on the one after. Nothing departs before its release, many frames later.
     const token = {};
     pairing = token;
-    return new Promise((resolve) => {
-      requestAnimationFrame(() => {
-        if (pairing !== token) { resolve(null); return; }
-        const t1 = performance.now();
-        // Rank in coherentOrder: the r-th source takes the matching quantile of the targets.
-        const ranks = new Uint32Array(k);
-        coherentOrder(sx, sy, k).forEach((src, r) => {
-          ranks[src] = Math.min(n - 1, Math.floor((r * n) / k));
-        });
+    const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
+    const live = () => pairing === token;
+    return nextFrame().then(() => {
+      if (!live()) return null;
+      const t1 = performance.now();
+      // Rank in coherentOrder: the r-th source takes the matching quantile of the targets.
+      const ranks = new Uint32Array(k);
+      coherentOrder(sx, sy, k).forEach((src, r) => {
+        ranks[src] = Math.min(n - 1, Math.floor((r * n) / k));
+      });
+      const sortMs = performance.now() - t1;
+      return nextFrame().then(() => {
+        if (!live()) return null;
+        const t2 = performance.now();
         draws.forEach((d, di) => fillDraw(d, ranks.subarray(...slices[di])));
-        stats = { ...stats, ...pathStats(sx, sy, ranks, k), pairMs: performance.now() - t1 };
-        performance.measure?.('globe-gallery pq pairing', { start: t1, detail: { motion, ...stats } });
+        const fillMs = performance.now() - t2;
+        stats = { ...stats, ...pathStats(sx, sy, ranks, k), sortMs, fillMs };
+        const detail = { motion, ...stats };
+        performance.measure?.('globe-gallery pq pairing', { start: t1, detail });
         version += 1;
-        resolve(stats);
+        return stats;
       });
     });
   }
