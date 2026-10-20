@@ -192,23 +192,12 @@ export function coherentOrder(xs, ys, count = xs.length) {
   return out;
 }
 
-// How card pixels are matched to glyph targets (?pqpair=); see README (Pairing).
-export const QUOTE_PAIRS = ['ot', 'soft', 'band'];
-const SOFT_X = 1; // soft: ± x key noise, in band widths
-const SOFT_Y = 0.12; // soft: ± y key noise, as a share of the set's height
-const SOFT_SWAP = 0.2; // soft: share of particles swapped with a near rank
-const SOFT_SWAP_SPAN = 1 / 32; // soft: how near, as a share of all ranks
-const OT_DITHER = 0.5; // ot: soft's key noise, scaled, on the transported copies' final ranking
-const OT_SAMPLE = 4096; // ot: sources (and targets) the transport is solved on
-const OT_ITER = 6; // ot: sliced-Wasserstein gradient steps
-const OT_DIRS = 4; // ot: random directions averaged per step
-const OT_STEP = 0.7; // ot: step size (1 = the full 1D matching move)
-const OT_ANGLES = Array.from({ length: OT_ITER * OT_DIRS }, (_, j) => (j * 2.39996323) % Math.PI);
-
-export function parsePair(search = '') {
-  const pair = new URLSearchParams(search).get('pqpair');
-  return QUOTE_PAIRS.includes(pair) ? pair : QUOTE_PAIRS[0];
-}
+// Soft pairing: the band order with noisy sort keys and near-rank swaps, so neighbouring cards'
+// particles interleave at the band seams and card colours dither instead of tiling the text.
+const SOFT_X = 1; // ± x key noise, in band widths
+const SOFT_Y = 0.12; // ± y key noise, as a share of the set's height
+const SOFT_SWAP = 0.2; // share of target ranks that trade sources with a near rank
+const SOFT_SWAP_SPAN = 1 / 32; // how near, as a share of all ranks
 
 function extent(arr, count) {
   let lo = Infinity; let hi = -Infinity;
@@ -219,7 +208,7 @@ function extent(arr, count) {
   return Math.max(1e-6, hi - lo);
 }
 
-export default function createQuoteParticles({ figureEl, railEl, count, motion = 'abc', pair = QUOTE_PAIRS[0] }) {
+export default function createQuoteParticles({ figureEl, railEl, count, motion = 'abc' }) {
   const n = count;
   const M = QUOTE_MOTIONS[motion] || QUOTE_MOTIONS.abc;
   const group = new THREE.Group();
@@ -230,7 +219,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
   const tCol = new Float32Array(n * 3);
   const tOrder = new Float32Array(n); // reading order 0 → 1
   let tSorted = new Uint32Array(0); // target indices in coherentOrder
-  let tProj = []; // ot: the targets' sorted projections on each OT_DIRS direction
   let stats = {};
   let pairing = null; // the pending pairing frame's token
 
@@ -322,16 +310,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     const ys = new Float32Array(n);
     for (let i = 0; i < n; i += 1) { xs[i] = tDst[i * 2]; ys[i] = tDst[i * 2 + 1]; }
     tSorted = coherentOrder(xs, ys);
-    if (pair === 'ot') {
-      const stride = Math.max(1, Math.floor(n / OT_SAMPLE));
-      const ms = Math.floor(n / stride);
-      tProj = OT_ANGLES.map((a) => {
-        const [c, sn] = [Math.cos(a), Math.sin(a)];
-        const out = new Float32Array(ms);
-        for (let j = 0; j < ms; j += 1) out[j] = xs[j * stride] * c + ys[j * stride] * sn;
-        return out.sort();
-      });
-    }
     // converge bends its paths around the quote's centre.
     shared.uCentre.value.set(xs.reduce((a, v) => a + v, 0) / n, ys.reduce((a, v) => a + v, 0) / n);
     return true;
@@ -459,12 +437,10 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     return ranks;
   }
 
-  // Noisy keys (`scale` of soft's): neighbouring cards' particles interleave across the band
-  // seams, and a share swap with a near rank, so card colours dither instead of tiling the text in
-  // rectangles.
-  function softRanks(xs, ys, k, scale) {
-    const bw = (scale * SOFT_X * extent(xs, k)) / PAIR_BANDS;
-    const bh = scale * SOFT_Y * extent(ys, k);
+  // Each source's target rank under soft pairing (see SOFT_X).
+  function softRanks(xs, ys, k) {
+    const bw = (SOFT_X * extent(xs, k)) / PAIR_BANDS;
+    const bh = SOFT_Y * extent(ys, k);
     const nx = new Float32Array(k);
     const ny = new Float32Array(k);
     for (let i = 0; i < k; i += 1) {
@@ -474,7 +450,7 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     const order = coherentOrder(nx, ny, k);
     const ranks = quantileRanks(order, k);
     // Swaps along the order, so a target trades its source with a nearby target's.
-    const span = Math.max(1, Math.round(scale * SOFT_SWAP_SPAN * k));
+    const span = Math.max(1, Math.round(SOFT_SWAP_SPAN * k));
     for (let r = 0; r < k; r += 1) {
       if (Math.random() < SOFT_SWAP) {
         const q = Math.min(k - 1, Math.max(0, r + Math.round((Math.random() * 2 - 1) * span)));
@@ -483,56 +459,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
       }
     }
     return ranks;
-  }
-
-  // The pairing as per-frame steps; the last returns each source's target rank.
-  function pairSteps(sx, sy, k) {
-    if (pair === 'soft') return [() => softRanks(sx, sy, k, 1)];
-    if (pair === 'ot') {
-      // Approximate optimal transport, solved on a subsample: sliced-Wasserstein gradient descent
-      // moves copies of OT_SAMPLE sources onto the targets' distribution (each step averages the
-      // 1D quantile-matching moves along OT_DIRS directions). Every source then takes its sample's
-      // displacement (sources are laid out card by card, row by row, so the index-nearest sample
-      // is a spatial neighbour on the same card), and the moved copies, now sitting nearly on
-      // their targets, pair by rank with half of soft's dithering. A smooth map, without bands.
-      const cx = Float32Array.from(sx.subarray(0, k));
-      const cy = Float32Array.from(sy.subarray(0, k));
-      return [() => {
-        const stride = Math.max(1, Math.floor(k / OT_SAMPLE));
-        const m = Math.floor(k / stride);
-        const px = new Float32Array(m);
-        const py = new Float32Array(m);
-        for (let j = 0; j < m; j += 1) { px[j] = sx[j * stride]; py[j] = sy[j * stride]; }
-        const all = new Uint32Array(m);
-        for (let j = 0; j < m; j += 1) all[j] = j;
-        const proj = new Float32Array(m);
-        const gx = new Float32Array(m);
-        const gy = new Float32Array(m);
-        for (let it = 0; it < OT_ITER; it += 1) {
-          gx.fill(0); gy.fill(0);
-          for (let d = 0; d < OT_DIRS; d += 1) {
-            const a = OT_ANGLES[it * OT_DIRS + d];
-            const [c, sn] = [Math.cos(a), Math.sin(a)];
-            for (let j = 0; j < m; j += 1) proj[j] = px[j] * c + py[j] * sn;
-            const order = sortBy(proj, all);
-            const tp = tProj[it * OT_DIRS + d];
-            for (let r = 0; r < m; r += 1) {
-              const j = order[r];
-              const delta = tp[Math.min(tp.length - 1, Math.floor((r * tp.length) / m))] - proj[j];
-              gx[j] += delta * c; gy[j] += delta * sn;
-            }
-          }
-          const kick = (2 * OT_STEP) / OT_DIRS;
-          for (let j = 0; j < m; j += 1) { px[j] += gx[j] * kick; py[j] += gy[j] * kick; }
-        }
-        for (let i = 0; i < k; i += 1) {
-          const j = Math.min(m - 1, Math.floor(i / stride));
-          cx[i] += px[j] - sx[j * stride];
-          cy[i] += py[j] - sy[j * stride];
-        }
-      }, () => softRanks(cx, cy, k, OT_DITHER)];
-    }
-    return [() => quantileRanks(coherentOrder(sx, sy, k), k)];
   }
 
   // cards: [{ project(u, v) → [x, y] px now, origin, axisU, axisV (world), tex, repeat, offset,
@@ -643,32 +569,29 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     stats = { count: k, handoffMs: performance.now() - t0 };
     performance.measure?.('globe-gallery pq sources', { start: t0, detail: { motion, ...stats } });
     version += 1;
-    // The pairing waits, off the hand-off frame, one step per frame (pairSteps), then fills the
-    // buffers on the frame after. Nothing departs before its release, many frames later.
+    // The pairing waits, off the hand-off frame, and is split in two: the sort on the next frame,
+    // the buffer fill on the one after. Nothing departs before its release, many frames later.
     const token = {};
     pairing = token;
     const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
-    const steps = pairSteps(sx, sy, k);
-    const t1 = performance.now();
-    let stepMs = 0;
-    let ranks = null;
-    const run = (i) => nextFrame().then(() => {
-      if (pairing !== token) return null;
-      const ts = performance.now();
-      if (i < steps.length) {
-        ranks = steps[i]() || ranks;
-        stepMs = Math.max(stepMs, performance.now() - ts);
-        return run(i + 1);
-      }
-      draws.forEach((d, di) => fillDraw(d, ranks.subarray(...slices[di])));
-      const fillMs = performance.now() - ts;
-      stats = { ...stats, ...pathStats(sx, sy, ranks, k), steps: steps.length, stepMs, fillMs };
-      const detail = { motion, pair, ...stats };
-      performance.measure?.('globe-gallery pq pairing', { start: t1, detail });
-      version += 1;
-      return stats;
+    const live = () => pairing === token;
+    return nextFrame().then(() => {
+      if (!live()) return null;
+      const t1 = performance.now();
+      const ranks = softRanks(sx, sy, k);
+      const sortMs = performance.now() - t1;
+      return nextFrame().then(() => {
+        if (!live()) return null;
+        const t2 = performance.now();
+        draws.forEach((d, di) => fillDraw(d, ranks.subarray(...slices[di])));
+        const fillMs = performance.now() - t2;
+        stats = { ...stats, ...pathStats(sx, sy, ranks, k), sortMs, fillMs };
+        const detail = { motion, ...stats };
+        performance.measure?.('globe-gallery pq pairing', { start: t1, detail });
+        version += 1;
+        return stats;
+      });
     });
-    return run(0);
   }
 
   // Async only for the font wait; measure → raster → targets run in one task so they agree.
@@ -716,7 +639,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
     isReady: () => ready,
     drawCount: () => draws.length + 1,
     motion,
-    pair,
     getStats: () => stats,
     // Settled and already on the canvas: the caller may skip the draw.
     isIdle: () => lastP >= CRISP_P && stateKey === drawnKey,

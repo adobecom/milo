@@ -2014,30 +2014,24 @@ sprite shrinks from cell size to the text dot size and rounds off over the first
 keeps sampling its own photo pixels and turns to the ink only over the last 30% of its own travel
 (`QUOTE_INK_FROM`).
 
-**Pairing (`?pqpair=`).** Card pixels are matched to glyph targets on the frames after the
-hand-off. The tiles are drawn on the hand-off frame with `PENDING` timings, then `pairSteps` runs
-one step per animation frame, and `fillDraw` writes the buffers on the frame after the last step.
-Nothing departs before its release, many frames later. The param is read once (`parsePair`),
-logged with the mode as `[globe-gallery] pqmotion=… pqpair=…`, and unknown or missing values fall
-back to `ot`. All three options build on `coherentOrder`, a 2D quantile order: 8 equal-count x bands
-(`PAIR_BANDS`), each read top to bottom, over each set's own extent. Rank r of the sources takes rank
-r of the targets.
+**Pairing.** Card pixels are matched to glyph targets on the frames after the hand-off. The tiles
+are drawn on the hand-off frame with `PENDING` timings. The sort runs on the next animation frame
+(`softRanks`), and `fillDraw` writes the buffers on the frame after. Nothing departs before its
+release, many frames later.
 
-| `pqpair` | Mapping |
-| --- | --- |
-| `band` | Plain `coherentOrder` on both sets. The shortest paths, but each card's contiguous pixels land on a contiguous rectangle of the text, so card boundaries become hard, single-colour rectangular seams. This was the original behaviour, kept for comparison. |
-| `soft` | `softRanks`: the sources' sort keys get per-particle noise (±`SOFT_X` = 1 band width in x, ±`SOFT_Y` = 12% of the height in y). Then `SOFT_SWAP` (20%) of target ranks trade sources with a rank up to `SOFT_SWAP_SPAN` (1/32 of all) away. Neighbouring cards interleave at the seams, so colours dither instead of tiling. |
-| `ot` (default) | Approximate optimal transport. Sliced-Wasserstein gradient descent (`OT_ITER` 6 steps × `OT_DIRS` 4 directions, step `OT_STEP` 0.7) moves copies of `OT_SAMPLE` (4096) subsampled sources onto the targets' distribution. Each step averages 1D quantile-matching moves; the targets' sorted projections are precomputed when the targets are built. Every source takes the displacement of its index-nearest sample, which is a neighbour on the same card. The moved copies then rank with half of soft's dithering (`OT_DITHER`). The result is a smooth map with no band structure. It is two frame steps. |
+The base is `coherentOrder`, a 2D quantile order: 8 equal-count x bands (`PAIR_BANDS`), each read
+top to bottom, over each set's own extent. Rank r of the sources takes rank r of the targets. On its
+own that maps each card's contiguous pixels onto a contiguous rectangle of the text, so card colours
+would tile the quote with hard seams. Soft pairing loosens it:
+- **Noisy sort keys.** Each source's keys get per-particle noise of ±`SOFT_X` (1 band width) in x and
+  ±`SOFT_Y` (12% of the height) in y, so neighbouring cards interleave at the seams.
+- **Near-rank swaps.** `SOFT_SWAP` (20%) of target ranks trade sources with a rank up to
+  `SOFT_SWAP_SPAN` (1/32 of all) away.
 
-Measured on the page (mid-formation frames p 0.45–0.75):
+Colours dither across the text instead of forming rectangles, and paths stay about half the random
+pairing's (1440: 289 px vs 589; 390: 182 vs 313).
 
-| | band | soft | ot |
-| --- | --- | --- | --- |
-| Large single-colour regions, share of coloured text area (mean, 1440 / 390) | 43% / 37% | 35% / 34% | **32% / 22%** |
-| Mean path, px (1440 / 390; random ≈ 590 / 312) | 292 / 150 | 289 / 182 | 303 / 166 |
-| Heaviest pairing frame at 4× throttle, 390 | 25 ms | 29 ms | 31 ms |
-
-**Arrival feathering (all options).** Each particle's arrival gets a fixed random offset of
+**Arrival feathering.** Each particle's arrival gets a fixed random offset of
 ±`QUOTE_ARRIVE_JITTER` (0.02 p), so the landing wave's leading edge is feathered and a dense region
 never lands at one instant. The crisp reveal (`QUOTE_PLANE_FRAG`) ramps from a region's mean arrival
 to past its latest one, and particles fade only after that, so the crisp text never shows before
@@ -2047,7 +2041,7 @@ near-landing particles converge on the text colour. `QUOTE_CRISP_P` grows by the
 
 **Motion modes (`?pqmotion=`).** The mode is read once at init (`parseMotion`), logged as
 `[globe-gallery] pqmotion=…`, and compiled into the particle shader as `PQ_MOTION`. Unknown or
-missing values fall back to `abc`. All modes share pairing, release, landing, ink, crisp reveal and
+missing values fall back to `abc`. All modes share soft pairing, release, landing, ink, crisp reveal and
 `QUOTE_CRISP_P` (0.88), so the runway, pin and hold are identical. The constants are in
 `QUOTE_MOTIONS` (`shaders.js`).
 

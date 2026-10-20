@@ -13,7 +13,7 @@ import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
-import createQuoteParticles, { QUOTE_LIVE_P, parseMotion, parsePair } from './src/quote-particles.js';
+import createQuoteParticles, { QUOTE_LIVE_P, parseMotion } from './src/quote-particles.js';
 import {
   easeOutCubic, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
@@ -423,9 +423,8 @@ function createGlobeGalleryRuntime(
   const forcedColorsMQ = window.matchMedia?.('(forced-colors: active)') ?? null;
   // The quote's particle flight, read once (README: WebGL pull quote → Motion modes).
   const pqMotion = parseMotion(window.location.search);
-  const pqPair = parsePair(window.location.search);
   // eslint-disable-next-line no-console -- requested: confirms the active mode on a test page
-  if (pqEl) console.info(`[globe-gallery] pqmotion=${pqMotion} pqpair=${pqPair}`);
+  if (pqEl) console.info(`[globe-gallery] pqmotion=${pqMotion}`);
 
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
@@ -2099,7 +2098,6 @@ function createGlobeGalleryRuntime(
         railEl: pq.railEl,
         count: bp.name === 'sm' ? PQ_PARTICLES_SM : PQ_PARTICLES_MD,
         motion: pqMotion,
-        pair: pqPair,
       });
       scene.add(pq.fx.object);
     }
