@@ -50,7 +50,7 @@ const onPlayerMessage = (event) => {
 let playerListenerAdded = false;
 
 const createIframe = (a, href, opts = {}) => {
-  const { autoplay = false, focus = false } = opts;
+  const { autoplay = false, focus = false, isC2Page = false } = opts;
   const videoHref = href || a.href;
 
   const iframe = createTag('iframe', {
@@ -63,8 +63,8 @@ const createIframe = (a, href, opts = {}) => {
   });
   const embed = createTag('div', { class: 'milo-video' }, iframe);
   a.insertAdjacentElement('afterend', embed);
-  // C2 containers like carousel-c2 hide inactive content before autoblocks load.
-  if (getMetadata('foundation') === 'c2' && embed.closest('[aria-hidden="true"]')) iframe.setAttribute('tabindex', '-1');
+  // Containers like carousel-c2 hide inactive content before autoblocks load.
+  if (isC2Page && embed.closest('[aria-hidden="true"]')) iframe.setAttribute('tabindex', '-1');
 
   const idMatch = videoHref.match(/\/v\/(\d+)/);
   const videoId = idMatch ? idMatch[1] : null;
@@ -135,11 +135,10 @@ const onPosterPlay = (e) => {
   if (!poster?.dataset.href || !e.target.closest('.consonant-play-btn')) return;
   const a = createTag('a', { href: poster.dataset.href });
   poster.replaceWith(a);
-  embedPlayer(a, { autoplay: true, focus: true });
+  embedPlayer(a, { autoplay: true, focus: true, isC2Page: true });
 };
 let posterListenerAdded = false;
 
-// The MPC player only loads once the poster's play button is pressed.
 const createPosterPlayer = (a) => {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/styles/consonant-play-button.css`);
@@ -160,7 +159,6 @@ const createPosterPlayer = (a) => {
     .catch((e) => logError('Could not get play label', e));
   poster.append(button);
   a.replaceWith(poster);
-  // Containers like carousel-c2 hide inactive content before autoblocks load.
   if (poster.closest('[aria-hidden="true"]')) button.setAttribute('tabindex', '-1');
   if (posterListenerAdded) return;
   document.addEventListener('click', onPosterPlay);
@@ -171,7 +169,6 @@ export default function init(a) {
   a.classList.add('hide-video');
   const isC2Page = getMetadata('foundation') === 'c2';
   const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
-  // C2 renders MPC MP4s natively everywhere; C1 keeps stage behaviour (background blocks only).
   if (a.href.includes('.mp4') && (isC2Page || bgBlocks.some((b) => a.closest(`.${b}`)))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
@@ -183,6 +180,6 @@ export default function init(a) {
     && new URL(a.href).searchParams.get('autoplay') !== 'true') {
     createPosterPlayer(a);
   } else {
-    embedPlayer(a);
+    embedPlayer(a, { isC2Page });
   }
 }

@@ -24,13 +24,12 @@
       display: flex;
     }
 
-    /* MPC MP4s (stage rendered them as iframes) get the same box as images; other MP4s keep stage sizing. */
+    /* MPC MP4s match the MPC player: card media box, letterboxed on black. Other MP4s keep stage sizing. */
     .video-container:has(> video[data-video-source*="tv.adobe.com"]),
     video[data-video-source*="tv.adobe.com"] {
       width: 100%;
     }
 
-    /* Letterboxed on black, like the MPC player iframe. */
     video[data-video-source*="tv.adobe.com"] {
       display: block;
       aspect-ratio: 4/3;
@@ -43,7 +42,6 @@
       pointer-events: auto;
     }
 
-    /* MPC iframe fills the card's media box and sits above the card link; other embeds keep stage sizing. */
     .milo-video:has(> iframe.adobetv) {
       height: auto;
       padding-bottom: 0;

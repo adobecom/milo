@@ -1553,7 +1553,6 @@ export const isMpcPlayerUrl = (href) => {
   }
 };
 
-// An MPC player URL alt without an icon becomes a poster video on C2 pages.
 const isMpcPosterAlt = (alt) => {
   const [source, , icon] = alt.split('|');
   return !icon && isMpcPlayerUrl(source.trim());
