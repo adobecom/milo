@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
-import createQuoteParticles, { QUOTE_LIVE_P, parseMotion, coherentOrder } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, { QUOTE_LIVE_P, parseMotion, parsePair, coherentOrder } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 
 function mount(quote = 'Creativity connects us.') {
   document.body.innerHTML = `
@@ -165,6 +165,14 @@ describe('globe-gallery: quote particles', () => {
     expect(parseMotion('')).to.equal('abc');
   });
 
+  it('parses the pairing, falling back to ot', () => {
+    expect(parsePair('?pqpair=soft')).to.equal('soft');
+    expect(parsePair('?pqmotion=converge&pqpair=band')).to.equal('band');
+    expect(parsePair('?pqpair=ot')).to.equal('ot');
+    expect(parsePair('?pqpair=nope')).to.equal('ot');
+    expect(parsePair('')).to.equal('ot');
+  });
+
   it('orders points so consecutive points are near each other', () => {
     const N = 4096;
     const xs = new Float32Array(N).map(() => Math.random() * 1000);
@@ -179,51 +187,52 @@ describe('globe-gallery: quote particles', () => {
     expect(step).to.be.below(rand / 6);
   });
 
-  ['abc', 'swirl', 'converge'].forEach((motion) => {
-    it(`pairs card pixels with nearby targets (${motion})`, async () => {
-      const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 3000, motion });
-      await fx.layout({ dpr: 1 });
-      // Cards spread around the quote, as on the page: pixels should go to the nearer glyphs,
-      // not across the figure.
-      const card = (x0, y0) => ({
-        project: (u, v) => [x0 + 200 * u, y0 + 150 * v],
-        origin: new THREE.Vector3(),
-        axisU: new THREE.Vector3(1, 0, 0),
-        axisV: new THREE.Vector3(0, -1, 0),
-        tex: new THREE.Texture(),
-        repeat: new THREE.Vector2(1, 1),
-        offset: new THREE.Vector2(0, 0),
-        mirror: false,
-        aspect: 1.2,
-        radius: 0.03,
-        alpha: 1,
-        order: 0,
+  [['abc', 'band'], ['swirl', 'soft'], ['converge', 'ot'], ['abc', 'soft'], ['abc', 'ot']]
+    .forEach(([motion, pair]) => {
+      it(`pairs card pixels with nearby targets (${motion}, ${pair})`, async () => {
+        const { figureEl, railEl } = mount();
+        fx = createQuoteParticles({ figureEl, railEl, count: 3000, motion, pair });
+        await fx.layout({ dpr: 1 });
+        // Cards spread around the quote, as on the page: pixels should go to the nearer glyphs,
+        // not across the figure.
+        const card = (x0, y0) => ({
+          project: (u, v) => [x0 + 200 * u, y0 + 150 * v],
+          origin: new THREE.Vector3(),
+          axisU: new THREE.Vector3(1, 0, 0),
+          axisV: new THREE.Vector3(0, -1, 0),
+          tex: new THREE.Texture(),
+          repeat: new THREE.Vector2(1, 1),
+          offset: new THREE.Vector2(0, 0),
+          mirror: false,
+          aspect: 1.2,
+          radius: 0.03,
+          alpha: 1,
+          order: 0,
+        });
+        await fx.setSources([card(0, 400), card(560, 0)], 800, 600);
+        const stats = fx.getStats();
+        expect(stats.count).to.be.within(2800, 3000);
+        expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
+        const draws = fx.object.children.filter((o) => o instanceof THREE.Points);
+        expect(draws).to.have.length(2);
+        draws.forEach((d) => {
+          expect(d.material.defines.PQ_MOTION).to.equal({ abc: 0, swirl: 1, converge: 2 }[motion]);
+          const { aRand } = d.geometry.attributes;
+          for (let i = 0; i < aRand.count; i += 1) {
+            const [leave, arrive] = [aRand.array[i * 4], aRand.array[i * 4 + 3]];
+            expect(leave).to.be.at.least(0);
+            expect(arrive).to.be.above(leave);
+            expect(arrive).to.be.at.most(QUOTE_LIVE_P);
+          }
+        });
+        // The left card mostly feeds glyphs further left than the right card does.
+        const meanX = (d) => {
+          const pos = d.geometry.attributes.position;
+          let sum = 0;
+          for (let i = 0; i < pos.count; i += 1) sum += pos.array[i * 3];
+          return sum / pos.count;
+        };
+        expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
       });
-      await fx.setSources([card(0, 400), card(560, 0)], 800, 600);
-      const stats = fx.getStats();
-      expect(stats.count).to.be.within(2800, 3000);
-      expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
-      const draws = fx.object.children.filter((o) => o instanceof THREE.Points);
-      expect(draws).to.have.length(2);
-      draws.forEach((d) => {
-        expect(d.material.defines.PQ_MOTION).to.equal({ abc: 0, swirl: 1, converge: 2 }[motion]);
-        const { aRand } = d.geometry.attributes;
-        for (let i = 0; i < aRand.count; i += 1) {
-          const [leave, arrive] = [aRand.array[i * 4], aRand.array[i * 4 + 3]];
-          expect(leave).to.be.at.least(0);
-          expect(arrive).to.be.above(leave);
-          expect(arrive).to.be.at.most(QUOTE_LIVE_P);
-        }
-      });
-      // The left card mostly feeds glyphs further left than the right card does.
-      const meanX = (d) => {
-        const pos = d.geometry.attributes.position;
-        let sum = 0;
-        for (let i = 0; i < pos.count; i += 1) sum += pos.array[i * 3];
-        return sum / pos.count;
-      };
-      expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
     });
-  });
 });
