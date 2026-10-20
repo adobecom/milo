@@ -200,64 +200,98 @@ a.blog-header-author-name:hover {
   }
 }
 
-.blog-divider-frame {
-  position: relative;
+/* Section dividers: decorative dotted rules that never take up layout space. */
+.blog-divider-frame,
+.blog-divider-frame + .blog-article-layout {
+  --blog-divider-dots: var(--color-gray-400) 0 2px, transparent 2px 7px;
+  --blog-divider-gap: 48px;
 }
 
-.blog-divider-frame::before {
-  content: none;
-}
-
-/* A single continuous frame sits at the existing container edges. */
+/* One continuous frame, 56px out into the page gutters (clamped at the viewport edge). */
 @media (min-width: 600px) {
-  .blog-divider-frame.blog-divider-bottom::before {
+  .blog-divider-frame::before {
     content: "";
     position: absolute;
     inset-block-start: 0;
+    inset-inline: max(0px, calc(var(--grid-margins-width) - 56px));
     block-size: var(--blog-divider-height, 100%);
-    inset-inline-start: max(0px, calc(var(--grid-margins-width) - 56px));
-    inset-inline-end: max(0px, calc(var(--grid-margins-width) - 56px));
-    pointer-events: none;
     background-image:
-      repeating-linear-gradient(to bottom, var(--color-gray-400) 0 2px, transparent 2px 7px),
-      repeating-linear-gradient(to bottom, var(--color-gray-400) 0 2px, transparent 2px 7px);
-    background-repeat: repeat-y, repeat-y;
+      repeating-linear-gradient(to bottom, var(--blog-divider-dots)),
+      repeating-linear-gradient(to bottom, var(--blog-divider-dots));
     background-position: left top, right top;
-    background-size: 2px 100%, 2px 100%;
+    background-repeat: repeat-y;
+    background-size: 2px 100%;
+    pointer-events: none;
     z-index: 1;
   }
 }
 
-/* Full-width divider at the bottom of the header section only; kept on mobile. */
-.blog-divider-bottom::after {
+/* Full-width rule below the header. */
+.blog-divider-frame::after {
   content: "";
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
-  height: 2px;
+  block-size: 2px;
+  background-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
   pointer-events: none;
-  background-image: repeating-linear-gradient(to right, var(--color-gray-400) 0 2px, transparent 2px 7px);
-  background-repeat: repeat-x;
 }
 
-@media (min-width: 1200px) {
-  .blog-divider-bottom + .blog-article-layout {
+/* In the stacked layout, the header rule moves below the sidenav. */
+@media (max-width: 1199px) {
+  .blog-divider-frame:has(+ .blog-article-layout)::after {
+    content: none;
+  }
+
+  /* Figma: 56px between the rule and the content on either side. */
+  .blog-divider-frame + .blog-article-layout {
+    --blog-divider-space: 56px;
+
+    row-gap: calc(2 * var(--blog-divider-space) + 2px);
+  }
+
+  .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
     position: relative;
   }
 
-  .blog-divider-bottom + .blog-article-layout > .blog-article-content {
-    margin-top: 48px;
-  }
-
-  .blog-divider-bottom + .blog-article-layout::before {
+  /* The border-image outset bleeds the rule to the viewport edges
+     without causing horizontal scrolling. */
+  .blog-divider-frame + .blog-article-layout > .blog-side-navigation::after {
     content: "";
     position: absolute;
-    grid-column: 2 / 3;
-    inset-block: 0;
-    inset-inline-start: -56px;
-    width: 2px;
+    inset-inline: 0;
+    inset-block-start: calc(100% + var(--blog-divider-space));
+    block-size: 2px;
+    border-image: repeating-linear-gradient(to right, var(--blog-divider-dots)) fill 0 / 0 / 0 100vw;
     pointer-events: none;
-    background-image: repeating-linear-gradient(to bottom, var(--color-gray-400) 0 2px, transparent 2px 7px);
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Reserved on the header so the article doesn't shift when the deferred sidenav layout loads. */
+  .blog-divider-frame {
+    margin-block-end: var(--blog-divider-gap);
+  }
+
+  .blog-divider-frame + .blog-article-layout {
+    position: relative;
+  }
+
+  /* Keeps the nav 76px below the header rule. */
+  .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
+    margin-block-start: calc(76px - var(--blog-divider-gap));
+  }
+
+  /* Sits on the nav column's edge, so it follows the sidenav's column gap. */
+  .blog-divider-frame + .blog-article-layout::before {
+    content: "";
+    position: absolute;
+    grid-column: 1 / 2;
+    inset-block: calc(-1 * var(--blog-divider-gap)) 0;
+    inset-inline-start: 100%;
+    inline-size: 2px;
+    background-image: repeating-linear-gradient(to bottom, var(--blog-divider-dots));
+    pointer-events: none;
     z-index: 1;
   }
 }

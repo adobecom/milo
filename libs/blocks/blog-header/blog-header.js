@@ -479,39 +479,55 @@ async function buildByline(authorRows, config, base) {
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 }
 
+const dividerObservers = new WeakMap();
+
 function decorateDividers(el) {
   if (el.classList.contains('no-dividers')) return;
   const headerSection = el.closest('.section');
   if (!headerSection) return;
 
-  headerSection.classList.add('blog-divider-frame', 'blog-divider-bottom');
+  headerSection.classList.add('blog-divider-frame');
   const sections = [headerSection];
   let section = headerSection.nextElementSibling;
   while (section?.classList.contains('section') && !section.querySelector('.card-metadata')) {
-    section.classList.add('blog-divider-frame');
     sections.push(section);
     section = section.nextElementSibling;
   }
-  const relatedSection = section?.querySelector('.card-metadata') ? section : null;
+  const relatedSection = section?.classList.contains('section') ? section : null;
 
+  const findEndpoint = () => {
+    // Once the sidenav wraps the article, end with it so both vertical rules agree.
+    const layout = headerSection.nextElementSibling;
+    if (layout?.classList.contains('blog-article-layout')) return layout;
+    // The related section can start with article text, wrapped during later decoration.
+    return relatedSection?.querySelector(':scope > .content:first-child') || sections.at(-1);
+  };
+
+  let endpoint;
   // Span collapsed margins without changing the article's layout.
-  const updateFrame = (entries, resizeObserver) => {
+  const updateFrame = (entries, observer) => {
     if (!headerSection.isConnected) {
-      resizeObserver.disconnect();
+      observer.disconnect();
+      dividerObservers.delete(headerSection);
       return;
     }
-    // The related section can start with article text, wrapped during later decoration.
-    const endpoint = relatedSection?.querySelector(':scope > .content:first-child')
-      || sections.at(-1);
-    resizeObserver.observe(endpoint);
+    const nextEndpoint = findEndpoint();
+    if (nextEndpoint !== endpoint) {
+      if (endpoint && !sections.includes(endpoint)) observer.unobserve(endpoint);
+      endpoint = nextEndpoint;
+      observer.observe(endpoint);
+    }
     const height = endpoint.getBoundingClientRect().bottom
       - headerSection.getBoundingClientRect().top;
     headerSection.style.setProperty('--blog-divider-height', `${height}px`);
   };
+
+  dividerObservers.get(headerSection)?.disconnect();
   const observer = new ResizeObserver(updateFrame);
-  sections.forEach((framedSection) => observer.observe(framedSection));
-  if (relatedSection) observer.observe(relatedSection);
-  observer.observe(headerSection.parentElement);
+  dividerObservers.set(headerSection, observer);
+  [...sections, relatedSection, headerSection.parentElement]
+    .filter(Boolean)
+    .forEach((target) => observer.observe(target));
   updateFrame([], observer);
 }
 

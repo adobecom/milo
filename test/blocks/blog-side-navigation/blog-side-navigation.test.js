@@ -136,12 +136,7 @@ describe('blog-side-navigation section list', () => {
       expect(block.getBoundingClientRect().width).to.be.at.most(280);
       expect(article.getBoundingClientRect().left)
         .to.be.greaterThan(block.getBoundingClientRect().right);
-      expect(block.getBoundingClientRect().top - article.getBoundingClientRect().top)
-        .to.equal(76);
-      expect(getComputedStyle(block).marginBlockStart).to.equal('76px');
-      expect(getComputedStyle(block).paddingTop).to.equal('0px');
-      expect(block.querySelector('nav').getBoundingClientRect().top)
-        .to.equal(block.getBoundingClientRect().top);
+      expect(article.getBoundingClientRect().top).to.equal(block.getBoundingClientRect().top);
       expect(block.getBoundingClientRect().top)
         .to.be.at.least(main.querySelector('.blog-header').getBoundingClientRect().bottom);
       expect(main.querySelector('.content').getBoundingClientRect().width)
@@ -149,14 +144,9 @@ describe('blog-side-navigation section list', () => {
       article.style.minHeight = '1800px';
       main.insertAdjacentHTML('beforeend', '<div style="height: 1000px"></div>');
       scrollStub.callThrough();
-      const stickyStart = block.getBoundingClientRect().top + window.scrollY - 88;
-      window.scrollTo({ top: stickyStart - 12, behavior: 'instant' });
-      await new Promise(requestAnimationFrame);
-      expect(block.querySelector('nav').getBoundingClientRect().top).to.be.closeTo(100, 1);
-      window.scrollTo({ top: stickyStart + 12, behavior: 'instant' });
+      window.scrollTo({ top: 400, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
       expect(block.getBoundingClientRect().top).to.be.closeTo(88, 1);
-      expect(block.querySelector('nav').getBoundingClientRect().top).to.be.closeTo(88, 1);
       const articleEnd = layout.getBoundingClientRect().bottom + window.scrollY;
       window.scrollTo({ top: articleEnd - 60, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
@@ -164,12 +154,9 @@ describe('blog-side-navigation section list', () => {
         .to.be.closeTo(layout.getBoundingClientRect().bottom, 1);
       window.scrollTo({ top: 0, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      expect(block.getBoundingClientRect().top - article.getBoundingClientRect().top)
-        .to.equal(76);
       for (const width of [768, 390]) {
         await setViewport({ width, height: 1000 });
         expect(getComputedStyle(block).position).to.equal('static');
-        expect(getComputedStyle(block).marginBlockStart).to.equal('0px');
         expect(article.getBoundingClientRect().top)
           .to.be.greaterThan(block.getBoundingClientRect().bottom);
         expect(article.getBoundingClientRect().width).to.equal(block.getBoundingClientRect().width);
