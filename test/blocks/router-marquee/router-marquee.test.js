@@ -1,6 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { getConfig } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/router-marquee/router-marquee.js';
 
@@ -10,6 +13,64 @@ const FIRST_FRAME_FALLBACK_MS = 8000;
 const mobileVp = (block) => block.querySelector('.rm-viewport[data-viewport="mobile"]');
 
 describe('Router Marquee', () => {
+  describe('MEP inline MAS editing', () => {
+    let originalMep;
+    beforeEach(() => {
+      originalMep = getConfig().mep;
+      getConfig().mep = { ...originalMep, preview: true };
+    });
+    afterEach(() => {
+      unwatchForMasContent();
+      delete document.body.dataset.mepMasHighlight;
+      getConfig().mep = originalMep;
+      sinon.restore();
+    });
+
+    ['missing viewport', 'empty columns'].forEach((variant) => {
+      it(`preserves Studio editing when inheriting ${variant}`, async () => {
+        document.body.innerHTML = await readFile({ path: './mocks/nested-paragraphs.html' });
+        const block = document.querySelector('.router-marquee');
+        const original = block.querySelector('mas-field');
+        const url = 'https://mas.adobe.com/studio.html#content-type=merch-card&query=router&field=prices';
+        original.dataset.masBlock = 'inline';
+        mepMasStudioUrls.set(original, url);
+        if (variant === 'empty columns') {
+          block.insertAdjacentHTML('beforeend', '<div><div>tablet-viewport</div></div><div><div></div><div></div></div>');
+        }
+        const openStub = sinon.stub(window, 'open');
+        document.body.dataset.mepMasHighlight = 'true';
+        watchForMasContent();
+        init(block);
+
+        ['mobile', 'tablet', 'desktop'].forEach((viewport) => {
+          const field = block.querySelector(`.rm-viewport[data-viewport="${viewport}"] mas-field`);
+          expect(field).to.exist;
+          expect(mepMasStudioUrls.get(field)).to.equal(url);
+          sinon.stub(field, 'getBoundingClientRect').returns({ top: 100, right: 400, height: 30 });
+          field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+          expect(openStub.lastCall.args).to.deep.equal([url, '_blank', 'noopener,noreferrer']);
+        });
+        expect(openStub.callCount).to.equal(3);
+      });
+    });
+  });
+
+  it('separates adjacent inline MAS paragraphs with a space', async () => {
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/c2/blocks/router-marquee/router-marquee.css' });
+    document.head.append(style);
+    try {
+      document.body.innerHTML = '<div class="router-marquee"><mas-field><span data-role="mas-field-content"><p>A$9.99/mo</p><p>Terms apply.</p></span></mas-field></div>';
+      const [first, second] = document.querySelectorAll('mas-field p');
+      expect(getComputedStyle(first).display).to.equal('inline');
+      expect(getComputedStyle(second).display).to.equal('inline');
+      expect(getComputedStyle(first, '::before').content).to.equal('none');
+      expect(getComputedStyle(second, '::before').content).to.equal('" "');
+    } finally {
+      style.remove();
+    }
+  });
+
   it('builds one viewport per breakpoint, cloning missing breakpoints', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.router-marquee');
@@ -694,6 +755,178 @@ describe('router-marquee light variant, ctas and foreground media', () => {
 
     mobileVp(block).querySelectorAll('.rm-slide').forEach((slide) => {
       expect(slide.querySelector('.rm-foreground')).to.not.exist;
+    });
+  });
+});
+
+describe('router-marquee ctas whose mas-field resolves after decoration', () => {
+  let block;
+
+  const ctaSlide = (cta) => `
+  <div>
+    <div>
+      <h1>Title</h1>
+      <p>${cta}</p>
+    </div>
+    <div><p>background</p></div>
+  </div>`;
+  const lateField = '<em><strong><mas-field field="cta"><aem-fragment></aem-fragment></mas-field></strong></em>';
+  const hiddenField = '<em><strong><mas-field field="ctas[none]" hidden></mas-field></strong></em>';
+  const secondary = '<em><a href="/learn">Learn more</a></em>';
+  const desktop = () => block.querySelector('.rm-viewport[data-viewport="desktop"]');
+
+  /** Stands in for mas-field rendering its content, then announcing mas:ready. */
+  const resolveLateField = (field, text) => {
+    const content = document.createElement('div');
+    content.setAttribute('data-role', 'mas-field-content');
+    content.innerHTML = `<a href="/buy">${text}</a>`;
+    field.append(content);
+    field.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+  };
+  // Flush IntersectionObserver entries from earlier blocks before init replaces SLIDE_ANALYTICS.
+  const mount = async (cta) => {
+    await nextFrame();
+    await nextFrame();
+    block = buildBlock(ctaSlide(cta));
+    init(block);
+  };
+  const until = async (check) => {
+    for (let i = 0; i < 50 && !check(); i += 1) await new Promise((r) => { setTimeout(r, 20); });
+  };
+
+  before(async () => {
+    const { setConfig } = await import('../../../libs/utils/utils.js');
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+    // registers the watchMasFieldCtas listener that hoists a late CTA
+    const { initMasField } = await import('../../../libs/blocks/merch/merch.js');
+    const probe = document.createElement('a');
+    probe.href = 'https://mas.adobe.com/studio.html#';
+    await initMasField(probe);
+  });
+
+  afterEach(() => {
+    block?.closest('.section')?.remove();
+    block = null;
+  });
+
+  it('keeps an unresolved mas-field, then styles its link once content arrives', async () => {
+    await mount(`${lateField} ${secondary}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    const field = ctas.querySelector('mas-field');
+    expect(field).to.exist;
+    expect(ctas.querySelector('.rm-cta-primary')).to.not.exist;
+
+    resolveLateField(field, 'Buy now');
+    await until(() => ctas.querySelector('.rm-cta-primary'));
+
+    const primary = ctas.querySelector('.rm-cta-primary');
+    expect(primary.textContent).to.equal('Buy now');
+    expect(primary.classList.contains('con-button')).to.be.true;
+    expect(ctas.querySelector('mas-field')).to.not.exist;
+    // flattened like an on-time button
+    expect(ctas.querySelector('em, strong')).to.not.exist;
+    expect([...ctas.children].map((c) => c.textContent)).to.deep.equal(['Buy now', 'Learn more']);
+  });
+
+  it('styles the resolved sibling while another field is still pending', async () => {
+    await mount(`${lateField} ${secondary}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector('em > a').classList.contains('con-button')).to.be.true;
+  });
+
+  it('decorates a CTA that resolved in time exactly as before', async () => {
+    await mount('<em><strong><a href="/buy">Buy now</a></strong></em>');
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector(':scope > a.rm-cta-primary.con-button')).to.exist;
+    expect(ctas.querySelector('em, strong')).to.not.exist;
+  });
+
+  it('drops an initially hidden empty field and flattens the row around the valid button', async () => {
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${hiddenField} ${hiddenField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector('mas-field')).to.not.exist;
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
+    expect(ctas.firstElementChild.classList.contains('rm-cta-primary')).to.be.true;
+  });
+
+  it('flattens once a pending field resolves empty, keeping the valid button', async () => {
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${lateField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    const field = ctas.querySelector('mas-field');
+    expect(field).to.exist;
+    expect(ctas.querySelector('.rm-cta-primary').parentElement.tagName).to.equal('STRONG');
+
+    // mas-field with no such CTA hides itself, then fires mas:ready
+    field.hidden = true;
+    field.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true }));
+    await until(() => !ctas.querySelector('mas-field'));
+
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
+    expect(ctas.firstElementChild.textContent).to.equal('Buy now');
+  });
+
+  it('flattens once a pending field fails to load, keeping the valid button', async () => {
+    await mount(`<em><strong><a href="/buy">Buy now</a></strong></em> ${lateField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelector('mas-field')).to.exist;
+
+    // aem-fragment marks itself with class "error" before it fires aem:error
+    ctas.querySelector('aem-fragment').classList.add('error');
+    await until(() => !ctas.querySelector('mas-field'));
+
+    expect([...ctas.children].map((c) => c.tagName)).to.deep.equal(['A']);
+    expect(ctas.firstElementChild.textContent).to.equal('Buy now');
+  });
+
+  it('keeps a pending field while a sibling field is hidden', async () => {
+    await mount(`${hiddenField} ${lateField}`);
+
+    const ctas = desktop().querySelector('.rm-ctas');
+    expect(ctas.querySelectorAll('mas-field:not([hidden])').length).to.equal(1);
+  });
+
+  describe('on /kr', () => {
+    let config;
+    before(() => {
+      config = getConfig();
+      config.locale = { ...config.locale, prefix: '/kr' };
+    });
+    after(() => { config.locale = { ...config.locale, prefix: '' }; });
+
+    it('removes a late free-trial CTA, keeping the other button', async () => {
+      await mount(`${lateField} ${secondary}`);
+
+      const ctas = desktop().querySelector('.rm-ctas');
+      resolveLateField(ctas.querySelector('mas-field'), 'Free trial');
+      await until(() => !ctas.querySelector('mas-field'));
+
+      expect([...ctas.children].map((c) => c.textContent)).to.deep.equal(['Learn more']);
+    });
+
+    it('removes an already-loaded free-trial CTA while another field is still pending', async () => {
+      const trial = '<em><strong><a href="/kr/cc-shared/fragments/trial-modals/x" data-modal-path="/kr/cc-shared/fragments/trial-modals/x">Free trial</a></strong></em>';
+      await mount(`${trial} ${lateField}`);
+
+      const ctas = desktop().querySelector('.rm-ctas');
+      expect(ctas.querySelector('mas-field')).to.exist;
+      expect(ctas.textContent).to.not.include('Free trial');
+      expect(ctas.querySelector('a')).to.not.exist;
+    });
+
+    it('keeps a late CTA that is not a free trial', async () => {
+      await mount(lateField);
+
+      const ctas = desktop().querySelector('.rm-ctas');
+      resolveLateField(ctas.querySelector('mas-field'), 'Buy now');
+      await until(() => ctas.querySelector('.rm-cta-primary'));
+
+      expect(ctas.querySelector('.rm-cta-primary').textContent).to.equal('Buy now');
     });
   });
 });
