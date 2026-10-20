@@ -2550,6 +2550,13 @@ function shouldSkipLenis() {
     : deviceMemory <= 4 && cores <= 4;
 }
 
+export function getFontKit() {
+  const kit = new URLSearchParams(window.location.search).get('font-kit')
+    ?? getMetadata('font-kit');
+  if (kit === 'default') return undefined;
+  return /^[a-z0-9]{7}(?:\.css)?$/.test(kit) ? `${kit.slice(0, 7)}.css` : undefined;
+}
+
 let fontsPromise;
 function importFonts(locale = getConfig().locale) {
   fontsPromise ??= import('./fonts.js')
@@ -3170,7 +3177,8 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    if (getMetadata('foundation') === 'c2') {
+    if (getMetadata('foundation') === 'c2'
+      || (getFontKit() && getConfig().locale.tk.endsWith('.css'))) {
       warmTypekit();
       importFonts();
     }

@@ -1,4 +1,4 @@
-import { loadStyle } from './utils.js';
+import { getFontKit, loadStyle } from './utils.js';
 
 // A gently modified version of the dynamic subsetting loader from Adobe Fonts
 function dynamicTypekit(kitId, d = document) {
@@ -17,11 +17,16 @@ function dynamicTypekit(kitId, d = document) {
 export default function loadFonts(locale) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
+    const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+    const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
+    const safariKit = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
+    const kitId = getFontKit() || safariKit;
+    const href = `https://use.typekit.net/${kitId}`;
     return new Promise((resolve) => {
-      const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-      const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
-      const kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
-      loadStyle(`https://use.typekit.net/${kitId}`, resolve);
+      loadStyle(href, resolve);
+    }).then((status) => {
+      if (status === 'error') throw new Error(`Failed to load Typekit stylesheet: ${kitId}`);
+      return status;
     });
   }
   return dynamicTypekit(locale.tk);
