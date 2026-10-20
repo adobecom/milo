@@ -1,4 +1,5 @@
 import { getMetadata, loadScript, loadStyle } from '../../../utils/utils.js';
+import { getAcomAssistantGnavFabState } from '../../../features/acom-assistant-gnav.js';
 import {
   initAcomAssistantOnce,
   sendAcomAssistantUserMessage,
@@ -23,10 +24,12 @@ function extractCardPrompts(cards) {
 export async function ensureAcomAssistant(cards) {
   // Page metadata, then site config (see getAcomAssistantIdentity).
   const { appid, appver } = getAcomAssistantIdentity();
+  const gnavFabState = getAcomAssistantGnavFabState();
 
   return initAcomAssistantOnce({
     appid,
     appver,
+    ...(gnavFabState && { gnavFabState }),
     componentid: 'brand-concierge',
     pageTitle: getMetadata('og:title') || undefined,
     pageDescription: getMetadata('og:description') || undefined,
