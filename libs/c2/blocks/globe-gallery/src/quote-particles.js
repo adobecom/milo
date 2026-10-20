@@ -1,7 +1,7 @@
 import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
-  QUOTE_DEPART_MAX, QUOTE_FLY_MIN, QUOTE_FLY_SPAN,
+  QUOTE_DEPART_MAX, QUOTE_ARRIVE_START, QUOTE_ARRIVE_SPAN, QUOTE_SETTLE,
 } from './shaders.js';
 
 // The WebGL pull quote: card pixels scatter and fly into the quote's glyphs, then hand over to a
@@ -11,20 +11,15 @@ import {
 
 const INK_ALPHA = 128; // raster alpha that counts as a target pixel
 const PROBE = 24; // grid that finds the on-screen part of each card
-const DST_SIZE = 2;
+const DST_SIZE = 2; // until the first layout measures the spacing
 const SCATTER_EXPAND = 0.35; // radial blow-out, as a share of the distance from the view centre
 const SCATTER_RADIUS = 0.15; // random scatter, as a share of the viewport's short side
 const EDGE_LEAD = 0.75; // share of the departure order set by distance from the card's edge
 const RASTER_PAD = 6; // px around the figure so antialiased edges are not clipped
-const LANDED_P = QUOTE_DEPART_MAX + QUOTE_FLY_MIN + QUOTE_FLY_SPAN;
-const PLANE_IN = [LANDED_P - 0.04, LANDED_P + 0.06];
-const POINTS_OUT = [LANDED_P, 1];
-export const QUOTE_LIVE_P = LANDED_P;
-
-const smoothstep = (a, b, x) => {
-  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return t * t * (3 - 2 * t);
-};
+// The last glyph is crisp here; the whole quote is the crisp raster from then on.
+const CRISP_P = QUOTE_ARRIVE_START + QUOTE_ARRIVE_SPAN + QUOTE_SETTLE;
+export const QUOTE_LIVE_P = CRISP_P;
+const DST_SPACING = 1.25; // landed dot size, as a multiple of the targets' mean spacing
 
 function textLines(el, ox, oy) {
   const cs = getComputedStyle(el);
@@ -185,7 +180,9 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const planeMat = new THREE.ShaderMaterial({
     uniforms: {
       uMap: { value: null },
-      uOpacity: { value: 0 },
+      uP: shared.uP,
+      uBox: { value: { x: 0, y: 0, z: 1, w: 1 } },
+      uRtl: { value: 0 },
       uView: shared.uView,
     },
     vertexShader: QUOTE_PLANE_VERT,
@@ -226,6 +223,11 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       [pick[i], pick[j]] = [pick[j], pick[i]];
     }
     const { box } = m;
+    planeMat.uniforms.uBox.value = { x: box.x, y: box.y, z: box.w, w: box.h };
+    planeMat.uniforms.uRtl.value = m.rtl ? 1 : 0;
+    // Landed dots a little wider than their spacing, so a glyph's particles read as a fill.
+    const spacing = Math.sqrt(cand.length / n);
+    shared.uDstSize.value = Math.min(4, Math.max(1.6, DST_SPACING * spacing));
     const jitter = pick.length < n ? 0.6 : 0;
     for (let i = 0; i < n; i += 1) {
       const k = pick[i % take];
@@ -237,7 +239,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       tCol.set([data[k] / 255, data[k + 1] / 255, data[k + 2] / 255], i * 3);
       const xn = (px - box.x) / Math.max(1, box.w);
       const yn = (py - box.y) / Math.max(1, box.h);
-      tOrder[i] = Math.min(1, (m.rtl ? 1 - xn : xn) * 0.7 + yn * 0.3);
+      // Must match QUOTE_PLANE_FRAG's order, which reveals the crisp text pixel by pixel.
+      tOrder[i] = Math.min(1, Math.max(0, (m.rtl ? 1 - xn : xn) * 0.7 + yn * 0.3));
       tSeed[i * 2] = Math.random() * Math.PI * 2;
       tSeed[i * 2 + 1] = 0.3 + 0.7 * Math.random();
     }
@@ -288,7 +291,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       rand[j * 4] = QUOTE_DEPART_MAX * (EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random());
       rand[j * 4 + 1] = tSeed[i * 2];
       rand[j * 4 + 2] = tSeed[i * 2 + 1];
-      rand[j * 4 + 3] = QUOTE_FLY_MIN + QUOTE_FLY_SPAN * tOrder[i];
+      rand[j * 4 + 3] = QUOTE_ARRIVE_START + QUOTE_ARRIVE_SPAN * tOrder[i]; // arrival p
     }
     geo.setAttribute('position', new THREE.BufferAttribute(dst, 3));
     geo.setAttribute('aUv', new THREE.BufferAttribute(uvs, 2));
@@ -429,11 +432,11 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     shared.uScatter.value.y = SCATTER_RADIUS * Math.min(W, H);
     shared.uZoomT.value.set(zoom[0], zoom[1]);
     shared.uCamZ.value.set(zoom[2], zoom[3]);
-    shared.uAlpha.value = 1 - smoothstep(POINTS_OUT[0], POINTS_OUT[1], p);
-    planeMat.uniforms.uOpacity.value = smoothstep(PLANE_IN[0], PLANE_IN[1], p);
-    draws.forEach(({ points }) => { points.visible = shared.uAlpha.value > 0; });
-    plane.visible = planeMat.uniforms.uOpacity.value > 0;
-    stateKey = `${p}|${show}|${version}|${W}x${H}@${dpr}`;
+    draws.forEach(({ points }) => { points.visible = p < CRISP_P; });
+    plane.visible = p > QUOTE_ARRIVE_START;
+    // Past CRISP_P every pixel is the finished raster, so further scroll changes nothing drawn.
+    const drawnP = p >= CRISP_P ? 'crisp' : p;
+    stateKey = `${drawnP}|${show}|${version}|${W}x${H}@${dpr}`;
   }
 
   return {
@@ -444,7 +447,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     isReady: () => ready,
     drawCount: () => draws.length + 1,
     // Settled and already on the canvas: the caller may skip the draw.
-    isIdle: () => lastP >= 1 && stateKey === drawnKey,
+    isIdle: () => lastP >= CRISP_P && stateKey === drawnKey,
     markDrawn: () => { drawnKey = stateKey; },
     invalidate: () => { drawnKey = ''; },
     dispose() {

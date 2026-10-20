@@ -103,7 +103,8 @@ describe('globe-gallery: quote particles', () => {
     expect(plane.visible).to.be.false;
     fx.update(1, view);
     expect(points.visible).to.be.false;
-    expect(plane.material.uniforms.uOpacity.value).to.equal(1);
+    expect(plane.visible).to.be.true;
+    expect(plane.material.uniforms.uP.value).to.equal(1);
     expect(QUOTE_LIVE_P).to.be.below(1);
     expect(fx.isIdle()).to.be.false;
     fx.markDrawn();
@@ -118,6 +119,33 @@ describe('globe-gallery: quote particles', () => {
     expect(points.material.uniforms.uCamZ.value.toArray()).to.deep.equal([57, 117]);
     fx.update(1, { ...view, active: false });
     expect(fx.object.visible).to.be.false;
+  });
+
+  it('lands each glyph by reading order and is still once the last one is crisp', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 800 });
+    await fx.layout({ dpr: 1 });
+    fx.setSources([], 800, 600);
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const { position, aRand } = points.geometry.attributes;
+    let left = 0; let right = 0; let nl = 0; let nr = 0;
+    for (let i = 0; i < position.count; i += 1) {
+      const arrive = aRand.array[i * 4 + 3];
+      expect(arrive).to.be.within(0.6, 0.8 + 1e-6);
+      expect(arrive - aRand.array[i * 4]).to.be.at.least(0.3 - 1e-6); // no rushed flight
+      if (position.array[i * 3] < 300) {
+        left += arrive; nl += 1;
+      } else {
+        right += arrive; nr += 1;
+      }
+    }
+    expect(left / nl).to.be.below(right / nr);
+    const view = { W: 800, H: 600, dpr: 1 };
+    fx.update(QUOTE_LIVE_P, view);
+    expect(points.visible).to.be.false;
+    fx.markDrawn();
+    fx.update(0.97, view);
+    expect(fx.isIdle()).to.be.true; // nothing left to fill in after the last landing
   });
 
   it('stays unready for an empty figure', async () => {

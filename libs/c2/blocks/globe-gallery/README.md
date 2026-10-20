@@ -2011,19 +2011,28 @@ mirrors `TL.camZAtZoomT`). It then eases exponentially to a stop at least `QUOTE
 of the particle, so its motion leaves the dolly with no velocity kink and can never pass behind the
 camera.
 
-On top of that, smootherstep `te` carries the particle to its px text target over `aRand.w`
-(`QUOTE_FLY_MIN` + `QUOTE_FLY_SPAN` × reading order). A `sin(π·te)` bump adds the radial and random
-scatter. Over the first 40% of its flight, the sprite shrinks from its cell size to the text dot size
-and rounds off. Each particle keeps sampling its own photo pixels, and turns to the ink only over the
-last 22% of its own travel (`QUOTE_INK_FROM`).
+On top of that, smootherstep `te` carries the particle to its px text target. A `sin(π·te)` bump
+adds the radial and random scatter. Over the first 40% of its flight, the sprite shrinks from its
+cell size to the text dot size and rounds off. Each particle keeps sampling its own photo pixels, and
+turns to the ink only over the last 22% of its own travel (`QUOTE_INK_FROM`).
+
+**Landing = crisp, locally.** A particle's arrival `aRand.w` depends only on its target's reading
+order: `QUOTE_ARRIVE_START` (0.6) + `QUOTE_ARRIVE_SPAN` (0.2) × order, where order is x·0.7 + y·0.3
+across the figure box, mirrored for RTL. Every particle of a glyph therefore lands together, and its
+flight time is the arrival minus its own edge-first departure, never less than `QUOTE_FLY_MIN`.
+`QUOTE_PLANE_FRAG` recomputes the same order per pixel from `uBox`/`uRtl` and reveals the crisp
+raster over the first 60% of `QUOTE_SETTLE` (0.04) after that pixel's arrival. The particles land
+as solid squares (rounding undone, +30% size, dot size from the target spacing) and fade out over
+the same window. So the quote goes crisp in one reading-order wave behind the landing, with no
+global fill-in, and every region is speckled for only ~3vh of scroll.
 
 | `p` | What |
 | --- | --- |
 | 0 | Cards render as before. At p > 0 they hide and their particles take over, identical on screen. |
 | 0 → 0.3 | Departures, edge first. |
-| ≤ 0.9 | Every particle has landed (`QUOTE_LIVE_P` marks the DOM figure `is-live`). |
-| 0.86 → 0.96 | The text plane fades in. From 0.9 the points fade out. |
-| 1 | Only the text plane remains. Rendering stops (see below). |
+| 0.6 → 0.8 | Landings, in reading order, each glyph turning crisp as it lands. |
+| ≤ 0.84 | Everything is the crisp raster (`QUOTE_LIVE_P` marks the DOM figure `is-live`). Rendering stops (see below). |
+
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
 authored text (`plainQuote`, which also hangs the opening mark), shrinks the font size if the box is
@@ -2061,7 +2070,7 @@ they form a viewport-sized layer that mirrors the world, so the transparent figu
 on exactly the same frames as the canvas that draws it. Reduced motion still flattens both to
 static.
 
-**Render on demand.** The scene is drawn only while something changes. At `p === 1`, once a frame
+**Render on demand.** The scene is drawn only while something changes. Past `QUOTE_LIVE_P`, once a frame
 with the same progress, layout version and viewport has been drawn (`isIdle`/`markDrawn`),
 `renderScene` skips the draw and the canvas keeps its last frame. Resizing, a re-layout, the canvas
 being re-shown, or the modal opening forces a redraw. Measured: 0 draw calls per second while the

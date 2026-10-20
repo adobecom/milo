@@ -256,10 +256,15 @@ export const TEXT_FRAG = [
 // texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
 // so at rest the tiles are the card, pixel for pixel. Then, edge first, each particle departs: its
 // own camera eases to a stop (velocity-continuous) and it travels to its text target in px.
-// aRand = (departure p, scatter angle, scatter share, flight duration). See quote-particles.js.
+// aRand = (departure p, scatter angle, scatter share, arrival p). See quote-particles.js.
+// Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
+// together, and the crisp text plane reveals each pixel with that same function: the text goes
+// crisp in one wave with the landing, with no global fill-in afterwards.
 export const QUOTE_DEPART_MAX = 0.3;
-export const QUOTE_FLY_MIN = 0.35;
-export const QUOTE_FLY_SPAN = 0.25; // added by the target's reading order
+export const QUOTE_FLY_MIN = 0.3; // shortest flight, so the earliest arrival is DEPART_MAX + this
+export const QUOTE_ARRIVE_START = QUOTE_DEPART_MAX + QUOTE_FLY_MIN;
+export const QUOTE_ARRIVE_SPAN = 0.2; // reading order 0 → 1 lands across this much p
+export const QUOTE_SETTLE = 0.04; // a region's particles hand over to the crisp text in this window
 export const QUOTE_INK_FROM = 0.78; // share of a particle's own travel after which it turns to ink
 const QUOTE_MIN_DEPTH = 2; // world units a departed particle's camera stays in front of it
 const QUOTE_TILE_MAX = 128; // CSS px
@@ -293,6 +298,7 @@ export const QUOTE_POINTS_VERT = [
   'varying float vRound;',
   'varying vec3 vInk;',
   'varying float vInkK;',
+  'varying float vFade;',
   ...PX_TO_CLIP,
   // Mirrors TL.camZAtZoomT, for the camera at a given flight progress.
   'float camZAt(float p) {',
@@ -306,7 +312,7 @@ export const QUOTE_POINTS_VERT = [
   '  return vec2((n.x + 1.0) * 0.5 * uView.x, (1.0 - n.y) * 0.5 * uView.y);',
   '}',
   'void main() {',
-  '  float t = clamp((uP - aRand.x) / aRand.w, 0.0, 1.0);',
+  '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
   '  float te = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);', // smootherstep: still at both ends
   '  vec2 s; vec2 su; vec2 sv;',
   '  if (uScreenSrc > 0.5) {',
@@ -331,7 +337,10 @@ export const QUOTE_POINTS_VERT = [
   // The bounding square of the projected cell, so neighbouring tiles always overlap.
   '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
   '  float g = smoothstep(0.0, 0.4, t);',
-  `  float size = mix(min(tile, ${glf(QUOTE_TILE_MAX)}), uDstSize, g);`,
+  // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
+  // solid for the moment before the crisp text takes it over.
+  '  float land = smoothstep(0.85, 1.0, t);',
+  `  float size = mix(min(tile, ${glf(QUOTE_TILE_MAX)}), uDstSize, g) * (1.0 + 0.3 * land);`,
   '  vec2 dir = vec2(cos(aRand.y), sin(aRand.y));',
   '  vec2 off = ((s - uView * 0.5) * uScatter.x + dir * aRand.z * uScatter.y) * sin(3.14159 * te);',
   '  gl_Position = pxToClip(mix(s, position.xy, te) + off, uView);',
@@ -343,7 +352,9 @@ export const QUOTE_POINTS_VERT = [
   '  vJinv = vec4(d, -b, -c, a) / (abs(det) > 1e-6 ? det : 1e-6);',
   '  vUv = aUv;',
   '  vSize = size;',
-  '  vRound = g;',
+  '  vRound = g * (1.0 - land);',
+  // Out over the second half of the region's settle window, as the crisp text comes in under it.
+  `  vFade = 1.0 - smoothstep(aRand.w + ${glf(QUOTE_SETTLE * 0.3)}, aRand.w + ${glf(QUOTE_SETTLE * 0.8)}, uP);`,
   '  vInk = aDstCol;',
   `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
   '  vInkK = ink * ink;',
@@ -366,11 +377,12 @@ export const QUOTE_POINTS_FRAG = [
   'varying float vRound;',
   'varying vec3 vInk;',
   'varying float vInkK;',
+  'varying float vFade;',
   ...RR_SDF,
   'void main() {',
   '  vec2 pc = gl_PointCoord - 0.5;',
   '  float dotA = 1.0 - smoothstep(0.16, 0.25, dot(pc, pc));',
-  '  float alpha = uAlpha * mix(1.0, dotA, vRound);',
+  '  float alpha = uAlpha * vFade * mix(1.0, dotA, vRound);',
   '  vec3 col = vInk;',
   '  if (uScreenSrc > 0.5) {',
   '    alpha *= vRound;', // nothing to break up: these only appear as they fly
@@ -391,22 +403,33 @@ export const QUOTE_POINTS_FRAG = [
 ].join('\n');
 
 // The settled quote: the same raster the targets were sampled from, one texel per device pixel.
+// The settled quote: the same raster the targets were sampled from, one texel per device pixel,
+// each pixel revealed by the same reading-order arrival as the particles that land on it.
 export const QUOTE_PLANE_VERT = [
   'uniform vec2 uView;',
   'varying vec2 vUv;',
+  'varying vec2 vPx;',
   ...PX_TO_CLIP,
   'void main() {',
   '  vUv = uv;',
+  '  vPx = position.xy;',
   '  gl_Position = pxToClip(position.xy, uView);',
   '}',
 ].join('\n');
 
 export const QUOTE_PLANE_FRAG = [
   'uniform sampler2D uMap;',
-  'uniform float uOpacity;',
+  'uniform float uP;',
+  'uniform vec4 uBox;', // the reading-order box (x, y, w, h), px
+  'uniform float uRtl;',
   'varying vec2 vUv;',
+  'varying vec2 vPx;',
   'void main() {',
+  '  vec2 n = (vPx - uBox.xy) / max(uBox.zw, vec2(1.0));',
+  '  float order = clamp((uRtl > 0.5 ? 1.0 - n.x : n.x) * 0.7 + n.y * 0.3, 0.0, 1.0);',
+  `  float arrive = ${glf(QUOTE_ARRIVE_START)} + ${glf(QUOTE_ARRIVE_SPAN)} * order;`,
+  `  float reveal = smoothstep(arrive, arrive + ${glf(QUOTE_SETTLE * 0.6)}, uP);`,
   '  vec4 t = texture2D(uMap, vUv);',
-  '  gl_FragColor = vec4(t.rgb, t.a * uOpacity);',
+  '  gl_FragColor = vec4(t.rgb, t.a * reveal);',
   '}',
 ].join('\n');
