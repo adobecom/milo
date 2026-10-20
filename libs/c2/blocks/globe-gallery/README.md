@@ -2011,17 +2011,30 @@ screen Jacobian of the card's projection, with the card shader's cover-crop, CA 
 SDF. So at the start the tiles are pixel-identical to the card, and the cards simply fade out under
 them across `PQ_HANDOFF_P` (2%) before any tile moves.
 
-**The break-up is progressive.** Each tile has its own release (`aRelease`): edge-first within its
-card (rim before centre, after stage's `DISPERSE_EDGE_LEAD` idea), nearer cards first, plus jitter,
-so no card goes soft all at once. From its release a tile collapses to a round dot and bursts
-outward over `QUOTE_BURST_DUR`, while it stops riding the camera on an exponential tail
-(`QUOTE_DETACH_*`, C¹ at the release), so it neither halts nor keeps rushing at the viewer. It then
-flies to its text target, blending in clip space toward a plane attached to the camera, so the
-motion eases out of the camera's. A source the camera is about to reach breaks up early.
+**Coherent pairing.** Which card pixel flies to which glyph point is decided by position, not at
+random: `coherentOrder` ranks a point set by `PAIR_BANDS` (8) equal-count x bands, each read top to
+bottom (a linear counting sort, ~2.5 ms for 30k points), and the r-th source by screen position takes
+the r-th target in the same order, built once with the targets. Left cards feed the left of the
+quote, neighbours stay neighbours and paths don't cross. On the page this halves the mean path
+(desktop ≈ 270 vs 585 px, mobile ≈ 165 vs 320 px; `getStats()`). The sources' screen positions are
+taken on the hand-off frame, but the pairing runs on the **next** frame, so the hand-off frame's cost
+is unchanged; until then every particle is parked at a departure beyond any flight.
+
+**Release, then a fixed flight.** Three separate beats per particle:
+1. *Release* (`aRelease`: card rim first, nearer cards first, jittered). The tile lets go of the
+   camera's dolly on a C¹ exponential tail (`QUOTE_DETACH_*`) and then holds still on screen.
+   Waiting particles must not stay attached to the moving camera, or their cards dolly off screen
+   and fly back in.
+2. *Flight* (`flightWindow`): a fixed `QUOTE_FLY` (rim particles up to `QUOTE_EDGE_FLY` longer)
+   ending at the particle's own reading-order arrival, never before its release. Only a band of the
+   quote is airborne at once. The path is direct, with a slight sideways wobble
+   (`QUOTE_WOBBLE`, 6% of the path, zero at both ends) and no radial burst or random scatter. The
+   tile turns into a dot over the first quarter of its flight.
+3. *Landing and reveal*, below.
+
 **Landing is a reading-order wave, and the text is crisp as it lands.** Arrival is keyed to the
 particle's *target*: a text point at reading-order position `o` (`readingOrder`, mostly along the
-line, a little down the block, RTL-aware) lands at `QUOTE_ARRIVE_FROM + o · QUOTE_ARRIVE_SPREAD`,
-however late its tile was released. Each particle keeps its photo colour in flight, turns to the
+line, a little down the block, RTL-aware) lands at `QUOTE_ARRIVE_FROM + o · QUOTE_ARRIVE_SPREAD`. Each particle keeps its photo colour in flight, turns to the
 text colour over the last `1 − QUOTE_INK_FROM` of its travel, and swells (`QUOTE_LANDED_GROW`) so
 landed dots read solid. `QUOTE_REVEAL_LAG` later that region of the **DOM text** turns crisp over
 `QUOTE_REVEAL_DUR` while its particles fade out over the same window. The DOM can't reveal per
@@ -2064,6 +2077,11 @@ split lines `aria-hidden` and the `.sr-only` copy as before. `pointer-events` (a
 on at `p = 1`, and `dropQuoteSelection` still clears a selection on the way back. In
 **forced-colors** mode the particles are skipped and the system-coloured DOM text fades in.
 **Reduced motion** never creates the particles: the quote is static after the globe, as before.
+
+**Perf.** The particle program is compiled when the targets are built, and a pool of per-card
+materials is prepared then too, so the hand-off frame only re-aims them. At 4× CPU throttle
+(headless): the hand-off frame is unchanged from before the pairing (~41–47 ms mobile), and the
+pairing adds one ~25 ms frame after it (~45 ms at 60k on desktop).
 
 **Known limits (PoC).** A card partly off screen only gets tiles for its visible part; one draw per
 far card (no atlas); particles draw over anything else on the canvas.

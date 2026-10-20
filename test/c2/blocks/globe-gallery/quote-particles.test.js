@@ -1,5 +1,7 @@
 import { expect } from '@esm-bundle/chai';
-import createQuoteParticles, { rasterizeQuote, pendingFonts, readingOrder, readingX, revealFront } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, {
+  rasterizeQuote, pendingFonts, readingOrder, readingX, revealFront, coherentOrder, flightWindow,
+} from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 import { Vector3 } from '../../../../libs/deps/three.js';
 import { buildGlobeDom } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
@@ -135,6 +137,64 @@ describe('globe-gallery: quote particles', () => {
     fx.dispose();
     expect(added).to.have.length(0);
     expect(fx.isBuilt()).to.be.false;
+  });
+
+  it('pairs sources with targets by position, holding them on the cards until paired', async () => {
+    const { fig } = mountFigure();
+    const scene = { add: () => {}, remove: () => {} };
+    const fx = createQuoteParticles(scene, 1000);
+    const targets = rasterizeQuote(fig, 0, 2000);
+    let pts = null;
+    fx.build(targets);
+    scene.add = (o) => { pts = o; };
+    // Four cards tiling the area the quote lands in, as the far side does around the view centre.
+    const card = (x0, y0) => ({
+      project: (u, v) => [x0 + 210 * u, y0 + 110 * v],
+      world: (u, v, out) => out.set(x0 + 210 * u, -(y0 + 110 * v), -10),
+      axisU: new Vector3(210, 0, 0),
+      axisV: new Vector3(0, 110, 0),
+      depth: 10,
+      texture: { isTexture: true },
+      repeat: { x: 1, y: 1 },
+      offset: { x: 0, y: 0 },
+      aspect: 210 / 110,
+      radius: 0.03,
+      ca: 0,
+      mirror: false,
+      alpha: 1,
+    });
+    const cards = [card(0, 0), card(210, 0), card(0, 110), card(210, 110)];
+    fx.build(targets);
+    const pending = fx.setSources(cards, 800, 600);
+    // The hand-off frame: nothing departs or reveals yet.
+    const seed = pts.geometry.getAttribute('aSeed').array;
+    expect(seed[1]).to.be.above(1);
+    const stats = await pending;
+    // Locality: the coherent pairing's mean path is far shorter than a random pairing's.
+    // (The fixture's source and target extents differ, which sets a floor on any pairing's path.)
+    expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.75);
+    // Every particle now departs after its release and lands in reading order.
+    const rel = pts.geometry.getAttribute('aRelease').array;
+    for (let i = 0; i < 2000; i += 1) {
+      expect(seed[i * 4 + 1]).to.be.at.least(rel[i]);
+      expect(seed[i * 4 + 3]).to.be.above(seed[i * 4 + 1]);
+      expect(seed[i * 4 + 3]).to.be.at.most(1);
+    }
+    fx.dispose();
+  });
+
+  it('orders points by x bands then y, and flies a fixed time ending at the arrival', () => {
+    const xs = Float32Array.from({ length: 64 }, (_, i) => i % 8);
+    const ys = Float32Array.from({ length: 64 }, (_, i) => Math.floor(i / 8));
+    const order = [...coherentOrder(xs, ys)];
+    expect(new Set(order).size).to.equal(64);
+    // The first band is the leftmost column, read top to bottom.
+    expect(order.slice(0, 8).map((i) => xs[i])).to.deep.equal(new Array(8).fill(0));
+    expect(order.slice(0, 8).map((i) => ys[i])).to.deep.equal([0, 1, 2, 3, 4, 5, 6, 7]);
+    const [leave, arrive] = flightWindow(1, 1, 0.05);
+    expect(arrive - leave).to.be.closeTo(0.3, 0.001);
+    const [early] = flightWindow(0, 1, 0.25);
+    expect(early).to.be.at.least(0.29); // never before it has let go of the camera
   });
 
   it('reveals the text in the same reading-order wave the particles land in', () => {

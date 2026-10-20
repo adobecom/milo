@@ -1109,6 +1109,12 @@ function createGlobeGalleryRuntime(
     const targets = QP.rasterizeQuote(pqEl, pinEl.getBoundingClientRect().top, budget);
     if (!targets) return;
     quoteFx.build(targets, getComputedStyle(pqEl).direction === 'rtl');
+    // Compile the particle program now, not on the hand-off frame.
+    if (!pqFly.p) {
+      quoteFx.setVisible(true);
+      renderer.compile(scene, camera);
+      quoteFx.setVisible(false);
+    }
     measureQuoteMasks();
   }
 
@@ -1985,7 +1991,6 @@ function createGlobeGalleryRuntime(
       H,
       dpr: renderer.getPixelRatio(),
       camera,
-      targetDepth: bp.SPHERE_R * (sphereGroup.scale.x || 1),
       // Exactly the zoom deriveFrame drives: p and zoomT are both linear in scroll.
       zoom: [pqStartZoomT, (PQ_FLY_VH * H) / (TL.ZOOM_TO_TAIL_T
         * Math.max(1, blockHeight - holdPx() - formedScrollPx()))],

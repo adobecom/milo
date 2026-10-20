@@ -1,7 +1,8 @@
 import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_PARTICLE_VERT, QUOTE_PARTICLE_FRAG,
-  QUOTE_ARRIVE_FROM, QUOTE_ARRIVE_SPREAD, QUOTE_REVEAL_LAG, QUOTE_REVEAL_DUR,
+  QUOTE_ARRIVE_FROM, QUOTE_ARRIVE_SPREAD, QUOTE_ARRIVE_JITTER, QUOTE_REVEAL_LAG, QUOTE_REVEAL_DUR,
+  QUOTE_FLY, QUOTE_EDGE_FLY, QUOTE_DETACH_AT,
 } from './shaders.js';
 
 // Pull-quote particle hand-off: the far-side cards' pixels burst off and fly into the quote's
@@ -152,15 +153,59 @@ function inkBox(dst, count, rtl) {
   return { x0, y0, x1, y1, rtl };
 }
 
-function seedFor(dst, count, box) {
-  const seed = new Float32Array(count * 4);
-  for (let i = 0; i < count; i += 1) {
-    seed[i * 4] = Math.min(1, Math.max(0, readingOrder(dst[i * 3], dst[i * 3 + 1], box)));
-    seed[i * 4 + 1] = Math.random() * Math.PI * 2;
-    seed[i * 4 + 2] = 0.3 + 0.7 * Math.random();
-    seed[i * 4 + 3] = Math.random() * 2 - 1;
+const MATERIAL_POOL = 24; // per-card draws prepared up front; more are added on demand
+const PENDING = 9; // reading order / departure / arrival before pairing: beyond any flight
+const PAIR_BANDS = 8; // x bands of the 2D quantile order
+const EDGE_LEAD = 0.75; // share of a particle's departure order set by its depth in its card
+
+const SORT_BUCKETS = 4096; // key resolution of the counting sort: below a pixel at these extents
+const bucketCounts = new Uint32Array(SORT_BUCKETS + 1);
+
+// Indices `idx` stably sorted by key[i] quantized to SORT_BUCKETS: a counting sort, linear in the
+// count, so the pairing stays off the critical path even on a throttled phone.
+function sortBy(key, idx) {
+  let lo = Infinity; let hi = -Infinity;
+  idx.forEach((i) => { lo = Math.min(lo, key[i]); hi = Math.max(hi, key[i]); });
+  const scale = (SORT_BUCKETS - 1) / Math.max(1e-6, hi - lo);
+  const slot = new Uint16Array(idx.length);
+  bucketCounts.fill(0);
+  idx.forEach((i, k) => {
+    slot[k] = Math.round((key[i] - lo) * scale);
+    bucketCounts[slot[k] + 1] += 1;
+  });
+  for (let b = 1; b <= SORT_BUCKETS; b += 1) bucketCounts[b] += bucketCounts[b - 1];
+  const out = new Uint32Array(idx.length);
+  idx.forEach((i, k) => {
+    out[bucketCounts[slot[k]]] = i;
+    bucketCounts[slot[k]] += 1;
+  });
+  return out;
+}
+
+// A locality-preserving order over a point set's own extent: PAIR_BANDS equal-count bands by x,
+// each read top to bottom. Rank r in one set and rank r in another sit at the same x and y
+// quantiles, so pairing two sets by rank keeps neighbours together and paths short (a cheap
+// stand-in for optimal transport).
+export function coherentOrder(xs, ys, count = xs.length) {
+  const byX = sortBy(xs, Uint32Array.from({ length: count }, (_, i) => i));
+  const out = new Uint32Array(count);
+  for (let b = 0; b < PAIR_BANDS; b += 1) {
+    const from = Math.floor((b * count) / PAIR_BANDS);
+    const to = Math.floor(((b + 1) * count) / PAIR_BANDS);
+    if (to > from) out.set(sortBy(ys, byX.subarray(from, to)), from);
   }
-  return seed;
+  return out;
+}
+
+// [departure, arrival] uP of a particle released at `release`, `edge` deep in its card (0 rim →
+// 1 centre), paired with a target of reading order `order`: a fixed flight ending at its own
+// arrival, so only a band is airborne at once; rim particles fly longer so they still leave first.
+// Never before it has let go of the camera.
+export function flightWindow(order, edge, release) {
+  const arrive = QUOTE_ARRIVE_FROM + order * QUOTE_ARRIVE_SPREAD
+    + Math.random() * QUOTE_ARRIVE_JITTER;
+  const leave = arrive - QUOTE_FLY * (1 + QUOTE_EDGE_FLY * (1 - edge));
+  return [Math.min(arrive - 0.5 * QUOTE_FLY, Math.max(release + QUOTE_DETACH_AT, leave)), arrive];
 }
 
 const QUAD_PROBE = 12;
@@ -208,9 +253,7 @@ export default function createQuoteParticles(scene, renderOrder) {
     uP: { value: 0 },
     uFade: { value: 1 },
     uSize: { value: 2 },
-    uScatter: { value: 0 },
     uMinDepth: { value: 1.5 },
-    uTargetDepth: { value: 30 },
   };
   const makeMaterial = (card) => new THREE.ShaderMaterial({
     uniforms: {
@@ -234,14 +277,51 @@ export default function createQuoteParticles(scene, renderOrder) {
     depthWrite: false,
     extensions: { derivatives: true }, // fwidth for the corner AA in WebGL1; no-op in WebGL2
   });
+  // Point a pooled material at a card (or at nothing: an invisible stand-in).
+  const aimMaterial = (mat, card) => {
+    const u = mat.uniforms;
+    u.uMap.value = card ? card.texture : null;
+    u.uRepeat.value.set(card ? card.repeat.x : 1, card ? card.repeat.y : 1);
+    u.uOffset.value.set(card ? card.offset.x : 0, card ? card.offset.y : 0);
+    u.uAspect.value = card ? card.aspect : 1;
+    u.uRadius.value = card ? card.radius : 0;
+    u.uCA.value = card ? card.ca : 0;
+    u.uMirror.value = card && card.mirror ? 1 : 0;
+    u.uAlpha.value = card ? card.alpha : 0;
+    if (card) {
+      u.uAxisU.value.copy(card.axisU);
+      u.uAxisV.value.copy(card.axisV);
+      u.uCell.value.set(card.cellU, card.cellV);
+    }
+    return mat;
+  };
   let points = null;
   let count = 0;
+  // A pool built (and compiled by the caller) with the targets, so the hand-off frame only
+  // re-aims materials instead of setting new ones up.
+  let pool = [];
   let materials = [];
+  const pooled = (k) => {
+    while (pool.length <= k) pool.push(makeMaterial(null));
+    return pool[k];
+  };
   let lastSources = null;
   let orderBox = null;
+  // Text targets, kept to be dealt out by the pairing: px, colour, reading order, coherent order.
+  let tDst = null;
+  let tCol = null;
+  let tOrder = null;
+  let tSorted = null;
+  // Per particle, from setSources: rough screen position now, depth in its card, release p.
+  let sx = null;
+  let sy = null;
+  let edge = null;
+  let pairing = null; // the pending pairing frame's token
+  let stats = {};
 
   function disposeMaterials() {
-    materials.forEach((m) => m.dispose());
+    pool.forEach((m) => m.dispose());
+    pool = [];
     materials = [];
   }
 
@@ -252,13 +332,47 @@ export default function createQuoteParticles(scene, renderOrder) {
     points = null;
   }
 
+  // Deal the targets out to the particles by rank in coherentOrder, so the r-th source (by screen
+  // position) takes the target at the same x and y quantiles, and set each one's flight.
+  function pair() {
+    const t0 = performance.now();
+    const geo = points.geometry;
+    const pos = geo.getAttribute('position');
+    const col = geo.getAttribute('aDstColor');
+    const seed = geo.getAttribute('aSeed');
+    const rel = geo.getAttribute('aRelease');
+    const order = coherentOrder(sx, sy, count);
+    let paired = 0;
+    let random = 0;
+    for (let r = 0; r < count; r += 1) {
+      const i = order[r];
+      const t = tSorted[r];
+      pos.array.set([tDst[t * 2], tDst[t * 2 + 1], 0], i * 3);
+      col.array.set([tCol[t * 3], tCol[t * 3 + 1], tCol[t * 3 + 2]], i * 3);
+      const [leave, arrive] = flightWindow(tOrder[t], edge[i], rel.array[i]);
+      seed.array.set([tOrder[t], leave, Math.random() * 2 - 1, arrive], i * 4);
+      paired += Math.hypot(tDst[t * 2] - sx[i], tDst[t * 2 + 1] - sy[i]);
+      random += Math.hypot(tDst[r * 2] - sx[i], tDst[r * 2 + 1] - sy[i]); // targets are shuffled
+    }
+    [pos, col, seed].forEach((a) => { a.needsUpdate = true; });
+    stats = {
+      ...stats,
+      count,
+      meanPath: paired / Math.max(1, count),
+      meanPathRandom: random / Math.max(1, count),
+      pairMs: performance.now() - t0,
+    };
+    return stats;
+  }
+
   // cards: [{ project(u, v) → [x, y] px (v down the card as seen), world(u, v, out) → Vector3,
   // axisU, axisV (world per unit geometry uv), depth, texture, repeat, offset, aspect, radius, ca,
   // mirror, alpha }]. Particles go to each card by the on-screen area of its visible part, as a
   // grid of tiles in one contiguous range per card, so each card is one draw with its own texture.
   function setSources(cards, W, H) {
     lastSources = { cards, W, H };
-    if (!points) return;
+    if (!points) return Promise.resolve(null);
+    const t0 = performance.now();
     const geo = points.geometry;
     const srcW = geo.getAttribute('aSrcWorld');
     const uv = geo.getAttribute('aUv');
@@ -266,8 +380,12 @@ export default function createQuoteParticles(scene, renderOrder) {
     const windows = cards.map((c) => screenWindow(c.project, W, H));
     const area = cards.map((c, k) => (windows[k] ? windowArea(c.project, windows[k]) : 0));
     const total = area.reduce((a, b) => a + b, 0);
-    disposeMaterials();
+    materials = [];
     geo.clearGroups();
+    sx = new Float32Array(count);
+    sy = new Float32Array(count);
+    edge = new Float32Array(count);
+    const edgeOf = edge;
     const tmp = new THREE.Vector3();
     let i = 0;
     if (total > 0) {
@@ -292,15 +410,28 @@ export default function createQuoteParticles(scene, renderOrder) {
         const dv = (win.v1 - win.v0) / rows;
         const start = i;
         const depthRank = (card.depth - dMin) / dSpan; // nearer cards let go first
+        // Roughly where each tile sits on screen now (bilinear over the window's projected
+        // corners: plenty for pairing, and far cheaper than projecting each one).
+        const [dx, dy] = card.project(win.u1, win.v1);
+        const at = (u, v) => {
+          const a = (u - win.u0) / Math.max(1e-6, win.u1 - win.u0);
+          const b = (v - win.v0) / Math.max(1e-6, win.v1 - win.v0);
+          return [
+            (1 - b) * ((1 - a) * ax + a * bx) + b * ((1 - a) * cx + a * dx),
+            (1 - b) * ((1 - a) * ay + a * by) + b * ((1 - a) * cy + a * dy),
+          ];
+        };
         const put = (u, v) => {
           // v runs down the card as seen; geometry v runs up.
           card.world(u, v, tmp);
           srcW.array.set([tmp.x, tmp.y, tmp.z], i * 3);
           uv.array.set([u, 1 - v], i * 2);
           // Edge-first: 0 on the rim, 1 at the centre, in card-height units.
-          const edge = Math.min(Math.min(u, 1 - u) * card.aspect, Math.min(v, 1 - v));
-          const inner = Math.min(1, edge / (0.5 * Math.min(card.aspect, 1)));
+          const rim = Math.min(Math.min(u, 1 - u) * card.aspect, Math.min(v, 1 - v));
+          const inner = Math.min(1, rim / (0.5 * Math.min(card.aspect, 1)));
           rel.array[i] = 0.02 + 0.08 * depthRank + 0.1 * inner + 0.06 * Math.random();
+          [sx[i], sy[i]] = at(u, v);
+          edgeOf[i] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random();
           i += 1;
         };
         for (let r = 0; r < rows; r += 1) {
@@ -311,7 +442,7 @@ export default function createQuoteParticles(scene, renderOrder) {
           const ru = win.u0 + Math.random() * (win.u1 - win.u0);
           put(ru, win.v0 + Math.random() * (win.v1 - win.v0));
         }
-        materials.push(makeMaterial({ ...card, cellU: du, cellV: dv }));
+        materials.push(aimMaterial(pooled(materials.length), { ...card, cellU: du, cellV: dv }));
         geo.addGroup(start, i - start, materials.length - 1);
       });
     }
@@ -321,59 +452,94 @@ export default function createQuoteParticles(scene, renderOrder) {
         srcW.array.set([0, 0, -1e3], i * 3);
         uv.array.set([0.5, 0.5], i * 2);
         rel.array[i] = 0;
+        sx[i] = Math.random() * W;
+        sy[i] = Math.random() * H;
+        edgeOf[i] = Math.random();
       }
-      materials.push(makeMaterial(null));
+      materials.push(aimMaterial(pooled(materials.length), null));
       geo.addGroup(0, count, materials.length - 1);
     }
     points.material = materials;
     srcW.needsUpdate = true;
     uv.needsUpdate = true;
     rel.needsUpdate = true;
+    // Until paired, nothing departs or reveals (PENDING is beyond any flight). The pairing (the
+    // sort) runs on the next frame, off the hand-off frame; no particle is released before then.
+    const seed = geo.getAttribute('aSeed');
+    for (let k = 0; k < count; k += 1) seed.array.set([PENDING, PENDING, 0, PENDING + 1], k * 4);
+    seed.needsUpdate = true;
+    stats = { handoffMs: performance.now() - t0 };
+    const token = {};
+    pairing = token;
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        if (pairing !== token || !points) { resolve(null); return; }
+        pairing = null;
+        resolve(pair());
+      });
+    });
   }
 
   function build(targets, rtl = false) {
     disposeGeometry();
     count = targets.count;
     orderBox = inkBox(targets.dst, count, rtl);
+    tDst = new Float32Array(count * 2);
+    tOrder = new Float32Array(count);
+    for (let i = 0; i < count; i += 1) {
+      const [x, y] = [targets.dst[i * 3], targets.dst[i * 3 + 1]];
+      tDst.set([x, y], i * 2);
+      tOrder[i] = Math.min(1, Math.max(0, readingOrder(x, y, orderBox)));
+    }
+    tCol = targets.color;
+    tSorted = coherentOrder(
+      tDst.filter((v, k) => k % 2 === 0),
+      tDst.filter((v, k) => k % 2 === 1),
+      count,
+    );
+    const seed = new Float32Array(count * 4);
+    for (let k = 0; k < count; k += 1) seed.set([PENDING, PENDING, 0, PENDING + 1], k * 4);
     const geo = createPointGeometry({
-      position: [targets.dst, 3],
-      aDstColor: [targets.color, 3],
+      position: [targets.dst.slice(), 3],
+      aDstColor: [targets.color.slice(), 3],
       aSrcWorld: [new Float32Array(count * 3), 3],
       aUv: [new Float32Array(count * 2), 2],
       aRelease: [new Float32Array(count), 1],
-      aSeed: [seedFor(targets.dst, count, orderBox), 4],
+      aSeed: [seed, 4],
     });
     disposeMaterials();
-    materials = [makeMaterial(null)];
-    geo.addGroup(0, count, 0);
+    for (let k = 0; k < MATERIAL_POOL; k += 1) pooled(k);
+    materials = pool;
+    // Every pooled material drawn over the full range for the warm-up compile; setSources regroups.
+    pool.forEach((m, k) => geo.addGroup(0, k ? 0 : count, k));
     points = createPoints(geo, materials);
     points.frustumCulled = false; // positions are clip-space; the bounds three would test are not
     points.renderOrder = renderOrder;
     points.visible = false;
     shared.uSize.value = targets.size;
     scene.add(points);
-    if (lastSources) setSources(lastSources.cards, lastSources.W, lastSources.H);
+    if (lastSources) return setSources(lastSources.cards, lastSources.W, lastSources.H);
+    return Promise.resolve(null);
   }
 
   // zoom: [zoomT at p = 0, zoomT per unit p]; camZ: [CAM_Z_SPHERE, CAM_Z_END].
   function setFrame({
-    p, fade, pinTop, W, H, dpr, camera, targetDepth, zoom, camZ,
+    p, fade, pinTop, W, H, dpr, camera, zoom, camZ,
   }) {
     shared.uP.value = p;
     shared.uFade.value = fade;
     shared.uPinTop.value = pinTop;
     shared.uViewport.value.set(W, H);
     shared.uDpr.value = dpr;
-    shared.uScatter.value = 0.2 * Math.min(W, H);
     if (camera) shared.uProj.value.copy(camera.projectionMatrix);
     if (zoom) shared.uZoom.value.set(zoom[0], zoom[1]);
     if (camZ) shared.uCamZ.value.set(camZ[0], camZ[1]);
-    if (targetDepth) shared.uTargetDepth.value = targetDepth;
   }
 
   function setVisible(v) { if (points) points.visible = v; }
 
   function dispose() {
+    pairing = null;
     disposeGeometry();
     disposeMaterials();
     lastSources = null;
@@ -386,6 +552,7 @@ export default function createQuoteParticles(scene, renderOrder) {
     setVisible,
     isBuilt: () => !!points,
     getOrderBox: () => orderBox,
+    getStats: () => stats,
     getDrawCount: () => (points ? points.geometry.groups.length : 0),
     dispose,
   };
