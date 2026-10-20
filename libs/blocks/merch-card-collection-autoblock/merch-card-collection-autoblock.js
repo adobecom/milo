@@ -168,13 +168,10 @@ const firstPage = (params) => {
   return next;
 };
 
-// Every selected pill counts, including the default category, so Featured +
-// Individuals reads "All Filters (2)". 'all' means unfiltered.
+// Every selected pill counts, including the default category and All, so
+// Featured + Individuals reads "All Filters (2)".
 export function countApplied(params, groups = []) {
-  return groups.reduce((total, { deeplink }) => {
-    const raw = params.get(deeplink);
-    return total + (raw && raw !== 'all' ? 1 : 0);
-  }, 0);
+  return groups.filter(({ deeplink }) => params.get(deeplink)).length;
 }
 
 // The one shape the bar and drawer both render.

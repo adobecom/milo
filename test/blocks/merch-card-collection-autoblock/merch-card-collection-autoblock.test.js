@@ -617,8 +617,7 @@ describe('merch-card-collection autoblock', () => {
       ];
       const count = (hash) => countApplied(new URLSearchParams(hash), groups);
       expect(count('')).to.equal(0);
-      // 'all' means unfiltered.
-      expect(count('filter=all')).to.equal(0);
+      expect(count('filter=all')).to.equal(1);
       expect(count('filter=featured')).to.equal(1);
       expect(count('filter=featured&pricing=individuals')).to.equal(2);
       expect(count('filter=photo&types=desktop&pricing=business')).to.equal(3);
@@ -1211,7 +1210,7 @@ describe('merch-card-collection autoblock', () => {
         expect(params().has('pricing')).to.be.false;
         expect(pricing()).to.have.length(3);
         expect(pricing().every((input) => input.disabled)).to.be.true;
-        expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (0)');
+        expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (1)');
       });
 
       it('greys an excluded option, hands the rule to the collection and strips a deep link to it', async () => {
