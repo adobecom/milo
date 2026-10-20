@@ -893,8 +893,7 @@ describe('router-marquee ctas whose mas-field resolves after decoration', () => 
 
   describe('on /kr', () => {
     let config;
-    before(async () => {
-      const { getConfig } = await import('../../../libs/utils/utils.js');
+    before(() => {
       config = getConfig();
       config.locale = { ...config.locale, prefix: '/kr' };
     });
