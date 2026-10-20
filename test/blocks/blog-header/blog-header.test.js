@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
 import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { closeModal } from '../../../libs/blocks/modal/modal.js';
+import initSideNavigation from '../../../libs/blocks/blog-side-navigation/blog-side-navigation.js';
 import { waitFor } from '../../helpers/waitfor.js';
 import init, {
   getReadingTime,
@@ -36,6 +37,7 @@ window.lana = { log: stub() };
 
 const svgText = await readFile({ path: '../../../libs/blocks/blog-header/blog-header.svg' });
 const blogHeaderCss = await readFile({ path: '../../../libs/blocks/blog-header/blog-header.css' });
+const sideNavigationCss = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
 
 function buildProfile({
   name = 'Profile Name',
@@ -899,11 +901,12 @@ describe('blog-header section dividers', () => {
   describe('divider styling', () => {
     let style;
     let framingMedia;
+    let navigationMedia;
 
     beforeEach(() => {
       fetchStub = mockFetch();
       style = document.createElement('style');
-      style.textContent = blogHeaderCss;
+      style.textContent = `${blogHeaderCss}\n${sideNavigationCss}`;
       document.head.append(style);
       framingMedia = [...style.sheet.cssRules].find((rule) => (
         rule.type === CSSRule.MEDIA_RULE
@@ -911,10 +914,116 @@ describe('blog-header section dividers', () => {
           nestedRule.selectorText === '.blog-divider-frame.blog-divider-bottom::before'
         ))
       ));
+      navigationMedia = [...style.sheet.cssRules].find((rule) => (
+        rule.type === CSSRule.MEDIA_RULE
+        && [...rule.cssRules].some((nestedRule) => (
+          nestedRule.selectorText === '.blog-divider-bottom + .blog-article-layout::before'
+        ))
+      ));
     });
 
     afterEach(() => {
       style.remove();
+    });
+
+    async function buildNavigationLayout(options) {
+      const layoutMedia = [...style.sheet.cssRules].find((rule) => (
+        rule.type === CSSRule.MEDIA_RULE
+        && [...rule.cssRules].some((nestedRule) => (
+          nestedRule.selectorText === '.blog-article-layout'
+        ))
+      ));
+      layoutMedia.media.mediaText = navigationMedia.media.mediaText;
+      const fixture = buildSections(options);
+      const { main, headerSection, block } = fixture;
+      main.style.setProperty('--grid-container-width', '100%');
+      main.style.setProperty('--color-gray-400', '#B6B6B6');
+      [...main.children].slice(1).forEach((section) => {
+        if (!section.querySelector('.card-metadata')) {
+          section.firstElementChild.classList.add('content');
+        }
+      });
+      main.querySelector('.content').insertAdjacentHTML('afterbegin', '<h2>Article section</h2>');
+      await init(block);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      return {
+        ...fixture,
+        navigation,
+        layout: main.querySelector('.blog-article-layout'),
+        article: main.querySelector('.blog-article-content'),
+      };
+    }
+
+    it('frames the article beside the sidenav continuously without changing layout', async () => {
+      expect(navigationMedia.conditionText).to.equal('(min-width: 1200px)');
+      navigationMedia.media.mediaText = 'all';
+      const { main, headerSection, layout, article, navigation } = await buildNavigationLayout();
+      const frame = getComputedStyle(layout, '::before');
+      expect(frame.content).to.equal('""');
+      expect(frame.position).to.equal('absolute');
+      expect(frame.insetInlineStart).to.equal('-56px');
+      expect(frame.insetBlockStart).to.equal('0px');
+      expect(frame.insetBlockEnd).to.equal('0px');
+      expect(frame.gridColumn).to.equal('2 / 3');
+      expect(frame.width).to.equal('2px');
+      expect(frame.pointerEvents).to.equal('none');
+      expect(frame.zIndex).to.equal('1');
+      expect(frame.backgroundImage).to.include('rgb(182, 182, 182) 0px,');
+      expect(parseFloat(frame.height)).to.be.closeTo(layout.getBoundingClientRect().height, 0.01);
+      expect(layout.getBoundingClientRect().top)
+        .to.equal(headerSection.getBoundingClientRect().bottom);
+      expect(article.getBoundingClientRect().top - layout.getBoundingClientRect().top)
+        .to.equal(48);
+      expect(getComputedStyle(navigation).marginBlockStart).to.equal('76px');
+      expect(getComputedStyle(navigation).paddingTop).to.equal('0px');
+      expect(navigation.parentElement).to.equal(layout);
+      expect(main.lastElementChild.querySelector('.card-metadata')).to.exist;
+      expect(article.querySelector('.card-metadata')).not.to.exist;
+
+      const elements = [layout, navigation, article, ...article.children];
+      const rectangles = elements.map((element) => element.getBoundingClientRect().toJSON());
+      style.sheet.insertRule(
+        '.blog-divider-bottom + .blog-article-layout::before { content: none; }',
+        style.sheet.cssRules.length,
+      );
+      expect(elements.map((element) => element.getBoundingClientRect().toJSON()))
+        .to.deep.equal(rectangles);
+    });
+
+    it('extends the sidenav divider when article content grows and follows inline direction', async () => {
+      navigationMedia.media.mediaText = 'all';
+      const { main, layout, article } = await buildNavigationLayout();
+      const height = parseFloat(getComputedStyle(layout, '::before').height);
+      article.lastElementChild.insertAdjacentHTML('beforeend', '<div style="height: 200px"></div>');
+      expect(parseFloat(getComputedStyle(layout, '::before').height)).to.be.greaterThan(height);
+      expect(parseFloat(getComputedStyle(layout, '::before').height))
+        .to.be.closeTo(layout.getBoundingClientRect().height, 0.01);
+      const grownHeight = parseFloat(getComputedStyle(layout, '::before').height);
+      article.style.marginTop = '96px';
+      expect(parseFloat(getComputedStyle(layout, '::before').height))
+        .to.be.closeTo(grownHeight + 48, 0.01);
+      main.dir = 'rtl';
+      const frame = getComputedStyle(layout, '::before');
+      expect(frame.insetInlineStart).to.equal('-56px');
+      expect(frame.right).to.equal('-56px');
+    });
+
+    it('hides the sidenav divider in the stacked layout while retaining the header rule', async () => {
+      navigationMedia.media.mediaText = 'not all';
+      const { headerSection, layout } = await buildNavigationLayout();
+      expect(getComputedStyle(layout, '::before').content).to.equal('none');
+      expect(getComputedStyle(headerSection, '::after').content).to.equal('""');
+    });
+
+    it('does not render the sidenav divider when the header has no-dividers or is absent', async () => {
+      navigationMedia.media.mediaText = 'all';
+      const { headerSection, layout } = await buildNavigationLayout({ noDividers: true });
+      expect(getComputedStyle(layout, '::before').content).to.equal('none');
+      headerSection.remove();
+      expect(getComputedStyle(layout, '::before').content).to.equal('none');
     });
 
     it('positions the continuous frame 56px outside the container above section backgrounds without changing layout', async () => {

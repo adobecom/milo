@@ -240,6 +240,28 @@ a.blog-header-author-name:hover {
   background-repeat: repeat-x;
 }
 
+@media (min-width: 1200px) {
+  .blog-divider-bottom + .blog-article-layout {
+    position: relative;
+  }
+
+  .blog-divider-bottom + .blog-article-layout > .blog-article-content {
+    margin-top: 48px;
+  }
+
+  .blog-divider-bottom + .blog-article-layout::before {
+    content: "";
+    position: absolute;
+    grid-column: 2 / 3;
+    inset-block: 0;
+    inset-inline-start: -56px;
+    width: 2px;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(to bottom, var(--color-gray-400) 0 2px, transparent 2px 7px);
+    z-index: 1;
+  }
+}
+
 /* Blog Social share modal (appended to body by getModal) */
 .blog-share-modal.dialog-modal {
   width: fit-content;
