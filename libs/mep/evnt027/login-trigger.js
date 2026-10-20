@@ -10,16 +10,31 @@ export default function init() {
   if (activeTrigger) return activeTrigger;
   if (localStorage.getItem(DISMISSED_KEY)) return null;
 
-  const path = getMetadata('max26-login-prompt');
-  const targetSelector = getMetadata('max26-login-prompt-scroll-target');
-  const delayValue = getMetadata('max26-login-prompt-delay') ?? (targetSelector ? '0' : '120');
+  const fragmentPath = getMetadata('max26-login-prompt');
+  if (!fragmentPath) throw new Error('Missing max26-login-prompt fragment metadata.');
+  const fragmentUrl = new URL(fragmentPath, window.location.href);
+  const params = fragmentUrl.searchParams;
+  const targetId = params.get('showAfter');
+  if (params.has('showAfter') && (!targetId || /\s/.test(targetId) || targetId.startsWith('#'))) {
+    throw new Error('showAfter must be a non-empty element ID without a leading # or whitespace.');
+  }
+  const targetSelector = targetId ? null : getMetadata('max26-login-prompt-scroll-target');
+  const hasTarget = !!(targetId || targetSelector);
+  const authoredDelay = params.get('delay') ?? getMetadata('max26-login-prompt-delay');
+  const hasDelay = authoredDelay !== null || !hasTarget;
+  const delayValue = authoredDelay ?? (hasTarget ? '0' : '120');
   const delay = Number(delayValue) * 1000;
-  if (!path) throw new Error('Missing max26-login-prompt fragment metadata.');
+  const operator = params.get('operator') ?? 'and';
   if (!delayValue.trim() || !Number.isFinite(delay) || delay < 0) {
-    throw new Error('max26-login-prompt-delay must be a non-negative number of seconds.');
+    throw new Error('MAX login prompt delay must be a non-negative number of seconds.');
+  }
+  if (operator !== 'and' && operator !== 'or') {
+    throw new Error('MAX login prompt operator must be "and" or "or".');
   }
   // Validate authored selectors before installing event handlers.
   if (targetSelector) document.querySelector(targetSelector);
+  ['delay', 'showAfter', 'operator'].forEach((name) => params.delete(name));
+  const path = fragmentUrl.href;
 
   let stopped = false;
   let preparing = false;
@@ -39,12 +54,16 @@ export default function init() {
   const canOpen = () => {
     if (stopped || document.visibilityState !== 'visible'
       || localStorage.getItem(DISMISSED_KEY)
-      || document.querySelector('.dialog-modal, .modal-curtain')
-      || performance.now() < delay) return false;
-    if (!targetSelector) return true;
-    const target = document.querySelector(targetSelector);
-    return !!target && target.getClientRects().length > 0
-      && target.getBoundingClientRect().top < window.innerHeight;
+      || document.querySelector('.dialog-modal, .modal-curtain')) return false;
+    const conditions = [];
+    if (hasDelay) conditions.push(performance.now() >= delay);
+    if (hasTarget) {
+      const target = targetId
+        ? document.getElementById(targetId) : document.querySelector(targetSelector);
+      conditions.push(!!target && target.getClientRects().length > 0
+        && target.getBoundingClientRect().top < window.innerHeight);
+    }
+    return operator === 'or' ? conditions.some(Boolean) : conditions.every(Boolean);
   };
 
   async function check() {
@@ -108,6 +127,7 @@ export default function init() {
     observer.observe(document.querySelector('main'), { childList: true, subtree: true });
   }
   activeTrigger = stop;
-  timer = setTimeout(check, Math.max(0, delay - performance.now()));
+  if (hasDelay) timer = setTimeout(check, Math.max(0, delay - performance.now()));
+  queueMicrotask(check);
   return stop;
 }

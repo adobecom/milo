@@ -66,7 +66,8 @@ The latest page-specific requirements specify two minutes on the homepage and
 session guide, and reaching an authored target on individual session pages. The general
 inactivity-based proposal is not implemented: it has no confirmed duration.
 CTA destinations remain authored; AA tracking identifiers are still pending.
-Do not use the old three-second delay or Summit sign-in parameters.
+The default remains 120 seconds; explicit URL parameters can override timing
+for a particular page. Do not reuse Summit-specific sign-in parameters.
 
 ## Automatic triggering
 
@@ -79,13 +80,34 @@ Configure parent-page metadata (directly or with the manifest's `updateMetadata`
 
 | Metadata | Value |
 | --- | --- |
-| `max26-login-prompt` | The live or post-event fragment URL, without a modal hash |
-| `max26-login-prompt-scroll-target` | Optional target section selector, for example `#session-details` |
-| `max26-login-prompt-delay` | Optional delay in seconds since navigation; defaults to `120` without a target, or `0` with a target |
+| `max26-login-prompt` | The live or post-event fragment URL, without a modal hash; supports the trigger parameters below |
+| `max26-login-prompt-scroll-target` | Existing optional target section selector, for example `#session-details`; URL `showAfter` takes precedence |
+| `max26-login-prompt-delay` | Existing optional delay in seconds since navigation; URL `delay` takes precedence |
+
+Authors can configure the trigger directly on the fragment URL, for example:
+
+```text
+/homepage/fragments/mep/max2026/login-modal?delay=3&showAfter=session-details&operator=and
+```
+
+| URL parameter | Meaning |
+| --- | --- |
+| `delay` | Non-negative number of seconds since navigation, not since script initialization |
+| `showAfter` | Element ID without `#`, for example `session-details`; qualifies when its top enters the viewport |
+| `operator` | `and` (default) waits for both configured conditions; `or` waits for either |
+
+Only configured conditions participate in AND/OR. With no delay or target,
+the existing default is a 120-second delay. With only a target, there is no
+implicit delay, even with `operator=or`. Explicit `delay=0` is an immediately
+satisfied delay condition. Trigger parameters are removed before loading the
+fragment; they do not change its content or the primary CTA's authored URL.
+Invalid delays, operators, or `showAfter` IDs report an error and do not install
+the trigger. Existing selector metadata is still supported.
 
 The fragment URL is required. For scroll triggering, target the safe section
 after the marquee/player, not the marquee/player itself. Use a stable authored
-element ID on the actual page; a missing or hidden target prevents opening.
+element ID on the actual page; a missing or hidden target does not satisfy the
+scroll condition. With `operator=or`, the delay can still trigger the prompt.
 The first matching target is reached when its top enters the viewport from below.
 A target already above the viewport also qualifies, including restored scroll
 positions and fast scrolling. There is no separate marquee/player detection:
@@ -94,8 +116,10 @@ authors must choose a target position where the modal will not cover the player.
 | Desired behavior | Configuration |
 | --- | --- |
 | Two-minute delay | Fragment URL only; no scroll target |
-| Target section in view, no delay | Fragment URL and `max26-login-prompt-scroll-target: #session-details` |
-| Two-minute delay AND target reached | Fragment URL, scroll target, and `max26-login-prompt-delay: 120` |
+| Explicit two-minute delay | Fragment URL with `?delay=120` |
+| Target section in view, no delay | Fragment URL with `?showAfter=session-details` |
+| Three-second delay AND target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=and` |
+| Three-second delay OR target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=or` |
 
 Adobe Target must apply the appropriate configuration to each page and event
 phase. Timing is not restarted when this script loads late. Hidden tabs and
