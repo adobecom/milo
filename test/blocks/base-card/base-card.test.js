@@ -89,7 +89,7 @@ describe('Base Card', () => {
     expect(block.closest('.section').classList.contains('base-card-section')).to.be.true;
   });
 
-  describe('video pointer interaction', () => {
+  describe('video', () => {
     const hitAtCenter = (el) => {
       el.scrollIntoView({ block: 'center' });
       const { left, top, width, height } = el.getBoundingClientRect();
@@ -124,6 +124,18 @@ describe('Base Card', () => {
     it('keeps the card link clickable over a native video without controls', () => {
       const video = document.querySelector('#nativeAutoplay video');
       expect(hitAtCenter(video).closest('a')?.href).to.equal('https://www.adobe.com/card-link');
+    });
+
+    it('sizes MPC native video to the card media box instead of its intrinsic size', () => {
+      const { width, height } = document.querySelector('#nativeControls video').getBoundingClientRect();
+      expect(Math.round(width)).to.equal(400);
+      expect(Math.round(height)).to.equal(300);
+    });
+
+    it('leaves non-MPC native video sizing unchanged', () => {
+      const { width, height } = document.querySelector('#nativeOther video').getBoundingClientRect();
+      expect(Math.round(width)).to.equal(300);
+      expect(Math.round(height)).to.equal(150);
     });
   });
 });

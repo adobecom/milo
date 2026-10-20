@@ -24,10 +24,16 @@
       display: flex;
     }
 
-    /* MPC MP4 renditions top out at 960px wide, so don't rely on intrinsic width. */
-    .video-container,
-    video {
+    /* MPC MP4s (stage rendered them as iframes) get the same box as images; other MP4s keep stage sizing. */
+    .video-container:has(> video[data-video-source*="tv.adobe.com"]),
+    video[data-video-source*="tv.adobe.com"] {
       width: 100%;
+    }
+
+    video[data-video-source*="tv.adobe.com"] {
+      display: block;
+      aspect-ratio: 4/3;
+      object-fit: cover;
     }
 
     /* Native video controls sit above the card link. */
@@ -172,7 +178,8 @@
       }
 
       .media picture:not(.icon) img,
-      .media .milo-video {
+      .media .milo-video,
+      .media video[data-video-source*="tv.adobe.com"] {
         aspect-ratio: 2.2/1;
       }
     }
