@@ -1214,6 +1214,45 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadArea hash scrolling', () => {
+    let originalUrl;
+    let originalScrollTo;
+    let area;
+    let articleHeading;
+    let scrollSpy;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      originalScrollTo = window.scrollTo;
+      scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      area = createTag('div');
+      area.innerHTML = '<div><h2 id="fragment-section">Fragment section</h2></div>';
+      articleHeading = createTag('h2', { id: 'article-section' }, 'Article section');
+      document.body.append(articleHeading, area);
+    });
+
+    afterEach(() => {
+      area.remove();
+      articleHeading.remove();
+      window.scrollTo = originalScrollTo;
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('does not revisit an article hash when an unrelated fragment finishes loading', async () => {
+      window.history.replaceState(null, '', '#article-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.called).to.be.false;
+    });
+
+    it('preserves deep links to headings inside the fragment being loaded', async () => {
+      window.history.replaceState(null, '', '#fragment-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
+    });
+  });
+
   describe('useDotHtml', async () => {
     beforeEach(async () => {
       window.lana = { log: (msg) => console.error(msg) };
