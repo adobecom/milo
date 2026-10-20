@@ -99,8 +99,13 @@ const scrollHubHeroTo = (el, progress) => {
       const hubHero = el.closest('.hub-hero');
       if (!hubHero) return;
       const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
-      if (totalScrollRange <= 0) return;
-      const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
+      const heroStyle = getComputedStyle(hubHero);
+      const heroHeight = parseFloat(heroStyle.getPropertyValue('--hub-hero-height'));
+      const scrollRange = heroStyle.animationName.includes('hubHeroDesktopShrink') && Number.isFinite(heroHeight)
+        ? heroHeight - window.innerHeight
+        : totalScrollRange;
+      if (scrollRange <= 0) return;
+      const targetScrollY = hubHeroAbsTop + scrollRange * progress;
       window.scrollTo({ top: targetScrollY, behavior: 'instant' });
     });
   });
@@ -352,7 +357,10 @@ const onHover = (event, context) => {
   if (!isFocus && slideEl.classList.contains('hovered')
     && !slideLeaveTimeouts.has(video) && !rewindIntervals.has(video)) return;
 
-  if (isFocus && slideEl.matches(':focus-visible')) scrollHubHeroTo(slideEl, 0.6);
+  if (isFocus && slideEl.matches(':focus-visible')) {
+    const progress = window.matchMedia('(width >= 768px)').matches ? 0.55 : 0.6;
+    scrollHubHeroTo(slideEl, progress);
+  }
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.delete(video);
 
