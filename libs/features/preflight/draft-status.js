@@ -20,6 +20,7 @@ const BAR = `<div class="preflight-notification"><div class="notification-conten
 
 let bar;
 let checkedDraft;
+let reportOpening;
 
 const plural = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
@@ -62,6 +63,11 @@ async function openReport() {
   const dialog = await getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   const curtain = dialog.nextElementSibling;
   keepAcrossEdits(dialog, curtain);
+}
+
+function openReportOnce() {
+  if (reportOpening || document.getElementById('preflight')) return;
+  reportOpening = openReport().finally(() => { reportOpening = undefined; });
 }
 
 async function refreshOpenReport(draft) {
@@ -110,7 +116,7 @@ export default function showDraftStatus() {
   if (bar) return;
   loadStyle(`${getConfig().base}/styles/preflight-notification.css`);
   bar = createTag('div', { class: 'milo-preflight-overlay draft-status' }, BAR);
-  bar.querySelector('.preflight-review-link').addEventListener('click', debounce(openReport));
+  bar.querySelector('.preflight-review-link').addEventListener('click', openReportOnce);
   bar.querySelector('.notification-close').addEventListener('click', close);
   document.addEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits);
   keepAcrossEdits(bar);
