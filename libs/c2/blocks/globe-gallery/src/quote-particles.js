@@ -1,7 +1,7 @@
 import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
-  QUOTE_DEPART_MAX, QUOTE_ARRIVE_START, QUOTE_ARRIVE_SPAN, QUOTE_SETTLE,
+  QUOTE_FLIGHT as F, QUOTE_CRISP_P,
 } from './shaders.js';
 
 // The WebGL pull quote: card pixels scatter and fly into the quote's glyphs, then hand over to a
@@ -12,12 +12,10 @@ import {
 const INK_ALPHA = 128; // raster alpha that counts as a target pixel
 const PROBE = 24; // grid that finds the on-screen part of each card
 const DST_SIZE = 2; // until the first layout measures the spacing
-const SCATTER_EXPAND = 0.35; // radial blow-out, as a share of the distance from the view centre
-const SCATTER_RADIUS = 0.15; // random scatter, as a share of the viewport's short side
 const EDGE_LEAD = 0.75; // share of the departure order set by distance from the card's edge
 const RASTER_PAD = 6; // px around the figure so antialiased edges are not clipped
 // The last glyph is crisp here; the whole quote is the crisp raster from then on.
-const CRISP_P = QUOTE_ARRIVE_START + QUOTE_ARRIVE_SPAN + QUOTE_SETTLE;
+const CRISP_P = QUOTE_CRISP_P;
 export const QUOTE_LIVE_P = CRISP_P;
 const DST_SPACING = 1.25; // landed dot size, as a multiple of the targets' mean spacing
 
@@ -148,6 +146,46 @@ function rasterize(m, dpr) {
   };
 }
 
+const PENDING = 9; // departure/arrival p before pairing: beyond any flight
+const PAIR_BANDS = 8; // x bands of the 2D quantile order (8 measured best of 4–32)
+
+// Indices of the first `count` points sorted by `key`, via one native typed-array sort of packed
+// (quantized key, index) pairs.
+function sortBy(key, idx) {
+  const SLOT = 2 ** 20; // index bits under the key; counts stay well below
+  const m = idx.length;
+  let lo = Infinity; let hi = -Infinity;
+  for (let j = 0; j < m; j += 1) {
+    const v = key[idx[j]];
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
+  const scale = (SLOT - 1) / Math.max(1e-6, hi - lo);
+  const packed = new Float64Array(m);
+  for (let j = 0; j < m; j += 1) packed[j] = Math.round((key[idx[j]] - lo) * scale) * SLOT + idx[j];
+  packed.sort();
+  const out = new Uint32Array(m);
+  for (let j = 0; j < m; j += 1) out[j] = packed[j] % SLOT;
+  return out;
+}
+
+// A locality-preserving order over the set's own extent: PAIR_BANDS equal-count bands by x, each
+// read top to bottom. Rank r in one set and rank r in another sit at the same x and y quantiles,
+// so pairing two sets by rank keeps neighbours together and paths short (a cheap stand-in for
+// optimal transport; about half the random pairing's path on the page, see README).
+export function coherentOrder(xs, ys, count = xs.length) {
+  const all = new Uint32Array(count);
+  for (let i = 0; i < count; i += 1) all[i] = i;
+  const byX = sortBy(xs, all);
+  const out = new Uint32Array(count);
+  for (let b = 0; b < PAIR_BANDS; b += 1) {
+    const from = Math.floor((b * count) / PAIR_BANDS);
+    const to = Math.floor(((b + 1) * count) / PAIR_BANDS);
+    if (to > from) out.set(sortBy(ys, byX.subarray(from, to)), from);
+  }
+  return out;
+}
+
 export default function createQuoteParticles({ figureEl, railEl, count }) {
   const n = count;
   const group = new THREE.Group();
@@ -157,7 +195,9 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const tDst = new Float32Array(n * 2);
   const tCol = new Float32Array(n * 3);
   const tOrder = new Float32Array(n); // reading order 0 → 1
-  const tSeed = new Float32Array(n * 2); // scatter angle, scatter share
+  let tSorted = new Uint32Array(0); // target indices in coherentOrder
+  let stats = {};
+  let pairing = null; // the pending pairing frame's token
 
   // One set of uniform objects, referenced by every card material, so a frame updates them once.
   const shared = {
@@ -166,7 +206,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     uDpr: { value: 1 },
     uDstSize: { value: DST_SIZE },
     uAlpha: { value: 1 },
-    uScatter: { value: new THREE.Vector2(SCATTER_EXPAND, 0) },
     uZoomT: { value: new THREE.Vector2() },
     uCamZ: { value: new THREE.Vector2() },
   };
@@ -241,9 +280,11 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const yn = (py - box.y) / Math.max(1, box.h);
       // Must match QUOTE_PLANE_FRAG's order, which reveals the crisp text pixel by pixel.
       tOrder[i] = Math.min(1, Math.max(0, (m.rtl ? 1 - xn : xn) * 0.7 + yn * 0.3));
-      tSeed[i * 2] = Math.random() * Math.PI * 2;
-      tSeed[i * 2 + 1] = 0.3 + 0.7 * Math.random();
     }
+    const xs = new Float32Array(n);
+    const ys = new Float32Array(n);
+    for (let i = 0; i < n; i += 1) { xs[i] = tDst[i * 2]; ys[i] = tDst[i * 2 + 1]; }
+    tSorted = coherentOrder(xs, ys);
     return true;
   }
 
@@ -271,31 +312,38 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     draws = [];
   }
 
-  // One card's (or the fallback's) particles: uv on the card, plus their share of the targets.
+  // A particle's release p: where it eases off the camera's dolly. It depends only on how deep it
+  // sits in its card (`edge`: 0 rim → 1 centre, loosened), so the cards tear from the rim.
+  const releaseAt = (edge) => F.release[0] + F.release[1] * edge;
+
+  // [departure, arrival] p once the particle is paired with a target of reading order `order`.
+  function flight(order, edge) {
+    const arrive = F.arriveStart + F.arriveSpan * order;
+    const release = releaseAt(edge);
+    // A fixed flight ending at the particle's own arrival, so only a band is airborne at once;
+    // rim particles fly longer so they still leave first. Never before the release.
+    const leave = arrive - F.fly * (1 + F.edgeFly * (1 - edge));
+    return [Math.min(arrive - 0.5 * F.fly, Math.max(release, leave)), arrive];
+  }
+
+  // One card's (or the fallback's) particles, drawn as tiles from the hand-off frame on. Their
+  // targets come with the pairing (fillDraw); until then they hold at PENDING, never reached.
   function addDraw(card, uvs, cell) {
     const k = uvs.length / 2;
     const geo = new THREE.BufferGeometry();
     const dst = new Float32Array(k * 3);
-    const dstCol = new Float32Array(k * 3);
     const rand = new Float32Array(k * 4);
-    const base = draws.reduce((sum, d) => sum + d.count, 0);
+    const edge = new Float32Array(k);
     for (let j = 0; j < k; j += 1) {
-      const i = (base + j) % n;
-      dst[j * 3] = tDst[i * 2];
-      dst[j * 3 + 1] = tDst[i * 2 + 1];
-      dstCol.set([tCol[i * 3], tCol[i * 3 + 1], tCol[i * 3 + 2]], j * 3);
-      // Edge first: depth into the card sets most of the departure, chance the rest.
       const u = uvs[j * 2];
       const v = uvs[j * 2 + 1];
       const inner = card ? Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v)) : Math.random();
-      rand[j * 4] = QUOTE_DEPART_MAX * (EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random());
-      rand[j * 4 + 1] = tSeed[i * 2];
-      rand[j * 4 + 2] = tSeed[i * 2 + 1];
-      rand[j * 4 + 3] = QUOTE_ARRIVE_START + QUOTE_ARRIVE_SPAN * tOrder[i]; // arrival p
+      edge[j] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random();
+      rand.set([PENDING, releaseAt(edge[j]), Math.random() * 2 - 1, PENDING], j * 4);
     }
     geo.setAttribute('position', new THREE.BufferAttribute(dst, 3));
     geo.setAttribute('aUv', new THREE.BufferAttribute(uvs, 2));
-    geo.setAttribute('aDstCol', new THREE.BufferAttribute(dstCol, 3));
+    geo.setAttribute('aDstCol', new THREE.BufferAttribute(new Float32Array(k * 3), 3));
     geo.setAttribute('aRand', new THREE.BufferAttribute(rand, 4));
     const mat = new THREE.ShaderMaterial({
       uniforms: {
@@ -323,7 +371,33 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     points.frustumCulled = false;
     points.renderOrder = 1e6 + (card ? card.order : 0) / 1e4; // the cards' own depth order
     group.add(points);
-    draws.push({ points, mat, geo, count: k });
+    draws.push({ points, mat, geo, count: k, edge });
+  }
+
+  // A draw's targets from the coherent rank each particle took.
+  function fillDraw({ geo, edge }, ranks) {
+    const { position, aDstCol, aRand } = geo.attributes;
+    for (let j = 0; j < ranks.length; j += 1) {
+      const i = tSorted[ranks[j]];
+      position.array.set([tDst[i * 2], tDst[i * 2 + 1]], j * 3);
+      aDstCol.array.set([tCol[i * 3], tCol[i * 3 + 1], tCol[i * 3 + 2]], j * 3);
+      const [leave, arrive] = flight(tOrder[i], edge[j]);
+      aRand.array[j * 4] = leave;
+      aRand.array[j * 4 + 3] = arrive;
+    }
+    [position, aDstCol, aRand].forEach((a) => { a.needsUpdate = true; });
+  }
+
+  // Mean straight-line path of the pairing, against the old random one.
+  function pathStats(sx, sy, ranks, k) {
+    let paired = 0; let random = 0;
+    for (let i = 0; i < k; i += 1) {
+      const t = tSorted[ranks[i]];
+      paired += Math.hypot(tDst[t * 2] - sx[i], tDst[t * 2 + 1] - sy[i]);
+      const q = i % n;
+      random += Math.hypot(tDst[q * 2] - sx[i], tDst[q * 2 + 1] - sy[i]);
+    }
+    return { count: k, meanPath: paired / Math.max(1, k), meanPathRandom: random / Math.max(1, k) };
   }
 
   // cards: [{ project(u, v) → [x, y] px now, origin, axisU, axisV (world), tex, repeat, offset,
@@ -332,7 +406,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   function setSources(cards, W, H) {
     lastQuads = { cards, W, H };
     clearDraws();
-    if (!ready) return;
+    if (!ready) return Promise.resolve(null);
     const inView = ([x, y]) => x > -0.05 * W && x < 1.05 * W && y > -0.05 * H && y < 1.05 * H;
     const windows = cards.map(({ project }) => {
       let u0 = 1; let u1 = 0; let v0 = 1; let v1 = 0;
@@ -371,9 +445,14 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       return Math.abs(a2) / 2;
     });
     const total = area.reduce((a, b) => a + b, 0);
+    const t0 = performance.now();
+    pairing = null;
+    // Every particle's cell, and roughly where it sits on screen now (bilinear over the window's
+    // projected corners: plenty for pairing, and far cheaper than projecting each one).
+    const grids = [];
     if (!total) {
       const uvs = new Float32Array(n * 2).map(() => Math.random());
-      addDraw(null, uvs, [0, 0]);
+      grids.push({ card: null, uvs, cell: [0, 0] });
     } else {
       cards.forEach((card, ci) => {
         const win = windows[ci];
@@ -395,10 +474,66 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
             uvs[(r * cols + c) * 2 + 1] = win.v0 + (r + 0.5) * dv;
           }
         }
-        addDraw(card, uvs, [du, dv]);
+        const box = [[win.u0, win.v0], [win.u1, win.v0], [win.u1, win.v1], [win.u0, win.v1]];
+        const corners = box.map(([u, v]) => card.project(u, v));
+        grids.push({ card, uvs, cell: [du, dv], corners, win });
       });
     }
+    const k = grids.reduce((sum, g) => sum + g.uvs.length / 2, 0);
+    const sx = new Float32Array(k);
+    const sy = new Float32Array(k);
+    let o = 0;
+    grids.forEach(({ uvs, corners, win }) => {
+      for (let j = 0; j < uvs.length / 2; j += 1) {
+        if (!corners) {
+          sx[o] = uvs[j * 2] * W;
+          sy[o] = uvs[j * 2 + 1] * H;
+        } else {
+          const a = (uvs[j * 2] - win.u0) / Math.max(1e-6, win.u1 - win.u0);
+          const b = (uvs[j * 2 + 1] - win.v0) / Math.max(1e-6, win.v1 - win.v0);
+          const [p0, p1, p2, p3] = corners;
+          sx[o] = (1 - b) * ((1 - a) * p0[0] + a * p1[0]) + b * ((1 - a) * p3[0] + a * p2[0]);
+          sy[o] = (1 - b) * ((1 - a) * p0[1] + a * p1[1]) + b * ((1 - a) * p3[1] + a * p2[1]);
+        }
+        o += 1;
+      }
+    });
+    o = 0;
+    const slices = grids.map(({ card, uvs, cell }) => {
+      addDraw(card, uvs, cell);
+      const slice = [o, o + uvs.length / 2];
+      [, o] = slice;
+      return slice;
+    });
+    stats = { count: k, handoffMs: performance.now() - t0 };
+    performance.measure?.('globe-gallery pq sources', { start: t0, detail: { ...stats } });
     version += 1;
+    // The pairing waits, off the hand-off frame, and is split in two: the sort on the next frame,
+    // the buffer fill on the one after. Nothing departs before its release, many frames later.
+    const token = {};
+    pairing = token;
+    const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
+    const live = () => pairing === token;
+    return nextFrame().then(() => {
+      if (!live()) return null;
+      const t1 = performance.now();
+      // Rank in coherentOrder: the r-th source takes the matching quantile of the targets.
+      const ranks = new Uint32Array(k);
+      coherentOrder(sx, sy, k).forEach((src, r) => {
+        ranks[src] = Math.min(n - 1, Math.floor((r * n) / k));
+      });
+      const sortMs = performance.now() - t1;
+      return nextFrame().then(() => {
+        if (!live()) return null;
+        const t2 = performance.now();
+        draws.forEach((d, di) => fillDraw(d, ranks.subarray(...slices[di])));
+        const fillMs = performance.now() - t2;
+        stats = { ...stats, ...pathStats(sx, sy, ranks, k), sortMs, fillMs };
+        performance.measure?.('globe-gallery pq pairing', { start: t1, detail: { ...stats } });
+        version += 1;
+        return stats;
+      });
+    });
   }
 
   // Async only for the font wait; measure → raster → targets run in one task so they agree.
@@ -429,11 +564,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     shared.uP.value = p;
     shared.uView.value.set(W, H);
     shared.uDpr.value = dpr;
-    shared.uScatter.value.y = SCATTER_RADIUS * Math.min(W, H);
     shared.uZoomT.value.set(zoom[0], zoom[1]);
     shared.uCamZ.value.set(zoom[2], zoom[3]);
     draws.forEach(({ points }) => { points.visible = p < CRISP_P; });
-    plane.visible = p > QUOTE_ARRIVE_START;
+    plane.visible = p > F.arriveStart;
     // Past CRISP_P every pixel is the finished raster, so further scroll changes nothing drawn.
     const drawnP = p >= CRISP_P ? 'crisp' : p;
     stateKey = `${drawnP}|${show}|${version}|${W}x${H}@${dpr}`;
@@ -446,6 +580,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     update,
     isReady: () => ready,
     drawCount: () => draws.length + 1,
+    getStats: () => stats,
     // Settled and already on the canvas: the caller may skip the draw.
     isIdle: () => lastP >= CRISP_P && stateKey === drawnKey,
     markDrawn: () => { drawnKey = stateKey; },
@@ -453,6 +588,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     dispose() {
       generation += 1;
       ready = false;
+      pairing = null;
       clearDraws();
       if (group.parent) group.parent.remove(group);
       planeGeo.dispose();

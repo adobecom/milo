@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
-import createQuoteParticles, { QUOTE_LIVE_P } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 
 function mount(quote = 'Creativity connects us.') {
   document.body.innerHTML = `
@@ -30,7 +30,7 @@ describe('globe-gallery: quote particles', () => {
     fx = createQuoteParticles({ figureEl, railEl, count: 2000 });
     expect(await fx.layout({ dpr: 1 })).to.be.true;
     expect(fx.isReady()).to.be.true;
-    fx.setSources([], 800, 600);
+    await fx.setSources([], 800, 600);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
     expect(points.geometry.attributes.position.count).to.equal(2000);
@@ -63,7 +63,7 @@ describe('globe-gallery: quote particles', () => {
       alpha: 1,
       order: -5,
     });
-    fx.setSources([card(100), card(5000)], 800, 600);
+    await fx.setSources([card(100), card(5000)], 800, 600);
     expect(fx.drawCount()).to.equal(2); // one card draw + the text plane
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const { aUv, aRand } = points.geometry.attributes;
@@ -81,7 +81,7 @@ describe('globe-gallery: quote particles', () => {
     // Edge first: the rim departs well before the middle.
     expect(edge / ne).to.be.below(centre / nc);
     expect(points.material.uniforms.uMap.value).to.be.instanceOf(THREE.Texture);
-    fx.setSources([], 800, 600);
+    await fx.setSources([], 800, 600);
     expect(fx.drawCount()).to.equal(2);
     const fallback = fx.object.children.find((o) => o instanceof THREE.Points);
     expect(fallback.material.uniforms.uScreenSrc.value).to.equal(1);
@@ -91,7 +91,7 @@ describe('globe-gallery: quote particles', () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
-    fx.setSources([], 800, 600);
+    await fx.setSources([], 800, 600);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
     const view = { W: 800, H: 600, dpr: 1 };
@@ -125,14 +125,14 @@ describe('globe-gallery: quote particles', () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 800 });
     await fx.layout({ dpr: 1 });
-    fx.setSources([], 800, 600);
+    await fx.setSources([], 800, 600);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const { position, aRand } = points.geometry.attributes;
     let left = 0; let right = 0; let nl = 0; let nr = 0;
     for (let i = 0; i < position.count; i += 1) {
       const arrive = aRand.array[i * 4 + 3];
-      expect(arrive).to.be.within(0.6, 0.8 + 1e-6);
-      expect(arrive - aRand.array[i * 4]).to.be.at.least(0.3 - 1e-6); // no rushed flight
+      expect(arrive).to.be.within(0.45, 0.8 + 1e-6);
+      expect(arrive - aRand.array[i * 4]).to.be.at.least(0.15 - 1e-6); // no rushed flight
       if (position.array[i * 3] < 300) {
         left += arrive; nl += 1;
       } else {
@@ -154,5 +154,64 @@ describe('globe-gallery: quote particles', () => {
     fx = createQuoteParticles({ figureEl, railEl, count: 100 });
     expect(await fx.layout({ dpr: 1 })).to.be.false;
     expect(fx.isReady()).to.be.false;
+  });
+
+  it('orders points so consecutive points are near each other', () => {
+    const N = 4096;
+    const xs = new Float32Array(N).map(() => Math.random() * 1000);
+    const ys = new Float32Array(N).map(() => Math.random() * 600);
+    const order = coherentOrder(xs, ys);
+    expect(new Set(order).size).to.equal(N);
+    let step = 0; let rand = 0;
+    for (let i = 1; i < N; i += 1) {
+      step += Math.hypot(xs[order[i]] - xs[order[i - 1]], ys[order[i]] - ys[order[i - 1]]);
+      rand += Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
+    }
+    expect(step).to.be.below(rand / 6);
+  });
+
+  it('pairs card pixels with nearby targets', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
+    await fx.layout({ dpr: 1 });
+    // Cards spread around the quote, as on the page: pixels should go to the nearer glyphs,
+    // not across the figure.
+    const card = (x0, y0) => ({
+      project: (u, v) => [x0 + 200 * u, y0 + 150 * v],
+      origin: new THREE.Vector3(),
+      axisU: new THREE.Vector3(1, 0, 0),
+      axisV: new THREE.Vector3(0, -1, 0),
+      tex: new THREE.Texture(),
+      repeat: new THREE.Vector2(1, 1),
+      offset: new THREE.Vector2(0, 0),
+      mirror: false,
+      aspect: 1.2,
+      radius: 0.03,
+      alpha: 1,
+      order: 0,
+    });
+    await fx.setSources([card(0, 400), card(560, 0)], 800, 600);
+    const stats = fx.getStats();
+    expect(stats.count).to.be.within(2800, 3000);
+    expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
+    const draws = fx.object.children.filter((o) => o instanceof THREE.Points);
+    expect(draws).to.have.length(2);
+    draws.forEach((d) => {
+      const { aRand } = d.geometry.attributes;
+      for (let i = 0; i < aRand.count; i += 1) {
+        const [leave, arrive] = [aRand.array[i * 4], aRand.array[i * 4 + 3]];
+        expect(leave).to.be.at.least(0);
+        expect(arrive).to.be.above(leave);
+        expect(arrive).to.be.at.most(QUOTE_LIVE_P);
+      }
+    });
+    // The left card mostly feeds glyphs further left than the right card does.
+    const meanX = (d) => {
+      const pos = d.geometry.attributes.position;
+      let sum = 0;
+      for (let i = 0; i < pos.count; i += 1) sum += pos.array[i * 3];
+      return sum / pos.count;
+    };
+    expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
   });
 });
