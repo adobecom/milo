@@ -15,6 +15,7 @@ import {
   initBulkPublisherLingoMapping,
   isLingoLangFirstPath,
   getLanguageFirstCountryAndLang,
+  getRequestSize,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -1741,5 +1742,50 @@ describe('initBulkPublisherLingoMapping', () => {
 
     expect(fetchedUrls).to.have.length(1);
     expect(fetchedUrls[0]).to.equal(`${LINGO_MAPPING_URL}?bulkpublisher`);
+  });
+});
+
+describe('getRequestSize', () => {
+  const pinnedOnly = {
+    collectionSize: '150',
+    totalCardsToShow: '3',
+    sortDefault: 'featured',
+    sortEnablePopup: false,
+    showFilters: false,
+    showSearch: false,
+    showBookmarksFilter: false,
+    onlyShowBookmarkedCards: false,
+    partialLoadEnabled: false,
+    filterEvent: [],
+    container: 'carousel',
+  };
+
+  it('uses totalCardsToShow when collectionSize is empty', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '', totalCardsToShow: 10 })).to.equal(10);
+  });
+
+  it('requests only totalCardsToShow when cards are shown in server order', () => {
+    expect(getRequestSize(pinnedOnly)).to.equal(3);
+  });
+
+  it('keeps collectionSize when it is not larger than totalCardsToShow', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '3' })).to.equal('3');
+    expect(getRequestSize({ ...pinnedOnly, totalCardsToShow: '' })).to.equal('150');
+  });
+
+  [
+    ['a non-featured default sort', { sortDefault: 'dateDesc' }],
+    ['the sort popup', { sortEnablePopup: true }],
+    ['filters', { showFilters: true }],
+    ['search', { showSearch: true }],
+    ['the bookmarks filter', { showBookmarksFilter: true }],
+    ['bookmark-only collections', { onlyShowBookmarkedCards: true }],
+    ['partial load', { partialLoadEnabled: true }],
+    ['event filters', { filterEvent: ['live'] }],
+    ['the categories container', { container: 'categories' }],
+  ].forEach(([name, override]) => {
+    it(`keeps collectionSize with ${name}`, () => {
+      expect(getRequestSize({ ...pinnedOnly, ...override })).to.equal('150');
+    });
   });
 });

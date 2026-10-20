@@ -1064,6 +1064,30 @@ export const getProducts = async (state) => {
   }
 };
 
+/**
+ * Chimera returns cards in order, with featured cards first. The card library only needs more
+ * than `totalCardsToShow` cards when it filters, searches, re-sorts or samples them client-side.
+ * When none of those can happen, request `totalCardsToShow` instead of a larger `collectionSize`.
+ */
+export const getRequestSize = (state) => {
+  const collectionSize = parseInt(state.collectionSize, 10);
+  const totalCardsToShow = parseInt(state.totalCardsToShow, 10);
+  if (!collectionSize) return state.totalCardsToShow;
+  if (!(totalCardsToShow > 0) || collectionSize <= totalCardsToShow) return state.collectionSize;
+
+  const needsFullCollection = state.sortDefault !== 'featured'
+    || state.sortEnablePopup
+    || state.showFilters
+    || state.showSearch
+    || state.showBookmarksFilter
+    || state.onlyShowBookmarkedCards
+    || state.partialLoadEnabled
+    || state.filterEvent?.length
+    || state.container === 'categories';
+
+  return needsFullCollection ? state.collectionSize : totalCardsToShow;
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1153,7 +1177,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow
+      }&size=${getRequestSize(state)
       }${geoCountryParam
       }${localesQueryParam
       }${debug
