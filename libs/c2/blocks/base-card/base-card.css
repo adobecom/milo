@@ -30,10 +30,12 @@
       width: 100%;
     }
 
+    /* Letterboxed on black, like the MPC player iframe. */
     video[data-video-source*="tv.adobe.com"] {
       display: block;
       aspect-ratio: 4/3;
-      object-fit: cover;
+      object-fit: contain;
+      background: #000;
     }
 
     /* Native video controls sit above the card link. */
