@@ -339,7 +339,7 @@ export default function createQuoteParticles({ figureEl, railEl, count, motion =
   }
 
   // One card's (or the fallback's) particles, drawn as tiles from the hand-off frame on. Their
-  // targets come a frame later (fillDraw): until then they hold at PENDING, which nothing reaches.
+  // targets come with the pairing (fillDraw); until then they hold at PENDING, never reached.
   function addDraw(card, uvs, cell) {
     const k = uvs.length / 2;
     const geo = new THREE.BufferGeometry();
