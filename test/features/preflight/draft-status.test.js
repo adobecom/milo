@@ -105,6 +105,26 @@ describe('showDraftStatus', () => {
     expect(checksRun()).to.equal(runsBefore + 1);
   });
 
+  it('runs its own accessibility test for an edit made while an older check runs', async function test() {
+    this.timeout(15000);
+    await settle();
+    let releaseFirstRun;
+    const axeRun = sinon.stub(window.axe, 'run').callsFake(async () => {
+      if (axeRun.callCount === 1) await new Promise((resolve) => { releaseFirstRun = resolve; });
+      return { violations: [] };
+    });
+    main.querySelector('p').textContent = 'Older draft';
+    rerender();
+    await waitFor(() => axeRun.callCount === 1, 5000, 20);
+    main.querySelector('p').textContent = 'Newer draft';
+    rerender();
+    await pastDebounce();
+    releaseFirstRun();
+
+    await waitFor(() => axeRun.callCount === 2, 8000, 50);
+    axeRun.restore();
+  });
+
   it('shows an error and logs it when the checks cannot run', async function test() {
     this.timeout(10000);
     window.lana = { log: sinon.stub() };
@@ -152,29 +172,21 @@ describe('showDraftStatus', () => {
     await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);
   });
 
-  it('keeps the newest report when an older refresh finishes first', async function test() {
-    this.timeout(20000);
+  it('opens one report when Review is clicked again while it loads', async function test() {
+    this.timeout(10000);
     setConfig({ codeRoot: '/test/features/preflight/mocks', georouting: { enabled: 'off' }, footerReady: true });
-    const report = () => document.querySelector('#preflight .preflight');
-    bar().querySelector('.preflight-review-link').click();
-    await waitFor(report, 5000, 50);
     const heldReports = [];
     window.holdReport = () => new Promise((resolve) => { heldReports.push(resolve); });
-    const editAndWaitForRefresh = async (text) => {
-      const refreshes = heldReports.length;
-      main.querySelector('p').textContent = text;
-      rerender();
-      await waitFor(() => heldReports.length > refreshes, 8000, 20);
-    };
-
-    await editAndWaitForRefresh('Older draft');
-    await editAndWaitForRefresh('Newer draft');
-    heldReports[0]();
-    await settle();
-    heldReports[1]();
+    const review = bar().querySelector('.preflight-review-link');
+    review.click();
+    await waitFor(() => heldReports.length, 5000, 20);
+    review.click();
+    await new Promise((resolve) => { setTimeout(resolve, 500); });
+    heldReports.forEach((release) => release());
+    await waitFor(() => document.querySelector('#preflight'), 5000, 20);
     await settle();
 
-    expect(report().textContent).to.contain('Newer draft');
+    expect(document.querySelectorAll('#preflight').length).to.equal(1);
     delete window.holdReport;
     document.querySelector('#preflight .dialog-close').click();
     await waitFor(() => !document.querySelector('#preflight, .modal-curtain'), 2000, 50);

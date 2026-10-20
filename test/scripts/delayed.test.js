@@ -9,6 +9,7 @@ import loadDelayed, {
   isDaPreview,
 } from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
+import { waitFor } from '../helpers/waitfor.js';
 
 describe('Delayed', () => {
   const loadScript = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
@@ -169,15 +170,17 @@ describe('loadPreflightResults', () => {
     expect(settled).to.equal(true);
   });
 
-  it('shows only the draft status bar in DA Live Preview', async () => {
+  it('shows only the draft status bar in DA Live Preview', async function test() {
+    this.timeout(10000);
     const url = window.location.href;
-    document.body.insertAdjacentHTML('beforeend', '<main></main>');
+    document.body.innerHTML = '<main></main>';
     window.history.replaceState(null, '', '?dapreview=local');
     await loadPreflightResults();
     window.history.replaceState(null, '', url);
     const bar = document.documentElement.querySelector(':scope > .draft-status');
     const diffFetched = fetchStub.getCalls().some(({ args }) => String(args[0]).includes('.plain.html'));
-    bar?.querySelector('.notification-close').click();
+    await waitFor(() => bar.dataset.status !== 'checking', 5000, 50);
+    bar.querySelector('.notification-close').click();
     expect(bar !== null).to.equal(true);
     expect(diffFetched).to.equal(false);
   });

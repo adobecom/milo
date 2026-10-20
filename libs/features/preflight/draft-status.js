@@ -70,14 +70,10 @@ function openReportOnce() {
   reportOpening = openReport().finally(() => { reportOpening = undefined; });
 }
 
-async function refreshOpenReport(draft) {
+async function refreshOpenReport() {
   const report = document.querySelector('#preflight .preflight');
   if (!report) return;
   const freshReport = await loadReport();
-  if (draft !== checkedDraft) {
-    render(null, freshReport);
-    return;
-  }
   render(null, report);
   report.replaceWith(freshReport);
 }
@@ -90,7 +86,7 @@ function show({ status, text }) {
 const logFailure = (e) => window.lana?.log?.(`Preflight draft status failed: ${e}`, { tags: 'preflight' });
 
 async function check() {
-  if (!bar.isConnected) return; // a debounced re-check can fire after close
+  if (!bar.isConnected) return;
   const draft = draftWithoutCursor();
   if (draft === checkedDraft) return;
   checkedDraft = draft;
@@ -99,12 +95,12 @@ async function check() {
   clearLocalizationCache();
   const counts = await getIssueCounts({ merchDelayMs: MERCH_HYDRATION_MS })
     .catch((e) => { logFailure(e); return null; });
-  if (draft !== checkedDraft) return;
   show(counts ? summarize(counts) : FAILED);
-  await refreshOpenReport(draft);
+  await refreshOpenReport();
 }
 
-const runCheck = () => check().catch(logFailure);
+let checking = Promise.resolve();
+const runCheck = () => { checking = checking.then(check).catch(logFailure); };
 const checkAfterEdits = debounce(runCheck, RECHECK_DEBOUNCE_MS);
 
 function close() {
