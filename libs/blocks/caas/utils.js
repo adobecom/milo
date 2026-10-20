@@ -1066,26 +1066,34 @@ export const getProducts = async (state) => {
 
 /**
  * Chimera returns cards in order, with featured cards first. The card library only needs more
- * than `totalCardsToShow` cards when it filters, searches, re-sorts or samples them client-side.
- * When none of those can happen, request `totalCardsToShow` instead of a larger `collectionSize`.
+ * cards than it shows when users can filter, search or re-sort them, or when the default sort
+ * reorders them. Featured cards are pinned to the top on first load whatever the default sort,
+ * so when there are at least as many featured cards as shown cards, only those are ever shown.
+ * In those cases request just the number of shown cards instead of a larger `collectionSize`.
  */
 export const getRequestSize = (state) => {
   const collectionSize = parseInt(state.collectionSize, 10);
-  const totalCardsToShow = parseInt(state.totalCardsToShow, 10);
   if (!collectionSize) return state.totalCardsToShow;
-  if (!(totalCardsToShow > 0) || collectionSize <= totalCardsToShow) return state.collectionSize;
 
-  const needsFullCollection = state.sortDefault !== 'featured'
-    || state.sortEnablePopup
+  const shownLimit = parseInt(
+    state.sortDefault === 'random' ? state.sortReservoirSample : state.totalCardsToShow,
+    10,
+  );
+  if (!(shownLimit > 0) || collectionSize <= shownLimit) return state.collectionSize;
+
+  const hasUserControls = state.sortEnablePopup
     || state.showFilters
     || state.showSearch
     || state.showBookmarksFilter
     || state.onlyShowBookmarkedCards
     || state.partialLoadEnabled
-    || state.filterEvent?.length
     || state.container === 'categories';
+  if (hasUserControls) return state.collectionSize;
 
-  return needsFullCollection ? state.collectionSize : totalCardsToShow;
+  const onlyFeaturedShown = (state.featuredCards?.length || 0) >= shownLimit;
+  const serverOrderShown = state.sortDefault === 'featured' && !state.filterEvent?.length;
+
+  return onlyFeaturedShown || serverOrderShown ? shownLimit : state.collectionSize;
 };
 
 export const getConfig = async (originalState, strs = {}) => {

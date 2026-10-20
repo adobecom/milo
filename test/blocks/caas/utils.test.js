@@ -1788,4 +1788,35 @@ describe('getRequestSize', () => {
       expect(getRequestSize({ ...pinnedOnly, ...override })).to.equal('150');
     });
   });
+
+  describe('when featured cards fill every shown slot', () => {
+    const threeFeatured = {
+      ...pinnedOnly,
+      featuredCards: [{ contentId: 'a' }, { contentId: 'b' }, { contentId: 'c' }],
+    };
+
+    [
+      ['a non-featured default sort', { sortDefault: 'dateDesc' }],
+      ['the event sort', { sortDefault: 'eventSort' }],
+      ['event filters', { filterEvent: ['live'] }],
+    ].forEach(([name, override]) => {
+      it(`requests only the shown cards with ${name}`, () => {
+        expect(getRequestSize({ ...threeFeatured, ...override })).to.equal(3);
+      });
+    });
+
+    it('uses sortReservoirSample as the shown limit for the random sort', () => {
+      const random = { ...threeFeatured, sortDefault: 'random', totalCardsToShow: '10' };
+      expect(getRequestSize({ ...random, sortReservoirSample: '2' })).to.equal(2);
+      expect(getRequestSize({ ...random, sortReservoirSample: '4' })).to.equal('150');
+    });
+
+    it('keeps collectionSize when there are fewer featured cards than shown cards', () => {
+      expect(getRequestSize({ ...threeFeatured, totalCardsToShow: '4', sortDefault: 'dateDesc' })).to.equal('150');
+    });
+
+    it('keeps collectionSize when users can re-sort', () => {
+      expect(getRequestSize({ ...threeFeatured, sortEnablePopup: true })).to.equal('150');
+    });
+  });
 });
