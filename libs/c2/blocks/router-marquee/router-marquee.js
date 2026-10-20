@@ -1,7 +1,5 @@
-import { sendAnalytics } from '../../../martech/helpers.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
+import { sendAnalytics, processTrackingLabels } from '../../../martech/helpers.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
-import { debounce } from '../../../utils/action.js';
 import { cloneWithPreviewMetadata } from '../../../utils/decorate.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
@@ -1044,7 +1042,9 @@ export default function init(el) {
   // video/timer keep running for the whole drag. It no-ops within a breakpoint, so resizes
   // (e.g. the mobile address bar showing/hiding) never restart a paused video.
   window.addEventListener('resize', syncViewportAutoplay);
-  window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
+  import('../../../utils/action.js').then(({ debounce }) => {
+    window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
+  });
 
   const nextSection = el.closest('.section')?.nextElementSibling;
   if (nextSection) {

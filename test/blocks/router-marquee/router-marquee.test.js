@@ -186,6 +186,12 @@ describe('Router Marquee', () => {
     expect(cards[1].getAttribute('daa-ll')).to.equal('rm-nav-2--Slide two title');
   });
 
+  it('does not statically import late-loaded modules on the render path', async () => {
+    const src = await (await fetch('/libs/c2/blocks/router-marquee/router-marquee.js')).text();
+    expect(src).to.not.include('martech/attributes.js');
+    expect(src).to.not.match(/^import .*utils\/action\.js/m);
+  });
+
   it('defers every slide video so none is eager-fetched', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/video.html' });
     const block = document.querySelector('.router-marquee');
