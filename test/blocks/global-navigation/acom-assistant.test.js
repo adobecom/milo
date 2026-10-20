@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { createFullGlobalNavigation } from './test-utilities.js';
+import { createFullGlobalNavigation, loadStyles } from './test-utilities.js';
 import globalNavigationMock from './mocks/global-navigation.plain.js';
 import { ensureAcomAssistant } from '../../../libs/blocks/brand-concierge/acom-assistant-bootstrap.js';
 import { loadAcomAssistantGnav } from '../../../libs/features/acom-assistant-gnav.js';
@@ -34,8 +34,12 @@ describe('C1 global navigation authored Assistant entry point', () => {
 
   afterEach(() => {
     sinon.restore();
-    document.querySelectorAll('meta[name="acom-assistant"], meta[name="gnav-brand-concierge"]')
-      .forEach((meta) => meta.remove());
+    const metas = document.querySelectorAll([
+      'meta[name="acom-assistant"]',
+      'meta[name="gnav-brand-concierge"]',
+      'meta[name="gnav-brand-concierge-state"]',
+    ].join(', '));
+    for (const meta of metas) meta.remove();
     document.body.innerHTML = '';
     delete window.milo;
   });
@@ -119,6 +123,42 @@ describe('C1 global navigation authored Assistant entry point', () => {
 
     expect(document.querySelector('.feds-bc-wrapper #acomAssistant-gnav-mount')).to.exist;
     expect(client.initialize.calledOnce).to.be.true;
+  });
+
+  it('does not set the wrapper data-fab-state by default', async () => {
+    document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
+    await createFullGlobalNavigation({ imsInitialized: true });
+
+    expect(document.querySelector('.feds-bc-wrapper').hasAttribute('data-fab-state')).to.be.false;
+  });
+
+  describe('with GNav styles', () => {
+    before(() => loadStyles('/libs/blocks/global-navigation/global-navigation.css'));
+
+    const renderState = async (state) => {
+      document.head.insertAdjacentHTML('beforeend', '<meta name="gnav-brand-concierge" content="on">');
+      document.head.insertAdjacentHTML('beforeend', `<meta name="gnav-brand-concierge-state" content="${state}">`);
+      await createFullGlobalNavigation({ imsInitialized: true });
+      const wrapper = document.querySelector('.feds-bc-wrapper');
+      expect(wrapper.dataset.fabState).to.equal(state);
+      return wrapper;
+    };
+
+    it('caps the collapsed mount at the 40px icon width', async () => {
+      const wrapper = await renderState('collapsed');
+      const mount = wrapper.querySelector('#acomAssistant-gnav-mount');
+      expect(getComputedStyle(mount).maxWidth).to.equal('40px');
+    });
+
+    it('renders the hidden wrapper as an invisible zero-width spacer', async () => {
+      const wrapper = await renderState('hidden');
+      const style = getComputedStyle(wrapper);
+      expect(wrapper.querySelector('#acomAssistant-gnav-mount')).to.exist;
+      expect(wrapper.getBoundingClientRect().width).to.equal(0);
+      expect(style.paddingInlineStart).to.equal('0px');
+      expect(style.paddingInlineEnd).to.equal('0px');
+      expect(style.visibility).to.equal('hidden');
+    });
   });
 
   it('does not mount Assistant when metadata is off without removing the authored wrapper', async () => {

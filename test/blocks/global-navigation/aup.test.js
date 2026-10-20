@@ -164,7 +164,10 @@ describe('AUP', () => {
       { name: 'signed-out legacy nav', signedIn: false, unav: false, expected: false },
       { name: 'signed-out Universal Nav', signedIn: false, unav: true, expected: false },
       { name: 'metadata on', unav: false, content: 'on', expected: true },
+      { name: 'metadata enabled', unav: false, content: 'enabled', expected: true },
+      { name: 'metadata false', unav: true, content: 'false', expected: false },
       { name: 'query on overrides metadata off', unav: true, content: 'off', query: 'on', expected: true },
+      { name: 'query enabled overrides metadata off', unav: true, content: 'off', query: 'enabled', expected: true },
       { name: 'query off overrides metadata on', unav: false, content: 'on', query: 'off', expected: false },
       { name: 'empty query overrides metadata on', unav: true, content: 'on', query: '', expected: false },
       { name: 'metadata off', unav: true, content: 'off', expected: false },
@@ -187,22 +190,28 @@ describe('AUP', () => {
       });
     });
 
-    it('publishes readiness only after SDK configuration completes', async () => {
-      setSelect('on');
-      let resolveConfig;
-      instance.updateConfig.returns(new Promise((resolve) => { resolveConfig = resolve; }));
-      const ready = sinon.spy();
-      listen(AUP_SDK_READY_EVENT, ready);
-      const initialized = initializeHost();
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
-      expect(ready.called).to.be.false;
+    [
+      { select: 'on', features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] },
+      { select: 'enabled', features: ['useToasts'] },
+    ].forEach(({ select, features }) => {
+      it(`configures miniAppContext features for aup-select=${select} and publishes readiness`, async () => {
+        setSelect(select);
+        let resolveConfig;
+        instance.updateConfig.returns(new Promise((resolve) => { resolveConfig = resolve; }));
+        const ready = sinon.spy();
+        listen(AUP_SDK_READY_EVENT, ready);
+        const initialized = initializeHost();
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        expect(ready.called).to.be.false;
 
-      resolveConfig();
-      await initialized;
+        resolveConfig();
+        await initialized;
 
-      expect(ready.calledOnce).to.be.true;
-      expect(window.aupsdk === instance).to.be.true;
-      expect(instance.updateConfig.firstCall.args[0]).to.deep.equal({ miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } });
+        expect(ready.calledOnce).to.be.true;
+        expect(window.aupsdk === instance).to.be.true;
+        expect(instance.updateConfig.firstCall.args[0])
+          .to.deep.equal({ miniAppContext: { features } });
+      });
     });
 
     it('requests an IMS profile only while signed in and preserves profile errors', async () => {

@@ -1643,6 +1643,8 @@ describe('Merch Block', () => {
       { content: 'on', calls: 2, aup: true },
       { content: 'off', query: 'on', aup: true },
       { content: 'on', query: 'off', legacy: true },
+      { content: 'enabled', calls: 2, aup: true },
+      { content: 'false', legacy: true },
       { content: 'off', legacy: true },
       { content: 'off', commercePreload: 'off' },
       { content: 'on', commercePreload: 'off' },

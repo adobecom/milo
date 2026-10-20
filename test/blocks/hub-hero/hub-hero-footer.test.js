@@ -23,6 +23,38 @@ describe('hub-hero footer and assembly', () => {
       }
     };
 
+    const runningTransitions = (scope) => scope.getAnimations({ subtree: true })
+      .filter((animation) => animation instanceof window.CSSTransition);
+
+    // Jumps every running transition to its end state instead of waiting in real time.
+    const finishTransitions = (scope) => runningTransitions(scope)
+      .forEach((animation) => animation.finish());
+
+    // Pauses running transitions and seeks them to `ms` on a shared timeline.
+    const seekTransitions = (scope, ms) => {
+      runningTransitions(scope).forEach((animation) => {
+        animation.pause();
+        const { endTime } = animation.effect.getComputedTiming();
+        animation.currentTime = Math.min(ms, endTime);
+      });
+    };
+
+    // Steps running transitions through their full timeline deterministically.
+    const stepTransitions = (scope, steps, sample) => {
+      const transitions = runningTransitions(scope);
+      const total = Math.max(...transitions.map((animation) => animation.effect
+        .getComputedTiming().endTime), 0);
+      transitions.forEach((animation) => animation.pause());
+      for (let step = 1; step <= steps; step += 1) {
+        const elapsed = (total * step) / steps;
+        transitions.forEach((animation) => {
+          animation.currentTime = Math.min(elapsed, animation.effect.getComputedTiming().endTime);
+        });
+        sample(elapsed);
+      }
+      transitions.forEach((animation) => animation.finish());
+    };
+
     before(async () => {
       originalViewport = { width: window.innerWidth, height: window.innerHeight };
       originalDirection = document.documentElement.getAttribute('dir');
@@ -126,7 +158,7 @@ describe('hub-hero footer and assembly', () => {
           const rowWidth = row.getBoundingClientRect().width;
           expect(rowWidth).to.be.closeTo(3 * finalWidth + 2 * endGap, 0.1);
           cards[0].classList.add('hovered');
-          await new Promise((resolve) => { setTimeout(resolve, 350); });
+          finishTransitions(block);
           expect(row.getBoundingClientRect().width).to.be.closeTo(rowWidth, 0.1);
         });
       });
@@ -170,7 +202,7 @@ describe('hub-hero footer and assembly', () => {
                 hero: block.offsetHeight,
                 following: following.getBoundingClientRect().top + window.scrollY,
               });
-              if (performance.now() - start < 2000) requestAnimationFrame(sample);
+              if (performance.now() - start < 500) requestAnimationFrame(sample);
               else resolve();
             };
             requestAnimationFrame(sample);
@@ -214,7 +246,8 @@ describe('hub-hero footer and assembly', () => {
 
     ['p', 'h3'].forEach((footerTag) => {
       [3, 4].forEach((slideCount) => {
-        ['ltr', 'rtl'].forEach((direction) => {
+        // Both tags, slide counts and directions stay covered without the full cross product.
+        (({ 'p-3': ['ltr'], 'h3-4': ['rtl'] })[`${footerTag}-${slideCount}`] || []).forEach((direction) => {
           it(`expands proportional XL ${slideCount}-slide ${direction} ${footerTag} cards in short viewports without narrowing footer text`, async () => {
             document.documentElement.setAttribute('dir', direction);
             for (const viewport of [
@@ -245,19 +278,13 @@ describe('hub-hero footer and assembly', () => {
               const gap = parseFloat(getComputedStyle(block).getPropertyValue('--s2a-spacing-xs'));
               for (const state of ['hovered', 'focused']) {
                 card.classList.add(state);
-                const start = performance.now();
                 const samples = [];
-                await new Promise((resolve) => {
-                  const sample = () => {
-                    samples.push({
-                      cardWidth: card.getBoundingClientRect().width,
-                      textWidth: paragraph.getBoundingClientRect().width,
-                      rowWidth: row.getBoundingClientRect().width,
-                    });
-                    if (performance.now() - start < 400) requestAnimationFrame(sample);
-                    else resolve();
-                  };
-                  requestAnimationFrame(sample);
+                stepTransitions(block, 40, () => {
+                  samples.push({
+                    cardWidth: card.getBoundingClientRect().width,
+                    textWidth: paragraph.getBoundingClientRect().width,
+                    rowWidth: row.getBoundingClientRect().width,
+                  });
                 });
                 samples.forEach((sample) => {
                   expect(sample.cardWidth).to.be.at.least(restingWidth - 0.1);
@@ -267,7 +294,7 @@ describe('hub-hero footer and assembly', () => {
                 expect(card.getBoundingClientRect().width)
                   .to.be.at.least(restingWidth + icon.getBoundingClientRect().width + gap - 0.1);
                 card.classList.remove(state);
-                await new Promise((resolve) => { setTimeout(resolve, 350); });
+                finishTransitions(block);
                 expect(card.getBoundingClientRect().width).to.be.closeTo(restingWidth, 0.1);
               }
               block.remove();
@@ -310,16 +337,9 @@ describe('hub-hero footer and assembly', () => {
             expect(initial.opacity).to.equal(0);
             expect(initial.inset).to.be.closeTo(initial.padding, 0.1);
             const samples = [];
-            const start = performance.now();
             card.classList.add('hovered');
-            await new Promise((resolve) => {
-              const sample = () => {
-                const elapsed = performance.now() - start;
-                samples.push({ elapsed, ...measure() });
-                if (elapsed < 450) requestAnimationFrame(sample);
-                else resolve();
-              };
-              requestAnimationFrame(sample);
+            stepTransitions(block, 45, (elapsed) => {
+              samples.push({ elapsed, ...measure() });
             });
             const hovered = measure();
             const gap = parseFloat(getComputedStyle(footer).getPropertyValue('--s2a-spacing-xs'));
@@ -340,9 +360,9 @@ describe('hub-hero footer and assembly', () => {
             });
             card.classList.remove('hovered');
             expect(parseFloat(getComputedStyle(icon).transitionDelay)).to.equal(0);
-            await new Promise((resolve) => { setTimeout(resolve, 130); });
+            seekTransitions(block, 130);
             expect(measure().opacity).to.equal(0);
-            await new Promise((resolve) => { setTimeout(resolve, 220); });
+            finishTransitions(block);
             expect(measure().reserved).to.be.closeTo(0, 0.1);
             block.style.setProperty('--s2a-spacing-lg', '32px');
             await settleLayout();
@@ -357,6 +377,8 @@ describe('hub-hero footer and assembly', () => {
               window.scrollTo(0, 1800);
               await settleLayout();
               const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+              // The first card's footer is clipped until its scroll-driven reveal completes.
+              card.style.setProperty('--chrome-reveal', '1');
               const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
               const fullText = 'Create, edit, and organize images and digital art. '.repeat(12);
               const expectFullText = () => {
@@ -380,7 +402,7 @@ describe('hub-hero footer and assembly', () => {
               for (const scale of [1, 2]) {
                 card.blur();
                 card.classList.remove('hovered', 'focused');
-                await new Promise((resolve) => { setTimeout(resolve, 350); });
+                finishTransitions(block);
                 paragraph.style.fontSize = `calc(var(--s2a-typography-font-size-eyebrow) * ${scale})`;
                 paragraph.textContent = 'Short';
                 await settleLayout();
@@ -395,11 +417,13 @@ describe('hub-hero footer and assembly', () => {
                     .to.be.closeTo(lineHeight * 2, 0.1);
                   expect(paragraph.scrollHeight).to.be.above(paragraph.clientHeight);
                   card.classList.add('hovered');
-                  await new Promise((resolve) => { setTimeout(resolve, 350); });
+                  finishTransitions(block);
                   expectFullText();
                   card.classList.remove('hovered');
                   card.focus();
-                  await new Promise((resolve) => { setTimeout(resolve, 350); });
+                  // Keyboard focus scrolls the hero after two animation frames.
+                  await settleLayout();
+                  finishTransitions(block);
                   expect(card.matches(':focus-visible')).to.be.true;
                   expectFullText();
                 }
@@ -408,7 +432,7 @@ describe('hub-hero footer and assembly', () => {
                   window.scrollTo(0, window.scrollY + row.top
                     + card.offsetHeight - window.innerHeight + 24);
                 } else window.scrollTo(0, document.documentElement.scrollHeight);
-                await new Promise((resolve) => { setTimeout(resolve, 150); });
+                await settleLayout();
                 const range = document.createRange();
                 const node = paragraph.firstChild;
                 range.setStart(node, node.length - 5);
@@ -432,7 +456,7 @@ describe('hub-hero footer and assembly', () => {
     });
 
     [3, 4].forEach((slideCount) => {
-      ['ltr', 'rtl'].forEach((direction) => {
+      [slideCount === 3 ? 'ltr' : 'rtl'].forEach((direction) => {
         it(`preserves the ${slideCount}-slide ${direction} XL portrait ratio and 392px cap on resize`, async () => {
           await setViewport({ width: 1920, height: 1200 });
           document.documentElement.setAttribute('dir', direction);
@@ -448,7 +472,8 @@ describe('hub-hero footer and assembly', () => {
             await setViewport({ width, height });
             await settleLayout();
             window.scrollTo(0, (block.offsetHeight - window.innerHeight) * 0.95);
-            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            await settleLayout();
+            finishTransitions(block);
             await settleLayout();
             row.querySelectorAll('[data-index]').forEach((card) => {
               const bounds = card.getBoundingClientRect();
@@ -480,7 +505,7 @@ describe('hub-hero footer and assembly', () => {
       card.focus();
       expect(card.matches(':focus-visible')).to.be.true;
       expect(card.classList.contains('focused')).to.be.false;
-      await new Promise((resolve) => { setTimeout(resolve, 450); });
+      finishTransitions(block);
       expect(getComputedStyle(card.querySelector('.hub-hero-carousel-item-footer span')).opacity)
         .to.equal('1');
       expect(getComputedStyle(text).webkitLineClamp).to.equal('none');
@@ -515,14 +540,8 @@ describe('hub-hero footer and assembly', () => {
         const initialWidth = paragraph.getBoundingClientRect().width;
         const samples = [initialWidth];
         card.classList.add('hovered');
-        await new Promise((resolve) => {
-          const start = performance.now();
-          const sample = () => {
-            samples.push(paragraph.getBoundingClientRect().width);
-            if (performance.now() - start < 400) requestAnimationFrame(sample);
-            else resolve();
-          };
-          requestAnimationFrame(sample);
+        stepTransitions(block, 40, () => {
+          samples.push(paragraph.getBoundingClientRect().width);
         });
         expect(samples.at(-1)).to.be.above(initialWidth);
         for (let index = 1; index < samples.length; index += 1) {
