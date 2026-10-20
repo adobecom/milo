@@ -1,4 +1,4 @@
-import { createTag, getConfig, getMetadata } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadBlock, MILO_EVENTS } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { getSVGsfromFile } from '../share/share.js';
 import { getModal } from '../modal/modal.js';
@@ -500,6 +500,13 @@ export default async function init(el) {
   el.prepend(eyebrow);
   authorRows.forEach((row) => row.remove());
   el.append(byline);
+
+  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
+    if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;
+    const navigation = createTag('div', { class: 'blog-side-navigation' });
+    el.after(navigation);
+    loadBlock(navigation).catch((error) => logError(`side navigation failed: ${error.message}`));
+  }, { once: true });
 
   return readingTime;
 }
