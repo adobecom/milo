@@ -529,6 +529,68 @@ function decorateDividers(el) {
   updateFrame([], observer);
 }
 
+const BAR_HEIGHT = 8;
+
+function decorateProgressBar(el, main) {
+  const headerSection = el.closest('.section');
+  if (el.classList.contains('no-progress-bar') || !main || !headerSection) return;
+
+  const bar = createTag('div', { class: 'blog-progress-bar', 'aria-hidden': 'true' });
+  el.append(bar);
+  const stacked = window.matchMedia('(max-width: 1199px)');
+  let frame = 0;
+
+  const update = () => {
+    frame = 0;
+    if (!el.isConnected) {
+      cleanup(); // eslint-disable-line no-use-before-define
+      return;
+    }
+    // Article copy runs from the header section to the related cards, re-read as sections decorate.
+    const contents = [];
+    let section = headerSection.nextElementSibling;
+    if (section?.classList.contains('blog-article-layout')) {
+      section = section.querySelector('.blog-article-content > .section');
+    }
+    while (section && !section.querySelector('.card-metadata')) {
+      contents.push(...section.querySelectorAll(':scope > .content'));
+      section = section.nextElementSibling || section.parentElement?.closest('.blog-article-layout')?.nextElementSibling;
+    }
+    const first = contents[0]?.getBoundingClientRect();
+    const last = contents.at(-1)?.getBoundingClientRect();
+    if (!first) return;
+
+    const navigation = main.querySelector('.blog-side-navigation:not([hidden])');
+    const dividerY = stacked.matches && navigation
+      ? (navigation.getBoundingClientRect().bottom + first.top) / 2
+      : headerSection.getBoundingClientRect().bottom - 1;
+    const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
+    const dividerTop = dividerY - BAR_HEIGHT / 2;
+    const top = Math.max(globalNav, dividerTop);
+    // Stacked layouts start filling once the bar pins under the global nav.
+    const start = stacked.matches ? window.scrollY + dividerTop - globalNav : 0;
+
+    const distance = last.bottom + window.scrollY - window.innerHeight - start;
+    const progress = distance > 0 ? (window.scrollY - start) / distance : 0;
+    bar.style.top = `${top}px`;
+    bar.style.setProperty('--blog-progress', Math.min(1, Math.max(0, progress)));
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  const observer = new ResizeObserver(schedule);
+  const cleanup = () => {
+    window.removeEventListener('scroll', schedule);
+    window.removeEventListener('resize', schedule);
+    observer.disconnect();
+    cancelAnimationFrame(frame);
+  };
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule);
+  observer.observe(main);
+  update();
+}
+
 export default async function init(el) {
   const main = el.closest('main');
   const readingTime = main ? getReadingTime(main) : 0;
@@ -551,6 +613,7 @@ export default async function init(el) {
   authorRows.forEach((row) => row.remove());
   el.append(byline);
   decorateDividers(el);
+  decorateProgressBar(el, main);
 
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;
