@@ -1,6 +1,13 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
+import loadDelayed, {
+  loadPrivacy,
+  loadJarvisChat,
+  loadGoogleLogin,
+  addRUMCampaignTrackingParameters,
+  loadPreflightResults,
+  shouldAutoHighlight,
+} from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
@@ -139,24 +146,6 @@ describe('loadPreflightResults', () => {
     expect(document.querySelector('.preflight-diff-highlight-control')).to.be.null;
   });
 
-  it('only enables local highlights for autoHighlight=on', async () => {
-    setParam('autoHighlight', 'true');
-    document.body.insertAdjacentHTML('beforeend', '<main></main>');
-    await loadPreflightResults();
-    expect(fetchStub.called).to.equal(false);
-  });
-
-  ['dapreview', 'quick-edit'].forEach((param) => {
-    it(`skips ${param} pages even with autoHighlight=on`, async () => {
-      setParam('autoHighlight', 'on');
-      setParam(param, 'on');
-      document.body.insertAdjacentHTML('beforeend', '<main></main>');
-      await loadPreflightResults();
-      expect(fetchStub.calledWithMatch('.plain.html')).to.equal(false);
-      expect(document.querySelector('.preflight-diff-highlight-control')).to.be.null;
-    });
-  });
-
   it('does not render the publish notification on local hosts', async () => {
     // web-test-runner serves on localhost, so the isLocal branch is exercised
     // and the sidekick quality-check notification must be skipped.
@@ -185,5 +174,32 @@ describe('loadPreflightResults', () => {
     expect(settledBeforeFetch).to.equal(false);
     expect(settled).to.equal(true);
     expect(fetchStub.calledWithMatch('.plain.html')).to.equal(true);
+  });
+});
+
+describe('shouldAutoHighlight', () => {
+  const hosts = {
+    preview: { isPreview: true, isLocal: false },
+    localhost: { isPreview: false, isLocal: true },
+    live: { isPreview: false, isLocal: false },
+  };
+
+  [
+    ['preview', '', true],
+    ['preview', 'autoHighlight=on', true],
+    ['preview', 'autoHighlight=off', false],
+    ['localhost', '', false],
+    ['localhost', 'autoHighlight=on', true],
+    ['localhost', 'autoHighlight=off', false],
+    ['localhost', 'autoHighlight=true', false],
+    ['live', 'autoHighlight=on', false],
+    ['preview', 'dapreview=on', false],
+    ['localhost', 'dapreview=local&autoHighlight=on', false],
+    ['preview', 'quick-edit=on&autoHighlight=on', false],
+  ].forEach(([host, query, expected]) => {
+    it(`${expected ? 'highlights' : 'skips'} ${host} ${query ? `with ${query}` : 'without parameters'}`, () => {
+      const params = new URLSearchParams(query);
+      expect(shouldAutoHighlight({ ...hosts[host], params })).to.equal(expected);
+    });
   });
 });
