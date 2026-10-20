@@ -1,7 +1,7 @@
 import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
-  QUOTE_FLIGHT as F, QUOTE_CRISP_P,
+  QUOTE_FLIGHT as F, QUOTE_CRISP_P, QUOTE_ARRIVE_JITTER,
 } from './shaders.js';
 
 // The WebGL pull quote: card pixels scatter and fly into the quote's glyphs, then hand over to a
@@ -186,6 +186,22 @@ export function coherentOrder(xs, ys, count = xs.length) {
   return out;
 }
 
+// Soft pairing: the band order with noisy sort keys and near-rank swaps, so neighbouring cards'
+// particles interleave at the band seams and card colours dither instead of tiling the text.
+const SOFT_X = 1; // ± x key noise, in band widths
+const SOFT_Y = 0.12; // ± y key noise, as a share of the set's height
+const SOFT_SWAP = 0.2; // share of target ranks that trade sources with a near rank
+const SOFT_SWAP_SPAN = 1 / 32; // how near, as a share of all ranks
+
+function extent(arr, count) {
+  let lo = Infinity; let hi = -Infinity;
+  for (let i = 0; i < count; i += 1) {
+    if (arr[i] < lo) lo = arr[i];
+    if (arr[i] > hi) hi = arr[i];
+  }
+  return Math.max(1e-6, hi - lo);
+}
+
 export default function createQuoteParticles({ figureEl, railEl, count }) {
   const n = count;
   const group = new THREE.Group();
@@ -317,8 +333,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const releaseAt = (edge) => F.release[0] + F.release[1] * edge;
 
   // [departure, arrival] p once the particle is paired with a target of reading order `order`.
-  function flight(order, edge) {
-    const arrive = F.arriveStart + F.arriveSpan * order;
+  function flight(order, edge, jitter = 0) {
+    const arrive = F.arriveStart + F.arriveSpan * order + jitter;
     const release = releaseAt(edge);
     // A fixed flight ending at the particle's own arrival, so only a band is airborne at once;
     // rim particles fly longer so they still leave first. Never before the release.
@@ -381,7 +397,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const i = tSorted[ranks[j]];
       position.array.set([tDst[i * 2], tDst[i * 2 + 1]], j * 3);
       aDstCol.array.set([tCol[i * 3], tCol[i * 3 + 1], tCol[i * 3 + 2]], j * 3);
-      const [leave, arrive] = flight(tOrder[i], edge[j]);
+      const jitter = (Math.random() * 2 - 1) * QUOTE_ARRIVE_JITTER;
+      const [leave, arrive] = flight(tOrder[i], edge[j], jitter);
       aRand.array[j * 4] = leave;
       aRand.array[j * 4 + 3] = arrive;
     }
@@ -398,6 +415,37 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       random += Math.hypot(tDst[q * 2] - sx[i], tDst[q * 2 + 1] - sy[i]);
     }
     return { count: k, meanPath: paired / Math.max(1, k), meanPathRandom: random / Math.max(1, k) };
+  }
+
+  // Source order r takes the r-th quantile of the targets' coherent order.
+  function quantileRanks(order, k) {
+    const ranks = new Uint32Array(k);
+    for (let r = 0; r < k; r += 1) ranks[order[r]] = Math.min(n - 1, Math.floor((r * n) / k));
+    return ranks;
+  }
+
+  // Each source's target rank under soft pairing (see SOFT_X).
+  function softRanks(xs, ys, k) {
+    const bw = (SOFT_X * extent(xs, k)) / PAIR_BANDS;
+    const bh = SOFT_Y * extent(ys, k);
+    const nx = new Float32Array(k);
+    const ny = new Float32Array(k);
+    for (let i = 0; i < k; i += 1) {
+      nx[i] = xs[i] + (Math.random() * 2 - 1) * bw;
+      ny[i] = ys[i] + (Math.random() * 2 - 1) * bh;
+    }
+    const order = coherentOrder(nx, ny, k);
+    const ranks = quantileRanks(order, k);
+    // Swaps along the order, so a target trades its source with a nearby target's.
+    const span = Math.max(1, Math.round(SOFT_SWAP_SPAN * k));
+    for (let r = 0; r < k; r += 1) {
+      if (Math.random() < SOFT_SWAP) {
+        const q = Math.min(k - 1, Math.max(0, r + Math.round((Math.random() * 2 - 1) * span)));
+        const [a, b] = [order[r], order[q]];
+        [ranks[a], ranks[b]] = [ranks[b], ranks[a]];
+      }
+    }
+    return ranks;
   }
 
   // cards: [{ project(u, v) → [x, y] px now, origin, axisU, axisV (world), tex, repeat, offset,
@@ -517,11 +565,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     return nextFrame().then(() => {
       if (!live()) return null;
       const t1 = performance.now();
-      // Rank in coherentOrder: the r-th source takes the matching quantile of the targets.
-      const ranks = new Uint32Array(k);
-      coherentOrder(sx, sy, k).forEach((src, r) => {
-        ranks[src] = Math.min(n - 1, Math.floor((r * n) / k));
-      });
+      const ranks = softRanks(sx, sy, k);
       const sortMs = performance.now() - t1;
       return nextFrame().then(() => {
         if (!live()) return null;

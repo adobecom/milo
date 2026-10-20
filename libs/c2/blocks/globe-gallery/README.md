@@ -2011,19 +2011,33 @@ exponentially over `QUOTE_RELEASE_REACH` of the remaining depth and stops at lea
 `QUOTE_MIN_DEPTH` in front of the particle, so there is no velocity kink and the particle can never
 pass behind the camera. Later, at its departure p (`aRand.x`), the particle leaves for the text. Its
 sprite shrinks from cell size to the text dot size and rounds off over the first 40% of the leg. It
-keeps sampling its own photo pixels and turns to the ink only over the last 22% of its own travel
+keeps sampling its own photo pixels and turns to the ink only over the last 30% of its own travel
 (`QUOTE_INK_FROM`).
 
-**Pairing.** Sources and targets are matched by `coherentOrder`. That is a 2D quantile order: 8
-equal-count x bands (`PAIR_BANDS`), each read top to bottom, over each set's own extent. Rank r of
-the cards goes to rank r of the glyphs, so left cards feed the left of the quote, upper cards its
-upper lines, and neighbours stay together. It's a cheap stand-in for optimal transport. On the page,
-the mean path is about half of the old random pairing's (1440: 270 px vs 585; 390: 150 vs 312).
-Hilbert-curve ranks measured worse (259 vs 224 on a synthetic page). The target order is built
-with the targets. The source order needs the hand-off's screen positions,
-so `setSources` draws the tiles on the hand-off frame with `PENDING` timings. It sorts on the next
-animation frame and fills the buffers (`fillDraw`) on the one after. Nothing leaves before its release, many frames later. It is measured
-as `performance` entries `globe-gallery pq sources` / `globe-gallery pq pairing`.
+**Pairing.** Card pixels are matched to glyph targets on the frames after the hand-off. The tiles
+are drawn on the hand-off frame with `PENDING` timings. The sort runs on the next animation frame
+(`softRanks`), and `fillDraw` writes the buffers on the frame after. Nothing departs before its
+release, many frames later.
+
+The base is `coherentOrder`, a 2D quantile order: 8 equal-count x bands (`PAIR_BANDS`), each read
+top to bottom, over each set's own extent. Rank r of the sources takes rank r of the targets. On its
+own that maps each card's contiguous pixels onto a contiguous rectangle of the text, so card colours
+would tile the quote with hard seams. Soft pairing loosens it:
+- **Noisy sort keys.** Each source's keys get per-particle noise of ±`SOFT_X` (1 band width) in x and
+  ±`SOFT_Y` (12% of the height) in y, so neighbouring cards interleave at the seams.
+- **Near-rank swaps.** `SOFT_SWAP` (20%) of target ranks trade sources with a rank up to
+  `SOFT_SWAP_SPAN` (1/32 of all) away.
+
+Colours dither across the text instead of forming rectangles, and paths stay about half the random
+pairing's (1440: 289 px vs 589; 390: 182 vs 313).
+
+**Arrival feathering.** Each particle's arrival gets a fixed random offset of
+±`QUOTE_ARRIVE_JITTER` (0.02 p), so the landing wave's leading edge is feathered and a dense region
+never lands at one instant. The crisp reveal (`QUOTE_PLANE_FRAG`) ramps from a region's mean arrival
+to past its latest one, and particles fade only after that, so the crisp text never shows before
+most of its particles are in. The ink blend starts at 70% of each particle's travel (was 78%), so
+near-landing particles converge on the text colour. `QUOTE_CRISP_P` grows by the
+jitter (0.88).
 
 **Flight.** Particles release in a short common window (p 0.10–0.20, rim first; `QUOTE_FLIGHT.release`),
 so the cards stay compact while they wait. Each then departs `fly` (0.3) before its own arrival, and
@@ -2046,7 +2060,7 @@ global fill-in, and every region is speckled for only ~3vh of scroll.
 | 0 | Cards render as before. At p > 0 they hide and their particles take over, identical on screen. |
 | 0.1 → 0.2 | Releases from the dolly, rim first. |
 | 0.45 → 0.8 | Landings, in reading order, each glyph turning crisp as it lands. |
-| ≤ 0.84 | Everything is the crisp raster (`QUOTE_LIVE_P` marks the DOM figure `is-live`). Rendering stops (see below). |
+| ≤ 0.88 | Everything is the crisp raster (`QUOTE_LIVE_P` marks the DOM figure `is-live`). Rendering stops (see below). |
 
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain

@@ -262,7 +262,10 @@ export const TEXT_FRAG = [
 // together, and the crisp text plane reveals each pixel with that same function: the text goes
 // crisp in one wave with the landing, with no global fill-in afterwards.
 export const QUOTE_SETTLE = 0.04; // a region's particles hand over to the crisp text in this window
-export const QUOTE_INK_FROM = 0.78; // share of a particle's own travel after which it turns to ink
+export const QUOTE_INK_FROM = 0.7; // share of a particle's own travel after which it turns to ink
+// ± p on each particle's reading-order arrival, so the landing wave's edge is feathered and a dense
+// region never lands at one instant. The crisp reveal and the particle fade allow for it.
+export const QUOTE_ARRIVE_JITTER = 0.02;
 // The flight. Reading order 0 → 1 lands across [arriveStart, arriveStart + arriveSpan]; the last
 // glyph is crisp at QUOTE_CRISP_P. Particles ease off the dolly in a short common window `release`
 // (start, spread; rim first) so each card stays compact while it waits, then each flies a fixed
@@ -275,7 +278,8 @@ export const QUOTE_FLIGHT = {
   fly: 0.3,
   edgeFly: 0.5,
 };
-export const QUOTE_CRISP_P = QUOTE_FLIGHT.arriveStart + QUOTE_FLIGHT.arriveSpan + QUOTE_SETTLE;
+export const QUOTE_CRISP_P = QUOTE_FLIGHT.arriveStart + QUOTE_FLIGHT.arriveSpan
+  + 2 * QUOTE_ARRIVE_JITTER + QUOTE_SETTLE;
 const QUOTE_WOBBLE = 0.06; // sideways wobble, as a share of the path length
 const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
 const QUOTE_RELEASE_REACH = 0.5; // share of its remaining depth a released particle still closes
@@ -371,7 +375,9 @@ export const QUOTE_POINTS_VERT = [
   '  vSize = size;',
   '  vRound = g * (1.0 - land);',
   // Out over the second half of the region's settle window, as the crisp text comes in under it.
-  `  vFade = 1.0 - smoothstep(aRand.w + ${glf(QUOTE_SETTLE * 0.3)}, aRand.w + ${glf(QUOTE_SETTLE * 0.8)}, uP);`,
+  // Keyed past the latest arrival in its region, so early landers stay until the crisp text is in.
+  `  float fadeAt = aRand.w + ${glf(QUOTE_ARRIVE_JITTER)};`,
+  `  vFade = 1.0 - smoothstep(fadeAt + ${glf(QUOTE_SETTLE * 0.3)}, fadeAt + ${glf(QUOTE_SETTLE * 0.8)}, uP);`,
   '  vInk = aDstCol;',
   `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
   '  vInkK = ink * ink;',
@@ -445,7 +451,8 @@ export const QUOTE_PLANE_FRAG = [
   '  vec2 n = (vPx - uBox.xy) / max(uBox.zw, vec2(1.0));',
   '  float order = clamp((uRtl > 0.5 ? 1.0 - n.x : n.x) * 0.7 + n.y * 0.3, 0.0, 1.0);',
   `  float arrive = ${glf(QUOTE_FLIGHT.arriveStart)} + ${glf(QUOTE_FLIGHT.arriveSpan)} * order;`,
-  `  float reveal = smoothstep(arrive, arrive + ${glf(QUOTE_SETTLE * 0.6)}, uP);`,
+  // From the region's mean arrival to past its latest one: crisp only once most particles are in.
+  `  float reveal = smoothstep(arrive, arrive + ${glf(QUOTE_SETTLE * 0.6 + QUOTE_ARRIVE_JITTER)}, uP);`,
   '  vec4 t = texture2D(uMap, vUv);',
   '  gl_FragColor = vec4(t.rgb, t.a * reveal);',
   '}',
