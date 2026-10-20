@@ -131,7 +131,7 @@ describe('globe-gallery: quote particles', () => {
     let left = 0; let right = 0; let nl = 0; let nr = 0;
     for (let i = 0; i < position.count; i += 1) {
       const arrive = aRand.array[i * 4 + 3];
-      expect(arrive).to.be.within(0.45, 0.8 + 1e-6);
+      expect(arrive).to.be.within(0.45 - 0.02, 0.8 + 0.02 + 1e-6); // ± the arrival jitter
       expect(arrive - aRand.array[i * 4]).to.be.at.least(0.15 - 1e-6); // no rushed flight
       if (position.array[i * 3] < 300) {
         left += arrive; nl += 1;
