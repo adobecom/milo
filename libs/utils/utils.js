@@ -391,10 +391,21 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
+
+export function getAupSelectValue() {
+  const value = new URLSearchParams(window.location.search).get('aup-select')
+    ?? getMetadata('aup-select');
+  const normalized = value?.trim().toLowerCase();
+  return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
+}
+
+export function isAupSelectOn() {
+  return getAupSelectValue() === 'on';
+}
+
 export function isAupEnabled(useUniversalNav = false) {
-  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
-    || (new URLSearchParams(window.location.search).get('aup-select')
-      ?? getMetadata('aup-select')) === 'on';
+  return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectValue());
 }
 
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
