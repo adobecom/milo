@@ -259,11 +259,20 @@ export const TEXT_FRAG = [
 // toward a camera-attached plane, so the motion eases out of the camera's. Phase shares of uP:
 export const QUOTE_BURST_DUR = 0.22; // release → fully broken up
 export const QUOTE_FLY_LAG = 0.04; // release → start of flight
-export const QUOTE_FLY_DUR = 0.48;
-export const QUOTE_DELAY_MAX = 0.2; // reading-order arrival spread
+// Arrival is keyed to the TARGET, not the source: a text point at reading-order position o (0..1,
+// aSeed.x) lands at ARRIVE_FROM + o · ARRIVE_SPREAD (+ up to ARRIVE_JITTER), however late its tile
+// was released, so each region of the quote lands together and in reading order. The DOM text
+// turns crisp over the same region REVEAL_LAG after that, across REVEAL_DUR, while the landed
+// particles fade out over the same window (quoteRevealAt: the one function both sides use).
+export const QUOTE_ARRIVE_FROM = 0.6; // > max release + FLY_LAG, so every flight has room
+export const QUOTE_ARRIVE_SPREAD = 0.24;
+export const QUOTE_ARRIVE_JITTER = 0.02;
+export const QUOTE_REVEAL_LAG = 0.025; // ≥ ARRIVE_JITTER: a region is crisp only once it has landed
+export const QUOTE_REVEAL_DUR = 0.05; // FROM + SPREAD + LAG + DUR must stay ≤ 1
+export const QUOTE_LANDED_GROW = 1.6; // landed dot size over the ink spacing-derived base
 export const QUOTE_DETACH_AT = 0.04; // after its release, a tile stops riding the camera
 export const QUOTE_DETACH_TAU = 0.05;
-export const QUOTE_RELEASE_MAX = 0.26; // max aRelease; RELEASE + LAG + DELAY + DUR must stay ≤ 1
+export const QUOTE_RELEASE_MAX = 0.26; // max aRelease
 // Share of a particle's own travel after which it turns from its photo colour to the text's. Every
 // particle has landed (t = 1) by uP = 1, which is where the DOM cross-fade starts: no colour pop.
 export const QUOTE_INK_FROM = 0.78;
@@ -335,7 +344,10 @@ export const QUOTE_PARTICLE_VERT = [
   `  float e = max(smoothstep(aRelease, aRelease + ${glf(QUOTE_BURST_DUR)}, uP), near);`,
   '  vec2 dir = vec2(cos(aSeed.y), sin(aSeed.y));',
   '  vec2 from = src + ((src - uViewport * 0.5) * 0.5 + dir * aSeed.z * uScatter) * e;',
-  `  float t = clamp((uP - aRelease - ${glf(QUOTE_FLY_LAG)} - aSeed.x) / ${glf(QUOTE_FLY_DUR)}, 0.0, 1.0);`,
+  `  float base = ${glf(QUOTE_ARRIVE_FROM)} + aSeed.x * ${glf(QUOTE_ARRIVE_SPREAD)};`,
+  `  float arrive = base + fract(aSeed.y * 7.31) * ${glf(QUOTE_ARRIVE_JITTER)};`,
+  `  float go = aRelease + ${glf(QUOTE_FLY_LAG)};`,
+  '  float t = clamp((uP - go) / max(arrive - go, 0.05), 0.0, 1.0);',
   '  float te = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(2.0 - 2.0 * t, 3.0) * 0.5;',
   '  vec2 dst = position.xy + vec2(0.0, uPinTop);',
   '  vec2 path = dst - from;',
@@ -348,14 +360,16 @@ export const QUOTE_PARTICLE_VERT = [
   '  vec4 c = mix(vec4(fromNdc * cs.w, 0.0, cs.w), vec4(dstNdc * uTargetDepth, 0.0, uTargetDepth), te);',
   '  c.xy += swirl * toNdc * c.w;',
   '  gl_Position = c;',
-  '  float size = mix(mix(tile, max(2.4, uSize * 1.2), e), uSize, te);',
+  // Landed dots swell to close the gaps between them, so a landed glyph reads solid.
+  `  float size = mix(mix(tile, max(2.4, uSize * 1.2), e), uSize * ${glf(QUOTE_LANDED_GROW)}, te);`,
   '  gl_PointSize = clamp(size * uDpr, 1.0, 256.0);',
   '  vSize = gl_PointSize / uDpr;',
   '  vUv = aUv;',
   '  vE = e;',
   `  vInk = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
   '  vDst = aDstColor;',
-  '  vAlpha = uFade;',
+  `  float reveal = smoothstep(base + ${glf(QUOTE_REVEAL_LAG)}, base + ${glf(QUOTE_REVEAL_LAG + QUOTE_REVEAL_DUR)}, uP);`,
+  '  vAlpha = uFade * (1.0 - reveal);',
   '}',
 ].join('\n');
 

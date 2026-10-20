@@ -491,6 +491,24 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
+/* Particle hand-off: each line (and the name and role) turns crisp in the particles' landing
+   wave. JS writes the stops per element (writeQuoteMasks); the 100% fallbacks show it all. A mask,
+   never visibility, so the copy stays in the a11y tree. */
+.globe-gallery-pq-particles .globe-gallery-pullquote-line-inner,
+.globe-gallery-pq-particles .globe-gallery-pullquote-name,
+.globe-gallery-pq-particles .globe-gallery-pullquote-role {
+  -webkit-mask-image: linear-gradient(
+    var(--gg-pq-m-dir, to right),
+    #000 var(--gg-pq-m0, 100%),
+    transparent var(--gg-pq-m1, 100%)
+  );
+  mask-image: linear-gradient(
+    var(--gg-pq-m-dir, to right),
+    #000 var(--gg-pq-m0, 100%),
+    transparent var(--gg-pq-m1, 100%)
+  );
+}
+
 .globe-gallery-modal {
   position: fixed;
   inset: 0;

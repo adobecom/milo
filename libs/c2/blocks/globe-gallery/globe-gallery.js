@@ -431,6 +431,7 @@ function createGlobeGalleryRuntime(
     revealT: 0,
     frameStr: '',
     textStr: '',
+    masks: [], // { el, left, width, cy, str }: per-line DOM reveal, see writeQuoteMasks
   };
   // Particle hand-off state; quoteFx is null in RM and when no quote is authored.
   let quoteFx = null;
@@ -1046,6 +1047,51 @@ function createGlobeGalleryRuntime(
     pinEl.classList.toggle('is-released', state === 'after');
   }
 
+  // The DOM text the particles hand over to, one mask per rendered line (and the name and role),
+  // measured in the particles' own coordinates (viewport x, y from the pin's top).
+  function measureQuoteMasks() {
+    const pinTop = pinEl.getBoundingClientRect().top;
+    const els = [
+      ...pq.lineEls.map((line) => line.firstElementChild),
+      q('.globe-gallery-pullquote-name'),
+      q('.globe-gallery-pullquote-role'),
+    ].filter((el) => el && el.textContent.trim());
+    const range = document.createRange();
+    pq.masks = els.map((el) => {
+      const box = el.getBoundingClientRect();
+      range.selectNodeContents(el);
+      const ink = range.getBoundingClientRect();
+      return { el, left: box.left, width: box.width, cy: (ink.top + ink.bottom) / 2 - pinTop, str: '' };
+    });
+  }
+
+  // Each line turns crisp in the particles' reading-order wave: solid up to where its particles
+  // have finished fading, transparent past where they have not started. RTL sweeps the other way.
+  function writeQuoteMasks(p) {
+    const box = quoteFx.getOrderBox();
+    if (!box) return;
+    const { o0, o1 } = QP.revealFront(p);
+    pq.masks.forEach((m) => {
+      const lead = (x) => (box.rtl ? m.left + m.width - x : x - m.left);
+      const a = Math.max(-2, Math.min(m.width + 2, lead(QP.readingX(o1, m.cy, box))));
+      const b = Math.max(a + 1, Math.min(m.width + 3, lead(QP.readingX(o0, m.cy, box))));
+      const str = `${a.toFixed(1)}px|${b.toFixed(1)}px`;
+      if (str === m.str) return;
+      m.str = str;
+      m.el.style.setProperty('--gg-pq-m0', `${a.toFixed(1)}px`);
+      m.el.style.setProperty('--gg-pq-m1', `${b.toFixed(1)}px`);
+      m.el.style.setProperty('--gg-pq-m-dir', box.rtl ? 'to left' : 'to right');
+    });
+  }
+
+  function clearQuoteMasks() {
+    (pq.masks || []).forEach((m) => {
+      if (!m.str) return;
+      m.str = '';
+      ['--gg-pq-m0', '--gg-pq-m1', '--gg-pq-m-dir'].forEach((v) => m.el.style.removeProperty(v));
+    });
+  }
+
   function rebuildQuoteFx() {
     quoteFxDirty = false;
     clearTimeout(quoteFxTimer);
@@ -1063,6 +1109,7 @@ function createGlobeGalleryRuntime(
     const targets = QP.rasterizeQuote(pqEl, pinEl.getBoundingClientRect().top, budget);
     if (!targets) return;
     quoteFx.build(targets, getComputedStyle(pqEl).direction === 'rtl');
+    measureQuoteMasks();
   }
 
   // Debounced; tick() rebuilds at once if the flight is already under way.
@@ -1426,11 +1473,11 @@ function createGlobeGalleryRuntime(
     return pq.revealT;
   }
 
-  function writePullQuoteFrame(reveal) {
+  function writePullQuoteFrame(reveal, text = reveal) {
     const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
     const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
     writeFrameVars(hDrawn, vDrawn);
-    writePullQuoteText(reveal);
+    writePullQuoteText(text);
   }
 
   function splitQuote() {
@@ -1461,6 +1508,7 @@ function createGlobeGalleryRuntime(
       }
       writePullQuoteFrame(pq.revealT);
     }
+    if (quoteFx) measureQuoteMasks(); // fresh lines carry no mask; the rebuild re-measures too
     invalidateQuoteFx();
   }
 
@@ -1474,7 +1522,15 @@ function createGlobeGalleryRuntime(
     const live = particlesOn() ? pqFly.p >= 1 : frame.zoomT >= pqAppearZoomT;
     if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
     pqEl.style.pointerEvents = live ? 'auto' : 'none';
-    writePullQuoteFrame(advanceReveal(live));
+    const reveal = advanceReveal(live);
+    if (particlesOn()) {
+      // The text is revealed line by line in the particles' wave, not cross-faded after them.
+      writePullQuoteFrame(reveal, 1);
+      writeQuoteMasks(pqFly.p);
+    } else {
+      clearQuoteMasks();
+      writePullQuoteFrame(reveal);
+    }
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
@@ -2350,6 +2406,8 @@ function createGlobeGalleryRuntime(
       pqEl.style.cssText = '';
       pq.frameStr = '';
       pq.textStr = '';
+      clearQuoteMasks();
+      pq.masks = [];
       pq.revealT = 0;
     }
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;

@@ -2018,10 +2018,19 @@ outward over `QUOTE_BURST_DUR`, while it stops riding the camera on an exponenti
 (`QUOTE_DETACH_*`, C¹ at the release), so it neither halts nor keeps rushing at the viewer. It then
 flies to its text target, blending in clip space toward a plane attached to the camera, so the
 motion eases out of the camera's. A source the camera is about to reach breaks up early.
-Each particle keeps its photo colour for its whole flight and blends to the text colour only over the
-last `1 − QUOTE_INK_FROM` (22%) of its own travel, so the letters visibly assemble from the cards'
-pixels and turn to ink as they land; every particle has landed by `p = 1`, where the DOM cross-fade
-starts, so there is no colour pop. Everything is a function of scroll, so a reversal re-forms the
+**Landing is a reading-order wave, and the text is crisp as it lands.** Arrival is keyed to the
+particle's *target*: a text point at reading-order position `o` (`readingOrder`, mostly along the
+line, a little down the block, RTL-aware) lands at `QUOTE_ARRIVE_FROM + o · QUOTE_ARRIVE_SPREAD`,
+however late its tile was released. Each particle keeps its photo colour in flight, turns to the
+text colour over the last `1 − QUOTE_INK_FROM` of its travel, and swells (`QUOTE_LANDED_GROW`) so
+landed dots read solid. `QUOTE_REVEAL_LAG` later that region of the **DOM text** turns crisp over
+`QUOTE_REVEAL_DUR` while its particles fade out over the same window. The DOM can't reveal per
+pixel, so each rendered line (`layoutQuote`'s line inners) and the name and role carry a
+`linear-gradient` mask whose stops (`--gg-pq-m0/1`, direction `--gg-pq-m-dir`) `writeQuoteMasks`
+places from `revealFront(p)` intersected with that line's row; a mask, never visibility, so the copy
+stays in the a11y tree. There is no global cross-fade after landing: any point of the text is dotted
+for ≈ 3–4vh of scroll, and the whole quote is crisp at `p ≈ 0.94`. The crosshair still draws on the
+`revealT` tween. Everything is a function of scroll, so a reversal re-forms the
 tiles on the cards (the camera retraces its path), the cards fade back in under them, and at `p = 0`
 the cards are back exactly where they were.
 

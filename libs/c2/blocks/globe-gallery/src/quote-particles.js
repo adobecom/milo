@@ -1,5 +1,8 @@
 import * as THREE from '../../../../deps/three.js';
-import { QUOTE_PARTICLE_VERT, QUOTE_PARTICLE_FRAG, QUOTE_DELAY_MAX } from './shaders.js';
+import {
+  QUOTE_PARTICLE_VERT, QUOTE_PARTICLE_FRAG,
+  QUOTE_ARRIVE_FROM, QUOTE_ARRIVE_SPREAD, QUOTE_REVEAL_LAG, QUOTE_REVEAL_DUR,
+} from './shaders.js';
 
 // Pull-quote particle hand-off: the far-side cards' pixels burst off and fly into the quote's
 // glyphs, laid out by the real DOM. See README (Particle hand-off).
@@ -118,19 +121,41 @@ function createPoints(geo, material) {
   return mesh;
 }
 
-// Arrival sweeps in reading order, loosened by a random share.
-function seedFor(dst, count, rtl) {
+// Reading-order position (0..1) of a point in the quote's ink box: mostly along the line, a little
+// down the block. The particles land, and the text turns crisp, in this order.
+export function readingOrder(x, y, box) {
+  const xn = (x - box.x0) / Math.max(1, box.x1 - box.x0);
+  const yn = (y - box.y0) / Math.max(1, box.y1 - box.y0);
+  return (box.rtl ? 1 - xn : xn) * 0.7 + yn * 0.3;
+}
+
+// Inverse along a line: the x at which reading order reaches o, on the row at y.
+export function readingX(o, y, box) {
+  const yn = (y - box.y0) / Math.max(1, box.y1 - box.y0);
+  const along = (o - yn * 0.3) / 0.7;
+  return box.x0 + (box.rtl ? 1 - along : along) * (box.x1 - box.x0);
+}
+
+// The reading-order positions whose text is fully crisp (o1) and not yet crisp at all (o0) at
+// flight progress p. Mirrors the particle shader's per-particle reveal.
+export function revealFront(p) {
+  const at = (p - QUOTE_ARRIVE_FROM - QUOTE_REVEAL_LAG) / QUOTE_ARRIVE_SPREAD;
+  return { o0: at, o1: at - QUOTE_REVEAL_DUR / QUOTE_ARRIVE_SPREAD };
+}
+
+function inkBox(dst, count, rtl) {
   let x0 = Infinity; let y0 = Infinity; let x1 = -Infinity; let y1 = -Infinity;
   for (let i = 0; i < count; i += 1) {
     x0 = Math.min(x0, dst[i * 3]); x1 = Math.max(x1, dst[i * 3]);
     y0 = Math.min(y0, dst[i * 3 + 1]); y1 = Math.max(y1, dst[i * 3 + 1]);
   }
+  return { x0, y0, x1, y1, rtl };
+}
+
+function seedFor(dst, count, box) {
   const seed = new Float32Array(count * 4);
   for (let i = 0; i < count; i += 1) {
-    const xn = (dst[i * 3] - x0) / Math.max(1, x1 - x0);
-    const yn = (dst[i * 3 + 1] - y0) / Math.max(1, y1 - y0);
-    const order = (rtl ? 1 - xn : xn) * 0.7 + yn * 0.3;
-    seed[i * 4] = (order * 0.75 + Math.random() * 0.25) * QUOTE_DELAY_MAX;
+    seed[i * 4] = Math.min(1, Math.max(0, readingOrder(dst[i * 3], dst[i * 3 + 1], box)));
     seed[i * 4 + 1] = Math.random() * Math.PI * 2;
     seed[i * 4 + 2] = 0.3 + 0.7 * Math.random();
     seed[i * 4 + 3] = Math.random() * 2 - 1;
@@ -213,6 +238,7 @@ export default function createQuoteParticles(scene, renderOrder) {
   let count = 0;
   let materials = [];
   let lastSources = null;
+  let orderBox = null;
 
   function disposeMaterials() {
     materials.forEach((m) => m.dispose());
@@ -308,13 +334,14 @@ export default function createQuoteParticles(scene, renderOrder) {
   function build(targets, rtl = false) {
     disposeGeometry();
     count = targets.count;
+    orderBox = inkBox(targets.dst, count, rtl);
     const geo = createPointGeometry({
       position: [targets.dst, 3],
       aDstColor: [targets.color, 3],
       aSrcWorld: [new Float32Array(count * 3), 3],
       aUv: [new Float32Array(count * 2), 2],
       aRelease: [new Float32Array(count), 1],
-      aSeed: [seedFor(targets.dst, count, rtl), 4],
+      aSeed: [seedFor(targets.dst, count, orderBox), 4],
     });
     disposeMaterials();
     materials = [makeMaterial(null)];
@@ -358,6 +385,7 @@ export default function createQuoteParticles(scene, renderOrder) {
     setFrame,
     setVisible,
     isBuilt: () => !!points,
+    getOrderBox: () => orderBox,
     getDrawCount: () => (points ? points.geometry.groups.length : 0),
     dispose,
   };

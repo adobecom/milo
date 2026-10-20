@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import createQuoteParticles, { rasterizeQuote, pendingFonts } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, { rasterizeQuote, pendingFonts, readingOrder, readingX, revealFront } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 import { Vector3 } from '../../../../libs/deps/three.js';
 import { buildGlobeDom } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
@@ -135,6 +135,20 @@ describe('globe-gallery: quote particles', () => {
     fx.dispose();
     expect(added).to.have.length(0);
     expect(fx.isBuilt()).to.be.false;
+  });
+
+  it('reveals the text in the same reading-order wave the particles land in', () => {
+    const box = { x0: 0, x1: 1000, y0: 0, y1: 500, rtl: false };
+    expect(readingOrder(0, 0, box)).to.equal(0);
+    expect(readingOrder(1000, 500, box)).to.equal(1);
+    expect(readingX(readingOrder(420, 250, box), 250, box)).to.be.closeTo(420, 1e-6);
+    const rtl = { ...box, rtl: true };
+    expect(readingX(readingOrder(420, 250, rtl), 250, rtl)).to.be.closeTo(420, 1e-6);
+    // Nothing crisp before the first arrival; all of it crisp before the flight ends.
+    expect(revealFront(0.5).o0).to.be.below(0);
+    expect(revealFront(1).o1).to.be.above(1);
+    const mid = revealFront(0.75);
+    expect(mid.o1).to.be.below(mid.o0);
   });
 
   it('maps a zoomT back to scroll, net of the quote hold', () => {
