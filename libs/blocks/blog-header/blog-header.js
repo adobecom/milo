@@ -496,7 +496,6 @@ function decorateDividers(el) {
   const relatedSection = section?.classList.contains('section') ? section : null;
 
   const findEndpoint = () => {
-    // Once the sidenav wraps the article, end with it so both vertical rules agree.
     const layout = headerSection.nextElementSibling;
     if (layout?.classList.contains('blog-article-layout')) return layout;
     // The related section can start with article text, wrapped during later decoration.
@@ -504,7 +503,6 @@ function decorateDividers(el) {
   };
 
   let endpoint;
-  // Span collapsed margins without changing the article's layout.
   const updateFrame = (entries, observer) => {
     if (!headerSection.isConnected) {
       observer.disconnect();

@@ -207,7 +207,6 @@ a.blog-header-author-name:hover {
   --blog-divider-gap: 48px;
 }
 
-/* One continuous frame, 56px out into the page gutters (clamped at the viewport edge). */
 @media (min-width: 600px) {
   .blog-divider-frame::before {
     content: "";
@@ -226,7 +225,6 @@ a.blog-header-author-name:hover {
   }
 }
 
-/* Full-width rule below the header. */
 .blog-divider-frame::after {
   content: "";
   position: absolute;
@@ -237,13 +235,11 @@ a.blog-header-author-name:hover {
   pointer-events: none;
 }
 
-/* In the stacked layout, the header rule moves below the sidenav. */
 @media (max-width: 1199px) {
   .blog-divider-frame:has(+ .blog-article-layout)::after {
     content: none;
   }
 
-  /* Figma: 56px between the rule and the content on either side. */
   .blog-divider-frame + .blog-article-layout {
     --blog-divider-space: 56px;
 
@@ -254,8 +250,6 @@ a.blog-header-author-name:hover {
     position: relative;
   }
 
-  /* The border-image outset bleeds the rule to the viewport edges
-     without causing horizontal scrolling. */
   .blog-divider-frame + .blog-article-layout > .blog-side-navigation::after {
     content: "";
     position: absolute;
@@ -277,12 +271,10 @@ a.blog-header-author-name:hover {
     position: relative;
   }
 
-  /* Keeps the nav 76px below the header rule. */
   .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
     margin-block-start: calc(76px - var(--blog-divider-gap));
   }
 
-  /* Sits on the nav column's edge, so it follows the sidenav's column gap. */
   .blog-divider-frame + .blog-article-layout::before {
     content: "";
     position: absolute;
@@ -296,7 +288,6 @@ a.blog-header-author-name:hover {
   }
 }
 
-/* Blog Social share modal (appended to body by getModal) */
 .blog-share-modal.dialog-modal {
   width: fit-content;
   max-width: calc(100% - 2em);
