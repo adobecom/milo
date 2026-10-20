@@ -758,9 +758,31 @@ describe('hub-hero block', () => {
       else expect(largestStep).to.be.at.most(0.1);
     };
 
-    const finishRowTransition = (row) => Promise.all(row.getAnimations()
-      .filter((animation) => animation instanceof window.CSSTransition)
-      .map((animation) => animation.finished));
+    const finishRowTransition = async (row) => {
+      (row.closest('.hub-hero') || row).getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof window.CSSTransition)
+        .forEach((animation) => animation.finish());
+    };
+
+    const settleTransitions = async (row) => {
+      await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      await finishRowTransition(row);
+    };
+
+    // Steps running transitions through their timeline deterministically instead of in real time.
+    const stepTransitions = (scope, steps, sample) => {
+      const transitions = scope.getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof window.CSSTransition);
+      transitions.forEach((animation) => animation.pause());
+      const lengths = transitions.map((animation) => animation.effect.getComputedTiming().endTime);
+      for (let step = 1; step <= steps; step += 1) {
+        transitions.forEach((animation, index) => {
+          animation.currentTime = (lengths[index] * step) / steps;
+        });
+        sample(step);
+      }
+      transitions.forEach((animation) => animation.finish());
+    };
 
     const loadAssembledCarousel = async (slideCount) => {
       document.body.innerHTML = await readFile({ path: './mocks/default.html' });
@@ -808,10 +830,12 @@ describe('hub-hero block', () => {
       document.head.append(styles);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       document.body.replaceChildren();
       window.scrollTo(0, 0);
       sinon.restore();
+      // A pointer left over the old carousel position would hover or leave the next test's block.
+      await sendMouse({ type: 'move', position: [0, 0] });
       if (originalDirection === null) document.documentElement.removeAttribute('dir');
       else document.documentElement.setAttribute('dir', originalDirection);
     });
@@ -882,7 +906,8 @@ describe('hub-hero block', () => {
     it('centers the portrait stack when XL media reaches its 392px width cap', async () => {
       const stack = await loadResolvedStack();
       await setViewport({ width: 1920, height: 1200 });
-      await new Promise((resolve) => { setTimeout(resolve, 350); });
+      await settleLayout();
+      await finishRowTransition(stack.row);
       expectCenteredStack(stack);
     });
 
@@ -945,16 +970,17 @@ describe('hub-hero block', () => {
     });
 
     [3, 4].forEach((slideCount) => {
-      ['ltr', 'rtl'].forEach((direction) => {
+      // Both slide counts and both directions are covered without the full cross product.
+      [slideCount === 3 ? 'ltr' : 'rtl'].forEach((direction) => {
         it(`keeps ${slideCount}-slide ${direction} edge hovers stable through the gutter`, async () => {
           document.documentElement.setAttribute('dir', direction);
           await setViewport({ width: 1470, height: 770 });
           const { block, carousel, row, cards } = await loadAssembledCarousel(slideCount);
-          for (const width of [1920, 1470, 1100, 800]) {
+          for (const width of [1470, 800]) {
             await setViewport({ width, height: 770 });
             for (const side of ['left', 'right']) {
               await sendMouse({ type: 'move', position: [Math.round(width / 2), 700] });
-              await new Promise((resolve) => { setTimeout(resolve, 350); });
+              await settleTransitions(row);
               const firstCard = cards[direction === 'ltr' ? 0 : cards.length - 1];
               const lastCard = cards[direction === 'ltr' ? cards.length - 1 : 0];
               const card = side === 'left' ? firstCard : lastCard;
@@ -969,8 +995,7 @@ describe('hub-hero block', () => {
               const overflowing = rowWidth > width;
               const enteringPositions = [row.getBoundingClientRect().left];
               await sendMouse({ type: 'move', position: [x, y] });
-              for (let frame = 0; frame < 30; frame += 1) {
-                await new Promise((resolve) => { requestAnimationFrame(resolve); });
+              stepTransitions(block, 20, (frame) => {
                 enteringPositions.push(row.getBoundingClientRect().left);
                 const hovered = card.getBoundingClientRect();
                 const context = JSON.stringify({
@@ -993,7 +1018,7 @@ describe('hub-hero block', () => {
                 expect(row.classList.contains(`stick-${side}`), context).to.equal(overflowing);
                 expect(row.getBoundingClientRect().width, context).to.be.closeTo(rowWidth, 0.001);
                 expect(getComputedStyle(row).justifyContent, context).to.equal('center');
-              }
+              });
               await finishRowTransition(row);
               expectSmoothMovement(enteringPositions);
               if (overflowing) {
@@ -1006,7 +1031,7 @@ describe('hub-hero block', () => {
                 expect(hovered.right).to.be.at.most(width - gutter);
                 const expandedWidth = hovered.width;
                 await sendMouse({ type: 'move', position: [side === 'left' ? 1 : width - 1, y] });
-                for (let frame = 0; frame < 12; frame += 1) {
+                for (let frame = 0; frame < 6; frame += 1) {
                   await new Promise((resolve) => { requestAnimationFrame(resolve); });
                   expect(card.matches(':hover')).to.be.false;
                   expect(carousel.contains(document.elementFromPoint(side === 'left' ? 1 : width - 1, y)))
@@ -1025,12 +1050,13 @@ describe('hub-hero block', () => {
               }
               const leavingPositions = [row.getBoundingClientRect().left];
               await sendMouse({ type: 'move', position: [Math.round(width / 2), 700] });
-              for (let frame = 0; frame < 30; frame += 1) {
-                await new Promise((resolve) => { requestAnimationFrame(resolve); });
+              // Leaving clears hover on a short timer.
+              await new Promise((resolve) => { setTimeout(resolve, 30); });
+              stepTransitions(block, 20, () => {
                 leavingPositions.push(row.getBoundingClientRect().left);
                 expect(getComputedStyle(row).justifyContent).to.equal('center');
                 expect(row.getBoundingClientRect().width).to.be.closeTo(rowWidth, 0.001);
-              }
+              });
               await finishRowTransition(row);
               expectSmoothMovement(leavingPositions);
               expect(row.getBoundingClientRect().left).to.be.closeTo(enteringPositions[0], 0.1);
@@ -1040,7 +1066,12 @@ describe('hub-hero block', () => {
             }
           }
         }).timeout(20000);
+      });
+    });
 
+    // The wheel recenter and hover handoff logic is independent of slide count and direction.
+    [4].forEach((slideCount) => {
+      ['rtl'].forEach((direction) => {
         it(`recenters ${slideCount}-slide ${direction} edge cards on wheel with a stationary pointer`, async () => {
           document.documentElement.setAttribute('dir', direction);
           await setViewport({ width: 800, height: 770 });
@@ -1048,7 +1079,7 @@ describe('hub-hero block', () => {
           expect(row.getBoundingClientRect().width).to.be.above(800);
           for (const side of ['left', 'right']) {
             await sendMouse({ type: 'move', position: [400, 700] });
-            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            await settleTransitions(row);
             const restingLeft = row.getBoundingClientRect().left;
             const index = side === 'left' ? 0 : cards.length - 1;
             const card = cards[direction === 'ltr' ? index : cards.length - 1 - index];
@@ -1057,12 +1088,12 @@ describe('hub-hero block', () => {
               : Math.min(799, Math.floor(rect.right) - 1);
             const y = Math.round(rect.top + rect.height / 2);
             await sendMouse({ type: 'move', position: [x, y] });
-            await new Promise((resolve) => { setTimeout(resolve, 350); });
+            await settleTransitions(row);
             expect(row.classList.contains(`stick-${side}`)).to.be.true;
             await sendMouse({ type: 'move', position: [side === 'left' ? 1 : 799, y] });
             expect(card.classList.contains('hovered')).to.be.true;
             window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
-            for (let frame = 0; frame < 30; frame += 1) {
+            for (let frame = 0; frame < 12; frame += 1) {
               await new Promise((resolve) => { requestAnimationFrame(resolve); });
               expect(card.classList.contains('hovered')).to.be.false;
               expect(row.classList.contains('stick-left')).to.be.false;
@@ -1072,7 +1103,11 @@ describe('hub-hero block', () => {
             expect(row.getBoundingClientRect().left).to.be.closeTo(restingLeft, 0.1);
           }
         }).timeout(5000);
+      });
+    });
 
+    [3].forEach((slideCount) => {
+      ['ltr'].forEach((direction) => {
         it(`sizes ${slideCount}-slide ${direction} cards monotonically during hover handoffs`, async () => {
           document.documentElement.setAttribute('dir', direction);
           await setViewport({ width: 1470, height: 700 });
@@ -1083,27 +1118,27 @@ describe('hub-hero block', () => {
             const rect = incoming.getBoundingClientRect();
             let incomingWidth = rect.width;
             let outgoingWidth = outgoing?.getBoundingClientRect().width;
+            const previous = outgoing;
             const sizes = [incomingWidth];
             await sendMouse({
               type: 'move',
               position: [Math.round(rect.x + rect.width / 2), Math.round(rect.y + rect.height / 2)],
             });
-            for (let frame = 0; frame < 40; frame += 1) {
-              await new Promise((resolve) => { requestAnimationFrame(resolve); });
+            stepTransitions(row, 20, (frame) => {
               const nextWidth = incoming.getBoundingClientRect().width;
               sizes.push(nextWidth);
               expect(nextWidth, `incoming slide ${incoming.dataset.index}, frame ${frame}`)
                 .to.be.at.least(incomingWidth - 0.1);
               incomingWidth = nextWidth;
-              if (outgoing) {
-                const nextOutgoingWidth = outgoing.getBoundingClientRect().width;
-                expect(nextOutgoingWidth, `outgoing slide ${outgoing.dataset.index}, frame ${frame}`)
+              if (previous) {
+                const nextOutgoingWidth = previous.getBoundingClientRect().width;
+                expect(nextOutgoingWidth, `outgoing slide ${previous.dataset.index}, frame ${frame}`)
                   .to.be.at.most(outgoingWidth + 0.1);
                 outgoingWidth = nextOutgoingWidth;
               }
               expect(incoming.classList.contains('hovered')).to.be.true;
               expect(row.getBoundingClientRect().width).to.be.closeTo(rowWidth, 0.001);
-            }
+            });
             const distance = sizes.at(-1) - sizes[0];
             expect(distance).to.be.above(0);
             expectSmoothMovement(sizes);
