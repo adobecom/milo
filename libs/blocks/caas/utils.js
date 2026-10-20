@@ -1065,20 +1065,18 @@ export const getProducts = async (state) => {
 };
 
 /**
- * Chimera returns cards in order, with featured cards first. The card library only needs more
- * cards than it shows when users can filter, search or re-sort them, or when the default sort
- * reorders them. Featured cards are pinned to the top on first load whatever the default sort,
- * so when there are at least as many featured cards as shown cards, only those are ever shown.
- * In those cases request just the number of shown cards instead of a larger `collectionSize`.
+ * Chimera returns cards in order, with featured cards first. With the default `featured` sort
+ * the card library keeps that order, so when users can't filter, search or re-sort, only the
+ * first `totalCardsToShow` cards are ever shown and the rest of `collectionSize` is unused.
+ * Other sorts (and event filters) need the full set, including to backfill slots left by
+ * featured cards that are unavailable.
  */
 export const getRequestSize = (state) => {
   const collectionSize = parseInt(state.collectionSize, 10);
   if (!collectionSize) return state.totalCardsToShow;
+  if (state.sortDefault !== 'featured' || state.filterEvent?.length) return state.collectionSize;
 
-  const shownLimit = parseInt(
-    state.sortDefault === 'random' ? state.sortReservoirSample : state.totalCardsToShow,
-    10,
-  );
+  const shownLimit = parseInt(state.totalCardsToShow, 10);
   if (!(shownLimit > 0) || collectionSize <= shownLimit) return state.collectionSize;
 
   const hasUserControls = state.sortEnablePopup
@@ -1088,12 +1086,7 @@ export const getRequestSize = (state) => {
     || state.onlyShowBookmarkedCards
     || state.partialLoadEnabled
     || state.container === 'categories';
-  if (hasUserControls) return state.collectionSize;
-
-  const onlyFeaturedShown = (state.featuredCards?.length || 0) >= shownLimit;
-  const serverOrderShown = state.sortDefault === 'featured' && !state.filterEvent?.length;
-
-  return onlyFeaturedShown || serverOrderShown ? shownLimit : state.collectionSize;
+  return hasUserControls ? state.collectionSize : shownLimit;
 };
 
 export const getConfig = async (originalState, strs = {}) => {
