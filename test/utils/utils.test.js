@@ -191,6 +191,14 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
     });
 
+    it('uses modulepreload instead of preload as=script for block scripts', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[rel="modulepreload"][crossorigin="anonymous"][href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="modulepreload"][href*="/libs/utils/decorate.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="script"]')).to.not.exist;
+    });
+
     it('preloads non-commerce autoblocks but excludes merch/mas', () => {
       document.body.innerHTML = `<main><div>
         <a href="https://www.youtube.com/watch?v=abc">watch</a>
