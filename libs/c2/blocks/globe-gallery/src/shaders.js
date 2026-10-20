@@ -256,22 +256,62 @@ export const TEXT_FRAG = [
 // texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
 // so at rest the tiles are the card, pixel for pixel. Then, edge first, each particle departs: its
 // own camera eases to a stop (velocity-continuous) and it travels to its text target in px.
-// aRand = (departure p, scatter angle, scatter share, arrival p). See quote-particles.js.
+// aRand = (departure p, release p, wobble −1…1, arrival p); converge adds aStage. Sources and
+// targets are paired by a 2D quantile order (quote-particles.js), so neighbours stay neighbours.
 // Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
 // together, and the crisp text plane reveals each pixel with that same function: the text goes
 // crisp in one wave with the landing, with no global fill-in afterwards.
-export const QUOTE_DEPART_MAX = 0.3;
-export const QUOTE_FLY_MIN = 0.3; // shortest flight, so the earliest arrival is DEPART_MAX + this
-export const QUOTE_ARRIVE_START = QUOTE_DEPART_MAX + QUOTE_FLY_MIN;
-export const QUOTE_ARRIVE_SPAN = 0.2; // reading order 0 → 1 lands across this much p
 export const QUOTE_SETTLE = 0.04; // a region's particles hand over to the crisp text in this window
 export const QUOTE_INK_FROM = 0.78; // share of a particle's own travel after which it turns to ink
-const QUOTE_MIN_DEPTH = 2; // world units a departed particle's camera stays in front of it
+export const QUOTE_CRISP_P = 0.84; // every mode's last glyph is crisp here: same runway for all
+
+// Motion modes (?pqmotion=), one shared path skeleton; the id is the shader's PQ_MOTION define.
+// arrive: reading order 0 → 1 lands across [start, start + span], so start + span + SETTLE is
+// QUOTE_CRISP_P for every mode. departMax caps the edge-first break-up start. abc/swirl instead
+// ease off the dolly in a short common window `release` (start, spread; rim first) so each card
+// stays compact while it waits, then fly a fixed `fly`, rim particles up to `edgeFly` longer.
+export const QUOTE_MOTIONS = {
+  // Coherent pairing, direct paths with a slight wobble, a fixed flight per particle.
+  abc: {
+    id: 0, arriveStart: 0.45, arriveSpan: 0.35, release: [0.1, 0.1], fly: 0.3, edgeFly: 0.5,
+  },
+  // abc's timing, but the paths ride one shared curl-noise flow, so neighbours move as ribbons.
+  swirl: {
+    id: 1, arriveStart: 0.45, arriveSpan: 0.35, release: [0.1, 0.1], fly: 0.3, edgeFly: 0.5,
+  },
+  // Two beats: gather into a cloud the size of the quote, then spread into the glyphs.
+  converge: {
+    id: 2, arriveStart: 0.6, arriveSpan: 0.2, departMax: 0.25, gather: 0.2, spread: 0.15,
+  },
+};
+const QUOTE_WOBBLE = 0.06; // abc: sideways wobble, as a share of the path length
+const QUOTE_SWIRL_AMP = 0.1; // swirl: flow displacement, as a share of the viewport's short side
+const QUOTE_SWIRL_SCALE = 0.35; // swirl: flow feature size, as a share of the short side
+const QUOTE_SWIRL_DRIFT = 1.5; // swirl: how far the flow evolves over the flight, noise units
+const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
+const QUOTE_RELEASE_REACH = 0.5; // share of its remaining depth a released particle still closes
 const QUOTE_TILE_MAX = 128; // CSS px
 
 const PX_TO_CLIP = [
   'vec4 pxToClip(vec2 p, vec2 view) {',
   '  return vec4(p.x / view.x * 2.0 - 1.0, 1.0 - p.y / view.y * 2.0, 0.0, 1.0);',
+  '}',
+];
+
+// Value noise and its curl: a divergence-free 2D flow, deterministic in its inputs.
+const CURL_NOISE = [
+  'float vnoise(vec2 p) {',
+  '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+  '  return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x),',
+  '    mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);',
+  '}',
+  'float flowField(vec2 p) { return vnoise(p) + 0.5 * vnoise(p * 2.03 + 17.1); }',
+  'vec2 curl(vec2 p) {',
+  '  const float e = 0.05;',
+  '  float dx = flowField(p + vec2(e, 0.0)) - flowField(p - vec2(e, 0.0));',
+  '  float dy = flowField(p + vec2(0.0, e)) - flowField(p - vec2(0.0, e));',
+  '  vec2 c = vec2(dy, -dx) / (2.0 * e);',
+  '  return c / (1.0 + length(c));', // bounded below 1
   '}',
 ];
 
@@ -281,7 +321,6 @@ export const QUOTE_POINTS_VERT = [
   'uniform float uDpr;',
   'uniform float uDstSize;',
   'uniform float uAlpha;',
-  'uniform vec2 uScatter;', // (radial expansion factor, scatter radius in px)
   'uniform vec2 uZoomT;', // (zoomT at p = 0, zoomT per unit p)
   'uniform vec2 uCamZ;', // (CAM_Z_SPHERE, CAM_Z_SPHERE − CAM_Z_END)
   'uniform vec3 uOrigin;', // the card's top-left corner, world
@@ -292,6 +331,9 @@ export const QUOTE_POINTS_VERT = [
   'attribute vec2 aUv;', // u right, v down the card as seen
   'attribute vec4 aRand;',
   'attribute vec3 aDstCol;',
+  '#if PQ_MOTION == 2',
+  'attribute vec2 aStage;', // converge: this particle's place in the cloud, px
+  '#endif',
   'varying vec2 vUv;',
   'varying vec4 vJinv;',
   'varying float vSize;',
@@ -300,6 +342,8 @@ export const QUOTE_POINTS_VERT = [
   'varying float vInkK;',
   'varying float vFade;',
   ...PX_TO_CLIP,
+  ...HASH21,
+  ...CURL_NOISE,
   // Mirrors TL.camZAtZoomT, for the camera at a given flight progress.
   'float camZAt(float p) {',
   '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
@@ -311,22 +355,22 @@ export const QUOTE_POINTS_VERT = [
   '  vec2 n = c.xy / c.w;',
   '  return vec2((n.x + 1.0) * 0.5 * uView.x, (1.0 - n.y) * 0.5 * uView.y);',
   '}',
+  'float smoother(float t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }', // still at ends
   'void main() {',
-  '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
-  '  float te = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);', // smootherstep: still at both ends
   '  vec2 s; vec2 su; vec2 sv;',
   '  if (uScreenSrc > 0.5) {',
   '    s = aUv * uView; su = vec2(2.0, 0.0); sv = vec2(0.0, 2.0);',
   '  } else {',
   '    vec3 w = uOrigin + uAxisU * aUv.x + uAxisV * aUv.y;',
   '    float camZ = cameraPosition.z;',
-  '    float zDep = camZAt(aRand.x);',
+  // Released (edge first) from the dolly before it departs, so a late band still waits on screen.
+  '    float zDep = camZAt(aRand.y);',
   `    float minZ = w.z + ${glf(QUOTE_MIN_DEPTH)};`,
   // Until it departs the particle sees the live camera; after, a camera that carries on at the
   // same speed and eases to a stop short of it — no kink, and never past it.
   '    float zEff = camZ;',
   '    if (camZ < zDep) {',
-  '      float d = max(zDep - minZ, 0.001) * 0.8;',
+  `      float d = max(zDep - minZ, 0.001) * ${glf(QUOTE_RELEASE_REACH)};`,
   '      zEff = zDep - d * (1.0 - exp(-(zDep - camZ) / d));',
   '    }',
   '    zEff = max(zEff, minZ);',
@@ -334,16 +378,36 @@ export const QUOTE_POINTS_VERT = [
   '    su = toPx(w + uAxisU * uCell.x, zEff) - s;',
   '    sv = toPx(w + uAxisV * uCell.y, zEff) - s;',
   '  }',
+  '  vec2 dst = position.xy;',
+  // `leave` drives the tile → dot change; `t` is the final approach, which drives landing + ink.
+  '#if PQ_MOTION == 2',
+  `  float leave = clamp((uP - aRand.x) / ${glf(QUOTE_MOTIONS.converge.gather)}, 0.0, 1.0);`,
+  `  float spread = ${glf(QUOTE_MOTIONS.converge.spread)};`,
+  '  float t = clamp((uP - aRand.w + spread) / spread, 0.0, 1.0);',
+  '  vec2 pos = mix(mix(s, aStage, smoother(leave)), dst, smoother(t));',
+  '#else',
+  '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
+  '  float leave = t;',
+  '  float te = smoother(t);',
+  '  vec2 pos = mix(s, dst, te);',
+  '  float bump = sin(3.14159 * te);', // 0 at both ends: hand-off and landing stay exact
+  '#if PQ_MOTION == 1',
+  '  float vmin = min(uView.x, uView.y);',
+  `  vec2 flow = curl(pos / (${glf(QUOTE_SWIRL_SCALE)} * vmin) + uP * ${glf(QUOTE_SWIRL_DRIFT)});`,
+  `  pos += flow * ${glf(QUOTE_SWIRL_AMP)} * vmin * bump;`,
+  '#else',
+  '  vec2 path = dst - s;',
+  `  pos += vec2(-path.y, path.x) * aRand.z * ${glf(QUOTE_WOBBLE)} * bump;`,
+  '#endif',
+  '#endif',
   // The bounding square of the projected cell, so neighbouring tiles always overlap.
   '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
-  '  float g = smoothstep(0.0, 0.4, t);',
+  '  float g = smoothstep(0.0, 0.4, leave);',
   // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
   // solid for the moment before the crisp text takes it over.
   '  float land = smoothstep(0.85, 1.0, t);',
   `  float size = mix(min(tile, ${glf(QUOTE_TILE_MAX)}), uDstSize, g) * (1.0 + 0.3 * land);`,
-  '  vec2 dir = vec2(cos(aRand.y), sin(aRand.y));',
-  '  vec2 off = ((s - uView * 0.5) * uScatter.x + dir * aRand.z * uScatter.y) * sin(3.14159 * te);',
-  '  gl_Position = pxToClip(mix(s, position.xy, te) + off, uView);',
+  '  gl_Position = pxToClip(pos, uView);',
   '  gl_PointSize = max(1.0, size * uDpr);',
   // px → card uv for the fragment's offset inside the sprite.
   '  float a = su.x / uCell.x; float b = sv.x / uCell.y;',
@@ -421,13 +485,14 @@ export const QUOTE_PLANE_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uP;',
   'uniform vec4 uBox;', // the reading-order box (x, y, w, h), px
+  'uniform vec2 uArrive;', // the motion's (arrival start, span)
   'uniform float uRtl;',
   'varying vec2 vUv;',
   'varying vec2 vPx;',
   'void main() {',
   '  vec2 n = (vPx - uBox.xy) / max(uBox.zw, vec2(1.0));',
   '  float order = clamp((uRtl > 0.5 ? 1.0 - n.x : n.x) * 0.7 + n.y * 0.3, 0.0, 1.0);',
-  `  float arrive = ${glf(QUOTE_ARRIVE_START)} + ${glf(QUOTE_ARRIVE_SPAN)} * order;`,
+  '  float arrive = uArrive.x + uArrive.y * order;',
   `  float reveal = smoothstep(arrive, arrive + ${glf(QUOTE_SETTLE * 0.6)}, uP);`,
   '  vec4 t = texture2D(uMap, vUv);',
   '  gl_FragColor = vec4(t.rgb, t.a * reveal);',

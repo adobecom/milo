@@ -2003,24 +2003,44 @@ rounded-rect SDF, and applies the same `pow(1/2.2)` as `CARD_FRAG`. On the hand-
 are therefore the card, pixel for pixel, with no downsampled copy and no stationary cross-fade. The
 cards simply hide at p > 0.
 
-**Break-up.** Each particle departs at its own `aRand.x`, up to `QUOTE_DEPART_MAX` (0.3). 75% of
-that delay is set by distance from the card's edge (`EDGE_LEAD`) and the rest is random, so the
-cards erode from the rim inward and never go soft all at once. Once it departs, a particle sees its
-own camera. That camera starts at the live camera's position and speed at departure (`camZAt(aRand.x)`
-mirrors `TL.camZAtZoomT`). It then eases exponentially to a stop at least `QUOTE_MIN_DEPTH` in front
-of the particle, so its motion leaves the dolly with no velocity kink and can never pass behind the
-camera.
+**Release and break-up.** Each particle has a release p (`aRand.y`), set mostly by distance from
+its card's edge (`EDGE_LEAD`) plus some randomness, so the cards tear from the rim. At release the
+particle stops following the dolly: it gets its own camera, which starts at the live camera's
+position and speed (`camZAt(aRand.y)` mirrors `TL.camZAtZoomT`). That camera then eases
+exponentially over `QUOTE_RELEASE_REACH` of the remaining depth and stops at least
+`QUOTE_MIN_DEPTH` in front of the particle, so there is no velocity kink and the particle can never
+pass behind the camera. Later, at its departure p (`aRand.x`), the particle leaves for the text. Its
+sprite shrinks from cell size to the text dot size and rounds off over the first 40% of the leg. It
+keeps sampling its own photo pixels and turns to the ink only over the last 22% of its own travel
+(`QUOTE_INK_FROM`).
 
-On top of that, smootherstep `te` carries the particle to its px text target. A `sin(π·te)` bump
-adds the radial and random scatter. Over the first 40% of its flight, the sprite shrinks from its
-cell size to the text dot size and rounds off. Each particle keeps sampling its own photo pixels, and
-turns to the ink only over the last 22% of its own travel (`QUOTE_INK_FROM`).
+**Pairing.** Sources and targets are matched by `coherentOrder`. That is a 2D quantile order: 8
+equal-count x bands (`PAIR_BANDS`), each read top to bottom, over each set's own extent. Rank r of
+the cards goes to rank r of the glyphs, so left cards feed the left of the quote, upper cards its
+upper lines, and neighbours stay together. It's a cheap stand-in for optimal transport. On the page,
+the mean path is about half of the old random pairing's (1440: 270 px vs 585; 390: 150 vs 312).
+Hilbert-curve ranks measured worse (259 vs 224 on a synthetic page). The target order (and
+converge's cloud) is built with the targets. The source order needs the hand-off's screen positions,
+so `setSources` draws the tiles on the hand-off frame with `PENDING` timings and pairs on the next
+animation frame (`fillDraw`). Nothing leaves before its release, many frames later. It is measured
+as `performance` entries `globe-gallery pq sources` / `globe-gallery pq pairing`.
+
+**Motion modes (`?pqmotion=`).** The mode is read once at init (`parseMotion`), logged as
+`[globe-gallery] pqmotion=…`, and compiled into the particle shader as `PQ_MOTION`. Unknown or
+missing values fall back to `abc`. All modes share pairing, release, landing, ink, crisp reveal and
+`QUOTE_CRISP_P` (0.84), so the runway, pin and hold are identical. The constants are in
+`QUOTE_MOTIONS` (`shaders.js`).
+
+| Mode | Flight |
+| --- | --- |
+| `abc` (default) | **Fixed flight time.** Particles release in a short common window (p 0.10–0.20, rim first), so cards stay compact while they wait. Each departs `fly` (0.3) before its own arrival, and rim particles up to `edgeFly` (×1.5) earlier, so only a band is airborne at a time. Arrivals run 0.45 → 0.80 in reading order. Paths are direct, with a sideways wobble of ±`QUOTE_WOBBLE` (6%) of the path length × `sin(π·te)`. |
+| `swirl` | abc's timing and pairing. The paths ride one shared curl-noise flow: two-octave value noise, its curl bounded below 1, scaled to `QUOTE_SWIRL_AMP` (10% of the short side) × `sin(π·te)`. It is sampled at the particle's straight-path position over a `QUOTE_SWIRL_SCALE` grid and drifts with scroll (`uP`), never with wall-clock time. Neighbours move as ribbons, and the hand-off and landing stay exact. |
+| `converge` | Two beats. Particles release and leave edge first (≤ 0.25) and gather over `gather` (0.2) into a cloud. The cloud is a jittered grid over the glyphs' 5th–95th percentile box, in coherent order, pulled halfway to a random point in its ellipse (`CLOUD_SIZE`). Each particle then spreads over `spread` (0.15) to its glyph, arriving 0.60 → 0.80 in reading order. |
 
 **Landing = crisp, locally.** A particle's arrival `aRand.w` depends only on its target's reading
-order: `QUOTE_ARRIVE_START` (0.6) + `QUOTE_ARRIVE_SPAN` (0.2) × order, where order is x·0.7 + y·0.3
-across the figure box, mirrored for RTL. Every particle of a glyph therefore lands together, and its
-flight time is the arrival minus its own edge-first departure, never less than `QUOTE_FLY_MIN`.
-`QUOTE_PLANE_FRAG` recomputes the same order per pixel from `uBox`/`uRtl` and reveals the crisp
+order: the mode's `arriveStart` + `arriveSpan` × order, where order is x·0.7 + y·0.3
+across the figure box, mirrored for RTL. Every particle of a glyph therefore lands together.
+`QUOTE_PLANE_FRAG` recomputes the same order per pixel from `uBox`/`uRtl`/`uArrive` and reveals the crisp
 raster over the first 60% of `QUOTE_SETTLE` (0.04) after that pixel's arrival. The particles land
 as solid squares (rounding undone, +30% size, dot size from the target spacing) and fade out over
 the same window. So the quote goes crisp in one reading-order wave behind the landing, with no
@@ -2029,8 +2049,8 @@ global fill-in, and every region is speckled for only ~3vh of scroll.
 | `p` | What |
 | --- | --- |
 | 0 | Cards render as before. At p > 0 they hide and their particles take over, identical on screen. |
-| 0 → 0.3 | Departures, edge first. |
-| 0.6 → 0.8 | Landings, in reading order, each glyph turning crisp as it lands. |
+| 0.1 → 0.2 | Releases, rim first (converge: departures ≤ 0.25, gathered by 0.45). |
+| 0.45 / 0.6 → 0.8 | Landings, in reading order (abc and swirl from 0.45, converge from 0.6), each glyph turning crisp as it lands. |
 | ≤ 0.84 | Everything is the crisp raster (`QUOTE_LIVE_P` marks the DOM figure `is-live`). Rendering stops (see below). |
 
 
