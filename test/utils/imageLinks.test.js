@@ -4,6 +4,10 @@ import sinon from 'sinon';
 import { decorateImageLinks } from '../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/image-links.html' });
+const foundation = document.createElement('meta');
+foundation.name = 'foundation';
+foundation.content = 'c2';
+document.head.append(foundation);
 
 describe('Image Link', () => {
   beforeEach(() => {
@@ -73,6 +77,16 @@ describe('Image Link', () => {
 
   it('Keeps an MPC player URL alt with a play icon as an image link', () => {
     const a = document.querySelector('#mpc-player-play a');
+    expect(a.classList.contains('image-link')).to.be.true;
+    expect(a.dataset.videoPoster).to.be.undefined;
+  });
+
+  it('Keeps an MPC player URL alt as an image link on C1 pages', () => {
+    foundation.remove();
+    const p = document.createElement('p');
+    p.innerHTML = '<picture><img src="./test/utils/mocksmedia_.png" alt="https://video.tv.adobe.com/v/332632 | MPC poster"></picture>';
+    decorateImageLinks(p);
+    const a = p.querySelector('a');
     expect(a.classList.contains('image-link')).to.be.true;
     expect(a.dataset.videoPoster).to.be.undefined;
   });

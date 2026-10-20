@@ -10,7 +10,7 @@ const NEXT = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="9" view
   <path fill-rule="evenodd" clip-rule="evenodd" d="M-5.23729e-06 4.43606C0.000232801 4.04471 0.317595 3.72718 0.708978 3.72707L8.45995 3.72707L5.94237 1.2095C5.66578 0.932652 5.66581 0.484406 5.94237 0.207542C6.21928 -0.0693646 6.66838 -0.0693445 6.9453 0.207542L10.6728 3.93508C10.9498 4.212 10.9498 4.66109 10.6728 4.93801L6.94531 8.66653C6.66845 8.94319 6.21925 8.94318 5.94238 8.66653C5.66556 8.38967 5.66566 7.94052 5.94238 7.6636L8.46093 5.14504L0.70898 5.14504C0.31745 5.14494 -4.81515e-06 4.82761 -5.23729e-06 4.43606Z" fill="currentColor"/>
 </svg>`;
 
-const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
+const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video, iframe';
 const MIN_SLIDE_TRANISTION_DURATION = 100;
 const MAX_SLIDE_TRANISTION_DURATION = 500;
 const SLIDES_TO_SHOW = 3;
@@ -134,6 +134,15 @@ function createSlideClone(slide) {
   clone.classList.remove('active');
   clone.style.removeProperty('--slide-spread-sign');
   clone.querySelectorAll('img').forEach((img) => img.setAttribute('loading', 'eager'));
+  // A player started before cloning would otherwise autoplay again in the clone.
+  clone.querySelectorAll('iframe.adobetv').forEach((iframe) => {
+    iframe.removeAttribute('data-playing');
+    const src = new URL(iframe.src);
+    if (!iframe.allow.includes('autoplay') || !src.searchParams.has('autoplay')) return;
+    src.searchParams.delete('autoplay');
+    iframe.src = src.href;
+    iframe.allow = iframe.allow.replace('autoplay; ', '');
+  });
   cloneSources.set(clone, slide);
   return clone;
 }
@@ -172,7 +181,7 @@ function cloneSlides(carouselEls) {
     });
   });
   // Keep the real slides attached; re-inserting them would reload any playing iframe.
-  [...wrapper.children].forEach((node) => { if (!slides.includes(node)) node.remove(); });
+  wrapper.querySelectorAll(':scope > [data-cloned]').forEach((n) => n.remove());
   wrapper.prepend(...cloneFront);
   wrapper.append(...cloneBack);
   carouselEls.allSlides = allSlides;
@@ -314,7 +323,8 @@ function attachListeners(carouselEls) {
 
   wrapper.addEventListener('pointerdown', (e) => {
     const { target } = e;
-    if (target.closest('a, button')) return;
+    // Links, buttons and players handle their own pointer input.
+    if (target.closest('a, button, video[controls], iframe')) return;
     e.preventDefault();
     wrapper.classList.add('grabbing');
     startX = e.clientX;

@@ -242,11 +242,22 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
     });
 
-    it('preloads adobetv for an MPC URL in a first-section image alt', () => {
+    it('preloads adobetv for an MPC player poster alt in the first section of a C2 page', () => {
+      const adobetvLink = () => !!document.head.querySelector('link[href*="/libs/blocks/adobetv/adobetv.js"]');
       document.body.innerHTML = '<main><div><img alt="https://video.tv.adobe.com/v/332632?autoplay=true | poster"></div></main>';
       utils.preloadLcpCodeFiles();
-      expect(document.head.querySelector('link[href*="/libs/blocks/adobetv/adobetv.js"]')).to.exist;
-      expect(document.head.querySelector('link[rel="preconnect"][href*="tv.adobe.com"]')).to.not.exist;
+      expect(adobetvLink(), 'C1 page').to.be.false;
+
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><img alt="https://video.tv.adobe.com/v/332632 | play | :play:"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(adobetvLink(), 'icon alt').to.be.false;
+
+      document.body.innerHTML = '<main><div><img alt="https://video.tv.adobe.com/v/332632?autoplay=true | poster"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(adobetvLink(), 'C2 poster alt').to.be.true;
+      expect(!!document.head.querySelector('link[rel="preconnect"][href*="tv.adobe.com"]')).to.be.false;
+      document.head.innerHTML = '';
     });
 
     it('preloads placeholders.js when the first section uses {{ }} tokens', () => {

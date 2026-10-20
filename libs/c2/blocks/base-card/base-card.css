@@ -35,7 +35,7 @@
       display: block;
       aspect-ratio: 4/3;
       object-fit: contain;
-      background: #000;
+      background: var(--s2a-color-gray-1000);
     }
 
     /* Native video controls sit above the card link. */
@@ -43,8 +43,8 @@
       pointer-events: auto;
     }
 
-    /* MPC iframe fills the card's media box and sits above the card link. */
-    .milo-video {
+    /* MPC iframe fills the card's media box and sits above the card link; other embeds keep stage sizing. */
+    .milo-video:has(> iframe.adobetv) {
       height: auto;
       padding-bottom: 0;
       aspect-ratio: 4/3;
@@ -180,7 +180,7 @@
       }
 
       .media picture:not(.icon) img,
-      .media .milo-video,
+      .media .milo-video:has(> iframe.adobetv),
       .media video[data-video-source*="tv.adobe.com"] {
         aspect-ratio: 2.2/1;
       }

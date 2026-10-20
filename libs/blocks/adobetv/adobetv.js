@@ -1,10 +1,10 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
-import { createTag, getConfig, getFederatedContentRoot, getFedsPlaceholderConfig, loadStyle } from '../../utils/utils.js';
+import {
+  createTag, getConfig, getFederatedContentRoot, getMetadata, isMpcPlayerUrl, loadStyle,
+} from '../../utils/utils.js';
 import { PLAY_ICON_SVG } from '../../utils/image-video-link.js';
 
 let captionsLangMapPromise = null;
-
-const isMpcPlayerUrl = (url) => /^https:\/\/(?:stage-)?video\.tv\.adobe\.com\/v\/\d+/.test(url);
 
 const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, {
   tags: 'adobetv',
@@ -63,6 +63,8 @@ const createIframe = (a, href, opts = {}) => {
   });
   const embed = createTag('div', { class: 'milo-video' }, iframe);
   a.insertAdjacentElement('afterend', embed);
+  // C2 containers like carousel-c2 hide inactive content before autoblocks load.
+  if (getMetadata('foundation') === 'c2' && embed.closest('[aria-hidden="true"]')) iframe.setAttribute('tabindex', '-1');
 
   const idMatch = videoHref.match(/\/v\/(\d+)/);
   const videoId = idMatch ? idMatch[1] : null;
@@ -130,10 +132,9 @@ const embedPlayer = (a, opts = {}) => {
 // Delegated so posters in cloned nodes (e.g. carousel slide clones) still play.
 const onPosterPlay = (e) => {
   const poster = e.target.closest?.('.mpc-poster');
-  if (!poster || !e.target.closest('.consonant-play-btn')) return;
-  const a = poster.previousElementSibling;
-  if (a?.tagName !== 'A') return;
-  poster.remove();
+  if (!poster?.dataset.href || !e.target.closest('.consonant-play-btn')) return;
+  const a = createTag('a', { href: poster.dataset.href });
+  poster.replaceWith(a);
   embedPlayer(a, { autoplay: true, focus: true });
 };
 let posterListenerAdded = false;
@@ -142,8 +143,11 @@ let posterListenerAdded = false;
 const createPosterPlayer = (a) => {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/styles/consonant-play-button.css`);
-  const poster = createTag('div', { class: 'mpc-poster modal-img-link' }, a.dataset.videoPoster);
-  const alt = poster.querySelector('img')?.alt;
+  const poster = createTag('div', { class: 'mpc-poster modal-img-link', 'data-href': a.href }, a.dataset.videoPoster);
+  const img = poster.querySelector('img');
+  const alt = img?.alt;
+  // The button label already includes the alt text.
+  img?.setAttribute('role', 'none');
   const withAlt = (label) => `${label}${alt ? ` ${alt}` : ''}`;
   const button = createTag('button', {
     type: 'button',
@@ -151,34 +155,34 @@ const createPosterPlayer = (a) => {
     'aria-label': withAlt('Play'),
   }, createTag('span', { class: 'play-icon-container' }, PLAY_ICON_SVG));
   import('../../features/placeholders.js')
-    .then(({ replaceKey }) => replaceKey('play-motion', getFedsPlaceholderConfig()))
+    .then(({ replaceKey }) => replaceKey('play-video', getConfig()))
     .then((label) => button.setAttribute('aria-label', withAlt(label)))
     .catch((e) => logError('Could not get play label', e));
   poster.append(button);
-  a.hidden = true;
-  a.after(poster);
-  if (!posterListenerAdded) {
-    document.addEventListener('click', onPosterPlay);
-    posterListenerAdded = true;
-  }
+  a.replaceWith(poster);
+  // Containers like carousel-c2 hide inactive content before autoblocks load.
+  if (poster.closest('[aria-hidden="true"]')) button.setAttribute('tabindex', '-1');
+  if (posterListenerAdded) return;
+  document.addEventListener('click', onPosterPlay);
+  posterListenerAdded = true;
 };
 
 export default function init(a) {
   a.classList.add('hide-video');
-  // MPC MP4s render natively like any MP4; MPC player URLs always use the MPC player.
-  if (a.href.includes('.mp4')) {
+  const isC2Page = getMetadata('foundation') === 'c2';
+  const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
+  // C2 renders MPC MP4s natively everywhere; C1 keeps stage behaviour (background blocks only).
+  if (a.href.includes('.mp4') && (isC2Page || bgBlocks.some((b) => a.closest(`.${b}`)))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
     decorateAnchorVideo({
       src: a.href,
       anchorTag: a,
     });
+  } else if (isC2Page && a.dataset.videoPoster && isMpcPlayerUrl(a.href)
+    && new URL(a.href).searchParams.get('autoplay') !== 'true') {
+    createPosterPlayer(a);
   } else {
-    const queryAutoplay = new URL(a.href).searchParams.get('autoplay') === 'true';
-    if (a.dataset.videoPoster && isMpcPlayerUrl(a.href) && !queryAutoplay) {
-      createPosterPlayer(a);
-    } else {
-      embedPlayer(a);
-    }
+    embedPlayer(a);
   }
 }

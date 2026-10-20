@@ -89,9 +89,18 @@ describe('adobetv autoblock', () => {
   });
 
   describe('MPC player', () => {
+    let foundation;
+
     beforeEach(() => {
       window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve({}) });
+      updateConfig({ ...getConfig(), locale: { prefix: '', ietf: 'en-US', contentRoot: '' } });
+      foundation = document.createElement('meta');
+      foundation.name = 'foundation';
+      foundation.content = 'c2';
+      document.head.append(foundation);
     });
+
+    afterEach(() => foundation.remove());
 
     it('keeps an MPC player URL with a playback hash as the MPC player', async () => {
       const wrapper = document.querySelector('#mpcPlayerAutoplay');
@@ -103,13 +112,31 @@ describe('adobetv autoblock', () => {
     it('renders a poster with a play button for an MPC player URL with a poster', async () => {
       const wrapper = document.querySelector('#mpcPlayerPoster');
       await init(wrapper.querySelector('a'));
-      expect(wrapper.querySelector('iframe')).to.be.null;
-      expect(wrapper.querySelector('video')).to.be.null;
-      expect(wrapper.querySelector('.mpc-poster img').getAttribute('src')).to.equal('poster.jpg');
-      const button = wrapper.querySelector('.mpc-poster button.consonant-play-btn');
+      expect(!!wrapper.querySelector('iframe')).to.be.false;
+      expect(!!wrapper.querySelector('video')).to.be.false;
+      expect(!!wrapper.querySelector('a'), 'anchor removed').to.be.false;
+      const poster = wrapper.querySelector('.mpc-poster');
+      expect(poster.dataset.href).to.equal('https://video.tv.adobe.com/v/111111');
+      const img = poster.querySelector('img');
+      expect(img.getAttribute('src')).to.equal('poster.jpg');
+      expect(img.getAttribute('role')).to.equal('none');
+      const button = poster.querySelector('button.consonant-play-btn');
       expect(button.getAttribute('aria-label')).to.equal('Play Demo video');
+      expect(button.hasAttribute('tabindex')).to.be.false;
       await new Promise((r) => { setTimeout(r, 100); });
-      expect(button.getAttribute('aria-label')).to.equal('play motion Demo video');
+      expect(button.getAttribute('aria-label')).to.equal('play video Demo video');
+    });
+
+    it('keeps players out of the tab order inside an aria-hidden container', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      wrapper.setAttribute('aria-hidden', 'true');
+      await init(wrapper.querySelector('a'));
+      expect(wrapper.querySelector('.mpc-poster button')?.getAttribute('tabindex')).to.equal('-1');
+
+      const plain = document.querySelector('#mpcPlayerPlain');
+      plain.setAttribute('aria-hidden', 'true');
+      await init(plain.querySelector('a'));
+      expect(plain.querySelector('iframe')?.getAttribute('tabindex')).to.equal('-1');
     });
 
     it('swaps the poster for an autoplaying MPC iframe on play', async () => {
@@ -221,6 +248,26 @@ describe('adobetv autoblock', () => {
       expect(cloneIframe.getAttribute('data-playing')).to.equal('true');
       expect(wrapper.querySelector('iframe').getAttribute('data-playing')).to.be.null;
       clone.remove();
+    });
+  });
+
+  describe('C1 pages', () => {
+    beforeEach(() => {
+      window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve({}) });
+    });
+
+    it('keeps an MPC MP4 outside background blocks as the iframe player', async () => {
+      const wrapper = document.querySelector('#mpcMp4Plain');
+      await init(wrapper.querySelector('a'));
+      expect(!!wrapper.querySelector('video'), 'native video').to.be.false;
+      expect(wrapper.querySelector('iframe')?.src).to.include('images-tv.adobe.com/mpcv3/1229/clip');
+    });
+
+    it('ignores the poster and renders the MPC iframe player', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      await init(wrapper.querySelector('a'));
+      expect(!!wrapper.querySelector('.mpc-poster'), 'poster').to.be.false;
+      expect(wrapper.querySelector('iframe')?.src).to.equal('https://video.tv.adobe.com/v/111111');
     });
   });
 });

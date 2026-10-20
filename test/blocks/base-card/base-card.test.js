@@ -137,5 +137,11 @@ describe('Base Card', () => {
       expect(Math.round(width)).to.equal(300);
       expect(Math.round(height)).to.equal(150);
     });
+
+    it('only gives the MPC iframe the card media ratio', () => {
+      const ratio = (sel) => getComputedStyle(document.querySelector(sel)).aspectRatio;
+      expect(ratio('#mpcIframe .milo-video')).to.equal('4 / 3');
+      expect(ratio('#youtubeIframe .milo-video')).to.equal('auto');
+    });
   });
 });
