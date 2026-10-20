@@ -250,14 +250,19 @@ export const TEXT_FRAG = [
   '}',
 ].join('\n');
 
-// Pull-quote particles. Everything is in CSS px with a top-left origin, mapped straight to clip
-// space, so the points ignore the scene camera. `position` is the text target; aRand is
-// (delay, scatter angle, scatter share, swirl). Phase shares of uP — see quote-particles.js.
-export const QUOTE_EXPAND_END = 0.3;
-export const QUOTE_FLY_START = 0.08;
-export const QUOTE_FLY_DUR = 0.5;
-export const QUOTE_DELAY_MAX = 0.3;
+// Pull-quote particles: one Points draw per far-side card. Each particle is a cell of the card,
+// a world-space point (uOrigin + uAxisU·u + uAxisV·v, the card frozen at the hand-off) projected
+// with the LIVE camera, so it rides the dolly. Its point sprite is a window onto the real card
+// texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
+// so at rest the tiles are the card, pixel for pixel. Then, edge first, each particle departs: its
+// own camera eases to a stop (velocity-continuous) and it travels to its text target in px.
+// aRand = (departure p, scatter angle, scatter share, flight duration). See quote-particles.js.
+export const QUOTE_DEPART_MAX = 0.3;
+export const QUOTE_FLY_MIN = 0.35;
+export const QUOTE_FLY_SPAN = 0.25; // added by the target's reading order
 export const QUOTE_INK_FROM = 0.78; // share of a particle's own travel after which it turns to ink
+const QUOTE_MIN_DEPTH = 2; // world units a departed particle's camera stays in front of it
+const QUOTE_TILE_MAX = 128; // CSS px
 
 const PX_TO_CLIP = [
   'vec4 pxToClip(vec2 p, vec2 view) {',
@@ -267,53 +272,121 @@ const PX_TO_CLIP = [
 
 export const QUOTE_POINTS_VERT = [
   'uniform float uP;',
-  'uniform float uIn;', // the tiles' share of the card → particle cross-fade
   'uniform vec2 uView;',
   'uniform float uDpr;',
-  'uniform vec2 uScatter;', // (radial expansion factor, scatter radius in px)
-  'uniform float uSrcSize;',
   'uniform float uDstSize;',
   'uniform float uAlpha;',
-  'attribute vec2 aSrc;',
-  'attribute float aSrcSize;', // the tile's size on its card at the hand-off
-  'attribute vec4 aSrcCol;',
-  'attribute vec3 aDstCol;',
+  'uniform vec2 uScatter;', // (radial expansion factor, scatter radius in px)
+  'uniform vec2 uZoomT;', // (zoomT at p = 0, zoomT per unit p)
+  'uniform vec2 uCamZ;', // (CAM_Z_SPHERE, CAM_Z_SPHERE − CAM_Z_END)
+  'uniform vec3 uOrigin;', // the card's top-left corner, world
+  'uniform vec3 uAxisU;', // across the card's width, world
+  'uniform vec3 uAxisV;', // down the card's height, world
+  'uniform vec2 uCell;', // one particle's cell, in card uv
+  'uniform float uScreenSrc;', // 1: no card; aUv is a viewport fraction
+  'attribute vec2 aUv;', // u right, v down the card as seen
   'attribute vec4 aRand;',
-  'varying vec4 vCol;',
+  'attribute vec3 aDstCol;',
+  'varying vec2 vUv;',
+  'varying vec4 vJinv;',
+  'varying float vSize;',
   'varying float vRound;',
+  'varying vec3 vInk;',
+  'varying float vInkK;',
   ...PX_TO_CLIP,
+  // Mirrors TL.camZAtZoomT, for the camera at a given flight progress.
+  'float camZAt(float p) {',
+  '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
+  '  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, 3.0));',
+  '}',
+  // The camera only dollies along z and looks down −z, so its view matrix is a translation.
+  'vec2 toPx(vec3 w, float camZ) {',
+  '  vec4 c = projectionMatrix * vec4(w.xy, w.z - camZ, 1.0);',
+  '  vec2 n = c.xy / c.w;',
+  '  return vec2((n.x + 1.0) * 0.5 * uView.x, (1.0 - n.y) * 0.5 * uView.y);',
+  '}',
   'void main() {',
-  '  vec2 c = uView * 0.5;',
-  // Ease in and out, so the tiles leave the photo gently rather than all at once.
-  `  float e = smoothstep(0.0, ${glf(QUOTE_EXPAND_END)}, uP);`,
+  '  float t = clamp((uP - aRand.x) / aRand.w, 0.0, 1.0);',
+  '  float te = t * t * t * (t * (t * 6.0 - 15.0) + 10.0);', // smootherstep: still at both ends
+  '  vec2 s; vec2 su; vec2 sv;',
+  '  if (uScreenSrc > 0.5) {',
+  '    s = aUv * uView; su = vec2(2.0, 0.0); sv = vec2(0.0, 2.0);',
+  '  } else {',
+  '    vec3 w = uOrigin + uAxisU * aUv.x + uAxisV * aUv.y;',
+  '    float camZ = cameraPosition.z;',
+  '    float zDep = camZAt(aRand.x);',
+  `    float minZ = w.z + ${glf(QUOTE_MIN_DEPTH)};`,
+  // Until it departs the particle sees the live camera; after, a camera that carries on at the
+  // same speed and eases to a stop short of it — no kink, and never past it.
+  '    float zEff = camZ;',
+  '    if (camZ < zDep) {',
+  '      float d = max(zDep - minZ, 0.001) * 0.8;',
+  '      zEff = zDep - d * (1.0 - exp(-(zDep - camZ) / d));',
+  '    }',
+  '    zEff = max(zEff, minZ);',
+  '    s = toPx(w, zEff);',
+  '    su = toPx(w + uAxisU * uCell.x, zEff) - s;',
+  '    sv = toPx(w + uAxisV * uCell.y, zEff) - s;',
+  '  }',
+  // The bounding square of the projected cell, so neighbouring tiles always overlap.
+  '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
+  '  float g = smoothstep(0.0, 0.4, t);',
+  `  float size = mix(min(tile, ${glf(QUOTE_TILE_MAX)}), uDstSize, g);`,
   '  vec2 dir = vec2(cos(aRand.y), sin(aRand.y));',
-  '  vec2 from = aSrc + ((aSrc - c) * uScatter.x + dir * aRand.z * uScatter.y) * e;',
-  `  float t = clamp((uP - ${glf(QUOTE_FLY_START)} - aRand.x) / ${glf(QUOTE_FLY_DUR)}, 0.0, 1.0);`,
-  '  float te = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(2.0 - 2.0 * t, 3.0) * 0.5;',
-  '  vec2 path = position.xy - from;',
-  '  vec2 swirl = vec2(-path.y, path.x) * aRand.w * 0.3 * sin(3.14159 * te);',
-  '  gl_Position = pxToClip(mix(from, position.xy, te) + swirl, uView);',
-  // Tiles shrink as they break apart, then take the text's dot size.
-  '  float srcSize = mix(aSrcSize, uSrcSize, e);',
-  '  gl_PointSize = max(1.0, mix(srcSize, uDstSize, te) * uDpr);',
-  '  vRound = e;',
-  // The photo colour rides the whole flight and turns to the ink only on the particle's own
-  // approach, so the letters visibly assemble from the cards' pixels.
+  '  vec2 off = ((s - uView * 0.5) * uScatter.x + dir * aRand.z * uScatter.y) * sin(3.14159 * te);',
+  '  gl_Position = pxToClip(mix(s, position.xy, te) + off, uView);',
+  '  gl_PointSize = max(1.0, size * uDpr);',
+  // px → card uv for the fragment's offset inside the sprite.
+  '  float a = su.x / uCell.x; float b = sv.x / uCell.y;',
+  '  float c = su.y / uCell.x; float d = sv.y / uCell.y;',
+  '  float det = a * d - b * c;',
+  '  vJinv = vec4(d, -b, -c, a) / (abs(det) > 1e-6 ? det : 1e-6);',
+  '  vUv = aUv;',
+  '  vSize = size;',
+  '  vRound = g;',
+  '  vInk = aDstCol;',
   `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
-  '  vec3 col = mix(mix(aSrcCol.rgb, vec3(1.0), 0.12 * e), aDstCol, ink * ink);',
-  '  vCol = vec4(col, mix(aSrcCol.a, 1.0, smoothstep(0.0, 0.4, te)) * uAlpha * uIn);',
+  '  vInkK = ink * ink;',
   '}',
 ].join('\n');
 
 export const QUOTE_POINTS_FRAG = [
-  'varying vec4 vCol;',
+  'uniform sampler2D uMap;',
+  'uniform vec2 uRepeat;',
+  'uniform vec2 uOffset;',
+  'uniform float uMirror;',
+  'uniform float uAspect;',
+  'uniform float uRadius;',
+  'uniform float uCardAlpha;',
+  'uniform float uAlpha;',
+  'uniform float uScreenSrc;',
+  'varying vec2 vUv;',
+  'varying vec4 vJinv;',
+  'varying float vSize;',
   'varying float vRound;',
+  'varying vec3 vInk;',
+  'varying float vInkK;',
+  ...RR_SDF,
   'void main() {',
-  // Square tiles while they still are the photo, round dots once they scatter.
-  '  float dotA = 1.0 - smoothstep(0.16, 0.25, dot(gl_PointCoord - 0.5, gl_PointCoord - 0.5));',
-  '  float a = vCol.a * mix(1.0, dotA, vRound);',
-  '  if (a < 0.004) discard;',
-  '  gl_FragColor = vec4(vCol.rgb, a);',
+  '  vec2 pc = gl_PointCoord - 0.5;',
+  '  float dotA = 1.0 - smoothstep(0.16, 0.25, dot(pc, pc));',
+  '  float alpha = uAlpha * mix(1.0, dotA, vRound);',
+  '  vec3 col = vInk;',
+  '  if (uScreenSrc > 0.5) {',
+  '    alpha *= vRound;', // nothing to break up: these only appear as they fly
+  '  } else {',
+  '    vec2 o = pc * vSize;',
+  '    vec2 uv = vUv + vec2(dot(vJinv.xy, o), dot(vJinv.zw, o));',
+  // The card's own GL uv (v up), mirrored on back faces exactly as CARD_FRAG does.
+  '    vec2 fUv = vec2(uMirror > 0.5 ? 1.0 - uv.x : uv.x, 1.0 - uv.y);',
+  '    vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
+  '    float aa = fwidth(pos.y);',
+  '    alpha *= uCardAlpha * (1.0 - smoothstep(-aa, aa, rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius)));',
+  '    vec3 tex = texture2D(uMap, fUv * uRepeat + uOffset).rgb;',
+  '    col = mix(pow(max(tex, 0.0), vec3(1.0 / 2.2)), vInk, vInkK);',
+  '  }',
+  '  if (alpha < 0.004) discard;',
+  '  gl_FragColor = vec4(col, alpha);',
   '}',
 ].join('\n');
 

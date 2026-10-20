@@ -1980,31 +1980,50 @@ colours, raster ready), `placeSphereCard` gives cards behind the centre plane (`
 `proxFade = 1`. They never run the stage dissolve or dispersion; the particles are their only
 break-up. Near-side cards keep the stage behaviour exactly.
 
-**Frozen globe.** Over `PQ_SPIN_EASE_T` (0.04 zoomT) before `pqStartZoomT`, `quoteSpinScale` eases
-auto-spin, drag inertia, hover and drag warp to 0. The pointer retires at the start of that window.
-While `quoteOwnsCards()` (p > 0), `updateSphereRotation` returns early with the orientation held, and
-`updateActiveCamera` holds the camera at `pqStartZoomT`. The particles are sampled from that frozen
-state, so scrolling back lands the cards exactly where the particles left them. Spin resumes along
-the same ease. `pq.p` is computed before the camera stage for this reason.
+**Frozen orientation, moving camera.** Over `PQ_SPIN_EASE_T` (0.04 zoomT) before
+`pqStartZoomT`, `quoteSpinScale` eases auto-spin, drag inertia, hover and drag warp to 0. The
+pointer retires at the start of that window. While `quoteOwnsCards()` (p > 0),
+`updateSphereRotation` returns early, so the orientation is held exactly. The camera is **not** held:
+it keeps dollying along `camZAtZoomT(zoomT)` at the stage's scroll pace. Scrolling back puts the
+cards exactly where the particles left them, and spin resumes along the same ease.
+
+**Hand-off: the particles are the card.** On the first owned frame, `projectCardQuads()` turns
+every far-side card still drawn into a world-space plane: its top-left `origin` plus `axisU` and
+`axisV` from the mesh's `matrixWorld`. The particles keep that plane for the whole flight. Each card
+gets one `Points` draw. `setSources` finds the card's on-screen uv window with a 24×24 probe; a card
+whose box meets the view but falls between probe points gets the whole card. It shares the particle
+budget across cards by projected area and lays it out as a grid of cells over each window.
+
+In `QUOTE_POINTS_VERT`, each particle is projected with the **live** `projectionMatrix` and
+`cameraPosition`. The camera only translates along z, so the view matrix is `w.z − camZ`. The
+sprite is sized to the bounding square of its projected cell. The fragment shader turns the sprite
+offset back into card uv through the inverse screen Jacobian of the cell. It then samples the real
+card texture with the card's `uRepeat`/`uOffset` crop and back-face mirror, masks the card's
+rounded-rect SDF, and applies the same `pow(1/2.2)` as `CARD_FRAG`. On the hand-off frame the tiles
+are therefore the card, pixel for pixel, with no downsampled copy and no stationary cross-fade. The
+cards simply hide at p > 0.
+
+**Break-up.** Each particle departs at its own `aRand.x`, up to `QUOTE_DEPART_MAX` (0.3). 75% of
+that delay is set by distance from the card's edge (`EDGE_LEAD`) and the rest is random, so the
+cards erode from the rim inward and never go soft all at once. Once it departs, a particle sees its
+own camera. That camera starts at the live camera's position and speed at departure (`camZAt(aRand.x)`
+mirrors `TL.camZAtZoomT`). It then eases exponentially to a stop at least `QUOTE_MIN_DEPTH` in front
+of the particle, so its motion leaves the dolly with no velocity kink and can never pass behind the
+camera.
+
+On top of that, smootherstep `te` carries the particle to its px text target over `aRand.w`
+(`QUOTE_FLY_MIN` + `QUOTE_FLY_SPAN` × reading order). A `sin(π·te)` bump adds the radial and random
+scatter. Over the first 40% of its flight, the sprite shrinks from its cell size to the text dot size
+and rounds off. Each particle keeps sampling its own photo pixels, and turns to the ink only over the
+last 22% of its own travel (`QUOTE_INK_FROM`).
 
 | `p` | What |
 | --- | --- |
-| 0 | Cards render as before. |
-| 0 → `PQ_HANDOFF_P` (0.06) | Hand-off, nothing moves. Square, perspective-correct tiles fade in over the cards on the cards' own pixels (first half), then the cards fade out under them (second half). Both are drawn throughout, so no frame drops coverage. |
-| after that | The motion runs on `m = (p − 0.06) / 0.94`, described in the rows below. |
-| m 0 → 0.3 | Break up. Tiles shrink from their cell size, round off and blow out from the screen centre. |
-| m 0.08 → 0.88 | Fly. Per particle: delay up to 0.3 (reading order, plus some randomness), 0.5 long, eased in/out, with a sideways swirl. Each particle keeps its photo colour and turns to the ink only over the last 22% of its own travel (`QUOTE_INK_FROM`), eased. |
-| m 0.84 → 0.96 | The text plane fades in. From 0.9 the points fade out. `QUOTE_LIVE_P` (0.88) marks the DOM figure `is-live`. |
+| 0 | Cards render as before. At p > 0 they hide and their particles take over, identical on screen. |
+| 0 → 0.3 | Departures, edge first. |
+| ≤ 0.9 | Every particle has landed (`QUOTE_LIVE_P` marks the DOM figure `is-live`). |
+| 0.86 → 0.96 | The text plane fades in. From 0.9 the points fade out. |
 | 1 | Only the text plane remains. Rendering stops (see below). |
-
-**Sources.** On the first owned frame, `projectCardQuads()` projects every card still drawn through
-its own `matrixWorld` and the held camera. Each card yields a `project(u, v)` closure, an alpha, its
-cover-crop, its texture and a back-face flag. `setSources` finds each card's on-screen uv window with
-a 12×12 probe. It then shares the particle budget by projected area and lays the particles out as a
-grid over that window. Each particle sits at its cell centre and is sized to its projected cell, with
-20% overlap (`aSrcSize`). Its colour is read from a 256px copy of the photo, cached per image, with
-u mirrored on back faces like `CARD_FRAG`. With no visible card, the sources fall back to a
-transparent spread over the viewport. Sources are re-sampled on every forward crossing of `p = 0`.
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
 authored text (`plainQuote`, which also hangs the opening mark), shrinks the font size if the box is
@@ -2029,8 +2048,8 @@ Coordinates are CSS px from the top-left of `.globe-gallery-pullquote-rail`. Bot
 straight to clip space and ignore the scene camera. The layout re-runs whenever the figure width,
 viewport height, nav height or DPR changes, and again on `fonts.ready`.
 
-**Particle counts.** `PQ_PARTICLES_SM` is 24k and `PQ_PARTICLES_MD` is 56k, in one `THREE.Points`
-draw. Attributes: `position` (target), `aSrc`, `aSrcCol`, `aDstCol`, `aRand`.
+**Particle counts.** `PQ_PARTICLES_SM` is 40k and `PQ_PARTICLES_MD` is 56k. There is one `THREE.Points`
+draw per far-side card in view (about 3–12) plus the text plane. Attributes: `position` (target), `aSrc`, `aSrcCol`, `aDstCol`, `aRand`.
 
 **Pinning.** There is no separate quote pin any more. Once `p > 0` the canvas swaps from
 `position: fixed` to `absolute` inside `.globe-gallery-world`, which is sticky and already stuck by
@@ -2067,8 +2086,11 @@ repaints even transparent text.
 fit, the measurement and the raster at the new size and DPR.
 
 **Known limitations (PoC).**
-- The hand-off tiles are flat-coloured cells, so a card reads slightly pixelated for the ~5vh
-  cross-fade, and the tiles' square corners cover the card's rounded ones.
+- On mobile the cards are close and large, so the cells (and the chunks that leave the edge) are
+  ~10px squares at the start of the break-up. At rest they are invisible (exact texture windows),
+  but the squares show as they leave.
+- `setSources` runs on the hand-off frame (window probe and grid for ~40k particles), so that one
+  frame costs more. With a 4× CPU throttle it shows as a p95 spike.
 - Ligatures and kerning come from canvas text shaping, not the DOM. Per-line advance correction
   keeps the boxes aligned, but an individual glyph can differ by a pixel.
 - A CJK or Thai quote is measured by character Ranges, which is correct. The scale correction

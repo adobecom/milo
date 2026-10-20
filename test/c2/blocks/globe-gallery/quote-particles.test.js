@@ -30,8 +30,10 @@ describe('globe-gallery: quote particles', () => {
     fx = createQuoteParticles({ figureEl, railEl, count: 2000 });
     expect(await fx.layout({ dpr: 1 })).to.be.true;
     expect(fx.isReady()).to.be.true;
-    const [points, plane] = fx.object.children;
-    expect(points).to.be.instanceOf(THREE.Points);
+    fx.setSources([], 800, 600);
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
+    expect(points.geometry.attributes.position.count).to.equal(2000);
     const pos = points.geometry.attributes.position.array;
     const box = figureEl.getBoundingClientRect();
     const rail = railEl.getBoundingClientRect();
@@ -42,41 +44,56 @@ describe('globe-gallery: quote particles', () => {
     expect(plane.material.uniforms.uMap.value).to.be.instanceOf(THREE.CanvasTexture);
   });
 
-  it('tiles each card quad edge to edge, or spreads over the viewport without any', async () => {
+  it('tiles each card with a draw over its real texture, or spreads over the view', async () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
-    const { aSrc, aSrcSize, aSrcCol } = fx.object.children[0].geometry.attributes;
-    // A 100 × 200 px card at (100, 100), seen straight on.
-    const project = (u, v) => [100 + 100 * u, 100 + 200 * v];
-    fx.setSources([{
-      pts: [100, 100, 200, 100, 200, 300, 100, 300],
-      project,
-      alpha: 0.5,
-      tex: null,
+    // A 100 × 200 px card at (100, 100), seen straight on; a second one fully off screen.
+    const card = (x0) => ({
+      project: (u, v) => [x0 + 100 * u, 100 + 200 * v],
+      origin: new THREE.Vector3(-1, 2, -30),
+      axisU: new THREE.Vector3(2, 0, 0),
+      axisV: new THREE.Vector3(0, -4, 0),
+      tex: new THREE.Texture(),
+      repeat: new THREE.Vector2(1, 1),
+      offset: new THREE.Vector2(0, 0),
       mirror: false,
-      repeat: { x: 1, y: 1 },
-      offset: { x: 0, y: 0 },
-    }], 800, 600);
-    let covered = 0;
-    for (let i = 0; i < 500; i += 1) {
-      expect(aSrc.array[i * 2]).to.be.within(100, 200);
-      expect(aSrc.array[i * 2 + 1]).to.be.within(100, 300);
-      expect(aSrcCol.array[i * 4 + 3]).to.equal(0.5);
-      covered += aSrcSize.array[i] ** 2;
+      aspect: 0.5,
+      radius: 0.03,
+      alpha: 1,
+      order: -5,
+    });
+    fx.setSources([card(100), card(5000)], 800, 600);
+    expect(fx.drawCount()).to.equal(2); // one card draw + the text plane
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const { aUv, aRand } = points.geometry.attributes;
+    expect(aUv.count).to.be.within(450, 500);
+    let edge = 0; let centre = 0; let ne = 0; let nc = 0;
+    for (let i = 0; i < aUv.count; i += 1) {
+      const u = aUv.array[i * 2];
+      const v = aUv.array[i * 2 + 1];
+      expect(u).to.be.within(0, 1);
+      expect(v).to.be.within(0, 1);
+      const inner = Math.min(u, 1 - u, v, 1 - v);
+      if (inner < 0.1) { edge += aRand.array[i * 4]; ne += 1; }
+      if (inner > 0.4) { centre += aRand.array[i * 4]; nc += 1; }
     }
-    // Tiles overlap a little, so together they cover at least the card.
-    expect(covered).to.be.at.least(100 * 200);
+    // Edge first: the rim departs well before the middle.
+    expect(edge / ne).to.be.below(centre / nc);
+    expect(points.material.uniforms.uMap.value).to.be.instanceOf(THREE.Texture);
     fx.setSources([], 800, 600);
-    expect(aSrcCol.array[3]).to.equal(0);
-    expect(aSrc.array[0]).to.be.within(0, 800);
+    expect(fx.drawCount()).to.equal(2);
+    const fallback = fx.object.children.find((o) => o instanceof THREE.Points);
+    expect(fallback.material.uniforms.uScreenSrc.value).to.equal(1);
   });
 
   it('crosses from points to the text plane and idles once drawn at rest', async () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
-    const [points, plane] = fx.object.children;
+    fx.setSources([], 800, 600);
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update(0, { ...view, active: false });
     expect(fx.object.visible).to.be.false;
@@ -96,8 +113,9 @@ describe('globe-gallery: quote particles', () => {
     fx.markDrawn();
     fx.invalidate();
     expect(fx.isIdle()).to.be.false;
-    fx.update(0.5, { ...view, fadeIn: 0.25 });
-    expect(points.material.uniforms.uIn.value).to.equal(0.25);
+    fx.update(0.5, { ...view, zoom: [0.2, 0.4, 57, 117] });
+    expect(points.material.uniforms.uZoomT.value.toArray()).to.deep.equal([0.2, 0.4]);
+    expect(points.material.uniforms.uCamZ.value.toArray()).to.deep.equal([57, 117]);
     fx.update(1, { ...view, active: false });
     expect(fx.object.visible).to.be.false;
   });

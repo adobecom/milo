@@ -109,11 +109,9 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 // WebGL pull quote: scroll it takes the card pixels to fly into the text, as a share of the
 // viewport height, and how many there are.
 const PQ_FLY_VH = 0.8;
-// Share of the flight spent cross-fading card → particle tiles in place, before anything moves.
-const PQ_HANDOFF_P = 0.06;
 // zoomT over which spin, inertia, hover and drag warp ease to rest before the hand-off.
 const PQ_SPIN_EASE_T = 0.04;
-const PQ_PARTICLES_SM = 24000;
+const PQ_PARTICLES_SM = 40000;
 const PQ_PARTICLES_MD = 56000;
 
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
@@ -1158,8 +1156,7 @@ function createGlobeGalleryRuntime(
       // easeInCubic matches the zoom's easeOutCubic; apparent size is held by sphereGroup.z.
       const camZ = zoomT === 0
         ? lerpN(camZArc, CAM_Z_SPHERE, sphereFormT * sphereFormT * sphereFormT)
-        // Held where the hand-off sampled the cards while the particles stand in for them.
-        : TL.camZAtZoomT(quoteOwnsCards() ? pqStartZoomT : zoomT, CAM_Z_SPHERE, CAM_Z_END);
+        : TL.camZAtZoomT(zoomT, CAM_Z_SPHERE, CAM_Z_END);
       camera.position.z = camZ;
     }
     applyCentringOffset(sphereFormT);
@@ -1391,7 +1388,7 @@ function createGlobeGalleryRuntime(
     if (reducedMotion || !pq.fx) return;
     const dom = !!forcedColorsMQ?.matches || !pq.fx.isReady();
     if (dom !== pqEl.classList.contains('is-dom')) pqEl.classList.toggle('is-dom', dom);
-    const live = (pq.p - PQ_HANDOFF_P) / (1 - PQ_HANDOFF_P) >= QUOTE_LIVE_P;
+    const live = pq.p >= QUOTE_LIVE_P;
     if (live === pq.live) return;
     pq.live = live;
     if (!live) dropQuoteSelection();
@@ -1400,71 +1397,78 @@ function createGlobeGalleryRuntime(
   }
 
   const quadCorner = new THREE.Vector3();
-  const QUAD_UV = [[0, 0], [1, 0], [1, 1], [0, 1]]; // TL, TR, BR, BL; v runs down the card
 
-  // The far-side cards as drawn on the hand-off frame. The camera is held at pqStartZoomT and the
-  // orientation frozen from then on, so this is also every later frame of the flight, and a
-  // reversal lands the cards exactly where the particles left them. Each card projects through
-  // its own mesh matrix, so the tiles sit on its pixels perspective-correct, facing tilt and all.
+  // The far-side cards on the hand-off frame, as world-space planes. The orientation is frozen
+  // while the particles own the cards, so the planes hold for the whole flight and a reversal
+  // lands the cards exactly where the particles left them; the camera keeps dollying, and the
+  // particles are projected with it every frame.
   function projectCardQuads() {
     camera.updateMatrixWorld();
     sphereGroup.updateMatrixWorld(true);
-    const quads = [];
+    const out = [];
     cards.forEach((card) => {
       const { mesh } = card;
       if (!mesh.visible || modal.isCardManaged(card)) return;
       const u = mesh.material.uniforms;
       const alpha = u.uOpacity.value * u.uReveal.value;
       if (alpha <= 0.002) return;
+      const world = (cu, cv) => new THREE.Vector3(
+        (cu - 0.5) * bp.CARD_W_SPHERE,
+        (0.5 - cv) * bp.CARD_H_SPHERE,
+        0,
+      ).applyMatrix4(mesh.matrixWorld);
       let behind = false;
       const project = (cu, cv) => {
-        quadCorner.set((cu - 0.5) * bp.CARD_W_SPHERE, (0.5 - cv) * bp.CARD_H_SPHERE, 0)
-          .applyMatrix4(mesh.matrixWorld);
+        quadCorner.copy(world(cu, cv));
         if (camera.position.z - quadCorner.z < camera.near) behind = true;
         quadCorner.project(camera);
         return [(quadCorner.x + 1) * 0.5 * W, (1 - quadCorner.y) * 0.5 * H];
       };
-      const pts = QUAD_UV.flatMap(([cu, cv]) => project(cu, cv));
+      const pts = [[0, 0], [1, 0], [0, 1]].map(([cu, cv]) => project(cu, cv));
       if (behind) return;
+      const origin = world(0, 0);
       // Screen winding tells a back face, which the card shader mirrors in u.
-      const cross = (pts[2] - pts[0]) * (pts[7] - pts[1]) - (pts[3] - pts[1]) * (pts[6] - pts[0]);
-      quads.push({
-        pts,
+      const cross = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1])
+        - (pts[1][1] - pts[0][1]) * (pts[2][0] - pts[0][0]);
+      out.push({
         project,
-        alpha,
-        mirror: cross < 0,
+        origin,
+        axisU: world(1, 0).sub(origin),
+        axisV: world(0, 1).sub(origin),
         tex: u.uMap.value,
         repeat: u.uRepeat.value.clone(),
         offset: u.uOffset.value.clone(),
+        mirror: cross < 0,
+        aspect: u.uAspect.value,
+        radius: u.uRadius.value,
+        alpha,
+        order: mesh.renderOrder,
       });
     });
-    return quads;
+    return out;
   }
 
-  // After the card stage. p ∈ (0, PQ_HANDOFF_P]: the tiles fade in over the cards on the cards' own
-  // pixels, then the cards fade out under them, both drawn throughout, so no frame shows neither.
-  // Past it the tiles move. At p = 0 it is all cards again.
+  // After the card stage. From the first frame of p > 0 the particles are the far-side cards,
+  // pixel for pixel, so the cards hide; at p = 0 it is all cards again.
   function updateQuoteParticles() {
     if (!pq.fx) return;
     const owns = quoteOwnsCards();
-    const handoff = clamp01(pq.p / PQ_HANDOFF_P);
     if (owns) {
       if (!pq.sourced) {
         pq.fx.setSources(projectCardQuads(), W, H);
         pq.sourced = true;
       }
-      const cardK = clamp01(2 - 2 * handoff);
       cards.forEach((card) => {
-        if (modal.isCardManaged(card)) return;
-        if (cardK <= 0) card.mesh.visible = false;
-        else card.mesh.material.opacity *= cardK;
+        if (!modal.isCardManaged(card)) card.mesh.visible = false;
       });
     } else {
       pq.sourced = false; // re-sampled on the next crossing
     }
-    const motion = clamp01((pq.p - PQ_HANDOFF_P) / (1 - PQ_HANDOFF_P));
-    const fadeIn = clamp01(2 * handoff);
-    pq.fx.update(motion, { W, H, dpr: capDpr(), active: owns, fadeIn });
+    const formPx = formedScrollPx();
+    const zoomPx = Math.max(1, blockHeight - holdPx() - formPx);
+    const { CAM_Z_SPHERE, CAM_Z_END } = bp;
+    const zoom = [pqStartZoomT, (PQ_FLY_VH * H) / zoomPx, CAM_Z_SPHERE, CAM_Z_SPHERE - CAM_Z_END];
+    pq.fx.update(pq.p, { W, H, dpr: capDpr(), active: owns, zoom });
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
