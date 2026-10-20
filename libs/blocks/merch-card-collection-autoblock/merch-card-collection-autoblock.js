@@ -168,13 +168,10 @@ const firstPage = (params) => {
   return next;
 };
 
-// Every selected pill counts, including the default category, so Featured +
-// Individuals reads "All Filters (2)". 'all' means unfiltered.
+// Every selected pill counts, including the default category and All, so
+// Featured + Individuals reads "All Filters (2)".
 export function countApplied(params, groups = []) {
-  return groups.reduce((total, { deeplink }) => {
-    const raw = params.get(deeplink);
-    return total + (raw && raw !== 'all' ? 1 : 0);
-  }, 0);
+  return groups.filter(({ deeplink }) => params.get(deeplink)).length;
 }
 
 // The one shape the bar and drawer both render.
@@ -356,6 +353,42 @@ export const isCategoryOff = (params, tags) => tags.some((tag) => {
   const [group, value] = tag.split(':');
   return params.get(group) === value;
 });
+
+const metaList = (meta, key) => (meta[key]?.text ?? '').split(',').map((v) => v.trim()).filter(Boolean);
+
+// `<group>-off-for: all` turns a group off under those categories.
+// `exclude-in-<category>: group:tag` turns a tag off and removes its cards under it.
+// Off pills are greyed in the drawer and hidden in the bar.
+export function categoryRules(meta, groups) {
+  const category = groups.find((group) => group.category);
+  return {
+    off: Object.fromEntries(groups.filter((group) => !group.category)
+      .map(({ deeplink }) => [deeplink, metaList(meta, `${deeplink}-off-for`)])),
+    exclude: Object.fromEntries((category?.options ?? [])
+      .map(({ value }) => [value, metaList(meta, `exclude-in-${value.toLowerCase()}`)])),
+  };
+}
+
+// The groups and options that exist under `category`.
+export const groupsFor = (groups, category, { off, exclude }) => groups
+  .filter((group) => !off[group.deeplink]?.includes(category))
+  .map((group) => ({
+    ...group,
+    options: group.options.filter(({ value }) => !exclude[category]?.includes(`${group.deeplink}:${value}`)),
+  }));
+
+// Drops hash values for groups and options that `active` rules out.
+export function pruneParams(params, groups, active) {
+  const next = new URLSearchParams(params);
+  groups.filter((group) => !group.category).forEach(({ deeplink, options }) => {
+    const value = next.get(deeplink);
+    const live = active.find((group) => group.deeplink === deeplink);
+    const known = options.some((option) => option.value === value);
+    const stillLive = live?.options.some((option) => option.value === value);
+    if (value && known && !stillLive) next.delete(deeplink);
+  });
+  return next;
+}
 
 export function resetParams(params, groups) {
   const reset = withoutGroups(firstPage(params), groups);
@@ -582,6 +615,10 @@ export function mountProductPricingFilter(collection, container) {
   const groups = productPricingFilterGroups(collection.data, meta);
   const offTags = categoryOffTags(meta);
   const categoryDeeplink = groups.find((group) => group.category)?.deeplink;
+  const rules = categoryRules(meta, groups);
+  collection.excludeTags = rules.exclude;
+  // What exists under the selected category.
+  const activeGroups = (params) => groupsFor(groups, params.get(categoryDeeplink), rules);
   const drawer = buildProductPricingDrawer(collection, groups);
   const bar = buildProductPricingBar(collection, groups);
   const { trigger } = bar;
@@ -603,7 +640,7 @@ export function mountProductPricingFilter(collection, container) {
   let resultCount;
   const renderLabels = (params) => {
     const off = isCategoryOff(params, offTags);
-    const labels = filterBarLabels(params, groups, placeholders, resultCount, off);
+    const labels = filterBarLabels(params, activeGroups(params), placeholders, resultCount, off);
     drawer.applied.textContent = labels.applied;
     bar.triggerLabel.textContent = labels.trigger;
     drawer.results.textContent = labels.results;
@@ -613,11 +650,14 @@ export function mountProductPricingFilter(collection, container) {
   };
   // The selected pill stays live. Search is ignored.
   const renderAvailability = (params) => {
-    const unavailable = unavailablePills(loadedCards(collection), groups, params);
+    const active = activeGroups(params);
+    const unavailable = unavailablePills(loadedCards(collection), active, params);
+    const live = new Set(active.flatMap((group) => group.options.map((o) => `${group.deeplink}:${o.value}`)));
     const categoryOff = isCategoryOff(params, offTags);
     surfaces.forEach((root) => root.querySelectorAll('.product-pricing-pill input').forEach((input) => {
+      const gone = !live.has(`${input.dataset.deeplink}:${input.value}`);
       const offByCategory = categoryOff && input.dataset.deeplink === categoryDeeplink;
-      input.disabled = offByCategory
+      input.disabled = gone || offByCategory
         || (unavailable.has(`${input.dataset.deeplink}:${input.value}`) && !input.checked);
     }));
   };
@@ -625,13 +665,16 @@ export function mountProductPricingFilter(collection, container) {
     renderLabels(params);
     renderAvailability(params);
   };
-  // Fills the following groups once cards load. True when it wrote the hash.
+  // Drops what the category rules out and fills the following groups once
+  // cards load. True when it wrote the hash.
   const settle = () => {
-    const missing = derivedSelections(loadedCards(collection), groups, hashParams());
-    if (!missing.length) return false;
     const params = hashParams();
-    missing.forEach(([key, value]) => params.set(key, value));
-    writeHash(params);
+    const active = activeGroups(params);
+    const next = pruneParams(params, groups, active);
+    derivedSelections(loadedCards(collection), active, next)
+      .forEach(([key, value]) => next.set(key, value));
+    if (next.toString() === params.toString()) return false;
+    writeHash(next);
     return true;
   };
   const sync = () => {
