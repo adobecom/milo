@@ -16,14 +16,14 @@ import {
 } from './bc-utils.js';
 import {
   loadWebclient,
-  bcBootstrap,
-  openModal,
-  openSideModal,
   sideOverlayTop,
   setAuthoredContent,
-  mountId,
-  isMobile,
-} from './bc-bootstrap.js';
+} from '../../../blocks/brand-concierge/bc-bootstrap.js';
+import initChatPanel, {
+  openChatPanel,
+  closeChatPanel,
+  isChatPanelOpen,
+} from '../../../features/chat-panel/chat-panel.js';
 
 const variants = {};
 let useAcomAssistant = false;
@@ -35,17 +35,6 @@ async function routeAcomAssistantInput(options) {
   return acomAssistantRouteInput(options);
 }
 
-function checkGlobal() {
-  const params = new URLSearchParams(window.location.search);
-  if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
-    return window.milo.brandConcierge.brandConciergeGlobal;
-  }
-  if (params.get('side-overlay') === 'true') {
-    return true;
-  }
-  return false;
-}
-
 function routeInput({ text, cards, source = 'input' }) {
   if (useAcomAssistant) {
     routeAcomAssistantInput({ text, cards, source }).catch((error) => {
@@ -53,16 +42,7 @@ function routeInput({ text, cards, source = 'input' }) {
     });
     return;
   }
-  if (checkGlobal()) {
-    const isOpen = document.body.classList.contains('bc-side-open');
-    if (isOpen) bcBootstrap(text, mountId);
-    else {
-      sideOverlayTop();
-      openSideModal(text, bcBootstrap);
-    }
-  } else {
-    openModal(text, bcBootstrap);
-  }
+  openChatPanel(text);
 }
 
 function handleInput(text, input, cards) {
@@ -110,10 +90,7 @@ export default async function init(el) {
         loadWebclient();
       }
       if (window.adobe?.concierge?.clearHistory) {
-        if (document.body.classList.contains('bc-side-open')) {
-          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
-          closeButton.click();
-        }
+        if (isChatPanelOpen()) closeChatPanel();
         window.adobe.concierge.clearHistory();
       }
     });
@@ -217,8 +194,8 @@ export default async function init(el) {
   if (variants.isMarquee) {
     decorateMarqueeBackground(el, background, customGradient);
     decorateHeader(el, header, { eyebrow: true });
-    decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt });
+    decorateInput(el, input, { handle: onInput });
+    decorateCards(el, cards, { handle: onPrompt });
     decorateLegal(el, legal);
 
     const foreground = createTag('div', { class: 'foreground container' });
@@ -245,9 +222,11 @@ export default async function init(el) {
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
+  if (useAcomAssistant) return;
+
+  await initChatPanel();
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
-    sideOverlayTop();
-    openSideModal(null, bcBootstrap);
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+    openChatPanel();
   }
 }
