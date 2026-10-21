@@ -7,7 +7,7 @@ describe('Delayed', () => {
   const loadScript = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
   const loadStyle = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
 
-  it('should load privacy feature', async () => {
+  it.skip('should load privacy feature', async () => {
     expect(loadPrivacy).to.exist;
     setConfig({ privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db' });
     document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';

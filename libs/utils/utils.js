@@ -2691,8 +2691,8 @@ async function loadPostLCP(config) {
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
   if (!quickLink || window.adobePrivacy) return;
-  import('../scripts/loadPrivacy.js').then((module) => {
-    module.loadPrivacy(getConfig, loadScript);
+  import('../scripts/loadPrivacy.js').then(({ default: loadPrivacy }) => {
+    loadPrivacy(getConfig, loadScript);
   });
 }
 

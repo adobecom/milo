@@ -1,4 +1,4 @@
-export async function loadPrivacy (getConfig, loadScript) {
+const loadPrivacy = async (getConfig, loadScript) => {
   const { privacyId, env, holdPrivacyBanner, locale } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
@@ -40,3 +40,5 @@ export async function loadPrivacy (getConfig, loadScript) {
     }
   });
 };
+
+export default loadPrivacy;
