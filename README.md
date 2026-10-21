@@ -60,6 +60,49 @@ https://feat-branch--project--owner.aem.page/?milolibs=local (feature code, stag
 ```
 
 ## Testing
+### Jarvis persistent-panel spike
+
+With the local Milo server and Leo's client/UI dev servers running, use:
+
+```
+https://www.stage.adobe.com/creativecloud.html?milolibs=local&acom-assistant-panel=local
+```
+
+This opt-in uses `acom-assistant-panel: on` (or `?acom-assistant-panel=on|local` on stage) plus the existing Jarvis surface ID/version
+metadata or site configuration. `acom-assistant-panel=local` uses Leo's HTTPS client on port
+4443 and UI on port 3443, with deployed integration configuration and backend services.
+No local backend or messaging-init proxy is needed. Both jarvis-client and jarvis-ui
+need the embedded-mode changes. In `jarvis-ui`, run `npm start` with
+`LEO_MSG_ENV=integration`, `LEO_MSG_SERVER_URL=https://assistant-integration.adobe.io`,
+and `LEO_MSG_WS_URL=wss://assistant-integration.adobe.io`.
+Start the client with `LEO_MSG_INIT_CLIENT_VERSION=2026.10.38 npm run watch`
+to match the existing integration init version pin.
+`acom-assistant-panel=on` uses the environment's hosted bundle instead, which must
+also support `mountSelector`. Unsupported bundles show an error, not a separate window.
+Without the flag, the existing panel remains unchanged.
+Restart Leo's client dev server after the webpack entrypoint change, and allow
+Chrome's local-network access prompt for the stage page.
+This spike covers BC prompts and panel lifecycle; live-agent handoff and per-link
+footer surface overrides are not wired into the embedded mode.
+
+For local conversation testing, launch the surface-override browser harness:
+
+```sh
+node nala/utils/jarvis-panel-preview.js
+```
+
+It opens Chrome with the local-panel URL above. It discovers the deployed UI surface
+from integration's unmodified messaging-init response, then replaces only local
+`events[*].query.conversation.surfaces` values on outgoing integration conversation
+requests. Message, authentication, XDM, headers, and all other payload fields are
+unchanged. This avoids integration's `Concierge not found` response for localhost.
+The override exists only in this browser session; no shipped code or backend config
+is changed, and credentials/payloads are not logged or saved. Close Chrome or press
+Ctrl+C to stop. An optional stage URL can be supplied as the only positional argument.
+The headed preview starts in a 1440-by-900 window and follows browser-window resizing.
+Use `--smoke` for a headless HTTP-200 conversation check with a sample Photoshop prompt.
+The headless smoke viewport remains fixed at 1440 by 900.
+
 ### Unit Testing
 ```sh
 npm run test
