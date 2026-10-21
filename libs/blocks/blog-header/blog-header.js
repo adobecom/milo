@@ -552,13 +552,21 @@ function decorateProgressBar(el, main) {
     if (section?.classList.contains('blog-article-layout')) {
       section = section.querySelector('.blog-article-content > .section');
     }
-    while (section && !section.querySelector('.card-metadata')) {
+    while (section) {
+      if (section.querySelector('.card-metadata')) {
+        const finalCopy = section.querySelector(':scope > .content:first-child');
+        if (finalCopy) contents.push(finalCopy);
+        break;
+      }
       contents.push(...section.querySelectorAll(':scope > .content'));
       section = section.nextElementSibling || section.parentElement?.closest('.blog-article-layout')?.nextElementSibling;
     }
     const first = contents[0]?.getBoundingClientRect();
     const last = contents.at(-1)?.getBoundingClientRect();
-    if (!first) return;
+    if (!first) {
+      bar.hidden = true;
+      return;
+    }
 
     const navigation = main.querySelector('.blog-side-navigation:not([hidden])');
     const dividerY = stacked.matches && navigation
@@ -571,7 +579,9 @@ function decorateProgressBar(el, main) {
     const start = window.scrollY + first.top - globalNav;
 
     const distance = last.bottom + window.scrollY - window.innerHeight - start;
-    const progress = distance > 0 ? (window.scrollY - start) / distance : 0;
+    bar.hidden = distance <= 0;
+    if (bar.hidden) return;
+    const progress = (window.scrollY - start) / distance;
     bar.style.top = `${top}px`;
     bar.style.setProperty('--blog-progress', Math.min(1, Math.max(0, progress)));
   };
