@@ -93,7 +93,9 @@ or content already inside a dialog does not start another trigger.
 | URL parameter | Meaning |
 | --- | --- |
 | `delay` | Non-negative number of seconds since navigation, not since script initialization |
-| `showAfter` | Class name, for example `session-details` (`.session-details` is also accepted); the first matching element qualifies when its top enters the viewport |
+| `showAfter` | Class name, for example `session-details` (`.session-details` is also accepted); defaults to the first matching element |
+| `showAfterNth` | Positive, 1-based occurrence of the `showAfter` class in document order; defaults to `1` |
+| `showAfterMode` | `enter` (default) qualifies when the target's top enters the viewport; `passed` waits until its entire bottom has scrolled to or above the viewport top |
 | `operator` | `and` (default) waits for both configured conditions; `or` waits for either |
 
 Only configured conditions participate in AND/OR. With no delay or target,
@@ -101,25 +103,68 @@ the existing default is a 120-second delay. With only a target, there is no
 implicit delay, even with `operator=or`. Explicit `delay=0` is an immediately
 satisfied delay condition. Parameters do not change the primary CTA's authored URL.
 The shared fragment loader appends `.plain.html` before the query string.
-Invalid delays, operators, or `showAfter` class names report an error and do not install
-the trigger. Existing selector metadata is still supported.
+Invalid delays, operators, class names, occurrences, or modes report an error and
+do not install the trigger. `showAfterNth` requires a `showAfter` class; it does not
+apply to legacy selector metadata. `showAfterMode` requires a class or legacy
+selector target. Without these new parameters, existing scroll-target selection
+and entry thresholds are unchanged.
 
 The fragment URL is required. For scroll triggering, target the safe section
 after the marquee/player, not the marquee/player itself. Use a stable authored
 class on the actual page; a missing or hidden target does not satisfy the
 scroll condition. With `operator=or`, the delay can still trigger the prompt.
-The first matching target is reached when its top enters the viewport from below.
-A target already above the viewport also qualifies, including restored scroll
-positions and fast scrolling. There is no separate marquee/player detection:
-authors must choose a target position where the modal will not cover the player.
+By default, the first matching target is reached when its top enters the viewport
+from below. Use `showAfterNth` to select a later occurrence and
+`showAfterMode=passed` to wait until the whole selected element is above the
+viewport, rather than just visible. Hidden elements still count toward the
+occurrence number but cannot qualify; a missing occurrence waits until it exists.
+A target already past its configured threshold also qualifies, including restored
+scroll positions and fast scrolling. The video-player guard below applies
+independently of the configured scroll target.
 
 | Desired behavior | Configuration |
 | --- | --- |
 | Two-minute delay | Fragment URL only; no scroll target |
 | Explicit two-minute delay | Fragment URL with `?delay=120` |
 | Target section in view, no delay | Fragment URL with `?showAfter=session-details` |
+| Ninth session-guide row fully passed, no delay | Fragment URL with `?showAfter=sg-time-row&showAfterNth=9&showAfterMode=passed` |
+| Three-second delay AND ninth row fully passed | Fragment URL with `?delay=3&showAfter=sg-time-row&showAfterNth=9&showAfterMode=passed&operator=and` |
 | Three-second delay AND target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=and` |
 | Three-second delay OR target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=or` |
+
+For the session guide, count `.sg-time-row` elements across the page in document
+order. For example, `showAfterNth=9` selects the ninth row, not the ninth child
+of its parent. The condition is checked against the current matching elements,
+so rows inserted or replaced by the guide are picked up automatically. With
+`operator=or`, the delay can still open the modal before the selected row is passed;
+use `and` when passing that row must be required.
+
+### Video-player guard
+
+The trigger checks rendered `<video>` elements and Adobe TV player iframes before
+opening the dialog, including after asynchronous fragment loading. Adobe TV
+embeds are recognized by URLs under `https://video.tv.adobe.com/v/` or
+`https://stage-video.tv.adobe.com/v/`. This covers the MAX homepage's embedded
+keynote player; its inner `<video>` is not accessible from the parent page.
+The guard uses the outer iframe's geometry without accessing its contents.
+
+Once a player intersects the viewport, the prompt is deferred until that player's
+bottom has scrolled to or above the viewport top. This applies to paused players
+too: playback state does not allow the prompt to cover a player.
+
+The guard cannot be bypassed by an expired delay or `operator=or`. Scrolling
+back above a previously seen player does not count as passing it. If several
+players have been in view, all must be passed. Removing or hiding a player releases
+its guard; newly inserted players and changed iframe sources are picked up
+automatically.
+
+The existing delay is not restarted. Players that have never entered the viewport,
+including offscreen carousel media, do not block the prompt. Players already
+above the viewport do not block it either. The same conservative rule applies
+to rendered background `<video>` elements; there is no player-specific markup yet.
+
+Unrelated iframes do not block the prompt. Other iframe providers and players
+inside shadow roots require additional integration if they are introduced.
 
 ### Parent-page setup
 

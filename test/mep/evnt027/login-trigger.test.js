@@ -25,6 +25,7 @@ describe('MAX login prompt trigger', () => {
   let stop;
   let target;
   let targetTop;
+  let targetHeight;
   let fetchStub;
   let fragmentResponse;
   let visibility;
@@ -46,6 +47,40 @@ describe('MAX login prompt trigger', () => {
     await flush();
   };
   const modal = () => document.getElementById('max26-login-prompt');
+  const addTarget = (top, height = 200) => {
+    const element = createTag('section', { class: target.className }, 'Later section');
+    const bounds = { top, bottom: top + height };
+    sinon.stub(element, 'getBoundingClientRect').callsFake(() => bounds);
+    document.querySelector('main').append(element);
+    return { element, bounds };
+  };
+  const addVideo = (top = 0) => {
+    const video = createTag('video', { controls: '' });
+    const bounds = {
+      top, bottom: top + 200, left: 0, right: 300, width: 300, height: 200,
+    };
+    sinon.stub(video, 'getBoundingClientRect').callsFake(() => bounds);
+    document.querySelector('main').append(video);
+    return { video, bounds };
+  };
+  const addIframe = (src = 'https://video.tv.adobe.com/v/3458790?autoplay=true') => {
+    const iframe = createTag('iframe', { src: 'about:blank' });
+    const source = { value: src };
+    const bounds = {
+      top: 0, bottom: 200, left: 0, right: 300, width: 300, height: 200,
+    };
+    // Keep tests offline while exposing the real embed URL to the trigger.
+    sinon.stub(iframe, 'src').get(() => source.value);
+    sinon.stub(iframe, 'getBoundingClientRect').callsFake(() => bounds);
+    document.querySelector('main').append(iframe);
+    return { iframe, bounds, source };
+  };
+  const moveVideo = async (player, top) => {
+    player.bounds.top = top;
+    player.bounds.bottom = top + player.bounds.height;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+  };
   const loadAuthoredFragment = async (query) => {
     document.head.querySelector('meta[name="max26-login-prompt"]')?.remove();
     metadata('foundation', 'c2');
@@ -79,7 +114,9 @@ describe('MAX login prompt trigger', () => {
     target = createTag('section', { class: 'session-details' }, 'Session details');
     document.querySelector('main').append(target);
     targetTop = window.innerHeight + 1;
-    sinon.stub(target, 'getBoundingClientRect').callsFake(() => ({ top: targetTop }));
+    targetHeight = 200;
+    sinon.stub(target, 'getBoundingClientRect')
+      .callsFake(() => ({ top: targetTop, bottom: targetTop + targetHeight }));
     visibility = 'visible';
     sinon.stub(document, 'visibilityState').get(() => visibility);
     clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
@@ -114,7 +151,7 @@ describe('MAX login prompt trigger', () => {
   });
 
   it('uses the authored delay and strips trigger parameters from the fragment request', async () => {
-    configure('?delay=3&operator=or');
+    configure('?delay=3&showAfter=session-details&showAfterNth=2&showAfterMode=passed&operator=or&content=live');
     stop = init();
     await clock.tickAsync(2999);
     expect(modal()).to.be.null;
@@ -123,7 +160,7 @@ describe('MAX login prompt trigger', () => {
     expect(modal()).to.exist;
     const request = fetchStub.getCalls()
       .find(({ args }) => String(args[0]).includes(FRAGMENT_PATH));
-    expect(request.args[0]).to.equal(`${window.location.origin}${FRAGMENT_PATH}.plain.html`);
+    expect(request.args[0]).to.equal(`${window.location.origin}${FRAGMENT_PATH}.plain.html?content=live`);
   });
 
   it('measures the delay from navigation when initialized late', async () => {
@@ -165,12 +202,249 @@ describe('MAX login prompt trigger', () => {
     expect(localStorage.getItem(DISMISSED_KEY)).to.equal('true');
   });
 
+  it('opens the authored modal only after the selected row is passed and its delay expires', async () => {
+    target.className = 'sg-time-row';
+    targetTop = -targetHeight;
+    const later = addTarget(100);
+    const query = '?delay=3&showAfter=sg-time-row&showAfterNth=2&showAfterMode=passed&operator=and';
+    const fragment = await loadAuthoredFragment(query);
+    expect(fragment.hidden).to.be.true;
+    await clock.tickAsync(3000);
+    await flush();
+    expect(modal()).to.be.null;
+    later.bounds.top = -199.5;
+    later.bounds.bottom = 0.5;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.be.null;
+    later.bounds.top = -200;
+    later.bounds.bottom = 0;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.exist;
+    expect(fragment.parentElement).to.equal(modal());
+    expect(getComputedStyle(modal()).position).to.equal('fixed');
+    expect(document.querySelector('.modal-curtain.is-open')).to.exist;
+    const requests = fetchStub.getCalls()
+      .filter(({ args }) => String(args[0]).includes(FRAGMENT_PATH));
+    expect(requests).to.have.length(1);
+    expect(requests[0].args[0])
+      .to.equal(`${window.location.origin}${FRAGMENT_PATH}.plain.html${query}`);
+  });
+
   it('does not reveal inline fragment content for dismissed visitors', async () => {
     localStorage.setItem(DISMISSED_KEY, 'true');
     const fragment = await loadAuthoredFragment('?delay=0');
     expect(fragment.hidden).to.be.true;
     expect(getComputedStyle(fragment).display).to.equal('none');
     expect(modal()).to.be.null;
+  });
+
+  it('defers an expired timer until a visible paused video is fully passed', async () => {
+    const player = addVideo();
+    configure('?delay=3');
+    stop = init();
+    await clock.tickAsync(3000);
+    await flush();
+    expect(player.video.paused).to.be.true;
+    expect(modal()).to.be.null;
+    expect(fetchStub.getCalls().some(({ args }) => String(args[0]).includes(FRAGMENT_PATH)))
+      .to.be.false;
+    await moveVideo(player, -199.5);
+    expect(modal()).to.be.null;
+    await moveVideo(player, -200);
+    expect(modal()).to.exist;
+    expect(performance.now()).to.equal(3000);
+  });
+
+  ['and', 'or'].forEach((operator) => {
+    it(`does not let ${operator.toUpperCase()} conditions override a visible video`, async () => {
+      const player = addVideo();
+      configure(`?delay=3&showAfter=session-details&showAfterMode=passed&operator=${operator}`);
+      stop = init();
+      targetTop = -targetHeight;
+      window.dispatchEvent(new Event('scroll'));
+      await flush();
+      expect(modal()).to.be.null;
+      await clock.tickAsync(3000);
+      await flush();
+      expect(modal()).to.be.null;
+      await moveVideo(player, -200);
+      expect(modal()).to.exist;
+    });
+  });
+
+  it('does not release a seen video when the user scrolls back above it', async () => {
+    const player = addVideo();
+    configure('?delay=0');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    await moveVideo(player, window.innerHeight + 1);
+    expect(modal()).to.be.null;
+    await moveVideo(player, -200);
+    expect(modal()).to.exist;
+  });
+
+  it('waits until every video seen in the viewport is passed', async () => {
+    const first = addVideo();
+    const second = addVideo(200);
+    configure('?delay=0');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    await moveVideo(second, window.innerHeight + 1);
+    await moveVideo(first, -200);
+    expect(modal()).to.be.null;
+    await moveVideo(second, -200);
+    expect(modal()).to.exist;
+  });
+
+  ['hidden', 'invisible', 'zero-sized', 'above', 'below', 'offscreen-left', 'offscreen-right']
+    .forEach((placement) => {
+      it(`does not block on a ${placement} video that has not been viewed`, async () => {
+        const player = addVideo();
+        if (placement === 'hidden') player.video.hidden = true;
+        if (placement === 'invisible') player.video.style.visibility = 'hidden';
+        if (placement === 'zero-sized') player.bounds.width = 0;
+        if (placement === 'above') {
+          player.bounds.top = -200;
+          player.bounds.bottom = 0;
+        }
+        if (placement === 'below') {
+          player.bounds.top = window.innerHeight;
+          player.bounds.bottom = window.innerHeight + 200;
+        }
+        if (placement === 'offscreen-left') {
+          player.bounds.left = -300;
+          player.bounds.right = 0;
+        }
+        if (placement === 'offscreen-right') {
+          player.bounds.left = window.innerWidth;
+          player.bounds.right = window.innerWidth + 300;
+        }
+        configure('?delay=0');
+        stop = init();
+        await flush();
+        expect(modal()).to.exist;
+      });
+    });
+
+  ['removed', 'hidden'].forEach((change) => {
+    it(`resumes a deferred trigger when the video is ${change}`, async () => {
+      const player = addVideo();
+      document.body.append(player.video);
+      configure('?delay=0');
+      stop = init();
+      await flush();
+      expect(modal()).to.be.null;
+      if (change === 'removed') player.video.remove();
+      else player.video.hidden = true;
+      await flush();
+      expect(modal()).to.exist;
+    });
+  });
+
+  it('guards a video inserted after initialization before the delay expires', async () => {
+    configure('?delay=3');
+    stop = init();
+    await flush();
+    const player = addVideo();
+    await flush();
+    await clock.tickAsync(3000);
+    await flush();
+    expect(modal()).to.be.null;
+    await moveVideo(player, -200);
+    expect(modal()).to.exist;
+  });
+
+  it('rechecks videos after fragment loading and reuses the deferred content', async () => {
+    configure('?delay=0');
+    let resolveResponse;
+    fragmentResponse = () => new Promise((resolve) => { resolveResponse = resolve; });
+    stop = init();
+    await flush();
+    expect(resolveResponse).to.be.a('function');
+    const player = addVideo();
+    resolveResponse(new Response(FRAGMENT_HTML));
+    await flush();
+    expect(modal()).to.be.null;
+    await moveVideo(player, -200);
+    expect(modal()).to.exist;
+    expect(fetchStub.getCalls().filter(({ args }) => String(args[0]).includes(FRAGMENT_PATH)))
+      .to.have.length(1);
+  });
+
+  ['video.tv.adobe.com', 'stage-video.tv.adobe.com'].forEach((host) => {
+    it(`defers for a ${host} iframe without needing access to its video element`, async () => {
+      const player = addIframe(`https://${host}/v/3458790?autoplay=true`);
+      expect(document.querySelector('video')).to.be.null;
+      configure('?delay=0&operator=or');
+      stop = init();
+      await flush();
+      expect(modal()).to.be.null;
+      await moveVideo(player, -199.5);
+      expect(modal()).to.be.null;
+      await moveVideo(player, -200);
+      expect(modal()).to.exist;
+    });
+  });
+
+  [
+    'https://example.com/embed',
+    'https://example.com/video.tv.adobe.com/v/3458790',
+    'https://video.tv.adobe.com.example.com/v/3458790',
+    'about:blank',
+    'http://[',
+  ].forEach((src) => {
+    it(`does not block on an unrelated iframe: ${src}`, async () => {
+      addIframe(src);
+      configure('?delay=0');
+      stop = init();
+      await flush();
+      expect(modal()).to.exist;
+    });
+  });
+
+  it('detects a player iframe whose source is assigned after initialization', async () => {
+    const player = addIframe('about:blank');
+    configure('?delay=3');
+    stop = init();
+    await flush();
+    player.source.value = 'https://video.tv.adobe.com/v/3458790';
+    player.iframe.setAttribute('src', 'about:blank#player');
+    await flush();
+    await clock.tickAsync(3000);
+    await flush();
+    expect(modal()).to.be.null;
+    await moveVideo(player, -200);
+    expect(modal()).to.exist;
+  });
+
+  it('releases an iframe guard when its source is no longer an Adobe TV player', async () => {
+    const player = addIframe();
+    configure('?delay=0');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    player.source.value = 'about:blank';
+    player.iframe.setAttribute('src', 'about:blank#closed');
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('rechecks Adobe TV iframe visibility after fragment loading', async () => {
+    configure('?delay=0');
+    let resolveResponse;
+    fragmentResponse = () => new Promise((resolve) => { resolveResponse = resolve; });
+    stop = init();
+    await flush();
+    const player = addIframe();
+    resolveResponse(new Response(FRAGMENT_HTML));
+    await flush();
+    expect(modal()).to.be.null;
+    await moveVideo(player, -200);
+    expect(modal()).to.exist;
   });
 
   it('keeps a directly authored content-fragment preview inline', () => {
@@ -360,6 +634,121 @@ describe('MAX login prompt trigger', () => {
     expect(modal()).to.exist;
   });
 
+  [2, 9].forEach((nth) => {
+    it(`uses the ${nth}th matching class instance without changing entry behavior`, async () => {
+      targetTop = -targetHeight;
+      for (let index = 2; index < nth; index += 1) addTarget(-200);
+      const later = addTarget(window.innerHeight);
+      configure(`?showAfter=.session-details&showAfterNth=${nth}`);
+      stop = init();
+      await flush();
+      expect(modal()).to.be.null;
+      later.bounds.top -= 1;
+      later.bounds.bottom -= 1;
+      window.dispatchEvent(new Event('scroll'));
+      await flush();
+      expect(modal()).to.exist;
+    });
+  });
+
+  it('waits for a missing nth instance to be inserted without using an earlier match', async () => {
+    targetTop = -targetHeight;
+    configure('?showAfter=session-details&showAfterNth=2&showAfterMode=passed');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    addTarget(-200);
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('waits until the whole target has passed the viewport top', async () => {
+    configure('?showAfter=session-details&showAfterMode=passed');
+    stop = init();
+    for (const top of [window.innerHeight - targetHeight, 0, -targetHeight + 0.5]) {
+      targetTop = top;
+      window.dispatchEvent(new Event('scroll'));
+      await flush();
+      expect(modal()).to.be.null;
+    }
+    targetTop = -targetHeight;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('checks an already-passed target immediately at a restored scroll position', async () => {
+    configure('?showAfter=session-details&showAfterMode=passed');
+    targetTop = -targetHeight - 1;
+    stop = init();
+    await flush();
+    expect(modal()).to.exist;
+    expect(performance.now()).to.equal(0);
+  });
+
+  it('does not treat a hidden target as passed', async () => {
+    configure('?showAfter=session-details&showAfterMode=passed');
+    targetTop = -targetHeight;
+    target.hidden = true;
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    target.hidden = false;
+    window.dispatchEvent(new Event('resize'));
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('supports an explicit entry mode without changing its threshold', async () => {
+    configure('?showAfter=session-details&showAfterMode=enter');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    await reachTarget();
+    expect(modal()).to.exist;
+  });
+
+  ['and', 'or'].forEach((operator) => {
+    ['delay', 'target'].forEach((first) => {
+      it(`combines the passed condition with ${operator.toUpperCase()} when ${first} is first`, async () => {
+        configure(`?delay=3&showAfter=session-details&showAfterMode=passed&operator=${operator}`);
+        stop = init();
+        if (first === 'delay') await clock.tickAsync(3000);
+        else {
+          targetTop = -targetHeight;
+          window.dispatchEvent(new Event('scroll'));
+        }
+        await flush();
+        expect(!!modal()).to.equal(operator === 'or');
+        if (operator === 'or') return;
+        if (first === 'delay') {
+          targetTop = -targetHeight;
+          window.dispatchEvent(new Event('scroll'));
+        } else await clock.tickAsync(3000);
+        await flush();
+        expect(modal()).to.exist;
+      });
+    });
+  });
+
+  it('rechecks the passed condition after fragment loading', async () => {
+    configure('?showAfter=session-details&showAfterMode=passed');
+    let resolveResponse;
+    fragmentResponse = () => new Promise((resolve) => { resolveResponse = resolve; });
+    targetTop = -targetHeight;
+    stop = init();
+    await flush();
+    expect(resolveResponse).to.be.a('function');
+    targetTop = 0;
+    resolveResponse(new Response(FRAGMENT_HTML));
+    await flush();
+    expect(modal()).to.be.null;
+    targetTop = -targetHeight;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.exist;
+  });
+
   it('does not open for a hidden target', async () => {
     configure('?showAfter=session-details');
     target.hidden = true;
@@ -411,6 +800,18 @@ describe('MAX login prompt trigger', () => {
     await reachTarget();
     expect(modal()).to.be.null;
     await clock.tickAsync(3000);
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('supports passed mode with a legacy selector target', async () => {
+    metadata('max26-login-prompt-scroll-target', '.session-details');
+    configure('?showAfterMode=passed');
+    stop = init();
+    await reachTarget();
+    expect(modal()).to.be.null;
+    targetTop = -targetHeight;
+    window.dispatchEvent(new Event('scroll'));
     await flush();
     expect(modal()).to.exist;
   });
@@ -496,6 +897,14 @@ describe('MAX login prompt trigger', () => {
     'delay=-1', 'delay=', 'delay=NaN', 'delay=Infinity',
     'operator=xor', 'operator=', 'showAfter=', 'showAfter=%23session-details',
     'showAfter=session%20details', 'showAfter=.',
+    'showAfterNth=2', 'showAfter=session-details&showAfterNth=',
+    'showAfter=session-details&showAfterNth=0', 'showAfter=session-details&showAfterNth=-1',
+    'showAfter=session-details&showAfterNth=1.5', 'showAfter=session-details&showAfterNth=1e2',
+    'showAfter=session-details&showAfterNth=9007199254740993',
+    'showAfter=session-details&showAfterNth=Infinity',
+    'showAfter=session-details&showAfterNth=%202',
+    'showAfterMode=passed', 'showAfter=session-details&showAfterMode=',
+    'showAfter=session-details&showAfterMode=exit',
   ].forEach((query) => {
     it(`rejects invalid authoring: ${query}`, () => {
       configure(`?${query}`);

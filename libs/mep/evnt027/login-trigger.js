@@ -21,6 +21,21 @@ export default function init({ path: authoredPath, content: initialContent } = {
   }
   const targetSelector = targetClass ? null : getMetadata('max26-login-prompt-scroll-target');
   const hasTarget = !!(targetClass || targetSelector);
+  const targetNthValue = params.get('showAfterNth') ?? '1';
+  const targetNth = Number(targetNthValue);
+  if (params.has('showAfterNth') && !targetClass) {
+    throw new Error('showAfterNth requires a showAfter class name.');
+  }
+  if (!/^[1-9]\d*$/.test(targetNthValue) || !Number.isSafeInteger(targetNth)) {
+    throw new Error('showAfterNth must be a positive, 1-based integer.');
+  }
+  const targetMode = params.get('showAfterMode') ?? 'enter';
+  if (targetMode !== 'enter' && targetMode !== 'passed') {
+    throw new Error('showAfterMode must be "enter" or "passed".');
+  }
+  if (params.has('showAfterMode') && !hasTarget) {
+    throw new Error('showAfterMode requires a scroll target.');
+  }
   const authoredDelay = params.get('delay') ?? getMetadata('max26-login-prompt-delay');
   const hasDelay = authoredDelay !== null || !hasTarget;
   const delayValue = authoredDelay ?? (hasTarget ? '0' : '120');
@@ -34,7 +49,8 @@ export default function init({ path: authoredPath, content: initialContent } = {
   }
   // Validate authored selectors before installing event handlers.
   if (targetSelector) document.querySelector(targetSelector);
-  ['delay', 'showAfter', 'operator'].forEach((name) => params.delete(name));
+  ['delay', 'showAfter', 'showAfterNth', 'showAfterMode', 'operator']
+    .forEach((name) => params.delete(name));
   const path = fragmentUrl.href;
 
   let stopped = false;
@@ -42,7 +58,23 @@ export default function init({ path: authoredPath, content: initialContent } = {
   let content = initialContent;
   let timer;
   const listeners = [];
+  const viewedPlayers = new WeakSet();
   const observer = new MutationObserver(() => check()); // eslint-disable-line no-use-before-define
+
+  const isVideoBlocking = () => {
+    let blocked = false;
+    document.querySelectorAll('video, iframe[src]').forEach((player) => {
+      if (player.tagName === 'IFRAME'
+        && !/^https?:\/\/(?:stage-)?video\.tv\.adobe\.com\/v\//.test(player.src)) return;
+      if (!player.getClientRects().length || getComputedStyle(player).visibility !== 'visible') return;
+      const bounds = player.getBoundingClientRect();
+      if (bounds.width <= 0 || bounds.height <= 0) return;
+      if (bounds.top < window.innerHeight && bounds.bottom > 0
+        && bounds.left < window.innerWidth && bounds.right > 0) viewedPlayers.add(player);
+      if (viewedPlayers.has(player) && bounds.bottom > 0) blocked = true;
+    });
+    return blocked;
+  };
 
   const stop = () => {
     stopped = true;
@@ -55,14 +87,18 @@ export default function init({ path: authoredPath, content: initialContent } = {
   const canOpen = () => {
     if (stopped || document.visibilityState !== 'visible'
       || localStorage.getItem(DISMISSED_KEY)
-      || document.querySelector('.dialog-modal, .modal-curtain')) return false;
+      || document.querySelector('.dialog-modal, .modal-curtain')
+      || isVideoBlocking()) return false;
     const conditions = [];
     if (hasDelay) conditions.push(performance.now() >= delay);
     if (hasTarget) {
       const target = targetClass
-        ? document.getElementsByClassName(targetClass)[0] : document.querySelector(targetSelector);
+        ? document.getElementsByClassName(targetClass)[targetNth - 1]
+        : document.querySelector(targetSelector);
       conditions.push(!!target && target.getClientRects().length > 0
-        && target.getBoundingClientRect().top < window.innerHeight);
+        && (targetMode === 'passed'
+          ? target.getBoundingClientRect().bottom <= 0
+          : target.getBoundingClientRect().top < window.innerHeight));
     }
     return operator === 'or' ? conditions.some(Boolean) : conditions.every(Boolean);
   };
@@ -125,9 +161,12 @@ export default function init({ path: authoredPath, content: initialContent } = {
   listen(document, 'visibilitychange');
   window.addEventListener('pagehide', stop, { once: true });
   listeners.push([window, 'pagehide', stop]);
-  if (document.querySelector('main')) {
-    observer.observe(document.querySelector('main'), { childList: true, subtree: true });
-  }
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'style', 'hidden', 'open', 'src'],
+  });
   activeTrigger = stop;
   if (hasDelay) timer = setTimeout(check, Math.max(0, delay - performance.now()));
   queueMicrotask(check);
