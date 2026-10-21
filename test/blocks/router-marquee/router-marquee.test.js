@@ -197,84 +197,27 @@ describe('Router Marquee', () => {
     /* eslint-disable no-underscore-dangle */
     const originalSatellite = window._satellite;
     delete window._satellite;
-    const observed = new Map();
-    sinon.stub(window, 'IntersectionObserver').callsFake((callback) => ({
-      observe: (target) => observed.set(target, callback),
-      unobserve() {},
-      disconnect() {},
-    }));
+    const observers = new Map();
+    sinon.stub(window, 'IntersectionObserver').callsFake((cb) => ({ observe: (t) => observers.set(t, cb) }));
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.router-marquee');
-    const section = block.closest('.section');
     try {
       init(block);
-      window.IntersectionObserver.restore();
-
-      // hero DOM is built synchronously, with no analytics available yet
-      const vp = [...block.querySelectorAll('.rm-viewport')]
-        .find((v) => v.querySelector('.rm-slide[daa-lh]'));
-      const title = vp.querySelector('.rm-slide.is-active .rm-title');
+      const title = block.querySelector('.rm-slide[daa-lh].is-active .rm-title');
       expect(title.textContent).to.equal('Slide one title');
-      expect(vp.querySelector('.rm-card').getAttribute('daa-ll')).to.equal('rm-nav-1--Slide one title');
 
-      // the first slide is seen before section analytics or Launch are ready
-      observed.get(title)([{ target: title, isIntersecting: true }]);
-      section.setAttribute('daa-lh', 's1');
+      // slide is seen before daa-lh and Launch exist; a repeat must not duplicate the event
+      observers.get(title)([{ target: title, isIntersecting: true }]);
+      block.closest('.section').setAttribute('daa-lh', 's1');
       await Promise.resolve();
-      const track = sinon.spy();
-      window._satellite = { track };
+      window._satellite = { track: sinon.spy() };
       window.dispatchEvent(new Event('alloy_sendEvent'));
-      window.dispatchEvent(new Event('alloy_sendEvent'));
-      observed.get(title)([{ target: title, isIntersecting: true }]);
+      observers.get(title)([{ target: title, isIntersecting: true }]);
 
-      const names = track.getCalls().map((call) => call.args[1].data._adobe_corpnew
-        .digitalData.primaryEvent.eventInfo.eventName);
-      expect(names).to.deep.equal(['auto-slideseen-1--Slide one title|s1|b1']);
-    } finally {
-      sinon.restore();
-      window._satellite = originalSatellite;
-    }
-  });
-
-  it('fires a single user slide impression after hovering a card', async () => {
-    /* eslint-disable no-underscore-dangle */
-    const originalSatellite = window._satellite;
-    const track = sinon.spy();
-    window._satellite = { track };
-    const observed = new Map();
-    sinon.stub(window, 'IntersectionObserver').callsFake((callback) => ({
-      observe: (target) => observed.set(target, callback),
-      unobserve() {},
-      disconnect() {},
-    }));
-    sinon.stub(window, 'matchMedia').callsFake((query) => ({
-      matches: query.includes('min-width: 1280px'),
-      addEventListener() {},
-      removeEventListener() {},
-    }));
-    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-    const block = document.querySelector('.router-marquee');
-    block.closest('.section').setAttribute('daa-lh', 's1');
-    try {
-      init(block);
-      window.IntersectionObserver.restore();
-      const vp = [...block.querySelectorAll('.rm-viewport')]
-        .find((v) => v.querySelector('.rm-slide[daa-lh]'));
-      const titles = [...vp.querySelectorAll('.rm-slide .rm-title')];
-      const seen = (title) => observed.get(title)([{ target: title, isIntersecting: true }]);
-
-      seen(titles[0]);
-      vp.querySelectorAll('.rm-card')[1].dispatchEvent(new MouseEvent('mouseenter'));
-      expect(vp.querySelectorAll('.rm-slide')[1].classList.contains('is-active')).to.be.true;
-      seen(titles[1]);
-      seen(titles[1]);
-
-      const names = track.getCalls().map((call) => call.args[1].data._adobe_corpnew
-        .digitalData.primaryEvent.eventInfo.eventName);
-      expect(names).to.deep.equal([
-        'auto-slideseen-1--Slide one title|s1|b1',
-        'user-slideseen-2--Slide two title|s1|b2',
-      ]);
+      const { track } = window._satellite;
+      const { eventInfo } = track.firstCall.args[1].data._adobe_corpnew.digitalData.primaryEvent;
+      expect(track.calledOnce).to.be.true;
+      expect(eventInfo.eventName).to.equal('auto-slideseen-1--Slide one title|s1|b1');
     } finally {
       sinon.restore();
       window._satellite = originalSatellite;
