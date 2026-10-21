@@ -1153,11 +1153,13 @@ describe('hub-hero block', () => {
     let block;
     let container;
     let slides;
+    let motionPreference;
 
     beforeEach(async () => {
       const matchMedia = window.matchMedia.bind(window);
+      motionPreference = matchMedia('(min-width: 0px)');
       sinon.stub(window, 'matchMedia').callsFake((query) => (
-        query === '(prefers-reduced-motion: reduce)' ? { matches: true } : matchMedia(query)
+        query === '(prefers-reduced-motion: reduce)' ? motionPreference : matchMedia(query)
       ));
       block = await loadBlock('./mocks/default.html');
       container = block.querySelector('.hub-hero-carousel-container');
@@ -1192,9 +1194,52 @@ describe('hub-hero block', () => {
 
     it('does not clear hover or focus states on resize', async () => {
       slides[0].classList.add('hovered', 'focused');
+      container.classList.add('stick-left', 'stick-right');
+      sinon.stub(container, 'getBoundingClientRect')
+        .returns({ width: document.documentElement.clientWidth + 400 });
       window.dispatchEvent(new Event('resize'));
       await settleLayout();
       expect(slides[0].classList.contains('hovered')).to.be.true;
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('does not anchor overflowing rows when hovering or focusing either end', () => {
+      sinon.stub(container, 'getBoundingClientRect')
+        .returns({ width: document.documentElement.clientWidth + 400 });
+      for (const slide of [slides[0], slides.at(-1)]) {
+        for (const type of ['mousemove', 'focus']) {
+          container.classList.add('stick-left', 'stick-right');
+          const event = type === 'focus' ? new FocusEvent(type) : new MouseEvent(type, {
+            bubbles: true,
+            clientX: Number(slide.dataset.index),
+            clientY: 10,
+          });
+          slide.dispatchEvent(event);
+          expect(slide.classList.contains(type === 'focus' ? 'focused' : 'hovered')).to.be.true;
+          expect(container.classList.contains('stick-left')).to.be.false;
+          expect(container.classList.contains('stick-right')).to.be.false;
+        }
+      }
+    });
+
+    it('updates anchoring when the motion preference changes without clearing focus', () => {
+      const preference = sinon.stub(motionPreference, 'matches').get(() => false);
+      sinon.stub(container, 'getBoundingClientRect')
+        .returns({ width: document.documentElement.clientWidth + 400 });
+      slides[0].dispatchEvent(new FocusEvent('focus'));
+      expect(container.classList.contains('stick-left')).to.be.true;
+
+      preference.get(() => true);
+      motionPreference.dispatchEvent(new Event('change'));
+      expect(container.classList.contains('stick-left')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+      expect(slides[0].classList.contains('focused')).to.be.true;
+
+      preference.get(() => false);
+      motionPreference.dispatchEvent(new Event('change'));
+      expect(container.classList.contains('stick-left')).to.be.true;
       expect(slides[0].classList.contains('focused')).to.be.true;
     });
   });

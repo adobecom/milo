@@ -2333,6 +2333,12 @@
       min-height: var(--slide-footer-h);
     }
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hub-hero-carousel {
+      margin-top: 0;
+    }
+  }
 }
 
 @media (height < 500px) {

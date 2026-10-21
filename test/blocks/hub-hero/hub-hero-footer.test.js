@@ -167,6 +167,28 @@ describe('hub-hero footer and assembly', () => {
           });
         });
       });
+
+      it('does not add fallback carousel margins with reduced motion', async () => {
+        const reducedStyles = styles.textContent;
+        styles.textContent = reducedStyles.replaceAll(
+          '(not (animation-timeline: view())) or (-moz-appearance: none)',
+          '(display: block)',
+        );
+        try {
+          for (const width of [1470, 800, 375]) {
+            await setViewport({ width, height: 800 });
+            for (const slideCount of [3, 4]) {
+              const block = await loadCarousel(slideCount, 'h3');
+              const carousel = block.querySelector('.hub-hero-carousel');
+              expect(getComputedStyle(carousel).marginTop).to.equal('0px');
+              block.remove();
+              await settleLayout();
+            }
+          }
+        } finally {
+          styles.textContent = reducedStyles;
+        }
+      });
     });
 
     [

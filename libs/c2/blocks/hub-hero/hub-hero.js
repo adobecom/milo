@@ -283,7 +283,12 @@ const removeHovered = (carousel) => {
 
 const clearCarouselAnchoring = (container) => container.classList.remove('stick-left', 'stick-right');
 
-const updateCarouselAnchoring = ({ container, maxIndex }) => {
+const updateCarouselAnchoring = ({ container, maxIndex, reducedMotion }) => {
+  if (reducedMotion.matches) {
+    clearCarouselAnchoring(container);
+    return;
+  }
+
   const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
     || container.querySelector('.hub-hero-carousel-item:focus-visible');
   if (!slideEl) {
@@ -509,6 +514,7 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
     carousel: decoratedCarousel,
     isThreeSlides,
     maxIndex: slds.length,
+    reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)'),
   };
   const hover = (event) => onHover(event, context);
   const leave = (event) => onCarouselLeave(event, context);
@@ -518,6 +524,9 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   carouselContainer.querySelectorAll('[data-index]').forEach((slide) => slide.addEventListener('focus', hover));
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
+  context.reducedMotion.addEventListener('change', () => {
+    updateCarouselAnchoring(context);
+  }, { signal: scrollController.signal });
   let anchoringFrame = 0;
   const scheduleAnchoring = () => {
     if (anchoringFrame || scrollController.signal.aborted) return;
