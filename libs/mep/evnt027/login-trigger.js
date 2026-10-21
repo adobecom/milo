@@ -14,12 +14,13 @@ export default function init() {
   if (!fragmentPath) throw new Error('Missing max26-login-prompt fragment metadata.');
   const fragmentUrl = new URL(fragmentPath, window.location.href);
   const params = fragmentUrl.searchParams;
-  const targetId = params.get('showAfter');
-  if (params.has('showAfter') && (!targetId || /\s/.test(targetId) || targetId.startsWith('#'))) {
-    throw new Error('showAfter must be a non-empty element ID without a leading # or whitespace.');
+  const targetClass = params.get('showAfter')?.replace(/^\./, '');
+  if (params.has('showAfter')
+    && (!targetClass || /\s/.test(targetClass) || targetClass.startsWith('#'))) {
+    throw new Error('showAfter must name a single class, not an element ID or whitespace-separated list.');
   }
-  const targetSelector = targetId ? null : getMetadata('max26-login-prompt-scroll-target');
-  const hasTarget = !!(targetId || targetSelector);
+  const targetSelector = targetClass ? null : getMetadata('max26-login-prompt-scroll-target');
+  const hasTarget = !!(targetClass || targetSelector);
   const authoredDelay = params.get('delay') ?? getMetadata('max26-login-prompt-delay');
   const hasDelay = authoredDelay !== null || !hasTarget;
   const delayValue = authoredDelay ?? (hasTarget ? '0' : '120');
@@ -58,8 +59,8 @@ export default function init() {
     const conditions = [];
     if (hasDelay) conditions.push(performance.now() >= delay);
     if (hasTarget) {
-      const target = targetId
-        ? document.getElementById(targetId) : document.querySelector(targetSelector);
+      const target = targetClass
+        ? document.getElementsByClassName(targetClass)[0] : document.querySelector(targetSelector);
       conditions.push(!!target && target.getClientRects().length > 0
         && target.getBoundingClientRect().top < window.innerHeight);
     }

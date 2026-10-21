@@ -72,8 +72,10 @@ for a particular page. Do not reuse Summit-specific sign-in parameters.
 ## Automatic triggering
 
 Add an `insertScript` action pointing to
-`/libs/mep/evnt027/insertScript.js` **only in the treatment manifest**, alongside
-the block mapping above. The control must not load this script. Adobe Target owns
+`https://max-login-prompt-c2--milo--adobecom.aem.live/libs/mep/evnt027/insertScript.js`
+**only in the treatment manifest**, alongside the block mapping above.
+Use the absolute Milo code URL, not a `/libs/` URL relative to the UPP content site.
+The control must not load this script. Adobe Target owns
 audience eligibility, signed-in exclusions, and page targeting. This script
 does not load IMS, check login status, or restrict page paths.
 Configure parent-page metadata (directly or with the manifest's `updateMetadata` action):
@@ -93,7 +95,7 @@ Authors can configure the trigger directly on the fragment URL, for example:
 | URL parameter | Meaning |
 | --- | --- |
 | `delay` | Non-negative number of seconds since navigation, not since script initialization |
-| `showAfter` | Element ID without `#`, for example `session-details`; qualifies when its top enters the viewport |
+| `showAfter` | Class name, for example `session-details` (`.session-details` is also accepted); the first matching element qualifies when its top enters the viewport |
 | `operator` | `and` (default) waits for both configured conditions; `or` waits for either |
 
 Only configured conditions participate in AND/OR. With no delay or target,
@@ -101,12 +103,12 @@ the existing default is a 120-second delay. With only a target, there is no
 implicit delay, even with `operator=or`. Explicit `delay=0` is an immediately
 satisfied delay condition. Trigger parameters are removed before loading the
 fragment; they do not change its content or the primary CTA's authored URL.
-Invalid delays, operators, or `showAfter` IDs report an error and do not install
+Invalid delays, operators, or `showAfter` class names report an error and do not install
 the trigger. Existing selector metadata is still supported.
 
 The fragment URL is required. For scroll triggering, target the safe section
 after the marquee/player, not the marquee/player itself. Use a stable authored
-element ID on the actual page; a missing or hidden target does not satisfy the
+class on the actual page; a missing or hidden target does not satisfy the
 scroll condition. With `operator=or`, the delay can still trigger the prompt.
 The first matching target is reached when its top enters the viewport from below.
 A target already above the viewport also qualifies, including restored scroll
@@ -120,6 +122,32 @@ authors must choose a target position where the modal will not cover the player.
 | Target section in view, no delay | Fragment URL with `?showAfter=session-details` |
 | Three-second delay AND target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=and` |
 | Three-second delay OR target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=or` |
+
+### Parent-page setup: overlay, not inline content
+
+For `/homepage/fragments/mep/max2026/test`, keep the normal page content and:
+
+1. Set `foundation: c2` and the treatment's `personalization` metadata.
+2. Remove the inline `max26-login-prompt` block or inline inclusion of its fragment
+   from this parent page. Keep the block in the separate `/login-modal` fragment.
+3. Set `max26-login-prompt` metadata to
+   `/homepage/fragments/mep/max2026/login-modal?delay=3&showAfter=session-details&operator=and`.
+4. Add `session-details` as a class to the intended scroll-trigger element.
+   For a delay-only smoke test, use `?delay=3` and omit `showAfter`.
+5. Ensure the selected treatment includes the block mapping and `insertScript`
+   action above, and its page filters include the parent test page. Preview/update
+   the parent page and the manifest after changing them.
+
+The metadata can be authored on the page or supplied by the treatment with an
+`updateMetadata` action (`selector: max26-login-prompt`, with the fragment URL
+in the treatment column). The `insertScript` row's treatment value is the absolute
+script URL above; its selector is empty.
+
+The script loads the fragment off-document and opens it through the shared C2
+`getModal()` API. That API loads `/c2/blocks/modal/modal.css`, adds the fixed dialog,
+curtain, close button, focus handling, and scroll lock. The block CSS only customizes
+the MAX appearance. Neither a block mapping nor `?milolibs=local` activates the
+automatic trigger on its own.
 
 Adobe Target must apply the appropriate configuration to each page and event
 phase. Timing is not restarted when this script loads late. Hidden tabs and

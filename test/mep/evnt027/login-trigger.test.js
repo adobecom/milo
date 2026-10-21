@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import sinon from 'sinon';
 import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import init from '../../../libs/mep/evnt027/login-trigger.js';
@@ -15,6 +16,7 @@ describe('MAX login prompt trigger', () => {
   let fetchStub;
   let fragmentResponse;
   let visibility;
+  let styles;
 
   const metadata = (name, content) => {
     document.head.querySelector(`meta[name="${name}"]`)?.remove();
@@ -33,14 +35,20 @@ describe('MAX login prompt trigger', () => {
   };
   const modal = () => document.getElementById('max26-login-prompt');
 
-  before(() => {
+  before(async () => {
     setConfig({ codeRoot: '/libs' });
+    styles = createTag('style');
+    styles.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' })
+      + await readFile({ path: '../../../libs/mep/evnt027/max26-login-prompt/max26-login-prompt.css' });
+    document.head.append(styles);
   });
+
+  after(() => styles.remove());
 
   beforeEach(() => {
     localStorage.removeItem(DISMISSED_KEY);
     document.body.replaceChildren(createTag('main'));
-    target = createTag('section', { id: 'session-details' }, 'Session details');
+    target = createTag('section', { class: 'session-details' }, 'Session details');
     document.querySelector('main').append(target);
     targetTop = window.innerHeight + 1;
     sinon.stub(target, 'getBoundingClientRect').callsFake(() => ({ top: targetTop }));
@@ -94,6 +102,63 @@ describe('MAX login prompt trigger', () => {
     stop = init();
     await flush();
     expect(modal()).to.exist;
+  });
+
+  it('opens through the treatment insertScript entry point', async () => {
+    configure('?delay=0');
+    const script = createTag('script', { src: new URL('../../../libs/mep/evnt027/insertScript.js', import.meta.url).href });
+    try {
+      await new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.append(script);
+      });
+      await flush();
+      expect(modal()).to.exist;
+    } finally {
+      script.remove();
+      window.dispatchEvent(new Event('pagehide'));
+    }
+  });
+
+  [375, 1280].forEach((width) => {
+    it(`opens a fixed shared modal over page content at ${width}px`, async () => {
+      const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      try {
+        await setViewport({ width, height: 800 });
+        document.querySelector('main').prepend(createTag('div', { style: 'height: 1800px' }, 'Normal page content'));
+        const pageHeight = document.documentElement.scrollHeight;
+        configure('?delay=0');
+        stop = init();
+        await flush();
+        const modalStyle = document.head.querySelector('link[href$="/c2/blocks/modal/modal.css"]');
+        expect(modalStyle).to.exist;
+        if (!modalStyle.sheet) {
+          await new Promise((resolve, reject) => {
+            modalStyle.addEventListener('load', resolve, { once: true });
+            modalStyle.addEventListener('error', reject, { once: true });
+          });
+        }
+        const dialog = modal();
+        const curtain = document.querySelector('.modal-curtain.is-open');
+        expect(dialog.parentElement).to.equal(document.body);
+        expect(dialog.getAttribute('role')).to.equal('dialog');
+        expect(dialog.getAttribute('aria-modal')).to.equal('true');
+        expect(getComputedStyle(dialog).position).to.equal('fixed');
+        expect(getComputedStyle(curtain).position).to.equal('fixed');
+        expect(Number(getComputedStyle(dialog).zIndex))
+          .to.be.above(Number(getComputedStyle(curtain).zIndex));
+        const bounds = dialog.getBoundingClientRect();
+        expect(bounds.width).to.be.above(0);
+        expect(bounds.top).to.be.at.least(0);
+        expect(bounds.bottom).to.be.at.most(window.innerHeight);
+        expect(document.documentElement.scrollHeight).to.be.closeTo(pageHeight, 1);
+        expect(document.documentElement.classList.contains('disable-scroll')).to.be.true;
+        expect(dialog.querySelector('.dialog-close')).to.exist;
+      } finally {
+        await setViewport(originalViewport);
+      }
+    });
   });
 
   ['and', null].forEach((operator) => {
@@ -152,10 +217,38 @@ describe('MAX login prompt trigger', () => {
     expect(modal()).to.exist;
   });
 
-  it('looks up literal element IDs rather than treating them as selectors', async () => {
-    target.id = 'session:details.2026';
+  it('looks up literal class names rather than treating them as selectors', async () => {
+    target.className = 'session:details.2026';
     configure('?showAfter=session%3Adetails.2026');
     stop = init();
+    await reachTarget();
+    expect(modal()).to.exist;
+  });
+
+  it('accepts an optional leading dot on the class name', async () => {
+    configure('?showAfter=.session-details');
+    stop = init();
+    await reachTarget();
+    expect(modal()).to.exist;
+  });
+
+  it('does not match an element with only the requested ID', async () => {
+    target.className = '';
+    target.id = 'session-details';
+    configure('?showAfter=session-details');
+    stop = init();
+    await reachTarget();
+    expect(modal()).to.be.null;
+  });
+
+  it('uses the first matching class instance', async () => {
+    const laterTarget = createTag('section', { class: 'session-details' }, 'Later section');
+    document.querySelector('main').append(laterTarget);
+    sinon.stub(laterTarget, 'getBoundingClientRect').returns({ top: 0 });
+    configure('?showAfter=session-details');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
     await reachTarget();
     expect(modal()).to.exist;
   });
@@ -206,7 +299,7 @@ describe('MAX login prompt trigger', () => {
 
   it('preserves legacy delay and selector metadata', async () => {
     metadata('max26-login-prompt-delay', '3');
-    metadata('max26-login-prompt-scroll-target', '#session-details');
+    metadata('max26-login-prompt-scroll-target', '.session-details');
     stop = init();
     await reachTarget();
     expect(modal()).to.be.null;
@@ -295,7 +388,7 @@ describe('MAX login prompt trigger', () => {
   [
     'delay=-1', 'delay=', 'delay=NaN', 'delay=Infinity',
     'operator=xor', 'operator=', 'showAfter=', 'showAfter=%23session-details',
-    'showAfter=session%20details',
+    'showAfter=session%20details', 'showAfter=.',
   ].forEach((query) => {
     it(`rejects invalid authoring: ${query}`, () => {
       configure(`?${query}`);
