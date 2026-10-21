@@ -1,4 +1,5 @@
 import { getMetadata, isAcomAssistantEnabled } from '../utils/utils.js';
+import { initAnalytics } from '../blocks/brand-concierge/bc-analytics.js';
 
 const GNAV_FAB_STATES = new Set(['collapsed', 'hidden']);
 
@@ -57,8 +58,32 @@ export function decorateAcomAssistantGnav(el, cards, block) {
   return mount;
 }
 
+const observedMounts = new WeakSet();
+// The client renders .acomAssistantGnavRoot > .acomAssistantGnavInput (the entry point).
+const GNAV_ENTRY_SELECTOR = '.acomAssistantGnavInput';
+
+/** brand-concierge-global.js (which normally sets BC-GNav-shown) is skipped in
+ *  acom-assistant mode, and Milo only creates an empty mount -- the client renders
+ *  the actual GNav UI into it. Record the property only once that UI exists. */
+export function trackAcomAssistantGnavShown(mount) {
+  if (!mount || observedMounts.has(mount) || getAcomAssistantGnavFabState() === 'hidden') return;
+  observedMounts.add(mount);
+  if (mount.querySelector(GNAV_ENTRY_SELECTOR)) {
+    initAnalytics('BC-GNav-shown');
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    if (!mount.querySelector(GNAV_ENTRY_SELECTOR)) return;
+    observer.disconnect();
+    initAnalytics('BC-GNav-shown');
+  });
+  observer.observe(mount, { childList: true, subtree: true });
+}
+
 export function decorateNavWithAssistant(cards, topNav, block) {
-  if (!decorateAcomAssistantGnav(topNav, cards, block)) return;
+  const mount = decorateAcomAssistantGnav(topNav, cards, block);
+  if (!mount) return;
+  trackAcomAssistantGnavShown(mount);
   window.milo ||= {};
   window.milo.brandConcierge = { brandConciergeGlobal: true };
 }
