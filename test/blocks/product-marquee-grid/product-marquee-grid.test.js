@@ -2,8 +2,11 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 import init from '../../../libs/c2/blocks/product-marquee-grid/product-marquee-grid.js';
+import { loadStyle } from '../../../libs/utils/utils.js';
 
 const FEDERAL_SVG = 'https://main--federal--adobecom.aem.page/federal/assets/svgs/photoshop.svg';
+
+const loadStyles = (path) => new Promise((resolve) => { loadStyle(path, resolve); });
 
 async function initBlock(path) {
   document.body.innerHTML = await readFile({ path });
@@ -81,6 +84,37 @@ describe('Product Marquee Grid', () => {
       // No CTA is left loose directly under the content; they live in the wrapper.
       expect(content.querySelector('.pm-merch-content > .action-area')).to.be.null;
       expect(content.querySelector('.pm-merch-ctas')).to.exist;
+    });
+  });
+
+  describe('cta-stack variant', () => {
+    let block;
+    before(async () => {
+      await loadStyles('/libs/c2/blocks/product-marquee-grid/product-marquee-grid.css');
+    });
+
+    beforeEach(async () => {
+      block = await initBlock('./mocks/cta-stack.html');
+      document.body.append(block);
+    });
+
+    it('groups both single-paragraph ctas and stacks them full-width', () => {
+      const wrapper = block.querySelector('.pm-merch-ctas');
+      expect(wrapper).to.exist;
+      const ctas = [...wrapper.querySelectorAll('.con-button')];
+      expect(ctas.length).to.equal(2);
+      ctas.forEach((cta) => {
+        let node = cta.parentElement;
+        while (node && node !== wrapper) {
+          expect(getComputedStyle(node).display).to.equal('contents');
+          node = node.parentElement;
+        }
+      });
+
+      // cta-stack lays the row out as a column: the two buttons sit on different rows.
+      expect(getComputedStyle(wrapper).flexDirection).to.equal('column');
+      expect(ctas[0].offsetTop).to.not.equal(ctas[1].offsetTop);
+      expect(ctas[0].offsetLeft).to.equal(ctas[1].offsetLeft);
     });
   });
 
