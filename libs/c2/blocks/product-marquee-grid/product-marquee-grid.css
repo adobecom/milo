@@ -141,8 +141,7 @@
 
     > p,
     mas-field {
-      display: flex;
-      flex: 1 1 0;
+      display: contents;
     }
 
     .con-button {
