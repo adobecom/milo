@@ -1447,6 +1447,7 @@
   .hub-hero-carousel {
     padding-top: calc(var(--grid-col-three-offset) + var(--s2a-layout-lg));
     height: auto;
+    top: 0;
   }
 
   .hub-hero-carousel-header > div {
