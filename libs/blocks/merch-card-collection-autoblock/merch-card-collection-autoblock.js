@@ -209,16 +209,29 @@ export function productPricingFilterGroups(data, meta = {}) {
   return groups;
 }
 
+// The authored pill name, e.g. "{{coll-filter}} Filter", with its filter hole
+// filled: "Featured Filter". Without a hole there is no name to give.
+export function pillName(template, label) {
+  if (!template || !label) return null;
+  // A <template> keeps the authored markup inert while it is read.
+  const { content } = Object.assign(document.createElement('template'), { innerHTML: template });
+  const holes = content.querySelectorAll('[data-placeholder="filter"]');
+  if (!holes.length) return null;
+  holes.forEach((hole) => { hole.textContent = label; });
+  return content.textContent.replace(/\s+/g, ' ').trim() || null;
+}
+
 // Radios give exclusivity and arrow-key roving. Optional groups use checkboxes
 // so the active pill can be cleared; the hash keeps them exclusive. `scope`
 // keeps the bar and drawer copies of a group in separate radio groups.
-function buildPill({ value, label }, group, scope) {
+function buildPill({ value, label }, group, scope, name) {
   const input = createTag('input', {
     type: group.optional ? 'checkbox' : 'radio',
     name: `${scope}-${group.deeplink}`,
     value,
     'data-deeplink': group.deeplink,
     'data-optional': String(group.optional),
+    ...(name && { 'aria-label': name }),
   });
   return createTag('label', { class: 'product-pricing-pill' }, [input, label]);
 }
@@ -554,7 +567,8 @@ function buildProductPricingBar(collection, groups) {
       role: 'radiogroup',
       'aria-label': group.title,
     },
-    group.options.map((opt) => buildPill(opt, group, 'bar')),
+    // Out of the drawer, a pill alone doesn't say it's a filter.
+    group.options.map((opt) => buildPill(opt, group, 'bar', pillName(placeholders.filterPillLabel, opt.label))),
   ));
   // Inside the scroller, so the trigger scrolls with the pills. Outside it, the
   // trigger would hold 141px of a 300px row on mobile.

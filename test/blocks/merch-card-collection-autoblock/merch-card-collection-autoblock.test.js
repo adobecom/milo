@@ -10,6 +10,7 @@ import init, {
   countApplied,
   barGroups,
   emptyResultsMarkup,
+  pillName,
   filterBarLabels,
   resetParams,
   pageStep,
@@ -636,6 +637,18 @@ describe('merch-card-collection autoblock', () => {
       expect(barGroups([])).to.deep.equal([]);
     });
 
+    it('names a pill from the authored template', () => {
+      const hole = '<span data-placeholder="filter"></span>';
+      expect(pillName(`${hole} Filter`, 'Featured')).to.equal('Featured Filter');
+      expect(pillName(`Filtre ${hole}`, 'Photo')).to.equal('Filtre Photo');
+      expect(pillName(`${hole} Filter`, 'Students & Teachers $&')).to.equal('Students & Teachers $& Filter');
+      // Missing, empty, an unresolved key, or text with no hole: no name.
+      [undefined, '', 'coll-filter-pill-label', 'Filter'].forEach((template) => {
+        expect(pillName(template, 'Featured')).to.equal(null);
+      });
+      expect(pillName(`${hole} Filter`, '')).to.equal(null);
+    });
+
     it('fills the authored empty-results placeholders', () => {
       const placeholders = {
         noResultsText: '<p>0 results based on your <strong><span data-placeholder="filter"></span></strong></p>',
@@ -1024,6 +1037,25 @@ describe('merch-card-collection autoblock', () => {
       const checked = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:checked')]
         .map((i) => i.value).sort();
       expect(checked).to.deep.equal(['photo']);
+    });
+
+    it('names the bar pills, not the drawer ones, as filters', () => {
+      const collection = document.createElement('div');
+      const filterPillLabel = '<span data-placeholder="filter"></span> Filter';
+      collection.data = { ...data, placeholders: { ...data.placeholders, filterPillLabel } };
+      const container = document.createElement('div');
+      document.body.append(container);
+      mountProductPricingFilter(collection, container);
+      const names = (selector) => [...container.querySelectorAll(`${selector} .product-pricing-pill input`)]
+        .map((input) => input.getAttribute('aria-label'));
+      expect(names('.product-pricing-filter-bar')).to.deep.equal(['Featured Filter', 'Photo Filter', 'Individuals Filter']);
+      expect(names('.product-pricing-drawer').every((name) => name === null)).to.be.true;
+    });
+
+    it('leaves the pill names alone without the template', () => {
+      const { container } = mount();
+      const named = container.querySelectorAll('.product-pricing-pill input[aria-label]');
+      expect(named.length).to.equal(0);
     });
 
     it('pages the collection 12 cards at a time', () => {
