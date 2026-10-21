@@ -531,6 +531,24 @@ function decorateDividers(el) {
 
 const BAR_HEIGHT = 8;
 
+function findArticleCopy(headerSection) {
+  const contents = [];
+  let section = headerSection.nextElementSibling;
+  if (section?.classList.contains('blog-article-layout')) {
+    section = section.querySelector('.blog-article-content > .section');
+  }
+  while (section) {
+    if (section.querySelector('.card-metadata')) {
+      const finalCopy = section.querySelector(':scope > .content:first-child');
+      if (finalCopy) contents.push(finalCopy);
+      break;
+    }
+    contents.push(...section.querySelectorAll(':scope > .content'));
+    section = section.nextElementSibling || section.parentElement?.closest('.blog-article-layout')?.nextElementSibling;
+  }
+  return { first: contents[0], last: contents.at(-1) };
+}
+
 function decorateProgressBar(el, main) {
   const headerSection = el.closest('.section');
   if (el.classList.contains('no-progress-bar') || !main || !headerSection) return;
@@ -539,6 +557,11 @@ function decorateProgressBar(el, main) {
   el.append(bar);
   const stacked = window.matchMedia('(max-width: 1199px)');
   let frame = 0;
+  let discover = true;
+  let articleCopy;
+  let navigation;
+  let lastTop;
+  let lastProgress;
 
   const update = () => {
     frame = 0;
@@ -546,29 +569,18 @@ function decorateProgressBar(el, main) {
       cleanup(); // eslint-disable-line no-use-before-define
       return;
     }
-    // Article copy runs from the header section to the related cards, re-read as sections decorate.
-    const contents = [];
-    let section = headerSection.nextElementSibling;
-    if (section?.classList.contains('blog-article-layout')) {
-      section = section.querySelector('.blog-article-content > .section');
+    if (discover) {
+      articleCopy = findArticleCopy(headerSection);
+      navigation = main.querySelector('.blog-side-navigation:not([hidden])');
+      discover = false;
     }
-    while (section) {
-      if (section.querySelector('.card-metadata')) {
-        const finalCopy = section.querySelector(':scope > .content:first-child');
-        if (finalCopy) contents.push(finalCopy);
-        break;
-      }
-      contents.push(...section.querySelectorAll(':scope > .content'));
-      section = section.nextElementSibling || section.parentElement?.closest('.blog-article-layout')?.nextElementSibling;
-    }
-    const first = contents[0]?.getBoundingClientRect();
-    const last = contents.at(-1)?.getBoundingClientRect();
+    const first = articleCopy.first?.getBoundingClientRect();
+    const last = articleCopy.last?.getBoundingClientRect();
     if (!first) {
-      bar.hidden = true;
+      if (!bar.hidden) bar.hidden = true;
       return;
     }
 
-    const navigation = main.querySelector('.blog-side-navigation:not([hidden])');
     const dividerY = stacked.matches && navigation
       ? (navigation.getBoundingClientRect().bottom + first.top) / 2
       : headerSection.getBoundingClientRect().bottom - 1;
@@ -579,25 +591,45 @@ function decorateProgressBar(el, main) {
     const start = window.scrollY + first.top - globalNav;
 
     const distance = last.bottom + window.scrollY - window.innerHeight - start;
-    bar.hidden = distance <= 0;
-    if (bar.hidden) return;
-    const progress = (window.scrollY - start) / distance;
-    bar.style.top = `${top}px`;
-    bar.style.setProperty('--blog-progress', Math.min(1, Math.max(0, progress)));
+    const hidden = distance <= 0;
+    if (bar.hidden !== hidden) bar.hidden = hidden;
+    if (hidden) return;
+    const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
+    if (top !== lastTop) {
+      bar.style.top = `${top}px`;
+      lastTop = top;
+    }
+    if (progress !== lastProgress) {
+      bar.style.transform = `scaleX(${progress})`;
+      lastProgress = progress;
+    }
   };
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(update);
   };
+  const invalidate = (records) => {
+    if (records.every((record) => record.target === bar)) return;
+    discover = true;
+    schedule();
+  };
+  const mutations = new MutationObserver(invalidate);
   const observer = new ResizeObserver(schedule);
   const cleanup = () => {
     window.removeEventListener('scroll', schedule);
     window.removeEventListener('resize', schedule);
     observer.disconnect();
+    mutations.disconnect();
     cancelAnimationFrame(frame);
   };
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', schedule);
   observer.observe(main);
+  mutations.observe(main, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'hidden'],
+  });
   update();
 }
 

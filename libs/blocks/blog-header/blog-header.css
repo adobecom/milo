@@ -294,7 +294,7 @@ a.blog-header-author-name:hover {
   inset-inline: 0;
   block-size: 8px;
   background: #1473e6;
-  transform: scaleX(var(--blog-progress, 0));
+  transform: scaleX(0);
   transform-origin: left;
   pointer-events: none;
   z-index: 2;
