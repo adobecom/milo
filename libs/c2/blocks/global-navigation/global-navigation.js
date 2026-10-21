@@ -2,6 +2,7 @@ import {
   getEnv,
   getConfig,
   getMetadata,
+  getGnavSource,
   localizeLink,
   localizeLinkAsync,
   appendHtmlToLink,
@@ -175,7 +176,7 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
+  const gnavUrl = new URL(await getGnavSource(), window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
