@@ -1,4 +1,5 @@
 import { createTag, isAcomAssistantEnabled } from '../../../utils/utils.js';
+import { isJarvisPanel } from '../../../blocks/brand-concierge/bc-utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -86,6 +87,10 @@ export default async function init(el) {
 
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
+      if (isJarvisPanel()) {
+        closeChatPanel();
+        return;
+      }
       if (!window.adobe?.concierge?.clearHistory) {
         loadWebclient();
       }

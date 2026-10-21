@@ -13,6 +13,7 @@ import {
   handleConsent,
   hasChatCookie,
   isC2,
+  isJarvisPanel,
 } from './bc-utils.js';
 import {
   loadWebclient,
@@ -86,6 +87,10 @@ export default async function init(el) {
 
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
+      if (isJarvisPanel()) {
+        closeChatPanel();
+        return;
+      }
       if (!window.adobe?.concierge?.clearHistory) {
         loadWebclient();
       }

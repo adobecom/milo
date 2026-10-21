@@ -1,4 +1,5 @@
 import { createTag, isAcomAssistantEnabled } from '../../../utils/utils.js';
+import { isJarvisPanel } from '../../../blocks/brand-concierge/bc-utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -138,6 +139,10 @@ export default async function init(el) {
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   window.addEventListener('feds:signOut', () => {
+    if (isJarvisPanel()) {
+      closeChatPanel();
+      return;
+    }
     if (!window.adobe?.concierge?.clearHistory) {
       loadWebclient();
     }

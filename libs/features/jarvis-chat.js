@@ -1,3 +1,5 @@
+import { isJarvisPanel } from '../blocks/brand-concierge/bc-utils.js';
+
 let chatInitialized = false;
 let loadScript;
 let loadStyle;
@@ -204,12 +206,15 @@ const openChat = (event) => {
   }
 };
 
-const startInitialization = async (config, event, onDemand) => {
-  const asset = `https://${config.env.name !== 'prod' ? 'stage-' : ''}client.messaging.adobe.com/latest/AdobeMessagingClient`;
+const startInitialization = async (config, event, onDemand, options = {}) => {
+  const asset = options.asset || `https://${config.env.name !== 'prod' ? 'stage-' : ''}client.messaging.adobe.com/latest/AdobeMessagingClient`;
   await Promise.all([
     loadStyle(`${asset}.css`),
     loadScript(`${asset}.js`),
   ]);
+  if (options.mountSelector && !window.AdobeMessagingExperienceClient?.supportsEmbeddedPanel) {
+    throw new Error('This Jarvis bundle does not support embedded panels');
+  }
   let language;
   let region;
   if (config.locale.ietf.includes('-')) {
@@ -219,10 +224,13 @@ const startInitialization = async (config, event, onDemand) => {
     if (region === 'africa') region = 'ZA';
   }
 
-  window.AdobeMessagingExperienceClient.initialize({
+  return window.AdobeMessagingExperienceClient.initialize({
     appid: getMetadata('jarvis-surface-id') || config.jarvis.id || jarvisSecMeta?.['jarvis-surface-id'],
     appver: getMetadata('jarvis-surface-version') || config.jarvis.version || jarvisSecMeta?.['jarvis-surface-version'],
-    env: config.env.name !== 'prod' ? 'stage' : 'prod',
+    env: options.env || (config.env.name !== 'prod' ? 'stage' : 'prod'),
+    ...(options.mountSelector && { mountSelector: options.mountSelector }),
+    ...(options.initConfigUrl && { initConfigUrl: options.initConfigUrl }),
+    ...(options.assistantUiURL && { assistantUiURL: options.assistantUiURL }),
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
@@ -238,13 +246,16 @@ const startInitialization = async (config, event, onDemand) => {
     callbacks: {
       initCallback: (data) => {
         chatInitialized = !!data?.releaseControl?.showAdobeMessaging;
+        options.initCallback?.(data);
       },
       onReadyCallback: () => {
         if (onDemand) {
           openChat(event);
         }
+        options.onReadyCallback?.();
       },
-      initErrorCallback: () => {},
+      initErrorCallback: (error) => options.initErrorCallback?.(error),
+      windowStateCallback: options.windowStateCallback,
       chatStateCallback: () => {},
       getContextCallback: () => {
         let appId; let appVer;
@@ -311,12 +322,17 @@ const initJarvisChat = async (
   loadScriptFunction,
   loadStyleFunction,
   getMetadataFunction,
+  options = {},
 ) => {
-  if (!config?.jarvis) return;
+  if (!config?.jarvis || (isJarvisPanel() && !options.mountSelector)) return undefined;
 
   loadScript = loadScriptFunction;
   loadStyle = loadStyleFunction;
   getMetadata = getMetadataFunction;
+
+  if (options.mountSelector) {
+    return startInitialization(config, null, false, options);
+  }
 
   const onDemandMeta = getMetadata('jarvis-on-demand')?.toLowerCase();
   const onDemand = onDemandMeta ? onDemandMeta === 'on' : config.jarvis.onDemand;
@@ -344,6 +360,7 @@ const initJarvisChat = async (
     await startInitialization(config);
     addEventListeners();
   }
+  return undefined;
 };
 
 export {

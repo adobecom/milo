@@ -481,6 +481,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 export function isAcomAssistantEnabled() {
   const isStage = getConfig().env?.name === 'stage';
   if (isStage && PAGE_URL.searchParams.get('acom-assistant') === 'off') return false;
+  if (['on', 'local'].includes(new URLSearchParams(window.location.search).get('jarvis-panel'))) return false;
   return getMetadata('acom-assistant') === 'on';
 }
 

@@ -8,6 +8,7 @@ import {
   hasChatCookie,
   isC2,
   isC2Nav,
+  isJarvisPanel,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
@@ -142,6 +143,10 @@ export default async function init(el) {
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
+      if (isJarvisPanel()) {
+        closeChatPanel();
+        return;
+      }
       if (!window.adobe?.concierge?.clearHistory) {
         loadWebclient();
       }

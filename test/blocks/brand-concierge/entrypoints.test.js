@@ -228,4 +228,174 @@ describe('BC entrypoints share a persistent chat panel', () => {
       .filter(({ args }) => args[0].src?.endsWith('/sentry/wrapper.js'));
     expect(scripts.length).to.equal(1);
   });
+
+  it('keeps the web client when acom-assistant is on but the spike is not enabled', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'acom-assistant';
+    meta.content = 'on';
+    document.head.append(meta);
+    try {
+      await openChatPanel();
+      expect(bootstrap.calledOnce).to.be.true;
+      expect(window.AdobeMessagingExperienceClient).to.be.undefined;
+    } finally {
+      meta.remove();
+    }
+  });
+
+  describe('embedded Jarvis spike', () => {
+    let client;
+    let options;
+    let originalUrl;
+    let assistantMeta;
+
+    beforeEach(() => {
+      options = undefined;
+      originalUrl = window.location.href;
+      window.history.replaceState({}, '', '?jarvis-panel=on');
+      assistantMeta = document.createElement('meta');
+      assistantMeta.name = 'acom-assistant';
+      assistantMeta.content = 'on';
+      document.head.append(assistantMeta);
+      setConfig({ jarvis: { id: 'bc-test', version: '1.0' } });
+      client = {
+        supportsEmbeddedPanel: true,
+        initialize: sinon.stub().callsFake((config) => {
+          options = config;
+          queueMicrotask(() => {
+            config.callbacks.initCallback({ releaseControl: { showAdobeMessaging: true } });
+            config.callbacks.onReadyCallback();
+          });
+          return { status: 'success', type: 'init_started' };
+        }),
+        getMessagingExperienceState: sinon.stub().returns({ embedded: true }),
+        openMessagingWindow: sinon.spy(),
+        closeMessageWindow: sinon.spy(),
+        sendUserMessage: sinon.stub().returns(true),
+        handleSignOut: sinon.spy(),
+        updateAccessToken: sinon.spy(),
+      };
+      document.head.append.callsFake((...elements) => {
+        elements.forEach((element) => {
+          if (element.tagName === 'SCRIPT' && element.src.startsWith('https://')) {
+            window.AdobeMessagingExperienceClient = client;
+            setTimeout(() => element.dispatchEvent(new Event('load')), 0);
+          } else {
+            Element.prototype.append.call(document.head, element);
+          }
+        });
+      });
+      const appendChild = document.head.appendChild.bind(document.head);
+      sinon.stub(document.head, 'appendChild').callsFake((element) => {
+        if (element.tagName === 'LINK' && element.href.startsWith('https://')) {
+          queueMicrotask(() => element.dispatchEvent(new Event('load')));
+          return element;
+        }
+        return appendChild(element);
+      });
+    });
+
+    afterEach(() => {
+      window.history.replaceState({}, '', originalUrl);
+      assistantMeta.remove();
+      delete window.AdobeMessagingExperienceClient;
+      document.querySelectorAll('script[src*="client.messaging.adobe.com"]').forEach((el) => el.remove());
+    });
+
+    it('mounts Jarvis in the existing panel and preserves it across close/reopen', async () => {
+      await openChatPanel('First prompt');
+      const panel = document.getElementById('chat-panel');
+      expect(options.mountSelector).to.equal('#brand-concierge-mount');
+      expect(client.sendUserMessage.calledWith({ label: 'First prompt' })).to.be.true;
+      expect(bootstrap.called).to.be.false;
+      closeChatPanel();
+      expect(client.closeMessageWindow.calledOnce).to.be.true;
+      await openChatPanel();
+      await openChatPanel('Second prompt');
+      expect(document.getElementById('chat-panel')).to.equal(panel);
+      expect(client.initialize.calledOnce).to.be.true;
+      expect(client.openMessagingWindow.calledOnce).to.be.true;
+      expect(client.sendUserMessage.secondCall.args[0]).to.deep.equal({ label: 'Second prompt' });
+    });
+
+    it('shares initialization across simultaneous opens', async () => {
+      await Promise.all([openChatPanel(), openChatPanel()]);
+      expect(client.initialize.calledOnce).to.be.true;
+      expect(bootstrap.called).to.be.false;
+    });
+
+    it('uses integration services with local frontend assets instead of a local backend', async () => {
+      window.history.replaceState({}, '', '?jarvis-panel=local');
+      await openChatPanel();
+      expect(options.env).to.equal('integration');
+      expect(new URL(options.initConfigUrl).hostname).to.equal('integration-client.messaging.adobe.com');
+      expect(new URL(options.assistantUiURL).port).to.equal('3443');
+      expect(options.mountSelector).to.equal('#brand-concierge-mount');
+    });
+
+    it('routes Jarvis chat links into the host panel before native window handlers', async () => {
+      await initPanel();
+      const link = document.createElement('a');
+      link.href = '#open-jarvis-chat';
+      document.body.append(link);
+      const nativeHandler = sinon.spy();
+      document.addEventListener('click', nativeHandler);
+      try {
+        link.click();
+        await waitFor(() => client.openMessagingWindow.called);
+        expect(document.body.classList.contains('chat-panel-open')).to.be.true;
+        expect(nativeHandler.called).to.be.false;
+      } finally {
+        document.removeEventListener('click', nativeHandler);
+      }
+    });
+
+    it('synchronizes Jarvis close notifications with the host panel', async () => {
+      await openChatPanel();
+      options.callbacks.windowStateCallback({ state: 'hidden' });
+      expect(document.body.classList.contains('chat-panel-open')).to.be.false;
+      expect(localStorage.getItem('bc-side-overlay')).to.equal('closed');
+    });
+
+    it('uses Jarvis sign-out handling without loading the web client', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      await initMilo(document.querySelector('.brand-concierge'));
+      await openChatPanel();
+      window.dispatchEvent(new Event('feds:signOut'));
+      expect(client.handleSignOut.calledOnce).to.be.true;
+      expect(document.body.classList.contains('chat-panel-open')).to.be.false;
+      const scripts = document.head.append.getCalls().flatMap(({ args }) => args);
+      expect(scripts.some((el) => el.src?.includes('brand-concierge-web-agent'))).to.be.false;
+    });
+
+    it('does not open a native window if the bundle lacks embedded support', async () => {
+      client.supportsEmbeddedPanel = false;
+      let failure;
+      try {
+        await openChatPanel('Do not send');
+      } catch (error) {
+        failure = error;
+      }
+      expect(failure.message).to.include('does not support embedded panels');
+      expect(document.querySelector('#chat-panel [role="alert"]')).to.exist;
+      expect(client.openMessagingWindow.called).to.be.false;
+      expect(client.initialize.called).to.be.false;
+      expect(client.sendUserMessage.called).to.be.false;
+      expect(bootstrap.called).to.be.false;
+    });
+
+    it('does not open Jarvis after the panel is closed during initialization', async () => {
+      client.initialize.callsFake((config) => {
+        options = config;
+        return { status: 'success', type: 'init_started' };
+      });
+      const opening = openChatPanel('Pending prompt');
+      await waitFor(() => !!options);
+      closeChatPanel();
+      options.callbacks.onReadyCallback();
+      await opening;
+      expect(client.openMessagingWindow.called).to.be.false;
+      expect(client.sendUserMessage.called).to.be.false;
+    });
+  });
 });

@@ -1,12 +1,13 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { bcBootstrap, mountId } from '../../blocks/brand-concierge/bc-bootstrap.js';
-import { aiIcon, getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
+import { aiIcon, getBetaLabel, isJarvisPanel } from '../../blocks/brand-concierge/bc-utils.js';
 import { getAnalyticsLabel } from '../../blocks/brand-concierge/bc-analytics.js';
 
 let initialization = null;
 let bootstrapPromise = null;
 let panelEl = null;
 let toggleEl = null;
+let jarvisClient = null;
 
 function buildPanel() {
   const panel = createTag('aside', { id: 'chat-panel', 'aria-label': 'Chat' });
@@ -53,6 +54,7 @@ export function closeChatPanel() {
   document.body.classList.remove('chat-panel-open');
   toggleEl?.setAttribute('aria-expanded', 'false');
   localStorage.setItem('bc-side-overlay', 'closed');
+  jarvisClient?.closeMessageWindow();
   window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
 }
 
@@ -68,6 +70,33 @@ export async function openChatPanel(initialMessage) {
   toggleEl?.setAttribute('aria-expanded', 'true');
   localStorage.setItem('bc-side-overlay', 'open');
   if (!wasOpen) window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
+  if (isJarvisPanel()) {
+    try {
+      if (!bootstrapPromise) {
+        bootstrapPromise = import('./jarvis-panel.js').then(({ default: initJarvisPanel }) => (
+          initJarvisPanel(mountId, ({ state }) => {
+            if (state === 'hidden') closeChatPanel();
+          })
+        ));
+      }
+      jarvisClient = await bootstrapPromise;
+      if (!isChatPanelOpen()) return;
+      if (initialMessage) {
+        const accepted = jarvisClient.sendUserMessage({ label: initialMessage });
+        if (!accepted) throw new Error('Jarvis did not accept the panel prompt');
+      } else {
+        jarvisClient.openMessagingWindow({ sourceType: 'button', sourceText: 'Ask' });
+      }
+    } catch (error) {
+      window.lana?.log(`Jarvis panel: ${error.message}`, { tags: 'brand-concierge', severity: 'error' });
+      const mount = panelEl.querySelector(`#${mountId}`);
+      if (!mount.querySelector('[role="alert"]')) {
+        mount.append(createTag('p', { role: 'alert' }, 'Chat could not be loaded. Please reload the page to try again.'));
+      }
+      throw error;
+    }
+    return;
+  }
   if (!bootstrapPromise) {
     bootstrapPromise = bcBootstrap(initialMessage || null, mountId);
     await bootstrapPromise;
@@ -81,6 +110,13 @@ function handleKeydown(event) {
   if (event.key === 'Escape') closeChatPanel();
 }
 
+function handleJarvisLink(event) {
+  if (!isJarvisPanel() || !event.target.closest('a[href*="#open-jarvis-chat"]')) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  openChatPanel();
+}
+
 /**
  * Build the panel DOM + wire up close/toggle/Escape. Idempotent — calling
  * again is a no-op. Does NOT open the panel; callers must call openChatPanel().
@@ -89,6 +125,7 @@ export default function init() {
   if (initialization && (!panelEl || document.contains(panelEl))) return initialization;
   panelEl = null;
   bootstrapPromise = null;
+  jarvisClient = null;
   initialization = (async () => {
     const { miloLibs, codeRoot } = getConfig();
     const base = miloLibs || codeRoot || '/libs';
@@ -106,6 +143,8 @@ export default function init() {
     closeBtn.addEventListener('click', closeChatPanel);
     document.removeEventListener('keydown', handleKeydown);
     document.addEventListener('keydown', handleKeydown);
+    document.removeEventListener('click', handleJarvisLink, true);
+    document.addEventListener('click', handleJarvisLink, true);
   })();
   return initialization;
 }
