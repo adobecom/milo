@@ -567,8 +567,8 @@ function decorateProgressBar(el, main) {
     const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
     const dividerTop = dividerY - BAR_HEIGHT / 2;
     const top = Math.max(globalNav, dividerTop);
-    // Stacked layouts start filling once the bar pins under the global nav.
-    const start = stacked.matches ? window.scrollY + dividerTop - globalNav : 0;
+    // Start filling when the first article copy reaches the bar below the global nav.
+    const start = window.scrollY + first.top - globalNav;
 
     const distance = last.bottom + window.scrollY - window.innerHeight - start;
     const progress = distance > 0 ? (window.scrollY - start) / distance : 0;
