@@ -347,9 +347,8 @@
   opacity: 1;
 }
 
-/* AcomAssistant window is open (windowStateCallback in features/acom-assistant.js) */
-.acom-assistant-open .bc-floating-element {
-  display: none;
+.floating-mobile-hide .bc-floating-element {
+    display: none;
 }
 
 /* floating-button */
@@ -970,6 +969,7 @@
 
 .bc-modal-title {
   font-size: 16px;
+  letter-spacing: normal;
   line-height: 32px;
   font-weight: 900;
   color: #000;
@@ -1172,6 +1172,10 @@
   .floating-input .bc-floating-input .bc-input-field {
     min-width: 340px;
   }
+
+  .floating-mobile-hide .bc-floating-element {
+    display: flex;
+  }
 }
 
 @media screen and (min-width: 900px) {
@@ -1308,6 +1312,12 @@
   .bc-side-open .bc-floating-element {
     display: none;
   }
+}
+
+/* AcomAssistant window is open (windowStateCallback in features/acom-assistant.js).
+   Kept after the floating variant display rules so it wins at equal specificity. */
+.acom-assistant-open .bc-floating-element {
+  display: none;
 }
 
 /* marquee */
