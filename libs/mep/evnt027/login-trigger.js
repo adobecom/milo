@@ -6,11 +6,11 @@ const DISMISSED_KEY = 'evnt027-login-prompt-dismissed';
 const MODAL_ID = 'max26-login-prompt';
 let activeTrigger;
 
-export default function init() {
+export default function init({ path: authoredPath, content: initialContent } = {}) {
   if (activeTrigger) return activeTrigger;
   if (localStorage.getItem(DISMISSED_KEY)) return null;
 
-  const fragmentPath = getMetadata('max26-login-prompt');
+  const fragmentPath = authoredPath ?? getMetadata('max26-login-prompt');
   if (!fragmentPath) throw new Error('Missing max26-login-prompt fragment metadata.');
   const fragmentUrl = new URL(fragmentPath, window.location.href);
   const params = fragmentUrl.searchParams;
@@ -39,7 +39,7 @@ export default function init() {
 
   let stopped = false;
   let preparing = false;
-  let content;
+  let content = initialContent;
   let timer;
   const listeners = [];
   const observer = new MutationObserver(() => check()); // eslint-disable-line no-use-before-define
@@ -89,6 +89,7 @@ export default function init() {
       // Loading the fragment can outlive a scroll, dismissal, or another modal.
       if (!canOpen()) return;
       const heading = content.querySelector('h1, h2, h3, h4, h5, h6');
+      content.hidden = false;
       await getModal(null, {
         id: MODAL_ID,
         title: heading?.textContent,

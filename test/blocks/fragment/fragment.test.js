@@ -88,6 +88,26 @@ describe('Fragments', () => {
     expect(h1).to.exist;
   });
 
+  it('appends .plain.html before the query parameters', async () => {
+    const parent = document.createElement('div');
+    const link = document.createElement('a');
+    link.href = '/fragments/with-query?delay=3&showAfter=side-by-side&operator=and';
+    parent.append(link);
+    document.body.append(parent);
+    const fetchStub = stub(window, 'fetch').resolves(new Response('<div><p>Query fragment</p></div>'));
+    try {
+      await getFragment(link);
+      expect(fetchStub.firstCall.args[0]).to.equal(
+        `${window.location.origin}/fragments/with-query.plain.html?delay=3&showAfter=side-by-side&operator=and`,
+      );
+      expect(parent.querySelector('.fragment').dataset.path).to.contain('?delay=3&showAfter=');
+      expect(parent.textContent).to.equal('Query fragment');
+    } finally {
+      fetchStub.restore();
+      parent.remove();
+    }
+  });
+
   it('Doesnt load a fragment', async () => {
     const a = document.querySelector('a.bad');
     await getFragment(a);

@@ -1,6 +1,7 @@
 import { createTag } from '../../../utils/utils.js';
 import { decorateBlockBg, decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { closeModal } from '../../../c2/blocks/modal/modal.js';
+import initTrigger from '../login-trigger.js';
 
 function decorate(block, root) {
   const [background, contentRow] = block.children;
@@ -69,4 +70,9 @@ export default function init(el) {
     const dialog = el.closest('.dialog-modal');
     if (dialog) closeModal(dialog);
   });
+  const fragment = el.closest('.fragment[data-path]');
+  if (fragment?.isConnected && !el.closest('.dialog-modal')) {
+    fragment.hidden = true;
+    initTrigger({ path: fragment.dataset.path, content: fragment });
+  }
 }

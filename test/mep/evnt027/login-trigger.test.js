@@ -1,12 +1,24 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile, setViewport } from '@web/test-runner-commands';
 import sinon from 'sinon';
-import { createTag, setConfig } from '../../../libs/utils/utils.js';
+import { createTag, loadArea, setConfig } from '../../../libs/utils/utils.js';
 import init from '../../../libs/mep/evnt027/login-trigger.js';
+import initBlock from '../../../libs/mep/evnt027/max26-login-prompt/max26-login-prompt.js';
 
 const DISMISSED_KEY = 'evnt027-login-prompt-dismissed';
 const FRAGMENT_PATH = '/fragments/max-login-trigger-test';
 const FRAGMENT_HTML = '<div><div><div class="max26-login-prompt" data-block-status="loaded"><h2>MAX login</h2></div></div></div>';
+const IMAGE = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="300"/%3E';
+const AUTHORED_BLOCK = `<div class="max26-login-prompt dark">
+  <div><div><picture><img src="${IMAGE}" alt=""></picture></div></div>
+  <div><div>
+    <p><picture><img src="${IMAGE}" alt="Adobe MAX"></picture></p>
+    <h2>Personalize your MAX experience.</h2>
+    <p>Build your schedule.</p>
+    <p><a href="https://www.adobe.com/">Register/Sign in</a></p>
+    <p><a href="#guest">Continue as guest</a></p>
+  </div></div>
+</div>`;
 
 describe('MAX login prompt trigger', () => {
   let clock;
@@ -34,9 +46,25 @@ describe('MAX login prompt trigger', () => {
     await flush();
   };
   const modal = () => document.getElementById('max26-login-prompt');
+  const loadAuthoredFragment = async (query) => {
+    document.head.querySelector('meta[name="max26-login-prompt"]')?.remove();
+    metadata('foundation', 'c2');
+    fragmentResponse = () => Promise.resolve(new Response(`<div>${AUTHORED_BLOCK}</div>`));
+    const holder = createTag('div');
+    const url = `${FRAGMENT_PATH}${query}`;
+    const link = createTag('a', { href: url }, url);
+    holder.append(createTag('div', null, createTag('p', null, link)));
+    document.querySelector('main').append(holder);
+    await loadArea(holder);
+    await flush();
+    return holder.querySelector('.fragment');
+  };
 
   before(async () => {
-    setConfig({ codeRoot: '/libs' });
+    setConfig({
+      codeRoot: '/libs',
+      mep: { blocks: { 'max26-login-prompt': `${window.location.origin}/libs/mep/evnt027/max26-login-prompt` } },
+    });
     styles = createTag('style');
     styles.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' })
       + await readFile({ path: '../../../libs/mep/evnt027/max26-login-prompt/max26-login-prompt.css' });
@@ -66,9 +94,11 @@ describe('MAX login prompt trigger', () => {
 
   afterEach(() => {
     stop?.();
+    window.dispatchEvent(new Event('pagehide'));
     stop = null;
     sinon.restore();
     document.querySelectorAll('meta[name^="max26-login-prompt"]').forEach((meta) => meta.remove());
+    document.head.querySelector('meta[name="foundation"]')?.remove();
     document.body.replaceChildren();
     document.documentElement.classList.remove('disable-scroll');
     localStorage.removeItem(DISMISSED_KEY);
@@ -102,6 +132,83 @@ describe('MAX login prompt trigger', () => {
     stop = init();
     await flush();
     expect(modal()).to.exist;
+  });
+
+  it('opens the authored fragment link as a modal without metadata or an insertScript action', async () => {
+    target.className = 'side-by-side';
+    const query = '?delay=3&showAfter=side-by-side&operator=and';
+    const fragment = await loadAuthoredFragment(query);
+    expect(fragment.hidden).to.be.true;
+    expect(getComputedStyle(fragment).display).to.equal('none');
+    expect(modal()).to.be.null;
+    await clock.tickAsync(3000);
+    expect(modal()).to.be.null;
+    await reachTarget();
+    const dialog = modal();
+    expect(dialog).to.exist;
+    expect(fragment.hidden).to.be.false;
+    expect(fragment.parentElement).to.equal(dialog);
+    expect(getComputedStyle(dialog).position).to.equal('fixed');
+    expect(getComputedStyle(fragment).overflowY).to.equal('auto');
+    expect(dialog.getBoundingClientRect().top).to.be.at.least(0);
+    expect(dialog.getBoundingClientRect().bottom).to.be.at.most(window.innerHeight);
+    expect(document.querySelector('main').contains(fragment)).to.be.false;
+    expect(document.querySelectorAll('.max26-login-prompt')).to.have.length(1);
+    expect(document.querySelectorAll('.dialog-modal')).to.have.length(1);
+    expect(document.querySelector('.modal-curtain.is-open')).to.exist;
+    const requests = fetchStub.getCalls()
+      .filter(({ args }) => String(args[0]).includes(FRAGMENT_PATH));
+    expect(requests).to.have.length(1);
+    expect(requests[0].args[0])
+      .to.equal(`${window.location.origin}${FRAGMENT_PATH}.plain.html${query}`);
+    dialog.querySelector('.max26-login-prompt-guest').click();
+    expect(localStorage.getItem(DISMISSED_KEY)).to.equal('true');
+  });
+
+  it('does not reveal inline fragment content for dismissed visitors', async () => {
+    localStorage.setItem(DISMISSED_KEY, 'true');
+    const fragment = await loadAuthoredFragment('?delay=0');
+    expect(fragment.hidden).to.be.true;
+    expect(getComputedStyle(fragment).display).to.equal('none');
+    expect(modal()).to.be.null;
+  });
+
+  it('keeps a directly authored content-fragment preview inline', () => {
+    document.querySelector('main').insertAdjacentHTML('beforeend', AUTHORED_BLOCK);
+    const block = document.querySelector('.max26-login-prompt');
+    initBlock(block);
+    expect(block.isConnected).to.be.true;
+    expect(block.closest('.fragment')).to.be.null;
+    expect(block.hidden).to.be.false;
+    expect(modal()).to.be.null;
+  });
+
+  it('does not start another trigger when decorating detached modal content', async () => {
+    const fragment = createTag('div', {
+      class: 'fragment',
+      'data-path': `${FRAGMENT_PATH}?delay=0`,
+    });
+    fragment.innerHTML = AUTHORED_BLOCK;
+    initBlock(fragment.querySelector('.max26-login-prompt'));
+    await flush();
+    expect(fragment.hidden).to.be.false;
+    expect(modal()).to.be.null;
+  });
+
+  it('does not hide or reopen fragment content that is already inside a dialog', async () => {
+    const dialog = createTag('div', { class: 'dialog-modal' });
+    const fragment = createTag('div', {
+      class: 'fragment',
+      'data-path': `${FRAGMENT_PATH}?delay=0`,
+    });
+    fragment.innerHTML = AUTHORED_BLOCK;
+    dialog.append(fragment);
+    document.body.append(dialog);
+    initBlock(fragment.querySelector('.max26-login-prompt'));
+    await flush();
+    expect(fragment.hidden).to.be.false;
+    expect(document.querySelectorAll('.dialog-modal')).to.have.length(1);
+    expect(document.querySelector('.modal-curtain')).to.be.null;
   });
 
   it('opens through the treatment insertScript entry point', async () => {
