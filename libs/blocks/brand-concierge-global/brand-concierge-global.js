@@ -1,4 +1,4 @@
-import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled, isAcomAssistantPanelEnabled } from '../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -8,12 +8,16 @@ import {
   hasChatCookie,
   isC2,
   isC2Nav,
-  isJarvisPanel,
 } from '../brand-concierge/bc-utils.js';
 import {
   loadWebclient,
+  bcBootstrap,
+  openSideModal,
   setAuthoredContent,
+  sideOverlayTop,
+  isMobile,
 } from '../brand-concierge/bc-bootstrap.js';
+import { initAnalytics } from '../brand-concierge/bc-analytics.js';
 import initChatPanel, {
   openChatPanel,
   closeChatPanel,
@@ -22,6 +26,7 @@ import initChatPanel, {
 
 let stayActive = false;
 let useAcomAssistant = false;
+let useAcomAssistantPanel = false;
 
 function gnavActivate(gnavInput, gnavCards) {
   gnavInput.classList.add('active');
@@ -45,18 +50,28 @@ function handleInput(text, gnavInput) {
   submitButton.disabled = true;
   textArea.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  openChatPanel(text);
+  if (useAcomAssistantPanel) openChatPanel(text);
+  else openSideModal(text, bcBootstrap);
 }
 
 function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
-  openChatPanel(text);
+  if (useAcomAssistantPanel) openChatPanel(text);
+  else openSideModal(text, bcBootstrap);
 }
 
 function handleGnavButton(event) {
-  openChatPanel();
+  if (useAcomAssistantPanel) {
+    openChatPanel();
+    event.target.blur();
+    return;
+  }
+  const isOpen = document.body.classList.contains('bc-side-open');
+  const close = document.querySelector('#brand-concierge-side button.dialog-close');
+  if (!isOpen) openSideModal(null, bcBootstrap);
+  else close.click();
   event.target.blur();
 }
 
@@ -118,12 +133,22 @@ async function decorateGnav(cards, input, topNav, el) {
     });
 
     gnavButton.addEventListener('click', (event) => {
+      // debounce the click to prevent double opening of the modal
       gnavButton.classList.add('active');
       const cleanup = setTimeout(() => {
         gnavButton.classList.remove('active');
         clearTimeout(cleanup);
       }, 500);
-      handleGnavButton(event);
+      if (!useAcomAssistantPanel && document.body.classList.contains('bc-side-open')) {
+        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+        if (closeButton) {
+          closeButton.click();
+        } else {
+          document.body.classList.remove('bc-side-open');
+          localStorage.setItem('bc-side-overlay', 'closed');
+          handleGnavButton(event);
+        }
+      } else handleGnavButton(event);
     });
     if (window?.milo) {
       window.milo.brandConcierge = brandConcierge;
@@ -137,13 +162,14 @@ async function decorateGnav(cards, input, topNav, el) {
 
 export default async function init(el) {
   useAcomAssistant = isAcomAssistantEnabled();
+  useAcomAssistantPanel = isAcomAssistantPanelEnabled();
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
-      if (isJarvisPanel()) {
+      if (useAcomAssistantPanel) {
         closeChatPanel();
         return;
       }
@@ -151,11 +177,16 @@ export default async function init(el) {
         loadWebclient();
       }
       if (window.adobe?.concierge?.clearHistory) {
-        if (isChatPanelOpen()) closeChatPanel();
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
         window.adobe.concierge.clearHistory();
       }
     });
   }
+
+  initAnalytics('BC-GNav-shown');
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
@@ -175,13 +206,20 @@ export default async function init(el) {
   });
 
   if (useAcomAssistant) return;
+  window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge-global' }));
 
-  // Build the chat-panel DOM once. Opening is driven by gnav button / input /
-  // suggested-prompt click handlers above.
-  await initChatPanel();
+  if (useAcomAssistantPanel) {
+    await initChatPanel();
+    if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
+    if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+      openChatPanel();
+    }
+    return;
+  }
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
-    openChatPanel();
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
+    openSideModal(null, bcBootstrap);
   }
 }

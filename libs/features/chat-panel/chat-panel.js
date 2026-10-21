@@ -1,8 +1,14 @@
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
-import { bcBootstrap, mountId } from '../../blocks/brand-concierge/bc-bootstrap.js';
-import { aiIcon, getBetaLabel, isJarvisPanel } from '../../blocks/brand-concierge/bc-utils.js';
+import {
+  createTag,
+  getConfig,
+  loadStyle,
+  isAcomAssistantPanelEnabled,
+} from '../../utils/utils.js';
+import { aiIcon, getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
 import { getAnalyticsLabel } from '../../blocks/brand-concierge/bc-analytics.js';
+import initJarvisPanel from './jarvis-panel.js';
 
+const mountId = 'brand-concierge-mount';
 let initialization = null;
 let bootstrapPromise = null;
 let panelEl = null;
@@ -70,39 +76,27 @@ export async function openChatPanel(initialMessage) {
   toggleEl?.setAttribute('aria-expanded', 'true');
   localStorage.setItem('bc-side-overlay', 'open');
   if (!wasOpen) window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
-  if (isJarvisPanel()) {
-    try {
-      if (!bootstrapPromise) {
-        bootstrapPromise = import('./jarvis-panel.js').then(({ default: initJarvisPanel }) => (
-          initJarvisPanel(mountId, ({ state }) => {
-            if (state === 'hidden') closeChatPanel();
-          })
-        ));
-      }
-      jarvisClient = await bootstrapPromise;
-      if (!isChatPanelOpen()) return;
-      if (initialMessage) {
-        const accepted = jarvisClient.sendUserMessage({ label: initialMessage });
-        if (!accepted) throw new Error('Jarvis did not accept the panel prompt');
-      } else {
-        jarvisClient.openMessagingWindow({ sourceType: 'button', sourceText: 'Ask' });
-      }
-    } catch (error) {
-      window.lana?.log(`Jarvis panel: ${error.message}`, { tags: 'brand-concierge', severity: 'error' });
-      const mount = panelEl.querySelector(`#${mountId}`);
-      if (!mount.querySelector('[role="alert"]')) {
-        mount.append(createTag('p', { role: 'alert' }, 'Chat could not be loaded. Please reload the page to try again.'));
-      }
-      throw error;
+  try {
+    if (!bootstrapPromise) {
+      bootstrapPromise = initJarvisPanel(mountId, ({ state }) => {
+        if (state === 'hidden') closeChatPanel();
+      });
     }
-    return;
-  }
-  if (!bootstrapPromise) {
-    bootstrapPromise = bcBootstrap(initialMessage || null, mountId);
-    await bootstrapPromise;
-  } else if (initialMessage) {
-    await bootstrapPromise;
-    await bcBootstrap(initialMessage, mountId);
+    jarvisClient = await bootstrapPromise;
+    if (!isChatPanelOpen()) return;
+    if (initialMessage) {
+      const accepted = jarvisClient.sendUserMessage({ label: initialMessage });
+      if (!accepted) throw new Error('Jarvis did not accept the panel prompt');
+    } else {
+      jarvisClient.openMessagingWindow({ sourceType: 'button', sourceText: 'Ask' });
+    }
+  } catch (error) {
+    window.lana?.log(`Jarvis panel: ${error.message}`, { tags: 'brand-concierge', severity: 'error' });
+    const mount = panelEl.querySelector(`#${mountId}`);
+    if (!mount.querySelector('[role="alert"]')) {
+      mount.append(createTag('p', { role: 'alert' }, 'Chat could not be loaded. Please reload the page to try again.'));
+    }
+    throw error;
   }
 }
 
@@ -111,7 +105,7 @@ function handleKeydown(event) {
 }
 
 function handleJarvisLink(event) {
-  if (!isJarvisPanel() || !event.target.closest('a[href*="#open-jarvis-chat"]')) return;
+  if (!isAcomAssistantPanelEnabled() || !event.target.closest('a[href*="#open-jarvis-chat"]')) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   openChatPanel();

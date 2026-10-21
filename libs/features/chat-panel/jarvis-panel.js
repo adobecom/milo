@@ -8,7 +8,7 @@ export default function initJarvisPanel(mountIdentifier, onWindowState) {
     id: getMetadata('jarvis-surface-id') || config.jarvis?.id,
     version: getMetadata('jarvis-surface-version') || config.jarvis?.version,
   };
-  const local = new URLSearchParams(window.location.search).get('jarvis-panel') === 'local';
+  const local = new URLSearchParams(window.location.search).get('acom-assistant-panel') === 'local';
   const asset = config.env.name === 'prod'
     ? 'https://client.messaging.adobe.com/latest/AdobeMessagingClient'
     : 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient';

@@ -1,4 +1,4 @@
-import { isJarvisPanel } from '../blocks/brand-concierge/bc-utils.js';
+import { isAcomAssistantPanelEnabled } from '../utils/utils.js';
 
 let chatInitialized = false;
 let loadScript;
@@ -324,7 +324,8 @@ const initJarvisChat = async (
   getMetadataFunction,
   options = {},
 ) => {
-  if (!config?.jarvis || (isJarvisPanel() && !options.mountSelector)) return undefined;
+  if (!config?.jarvis
+    || (isAcomAssistantPanelEnabled() && !options.mountSelector)) return undefined;
 
   loadScript = loadScriptFunction;
   loadStyle = loadStyleFunction;

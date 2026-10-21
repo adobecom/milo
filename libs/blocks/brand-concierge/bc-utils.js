@@ -24,11 +24,6 @@ const getTargetHeight = (target) => {
 
 const BC_SESSION_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_bc_session_id';
 
-export function isJarvisPanel() {
-  const mode = new URLSearchParams(window.location.search).get('jarvis-panel');
-  return ['on', 'local'].includes(mode) && getMetadata('acom-assistant') === 'on';
-}
-
 export function hasChatCookie() {
   const cookies = document.cookie.split(';');
   for (let i = 0; i < cookies.length; i += 1) {

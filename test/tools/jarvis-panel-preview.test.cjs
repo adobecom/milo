@@ -1,6 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { installSurfaceOverride } = require('../../nala/utils/jarvis-panel-preview.js');
+const { chromium } = require('playwright');
+const { installSurfaceOverride, openPreview } = require('../../nala/utils/jarvis-panel-preview.js');
 
 const INIT_URL = 'https://integration-server.messaging.adobe.com/core/v1/messaging/init';
 const CONVERSATION_URL = 'https://assistant-integration.adobe.io/brand-concierge/conversations?sessionId=test';
@@ -118,4 +119,25 @@ test('clears a previous surface when initialization is disabled on a later reloa
   await dispatch(route);
   assert.equal(route.aborted, 'failed');
   assert.equal(route.forwarded, undefined);
+});
+
+test('headed preview follows window size while headless smoke keeps a fixed viewport', async (t) => {
+  const newContext = t.mock.fn(async () => ({
+    route: async () => {},
+    newPage: async () => ({ goto: async () => {} }),
+  }));
+  const launch = t.mock.method(chromium, 'launch', async () => ({
+    newContext,
+    close: async () => {},
+  }));
+  t.mock.method(console, 'log', () => {});
+
+  await openPreview();
+  assert.equal(newContext.mock.calls[0].arguments[0].viewport, null);
+  assert.equal(launch.mock.calls[0].arguments[0].headless, false);
+  assert.ok(launch.mock.calls[0].arguments[0].args.includes('--window-size=1440,900'));
+
+  await openPreview({ headless: true });
+  assert.deepEqual(newContext.mock.calls[1].arguments[0].viewport, { width: 1440, height: 900 });
+  assert.equal(launch.mock.calls[1].arguments[0].headless, true);
 });

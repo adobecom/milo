@@ -1,4 +1,4 @@
-import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled, isAcomAssistantPanelEnabled } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -13,12 +13,16 @@ import {
   handleConsent,
   hasChatCookie,
   isC2,
-  isJarvisPanel,
 } from './bc-utils.js';
 import {
   loadWebclient,
+  bcBootstrap,
+  openModal,
+  openSideModal,
   sideOverlayTop,
   setAuthoredContent,
+  mountId,
+  isMobile,
 } from './bc-bootstrap.js';
 import initChatPanel, {
   openChatPanel,
@@ -28,12 +32,21 @@ import initChatPanel, {
 
 const variants = {};
 let useAcomAssistant = false;
+let useAcomAssistantPanel = false;
 let acomAssistantModulePromise;
 
 async function routeAcomAssistantInput(options) {
   acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
   const { acomAssistantRouteInput } = await acomAssistantModulePromise;
   return acomAssistantRouteInput(options);
+}
+
+function checkGlobal() {
+  const params = new URLSearchParams(window.location.search);
+  if (window?.milo?.brandConcierge?.brandConciergeGlobal) {
+    return window.milo.brandConcierge.brandConciergeGlobal;
+  }
+  return params.get('side-overlay') === 'true';
 }
 
 function routeInput({ text, cards, source = 'input' }) {
@@ -43,7 +56,20 @@ function routeInput({ text, cards, source = 'input' }) {
     });
     return;
   }
-  openChatPanel(text);
+  if (useAcomAssistantPanel) {
+    openChatPanel(text);
+    return;
+  }
+  if (checkGlobal()) {
+    const isOpen = document.body.classList.contains('bc-side-open');
+    if (isOpen) bcBootstrap(text, mountId);
+    else {
+      sideOverlayTop();
+      openSideModal(text, bcBootstrap);
+    }
+  } else {
+    openModal(text, bcBootstrap);
+  }
 }
 
 function handleInput(text, input, cards) {
@@ -71,6 +97,7 @@ export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
   useAcomAssistant = isAcomAssistantEnabled();
+  useAcomAssistantPanel = isAcomAssistantPanelEnabled();
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
@@ -87,7 +114,7 @@ export default async function init(el) {
 
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
-      if (isJarvisPanel()) {
+      if (useAcomAssistantPanel) {
         closeChatPanel();
         return;
       }
@@ -95,7 +122,10 @@ export default async function init(el) {
         loadWebclient();
       }
       if (window.adobe?.concierge?.clearHistory) {
-        if (isChatPanelOpen()) closeChatPanel();
+        if (document.body.classList.contains('bc-side-open')) {
+          const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+          closeButton.click();
+        }
         window.adobe.concierge.clearHistory();
       }
     });
@@ -229,12 +259,18 @@ export default async function init(el) {
 
   if (useAcomAssistant) return;
 
-  // Build the chat-panel DOM once so gnav / floating-button / input triggers
-  // can open it. Idempotent — safe to call from multiple BC block instances.
-  await initChatPanel();
+  if (useAcomAssistantPanel) {
+    await initChatPanel();
+    if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
+    if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+      openChatPanel();
+    }
+    return;
+  }
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
-  if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
-    openChatPanel();
+  if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
+    sideOverlayTop();
+    openSideModal(null, bcBootstrap);
   }
 }

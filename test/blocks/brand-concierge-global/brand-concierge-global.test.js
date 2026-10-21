@@ -4,13 +4,11 @@ import sinon from 'sinon';
 import { waitForElement, waitFor, delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { getAuthoredGnavCards } from '../../../libs/features/acom-assistant-gnav.js';
-import mockExternalScripts from '../../helpers/mock-script-loading.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
 const { default: init } = await import('../../../libs/blocks/brand-concierge-global/brand-concierge-global.js');
 const { sideOverlayTop } = await import('../../../libs/blocks/brand-concierge/bc-bootstrap.js');
-const { closeChatPanel } = await import('../../../libs/features/chat-panel/chat-panel.js');
 
 describe('Brand Concierge Global', () => {
   let block;
@@ -24,21 +22,16 @@ describe('Brand Concierge Global', () => {
     block = document.querySelector('.brand-concierge-global');
     originalAdobePrivacy = window.adobePrivacy;
     originalLana = window.lana;
-    window.adobe = { concierge: { bootstrap: sinon.spy() } };
-    mockExternalScripts();
   });
 
   afterEach(() => {
-    closeChatPanel();
-    document.getElementById('chat-panel')?.remove();
-    document.getElementById('chat-panel-toggle')?.remove();
     sinon.restore();
     window.adobePrivacy = originalAdobePrivacy;
     window.lana = originalLana;
     delete window.adobe;
     delete window.milo;
     localStorage.removeItem('bc-side-overlay');
-    document.body.classList.remove('bc-side-open', 'disable-scroll', 'chat-panel-open');
+    document.body.classList.remove('bc-side-open', 'disable-scroll');
     document.querySelectorAll('.dialog-modal, .modal-curtain').forEach((n) => n.remove());
   });
 
@@ -139,20 +132,20 @@ describe('Brand Concierge Global', () => {
     expect(cards.classList.contains('active')).to.be.false;
   });
 
-  it('opens the chat panel when the gnav button is clicked', async () => {
+  it('opens the side modal when the gnav button is clicked', async () => {
     window.adobe = { concierge: { bootstrap: sinon.spy() } };
     init(block);
     const bcGnav = await waitForElement('.bc-gnav');
 
     bcGnav.querySelector('.gnav-button').click();
 
-    await waitFor(() => document.body.classList.contains('chat-panel-open'));
-    const modal = await waitForElement('#chat-panel');
+    const modal = await waitForElement('#brand-concierge-side');
     expect(modal).to.exist;
     expect(modal.querySelector('#brand-concierge-mount')).to.exist;
+    expect(modal.querySelector('.dialog-close').getAttribute('daa-ll')).to.equal('Filters|testAA|bc#modal-close');
 
     // side overlay state is tracked on the body and in localStorage
-    expect(document.body.classList.contains('chat-panel-open')).to.be.true;
+    expect(document.body.classList.contains('bc-side-open')).to.be.true;
     expect(localStorage.getItem('bc-side-overlay')).to.equal('open');
   });
 
@@ -167,7 +160,7 @@ describe('Brand Concierge Global', () => {
     expect(block.classList.contains('hide-block')).to.be.true;
   });
 
-  it('submits typed input and opens the chat panel with the message', async () => {
+  it('submits typed input and opens the side modal with the message', async () => {
     window.adobe = { concierge: { bootstrap: sinon.spy() } };
     init(block);
     const bcGnav = await waitForElement('.bc-gnav');
@@ -180,7 +173,7 @@ describe('Brand Concierge Global', () => {
 
     textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 
-    const modal = await waitForElement('#chat-panel');
+    const modal = await waitForElement('#brand-concierge-side');
     const mount = modal.querySelector('#brand-concierge-mount');
     await waitFor(() => mount.dataset.initialMessage === 'Design a logo');
     expect(mount.dataset.initialMessage).to.equal('Design a logo');
@@ -190,14 +183,14 @@ describe('Brand Concierge Global', () => {
     expect(submit.disabled).to.be.true;
   });
 
-  it('opens the chat panel with the prompt text when a card is clicked', async () => {
+  it('opens the side modal with the prompt text when a card is clicked', async () => {
     window.adobe = { concierge: { bootstrap: sinon.spy() } };
     init(block);
     const bcGnav = await waitForElement('.bc-gnav');
 
     bcGnav.querySelectorAll('.prompt-card-button')[1].click();
 
-    const modal = await waitForElement('#chat-panel');
+    const modal = await waitForElement('#brand-concierge-side');
     const mount = modal.querySelector('#brand-concierge-mount');
     await waitFor(() => mount.dataset.initialMessage === 'Prompt two');
     expect(mount.dataset.initialMessage).to.equal('Prompt two');
@@ -227,21 +220,18 @@ describe('Brand Concierge Global', () => {
     expect(cards.classList.contains('active')).to.be.false;
   });
 
-  it('keeps the same chat panel open when the gnav button is clicked while open', async () => {
+  it('closes the side modal when the gnav button is clicked while open', async () => {
     window.adobe = { concierge: { bootstrap: sinon.spy() } };
     init(block);
     const bcGnav = await waitForElement('.bc-gnav');
     const button = bcGnav.querySelector('.gnav-button');
 
     button.click();
-    await waitFor(() => document.body.classList.contains('chat-panel-open'));
-    const panel = document.getElementById('chat-panel');
+    await waitFor(() => document.body.classList.contains('bc-side-open'));
 
     button.click();
-    await delay(0);
-    expect(document.body.classList.contains('chat-panel-open')).to.be.true;
-    expect(document.getElementById('chat-panel')).to.equal(panel);
-    expect(localStorage.getItem('bc-side-overlay')).to.equal('open');
+    await waitFor(() => !document.body.classList.contains('bc-side-open'));
+    expect(localStorage.getItem('bc-side-overlay')).to.equal('closed');
   });
 
   it('clears chat history on feds:signOut', async () => {

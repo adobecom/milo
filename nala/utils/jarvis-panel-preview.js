@@ -79,17 +79,20 @@ async function openPreview({ url = DEFAULT_URL, headless = false } = {}) {
     throw new Error('Use an HTTPS *.stage.adobe.com preview URL, not production.');
   }
   target.searchParams.set('milolibs', 'local');
-  target.searchParams.set('jarvis-panel', 'local');
+  target.searchParams.set('acom-assistant-panel', 'local');
   const browser = await chromium.launch({
     channel: 'chrome',
     headless,
-    args: ['--disable-features=LocalNetworkAccessChecks,LocalNetworkAccessChecksWebRTC'],
+    args: [
+      '--disable-features=LocalNetworkAccessChecks,LocalNetworkAccessChecksWebRTC',
+      ...(!headless ? ['--window-size=1440,900'] : []),
+    ],
   });
   try {
     const context = await browser.newContext({
       ignoreHTTPSErrors: true,
       serviceWorkers: 'block',
-      viewport: { width: 1440, height: 900 },
+      viewport: headless ? { width: 1440, height: 900 } : null,
     });
     await installSurfaceOverride(context);
     const page = await context.newPage();
