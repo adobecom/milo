@@ -1,0 +1,65 @@
+.tag-cta {
+  box-sizing: border-box;
+  width: calc(100% - 2 * var(--spacing-s));
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--text-color);
+}
+
+.tag-cta .tag-cta-heading {
+  margin: 0 0 var(--spacing-s);
+  font-size: var(--type-heading-xl-size);
+  line-height: var(--type-heading-xl-lh);
+}
+
+.tag-cta .tag-cta-heading:only-child {
+  margin-bottom: 0;
+}
+
+.tag-cta .tag-cta-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.tag-cta .tag-cta-list li {
+  max-width: 100%;
+  margin: 0;
+}
+
+.tag-cta .tag-cta-list a:any-link,
+.tag-cta .tag-cta-tag {
+  display: block;
+  box-sizing: border-box;
+  padding: var(--spacing-xxs) var(--spacing-xs);
+  border-radius: 10px;
+  background-color: var(--color-gray-200);
+  color: var(--text-color);
+  font-size: var(--type-body-s-size);
+  font-weight: 400;
+  line-height: var(--type-body-s-lh);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.tag-cta .tag-cta-list a:hover {
+  background-color: var(--color-gray-300);
+}
+
+.tag-cta .tag-cta-list a:active {
+  background-color: var(--color-gray-400);
+}
+
+.tag-cta .tag-cta-list a:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
+  outline-offset: 3px;
+}
+
+@media (min-width: 1200px) {
+  .tag-cta .tag-cta-heading {
+    margin-bottom: var(--spacing-m);
+  }
+}

@@ -1,7 +1,7 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { closeModal } from '../../../libs/blocks/modal/modal.js';
 import { waitFor } from '../../helpers/waitfor.js';
 import init, {
@@ -23,6 +23,7 @@ const placeholders = {
   'blog-share-copy-error': 'Copy failed',
   '1-min-read': '1 min read',
   '5-min-read': '5 min read',
+  'jump-to-section': 'JUMP TO SECTION',
 };
 
 setConfig({
@@ -209,6 +210,37 @@ describe('blog-header decoration', () => {
     expect(share.querySelector('svg').getAttribute('focusable')).to.equal('false');
     expect(block.querySelectorAll('.blog-header-author').length).to.equal(1);
     expect(window.sessionStorage.getItem('blog-reading-time')).to.equal('2');
+  });
+
+  it('automatically loads section navigation after article decoration without duplicating it', async () => {
+    fetchStub = mockFetch();
+    const { main, block } = buildBlock();
+    await init(block);
+    expect(main.querySelector('.blog-side-navigation')).not.to.exist;
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="content">'
+      + '<h2>First section</h2><h2>Second section</h2></div></div>');
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => main.querySelector('.blog-side-navigation a'));
+    const navigation = main.querySelector('.blog-side-navigation');
+    expect([...navigation.querySelectorAll('a')].map((link) => link.getAttribute('href')))
+      .to.deep.equal(['#section-1', '#section-2']);
+    expect(navigation.querySelector('nav').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    expect(main.querySelectorAll('.blog-side-navigation').length).to.equal(1);
+  });
+
+  it('does not duplicate an existing side navigation or initialize a removed header', async () => {
+    fetchStub = mockFetch();
+    const { main, block } = buildBlock();
+    await init(block);
+    main.insertAdjacentHTML('beforeend', '<div class="blog-side-navigation"></div>');
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    expect(main.querySelectorAll('.blog-side-navigation').length).to.equal(1);
+    const detached = buildBlock();
+    await init(detached.block);
+    detached.main.remove();
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    expect(detached.main.querySelector('.blog-side-navigation')).not.to.exist;
   });
 
   it('preserves inline summary nodes without cloning them', async () => {
