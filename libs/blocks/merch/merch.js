@@ -1255,7 +1255,6 @@ export async function getCheckoutAction(
   el,
 ) {
   try {
-    await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
       getDownloadAction(options, imsSignedInPromise, offers),
       getUpgradeAction(options, imsSignedInPromise, offers, el),

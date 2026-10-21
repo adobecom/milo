@@ -216,20 +216,23 @@
   section: References
   severity: error
   requirement: >
-    Nodes that appear in @graph MUST NOT be inlined as nested objects; they
-    MUST be referenced by @id.
+    Nodes that appear in @graph MUST be referenced by @id, except that
+    SoftwareApplication offers and aggregateRating MUST be serialized inline
+    under softwareapplication-nested-entities.
   applies_to: [all]
   implements: [extractInlineEntities, injectLinks]
   tested_by: [conformance.test.js]
-  interacts_with: [organization-nested-extraction, aggregaterating-extraction]
+  interacts_with: [organization-nested-extraction, aggregaterating-extraction,
+                   softwareapplication-nested-entities]
   notes: >
     v1 extracts inline entities only from a fixed property allowlist
     (publisher, author, creator, provider, brand, seller, offers,
-    itemOffered, aggregateRating). Inline typed entities under other
-    properties (breadcrumb, mainEntity, hasPart, isPartOf, mainEntityOfPage)
-    are not yet hoisted.
+    itemOffered, aggregateRating) for internal merging. Application Offers
+    and AggregateRating are nested again during serialization. Inline typed
+    entities under other properties (breadcrumb, mainEntity, hasPart, isPartOf,
+    mainEntityOfPage) are not yet hoisted.
   status: partial
-  last_updated: "2026-05-29"
+  last_updated: "2026-10-14"
 
 - name: manager-baseline-graph
   section: Graph composition
@@ -336,18 +339,18 @@
   section: Graph composition
   severity: error
   requirement: >
-    The graph MUST contain at most one AggregateRating node. Multiple
-    producer contributions merge at the canonical @id
+    The internal graph MUST contain at most one AggregateRating node. Multiple
+    producer contributions merge at the canonical internal @id
     ({canonicalPageURL}#aggregaterating); source priority resolves scalar
-    conflicts.
+    conflicts. Application aggregateRating serializes inline without @id.
   applies_to: [AggregateRating]
   implements: [RULES.AggregateRating, normalizeNode, mergeNodes]
   tested_by: [conformance.test.js]
   interacts_with: [aggregaterating-extraction, aggregaterating-min-rating-value,
                    aggregaterating-min-rating-count, source-priority]
-  notes: ""
+  notes: A shared rating may also remain at the root for non-application references.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-10-14"
 
 - name: repeatable-types
   section: Graph composition
@@ -492,18 +495,19 @@
     A Product node MUST be transformed into a SoftwareApplication node.
     The transform rewrites @type from Product to SoftwareApplication,
     re-derives @id to {canonicalPageURL}#softwareapplication, and preserves
-    shared properties (name, brand, image, offers, etc.). Nested Brand and
-    Offer entities are hoisted to the top-level @graph by @id.
+    shared properties (name, brand, image, offers, etc.). Brand stays inline;
+    offers and aggregateRating are serialized as nested entities without @id.
   applies_to: [Product]
-  implements: [TYPE_TRANSFORMS, normalizeNode, extractInlineEntities]
+  implements: [TYPE_TRANSFORMS, normalizeNode, extractInlineEntities, nestApplicationEntities]
   tested_by: []
-  interacts_with: [softwareapplication-subtype-allowed, nodes-referenced-by-id]
+  interacts_with: [softwareapplication-subtype-allowed, nodes-referenced-by-id,
+                   softwareapplication-nested-entities]
   notes: >
     Adobe.com pages do not market physical products. The merch card system
     emits Product but the canonical primary type for product-oriented pages
     is SoftwareApplication.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-10-14"
 
 - name: softwareapplication-subtype-allowed
   section: Type transforms
@@ -629,18 +633,21 @@
   severity: info
   requirement: |
     AggregateRating objects embedded as inline property values (typically
-    on SoftwareApplication, Article, Product, etc.) are hoisted to the
-    top-level @graph and merged into the canonical AggregateRating node at
+    on SoftwareApplication, Article, Product, etc.) are extracted into the
+    internal graph and merged into the canonical AggregateRating node at
     {canonicalPageURL}#aggregaterating. The inline value is replaced with
-    { "@id": "<canonical-aggregaterating-id>" }.
+    { "@id": "<canonical-aggregaterating-id>" } internally. For SoftwareApplication
+    and its supported subtypes, serialization resolves the merged rating into
+    a nested object without @id rather than a root node and reference.
   applies_to: [AggregateRating]
-  implements: [extractInlineEntities, ENTITY_PROPS]
-  tested_by: []
+  implements: [extractInlineEntities, ENTITY_PROPS, nestApplicationEntities]
+  tested_by: [extract.test.js, manager.test.js]
   interacts_with: [aggregaterating-singleton, aggregaterating-min-rating-value,
-                   aggregaterating-min-rating-count, nodes-referenced-by-id]
+                   aggregaterating-min-rating-count, nodes-referenced-by-id,
+                   softwareapplication-nested-entities]
   notes: ""
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-10-14"
 
 - name: breadcrumblist-items-canonical-origin
   section: Defaults and precedence
@@ -735,20 +742,49 @@
   section: "Type-specific: SoftwareApplication"
   severity: warn
   requirement: >
-    A SoftwareApplication node SHOULD have an offers property referencing
-    one or more Offer nodes by @id. Multiple offers (e.g., paid
-    subscription and free trial) are encoded as separate Offer nodes.
+    A SoftwareApplication node SHOULD have an offers property containing
+    one or more nested Offer objects without @id. Multiple offers (e.g.,
+    paid subscription and free trial) are encoded as an array of nested objects.
   applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
-  implements: [extractInlineEntities]
+  implements: [nestApplicationEntities, withDefaultOffer]
   tested_by: [manager.test.js]
-  interacts_with: [offer-price, softwareapplication-offer-provenance]
+  interacts_with: [offer-price, softwareapplication-offer-provenance,
+                   softwareapplication-nested-entities]
   notes: >
     Each Offer MAY include a potentialAction property to express usage
     actions, e.g. BuyAction, TryAction. When offers are absent or empty, the
     manager emits the serialized fallback defined by
     softwareapplication-offer-provenance.
   status: active
-  last_updated: "2026-09-16"
+  last_updated: "2026-10-14"
+
+- name: softwareapplication-nested-entities
+  section: "Type-specific: SoftwareApplication"
+  severity: error
+  requirement: >
+    SoftwareApplication and its supported subtypes MUST serialize locally
+    resolved offers and aggregateRating as complete nested objects, not @id
+    references. Nested Offer and AggregateRating objects MUST NOT carry @id
+    or @context. Object and array property shapes MUST be preserved.
+    This applies to inline producer payloads and references to separately
+    supplied root entities, after Product transformation, canonical reference
+    remapping, source-priority merging, and rating quality filtering.
+    Consumed child entities MUST NOT remain in the serialized root @graph
+    unless another relationship still references their @id.
+    Unrelated standalone entities MUST NOT be attached to an application.
+  applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: [nestApplicationEntities, APPLICATION_ENTITY_TYPES, JsonLdGraphManager.rewrite]
+  tested_by: [manager.test.js, extract.test.js, merge.test.js, conformance.test.js]
+  interacts_with: [softwareapplication-offers, aggregaterating-extraction,
+                   nodes-referenced-by-id, source-priority, product-to-softwareapplication,
+                   aggregaterating-min-rating-value, aggregaterating-min-rating-count]
+  notes: >
+    Internal canonical IDs and source maps remain intact for future rebuilds.
+    Shared root entities retain IDs for non-application consumers; application
+    copies remain ID-free. Unresolved references and unsupported producer
+    values are preserved rather than fabricating entity bodies.
+  status: active
+  last_updated: "2026-10-14"
 
 - name: softwareapplication-rating-or-review
   section: "Type-specific: SoftwareApplication"
@@ -810,27 +846,25 @@
     The manager MUST serialize an Offer for a SoftwareApplication,
     WebApplication, MobileApplication, or VideoGame whose offers property is
     missing or an empty array. This applies to SoftwareApplication nodes
-    transformed from Product. The generated Offer MUST have @id
-    {canonicalPageURL}#offer, price "0", and availability
-    "https://schema.org/InStock"; the application MUST reference it as offers:
-    [{"@id":"{canonicalPageURL}#offer"}].
-    Applications with authored Offer references MUST remain unchanged. The
-    manager MUST NOT generate an Offer when no supported application exists
-    or infer an application relationship from a standalone Offer. If an
-    unrelated node already uses the reserved fallback @id, the manager MUST
-    preserve it and its references under a distinct serialized @id while
-    reserving {canonicalPageURL}#offer for the generated fallback.
+    transformed from Product. The generated Offer MUST have price "0" and
+    availability "https://schema.org/InStock"; the application MUST contain
+    it in its offers array as a nested object without @id.
+    Authored Offer data MUST be preserved and serialized according to
+    softwareapplication-nested-entities. The manager MUST NOT generate an
+    Offer when no supported application exists
+    or infer an application relationship from a standalone Offer. No fallback
+    @id is reserved, so unrelated nodes and their references remain unchanged.
   applies_to: [Offer, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
   implements: [JsonLdGraphManager.rewrite, withDefaultOffer]
   tested_by: [manager.test.js]
-  interacts_with: [softwareapplication-offers, offer-price]
+  interacts_with: [softwareapplication-offers, offer-price, softwareapplication-nested-entities]
   notes: >
     The generated fallback is derived serialized output only and MUST NOT be
     persisted in the manager graph or source maps. A later runtime
     producer-authored Offer therefore replaces the fallback on the next
     rebuild rather than coexisting with it.
   status: active
-  last_updated: "2026-09-16"
+  last_updated: "2026-10-14"
 
 - name: aggregaterating-min-rating-value
   section: "Type-specific: AggregateRating"
@@ -839,7 +873,8 @@
     An AggregateRating node MUST have ratingValue >= 4.0 (on the default
     1-5 scale). When the threshold is not met, the manager omits the
     AggregateRating node from the graph AND removes any aggregateRating
-    reference from host entities so consumers do not see a dangling @id.
+    reference from host entities before serialization, so neither a nested
+    rating nor a dangling @id is emitted.
   applies_to: [AggregateRating]
   implements: [aggregateRatingMeetsThresholds, AGGREGATE_RATING_MIN_VALUE,
                JsonLdGraphManager.rewrite]
@@ -851,7 +886,7 @@
     worse than no rating signal. Threshold is configurable per future
     policy revision.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-10-14"
 
 - name: aggregaterating-min-rating-count
   section: "Type-specific: AggregateRating"
@@ -859,7 +894,8 @@
   requirement: >
     An AggregateRating node MUST have ratingCount >= 100. When the
     threshold is not met, the manager omits the AggregateRating node from
-    the graph AND removes any aggregateRating reference from host entities.
+    the graph AND removes any aggregateRating reference from host entities
+    before serialization, including references in arrays.
   applies_to: [AggregateRating]
   implements: [aggregateRatingMeetsThresholds, AGGREGATE_RATING_MIN_COUNT,
                JsonLdGraphManager.rewrite]
@@ -872,7 +908,7 @@
     statistical accidents to consumers. Threshold is configurable per
     future policy revision.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-10-14"
 
 - name: breadcrumblist-items
   section: "Type-specific: BreadcrumbList"

@@ -1,9 +1,173 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
+import { getConfig, loadStyle } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/offer-hero/offer-hero.js';
 
 describe('offer-hero', () => {
+  describe('MEP inline MAS editing', () => {
+    let originalViewport;
+    let originalMep;
+    beforeEach(() => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      originalMep = getConfig().mep;
+      getConfig().mep = { ...originalMep, preview: true };
+    });
+    afterEach(async () => {
+      unwatchForMasContent();
+      delete document.body.dataset.mepMasHighlight;
+      sinon.restore();
+      getConfig().mep = originalMep;
+      await setViewport(originalViewport);
+    });
+
+    it('opens Studio for fields inherited across mobile, tablet, and desktop viewports', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/mas-fields.html' });
+      const block = document.querySelector('.offer-hero');
+      const rows = [...block.children];
+      block.prepend(Object.assign(document.createElement('div'), { innerHTML: '<div>mobile-viewport</div>' }));
+      ['tablet', 'desktop'].forEach((viewport) => {
+        block.insertAdjacentHTML('beforeend', `<div><div>${viewport}-viewport</div></div>`);
+        rows.forEach((row) => {
+          const emptyRow = document.createElement('div');
+          [...row.children].forEach(() => emptyRow.append(document.createElement('div')));
+          block.append(emptyRow);
+        });
+      });
+      const fields = [...block.querySelectorAll('mas-field')];
+      fields.forEach((field, index) => {
+        field.dataset.masBlock = 'inline';
+        mepMasStudioUrls.set(field, `https://mas.adobe.com/studio.html#query=viewport-${index}`);
+      });
+      const openStub = sinon.stub(window, 'open');
+      document.body.dataset.mepMasHighlight = 'true';
+      watchForMasContent();
+      init(block);
+
+      for (const width of [375, 1000, 1440]) {
+        await setViewport({ width, height: 900 });
+        await new Promise((resolve) => { requestAnimationFrame(resolve); });
+        const renderedFields = [...block.querySelectorAll('mas-field')];
+        expect(renderedFields.length).to.equal(fields.length);
+        renderedFields.forEach((field, index) => {
+          const url = `https://mas.adobe.com/studio.html#query=viewport-${index}`;
+          expect(mepMasStudioUrls.get(field)).to.equal(url);
+          const rectStub = sinon.stub(field, 'getBoundingClientRect')
+            .returns({ top: 100, right: 400, height: 30 });
+          field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+          expect(openStub.lastCall.args).to.deep.equal([url, '_blank', 'noopener,noreferrer']);
+          rectStub.restore();
+        });
+      }
+    });
+
+    it('preserves MAS editing when promoting the hero heading and moving card text', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.offer-hero');
+      const headings = [block.querySelector('h2'), block.querySelector('h4')];
+      const fields = headings.map((heading) => {
+        heading.innerHTML = '<mas-field field="cardTitle" data-mas-block="inline"><span data-role="mas-field-content">Creative apps</span></mas-field>';
+        return heading.firstElementChild;
+      });
+      const urls = fields.map((field, index) => {
+        const url = `https://mas.adobe.com/studio.html#content-type=merch-card&query=offer-${index}&field=cardTitle`;
+        mepMasStudioUrls.set(field, url);
+        return url;
+      });
+      const readySpies = fields.map((field) => {
+        const spy = sinon.spy();
+        field.addEventListener('mas:ready', spy);
+        return spy;
+      });
+      const openStub = sinon.stub(window, 'open');
+      document.body.dataset.mepMasHighlight = 'true';
+      watchForMasContent();
+      init(block);
+
+      expect(block.querySelector('.hero-content h1 mas-field')).to.equal(fields[0]);
+      expect(block.querySelector('.hero-content h1').id).to.equal('save-today');
+      expect(block.querySelector('.hero-card-title mas-field')).to.equal(fields[1]);
+      expect(block.querySelector('.hero-content h2')).to.be.null;
+      fields.forEach((field, index) => {
+        field.dispatchEvent(new Event('mas:ready'));
+        expect(readySpies[index].calledOnce).to.be.true;
+        sinon.stub(field, 'getBoundingClientRect').returns({ top: 100, right: 400, height: 30 });
+        field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+        expect(openStub.getCall(index).args).to.deep.equal([urls[index], '_blank', 'noopener,noreferrer']);
+      });
+    });
+  });
+
+  describe('MAS body fields', () => {
+    before(async () => {
+      await new Promise((resolve, reject) => {
+        loadStyle('/libs/c2/blocks/offer-hero/offer-hero.css', (status) => {
+          if (status === 'error') reject(new Error('Failed to load Offer Hero styles'));
+          else resolve();
+        });
+      });
+    });
+
+    ['single paragraph', 'multiple paragraphs'].forEach((variant) => {
+      ['before decoration', 'after decoration', 'already unwrapped'].forEach((timing) => {
+        it(`normalizes ${variant} resolved ${timing}`, async () => {
+          document.body.innerHTML = await readFile({ path: './mocks/mas-fields.html' });
+          const block = document.querySelector('.offer-hero');
+          const fields = [...block.querySelectorAll('mas-field[field="shortDescription"]')];
+          const resolve = () => fields.forEach((field) => {
+            field.querySelector('[data-role="mas-field-content"]').innerHTML = `
+              <p>Creative apps with <span is="inline-price">US$9.99/mo</span>.</p>
+              ${variant === 'multiple paragraphs' ? '<p><em>Terms apply.</em> <a href="/terms">See terms</a></p>' : ''}
+            `;
+          });
+          if (timing !== 'after decoration') resolve();
+          if (timing === 'already unwrapped') {
+            fields.forEach((field) => field.parentElement.replaceWith(field));
+          }
+
+          init(block);
+          if (timing === 'after decoration') resolve();
+
+          fields.forEach((field, index) => {
+            const body = field.parentElement;
+            expect(body.tagName).to.equal('DIV');
+            expect(body.classList.contains(index === 0 ? 'body-lg' : 'body-md')).to.be.true;
+            expect(field.querySelectorAll('p').length).to.equal(variant === 'single paragraph' ? 1 : 2);
+            expect(field.querySelector('[is="inline-price"]').textContent).to.equal('US$9.99/mo');
+            expect(body.textContent.match(/Creative apps/g).length).to.equal(1);
+            body.style.fontSize = '22px';
+            body.style.lineHeight = '30px';
+            field.querySelectorAll('p').forEach((p) => {
+              const styles = getComputedStyle(p);
+              expect(styles.display).to.equal('inline');
+              expect(styles.fontSize).to.equal('22px');
+              expect(styles.lineHeight).to.equal('30px');
+            });
+            if (variant === 'multiple paragraphs') {
+              expect(field.querySelector('em').textContent).to.equal('Terms apply.');
+              expect(field.querySelector('a').getAttribute('href')).to.equal('/terms');
+              expect(getComputedStyle(field.querySelector('p + p'), '::before').content).to.equal('" "');
+            }
+          });
+
+          const tablet = window.matchMedia('(768px < width < 1280px)').matches;
+          expect(getComputedStyle(fields[0].parentElement).maxWidth)
+            .to.equal(tablet ? 'calc(100% - 438px)' : '590px');
+          const cardBody = fields[1].closest('.hero-card-body-text');
+          expect(cardBody.closest('.hero-card-text-wrapper')).to.exist;
+          expect(block.querySelector('.hero-card-tile').getAttribute('href')).to.equal(`${window.location.origin}/apps/cloud`);
+          expect(block.querySelector('.learn-more').getAttribute('href')).to.equal('/apps/cloud');
+          expect(block.querySelectorAll('mas-field[field="shortDescription"]').length).to.equal(2);
+          expect(block.querySelector('.hero-content h1 mas-field').textContent).to.equal('Creative Cloud');
+          expect(block.querySelector('.hero-content .con-button').textContent).to.equal('Buy now');
+        });
+      });
+    });
+  });
+
   describe('fully authored block', () => {
     let block;
     beforeEach(async () => {

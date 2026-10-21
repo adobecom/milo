@@ -1,5 +1,11 @@
-import { getConfig, getMetadata, loadScript, loadStyle } from '../../../utils/utils.js';
-import { initAcomAssistantOnce, sendAcomAssistantUserMessage, openAcomAssistantChat } from '../../../features/acom-assistant.js';
+import { getMetadata, loadScript, loadStyle } from '../../../utils/utils.js';
+import { getAcomAssistantGnavFabState } from '../../../features/acom-assistant-gnav.js';
+import {
+  initAcomAssistantOnce,
+  sendAcomAssistantUserMessage,
+  openAcomAssistantChat,
+  getAcomAssistantIdentity,
+} from '../../../features/acom-assistant.js';
 import acomAssistantAnalyticsAdapter from './acom-assistant-analytics.js';
 
 const chatLabelText = 'Ask';
@@ -16,12 +22,14 @@ function extractCardPrompts(cards) {
 }
 
 export async function ensureAcomAssistant(cards) {
-  const appid = getConfig().jarvis?.id;
-  const appver = getConfig().jarvis?.version;
+  // Page metadata, then site config (see getAcomAssistantIdentity).
+  const { appid, appver } = getAcomAssistantIdentity();
+  const gnavFabState = getAcomAssistantGnavFabState();
 
   return initAcomAssistantOnce({
     appid,
     appver,
+    ...(gnavFabState && { gnavFabState }),
     componentid: 'brand-concierge',
     pageTitle: getMetadata('og:title') || undefined,
     pageDescription: getMetadata('og:description') || undefined,
