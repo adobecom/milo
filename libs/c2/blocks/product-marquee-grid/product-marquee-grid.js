@@ -58,8 +58,11 @@ function buildMerchCard(col) {
     .filter((btn) => !btn.closest(MAS_BODY_FIELDS));
   buttons.forEach((btn) => btn.remove());
 
-  const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md)')]
-    .filter((el) => el.textContent.trim() || el.matches('mas-field') || el.querySelector('mas-field, [is="inline-price"]'));
+  // A whole card can be authored as a single autoblock link, which MAS upgrades into
+  // <merch-card> in place (async). Keep both the link's paragraph and an already-upgraded
+  // <merch-card> so the full card lands inside pm-merch-content as-is.
+  const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md, merch-card)')]
+    .filter((el) => el.textContent.trim() || el.matches('mas-field, merch-card') || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
