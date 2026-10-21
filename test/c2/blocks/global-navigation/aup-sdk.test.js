@@ -26,16 +26,20 @@ describe('C2 global-navigation AUP SDK', () => {
   const signIn = (signedIn) => {
     window.adobeIMS = { isSignedInUser: () => signedIn };
   };
+  // Blocked tags never execute; a loaded mark lets loadScript resolve without network.
+  const addSdkScript = (loaded = true) => {
+    const tag = document.createElement('script');
+    tag.type = 'javascript/blocked';
+    tag.src = SDK_URL;
+    if (loaded) tag.dataset.loaded = 'true';
+    document.head.append(tag);
+    return tag;
+  };
 
   before(async () => {
     // Warm the lazily imported SDK host so timing does not depend on module fetches.
     await import('../../../../libs/blocks/global-navigation/utilities/aup-sdk.js');
-    // Mark the SDK bundle as loaded so loadScript resolves without a network request.
-    script = document.createElement('script');
-    script.type = 'javascript/blocked';
-    script.src = SDK_URL;
-    script.dataset.loaded = 'true';
-    document.head.append(script);
+    script = addSdkScript();
   });
 
   after(() => script.remove());
@@ -147,6 +151,24 @@ describe('C2 global-navigation AUP SDK', () => {
     expect(await fetchAUPSDKInstance()).to.equal(instance);
     expect(preloadSDK.calledTwice).to.be.true;
     expect(ready.calledOnce).to.be.true;
+  });
+
+  it('downloads the SDK again after a script load failure', async () => {
+    script.remove();
+    const failed = addSdkScript(false);
+    const listen = sinon.spy(failed, 'addEventListener');
+    const fetchAUPSDKInstance = initAupSdk({ imsReady: Promise.resolve(), unavEnabled: false });
+    const attempt = fetchAUPSDKInstance();
+    await waitFor(() => listen.calledWith('error'));
+    failed.dispatchEvent(new Event('error'));
+
+    expect((await attempt.catch((error) => error)).message).to.include('error loading script');
+    expect(failed.isConnected).to.be.false;
+    expect(preloadSDK.called).to.be.false;
+
+    script = addSdkScript();
+    expect(await fetchAUPSDKInstance()).to.equal(instance);
+    expect(preloadSDK.calledOnce).to.be.true;
   });
 
   it('waits for a late IMS instance after an IMS timeout', async () => {

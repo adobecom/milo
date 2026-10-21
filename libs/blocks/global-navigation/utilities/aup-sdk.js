@@ -31,11 +31,14 @@ export async function preloadAupSdk() {
   const lingoRegion = lingoActive() ? await getLingoRegion() : null;
   const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
-  await loadScript(
-    `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/stable/main.js`,
-    null,
-    { mode: 'async' },
-  );
+  const sdkUrl = `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/stable/main.js`;
+  try {
+    await loadScript(sdkUrl, null, { mode: 'async' });
+  } catch (e) {
+    // loadScript reuses a failed tag and would wait forever; drop it so a retry re-downloads.
+    document.head.querySelector(`script[src="${sdkUrl}"]:not([data-loaded])`)?.remove();
+    throw e;
+  }
 
   let cancelActiveDialog;
   let dialogRequest = 0;
