@@ -1,5 +1,15 @@
 import { getMetadata, isAcomAssistantEnabled } from '../utils/utils.js';
 
+const GNAV_FAB_STATES = new Set(['collapsed', 'hidden']);
+
+/** GNav entry point state (gnav-brand-concierge-state metadata) for the client's
+ *  gnavFabState init option. Undefined unless collapsed or hidden, so the client
+ *  keeps its default (normal). */
+export function getAcomAssistantGnavFabState() {
+  const state = getMetadata('gnav-brand-concierge-state')?.trim().toLowerCase();
+  return GNAV_FAB_STATES.has(state) ? state : undefined;
+}
+
 let authoredCards;
 let noGnavMobile = false;
 
@@ -36,6 +46,9 @@ export function decorateAcomAssistantGnav(el, cards, block) {
   if (!wrapper) return null;
   let mount = wrapper.querySelector('#acomAssistant-gnav-mount');
   if (!mount) {
+    // The GNav CSS keys off data-fab-state; the client applies gnavFabState itself.
+    const fabState = getAcomAssistantGnavFabState();
+    if (fabState) wrapper.dataset.fabState = fabState;
     mount = document.createElement('div');
     mount.id = 'acomAssistant-gnav-mount';
     wrapper.append(mount);

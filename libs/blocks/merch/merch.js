@@ -569,10 +569,15 @@ export async function fetchEntitlements() {
 }
 
 export async function fetchCheckoutLinkConfigs(base = '', env = '') {
+  let configBase = base;
+  if (/\.page$/.test(document.location.origin)) {
+    /* c8 ignore next 2 */
+    configBase = configBase.replace('.live', '.page');
+  }
   const params = new URLSearchParams(window.location.search);
   const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
-    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
-    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
+    ? `${configBase}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${configBase}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
     ?? fetch(path)
       .catch((e) => {
@@ -619,12 +624,7 @@ export async function getCheckoutLinkConfig(
     delete extraOptionsObj.svar;
     options.extraOptions = JSON.stringify(extraOptionsObj);
   }
-  let { base } = getConfig();
-  const { env } = getConfig();
-  if (/\.page$/.test(document.location.origin)) {
-    /* c8 ignore next 2 */
-    base = base.replace('.live', '.page');
-  }
+  const { base, env } = getConfig();
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
@@ -1291,7 +1291,8 @@ export async function initService(force = false, attributes = {}) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
+  const { base, commerce, env: miloEnv, locale: miloLocale } = getConfig();
+  fetchCheckoutLinkConfigs(base, miloEnv);
 
   const extraAttrs = [
     'checkout-workflow-step',
