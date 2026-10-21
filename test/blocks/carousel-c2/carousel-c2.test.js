@@ -175,29 +175,54 @@ describe('Carousel C2', () => {
     });
   });
 
-  it('does not autoplay a cloned copy of a player started before the first move', async () => {
+  it('does not autoplay cloned copies of MPC players', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.carousel-c2');
     init(block);
     const wrapper = block.querySelector('.carousel-wrapper');
-    const iframe = document.createElement('iframe');
-    iframe.className = 'adobetv';
-    iframe.src = 'about:blank?autoplay=true';
-    iframe.allow = 'autoplay; encrypted-media; fullscreen';
-    iframe.dataset.playing = 'true';
-    wrapper.querySelector('.carousel-slide.active').append(iframe);
-    iframe.contentWindow.postMessage = () => {};
+    const addPlayer = (slide, src, allow) => {
+      const iframe = document.createElement('iframe');
+      iframe.className = 'adobetv';
+      iframe.src = src;
+      iframe.allow = allow;
+      iframe.dataset.playing = 'true';
+      slide.append(iframe);
+      iframe.contentWindow.postMessage = () => {};
+      return iframe;
+    };
+    const active = wrapper.querySelector('.carousel-slide.active');
+    const started = addPlayer(active, 'about:blank?autoplay=true', 'autoplay; encrypted-media; fullscreen');
+    const authored = addPlayer(active.nextElementSibling, 'about:blank?autoplay=true&end=replay', 'encrypted-media; fullscreen');
 
     block.querySelector('button.next').click();
 
     const clones = [...wrapper.querySelectorAll(':scope > [data-cloned] iframe.adobetv')];
-    expect(clones.length).to.be.greaterThan(0);
+    expect(clones.some((clone) => clone.src.includes('end=replay')), 'authored clone').to.be.true;
     clones.forEach((clone) => {
-      expect(clone.src.includes('autoplay')).to.be.false;
+      expect(clone.src.includes('autoplay'), clone.src).to.be.false;
       expect(clone.allow).to.equal('encrypted-media; fullscreen');
       expect(clone.hasAttribute('data-playing')).to.be.false;
     });
-    expect(iframe.src).to.include('autoplay=true');
+    expect(started.src).to.include('autoplay=true');
+    expect(authored.src).to.include('autoplay=true');
+  });
+
+  it('leaves arrow keys to a focused native video player', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const active = block.querySelector('.carousel-slide.active');
+    const video = document.createElement('video');
+    video.controls = true;
+    active.append(video);
+    video.focus();
+
+    ['ArrowRight', 'ArrowLeft'].forEach((code) => {
+      video.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true }));
+    });
+
+    expect(active.classList.contains('active')).to.be.true;
+    expect(document.activeElement === video, 'focus stays on the video').to.be.true;
   });
 
   it('keeps a poster decorated in an inactive slide out of the tab order until its slide is active', async () => {

@@ -137,11 +137,11 @@ function createSlideClone(slide) {
   // A player started before cloning would otherwise autoplay again in the clone.
   clone.querySelectorAll('iframe.adobetv').forEach((iframe) => {
     iframe.removeAttribute('data-playing');
+    iframe.allow = iframe.allow.replace('autoplay; ', '');
     const src = new URL(iframe.src);
-    if (!iframe.allow.includes('autoplay') || !src.searchParams.has('autoplay')) return;
+    if (!src.searchParams.has('autoplay')) return;
     src.searchParams.delete('autoplay');
     iframe.src = src.href;
-    iframe.allow = iframe.allow.replace('autoplay; ', '');
   });
   cloneSources.set(clone, slide);
   return clone;
@@ -306,6 +306,8 @@ function attachListeners(carouselEls) {
   nextBtn.addEventListener('click', (e) => moveSlides(carouselEls, 'next', e));
 
   el.addEventListener('keydown', (e) => {
+    // Native player controls use the arrow keys to seek.
+    if (e.target.closest?.('video[controls]')) return;
     if (e.code === 'ArrowLeft') moveSlides(carouselEls, getDirection('prev'), e);
     if (e.code === 'ArrowRight') moveSlides(carouselEls, getDirection('next'), e);
   });
