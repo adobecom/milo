@@ -580,6 +580,34 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
+@media (max-width: 767px) {
+  .global-footer .feds-footer-options:where(:has(.market-selector)) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "region"
+      "social"
+      "legal";
+    row-gap: var(--s2a-spacing-lg);
+  }
+
+  .global-footer .feds-footer-options:where(:has(.market-selector)) > .feds-social {
+    justify-self: start;
+  }
+}
+
+.global-footer.mobile .feds-footer-options:where(:has(.market-selector)) {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "region"
+    "social"
+    "legal";
+  row-gap: var(--s2a-spacing-lg);
+}
+
+.global-footer.mobile .feds-footer-options:where(:has(.market-selector)) > .feds-social {
+  justify-self: start;
+}
+
 .global-footer .feds-footer-miscLinks-legal > .footer-logo {
   order: 1;
   padding-bottom: var(--s2a-spacing-sm);
