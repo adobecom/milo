@@ -54,10 +54,6 @@ function buildMerchCard(col) {
     .forEach((p) => p.classList.add('body-md'));
   normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
-  const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')]
-    .filter((btn) => !btn.closest(MAS_BODY_FIELDS));
-  buttons.forEach((btn) => btn.remove());
-
   // A whole card can be authored as a single autoblock link, which MAS upgrades into
   // <merch-card> in place (async). Keep both the link's paragraph and an already-upgraded
   // <merch-card> so the full card lands inside pm-merch-content as-is.
@@ -69,12 +65,16 @@ function buildMerchCard(col) {
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
-  const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  buttons.forEach((btn) => ctaWrapper.append(btn));
+  const isCtaPara = (el) => !!el.querySelector('.con-button, a[data-wcs-osi], mas-field[field^="ctas"]');
+  const ctaParas = [...cardContent.children].filter(isCtaPara);
+  if (ctaParas.length) {
+    const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
+    ctaParas[0].replaceWith(ctaWrapper);
+    ctaParas.forEach((area) => ctaWrapper.append(area));
+  }
 
   const merchCard = createTag('div', { class: 'pm-merch-card' });
   merchCard.append(cardContent);
-  if (ctaWrapper.children.length) merchCard.append(ctaWrapper);
   return merchCard;
 }
 
