@@ -347,6 +347,10 @@
   opacity: 1;
 }
 
+.floating-mobile-hide .bc-floating-element {
+    display: none;
+}
+
 /* floating-button */
 .bc-floating-button {
   bottom: 0;
@@ -965,6 +969,7 @@
 
 .bc-modal-title {
   font-size: 16px;
+  letter-spacing: normal;
   line-height: 32px;
   font-weight: 900;
   color: #000;
@@ -1166,6 +1171,10 @@
 
   .floating-input .bc-floating-input .bc-input-field {
     min-width: 340px;
+  }
+
+  .floating-mobile-hide .bc-floating-element {
+    display: flex;
   }
 }
 

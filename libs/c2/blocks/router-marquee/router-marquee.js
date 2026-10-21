@@ -42,8 +42,9 @@ const setSlideObserver = (slides) => {
     const titleEl = slide.querySelector('.rm-title');
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        const viewport = getViewport(entry.target);
-        SLIDE_ANALYTICS[viewport][index].visible = entry.isIntersecting;
+        const analytics = SLIDE_ANALYTICS[getViewport(entry.target)]?.[index];
+        if (!analytics) return;
+        analytics.visible = entry.isIntersecting;
         if (entry.isIntersecting && slide.classList.contains('is-active')) {
           const card = slide.closest('.rm-viewport').querySelector('.rm-card.is-active');
           fireAnalytic(card, index);
@@ -53,6 +54,8 @@ const setSlideObserver = (slides) => {
     io.observe(titleEl);
   });
 };
+
+const cardDaaLl = (index, label, config) => `rm-nav-${index + 1}--${processTrackingLabels(label, config, 20)}`;
 
 const setAnalytics = (slides, cards, container, el) => {
   const config = getConfig();
@@ -67,7 +70,7 @@ const setAnalytics = (slides, cards, container, el) => {
   });
   cards.querySelectorAll('.rm-card').forEach((card, index) => {
     const { label } = SLIDE_ANALYTICS[container.dataset.viewport][index];
-    card.setAttribute('daa-ll', `rm-nav-${index + 1}--${processTrackingLabels(label, config, 20)}`);
+    card.setAttribute('daa-ll', cardDaaLl(index, label, config));
   });
 };
 
@@ -94,6 +97,11 @@ const clearInlineStyles = (el, props) => {
 };
 
 const STAGGER_CHILDREN = ['.rm-eyebrow', '.rm-title', '.rm-body', '.rm-ctas'];
+
+// A field merch.js gave up waiting on still renders in place later, so keep it connected.
+// mas-field hides itself once it resolves empty.
+const isPendingField = (mf) => !mf.hidden
+  && !mf.querySelector(':scope > [data-role="mas-field-content"]')?.hasChildNodes();
 
 // A slide can be authored as a promotion placeholder through a block variant class,
 // `promo-placeholder-slide-<n>` (1-based, e.g. "router-marquee (promo placeholder slide 3)").
@@ -395,6 +403,24 @@ const decorateSlide = (slide, isLight) => {
   decorateCtas(textCol, isLight);
 };
 
+// Cards without an authored label use the slide title.
+const titleLabelCards = new WeakSet();
+
+// The card's name, derived from its slide; re-run when MAS content lands late.
+const syncCard = (card, slide) => {
+  const labelEl = card.querySelector('.rm-card-label');
+  if (titleLabelCards.has(card)) {
+    labelEl.textContent = slide.querySelector('.rm-title')?.textContent.trim() ?? '';
+  }
+  const labelLink = labelEl.querySelector('a');
+  if (labelLink && !card.getAttribute('href')) card.setAttribute('href', labelLink.getAttribute('href'));
+  labelEl.querySelectorAll('a').forEach((a) => a.replaceWith(...a.childNodes));
+  const labelText = labelEl.textContent.trim();
+  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
+  card.setAttribute('aria-label', [eyebrowText, labelText].filter(Boolean).join(', '));
+  card.querySelector('.rm-card-icon')?.setAttribute('alt', labelText);
+};
+
 const buildCard = (slide) => {
   const icon = [...slide.querySelectorAll('p')]
     .find((p) => p.querySelector('img[src*=".svg"]'));
@@ -402,8 +428,8 @@ const buildCard = (slide) => {
   const iconSrc = icon && getFederatedUrl(icon.querySelector('img[src*=".svg"]')?.getAttribute('src'));
   const labelText = (label?.textContent ?? slide.querySelector('.rm-title')?.textContent ?? '').trim();
   const href = label?.querySelector('a')?.getAttribute('href') || '';
-  const eyebrowText = slide.querySelector('.rm-eyebrow')?.textContent.trim();
-  const ariaLabel = [eyebrowText, labelText].filter(Boolean).join(', ');
+  const labelField = label?.querySelector('mas-field');
+  const pendingLabel = labelField && isPendingField(labelField) ? labelField : null;
 
   icon?.remove();
   label?.remove();
@@ -411,21 +437,31 @@ const buildCard = (slide) => {
   const card = createTag('a', {
     class: 'rm-card',
     href,
-    'aria-label': ariaLabel,
     role: 'tab',
     'aria-selected': 'false',
   });
+  if (!label) titleLabelCards.add(card);
   card.replaceChildren(
-    ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' })] : []),
+    ...(iconSrc ? [createTag('img', { class: 'rm-card-icon', src: iconSrc, loading: 'lazy' })] : []),
     createTag('div', { class: 'rm-card-content' }, [
-      createTag('span', { class: 'rm-card-label' }, labelText),
+      createTag('span', { class: 'rm-card-label' }, pendingLabel ?? labelText),
       createTag('span', { class: 'rm-card-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
     ]),
     createTag('div', { class: 'rm-card-progress' }, [
       createTag('div', { class: 'rm-card-progress-bar' }),
     ]),
   );
+  syncCard(card, slide);
   return card;
+};
+
+// setAnalytics captured the title on init; martech trims on-time labels before this runs.
+const syncCardAnalytics = (card, slide, index) => {
+  const analytics = SLIDE_ANALYTICS[getViewport(slide)]?.[index];
+  const title = slide.querySelector('.rm-title')?.textContent;
+  if (!analytics || analytics.label === title) return;
+  analytics.label = title;
+  card.setAttribute('daa-ll', cardDaaLl(index, title, getConfig()).trim());
 };
 
 const buildReset = () => createTag('button', {
@@ -969,6 +1005,39 @@ const reorderSlidesMaybe = (el, viewports) => {
   }
 };
 
+const RETRY_DELAY_MS = 5000;
+
+// Retries each failed fragment once, through one field; its other fields then load from MAS' cache.
+const retryFailedFields = (el) => {
+  const waiting = new Map();
+  const retries = new Map();
+  let timer = null;
+
+  const retry = () => {
+    timer = null;
+    waiting.forEach((fragments, key) => {
+      const [first, ...rest] = [...fragments].filter((f) => f.isConnected);
+      if (!first) return;
+      const loaded = first.refresh(false).catch(() => false);
+      retries.set(key, loaded);
+      loaded.then((ok) => ok && rest.forEach((f) => f.refresh(false)));
+    });
+    waiting.clear();
+  };
+
+  el.addEventListener('aem:error', ({ target }) => {
+    if (target?.tagName !== 'AEM-FRAGMENT') return;
+    const key = ['fragment', 'pzn', 'mask'].map((attr) => target.getAttribute(attr) ?? '').join('|');
+    if (retries.has(key)) {
+      retries.get(key).then((ok) => ok && target.refresh(false));
+      return;
+    }
+    if (!waiting.has(key)) waiting.set(key, new Set());
+    waiting.get(key).add(target);
+    if (!timer) timer = setTimeout(retry, RETRY_DELAY_MS);
+  });
+};
+
 export default function init(el) {
   const viewports = groupByViewport(el);
   markPromoSlides(el, viewports);
@@ -1027,16 +1096,26 @@ export default function init(el) {
   loadViewportVideos(el);
   syncViewportAutoplay();
 
-  // merch.js reveals a resolved promo slide and its nav card. If the authored first slide was
-  // skipped while pending, make it active once the promotion resolves.
-  if (el.querySelector(`.${PROMO_PLACEHOLDER}`)) {
-    el.addEventListener('mas:ready', () => {
-      requestAnimationFrame(() => {
-        controllersByVp.forEach((ctrl) => ctrl.activateResolvedFirstPromo());
-        dynamicLayoutUpdates(el);
+  let lateContentFrame = null;
+  const onLateContent = () => {
+    if (lateContentFrame) return;
+    lateContentFrame = requestAnimationFrame(() => {
+      lateContentFrame = null;
+      containers.forEach((container) => {
+        const cards = container.querySelectorAll('.rm-card');
+        container.querySelectorAll('.rm-slide').forEach((slide, i) => {
+          syncCard(cards[i], slide);
+          syncCardAnalytics(cards[i], slide, i);
+        });
       });
+      // merch.js reveals a resolved promo slide and its nav card. If the authored first slide
+      // was skipped while pending, make it active once the promotion resolves.
+      controllersByVp.forEach((ctrl) => ctrl.activateResolvedFirstPromo());
+      dynamicLayoutUpdates(el);
     });
-  }
+  };
+  el.addEventListener('mas:ready', onLateContent);
+  retryFailedFields(el);
 
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
   // syncViewportAutoplay stays un-debounced: getActiveViewport() is a cheap matchMedia check,
