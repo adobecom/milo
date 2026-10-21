@@ -7,16 +7,6 @@ describe('Delayed', () => {
   const loadScript = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
   const loadStyle = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
 
-  it.skip('should load privacy feature', async () => {
-    expect(loadPrivacy).to.exist;
-    setConfig({ privacyId: '7a5eb705-95ed-4cc4-a11d-0cc5760e93db' });
-    document.body.innerHTML = '<footer><a href="https://www.adobe.com/#openPrivacy" id="privacy-link">Cookie preferences</a></footer>';
-    await loadPrivacy(getConfig, loadScript);
-    window.adobePrivacy = { showPreferenceCenter: sinon.stub() };
-    document.getElementById('privacy-link')?.click();
-    expect(window.adobePrivacy.showPreferenceCenter.called).to.be.true;
-  });
-
   it('should load jarvis feature', async () => {
     setConfig({ jarvis: { id: 'test', version: '1.0' } });
     const tag = document.createElement('meta');
