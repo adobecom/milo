@@ -650,6 +650,7 @@ describe('global navigation', () => {
       fetchStub = null;
       sinon.restore();
       document.cookie = 'dynamicNav=; Max-Age=0; Path=/';
+      document.cookie = 'OptanonConsent=; Max-Age=0; Path=/';
       document.head.replaceChildren();
       document.body.replaceChildren();
       document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
@@ -682,6 +683,7 @@ describe('global navigation', () => {
     });
 
     it('fetches navigation saved in the dynamic nav cookie', async () => {
+      document.cookie = 'OptanonConsent=groups=C0003%3A1; Path=/';
       const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
       document.head.append(dynamicNavOn);
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
@@ -689,6 +691,17 @@ describe('global navigation', () => {
       await initGnav(document.body.querySelector('header'));
       expect(
         fetchStub.calledOnceWith('http://localhost:2000/some-path.plain.html'),
+      ).to.be.true;
+    });
+
+    it('fetches authored navigation when functional cookie consent is denied', async () => {
+      document.cookie = 'OptanonConsent=groups=C0003%3A0; Path=/';
+      document.head.append(toFragment`<meta name="dynamic-nav" content="on">`);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      document.cookie = `dynamicNav=${encodeURIComponent(JSON.stringify({ s: 'http://localhost:2000/some-path' }))}; Path=/`;
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
       ).to.be.true;
     });
 
@@ -718,9 +731,11 @@ describe('global navigation', () => {
     describe('Breadcrumbs', () => {
       afterEach(() => {
         document.cookie = 'dynamicNav=; Max-Age=0; Path=/';
+        document.cookie = 'OptanonConsent=; Max-Age=0; Path=/';
       });
 
       it('should not decorate breadcrumbs when dynamic nav is active', async () => {
+        document.cookie = 'OptanonConsent=groups=C0003%3A1; Path=/';
         const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
         document.head.append(dynamicNavOn);
         document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);

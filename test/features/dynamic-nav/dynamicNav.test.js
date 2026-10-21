@@ -12,6 +12,7 @@ import dynamicNav, {
 
 const COOKIE = 'dynamicNav';
 const EXTERNAL_SOURCE = 'https://main--bacom--adobecom.aem.live/some/nav';
+const CONSENT = 'OptanonConsent=groups=C0001%3A1%2CC0003%3A1';
 
 const clearCookie = () => { document.cookie = `${COOKIE}=; Max-Age=0; Path=/`; };
 const seedCookie = (value) => {
@@ -29,10 +30,12 @@ describe('Dynamic nav (cookie based)', () => {
     setConfig({ dynamicNavKey: 'bacom' });
     resetCookieAvailability();
     clearCookie();
+    document.cookie = `${CONSENT}; Path=/`;
   });
 
   afterEach(() => {
     clearCookie();
+    document.cookie = 'OptanonConsent=; Max-Age=0; Path=/';
   });
 
   describe('entry pages', () => {
@@ -168,6 +171,51 @@ describe('Dynamic nav (cookie based)', () => {
     });
   });
 
+  describe('functional cookie consent', () => {
+    [
+      '',
+      'groups=C0001%3A1%2CC0003%3A0',
+      'groups=C0001%3A1',
+      'groups=C0003%3A10',
+      'groups=%E0%A4%A',
+    ].forEach((consent) => {
+      it(`ignores stored navigation without valid functional consent: "${consent}"`, async () => {
+        document.head.innerHTML = await readFile({ path: './mocks/on.html' });
+        seedCookie({ s: EXTERNAL_SOURCE });
+        document.cookie = consent
+          ? `OptanonConsent=${consent}; Path=/`
+          : 'OptanonConsent=; Max-Age=0; Path=/';
+        expect(dynamicNav('gnav/aem-sites')).to.equal('gnav/aem-sites');
+        expect(readState().consent).to.be.false;
+        expect(readState().source).to.be.null;
+      });
+    });
+
+    it('rechecks consent after it is revoked and granted without resetting availability', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/on.html' });
+      seedCookie({ s: EXTERNAL_SOURCE });
+      expect(dynamicNav('gnav/aem-sites')).to.equal(EXTERNAL_SOURCE);
+      document.cookie = 'OptanonConsent=groups=C0003%3A0; Path=/';
+      expect(dynamicNav('gnav/aem-sites')).to.equal('gnav/aem-sites');
+      document.cookie = `${CONSENT}; Path=/`;
+      expect(dynamicNav('gnav/aem-sites')).to.equal(EXTERNAL_SOURCE);
+    });
+
+    it('handles the full OneTrust cookie format', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/on.html' });
+      seedCookie({ s: EXTERNAL_SOURCE });
+      document.cookie = 'OptanonConsent=isGpcEnabled=0&groups=C0001%3A1%2CC0003%3A1&AwaitingReconsent=false; Path=/';
+      expect(dynamicNav('gnav/aem-sites')).to.equal(EXTERNAL_SOURCE);
+    });
+
+    it('handles an entirely URL-encoded consent cookie', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/on.html' });
+      seedCookie({ s: EXTERNAL_SOURCE });
+      document.cookie = `OptanonConsent=${encodeURIComponent('groups=C0001:1,C0003:1')}; Path=/`;
+      expect(dynamicNav('gnav/aem-sites')).to.equal(EXTERNAL_SOURCE);
+    });
+  });
+
   describe('cookie scope by environment', () => {
     it('shares the cookie across adobe.com subdomains on prod', () => {
       expect(getCookieEnvironment('www.adobe.com', 'https:')).to.deep.equal({ name: 'prod', shareDomain: 'adobe.com', secure: true });
@@ -275,15 +323,22 @@ describe('Dynamic nav (cookie based)', () => {
 describe('Dynamic nav cookie writes', () => {
   let writes;
   let getterValue;
+  let consentValue;
+  let reads;
 
   beforeEach(() => {
     setConfig({ dynamicNavKey: 'bacom' });
     resetCookieAvailability();
     writes = [];
     getterValue = '';
+    consentValue = CONSENT;
+    reads = 0;
     Object.defineProperty(document, 'cookie', {
       configurable: true,
-      get: () => getterValue,
+      get: () => {
+        reads += 1;
+        return [consentValue, getterValue].filter(Boolean).join('; ');
+      },
       set: (v) => { writes.push(v); },
     });
   });
@@ -336,5 +391,26 @@ describe('Dynamic nav cookie writes', () => {
     dynamicNav('gnav/aem-sites');
     expect(writes.length).to.equal(1);
     expect(writes[0]).to.contain('Max-Age=0');
+  });
+
+  it('does not read stored navigation when functional consent is denied', () => {
+    consentValue = 'OptanonConsent=groups=C0003%3A0';
+    getterValue = `${COOKIE}=${encodeURIComponent(JSON.stringify({ s: EXTERNAL_SOURCE }))}`;
+    expect(readState().source).to.be.null;
+    expect(reads).to.equal(1);
+    expect(writes).to.have.length(0);
+  });
+
+  ['entry', 'on', 'reset'].forEach((setting) => {
+    it(`does not write, refresh, or clear on ${setting} pages without consent`, async () => {
+      document.head.innerHTML = await readFile({ path: `./mocks/${setting}.html` });
+      getterValue = `${COOKIE}=${encodeURIComponent(JSON.stringify({ s: EXTERNAL_SOURCE }))}`;
+      consentValue = '';
+      expect(dynamicNav('gnav/aem-sites')).to.equal('gnav/aem-sites');
+      expect(writes).to.have.length(0);
+      consentValue = 'OptanonConsent=groups=C0003%3A0';
+      expect(dynamicNav('gnav/aem-sites')).to.equal('gnav/aem-sites');
+      expect(writes).to.have.length(0);
+    });
   });
 });

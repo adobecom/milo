@@ -1,4 +1,5 @@
 import { getCookie, getMetadata, isTrustedUrl } from '../../utils/utils.js';
+import { OPT_ON_AND_CONSENT_COOKIE, parseOptanonConsent } from '../../martech/helpers.js';
 
 const COOKIE_NAME = 'dynamicNav';
 const EXPIRY_SECONDS = 30 * 60; // 30-minute inactivity expiry, refreshed on use.
@@ -38,6 +39,19 @@ export function cookiesAvailable() {
     window.lana?.log('Dynamic nav: cookies unavailable, using authored navigation', { tags: 'dynamic-nav', severity: 'info' });
   }
   return cookieAvailability;
+}
+
+function hasFunctionalConsent() {
+  // Preserve embedded "=" characters in OneTrust's query-string cookie value.
+  const prefix = `${OPT_ON_AND_CONSENT_COOKIE}=`;
+  const raw = document.cookie.split(';').map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith(prefix))?.slice(prefix.length);
+  try {
+    return parseOptanonConsent(decodeURIComponent(raw || '')).configuration.functional;
+  } catch (e) {
+    window.lana?.log('Dynamic nav: malformed consent cookie, using authored navigation', { tags: 'dynamic-nav', severity: 'info' });
+    return false;
+  }
 }
 
 function sanitizeSource(source) {
@@ -87,7 +101,7 @@ export function cookieAttributes(
 }
 
 function writeState({ source, group }) {
-  if (!cookiesAvailable()) return;
+  if (!cookiesAvailable() || !hasFunctionalConsent()) return;
   // Resolve relative sources against the authoring origin before persisting.
   let absoluteSource;
   try {
@@ -104,25 +118,26 @@ function writeState({ source, group }) {
 }
 
 function clearState() {
-  if (!cookiesAvailable()) return;
+  if (!cookiesAvailable() || !hasFunctionalConsent()) return;
   document.cookie = [`${cookieName()}=`, 'Max-Age=0', ...cookieAttributes()].join('; ');
 }
 
 export function readState() {
   const available = cookiesAvailable();
-  if (!available) return { available: false, source: null, group: null };
+  const consent = available && hasFunctionalConsent();
+  if (!consent) return { available, consent, source: null, group: null };
 
   const raw = getCookie(cookieName());
-  if (!raw) return { available: true, source: null, group: null };
+  if (!raw) return { available, consent, source: null, group: null };
 
   try {
     const parsed = JSON.parse(decodeURIComponent(raw));
     const source = sanitizeSource(parsed?.s);
     const group = typeof parsed?.g === 'string' ? parsed.g : null;
-    if (!source) return { available: true, source: null, group, malformed: true };
-    return { available: true, source, group };
+    if (!source) return { available, consent, source: null, group, malformed: true };
+    return { available, consent, source, group };
   } catch (e) {
-    return { available: true, source: null, group: null, malformed: true };
+    return { available, consent, source: null, group: null, malformed: true };
   }
 }
 

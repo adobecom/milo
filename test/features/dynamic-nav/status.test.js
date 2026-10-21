@@ -33,12 +33,14 @@ describe('Dynamic Nav Status', () => {
     document.body.innerHTML = await readFile({ path: './mocks/status.html' });
     document.head.innerHTML = '<meta name="dynamic-nav" content=""><meta name="gnav-source" content="">';
     clearCookie();
+    document.cookie = 'OptanonConsent=groups=C0003%3A1; Path=/';
     resetCookieAvailability();
     setConfig({ dynamicNavKey: 'bacom' });
   });
 
   afterEach(() => {
     clearCookie();
+    document.cookie = 'OptanonConsent=; Max-Age=0; Path=/';
   });
 
   it('does not load the widget on production', async () => {
@@ -119,6 +121,20 @@ describe('Dynamic Nav Status', () => {
 
     const statusWidget = document.querySelector('.dynamic-nav-status');
     expect(statusText(statusWidget).cookies).to.equal('Yes');
+  });
+
+  ['entry', 'on', 'reset'].forEach((setting) => {
+    it(`reports ${setting} as inactive when functional consent is denied`, () => {
+      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', setting);
+      seedCookie({ s: GNAV_SOURCE });
+      document.cookie = 'OptanonConsent=groups=C0003%3A0; Path=/';
+      status();
+
+      const statusWidget = document.querySelector('.dynamic-nav-status');
+      expect(statusWidget.classList.contains(INACTIVE)).to.be.true;
+      expect(statusWidget.querySelector('.functional-consent span').innerText)
+        .to.equal('No (using authored navigation)');
+    });
   });
 
   it('reports the cookie scope for the current environment', () => {

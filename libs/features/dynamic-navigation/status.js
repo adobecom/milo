@@ -26,6 +26,7 @@ const getCurrentSource = (state, authoredSource) => (
 const getStatus = (state) => {
   const { setting, disabled, active, stored, groupMatched } = state;
 
+  if (!stored.consent) return INACTIVE;
   if (setting === 'entry') return ACTIVE;
   if (setting === 'reset') return RESET;
   if (disabled) return INACTIVE;
@@ -114,6 +115,7 @@ const createStatusWidget = () => {
       <p class="group">Group: <span>${groupMetaSetting}</span></p>
       <p class="group-match">Group matches stored group: <span>${groupsMatchMessage}</span></p>
       <p class="cookies-available">Cookies available: <span>${cookieMessage}</span></p>
+      <p class="functional-consent">Functional cookie consent (C0003): <span>${stored.consent ? 'Yes' : 'No (using authored navigation)'}</span></p>
       <p class="cookie-scope">Cookie scope: <span>${cookieScope}</span></p>
       <div class="nav-source-info">
         <p>Authored and stored source match: <span>${authoredSource === currentSource}</span></p>
