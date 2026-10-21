@@ -575,7 +575,7 @@ describe('AUP', () => {
     });
 
     it('defers the close event until Launch is ready', async () => {
-      const { sendAupDialogCloseAnalytics } = await import('../../../libs/blocks/global-navigation/global-navigation.js');
+      const { sendAupDialogCloseAnalytics } = await import('../../../libs/blocks/global-navigation/utilities/aup-sdk.js');
       window._satellite = undefined;
       await sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
       window._satellite = { track: sinon.spy() };
