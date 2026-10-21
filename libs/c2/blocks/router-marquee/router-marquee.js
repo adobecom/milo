@@ -1123,7 +1123,7 @@ export default function init(el) {
   window.addEventListener('resize', syncViewportAutoplay);
   import('../../../utils/action.js').then(({ debounce }) => {
     window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
-  });
+  }).catch((e) => window.lana?.log(`router-marquee: failed to load debounce: ${e}`, { tags: 'router-marquee', severity: 'info' }));
 
   const nextSection = el.closest('.section')?.nextElementSibling;
   if (nextSection) {
