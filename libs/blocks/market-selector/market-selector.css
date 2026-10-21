@@ -176,14 +176,15 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--s2a-color-content-knockout);
+    color: var(--s2a-color-transparent-white-64);
     font: inherit;
     font-size: var(--s2a-typography-font-size-body-sm);
     font-weight: var(--s2a-font-weight-adobe-clean-bold);
     cursor: pointer;
   }
 
-  .global-footer .market-selector-button:hover {
+  .global-footer .market-selector-button:hover,
+  .global-footer .market-selector-button[aria-expanded='true'] {
     color: var(--s2a-color-content-knockout);
   }
 
@@ -198,6 +199,12 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     height: 20px;
     flex: none;
     filter: brightness(0) invert(1);
+    opacity: 0.64;
+  }
+
+  .global-footer .market-selector-button:hover .market-selector-globe,
+  .global-footer .market-selector-button[aria-expanded='true'] .market-selector-globe {
+    opacity: 1;
   }
 
   .global-footer .market-selector-button::after {
