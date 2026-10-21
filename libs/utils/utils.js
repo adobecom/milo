@@ -17,6 +17,7 @@ const C1_BLOCKS = [
   'aside',
   'author-header',
   'blog-author',
+  'blog-side-navigation',
   'blog-header',
   'brand-concierge',
   'brand-concierge-global',
@@ -391,10 +392,21 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
+
+export function getAupSelectValue() {
+  const value = new URLSearchParams(window.location.search).get('aup-select')
+    ?? getMetadata('aup-select');
+  const normalized = value?.trim().toLowerCase();
+  return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
+}
+
+export function isAupSelectOn() {
+  return getAupSelectValue() === 'on';
+}
+
 export function isAupEnabled(useUniversalNav = false) {
-  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
-    || (new URLSearchParams(window.location.search).get('aup-select')
-      ?? getMetadata('aup-select')) === 'on';
+  return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectValue());
 }
 
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
@@ -2684,7 +2696,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export async function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash, area = document, behavior = 'smooth') {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2696,7 +2708,7 @@ export async function scrollToHashedElement(hash) {
       severity: 'error',
     });
   }
-  if (!targetElement) return;
+  if (!targetElement || !area.contains(targetElement)) return;
 
   let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
@@ -2708,7 +2720,7 @@ export async function scrollToHashedElement(hash) {
   const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
-    behavior: 'smooth',
+    behavior,
   });
 }
 
@@ -3232,7 +3244,7 @@ export async function loadArea(area = document) {
   if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
-    scrollToHashedElement(currentHash);
+    scrollToHashedElement(currentHash, area);
   }
 
   if (isDoc) await documentPostSectionLoading(config);

@@ -119,25 +119,45 @@ describe('Utils', () => {
       }
     });
 
-    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
-      it(`requires exact on for metadata "${value}"`, () => {
+    const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
+    const flagged = ['on', 'ON'];
+
+    ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
+      const enabled = !disabled.includes(value);
+      const flag = flagged.includes(value);
+
+      it(`reads metadata "${value}"`, () => {
         meta.content = value;
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
       });
 
-      it(`reads query "${value}" with and without metadata`, () => {
+      it(`reads query "${value}" over metadata`, () => {
         const url = new URL(window.location.href);
         url.searchParams.set('aup-select', value);
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
-        meta.content = value === 'on' ? 'off' : 'on';
+        meta.content = value === 'enabled' ? 'on' : 'enabled';
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+        expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.isAupSelectOn()).to.equal(meta.content === 'on');
       });
+    });
+
+    it('does not report a value for signed-in Universal Nav users without aup-select', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled(true)).to.be.true;
+        expect(utils.getAupSelectValue()).to.be.null;
+        expect(utils.isAupSelectOn()).to.be.false;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
     });
   });
 
@@ -1191,6 +1211,45 @@ describe('Utils', () => {
       utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
       expect(scrollToCalled).to.be.true;
       expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
+  });
+
+  describe('loadArea hash scrolling', () => {
+    let originalUrl;
+    let originalScrollTo;
+    let area;
+    let articleHeading;
+    let scrollSpy;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      originalScrollTo = window.scrollTo;
+      scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      area = createTag('div');
+      area.innerHTML = '<div><h2 id="fragment-section">Fragment section</h2></div>';
+      articleHeading = createTag('h2', { id: 'article-section' }, 'Article section');
+      document.body.append(articleHeading, area);
+    });
+
+    afterEach(() => {
+      area.remove();
+      articleHeading.remove();
+      window.scrollTo = originalScrollTo;
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('does not revisit an article hash when an unrelated fragment finishes loading', async () => {
+      window.history.replaceState(null, '', '#article-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.called).to.be.false;
+    });
+
+    it('preserves deep links to headings inside the fragment being loaded', async () => {
+      window.history.replaceState(null, '', '#fragment-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
     });
   });
 
