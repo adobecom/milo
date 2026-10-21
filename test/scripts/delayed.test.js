@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
+import loadDelayed, { loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
