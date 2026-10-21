@@ -42,5 +42,6 @@ describe('C2 Brand Concierge Assistant page metadata', () => {
       pageDescription: 'Create something amazing.',
       componentid: 'brand-concierge',
     });
+    expect(initialize.firstCall.args[0]).to.not.have.property('gnavFabState');
   });
 });
