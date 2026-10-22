@@ -11,11 +11,11 @@ let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
-// Mobile grid-exit experiment, compared against the default: ?hub-hero-exit=converge
+// Mobile grid-exit experiment, on by default; ?hub-hero-exit=off shows the default for comparison
 const MOBILE_EXIT_VARIANTS = ['converge'];
 const applyMobileExitVariant = (el) => {
-  const variant = new URLSearchParams(window.location.search).get('hub-hero-exit');
-  if (MOBILE_EXIT_VARIANTS.includes(variant)) el.classList.add(`exit-${variant}`);
+  if (new URLSearchParams(window.location.search).get('hub-hero-exit') === 'off') return;
+  el.classList.add(`exit-${MOBILE_EXIT_VARIANTS[0]}`);
 };
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');

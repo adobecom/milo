@@ -2357,7 +2357,7 @@
   }
 }
 
-/** mobile grid exit variant (?hub-hero-exit=converge) */
+/** mobile grid exit variant: converge (on by default; ?hub-hero-exit=off disables) */
 @media (width < 768px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
     /*
