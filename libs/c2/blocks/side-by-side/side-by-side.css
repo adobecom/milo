@@ -177,7 +177,7 @@
   }
 
   &.small-left .card-stacked {
-    padding-inline: 0 var(--card-stack-padding);;
+    padding-inline: 0 var(--card-stack-padding);
   }
 }
 
