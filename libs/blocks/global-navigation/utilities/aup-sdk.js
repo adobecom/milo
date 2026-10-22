@@ -6,8 +6,9 @@ import {
   isAupSelectOn,
   lingoActive,
   loadScript,
+  loadStyle,
 } from '../../../utils/utils.js';
-import { isDarkMode, toFragment } from './utilities.js';
+import { isDarkMode, rootPath, toFragment } from './utilities.js';
 import {
   AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
@@ -30,6 +31,12 @@ export async function preloadAupSdk() {
   if (allowOverride && commerceEnvironment?.toLowerCase() === 'prod') environment = 'prod';
   const lingoRegion = lingoActive() ? await getLingoRegion() : null;
   const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
+
+  // Dialog styles live here rather than in a gnav stylesheet so C1 and C2 pages both get them.
+  // Settles on error too, so a missing stylesheet never blocks checkout.
+  const dialogStyles = new Promise((resolve) => {
+    loadStyle(rootPath('utilities/aup-sdk.css'), resolve);
+  });
 
   const sdkUrl = `https://shared-components.${cdnEnvironment === 'prod' ? '' : `${cdnEnvironment}.`}adobe.com/aup-sdk/stable/main.js`;
   try {
@@ -127,6 +134,7 @@ export async function preloadAupSdk() {
         const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
         const [{ getModal, closeModal }] = await Promise.all([
           import(isC2 ? '../../../c2/blocks/modal/modal.js' : '../../modal/modal.js'),
+          dialogStyles,
           ...(isIframe ? [
             import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
             import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),

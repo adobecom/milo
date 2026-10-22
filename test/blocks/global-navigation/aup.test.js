@@ -895,6 +895,24 @@ describe('AUP', () => {
   });
 
   [
+    { name: 'C1', content: 'milo' },
+    { name: 'C2', content: 'c2' },
+  ].forEach(({ name, content }) => {
+    it(`applies the shared dialog styles in the ${name} modal`, async () => {
+      foundation = document.createElement('meta');
+      foundation.name = 'foundation';
+      foundation.content = content;
+      document.head.append(foundation);
+      const { showDialog } = await initializeHost();
+      await showDialog(createElement('iframe'), { title: 'Workflow' }, sinon.spy());
+
+      expect(document.head.querySelector('link[rel="stylesheet"][href$="/global-navigation/utilities/aup-sdk.css"]')).to.exist;
+      expect(getComputedStyle(dialog().querySelector('.aup-workflow-content')).position).to.equal('relative');
+      expect(dialog().getBoundingClientRect().height).to.be.greaterThan(300);
+    });
+  });
+
+  [
     { name: 'desktop', viewport: viewports.desktop },
     { name: 'mobile', viewport: { width: 390, height: 844 } },
   ].forEach(({ name, viewport }) => {
