@@ -686,6 +686,110 @@ describe('MAX login prompt trigger', () => {
     expect(performance.now()).to.equal(0);
   });
 
+  it('waits until main is fully above the viewport, not just its end visible', async () => {
+    const main = document.querySelector('main');
+    const bounds = { top: -200, bottom: window.innerHeight - 100 };
+    sinon.stub(main, 'getBoundingClientRect').callsFake(() => bounds);
+    target.className = 'main';
+    targetTop = -targetHeight;
+    metadata('max26-login-prompt-scroll-target', '.session-details');
+    configure('?showAfterTag=main&showAfterMode=passed&content=live');
+    stop = init();
+    for (const bottom of [window.innerHeight - 100, 0.5]) {
+      bounds.bottom = bottom;
+      window.dispatchEvent(new Event('scroll'));
+      await flush();
+      expect(modal()).to.be.null;
+    }
+    bounds.bottom = 0;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.exist;
+    const request = fetchStub.getCalls()
+      .find(({ args }) => String(args[0]).includes(FRAGMENT_PATH));
+    expect(request.args[0]).to.equal(`${window.location.origin}${FRAGMENT_PATH}.plain.html?content=live`);
+  });
+
+  it('opens an authored tag-targeted fragment only after main is fully passed', async () => {
+    const main = document.querySelector('main');
+    const bounds = { top: -100, bottom: 1 };
+    sinon.stub(main, 'getBoundingClientRect').callsFake(() => bounds);
+    const fragment = await loadAuthoredFragment('?showAfterTag=main&showAfterMode=passed');
+    expect(fragment.hidden).to.be.true;
+    expect(modal()).to.be.null;
+    bounds.bottom = -1;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.exist;
+    expect(fragment.parentElement).to.equal(modal());
+    expect(fetchStub.getCalls()
+      .filter(({ args }) => String(args[0]).includes(FRAGMENT_PATH))).to.have.length(1);
+  });
+
+  [false, true].forEach((canPass) => {
+    it(`${canPass ? 'opens' : 'stays closed'} when real scrolling ${canPass ? 'can' : 'cannot'} fully pass main`, async () => {
+      const main = document.querySelector('main');
+      main.style.cssText = `display: block; height: ${window.innerHeight * 2}px;`;
+      document.body.append(createTag('footer', { style: `height: ${canPass ? window.innerHeight + 100 : 100}px;` }));
+      window.scrollTo(0, 0);
+      configure('?showAfterTag=main&showAfterMode=passed');
+      stop = init();
+      window.scrollTo(0, window.scrollY + main.getBoundingClientRect().bottom - 1);
+      window.dispatchEvent(new Event('scroll'));
+      await flush();
+      expect(main.getBoundingClientRect().bottom).to.be.greaterThan(0);
+      expect(modal()).to.be.null;
+      window.scrollTo(0, window.scrollY + main.getBoundingClientRect().bottom + 1);
+      window.dispatchEvent(new Event('scroll'));
+      await flush();
+      if (canPass) {
+        expect(main.getBoundingClientRect().bottom).to.be.at.most(0);
+        expect(modal()).to.exist;
+      } else {
+        expect(main.getBoundingClientRect().bottom).to.be.greaterThan(0);
+        expect(modal()).to.be.null;
+      }
+    });
+  });
+
+  it('supports tag targets with nth selection and the default entry threshold', async () => {
+    const later = addTarget(window.innerHeight);
+    targetTop = -targetHeight;
+    configure('?showAfterTag=SECTION&showAfterNth=2');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    later.bounds.top -= 1;
+    window.dispatchEvent(new Event('scroll'));
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('waits for a missing tag target to be inserted', async () => {
+    configure('?showAfterTag=article&showAfterMode=passed');
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    const article = createTag('article', {}, 'Late content');
+    sinon.stub(article, 'getBoundingClientRect').returns({ top: -200, bottom: 0 });
+    document.querySelector('main').append(article);
+    await flush();
+    expect(modal()).to.exist;
+  });
+
+  it('does not qualify a hidden tag target', async () => {
+    configure('?showAfterTag=section&showAfterMode=passed');
+    targetTop = -targetHeight;
+    target.hidden = true;
+    stop = init();
+    await flush();
+    expect(modal()).to.be.null;
+    target.hidden = false;
+    window.dispatchEvent(new Event('resize'));
+    await flush();
+    expect(modal()).to.exist;
+  });
+
   it('does not treat a hidden target as passed', async () => {
     configure('?showAfter=session-details&showAfterMode=passed');
     targetTop = -targetHeight;
@@ -897,6 +1001,9 @@ describe('MAX login prompt trigger', () => {
     'delay=-1', 'delay=', 'delay=NaN', 'delay=Infinity',
     'operator=xor', 'operator=', 'showAfter=', 'showAfter=%23session-details',
     'showAfter=session%20details', 'showAfter=.',
+    'showAfterTag=', 'showAfterTag=%3Cmain%3E', 'showAfterTag=.main',
+    'showAfterTag=main%20section', 'showAfterTag=main,section', 'showAfterTag=*',
+    'showAfter=session-details&showAfterTag=main',
     'showAfterNth=2', 'showAfter=session-details&showAfterNth=',
     'showAfter=session-details&showAfterNth=0', 'showAfter=session-details&showAfterNth=-1',
     'showAfter=session-details&showAfterNth=1.5', 'showAfter=session-details&showAfterNth=1e2',

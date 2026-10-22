@@ -94,7 +94,8 @@ or content already inside a dialog does not start another trigger.
 | --- | --- |
 | `delay` | Non-negative number of seconds since navigation, not since script initialization |
 | `showAfter` | Class name, for example `session-details` (`.session-details` is also accepted); defaults to the first matching element |
-| `showAfterNth` | Positive, 1-based occurrence of the `showAfter` class in document order; defaults to `1` |
+| `showAfterTag` | HTML tag name, for example `main`; use instead of `showAfter` to select by tag rather than class |
+| `showAfterNth` | Positive, 1-based occurrence of the selected class or tag in document order; defaults to `1` |
 | `showAfterMode` | `enter` (default) qualifies when the target's top enters the viewport; `passed` waits until its entire bottom has scrolled to or above the viewport top |
 | `operator` | `and` (default) waits for both configured conditions; `or` waits for either |
 
@@ -103,9 +104,10 @@ the existing default is a 120-second delay. With only a target, there is no
 implicit delay, even with `operator=or`. Explicit `delay=0` is an immediately
 satisfied delay condition. Parameters do not change the primary CTA's authored URL.
 The shared fragment loader appends `.plain.html` before the query string.
-Invalid delays, operators, class names, occurrences, or modes report an error and
-do not install the trigger. `showAfterNth` requires a `showAfter` class; it does not
-apply to legacy selector metadata. `showAfterMode` requires a class or legacy
+Invalid delays, operators, class names, tag names, occurrences, or modes report an error and
+do not install the trigger. `showAfter` and `showAfterTag` are mutually exclusive.
+`showAfterNth` requires a URL class or tag target; it does not
+apply to legacy selector metadata. `showAfterMode` requires a class, tag, or legacy
 selector target. Without these new parameters, existing scroll-target selection
 and entry thresholds are unchanged.
 
@@ -128,6 +130,7 @@ independently of the configured scroll target.
 | Explicit two-minute delay | Fragment URL with `?delay=120` |
 | Target section in view, no delay | Fragment URL with `?showAfter=session-details` |
 | Ninth session-guide row fully passed, no delay | Fragment URL with `?showAfter=sg-time-row&showAfterNth=9&showAfterMode=passed` |
+| Entire main content fully passed, no delay | Fragment URL with `?showAfterTag=main&showAfterMode=passed` |
 | Three-second delay AND ninth row fully passed | Fragment URL with `?delay=3&showAfter=sg-time-row&showAfterNth=9&showAfterMode=passed&operator=and` |
 | Three-second delay AND target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=and` |
 | Three-second delay OR target reached | Fragment URL with `?delay=3&showAfter=session-details&operator=or` |
@@ -138,6 +141,13 @@ of its parent. The condition is checked against the current matching elements,
 so rows inserted or replaced by the guide are picked up automatically. With
 `operator=or`, the delay can still open the modal before the selected row is passed;
 use `and` when passing that row must be required.
+
+To target the page's `<main>` element without counting columns, use
+`?showAfterTag=main&showAfterMode=passed`. This waits until its bottom edge is
+at or above the viewport top, not merely visible near the footer. If the content
+after `<main>` is too short to allow that much scrolling, the condition cannot
+be reached and the modal stays closed. Tag targets take precedence over legacy
+scroll-target metadata, just like class targets.
 
 ### Video-player guard
 

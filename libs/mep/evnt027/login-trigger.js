@@ -19,12 +19,19 @@ export default function init({ path: authoredPath, content: initialContent } = {
     && (!targetClass || /\s/.test(targetClass) || targetClass.startsWith('#'))) {
     throw new Error('showAfter must name a single class, not an element ID or whitespace-separated list.');
   }
-  const targetSelector = targetClass ? null : getMetadata('max26-login-prompt-scroll-target');
-  const hasTarget = !!(targetClass || targetSelector);
+  const targetTag = params.get('showAfterTag');
+  if (params.has('showAfterTag') && (!targetTag || !/^[a-z][a-z0-9-]*$/i.test(targetTag))) {
+    throw new Error('showAfterTag must name a single HTML tag, for example "main".');
+  }
+  if (targetClass && targetTag) {
+    throw new Error('Use either showAfter or showAfterTag, not both.');
+  }
+  const targetSelector = targetClass || targetTag ? null : getMetadata('max26-login-prompt-scroll-target');
+  const hasTarget = !!(targetClass || targetTag || targetSelector);
   const targetNthValue = params.get('showAfterNth') ?? '1';
   const targetNth = Number(targetNthValue);
-  if (params.has('showAfterNth') && !targetClass) {
-    throw new Error('showAfterNth requires a showAfter class name.');
+  if (params.has('showAfterNth') && !targetClass && !targetTag) {
+    throw new Error('showAfterNth requires a showAfter class name or showAfterTag tag name.');
   }
   if (!/^[1-9]\d*$/.test(targetNthValue) || !Number.isSafeInteger(targetNth)) {
     throw new Error('showAfterNth must be a positive, 1-based integer.');
@@ -49,7 +56,7 @@ export default function init({ path: authoredPath, content: initialContent } = {
   }
   // Validate authored selectors before installing event handlers.
   if (targetSelector) document.querySelector(targetSelector);
-  ['delay', 'showAfter', 'showAfterNth', 'showAfterMode', 'operator']
+  ['delay', 'showAfter', 'showAfterTag', 'showAfterNth', 'showAfterMode', 'operator']
     .forEach((name) => params.delete(name));
   const path = fragmentUrl.href;
 
@@ -92,9 +99,10 @@ export default function init({ path: authoredPath, content: initialContent } = {
     const conditions = [];
     if (hasDelay) conditions.push(performance.now() >= delay);
     if (hasTarget) {
-      const target = targetClass
-        ? document.getElementsByClassName(targetClass)[targetNth - 1]
-        : document.querySelector(targetSelector);
+      let target;
+      if (targetClass) target = document.getElementsByClassName(targetClass)[targetNth - 1];
+      else if (targetTag) target = document.getElementsByTagName(targetTag)[targetNth - 1];
+      else target = document.querySelector(targetSelector);
       conditions.push(!!target && target.getClientRects().length > 0
         && (targetMode === 'passed'
           ? target.getBoundingClientRect().bottom <= 0
