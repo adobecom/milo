@@ -2357,7 +2357,7 @@
   }
 }
 
-/** mobile grid exit variant (?hub-hero-exit=stagger) */
+/** mobile grid exit variant: stagger (on by default; ?hub-hero-exit=off disables) */
 @media (width < 768px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
     /*
