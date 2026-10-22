@@ -987,27 +987,36 @@ export async function createMartechMetadata(placeholders, config, column) {
 function getPlaceholderColumn(placeholders, config, selectedVariantName) {
   if (!placeholders?.length || selectedVariantName === 'default') return null;
   const { countryIP } = config.mep || {};
-  const valueNames = [
-    selectedVariantName.toLowerCase(),
-    config.mep?.prefix,
-    config.locale.region.toLowerCase(),
-    ...(countryIP ? [`countryip(${countryIP})`] : []),
-    config.locale.ietf.toLowerCase(),
-    ...config.locale.ietf.toLowerCase().split('-'),
-    'value',
-    'other',
+  const matchRules = [
+    { value: selectedVariantName.toLowerCase(), label: 'variant' },
+    { value: config.mep?.prefix, label: 'MEP prefix' },
+    { value: config.locale.region.toLowerCase(), label: 'region' },
+    ...(countryIP ? [{ country: true, label: `countryip(${countryIP})` }] : []),
+    { value: config.locale.ietf.toLowerCase(), label: 'locale' },
+    ...config.locale.ietf.toLowerCase().split('-').map((value) => ({ value, label: 'language' })),
+    { value: 'value', label: 'value' },
+    { value: 'other', label: 'other' },
   ];
   const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
+  let match;
   const keyVal = keys.find(([key]) => {
     const modifiedStr = key.toLowerCase();
-    return valueNames.includes(modifiedStr) || hasCountryMatch(modifiedStr, config);
+    match = matchRules.find((rule) => (
+      rule.country ? hasCountryMatch(modifiedStr, config) : rule.value === modifiedStr
+    ));
+    return !!match;
   });
-  return keyVal?.[0] ?? null;
+  return keyVal ? { key: keyVal[0], matchedBy: match.label } : null;
 }
 
-export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
+export function parsePlaceholders(
+  placeholders,
+  config,
+  selectedVariantName = '',
+  pathname = new URL(window.location).pathname,
+  selectedColumn = getPlaceholderColumn(placeholders, config, selectedVariantName)?.key,
+) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
-  const key = getPlaceholderColumn(placeholders, config, selectedVariantName);
 
   const seenKeys = new Set();
   const filteredPlaceholders = placeholders.filter((item) => {
@@ -1017,15 +1026,15 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
     return true;
   });
 
-  if (key) {
+  if (selectedColumn) {
     const results = filteredPlaceholders.reduce((res, item) => {
-      res[item.key] = item[key];
+      res[item.key] = item[selectedColumn];
       return res;
     }, {});
     config.placeholders = { ...(config.placeholders || {}), ...results };
   }
 
-  createMartechMetadata(filteredPlaceholders, config, key);
+  if (selectedColumn) createMartechMetadata(filteredPlaceholders, config, selectedColumn);
 
   return config;
 }
@@ -1489,12 +1498,21 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
         manifestConfig.selectedVariant = 'default';
       }
       const currentConfig = getConfig();
-      manifestConfig.placeholderColumn = getPlaceholderColumn(
+      const placeholderSelection = getPlaceholderColumn(
         placeholderData,
         currentConfig,
         manifestConfig.selectedVariantName,
-      )?.toLowerCase() ?? null;
-      parsePlaceholders(placeholderData, currentConfig, manifestConfig.selectedVariantName);
+      );
+      manifestConfig.placeholderColumn = placeholderSelection?.key.toLowerCase() ?? null;
+      manifestConfig.placeholderMatch = placeholderSelection?.matchedBy ?? null;
+      manifestConfig.hasPlaceholderData = !!placeholderData?.length;
+      parsePlaceholders(
+        placeholderData,
+        currentConfig,
+        manifestConfig.selectedVariantName,
+        undefined,
+        placeholderSelection?.key ?? null,
+      );
     } catch (e) {
       log(`MEP Error parsing manifests: ${e.toString()}`);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);

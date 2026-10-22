@@ -18,16 +18,26 @@ describe('Functional test', () => {
       variants: { all: { commands: [], fragments: [] } },
       source: [],
       placeholderData: [
-        { key: 'market-name', us: 'United States', jp: 'Japan', fr: 'France' },
+        { key: 'market-name', jp: 'Japan', fr: 'France', us: 'United States' },
       ],
     };
 
     try {
       ['us', 'jp', 'fr'].forEach((region) => {
-        config.locale = { ietf: `${region}-XX`, region };
+        config.locale = { ietf: 'en-US', region };
         const [result] = cleanAndSortManifestList([{ ...manifest }], config);
         expect(result.placeholderColumn).to.equal(region);
+        expect(result.placeholderMatch).to.equal('region');
       });
+
+      config.locale = { ietf: 'en-US', region: 'de' };
+      const noMatchManifest = {
+        ...manifest,
+        placeholderData: [{ key: 'market-name', jp: 'Japan', fr: 'France' }],
+      };
+      const [noMatch] = cleanAndSortManifestList([noMatchManifest], config);
+      expect(noMatch.placeholderColumn).to.be.null;
+      expect(noMatch.placeholderMatch).to.be.null;
     } finally {
       config.locale = originalLocale;
       config.mep = originalMep;

@@ -314,6 +314,8 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           countryRestriction: 'emea',
           consentType: 'promo or no offer changes',
           placeholderColumn: 'us',
+          placeholderMatch: 'region',
+          hasPlaceholderData: true,
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
         },
@@ -326,6 +328,16 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           countryRestriction: null,
           consentType: null,
           disabled: true,
+        },
+        {
+          name: 'Placeholder No Match',
+          manifest: '/frags/mep/exp3.json',
+          variantNames: ['v-a'],
+          selectedVariantName: 'v-a',
+          placeholderColumn: null,
+          placeholderMatch: null,
+          hasPlaceholderData: true,
+          source: 'helix',
         },
       ],
     },
@@ -346,8 +358,8 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
     cleanup(bodyEl, headerEl);
   });
 
-  it('two .mep-manifest-card elements are rendered', () => {
-    expect(bodyEl.querySelectorAll('.mep-manifest-card').length).to.equal(2);
+  it('three .mep-manifest-card elements are rendered', () => {
+    expect(bodyEl.querySelectorAll('.mep-manifest-card').length).to.equal(3);
   });
 
   it('manifest card shows targetActivityName (campaign name)', () => {
@@ -358,14 +370,21 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
     expect(bodyEl.querySelector('.mep-manifest-card').textContent).to.include('EMEA');
   });
 
-  it('always shows the applied placeholder set or None', () => {
+  it('distinguishes applied, missing, and unmatched placeholder sets', () => {
     const cards = bodyEl.querySelectorAll('.mep-manifest-card');
     const columnValues = [...cards].map((card) => {
       const row = [...card.querySelectorAll('.mep-card-body .mep-row')]
         .find((item) => item.querySelector('h2')?.textContent === 'Placeholder Set');
       return row?.querySelector('.mep-row-value')?.textContent;
     });
-    expect(columnValues).to.deep.equal(['us', 'None']);
+    expect(columnValues).to.deep.equal(['us', 'None', 'No match']);
+
+    const matchValues = [...cards].map((card) => {
+      const row = [...card.querySelectorAll('.mep-card-body .mep-row')]
+        .find((item) => item.querySelector('h2')?.textContent === 'Placeholder Match');
+      return row?.querySelector('.mep-row-value')?.textContent;
+    });
+    expect(matchValues).to.deep.equal(['region', 'None', 'None']);
   });
 
   it('renders start/end dates and times inside the expandable body', () => {
