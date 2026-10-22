@@ -306,8 +306,10 @@ const initExitLeads = (hubHero) => {
     container.style.setProperty('--expand-fade-range', px('--exit-chrome-reveal') / range);
     if (heading) {
       const land = cardLand + px('--exit-heading-after');
-      hubHero.style.setProperty('--exit-heading-fade-from', `${land - px('--exit-heading-fade-before')}px`);
-      hubHero.style.setProperty('--exit-heading-fade-to', `${land + px('--exit-heading-fade-after')}px`);
+      // Fade in only once stuck, so the heading never visibly moves.
+      const from = land + px('--exit-heading-fade-delay');
+      hubHero.style.setProperty('--exit-heading-fade-from', `${from}px`);
+      hubHero.style.setProperty('--exit-heading-fade-to', `${from + px('--exit-heading-fade')}px`);
     }
   };
 

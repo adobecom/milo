@@ -2372,9 +2372,9 @@
       --exit-card-lead-run: 270px;
       --exit-expand-before: 175px;
       --exit-expand-after: 30px;
-      --exit-heading-after: 200px;
-      --exit-heading-fade-before: 70px;
-      --exit-heading-fade-after: 30px;
+      --exit-heading-after: 120px;
+      --exit-heading-fade-delay: 10px;
+      --exit-heading-fade: 100px;
       --exit-card2-enter: 220px;
       --exit-chrome-reveal: 70px;
       --exit-card-step: 560px;
