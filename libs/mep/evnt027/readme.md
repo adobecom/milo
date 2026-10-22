@@ -58,8 +58,9 @@ The personalization manifest must produce this block mapping in `config.mep`:
 }
 ```
 
-For automatic opening, author the fragment link on the parent page as described
-below. A fragment link with a modal hash also supports the shared C2 Modal's
+For automatic opening, use the metadata and `insertScript` Target integration
+below. The C2 block list registers the name; the experiment mapping selects its
+MEP implementation. A fragment link with a modal hash also supports the shared C2 Modal's
 click-to-open behavior, for example:
 `/homepage/fragments/mep/max2026/login-modal#max26-login-prompt`.
 Opening the fragment URL itself renders the content for authoring/visual preview;
@@ -78,23 +79,24 @@ for a particular page. Do not reuse Summit-specific sign-in parameters.
 
 ## Automatic triggering
 
-Author a plain fragment link on the parent page, with trigger parameters on
-that URL. For the test page, the existing authoring is supported directly:
+Set the parent page's `max26-login-prompt` metadata to the fragment URL with
+trigger parameters. For example:
 
 ```text
 https://main--upp--adobecom.aem.page/homepage/fragments/mep/max2026/login-modal?delay=3&showAfter=side-by-side&operator=and
 ```
 
-Keep `foundation: c2` and the treatment's `personalization` metadata, including
-the block mapping above. No `max26-login-prompt` metadata row or separate
-`insertScript` action is needed for this authored-link flow.
+Keep `foundation: c2` and the treatment's block mapping above. Add the
+`insertScript` action described under Target setup. Once the conditions are met,
+the trigger removes its parameters before fetching the fragment off-document,
+then opens that content in the shared C2 dialog.
 
-When the block is initialized inside the loaded page fragment, it hides that
-fragment and starts the trigger using the authored URL. Once the conditions are
-met, it moves the already-loaded content into the shared C2 dialog; it does not
-fetch or render a second copy. Dismissed visitors never see the hidden inline
-content. Direct content-fragment previews remain inline, and detached content
-or content already inside a dialog does not start another trigger.
+Do not insert a query-configured fragment link with `insertAfter` for this
+integration. The unchanged shared fragment loader appends `.plain.html` after
+query parameters; using metadata and `insertScript` avoids that dependency.
+The content fragment URL should not contain other query parameters.
+Direct content-fragment previews remain inline. Existing query-free authored
+fragment links still use the default trigger behavior.
 
 | URL parameter | Meaning |
 | --- | --- |
@@ -109,7 +111,8 @@ Only configured conditions participate in AND/OR. With no delay or target,
 the existing default is a 120-second delay. With only a target, there is no
 implicit delay, even with `operator=or`. Explicit `delay=0` is an immediately
 satisfied delay condition. Parameters do not change the primary CTA's authored URL.
-The shared fragment loader appends `.plain.html` before the query string.
+Trigger parameters are stripped before the content fetch, so the shared fragment
+loader receives a query-free URL.
 Invalid delays, operators, class names, tag names, occurrences, or modes report an error and
 do not install the trigger. `showAfter` and `showAfterTag` are mutually exclusive.
 `showAfterNth` requires a URL class or tag target; it does not
@@ -187,12 +190,13 @@ inside shadow roots require additional integration if they are introduced.
 For `/homepage/fragments/mep/max2026/test`, keep the normal page content and:
 
 1. Set `foundation: c2` and the treatment's `personalization` metadata.
-2. Author the `/login-modal?delay=3&showAfter=side-by-side&operator=and` fragment
-   link, without a modal hash. Keep the block in the separate `/login-modal` fragment.
-3. Use `side-by-side` as the class on the intended scroll-trigger element.
-   For a delay-only smoke test, use `?delay=3` and omit `showAfter`.
-4. Ensure the selected treatment includes the block mapping and its page filters
-   include the parent test page. No additional script action is required.
+2. Set `max26-login-prompt` metadata to the separate fragment URL with
+   `?delay=3&showAfter=side-by-side&operator=and`.
+3. Add the Target `insertScript` action below. Use `side-by-side` as the class
+   on the intended scroll-trigger element. For a delay-only smoke test, use
+   `?delay=3` and omit `showAfter`.
+4. Ensure the selected treatment includes the block mapping, metadata, and script
+   action, and its page filters include the parent test page.
 
 The block starts the shared trigger and uses the C2 `getModal()` API.
 That API loads `/c2/blocks/modal/modal.css`, adds the fixed dialog,
@@ -200,11 +204,9 @@ curtain, close button, focus handling, and scroll lock. The block CSS only custo
 the MAX appearance. `?milolibs=local` does not enable the treatment block mapping
 on its own.
 
-### Optional metadata-driven integration
+### Target setup
 
-The previous metadata-driven flow remains supported for pages that do not author
-a fragment link. Only for this alternative, add an `insertScript` treatment action
-with the absolute URL
+Add an `insertScript` treatment action with the absolute URL
 `https://max-login-prompt-c2--milo--adobecom.aem.live/libs/mep/evnt027/insertScript.js`
 and configure:
 
@@ -215,8 +217,9 @@ and configure:
 | `max26-login-prompt-delay` | Optional delay in seconds; URL `delay` takes precedence |
 
 The metadata can be authored on the page or supplied by the treatment's
-`updateMetadata` action. This alternative loads content off-document before
+`updateMetadata` action. This integration loads content off-document before
 opening the same dialog. Trigger parameters are removed before this fetch.
+Do not also insert the modal fragment using `insertAfter`.
 
 Adobe Target must apply the appropriate configuration to each page and event
 phase. Treatment eligibility owns signed-in exclusions and page targeting;
