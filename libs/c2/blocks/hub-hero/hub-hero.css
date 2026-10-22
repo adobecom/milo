@@ -806,7 +806,7 @@
     animation: elasticItemsShrink ease both, elasticMobileFirstSlideContainer ease both;
     animation-timeline: --hub-hero, --hub-hero;
     animation-range: entry 50% exit 100%, entry 100% exit 100%;
-    background-color: transparent;
+    background-color: color-mix(in srgb, var(--s2a-color-gray-1000) calc(var(--chrome-reveal) * 100%), transparent);
   }
 
   .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-header {
@@ -890,7 +890,6 @@
   .hub-hero-carousel-item-media {
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
-    border-radius: 0;
   }
 
   .hub-hero-carousel-item-media {
