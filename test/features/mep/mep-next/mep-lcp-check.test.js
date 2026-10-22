@@ -562,9 +562,9 @@ describe('mep-lcp-check', () => {
       expect(await init()).to.deep.equal([]);
       sinon.restore();
       expect(log.args.map(([msg]) => msg)).to.deep.equal([
-        'MEP LCP near-dupe image checks: no issues found (3 variants checked)',
-        'MEP LCP near-dupe image checks: no issues found (1 variant checked)',
-        'MEP LCP near-dupe image checks: no personalization variants to check',
+        '✅MEP LCP near-dupe image checks: no issues found (3 variants checked)',
+        '✅MEP LCP near-dupe image checks: no issues found (1 variant checked)',
+        '✅MEP LCP near-dupe image checks: no personalization variants to check',
       ]);
     });
   });
