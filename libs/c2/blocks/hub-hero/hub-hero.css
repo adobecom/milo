@@ -2434,10 +2434,6 @@
       }
 
       /* the right column leads instead (capped so it stays clear of the fading CTA) */
-      .hub-hero-image-grid-container-col:nth-child(4) {
-        --shuffle-down: calc(var(--exit-right-lead) * -1);
-      }
-
       .hub-hero-image-grid-container-col:nth-child(4) > div:nth-child(-n + 2) {
         animation-range: contain 0px contain 140px;
       }
@@ -2460,6 +2456,7 @@
       .hub-hero-image-grid-container-col:nth-child(4) {
         --exit-from: var(--grid-col-four-offset);
         --exit-x: calc((var(--exit-pitch) - (var(--grid-img-width-min) + 12px) / 2) * -1);
+        --shuffle-down: calc(var(--exit-right-lead) * -1);
       }
 
       /* card 1 sits below the images until it eases up into its sticky slot (initExitLeads) */
