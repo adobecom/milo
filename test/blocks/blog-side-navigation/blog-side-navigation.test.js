@@ -29,7 +29,9 @@ describe('blog-side-navigation section list', () => {
   function mockTablet(matches = true) {
     const query = new EventTarget();
     query.matches = matches;
-    mediaStub = stub(window, 'matchMedia').returns(query);
+    mediaStub = stub(window, 'matchMedia').callsFake((mediaQuery) => (
+      mediaQuery === '(min-width: 600px)' ? query : { matches: false }
+    ));
     return query;
   }
 
@@ -37,12 +39,13 @@ describe('blog-side-navigation section list', () => {
     scrollStub = stub(window, 'scrollTo');
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     scrollStub.restore();
     mediaStub?.restore();
     mediaStub = undefined;
     window.history.replaceState(null, '', originalUrl);
     document.querySelector('main')?.remove();
+    await new Promise(requestAnimationFrame);
   });
 
   it('uses H2 labels and numbered targets without replacing inline content', async () => {
@@ -66,6 +69,122 @@ describe('blog-side-navigation section list', () => {
       .to.deep.equal(['#section-1', '#section-2']);
     expect([...block.querySelectorAll('a')].map((link) => link.textContent))
       .to.deep.equal(['はじめに', 'はじめに']);
+  });
+
+  it('limits long jump labels to two lines except in collapsed mobile navigation', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    document.head.append(style);
+    const longTitle = 'A long section title that must remain fully accessible. '.repeat(12).trim();
+    try {
+      for (const width of [390, 768, 1440]) {
+        await setViewport({ width, height: 1000 });
+        for (const direction of ['ltr', 'rtl']) {
+          const { main, block } = buildArticle(
+            `<h2>${longTitle}</h2><h2>${longTitle}</h2><h2>Short</h2><h2>Last</h2>`,
+          );
+          main.dir = direction;
+          await init(block);
+          const button = block.querySelector('button');
+          const links = [...block.querySelectorAll('nav > ul > li > a')];
+          for (const expanded of [true, false]) {
+            if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
+            for (const link of links.filter((item) => !item.parentElement.hidden)) {
+              const text = link.querySelector('.blog-side-navigation-label');
+              const textStyle = getComputedStyle(text);
+              const lineHeight = parseFloat(textStyle.lineHeight);
+              const lines = !expanded && width < 600 ? 1 : 2;
+              expect(textStyle.webkitLineClamp).to.equal(String(lines));
+              expect(textStyle.overflow).to.equal('hidden');
+              if (text.textContent === longTitle) {
+                expect(text.getBoundingClientRect().height).to.be.closeTo(lineHeight * lines, 1);
+                expect(text.scrollHeight).to.be.greaterThan(text.clientHeight);
+              } else {
+                expect(text.getBoundingClientRect().height).to.be.closeTo(lineHeight, 1);
+              }
+            }
+            expect(links[0].textContent).to.equal(longTitle);
+            expect(links[1].textContent).to.equal(longTitle);
+            expect(links[0].getAttribute('href')).to.equal('#section-1');
+          }
+          main.remove();
+        }
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('uses plus and minus controls with an outer border and no link dividers at every viewport', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    document.head.append(style);
+    try {
+      for (const width of [390, 768, 1199, 1440]) {
+        await setViewport({ width, height: 1000 });
+        const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
+        await init(block);
+        const button = block.querySelector('button');
+        const icon = button.querySelector('span');
+        const list = block.querySelector('ul');
+        const mobile = width < 600;
+        if (button.getAttribute('aria-expanded') !== 'false') button.click();
+        expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
+        if (mobile) {
+          expect(getComputedStyle(block.querySelector(':scope > p')).fontSize).to.equal('16px');
+          expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight).to.equal('400');
+          expect(getComputedStyle(list).borderRadius).to.equal('0px');
+          expect(getComputedStyle(list).boxShadow).to.equal('none');
+          expect(getComputedStyle(button).borderWidth).to.equal('1px');
+          expect(getComputedStyle(button).borderRadius).to.equal('6px');
+          expect(getComputedStyle(button).backgroundColor).to.equal('rgb(248, 248, 248)');
+          expect(getComputedStyle(button.parentElement).backgroundColor).to.equal('rgba(0, 0, 0, 0)');
+          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('400');
+        }
+        expect(getComputedStyle(icon, '::before').width).to.equal('12px');
+        expect(getComputedStyle(icon, '::before').height).to.equal('2px');
+        expect(getComputedStyle(icon, '::after').width).to.equal('2px');
+        expect(getComputedStyle(icon, '::after').height).to.equal('12px');
+        expect(getComputedStyle(icon, '::after').display).not.to.equal('none');
+        expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
+        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
+        button.click();
+        expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
+        if (mobile) {
+          expect(getComputedStyle(button).borderWidth).to.equal('1px');
+          expect(getComputedStyle(button).borderRadius).to.equal('6px');
+        }
+        expect(getComputedStyle(button).backgroundColor).to.equal('rgb(0, 0, 0)');
+        expect(getComputedStyle(button).color).to.equal('rgb(255, 255, 255)');
+        expect(getComputedStyle(button).borderColor).to.equal('rgb(68, 68, 68)');
+        expect(getComputedStyle(icon, '::before').width).to.equal('6px');
+        expect(getComputedStyle(icon, '::before').height).to.equal('1.5px');
+        expect(getComputedStyle(icon, '::after').display).to.equal('none');
+        expect(getComputedStyle(icon).borderStyle).to.equal('solid');
+        expect(getComputedStyle(icon).borderColor).to.equal('rgb(255, 255, 255)');
+        expect(getComputedStyle(icon).borderRadius).to.equal('50%');
+        expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
+        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
+        expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
+          .to.equal(width < 600 ? '400' : '600');
+        for (const item of list.children) {
+          expect(item.hidden).to.equal(false);
+          expect(getComputedStyle(item).borderWidth).to.equal('0px');
+          expect(getComputedStyle(item.querySelector('a')).paddingInlineStart).to.equal('8px');
+          expect(getComputedStyle(item.querySelector('a')).paddingInlineEnd).to.equal('8px');
+          if (width < 600) {
+            expect(item.getBoundingClientRect().width).to.be.closeTo(list.clientWidth, 1);
+          }
+        }
+        main.remove();
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
   });
 
   it('ignores header, recommendation, footer, hidden and non-H2 headings', async () => {
@@ -114,25 +233,37 @@ describe('blog-side-navigation section list', () => {
     expect(main.querySelectorAll('#article-body').length).to.equal(1);
   });
 
-  it('bounds the desktop sticky rail to the article and stacks navigation on smaller screens', async () => {
+  it('uses a compact sticky rail on tablet, a wider desktop layout, and full-width jump links only on mobile', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     const css = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
-    style.textContent = `:root { --grid-container-width: calc(100% - 112px); }
-      .blog-header { min-height: 200px; }${css}`;
+    style.textContent = `:root { --grid-container-width: 83.4%; }
+      @media (min-width: 1440px) { :root { --grid-container-width: 1200px; } }
+      body { margin: 0; }
+      .blog-header { min-height: 200px; width: var(--grid-container-width); margin-inline: auto; }
+      ${css}`;
     document.head.append(style);
     try {
       await setViewport({ width: 1440, height: 1000 });
-      const { main, block } = buildArticle('<h2>Article section</h2><p>Article content.</p>');
+      const { main, block } = buildArticle(
+        '<h2>Article section</h2><p>Article content.</p><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>',
+      );
       await init(block);
       const layout = main.querySelector('.blog-article-layout');
       const article = main.querySelector('.blog-article-content');
+      const listStyle = getComputedStyle(block.querySelector('nav > ul'));
+      expect(listStyle.borderRadius).to.equal('4px');
+      expect(listStyle.border).to.equal('1px solid rgb(221, 221, 221)');
+      expect(listStyle.backgroundColor).to.equal('rgb(255, 255, 255)');
+      expect(listStyle.boxShadow).to.equal('rgba(0, 0, 0, 0.08) 1px 1px 4px 0px');
       expect(getComputedStyle(layout).columnGap).to.equal('56px');
       expect(getComputedStyle(block).position).to.equal('sticky');
       expect(getComputedStyle(block).top).to.equal('88px');
       expect(getComputedStyle(block).overflowY).to.equal('auto');
       expect(getComputedStyle(block.querySelector('[aria-current="location"]'))
-        .borderInlineStartWidth).to.equal('3px');
+        .borderInlineStartWidth).to.equal('0px');
+      expect(getComputedStyle(block.querySelector('[aria-current="location"]').parentElement)
+        .backgroundColor).to.equal('rgb(242, 242, 242)');
       expect(block.getBoundingClientRect().width).to.be.at.most(280);
       expect(article.getBoundingClientRect().left)
         .to.be.greaterThan(block.getBoundingClientRect().right);
@@ -141,6 +272,17 @@ describe('blog-side-navigation section list', () => {
         .to.be.at.least(main.querySelector('.blog-header').getBoundingClientRect().bottom);
       expect(main.querySelector('.content').getBoundingClientRect().width)
         .to.equal(article.getBoundingClientRect().width);
+      for (const width of [1440, 1600, 2000]) {
+        await setViewport({ width, height: 1000 });
+        expect(layout.getBoundingClientRect().width).to.equal(1200);
+        expect(layout.getBoundingClientRect().left)
+          .to.equal(main.querySelector('.blog-header').getBoundingClientRect().left);
+        expect(article.getBoundingClientRect().left)
+          .to.be.closeTo(block.getBoundingClientRect().right + 56, 1);
+        expect(article.getBoundingClientRect().right)
+          .to.be.closeTo(layout.getBoundingClientRect().right, 1);
+      }
+      block.insertAdjacentHTML('beforeend', '<div class="blog-related-content" style="height: 80px"></div>');
       article.style.minHeight = '1800px';
       main.insertAdjacentHTML('beforeend', '<div style="height: 1000px"></div>');
       scrollStub.callThrough();
@@ -154,15 +296,220 @@ describe('blog-side-navigation section list', () => {
         .to.be.closeTo(layout.getBoundingClientRect().bottom, 1);
       window.scrollTo({ top: 0, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      for (const width of [768, 390]) {
+      for (const width of [1199, 1024, 768, 600, 599, 390, 458, 1440, 390]) {
         await setViewport({ width, height: 1000 });
-        expect(getComputedStyle(block).position).to.equal('static');
-        expect(article.getBoundingClientRect().top)
-          .to.be.greaterThan(block.getBoundingClientRect().bottom);
-        expect(article.getBoundingClientRect().width).to.equal(block.getBoundingClientRect().width);
+        const nav = block.querySelector('nav');
+        if (width < 600) {
+          expect(getComputedStyle(block).display).to.equal('contents');
+          expect(getComputedStyle(nav).position).to.equal('sticky');
+          expect(article.getBoundingClientRect().top)
+            .to.be.greaterThan(nav.getBoundingClientRect().bottom);
+          expect(nav.getBoundingClientRect().width).to.be.closeTo(width, 1);
+          expect(nav.getBoundingClientRect().left).to.be.closeTo(0, 1);
+          expect(nav.getBoundingClientRect().right).to.be.closeTo(width, 1);
+          expect(nav.querySelector('ul').getBoundingClientRect().width).to.be.closeTo(width, 1);
+          expect(article.getBoundingClientRect().width)
+            .to.be.lessThan(nav.getBoundingClientRect().width);
+          const button = block.querySelector('button');
+          for (const expanded of [false, true]) {
+            if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
+            expect(button.hidden).to.equal(false);
+            expect(button.getBoundingClientRect().width).to.equal(32);
+            expect(button.getBoundingClientRect().left).to.be.at.least(0);
+            expect(button.getBoundingClientRect().right).to.be.at.most(width);
+            const link = button.parentElement.querySelector('a');
+            const text = link.querySelector('span');
+            const textLeft = link.getBoundingClientRect().left
+              + parseFloat(getComputedStyle(link).paddingInlineStart);
+            expect(textLeft).to.be.closeTo(block.querySelector(':scope > p')
+              .getBoundingClientRect().left, 1);
+            expect(text.getBoundingClientRect().right)
+              .to.be.at.most(button.getBoundingClientRect().left);
+          }
+        } else {
+          expect(getComputedStyle(layout).display).to.equal('grid');
+          const gap = width < 1200 ? 32 : 56;
+          expect(getComputedStyle(layout).columnGap).to.equal(`${gap}px`);
+          expect(getComputedStyle(block).position).to.equal('sticky');
+          expect(getComputedStyle(nav).position).to.equal('relative');
+          expect(article.getBoundingClientRect().left)
+            .to.be.closeTo(block.getBoundingClientRect().right + gap, 1);
+          expect(article.getBoundingClientRect().top).to.equal(block.getBoundingClientRect().top);
+          expect(block.getBoundingClientRect().width).to.be.at.most(280);
+          const related = block.querySelector('.blog-related-content');
+          expect(related.getBoundingClientRect().left).to.equal(block.getBoundingClientRect().left);
+          expect(related.getBoundingClientRect().width)
+            .to.equal(block.getBoundingClientRect().width);
+          window.scrollTo({ top: 400, behavior: 'instant' });
+          await new Promise(requestAnimationFrame);
+          expect(block.getBoundingClientRect().top).to.be.closeTo(88, 1);
+          window.scrollTo({ top: 0, behavior: 'instant' });
+          await new Promise(requestAnimationFrame);
+        }
         expect(document.documentElement.scrollWidth).to.be.at.most(width);
       }
     } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('hides internal scrollbars without clipping long navigation or keyboard focus', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    document.head.append(style);
+    try {
+      for (const width of [390, 768, 1440]) {
+        await setViewport({ width, height: 400 });
+        const content = Array.from({ length: 12 }, (_, index) => `<h2>Section ${index}</h2>`)
+          .join('');
+        const { main, block } = buildArticle(content);
+        await init(block);
+        main.querySelector('.blog-article-content').style.minHeight = '2000px';
+        const button = block.querySelector('button');
+        if (button.getAttribute('aria-expanded') === 'false') button.click();
+        const scroller = width < 600 ? block.querySelector('nav') : block;
+        expect(getComputedStyle(scroller).overflowY).to.equal('auto');
+        expect(getComputedStyle(scroller).scrollbarWidth).to.equal('none');
+        expect(getComputedStyle(scroller, '::-webkit-scrollbar').display).to.equal('none');
+        expect(scroller.scrollHeight).to.be.greaterThan(scroller.clientHeight);
+        expect(scroller.offsetWidth).to.equal(scroller.clientWidth);
+        scroller.scrollTop = 40;
+        expect(scroller.scrollTop).to.equal(40);
+        const lastLink = block.querySelector('nav > ul > li:last-child > a');
+        lastLink.focus();
+        expect(document.activeElement).to.equal(lastLink);
+        expect(lastLink.getBoundingClientRect().top)
+          .to.be.at.least(scroller.getBoundingClientRect().top);
+        expect(lastLink.getBoundingClientRect().bottom)
+          .to.be.at.most(scroller.getBoundingClientRect().bottom + 1);
+        main.remove();
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('keeps article and related-card layers beneath sticky navigation and the global header', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = `:root { --grid-container-width: calc(100% - 48px); }
+      .blog-header { min-height: 200px; }
+      .overlapping-content { position: fixed; inset: 0; z-index: 2147483647; background: red; }
+      ${await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' })}`;
+    document.head.append(style);
+    scrollStub.callThrough();
+    try {
+      for (const width of [390, 768, 1440]) {
+        await setViewport({ width, height: 800 });
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
+        main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="position: fixed; inset: 0 0 auto; height: 64px; z-index: 10; background: white"></div>');
+        await init(block);
+        const article = main.querySelector('.blog-article-content');
+        article.style.minHeight = '2400px';
+        article.insertAdjacentHTML('beforeend', '<div class="overlapping-content"></div>');
+        block.insertAdjacentHTML('beforeend', '<div class="blog-related-content"><div class="overlapping-content"></div></div>');
+        window.scrollTo({ top: 400, behavior: 'instant' });
+        await new Promise(requestAnimationFrame);
+        const nav = block.querySelector('nav');
+        const bounds = nav.getBoundingClientRect();
+        const x = bounds.left + bounds.width / 2;
+        const y = bounds.top + 20;
+        const topElement = document.elementFromPoint(x, y);
+        expect(topElement.closest('nav') === nav, JSON.stringify({
+          width,
+          x,
+          y,
+          actual: topElement.className,
+          articleIsolation: getComputedStyle(article).isolation,
+          relatedIsolation: getComputedStyle(block.querySelector('.blog-related-content')).isolation,
+          navZIndex: getComputedStyle(nav).zIndex,
+        })).to.equal(true);
+        expect(document.elementFromPoint(width / 2, 32).closest('.global-navigation')
+          === main.querySelector('.global-navigation')).to.equal(true);
+        main.insertAdjacentHTML('beforeend', '<div class="page-dialog" style="position: fixed; inset: 0; z-index: 100; background: white"></div>');
+        expect(document.elementFromPoint(x, y)
+          === main.querySelector('.page-dialog')).to.equal(true);
+        main.remove();
+      }
+    } finally {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('pins only jump links below the global header on mobile and clears section targets', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    const css = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = `:root { --grid-container-width: calc(100% - 48px); --global-height-nav: 64px; }
+      .blog-header { min-height: 200px; }${css}`;
+    document.head.append(style);
+    scrollStub.callThrough();
+    try {
+      for (const width of [390, 599]) {
+        await setViewport({ width, height: 800 });
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
+        main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="position: fixed; top: 0; height: 64px"></div>');
+        await init(block);
+        const nav = block.querySelector('nav');
+        const related = document.createElement('div');
+        related.className = 'blog-related-content';
+        related.style.height = '240px';
+        related.style.marginBlockStart = '40px';
+        block.append(related);
+        const article = main.querySelector('.blog-article-content');
+        article.style.minHeight = '2400px';
+        main.insertAdjacentHTML('beforeend', '<div style="height: 1000px"></div>');
+        await new Promise(requestAnimationFrame);
+        const relatedTop = related.getBoundingClientRect().top;
+        const title = block.querySelector(':scope > p');
+        const titleTop = title.getBoundingClientRect().top;
+        expect(title.textContent).to.equal('JUMP TO SECTION');
+        expect(nav.getBoundingClientRect().top).to.be.greaterThan(64);
+        for (const top of [600, 900]) {
+          window.scrollTo({ top, behavior: 'instant' });
+          await new Promise(requestAnimationFrame);
+          expect(nav.getBoundingClientRect().top).to.be.closeTo(64, 1);
+          expect(nav.querySelector('ul').getBoundingClientRect().top).to.be.closeTo(64, 1);
+          expect(title.getBoundingClientRect().top).to.be.closeTo(titleTop - top, 1);
+          expect(title.getBoundingClientRect().bottom).to.be.at.most(64);
+          expect(related.getBoundingClientRect().top).to.be.closeTo(relatedTop - top, 1);
+          expect(getComputedStyle(related).position).to.equal('static');
+          expect(nav.getBoundingClientRect().height).to.be.at.most(736);
+          expect(document.documentElement.scrollWidth).to.be.at.most(width);
+        }
+        const button = block.querySelector('button');
+        if (button.getAttribute('aria-expanded') === 'false') button.click();
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        const heading = main.querySelectorAll('h2')[1];
+        const margin = parseFloat(getComputedStyle(heading).scrollMarginTop);
+        expect(margin).to.be.closeTo(64 + nav.getBoundingClientRect().height + 24, 1);
+        scrollStub.resetHistory();
+        scrollStub.callsFake(() => {});
+        block.querySelector('a[href="#section-2"]').click();
+        await Promise.resolve();
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        const collapsedMargin = parseFloat(getComputedStyle(heading).scrollMarginTop);
+        const expectedTop = heading.getBoundingClientRect().top + window.scrollY - collapsedMargin;
+        expect(button.getAttribute('aria-expanded')).to.equal('false');
+        expect(scrollStub.firstCall.args[0].top).to.be.closeTo(expectedTop, 1);
+        expect(document.activeElement === heading).to.equal(true);
+        scrollStub.resetBehavior();
+        scrollStub.callThrough();
+        main.remove();
+      }
+    } finally {
+      scrollStub.resetBehavior();
+      scrollStub.callThrough();
+      window.scrollTo({ top: 0, behavior: 'instant' });
       style.remove();
       await setViewport(originalViewport);
     }
@@ -227,16 +574,69 @@ describe('blog-side-navigation section list', () => {
   });
 
   it('preserves native behavior for modified clicks', async () => {
-    const { block } = buildArticle('<h2>Section</h2>');
+    mockTablet(false);
+    const { block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
     await init(block);
-    const link = block.querySelector('a');
+    const button = block.querySelector('button');
+    button.click();
+    const link = block.querySelectorAll('a')[1];
     link.addEventListener('click', (event) => event.preventDefault());
     link.dispatchEvent(new MouseEvent('click', { ctrlKey: true, cancelable: true }));
     expect(scrollStub.called).to.equal(false);
     expect(window.location.href).to.equal(originalUrl);
+    expect(button.getAttribute('aria-expanded')).to.equal('true');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
   });
 
-  it('starts expanded and only offers collapse for more than three links on tablet and desktop', async () => {
+  it('closes only mobile dropdowns on selection and preserves open tablet and desktop rails', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = `:root { --grid-container-width: calc(100% - 48px); }
+      ${await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' })}`;
+    document.head.append(style);
+    try {
+      for (const width of [390, 768, 1199, 1200, 1440]) {
+        await setViewport({ width, height: 1000 });
+        const longTitle = 'A selected section title that wraps onto more than one line. '.repeat(8);
+        const { main, block } = buildArticle(
+          `<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>${longTitle}</h2>`,
+        );
+        main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="height: 64px"></div>');
+        await init(block);
+        const button = block.querySelector('button');
+        if (button.getAttribute('aria-expanded') === 'false') button.click();
+        const links = [...block.querySelectorAll('nav > ul > li > a')];
+        const heading = main.querySelectorAll('h2')[3];
+        links[3].focus({ preventScroll: true });
+        scrollStub.resetHistory();
+        links[3].click();
+        await Promise.resolve();
+        const desktop = width >= 600;
+        expect(button.getAttribute('aria-expanded')).to.equal(String(desktop));
+        expect(block.querySelectorAll('li[hidden]').length).to.equal(desktop ? 0 : 3);
+        expect(document.activeElement === heading).to.equal(true);
+        expect(window.location.hash).to.equal('#section-4');
+        if (!desktop) {
+          expect(links[3].parentElement.hidden).to.equal(false);
+          expect(button.parentElement === links[3].parentElement).to.equal(true);
+          expect(links[3].getAttribute('aria-current')).to.equal('location');
+        }
+        const nav = block.querySelector('nav');
+        const extra = desktop ? 0 : nav.getBoundingClientRect().height + 24;
+        const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64 - extra;
+        expect(scrollStub.firstCall.args[0].top).to.be.closeTo(expectedTop, 1);
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal(String(!desktop));
+        main.remove();
+        window.history.replaceState(null, '', originalUrl);
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('starts expanded and only offers collapse for more than three links on tablet', async () => {
     const media = mockTablet();
     for (const count of [1, 2, 3, 4]) {
       const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -271,9 +671,40 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('starts mobile lists with two or more links collapsed and supports expanding and collapsing', async () => {
+  it('starts collapsible desktop navigation closed without changing tablet or short lists', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    try {
+      for (const width of [1199, 1200, 1440]) {
+        await setViewport({ width, height: 1000 });
+        for (const count of [3, 4]) {
+          const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
+            .join('');
+          const { main, block } = buildArticle(content);
+          await init(block);
+          const button = block.querySelector('button');
+          const items = [...block.querySelectorAll('li')];
+          const open = count <= 3 || width < 1200;
+          expect(button.hidden).to.equal(count <= 3);
+          expect(button.getAttribute('aria-expanded')).to.equal(String(open));
+          expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
+          if (count > 3) {
+            button.click();
+            expect(button.getAttribute('aria-expanded')).to.equal(String(!open));
+            expect(items.filter((item) => !item.hidden).length).to.equal(open ? 1 : count);
+            button.click();
+            expect(button.getAttribute('aria-expanded')).to.equal(String(open));
+          }
+          main.remove();
+        }
+      }
+    } finally {
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('keeps short mobile lists open and only collapses lists with four or more links', async () => {
     mockTablet(false);
-    for (const count of [1, 2, 3, 4]) {
+    for (const count of [1, 2, 3, 4, 5]) {
       const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
         .join('');
       const { main, block } = buildArticle(content);
@@ -283,6 +714,10 @@ describe('blog-side-navigation section list', () => {
       if (count === 1) {
         expect(button).not.to.exist;
         expect(items[0].hidden).to.equal(false);
+      } else if (count <= 3) {
+        expect(button.hidden).to.equal(true);
+        expect(button.getAttribute('aria-expanded')).to.equal('true');
+        expect(items.every((item) => !item.hidden)).to.equal(true);
       } else {
         expect(button.hidden).to.equal(false);
         expect(button.getAttribute('aria-expanded')).to.equal('false');
@@ -325,6 +760,8 @@ describe('blog-side-navigation section list', () => {
   });
 
   it('centers the plus and minus strokes inside the toggle independently of the font', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    await setViewport({ width: 1440, height: 1000 });
     mockTablet();
     const style = document.createElement('style');
     style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
@@ -340,20 +777,24 @@ describe('blog-side-navigation section list', () => {
           if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
           const bounds = button.getBoundingClientRect();
           const iconBounds = icon.getBoundingClientRect();
+          const iconStyle = getComputedStyle(icon);
           expect(bounds.width).to.equal(32);
           expect(bounds.height).to.equal(32);
           const vertical = getComputedStyle(icon, '::after');
           expect(vertical.display === 'none').to.equal(expanded);
-          for (const pseudo of expanded ? ['::before'] : ['::before', '::after']) {
+          const strokes = expanded
+            ? [['::before', 6, 1.5]]
+            : [['::before', 12, 2], ['::after', 2, 12]];
+          for (const [pseudo, expectedWidth, expectedHeight] of strokes) {
             const stroke = getComputedStyle(icon, pseudo);
             const width = parseFloat(stroke.width);
             const height = parseFloat(stroke.height);
-            expect(width).to.equal(pseudo === '::before' ? 12 : 2);
-            expect(height).to.equal(pseudo === '::before' ? 2 : 12);
+            expect(width).to.equal(expectedWidth);
+            expect(height).to.equal(expectedHeight);
             const centerX = iconBounds.left + parseFloat(stroke.left)
-              + parseFloat(stroke.marginLeft) + width / 2;
+              + parseFloat(iconStyle.borderLeftWidth) + parseFloat(stroke.marginLeft) + width / 2;
             const centerY = iconBounds.top + parseFloat(stroke.top)
-              + parseFloat(stroke.marginTop) + height / 2;
+              + parseFloat(iconStyle.borderTopWidth) + parseFloat(stroke.marginTop) + height / 2;
             expect(centerX).to.be.closeTo(bounds.left + bounds.width / 2, 0.1);
             expect(centerY).to.be.closeTo(bounds.top + bounds.height / 2, 0.1);
           }
@@ -361,6 +802,7 @@ describe('blog-side-navigation section list', () => {
       }
     } finally {
       style.remove();
+      await setViewport(originalViewport);
     }
   });
 
@@ -398,29 +840,42 @@ describe('blog-side-navigation section list', () => {
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
   });
 
-  it('keeps keyboard focus visible when short lists gain or lose the mobile-only toggle', async () => {
+  it('keeps short lists open and preserves link focus across mobile and tablet breakpoints', async () => {
     const media = mockTablet();
-    const { block } = buildArticle('<h2>First</h2><h2>Second</h2>');
-    await init(block);
-    const button = block.querySelector('button');
-    const links = [...block.querySelectorAll('a')];
-    expect(button.hidden).to.equal(true);
-    links[1].focus({ preventScroll: true });
-    media.matches = false;
-    media.dispatchEvent(new Event('change'));
-    expect(button.hidden).to.equal(false);
-    expect(block.querySelectorAll('li[hidden]').length).to.equal(1);
-    expect(document.activeElement).to.equal(button);
-    media.matches = true;
-    media.dispatchEvent(new Event('change'));
-    expect(button.hidden).to.equal(true);
-    expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
-    expect(document.activeElement).to.equal(links[0]);
+    for (const count of [2, 3]) {
+      const { main, block } = buildArticle(
+        Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`).join(''),
+      );
+      await init(block);
+      const button = block.querySelector('button');
+      const links = [...block.querySelectorAll('a')];
+      links[1].focus({ preventScroll: true });
+      for (const matches of [false, true, false]) {
+        media.matches = matches;
+        media.dispatchEvent(new Event('change'));
+        expect(button.hidden).to.equal(true);
+        expect(button.getAttribute('aria-expanded')).to.equal('true');
+        expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+        expect(document.activeElement).to.equal(links[1]);
+      }
+      links[1].click();
+      await Promise.resolve();
+      expect(button.hidden).to.equal(true);
+      expect(button.getAttribute('aria-expanded')).to.equal('true');
+      expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+      expect(document.activeElement).to.equal(main.querySelectorAll('h2')[1]);
+      main.remove();
+    }
   });
 
   it('tracks sections in both scroll directions without moving focus, scrolling, or changing the URL', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    await setViewport({ width: 1440, height: 1000 });
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    document.head.append(style);
     const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2>');
-    let positions = [20, 200, 400];
+    let positions = [20, 1000, 2000];
     let scrollTop = 0;
     const scrollPosition = stub(window, 'scrollY').get(() => scrollTop);
     const rectangles = [...main.querySelectorAll('h2')].map((heading, index) => (
@@ -434,27 +889,101 @@ describe('blog-side-navigation section list', () => {
       links[0].focus({ preventScroll: true });
       const url = window.location.href;
       for (const [position, activeIndex] of [
-        [220, 1],
-        [420, 2],
+        [1020, 1],
+        [2020, 2],
         [0, 0],
       ]) {
         scrollTop = position;
         window.dispatchEvent(new Event('scroll'));
         await new Promise(requestAnimationFrame);
         expect(current()).to.deep.equal([links[activeIndex]]);
+        links.forEach((link, index) => {
+          expect(getComputedStyle(link.parentElement).backgroundColor)
+            .to.equal(index === activeIndex ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
+          expect(getComputedStyle(link).borderInlineStartWidth).to.equal('0px');
+          expect(getComputedStyle(link).paddingInlineStart).to.equal('8px');
+          expect(getComputedStyle(link).fontWeight).to.equal(index === activeIndex ? '600' : '400');
+        });
         expect(document.activeElement).to.equal(links[0]);
         expect(window.location.href).to.equal(url);
         expect(scrollStub.called).to.equal(false);
       }
-      positions = [20, 100, 400];
-      scrollTop = 150;
+      positions = [20, 500, 2000];
+      scrollTop = 750;
       window.dispatchEvent(new Event('resize'));
       await new Promise(requestAnimationFrame);
       expect(current()).to.deep.equal([links[1]]);
     } finally {
+      style.remove();
       rectangles.forEach((rectangle) => rectangle.restore());
       scrollPosition.restore();
+      await setViewport(originalViewport);
     }
+  });
+
+  [[true, 4], [false, 4]].forEach(([tablet, count]) => {
+    it(`shows the active section while collapsed with ${count} links on ${tablet ? 'desktop' : 'mobile'}`, async () => {
+      const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      await setViewport({ width: tablet ? 1440 : 390, height: 1000 });
+      mockTablet(tablet);
+      const titles = ['First', 'Second', 'Third', 'Fourth'].slice(0, count);
+      const { main, block } = buildArticle(titles.map((title) => `<h2>${title}</h2>`).join(''));
+      const positions = titles.map((_, index) => 20 + index * 200);
+      let scrollTop = 0;
+      const scrollPosition = stub(window, 'scrollY').get(() => scrollTop);
+      const rectangles = [...main.querySelectorAll('h2')].map((heading, index) => (
+        stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] - scrollTop }))
+      ));
+      const style = document.createElement('style');
+      style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+      document.head.append(style);
+      try {
+        await init(block);
+        const button = block.querySelector('button');
+        const items = [...block.querySelectorAll('nav > ul > li')];
+        const links = items.map((item) => item.querySelector('a'));
+        if (tablet) button.click();
+        button.focus({ preventScroll: true });
+        const url = window.location.href;
+        for (const activeIndex of [count - 1, 0, 1]) {
+          scrollTop = activeIndex ? positions[activeIndex] + 10 : 0;
+          window.dispatchEvent(new Event('scroll'));
+          await new Promise(requestAnimationFrame);
+          const visible = items.filter((item) => !item.hidden);
+          expect(visible.length).to.equal(1);
+          expect(visible[0] === items[activeIndex]).to.equal(true);
+          expect(visible[0].querySelector('a').textContent).to.equal(titles[activeIndex]);
+          expect(visible[0].querySelector('a').getAttribute('href')).to.equal(`#section-${activeIndex + 1}`);
+          expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
+          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal(tablet ? '600' : '400');
+          expect(button.parentElement === visible[0]).to.equal(true);
+          expect(button.getAttribute('aria-expanded')).to.equal('false');
+          expect(getComputedStyle(visible[0]).display).to.equal('flex');
+          expect(getComputedStyle(visible[0]).borderTopWidth).to.equal('0px');
+          expect(getComputedStyle(visible[0]).backgroundColor)
+            .to.equal(tablet ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
+          expect(items.filter((item) => getComputedStyle(item).display !== 'none').length).to.equal(1);
+          expect(document.activeElement === button).to.equal(true);
+          expect(window.location.href).to.equal(url);
+          expect(scrollStub.called).to.equal(false);
+        }
+        button.click();
+        expect(items.every((item) => !item.hidden)).to.equal(true);
+        expect(links.map((link) => link.textContent)).to.deep.equal(titles);
+        expect(button.parentElement === items[0]).to.equal(true);
+        expect(document.activeElement === button).to.equal(true);
+        links[0].focus({ preventScroll: true });
+        button.click();
+        expect(items[1].hidden).to.equal(false);
+        expect(items[0].hidden).to.equal(true);
+        expect(document.activeElement === button).to.equal(true);
+      } finally {
+        style.remove();
+        rectangles.forEach((rectangle) => rectangle.restore());
+        scrollPosition.restore();
+        await setViewport(originalViewport);
+      }
+    });
   });
 
   it('caches heading geometry during scrolling and refreshes it after layout changes', async () => {

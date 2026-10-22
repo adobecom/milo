@@ -17,6 +17,7 @@ const C1_BLOCKS = [
   'aside',
   'author-header',
   'blog-author',
+  'blog-related-content',
   'blog-side-navigation',
   'blog-header',
   'brand-concierge',
@@ -2701,7 +2702,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export async function scrollToHashedElement(hash, area = document, behavior = 'smooth') {
+export async function scrollToHashedElement(hash, area = document, behavior = 'smooth', extraOffset = 0) {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2724,7 +2725,7 @@ export async function scrollToHashedElement(hash, area = document, behavior = 's
 
   const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
-    top: topOffset - bufferHeight,
+    top: topOffset - bufferHeight - extraOffset,
     behavior,
   });
 }

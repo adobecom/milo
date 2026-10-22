@@ -1,22 +1,34 @@
-import { createTag, getConfig, scrollToHashedElement } from '../../utils/utils.js';
+import { createTag, getConfig, loadBlock, scrollToHashedElement } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 const sectionTrackers = new WeakMap();
 
-function scrollToSection(hash) {
+function scrollToSection(hash, block) {
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? 'instant' : 'smooth';
-  return scrollToHashedElement(hash, document, behavior);
+  const nav = block.querySelector('nav');
+  const offset = getComputedStyle(nav).position === 'sticky'
+    ? nav.getBoundingClientRect().height + 24 : 0;
+  return scrollToHashedElement(hash, document, behavior, offset);
 }
 
-function trackActiveSection(block, headings, cleanupControls) {
+function trackActiveSection(block, headings, collapseControls) {
   const links = [...block.querySelectorAll('nav > ul > li > a')];
   const navigation = document.querySelector('.global-navigation');
+  const jumpNavigation = block.querySelector('nav');
+  const layout = block.closest('.blog-article-layout');
   let currentIndex = -1;
   let frame = 0;
   let measure = true;
   let headingTops = [];
   let scrollMargin = 0;
+  const setActiveIndex = (index) => {
+    if (index === currentIndex) return;
+    links[currentIndex]?.removeAttribute('aria-current');
+    links[index].setAttribute('aria-current', 'location');
+    currentIndex = index;
+    collapseControls?.setActiveIndex(index);
+  };
   const update = () => {
     frame = 0;
     if (!block.isConnected) {
@@ -25,6 +37,9 @@ function trackActiveSection(block, headings, cleanupControls) {
     }
     const scrollTop = window.scrollY;
     if (measure) {
+      const height = getComputedStyle(jumpNavigation).position === 'sticky'
+        ? jumpNavigation.getBoundingClientRect().height : 0;
+      layout?.style.setProperty('--blog-side-navigation-height', `${height}px`);
       headingTops = headings.map((heading) => heading.getBoundingClientRect().top + scrollTop);
       scrollMargin = parseFloat(getComputedStyle(headings[0]).scrollMarginTop) || 0;
       measure = false;
@@ -35,10 +50,7 @@ function trackActiveSection(block, headings, cleanupControls) {
     headingTops.forEach((top, index) => {
       if (top <= offset) activeIndex = index;
     });
-    if (activeIndex === currentIndex) return;
-    links[currentIndex]?.removeAttribute('aria-current');
-    links[activeIndex].setAttribute('aria-current', 'location');
-    currentIndex = activeIndex;
+    setActiveIndex(activeIndex);
   };
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(update);
@@ -53,7 +65,7 @@ function trackActiveSection(block, headings, cleanupControls) {
     window.removeEventListener('resize', invalidate);
     observer.disconnect();
     cancelAnimationFrame(frame);
-    cleanupControls?.();
+    collapseControls?.cleanup();
     sectionTrackers.delete(block);
   });
   window.addEventListener('scroll', schedule, { passive: true });
@@ -61,9 +73,11 @@ function trackActiveSection(block, headings, cleanupControls) {
   const main = block.closest('main');
   const article = block.closest('.blog-article-layout') || main;
   observer.observe(article);
+  observer.observe(jumpNavigation);
   if (article !== main) observer.observe(main);
   if (navigation) observer.observe(navigation);
   update();
+  return { setActiveIndex };
 }
 
 function addCollapseControl(list, label) {
@@ -82,19 +96,28 @@ function addCollapseControl(list, label) {
   const items = [...list.children];
   items[0].append(button);
   const tablet = window.matchMedia('(min-width: 600px)');
-  const expanded = { tablet: true, mobile: false };
+  const expanded = { tablet: !window.matchMedia('(min-width: 1200px)').matches, mobile: false };
+  let activeIndex = 0;
   const render = () => {
-    const collapsible = items.length > (tablet.matches ? 3 : 1);
+    const collapsible = items.length > 3;
     const open = !collapsible || expanded[tablet.matches ? 'tablet' : 'mobile'];
     const focusedElement = document.activeElement;
+    const visibleItem = open ? items[0] : items[activeIndex];
     button.hidden = !collapsible;
-    if (!open && items.slice(1).some((item) => item.contains(focusedElement))) {
+    visibleItem.hidden = false;
+    if (button.parentElement !== visibleItem) {
+      visibleItem.append(button);
+      if (focusedElement === button && !button.hidden) button.focus({ preventScroll: true });
+    }
+    if (!open && items.some((item, index) => (
+      index !== activeIndex && item.contains(focusedElement)
+    ))) {
       button.focus({ preventScroll: true });
     } else if (button.hidden && focusedElement === button) {
-      items[0].querySelector('a').focus({ preventScroll: true });
+      visibleItem.querySelector('a').focus({ preventScroll: true });
     }
     button.setAttribute('aria-expanded', String(open));
-    items.forEach((item, index) => { item.hidden = !open && index > 0; });
+    items.forEach((item, index) => { item.hidden = !open && index !== activeIndex; });
   };
   button.addEventListener('click', () => {
     const viewport = tablet.matches ? 'tablet' : 'mobile';
@@ -103,7 +126,19 @@ function addCollapseControl(list, label) {
   });
   tablet.addEventListener('change', render);
   render();
-  return () => tablet.removeEventListener('change', render);
+  return {
+    collapse() {
+      expanded[tablet.matches ? 'tablet' : 'mobile'] = false;
+      render();
+    },
+    setActiveIndex(index) {
+      activeIndex = index;
+      if (button.getAttribute('aria-expanded') === 'false') render();
+    },
+    cleanup() {
+      tablet.removeEventListener('change', render);
+    },
+  };
 }
 
 function createLayout(block, main) {
@@ -174,13 +209,30 @@ export default async function init(block) {
       suffix += 1;
     }
     heading.id = id;
-    const link = createTag('a', { href: `#${id}` }, heading.textContent.trim());
+    const text = createTag('span', { class: 'blog-side-navigation-label' }, heading.textContent.trim());
+    const link = createTag('a', { href: `#${id}` }, text);
+    list.append(createTag('li', null, link));
+  });
+
+  const collapseControls = addCollapseControl(list, label);
+  const relatedContent = main.querySelector('.blog-related-content');
+  nav.append(list);
+  block.replaceChildren(createTag('p', null, createTag('strong', null, label)), nav);
+  block.hidden = false;
+  createLayout(block, main);
+  const sectionTracker = trackActiveSection(block, headings, collapseControls);
+  [...list.querySelectorAll(':scope > li > a')].forEach((link, index) => {
+    const heading = headings[index];
     link.addEventListener('click', (event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey
         || event.shiftKey || event.altKey) return;
       event.preventDefault();
+      if (collapseControls && !window.matchMedia('(min-width: 600px)').matches) {
+        sectionTracker.setActiveIndex(index);
+        collapseControls.collapse();
+      }
       if (window.location.hash !== link.hash) window.history.pushState(null, '', link.hash);
-      scrollToSection(link.hash).then(() => {
+      scrollToSection(link.hash, block).then(() => {
         if (!heading.hasAttribute('tabindex')) heading.tabIndex = -1;
         heading.focus({ preventScroll: true });
       }).catch((error) => {
@@ -190,16 +242,17 @@ export default async function init(block) {
         });
       });
     });
-    list.append(createTag('li', null, link));
   });
-
-  const cleanupControls = addCollapseControl(list, label);
-  nav.append(createTag('p', null, createTag('strong', null, label)), list);
-  block.replaceChildren(nav);
-  block.hidden = false;
-  createLayout(block, main);
-  trackActiveSection(block, headings, cleanupControls);
+  if (relatedContent) {
+    block.append(relatedContent);
+    loadBlock(relatedContent).catch((error) => {
+      window.lana?.log(`Blog related content failed to initialize: ${error.message}`, {
+        tags: 'blog-related-content',
+        severity: 'error',
+      });
+    });
+  }
   if (headings.some((heading) => window.location.hash === `#${heading.id}`)) {
-    await scrollToSection(window.location.hash);
+    await scrollToSection(window.location.hash, block);
   }
 }

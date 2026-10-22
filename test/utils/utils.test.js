@@ -1220,6 +1220,21 @@ describe('Utils', () => {
       expect(document.getElementById('not-block')).to.exist;
     });
 
+    it('supports an additional sticky surface offset without changing the default', async () => {
+      const originalScrollTo = window.scrollTo;
+      const scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      try {
+        await utils.scrollToHashedElement('#not-block');
+        await utils.scrollToHashedElement('#not-block', document, 'instant', 100);
+        expect(scrollSpy.secondCall.args[0].top).to.equal(scrollSpy.firstCall.args[0].top - 100);
+        expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
+        expect(scrollSpy.secondCall.args[0].behavior).to.equal('instant');
+      } finally {
+        window.scrollTo = originalScrollTo;
+      }
+    });
+
     it('should not scroll if no hash is present', () => {
       window.location.hash = '';
       let scrollToCalled = false;
