@@ -539,12 +539,12 @@ const groupByFragment = (findings) => {
 
 export function logFindings({ findings, unable }, checked = 0) {
   if (!findings.length && !unable.length) {
-    console.log(`${LOG_TITLE}: no issues found (${checked} variant${checked === 1 ? '' : 's'} checked)`);
+    console.log(`✅${LOG_TITLE}: no issues found (${checked} variant${checked === 1 ? '' : 's'} checked)`);
     return;
   }
   const groups = groupByFragment(findings);
   const count = groups.reduce((n, group) => n + group.fixes.length, 0);
-  console.groupCollapsed(`${LOG_TITLE} (${count})`);
+  console.groupCollapsed(`❌${LOG_TITLE} (${count})`);
   groups.forEach((group) => console.log(describeNearDuplicates(group)));
   unable.forEach((msg) => console.info(`Unable to compare: ${msg}`));
   if (findings.length) console.log(DISTANCE_NOTE);
@@ -586,7 +586,7 @@ export default async function init() {
   if (!mep?.lcpCheck || !mep.lcpSection) return [];
   const experiments = getVariantsToCheck(mep.lcpExperiments, mep.variantOverride);
   if (!experiments.length) {
-    if (!mep.lcpFindings) console.log(`${LOG_TITLE}: no personalization variants to check`);
+    if (!mep.lcpFindings) console.log(`💡${LOG_TITLE}: no personalization variants to check`);
     mep.lcpFindings ??= [];
     return mep.lcpFindings;
   }
