@@ -1238,19 +1238,35 @@ describe('merch-card-collection autoblock', () => {
       expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('desktop');
     });
 
-    it('opens and closes the drawer, tracking aria-expanded', async () => {
+    it('opens the drawer on its close button and closes it', () => {
       const { container } = mount();
       const drawer = container.querySelector('.product-pricing-drawer');
       const trigger = container.querySelector('.product-pricing-filter-trigger');
-      expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+      const close = container.querySelector('.product-pricing-drawer-close');
+      // A dialog trigger, not a disclosure.
+      expect(trigger.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(trigger.hasAttribute('aria-expanded')).to.be.false;
+      trigger.focus();
       trigger.click();
       expect(drawer.open).to.be.true;
-      expect(trigger.getAttribute('aria-expanded')).to.equal('true');
-      container.querySelector('.product-pricing-drawer-close').click();
+      expect(document.activeElement).to.equal(close);
+      expect(trigger.hasAttribute('aria-expanded')).to.be.false;
+      close.click();
       expect(drawer.open).to.be.false;
-      // <dialog> fires 'close' asynchronously, which is what clears the flag.
-      await delay(50);
-      expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+      // Native <dialog> hands focus back to the trigger.
+      expect(document.activeElement).to.equal(trigger);
+    });
+
+    it('names the drawer by its heading, with a unique id per drawer', () => {
+      const first = mount().container.querySelector('.product-pricing-drawer');
+      const second = mount().container.querySelector('.product-pricing-drawer');
+      [first, second].forEach((drawer) => {
+        expect(drawer.hasAttribute('aria-label')).to.be.false;
+        const title = document.getElementById(drawer.getAttribute('aria-labelledby'));
+        expect(title).to.equal(drawer.querySelector('h2.product-pricing-drawer-title'));
+        expect(title.textContent).to.equal('All Filters');
+      });
+      expect(first.getAttribute('aria-labelledby')).to.not.equal(second.getAttribute('aria-labelledby'));
     });
 
     it('opts the drawer out of Lenis scrolling', () => {
