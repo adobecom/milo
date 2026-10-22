@@ -991,7 +991,7 @@ describe('blog-header section dividers', () => {
       expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
     });
 
-    [1199, 375].forEach((width) => {
+    [1199, 600, 599, 375].forEach((width) => {
       it(`moves the header rule below the sidenav in the stacked layout at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
         const fixture = buildStyledSections();
@@ -1008,7 +1008,11 @@ describe('blog-header section dividers', () => {
         const ruleTop = navRect.top + parseFloat(rule.top);
         expect(rule.content).to.equal('""');
         expect(rule.pointerEvents).to.equal('none');
-        expect(rule.borderImageSource).to.include('rgb(182, 182, 182)');
+        expect(rule.blockSize).to.equal(width < 600 ? '1.5px' : '2px');
+        expect(rule.borderImageSource).to.include(width < 600
+          ? 'linear-gradient(rgb(192, 192, 192), rgb(192, 192, 192))'
+          : 'repeating-linear-gradient');
+        expect(rule.borderImageOutset).to.equal(`0 ${width}px`);
         expect(ruleTop - navRect.bottom).to.equal(56);
         expect(article.getBoundingClientRect().top - (ruleTop + parseFloat(rule.height)))
           .to.equal(56);
@@ -1056,8 +1060,9 @@ describe('blog-header section dividers', () => {
       expect(bottom.content).to.equal('""');
       expect(parseFloat(bottom.width))
         .to.be.closeTo(headerSection.getBoundingClientRect().width, 0.01);
-      expect(bottom.blockSize).to.equal('2px');
-      expect(bottom.backgroundImage).to.include('rgb(182, 182, 182)');
+      expect(bottom.blockSize).to.equal('1.5px');
+      expect(bottom.backgroundImage)
+        .to.equal('linear-gradient(rgb(192, 192, 192), rgb(192, 192, 192))');
     });
   });
 });

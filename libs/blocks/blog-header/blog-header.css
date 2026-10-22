@@ -200,11 +200,21 @@ a.blog-header-author-name:hover {
   }
 }
 
-/* Section dividers: decorative dotted rules that never take up layout space. */
+/* Section dividers: decorative rules that never take up layout space. */
 .blog-divider-frame,
 .blog-divider-frame + .blog-article-layout {
   --blog-divider-dots: var(--color-gray-400) 0 2px, transparent 2px 7px;
   --blog-divider-gap: 48px;
+  --blog-divider-rule-size: 2px;
+  --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
+}
+
+@media (max-width: 599px) {
+  .blog-divider-frame,
+  .blog-divider-frame + .blog-article-layout {
+    --blog-divider-rule-size: 1.5px;
+    --blog-divider-rule-image: linear-gradient(#c0c0c0, #c0c0c0);
+  }
 }
 
 @media (min-width: 600px) {
@@ -230,8 +240,8 @@ a.blog-header-author-name:hover {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
-  block-size: 2px;
-  background-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
+  block-size: var(--blog-divider-rule-size);
+  background-image: var(--blog-divider-rule-image);
   pointer-events: none;
 }
 
@@ -243,7 +253,7 @@ a.blog-header-author-name:hover {
   .blog-divider-frame + .blog-article-layout {
     --blog-divider-space: 56px;
 
-    row-gap: calc(2 * var(--blog-divider-space) + 2px);
+    row-gap: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
   }
 
   .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
@@ -255,8 +265,8 @@ a.blog-header-author-name:hover {
     position: absolute;
     inset-inline: 0;
     inset-block-start: calc(100% + var(--blog-divider-space));
-    block-size: 2px;
-    border-image: repeating-linear-gradient(to right, var(--blog-divider-dots)) fill 0 / 0 / 0 100vw;
+    block-size: var(--blog-divider-rule-size);
+    border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
     pointer-events: none;
   }
 }
