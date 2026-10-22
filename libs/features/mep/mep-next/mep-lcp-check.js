@@ -586,7 +586,7 @@ export default async function init() {
   if (!mep?.lcpCheck || !mep.lcpSection) return [];
   const experiments = getVariantsToCheck(mep.lcpExperiments, mep.variantOverride);
   if (!experiments.length) {
-    if (!mep.lcpFindings) console.log(`💡${LOG_TITLE}: no personalization variants to check`);
+    if (!mep.lcpFindings) console.log(`✅${LOG_TITLE}: no personalization variants to check`);
     mep.lcpFindings ??= [];
     return mep.lcpFindings;
   }
