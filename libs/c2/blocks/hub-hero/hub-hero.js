@@ -232,73 +232,74 @@ const initHeaderPin = (hubHero, header) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
-// Mobile exit: card 1, the carousel heading and card 2 land on their sticky slots ahead of
-// their scroll position, via scroll-driven CSS (compositor-synced). Timings are px of hero scroll,
-// like the image exits, so they hold on any screen height: card 1 lands at --exit-card-land (the
-// images clear at the same scroll on every screen); its reveal, the heading and card 2 are offset
-// from that landing. JS only measures sticky offsets and converts on resize.
-const LEAD_VARS = ['--lead-from', '--lead-land', '--lead-stick', '--lead-l', '--lead-big-l', '--lead-lp'];
-
+// Mobile exit: once the images clear, card 1, the carousel heading and the stacked cards land at
+// set scroll positions (px of hero scroll, so the same on any screen height). JS shifts the layout
+// so each one sticks there naturally (no per-frame motion, nothing fighting the sticky); card 1
+// alone eases up from below via --card-lead-* so it stays hidden under the images until then.
 const initExitLeads = (hubHero) => {
-  const card = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"]');
+  const carousel = hubHero.querySelector('.hub-hero-carousel');
   const heading = hubHero.querySelector('.hub-hero-carousel-header');
-  const card2 = hubHero.querySelector('.hub-hero-carousel-item[data-index="2"]');
   const container = hubHero.querySelector('.hub-hero-carousel-container');
-  if (!card || !container) return;
+  const cards = [...hubHero.querySelectorAll('.hub-hero-carousel-item[data-index]')]
+    .sort((x, y) => x.dataset.index - y.dataset.index);
+  if (!carousel || !container || !cards.length) return;
+  const [card] = cards;
+  const shifted = [carousel, container, ...cards];
   const mobileQuery = window.matchMedia('(width < 768px)');
 
   const clear = () => {
-    [card, heading, card2].filter(Boolean)
-      .forEach((el) => LEAD_VARS.forEach((v) => el.style.removeProperty(v)));
+    shifted.forEach((el) => el.style.removeProperty('margin-top'));
+    ['--card-lead-from', '--card-lead-land', '--card-lead-d'].forEach((v) => card.style.removeProperty(v));
     ['--expand-start', '--expand-end'].forEach((v) => container.style.removeProperty(v));
     ['--exit-heading-fade-from', '--exit-heading-fade-to'].forEach((v) => hubHero.style.removeProperty(v));
   };
 
-  const stickOf = (el, heroTop) => {
-    // Static position: measure as a non-sticky, unanimated box.
+  // Scroll (px into the hero) at which a sticky element sticks, from its static position.
+  const stickOf = (el) => {
     el.style.position = 'static';
-    el.style.animation = 'none';
     const staticTop = el.getBoundingClientRect().top + window.scrollY;
     el.style.removeProperty('position');
-    el.style.removeProperty('animation');
+    const heroTop = hubHero.getBoundingClientRect().top + window.scrollY;
     return staticTop - (parseFloat(getComputedStyle(el).top) || 0) - heroTop;
   };
 
-  const setLead = (el, land, run, stick) => {
-    const landPx = Math.max(Math.min(land, stick), 1);
-    const fromPx = Math.max(landPx - run, 0);
-    const values = [fromPx, landPx, stick, landPx - fromPx, stick - fromPx, stick - landPx];
-    LEAD_VARS.forEach((v, i) => el.style.setProperty(v, `${values[i]}px`));
-    return landPx;
+  // Move el's layout by (land - current stick) so it sticks at land; returns that shift.
+  const shiftTo = (el, target, land) => {
+    const delta = land - stickOf(el);
+    const margin = parseFloat(getComputedStyle(target).marginTop) || 0;
+    target.style.marginTop = `${margin + delta}px`;
+    return delta;
   };
 
   const measure = () => {
-    const { totalScrollRange: range, hubHeroAbsTop: heroTop } = getHubHeroScrollRange(hubHero);
-    if (!mobileQuery.matches || range <= 0) {
-      clear();
-      return;
-    }
+    clear();
+    if (!mobileQuery.matches || getHubHeroScrollRange(hubHero).totalScrollRange <= 0) return;
     const style = getComputedStyle(hubHero);
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
-
-    const cardStick = stickOf(card, heroTop);
-    const cardLand = setLead(card, px('--exit-card-land'), px('--exit-card-lead-run'), cardStick);
-    container.style.setProperty('--expand-start', (cardLand - px('--exit-expand-before')) / range);
-    container.style.setProperty('--expand-end', (cardLand + px('--exit-expand-after')) / range);
+    const cardLand = px('--exit-card-land');
 
     if (heading) {
-      const land = setLead(
-        heading,
-        cardLand + px('--exit-heading-after'),
-        px('--exit-heading-lead-run'),
-        stickOf(heading, heroTop),
-      );
+      // Pull the carousel up for the heading; the container takes the shift back.
+      const delta = shiftTo(heading, carousel, cardLand + px('--exit-heading-after'));
+      container.style.marginTop = `${(parseFloat(getComputedStyle(container).marginTop) || 0) - delta}px`;
+    }
+
+    const lead = -shiftTo(card, container, cardLand);
+    card.style.setProperty('--card-lead-d', `${Math.max(lead, 0)}px`);
+    card.style.setProperty('--card-lead-from', `${Math.max(cardLand - px('--exit-card-lead-run'), 0)}px`);
+    card.style.setProperty('--card-lead-land', `${cardLand}px`);
+
+    cards.slice(1).forEach((el, i) => {
+      shiftTo(el, el, cardLand + px('--exit-card2-after') + i * px('--exit-card-step'));
+    });
+
+    const { totalScrollRange: range } = getHubHeroScrollRange(hubHero);
+    container.style.setProperty('--expand-start', (cardLand - px('--exit-expand-before')) / range);
+    container.style.setProperty('--expand-end', (cardLand + px('--exit-expand-after')) / range);
+    if (heading) {
+      const land = cardLand + px('--exit-heading-after');
       hubHero.style.setProperty('--exit-heading-fade-from', `${land - px('--exit-heading-fade-before')}px`);
       hubHero.style.setProperty('--exit-heading-fade-to', `${land + px('--exit-heading-fade-after')}px`);
-    }
-    if (card2) {
-      const stick = stickOf(card2, heroTop);
-      setLead(card2, cardLand + px('--exit-card2-after'), px('--exit-card2-lead-run'), stick);
     }
   };
 
