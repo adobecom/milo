@@ -237,7 +237,8 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     background: var(--s2a-color-gray-800);
     box-shadow: 0 4px 12px rgb(0 0 0 / 8%), 0 2px 6px rgb(0 0 0 / 4%);
     color: var(--s2a-color-content-knockout);
-    font-size: var(--s2a-typography-font-size-body-sm);
+    font-size: var(--s2a-typography-font-size-body-md);
+    line-height: var(--s2a-typography-line-height-body-md);
     overflow-y: hidden;
     overscroll-behavior-y: contain;
   }
@@ -346,7 +347,7 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
     width: 100%;
     min-height: 40px;
     padding: 0 var(--s2a-spacing-sm);
-    border-radius: var(--s2a-border-radius-sm);
+    border-radius: var(--s2a-border-radius-xs);
     color: inherit;
     font: inherit;
     text-decoration: none;
@@ -398,6 +399,8 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
 
     .global-footer .market-selector-button {
       gap: var(--s2a-spacing-2xs);
+      font-size: var(--s2a-typography-font-size-caption);
+      line-height: var(--s2a-typography-line-height-caption);
     }
 
     .global-footer .market-selector-globe {
@@ -440,6 +443,8 @@ html:has(meta[name="footer-foundation"][content="c2"]) {
 
   .global-footer.mobile .market-selector-button {
     gap: var(--s2a-spacing-2xs);
+    font-size: var(--s2a-typography-font-size-caption);
+    line-height: var(--s2a-typography-line-height-caption);
   }
 
   .global-footer.mobile .market-selector-button .market-selector-globe {
