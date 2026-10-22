@@ -2364,17 +2364,19 @@
      * Stagger: rigid columns rise at the same speed, each starting at a different time.
      * All timings are px of hero scroll (not % or vh) so the motion is identical on any screen
      * height. Card 1, the carousel heading and the stacked cards then stick at set scroll
-     * positions anchored to card 1's landing (see initExitLeads).
+     * positions anchored to card 1's landing (see initExitLeads): card 1 fully reveals (expand,
+     * then chrome), then the heading fades in, then card 2 comes into view.
      */
     .hub-hero {
       --exit-card-land: 550px;
       --exit-card-lead-run: 270px;
       --exit-expand-before: 175px;
       --exit-expand-after: 30px;
-      --exit-heading-after: 85px;
-      --exit-heading-fade-before: 85px;
+      --exit-heading-after: 200px;
+      --exit-heading-fade-before: 70px;
       --exit-heading-fade-after: 30px;
-      --exit-card2-after: 490px;
+      --exit-card2-enter: 220px;
+      --exit-chrome-reveal: 70px;
       --exit-card-step: 560px;
 
       /* hero heading/CTA fade over a fixed scroll distance (10% of this px range), like the images */
@@ -2442,7 +2444,7 @@
         animation: hubHeroExitHeadingIn linear both, hubHeroExitHeadingOut ease forwards;
         animation-timeline: --hub-hero, --hub-hero;
         animation-range: contain var(--exit-heading-fade-from, 17%) contain var(--exit-heading-fade-to, 21%),
-          contain 25% contain 107%;
+          contain var(--exit-heading-fade-to, 25%) contain 107%;
       }
     }
   }
