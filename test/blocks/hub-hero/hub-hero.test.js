@@ -647,6 +647,17 @@ describe('hub-hero block', () => {
       expect(slides[3].classList.contains('hovered')).to.be.true;
     });
 
+    it('restores the keyboard-focused card once the pointer leaves the carousel', async () => {
+      slides[0].focus();
+      enterCard(slides[3]);
+      expect(slides[0].classList.contains('focused')).to.be.false;
+      container.dispatchEvent(new MouseEvent('mouseleave', { clientX: 1460, clientY: 900 }));
+      await new Promise((resolve) => { setTimeout(resolve, 30); });
+      expect(slides[3].classList.contains('hovered')).to.be.false;
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      expect(container.querySelectorAll('.hovered, .focused').length).to.equal(1);
+    });
+
     it('reuses carousel context instead of querying slide ancestors during hover and focus', () => {
       const closest = sinon.spy(slides[0], 'closest');
       const styles = sinon.spy(window, 'getComputedStyle');

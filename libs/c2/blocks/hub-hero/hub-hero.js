@@ -322,6 +322,7 @@ const clearCarouselState = (context) => {
   clearTimeout(leaveTimeouts.get(container));
   carousel.querySelectorAll('.hovered, .focused:not(:focus-visible)')
     .forEach((sld) => sld.classList.remove('hovered', 'focused'));
+  carousel.querySelector('.hub-hero-carousel-item:focus-visible')?.classList.add('focused');
   updateCarouselAnchoring(context);
 };
 
