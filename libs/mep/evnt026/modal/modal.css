@@ -369,7 +369,7 @@
       right: auto;
       left: var(--s2a-spacing-lg);
     }
-  } 
+  }
 }
 
 @media (min-width: 600px) {
