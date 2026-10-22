@@ -62,7 +62,7 @@ function buildMerchCard(col) {
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
-  const isCtaPara = (el) => !!el.querySelector('.con-button, a[data-wcs-osi], mas-field[field^="ctas"]');
+  const isCtaPara = (el) => !!el.querySelector('.con-button, mas-field[field^="ctas"]');
   const ctaParas = [...cardContent.children].filter(isCtaPara);
   if (ctaParas.length) {
     const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
