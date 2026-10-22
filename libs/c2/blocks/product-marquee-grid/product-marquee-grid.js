@@ -54,24 +54,27 @@ function buildMerchCard(col) {
     .forEach((p) => p.classList.add('body-md'));
   normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
-  const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')]
-    .filter((btn) => !btn.closest(MAS_BODY_FIELDS));
-  buttons.forEach((btn) => btn.remove());
-
   const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md)')]
-    .filter((el) => el.textContent.trim() || el.matches('mas-field') || el.querySelector('mas-field, [is="inline-price"]'));
+    .filter((el) => el.textContent.trim() || el.matches('mas-field')
+      || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
-  const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  buttons.forEach((btn) => ctaWrapper.append(btn));
+  // Group the CTA paragraphs in place (preserving authored order) so the buttons stay
+  // inside pm-merch-content. Key off stable markup: MAS ctas resolve .con-button late.
+  const isCtaPara = (el) => !!el.querySelector('.con-button, a[data-wcs-osi], mas-field[field^="ctas"]');
+  const ctaParas = [...cardContent.children].filter(isCtaPara);
+  if (ctaParas.length) {
+    const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
+    ctaParas[0].replaceWith(ctaWrapper);
+    ctaParas.forEach((para) => ctaWrapper.append(para));
+  }
 
   const merchCard = createTag('div', { class: 'pm-merch-card' });
   merchCard.append(cardContent);
-  if (ctaWrapper.children.length) merchCard.append(ctaWrapper);
   return merchCard;
 }
 

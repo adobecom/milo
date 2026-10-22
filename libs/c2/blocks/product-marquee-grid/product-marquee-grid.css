@@ -146,10 +146,21 @@
   .pm-merch-ctas {
     display: flex;
     gap: var(--s2a-spacing-xs);
+    /* Parent gap is --s2a-spacing-md (16px); +8px here = 24px above the CTAs. */
+    margin-top: var(--s2a-spacing-xs);
+    /* Parent is align-items: flex-start, so stretch to the card's full width. */
+    align-self: stretch;
 
-    > .con-button {
+    /* Collapse the CTA wrappers (the paragraph, and the mas-field around a MAS CTA)
+       so every button becomes a direct flex item — whether the two CTAs are authored
+       as one paragraph or split across two. One flex rule then lays them out. */
+    > p,
+    mas-field {
+      display: contents;
+    }
+
+    .con-button {
       flex: 1 1 0;
-      justify-content: center;
     }
   }
 
@@ -202,7 +213,7 @@
     .pm-merch-ctas {
       flex-direction: column;
 
-      > .con-button {
+      .con-button {
         flex: none;
         inline-size: 100%;
       }
