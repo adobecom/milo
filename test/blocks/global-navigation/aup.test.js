@@ -895,20 +895,32 @@ describe('AUP', () => {
   });
 
   [
-    { name: 'C1', content: 'milo' },
-    { name: 'C2', content: 'c2' },
-  ].forEach(({ name, content }) => {
-    it(`applies the shared dialog styles in the ${name} modal`, async () => {
-      foundation = document.createElement('meta');
-      foundation.name = 'foundation';
-      foundation.content = content;
-      document.head.append(foundation);
-      const { showDialog } = await initializeHost();
-      await showDialog(createElement('iframe'), { title: 'Workflow' }, sinon.spy());
+    { name: 'C1', content: 'milo', css: '/libs/blocks/modal/modal.css' },
+    { name: 'C2', content: 'c2', css: '/libs/c2/blocks/modal/modal.css' },
+  ].forEach(({ name, content, css }) => {
+    [
+      { viewport: { width: 390, height: 844 }, size: { width: 390, height: 844 } },
+      { viewport: { width: 1440, height: 1024 }, size: { width: 1280, height: 820 } },
+    ].forEach(({ viewport, size }) => {
+      it(`sizes the ${name} AUP dialog like the 3-in-1 modal at ${viewport.width}px`, async () => {
+        await setViewport(viewport);
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = content;
+        document.head.append(foundation);
+        await loadStyles(css);
+        const { showDialog } = await initializeHost();
+        await showDialog(createElement('iframe'), { title: 'Workflow' }, sinon.spy());
+        const box = dialog().getBoundingClientRect();
+        const workflow = dialog().querySelector('.aup-workflow-content');
+        const contentBox = workflow.getBoundingClientRect();
 
-      expect(document.head.querySelector('link[rel="stylesheet"][href$="/global-navigation/utilities/aup-sdk.css"]')).to.exist;
-      expect(getComputedStyle(dialog().querySelector('.aup-workflow-content')).position).to.equal('relative');
-      expect(dialog().getBoundingClientRect().height).to.be.greaterThan(300);
+        expect(dialog().classList.contains('three-in-one')).to.be.false;
+        const rounded = { width: Math.round(box.width), height: Math.round(box.height) };
+        expect(rounded).to.deep.equal(size);
+        expect(Math.round(contentBox.height)).to.equal(size.height);
+        expect(getComputedStyle(dialog().querySelector('iframe')).width).to.equal(`${size.width}px`);
+      });
     });
   });
 
