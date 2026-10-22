@@ -279,6 +279,34 @@ const initExitLeads = (hubHero) => {
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
     const cardLand = px('--exit-card-land');
 
+    // Slide: center each image on its row's line (the side images' centers), and send the row
+    // off one side (alternating, from the left); a row without a center image splits in two.
+    const cols = [...hubHero.querySelectorAll('.hub-hero-image-grid-container-col')].slice(1, 4);
+    const imgs = cols.flatMap((c) => [...c.children]);
+    [...cols, ...imgs].forEach((el) => { el.style.animation = 'none'; });
+    const rects = new Map(imgs.map((el) => [el, el.getBoundingClientRect()]));
+    [...cols, ...imgs].forEach((el) => el.style.removeProperty('animation'));
+    const rows = Math.max(...cols.map((c) => c.children.length));
+    const mid = (r) => r.top + r.height / 2;
+    for (let i = 0; i < rows; i += 1) {
+      const [l, c, r] = cols.map((col) => col.children[i]);
+      const sides = [l, r].filter(Boolean);
+      const line = sides.length
+        ? sides.reduce((sum, el) => sum + mid(rects.get(el)), 0) / sides.length
+        : mid(rects.get(c));
+      const row = [l, c, r].filter(Boolean);
+      const off = (el, dir) => (dir < 0 ? -rects.get(el).right
+        : window.innerWidth - rects.get(el).left) + dir * 16;
+      row.forEach((el) => {
+        el.style.setProperty('--align-dy', `${line - mid(rects.get(el))}px`);
+        let dir = el === l ? -1 : 1;
+        if (c) dir = i % 2 ? 1 : -1;
+        // A whole row travels together, by its farthest image's distance.
+        const travel = c ? Math.max(...row.map((x) => dir * off(x, dir))) * dir : off(el, dir);
+        el.style.setProperty('--slide-x', `${travel}px`);
+      });
+    }
+
     if (heading) {
       // Pull the carousel up for the heading; the container takes the shift back.
       const delta = shiftTo(heading, carousel, cardLand + px('--exit-heading-after'));

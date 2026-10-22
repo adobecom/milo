@@ -2357,11 +2357,13 @@
   }
 }
 
-/** mobile grid exit: stagger */
+/** mobile grid exit: slide */
 @media (width < 768px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
     /*
-     * Stagger: rigid columns rise at the same speed, each starting at a different time.
+     * Slide: the images first settle into rows (each centered on its row, so the center column
+     * rises), then the rows slide out sideways one after another: row 1 left, row 2 right, and so
+     * on; a row without a center image splits, its left image going left and its right image right.
      * All timings are px of hero scroll (not % or vh) so the motion is identical on any screen
      * height. Card 1, the carousel heading and the stacked cards then stick at set scroll
      * positions anchored to card 1's landing (see initExitLeads): card 1 fully reveals (expand,
@@ -2385,52 +2387,29 @@
         animation-range: contain 0px contain 3040px;
       }
 
-      .hub-hero-image-grid-container-col:nth-child(2) {
-        --exit-from: var(--grid-col-two-offset);
-        --exit-range: contain 45px contain 551px;
-        --exit-fade-range: contain 424px contain 551px;
-      }
-
-      .hub-hero-image-grid-container-col:nth-child(3) {
-        --exit-from: var(--grid-col-three-offset);
-        --exit-range: contain 75px contain 431px;
-        --exit-fade-range: contain 380px contain 440px;
-      }
-
-      .hub-hero-image-grid-container-col:nth-child(4) {
-        --exit-from: var(--grid-col-four-offset);
-        --exit-range: contain 100px contain 444px;
-        --exit-fade-range: contain 405px contain 475px;
-      }
-
-
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
-        --exit-lift: -564px;
-
-        will-change: transform, opacity;
-        animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFadeOut linear both;
-        animation-timeline: --hub-hero, --hub-hero;
-        animation-range: var(--exit-range), var(--exit-fade-range);
-      }
-
-      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
         animation: none;
-        translate: none;
+      }
+
+      /* --align-dy (onto the row's center line) and --slide-x (off-screen) come from initExitLeads */
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
+        --slide-range: contain 140px contain 330px;
+
         opacity: 1;
+        will-change: translate;
+        animation: hubHeroExitAlign cubic-bezier(0.45, 0, 0.55, 1) both,
+          hubHeroExitSlide cubic-bezier(0.5, 0, 0.75, 0.5) both;
+        animation-composition: replace, add;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: contain 0px contain 140px, var(--slide-range);
       }
 
-      /* tighten the center column's row gap so its top image trails the CTA further */
-      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(1) {
-        translate: 0 48px;
+      .hub-hero-image-grid-container-col > div:nth-child(2) {
+        --slide-range: contain 230px contain 420px;
       }
 
-      /* keeps the default layout's start gap (applied once the scroll timeline resolves) */
-      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(2) {
-        --exit-img-from: var(--start-gap);
-        --exit-img-lift: 0px;
-
-        animation: hubHeroExitImgRise linear both;
-        animation-timeline: --hub-hero;
+      .hub-hero-image-grid-container-col > div:nth-child(n + 3) {
+        --slide-range: contain 300px contain 490px;
       }
 
       /* card 1 sits below the images until it eases up into its sticky slot (initExitLeads) */
@@ -2450,9 +2429,15 @@
   }
 }
 
-@keyframes hubHeroExitFadeOut {
+@keyframes hubHeroExitAlign {
   to {
-    opacity: 0;
+    translate: 0 var(--align-dy, 0px);
+  }
+}
+
+@keyframes hubHeroExitSlide {
+  to {
+    translate: var(--slide-x, 0px) 0;
   }
 }
 
@@ -2494,32 +2479,3 @@
   }
 }
 
-@keyframes hubHeroExitRise {
-  from {
-    transform: translate(0, var(--exit-from, 0px)) scale(1);
-  }
-
-  to {
-    transform: translate(0, calc(var(--exit-from, 0px) + var(--exit-lift))) scale(var(--exit-scale, 1));
-  }
-}
-
-@keyframes hubHeroExitFade {
-  0%, 75% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes hubHeroExitImgRise {
-  from {
-    translate: 0 var(--exit-img-from, 0px);
-  }
-
-  to {
-    translate: 0 calc(var(--exit-img-from, 0px) + var(--exit-img-lift));
-  }
-}
