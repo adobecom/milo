@@ -2363,20 +2363,19 @@
     /*
      * Stagger: rigid columns rise at the same speed, each starting at a different time.
      * All timings are px of hero scroll (not % or vh) so the motion is identical on any screen
-     * height. Card 1, the carousel heading and card 2 then land on their sticky slots early
-     * (see initExitLeads); their timings are anchored to card 1's landing.
+     * height. Card 1, the carousel heading and the stacked cards then stick at set scroll
+     * positions anchored to card 1's landing (see initExitLeads).
      */
     .hub-hero {
-      --exit-card-land: 490px;
+      --exit-card-land: 550px;
       --exit-card-lead-run: 270px;
       --exit-expand-before: 175px;
       --exit-expand-after: 30px;
       --exit-heading-after: 85px;
-      --exit-heading-lead-run: 230px;
       --exit-heading-fade-before: 85px;
       --exit-heading-fade-after: 30px;
       --exit-card2-after: 490px;
-      --exit-card2-lead-run: 400px;
+      --exit-card-step: 560px;
 
       /* hero heading/CTA fade over a fixed scroll distance (10% of this px range), like the images */
       .hub-hero-header,
@@ -2386,17 +2385,20 @@
 
       .hub-hero-image-grid-container-col:nth-child(2) {
         --exit-from: var(--grid-col-two-offset);
-        --exit-range: contain 45px contain 450px;
+        --exit-range: contain 45px contain 551px;
+        --exit-fade-range: contain 424px contain 551px;
       }
 
       .hub-hero-image-grid-container-col:nth-child(3) {
         --exit-from: var(--grid-col-three-offset);
-        --exit-range: contain 75px contain 360px;
+        --exit-range: contain 75px contain 431px;
+        --exit-fade-range: contain 380px contain 440px;
       }
 
       .hub-hero-image-grid-container-col:nth-child(4) {
         --exit-from: var(--grid-col-four-offset);
-        --exit-range: contain 100px contain 375px;
+        --exit-range: contain 100px contain 444px;
+        --exit-fade-range: contain 405px contain 475px;
       }
 
 
@@ -2404,9 +2406,9 @@
         --exit-lift: -564px;
 
         will-change: transform, opacity;
-        animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFade linear both;
+        animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFadeOut linear both;
         animation-timeline: --hub-hero, --hub-hero;
-        animation-range: var(--exit-range), var(--exit-range);
+        animation-range: var(--exit-range), var(--exit-fade-range);
       }
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
@@ -2429,13 +2431,11 @@
         animation-timeline: --hub-hero;
       }
 
-      .hub-hero-carousel-item[data-index="1"],
-      .hub-hero-carousel-header {
-        animation: hubHeroExitLeadIn linear both, hubHeroExitLeadHold linear both;
-        animation-composition: replace, add;
-        animation-timeline: --hub-hero, --hub-hero;
-        animation-range: contain var(--lead-from, 0px) contain var(--lead-land, 0px),
-          contain var(--lead-land, 0px) contain var(--lead-stick, 0px);
+      /* card 1 sits below the images until it eases up into its sticky slot (initExitLeads) */
+      .hub-hero-carousel-item[data-index="1"] {
+        animation: hubHeroExitCardIn linear both;
+        animation-timeline: --hub-hero;
+        animation-range: contain var(--card-lead-from, 0px) contain var(--card-lead-land, 0px);
       }
 
       .hub-hero-carousel-header > div {
@@ -2444,124 +2444,20 @@
         animation-range: contain var(--exit-heading-fade-from, 17%) contain var(--exit-heading-fade-to, 21%),
           contain 25% contain 107%;
       }
-
-      /* card 2 keeps its stacking motion (minus the entry fade, which tracks its unled position) */
-      .hub-hero-carousel-item[data-index="2"] {
-        animation: hubHeroExitStackSlides ease both, hubHeroExitLeadIn linear both, hubHeroExitLeadHold linear both;
-        animation-composition: replace, replace, add;
-        animation-timeline: view(), --hub-hero, --hub-hero;
-        animation-range: entry 0% exit 100%, contain var(--lead-from, 0px) contain var(--lead-land, 0px),
-          contain var(--lead-land, 0px) contain var(--lead-stick, 0px);
-      }
     }
   }
 }
 
-@keyframes hubHeroExitStackSlides {
-  0% {
-    transform: translateY(var(--stack-offset));
-    filter: contrast(1);
-  }
-
-  30% {
-    filter: contrast(1);
-  }
-
-  100% {
-    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    filter: contrast(var(--stack-contrast, 1));
+@keyframes hubHeroExitFadeOut {
+  to {
+    opacity: 0;
   }
 }
 
-@keyframes hubHeroExitLeadIn {
-  0% {
-    translate: 0 calc(var(--lead-l, 0px) * -1.0000 + var(--lead-big-l, 0px) * 1.0000);
-  }
-
-  5% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.9951 + var(--lead-big-l, 0px) * 0.9928);
-  }
-
-  10% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.9810 + var(--lead-big-l, 0px) * 0.9720);
-  }
-
-  15% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.9584 + var(--lead-big-l, 0px) * 0.9393);
-  }
-
-  20% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.9280 + var(--lead-big-l, 0px) * 0.8960);
-  }
-
-  25% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.8906 + var(--lead-big-l, 0px) * 0.8438);
-  }
-
-  30% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.8470 + var(--lead-big-l, 0px) * 0.7840);
-  }
-
-  35% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.7979 + var(--lead-big-l, 0px) * 0.7183);
-  }
-
-  40% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.7440 + var(--lead-big-l, 0px) * 0.6480);
-  }
-
-  45% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.6861 + var(--lead-big-l, 0px) * 0.5747);
-  }
-
-  50% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.6250 + var(--lead-big-l, 0px) * 0.5000);
-  }
-
-  55% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.5614 + var(--lead-big-l, 0px) * 0.4252);
-  }
-
-  60% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.4960 + var(--lead-big-l, 0px) * 0.3520);
-  }
-
-  65% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.4296 + var(--lead-big-l, 0px) * 0.2817);
-  }
-
-  70% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.3630 + var(--lead-big-l, 0px) * 0.2160);
-  }
-
-  75% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.2969 + var(--lead-big-l, 0px) * 0.1562);
-  }
-
-  80% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.2320 + var(--lead-big-l, 0px) * 0.1040);
-  }
-
-  85% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.1691 + var(--lead-big-l, 0px) * 0.0607);
-  }
-
-  90% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.1090 + var(--lead-big-l, 0px) * 0.0280);
-  }
-
-  95% {
-    translate: 0 calc(var(--lead-l, 0px) * -0.0524 + var(--lead-big-l, 0px) * 0.0073);
-  }
-
-  100% {
-    translate: 0 calc(var(--lead-l, 0px) * 0.0000 + var(--lead-big-l, 0px) * 0.0000);
-  }
-}
-
-@keyframes hubHeroExitLeadHold {
+@keyframes hubHeroExitCardIn {
   from {
-    translate: 0 calc(var(--lead-lp, 0px) * -1);
+    translate: 0 var(--card-lead-d, 0px);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
   }
 
   to {
