@@ -11,6 +11,13 @@ let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
+// Mobile grid-exit experiment, compared against the default: ?hub-hero-exit=stagger
+const MOBILE_EXIT_VARIANTS = ['stagger'];
+const applyMobileExitVariant = (el) => {
+  const variant = new URLSearchParams(window.location.search).get('hub-hero-exit');
+  if (MOBILE_EXIT_VARIANTS.includes(variant)) el.classList.add(`exit-${variant}`);
+};
+
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const federateSvgSrc = (img) => { if (isSvgUrl(img?.src)) img.src = getFederatedUrl(img.src); };
 const unwrapParagraphs = (el) => el.querySelectorAll('p').forEach((p) => p.replaceWith(...p.childNodes));
@@ -232,6 +239,66 @@ const initHeaderPin = (hubHero, header) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
+// Exit experiments: sticky elements land on their sticky slot ahead of their scroll position.
+// The motion is a scroll-driven CSS animation (compositor-synced); JS only measures, in px of
+// hero scroll, where each lead starts, lands (--exit-<name>-lead-start/-land) and naturally sticks.
+const EXIT_LEADS = [
+  ['card', '.hub-hero-carousel-item[data-index="1"]'],
+  ['heading', '.hub-hero-carousel-header'],
+  ['card2', '.hub-hero-carousel-item[data-index="2"]'],
+];
+const LEAD_VARS = ['--lead-from', '--lead-land', '--lead-stick', '--lead-l', '--lead-big-l', '--lead-lp'];
+
+const initExitLeads = (hubHero) => {
+  if (!MOBILE_EXIT_VARIANTS.some((v) => hubHero.classList.contains(`exit-${v}`))) return;
+  const targets = EXIT_LEADS
+    .map(([name, selector]) => [name, hubHero.querySelector(selector)])
+    .filter(([, el]) => el);
+  const mobileQuery = window.matchMedia('(width < 768px)');
+
+  const measure = () => {
+    const style = getComputedStyle(hubHero);
+    const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
+    targets.forEach(([name, el]) => {
+      const start = parseFloat(style.getPropertyValue(`--exit-${name}-lead-start`));
+      const land = parseFloat(style.getPropertyValue(`--exit-${name}-land`));
+      if (!mobileQuery.matches || totalScrollRange <= 0 || !(land > start)) {
+        LEAD_VARS.forEach((v) => el.style.removeProperty(v));
+        return;
+      }
+      // Static position: measure as a non-sticky, unanimated box.
+      el.style.position = 'static';
+      el.style.animation = 'none';
+      const staticTop = el.getBoundingClientRect().top + window.scrollY;
+      el.style.removeProperty('position');
+      el.style.removeProperty('animation');
+      const stickPx = staticTop - (parseFloat(getComputedStyle(el).top) || 0) - hubHeroAbsTop;
+      const fromPx = Math.min(start * totalScrollRange, stickPx);
+      const landPx = Math.min(Math.max(land * totalScrollRange, fromPx + 1), stickPx);
+      const values = [fromPx, landPx, stickPx, landPx - fromPx, stickPx - fromPx, stickPx - landPx];
+      LEAD_VARS.forEach((v, i) => el.style.setProperty(v, `${values[i]}px`));
+    });
+  };
+
+  let frame = 0;
+  const schedule = () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(measure);
+  };
+  const resizeObserver = new ResizeObserver(schedule);
+  resizeObserver.observe(hubHero);
+  window.addEventListener('resize', schedule);
+  schedule();
+
+  new MutationObserver((_, observer) => {
+    if (!document.contains(hubHero)) {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', schedule);
+      observer.disconnect();
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+};
+
 const initCarouselContainerExpand = (hubHero) => {
   const container = hubHero.querySelector('.hub-hero-carousel-container');
   if (!container) return;
@@ -243,6 +310,12 @@ const initCarouselContainerExpand = (hubHero) => {
 
   const mobileQuery = window.matchMedia('(width < 768px)');
   const controller = new AbortController();
+  // Card 1's background wipes in with its footer, so CSS needs the footer's height.
+  const firstFooter = container.querySelector('.hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-footer');
+  const footerObserver = new ResizeObserver(([entry]) => {
+    firstFooter.parentElement.style.setProperty('--card-footer-h', `${entry.borderBoxSize[0].blockSize}px`);
+  });
+  if (firstFooter) footerObserver.observe(firstFooter);
   let ticking = false;
   const update = () => {
     ticking = false;
@@ -260,6 +333,7 @@ const initCarouselContainerExpand = (hubHero) => {
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
       controller.abort();
+      footerObserver.disconnect();
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -743,6 +817,7 @@ const findSize = (classes, key) => classes.find((item) => item.match(key))?.spli
 
 export default async function init(el) {
   el.classList.toggle('touch-scroll', window.matchMedia(CAROUSEL_TOUCH_SCROLL_QUERY).matches);
+  applyMobileExitVariant(el);
 
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
@@ -775,5 +850,6 @@ export default async function init(el) {
   initCarouselPosition(el);
   initHeaderPin(el, heroHeader);
   initCarouselContainerExpand(el);
+  initExitLeads(el);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }

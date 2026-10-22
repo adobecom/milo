@@ -488,12 +488,10 @@
       margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
     }
 
-
     .hub-hero-carousel-item-footer * {
       white-space: wrap;
     }
   }
-
 
   .hub-hero-carousel-item-media > p:nth-child(2),
   .hub-hero-carousel-item-media > p:has(picture),
@@ -736,7 +734,6 @@
     animation-range: var(--grid-col-rise-animation-range);
   }
 
-
   .hub-hero-carousel {
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
@@ -806,7 +803,18 @@
     animation: elasticItemsShrink ease both, elasticMobileFirstSlideContainer ease both;
     animation-timeline: --hub-hero, --hub-hero;
     animation-range: entry 50% exit 100%, entry 100% exit 100%;
-    background-color: color-mix(in srgb, var(--s2a-color-gray-1000) calc(var(--chrome-reveal) * 100%), transparent);
+
+    /*
+     * Black fills behind the media (its corners) as soon as the chrome starts, then follows the
+     * footer's wipe edge exactly, so nothing translucent shows below the footer.
+     */
+    --card-bg-edge: calc(100% - var(--card-footer-h, var(--slide-footer-h)) * (1 - var(--chrome-reveal)));
+
+    background-color: transparent;
+    background-image: linear-gradient(
+      var(--s2a-color-gray-1000) calc(var(--card-bg-edge) * min(1, var(--chrome-reveal) * 1000)),
+      transparent 0
+    );
   }
 
   .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-header {
@@ -1360,7 +1368,6 @@
     --grid-col-four-offset: 158px;
   }
 
-
 }
 
 /* below large */
@@ -1591,7 +1598,6 @@
   }
 }
 
-
 @keyframes carouselGapShrinkWidthGrowth {
   0% {
     gap: var(--start-gap);
@@ -1720,7 +1726,6 @@
     filter: contrast(var(--stack-contrast, 1));
   }
 }
-
 
 @keyframes carouselSlidesThreeSlideOffset {
   0% {
@@ -1910,7 +1915,6 @@
   }
 }
 
-
 @keyframes hubHeroGridIconFade {
   0% {
     opacity: 1;
@@ -1953,7 +1957,6 @@
   }
 }
 
-
 @keyframes hubHeroGridGapDesktopY {
   0% {
     translate: 0 0;
@@ -1963,7 +1966,6 @@
     translate: 0 calc(-(var(--start-gap) - var(--end-gap)));
   }
 }
-
 
 @keyframes hubHeroGridCol1Mobile {
   0% {
@@ -2136,7 +2138,6 @@
     transform: translate(calc(-2 * (var(--start-gap) - var(--end-gap))), var(--col-5-offset-adjuster));
   }
 }
-
 
 @keyframes s3SlideMediaExpand {
   0% {
@@ -2353,5 +2354,272 @@
 
   & + p::before {
     content: ' ';
+  }
+}
+
+/** mobile grid exit variant (?hub-hero-exit=stagger) */
+@media (width < 768px) and (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+    .hub-hero.exit-stagger {
+      --exit-pitch: calc(var(--grid-img-width-min) + var(--start-gap));
+
+      .hub-hero-image-grid-container-col:nth-child(2) { --exit-from: var(--grid-col-two-offset); }
+      .hub-hero-image-grid-container-col:nth-child(3) { --exit-from: var(--grid-col-three-offset); }
+      .hub-hero-image-grid-container-col:nth-child(4) { --exit-from: var(--grid-col-four-offset); }
+
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
+        will-change: transform, translate, opacity;
+      }
+
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
+        animation: none;
+        translate: none;
+        opacity: 1;
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(2) {
+        --exit-img-from: var(--start-gap);
+        --exit-img-lift: 0px;
+
+        animation: hubHeroExitImgRise linear both;
+        animation-timeline: --hub-hero;
+      }
+
+      /*
+       * Card 1, the carousel heading and card 2 land on their sticky slots early (start/land are
+       * hero progress), so there's no dead scroll after the images leave. The stack is also pulled
+       * up (card 1 is still below the fold at rest).
+       */
+      --exit-card-lead-start: 0.06;
+      --exit-card-land: 0.15;
+      --exit-heading-lead-start: 0.12;
+      --exit-heading-land: 0.2;
+      --exit-heading-fade: contain 17% contain 21%;
+      --exit-card2-lead-start: 0.2;
+      --exit-card2-land: 0.34;
+
+      .hub-hero-carousel-item[data-index="1"],
+      .hub-hero-carousel-header {
+        animation: hubHeroExitLeadIn linear both, hubHeroExitLeadHold linear both;
+        animation-composition: replace, add;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: contain var(--lead-from, 0px) contain var(--lead-land, 0px),
+          contain var(--lead-land, 0px) contain var(--lead-stick, 0px);
+      }
+
+      .hub-hero-carousel-header > div {
+        animation: hubHeroExitHeadingIn linear both, hubHeroExitHeadingOut ease forwards;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: var(--exit-heading-fade), contain 25% contain 107%;
+      }
+
+      /* card 2 keeps its stacking motion (minus the entry fade, which tracks its unled position) */
+      .hub-hero-carousel-item[data-index="2"] {
+        animation: hubHeroExitStackSlides ease both, hubHeroExitLeadIn linear both, hubHeroExitLeadHold linear both;
+        animation-composition: replace, replace, add;
+        animation-timeline: view(), --hub-hero, --hub-hero;
+        animation-range: entry 0% exit 100%, contain var(--lead-from, 0px) contain var(--lead-land, 0px),
+          contain var(--lead-land, 0px) contain var(--lead-stick, 0px);
+      }
+
+      .hub-hero-carousel-container {
+        --expand-start: var(--exit-expand-start, 0.09);
+        --expand-end: var(--exit-expand-end, 0.17);
+
+        margin-top: calc(var(--elastic-mobile-first-slide-offset) - var(--exit-card-advance, 150px));
+      }
+    }
+
+    /* stagger: rigid columns rise at the same speed, each starting at a different time */
+    .hub-hero.exit-stagger {
+      --exit-card-land: 0.17;
+      --exit-expand-end: 0.18;
+
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
+        --exit-lift: -85vh;
+
+        animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFade linear both;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: var(--exit-range), var(--exit-range);
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(2) { --exit-range: contain 1.5% contain 15.5%; }
+      .hub-hero-image-grid-container-col:nth-child(3) { --exit-range: contain 2.5% contain 12.5%; }
+      .hub-hero-image-grid-container-col:nth-child(4) { --exit-range: contain 3.5% contain 13%; }
+
+      /* tighten the center column's row gap so its top image trails the CTA further */
+      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(1) {
+        translate: 0 48px;
+      }
+    }
+  }
+}
+
+@keyframes hubHeroExitStackSlides {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+  }
+
+  30% {
+    filter: contrast(1);
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast, 1));
+  }
+}
+
+@keyframes hubHeroExitLeadIn {
+  0% {
+    translate: 0 calc(var(--lead-l, 0px) * -1.0000 + var(--lead-big-l, 0px) * 1.0000);
+  }
+
+  5% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.9951 + var(--lead-big-l, 0px) * 0.9928);
+  }
+
+  10% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.9810 + var(--lead-big-l, 0px) * 0.9720);
+  }
+
+  15% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.9584 + var(--lead-big-l, 0px) * 0.9393);
+  }
+
+  20% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.9280 + var(--lead-big-l, 0px) * 0.8960);
+  }
+
+  25% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.8906 + var(--lead-big-l, 0px) * 0.8438);
+  }
+
+  30% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.8470 + var(--lead-big-l, 0px) * 0.7840);
+  }
+
+  35% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.7979 + var(--lead-big-l, 0px) * 0.7183);
+  }
+
+  40% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.7440 + var(--lead-big-l, 0px) * 0.6480);
+  }
+
+  45% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.6861 + var(--lead-big-l, 0px) * 0.5747);
+  }
+
+  50% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.6250 + var(--lead-big-l, 0px) * 0.5000);
+  }
+
+  55% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.5614 + var(--lead-big-l, 0px) * 0.4252);
+  }
+
+  60% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.4960 + var(--lead-big-l, 0px) * 0.3520);
+  }
+
+  65% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.4296 + var(--lead-big-l, 0px) * 0.2817);
+  }
+
+  70% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.3630 + var(--lead-big-l, 0px) * 0.2160);
+  }
+
+  75% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.2969 + var(--lead-big-l, 0px) * 0.1562);
+  }
+
+  80% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.2320 + var(--lead-big-l, 0px) * 0.1040);
+  }
+
+  85% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.1691 + var(--lead-big-l, 0px) * 0.0607);
+  }
+
+  90% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.1090 + var(--lead-big-l, 0px) * 0.0280);
+  }
+
+  95% {
+    translate: 0 calc(var(--lead-l, 0px) * -0.0524 + var(--lead-big-l, 0px) * 0.0073);
+  }
+
+  100% {
+    translate: 0 calc(var(--lead-l, 0px) * 0.0000 + var(--lead-big-l, 0px) * 0.0000);
+  }
+}
+
+@keyframes hubHeroExitLeadHold {
+  from {
+    translate: 0 calc(var(--lead-lp, 0px) * -1);
+  }
+
+  to {
+    translate: 0 0;
+  }
+}
+
+@keyframes hubHeroExitHeadingIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hubHeroExitHeadingOut {
+  from {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+
+  94% {
+    transform: translate(0, -5%);
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(0, -100%);
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroExitRise {
+  from {
+    transform: translate(0, var(--exit-from, 0px)) scale(1);
+  }
+
+  to {
+    transform: translate(0, calc(var(--exit-from, 0px) + var(--exit-lift))) scale(var(--exit-scale, 1));
+  }
+}
+
+@keyframes hubHeroExitFade {
+  0%, 75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroExitImgRise {
+  from {
+    translate: 0 var(--exit-img-from, 0px);
+  }
+
+  to {
+    translate: 0 calc(var(--exit-img-from, 0px) + var(--exit-img-lift));
   }
 }
