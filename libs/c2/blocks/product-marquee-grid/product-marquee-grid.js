@@ -47,6 +47,18 @@ function buildChicletRow(iconEl, heading) {
 }
 
 function buildMerchCard(col) {
+  // A whole card can be authored as a single autoblock link, which MAS upgrades into
+  // <merch-card> in place (async). Put that card — or its not-yet-upgraded link — directly
+  // inside its own container, skipping the per-field pm-merch-content extraction below.
+  const authoredCard = col.querySelector('a.merch-card-autoblock, merch-card');
+  if (authoredCard) {
+    const { parentElement: parent } = authoredCard;
+    const node = parent?.tagName === 'P' && parent.children.length === 1 ? parent : authoredCard;
+    const fullCard = createTag('div', { class: 'pm-merch-card-full' });
+    fullCard.append(node);
+    return fullCard;
+  }
+
   [...col.children]
     .filter((el) => !el.matches(MAS_BODY_FIELDS) && !el.querySelector(MAS_BODY_FIELDS))
     .forEach((el) => decorateButtons(el));
