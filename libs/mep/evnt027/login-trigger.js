@@ -159,7 +159,6 @@ export default function init({ path: authoredPath } = {}) {
             localStorage.setItem(DISMISSED_KEY, 'true');
           } catch (error) {
             window.lana?.log(`EVNT027 dismissal: ${error.message}`, { tags: 'evnt027', severity: 'error' });
-            console.error('EVNT027 could not persist dismissal:', error);
           }
         },
       });
@@ -167,7 +166,6 @@ export default function init({ path: authoredPath } = {}) {
     } catch (error) {
       stop();
       window.lana?.log(`EVNT027: ${error.message}`, { tags: 'evnt027', severity: 'error' });
-      console.error('EVNT027 login prompt:', error);
     } finally {
       preparing = false;
     }
