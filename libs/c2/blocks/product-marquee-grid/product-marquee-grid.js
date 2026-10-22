@@ -62,9 +62,6 @@ function buildMerchCard(col) {
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
-
-  // Group the CTA paragraphs in place (preserving authored order) so the buttons stay
-  // inside pm-merch-content. Key off stable markup: MAS ctas resolve .con-button late.
   const isCtaPara = (el) => !!el.querySelector('.con-button, a[data-wcs-osi], mas-field[field^="ctas"]');
   const ctaParas = [...cardContent.children].filter(isCtaPara);
   if (ctaParas.length) {
