@@ -46,6 +46,11 @@ const onPlayerMessage = (event) => {
   if (!iframe) return;
   iframe.setAttribute('data-playing', state === 'play');
   if (state !== 'play') return;
+  // A player can finish loading after its C2 carousel slide was hidden.
+  if (getMetadata('foundation') === 'c2' && iframe.closest('[aria-hidden="true"]')) {
+    pauseMpcPlayer(iframe);
+    return;
+  }
   // Re-observing delivers a fresh entry, so a player that starts offscreen is paused.
   const observer = getPlayerObserver();
   observer.unobserve(iframe);
@@ -137,8 +142,11 @@ const embedPlayer = (a, opts = {}) => {
 const onPosterPlay = (e) => {
   const poster = e.target.closest?.('.mpc-poster');
   if (!poster?.dataset.href || !e.target.closest('.consonant-play-btn')) return;
+  // The player stays inside the poster so the block's image sizing keeps the media box stable.
+  poster.querySelector('.consonant-play-btn').remove();
+  poster.classList.add('is-playing');
   const a = createTag('a', { href: poster.dataset.href });
-  poster.replaceWith(a);
+  poster.append(a);
   embedPlayer(a, { autoplay: true, focus: true, isC2Page: true });
 };
 let posterListenerAdded = false;

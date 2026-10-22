@@ -139,16 +139,59 @@ describe('adobetv autoblock', () => {
       expect(plain.querySelector('iframe')?.getAttribute('tabindex')).to.equal('-1');
     });
 
-    it('swaps the poster for an autoplaying MPC iframe on play', async () => {
+    it('plays an autoplaying MPC iframe inside the poster on play', async () => {
       const wrapper = document.querySelector('#mpcPlayerPoster');
       await init(wrapper.querySelector('a'));
       wrapper.querySelector('.mpc-poster button').click();
-      const iframe = wrapper.querySelector('iframe');
-      expect(wrapper.querySelector('.mpc-poster')).to.be.null;
-      expect(wrapper.querySelector('a')).to.be.null;
+      const poster = wrapper.querySelector('.mpc-poster');
+      const iframe = poster.querySelector('.milo-video iframe');
+      expect(poster.classList.contains('is-playing')).to.be.true;
+      expect(!!poster.querySelector('button'), 'play button removed').to.be.false;
+      expect(!!wrapper.querySelector('a'), 'anchor removed').to.be.false;
       expect(iframe.src).to.equal('https://video.tv.adobe.com/v/111111?autoplay=true');
       expect(iframe.getAttribute('allow')).to.include('autoplay');
-      expect(document.activeElement).to.equal(iframe);
+      expect(document.activeElement === iframe, 'iframe focused').to.be.true;
+    });
+
+    it('keeps the poster box size when the player replaces it outside base-card', async () => {
+      await new Promise((resolve) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = '/libs/blocks/adobetv/adobetv.css';
+        link.onload = resolve;
+        document.head.append(link);
+      });
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      wrapper.className = 'news';
+      wrapper.style.width = '300px';
+      await init(wrapper.querySelector('a'));
+      const poster = wrapper.querySelector('.mpc-poster');
+      poster.querySelector('img').style.aspectRatio = '1 / 1';
+      const before = poster.querySelector('picture').getBoundingClientRect();
+
+      poster.querySelector('button').click();
+
+      const player = wrapper.querySelector('.milo-video').getBoundingClientRect();
+      expect(Math.round(player.width)).to.equal(Math.round(before.width));
+      expect(Math.round(player.height)).to.equal(Math.round(before.height));
+      expect(Math.round(poster.getBoundingClientRect().height)).to.equal(Math.round(before.height));
+    });
+
+    it('pauses a player that starts playing inside hidden C2 content', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPlain');
+      wrapper.setAttribute('aria-hidden', 'true');
+      await init(wrapper.querySelector('a'));
+      const iframe = wrapper.querySelector('iframe');
+      const sent = [];
+      iframe.contentWindow.postMessage = (msg) => sent.push(msg);
+
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://video.tv.adobe.com',
+        source: iframe.contentWindow,
+        data: { type: 'mpcStatus', state: 'play', id: '888888' },
+      }));
+
+      expect(sent.some((msg) => msg.action === 'pause'), 'pause sent').to.be.true;
     });
 
     it('plays a poster that was cloned after decoration', async () => {
@@ -158,9 +201,9 @@ describe('adobetv autoblock', () => {
       clone.id = 'mpcPlayerPosterClone';
       wrapper.after(clone);
       clone.querySelector('.mpc-poster button').click();
-      expect(clone.querySelector('.mpc-poster')).to.be.null;
-      expect(clone.querySelector('iframe').src).to.include('autoplay=true');
-      expect(wrapper.querySelector('.mpc-poster')).to.exist;
+      expect(clone.querySelector('iframe')?.src).to.include('autoplay=true');
+      expect(!!wrapper.querySelector('iframe'), 'original untouched').to.be.false;
+      expect(!!wrapper.querySelector('.mpc-poster button'), 'original button kept').to.be.true;
     });
 
     it('renders an autoplay MPC MP4 outside background blocks as a native video', async () => {

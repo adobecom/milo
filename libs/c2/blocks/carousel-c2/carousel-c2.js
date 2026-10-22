@@ -232,9 +232,10 @@ function slideAnimation(carouselEls, direction) {
   /* eslint-enable */
 }
 
-function pauseInactiveMpcPlayers(slides, activeSlides) {
-  const playing = slides
-    .filter((slide) => !activeSlides.includes(slide))
+function pauseInactiveMedia(slides, activeSlides) {
+  const inactive = slides.filter((slide) => !activeSlides.includes(slide));
+  inactive.forEach((slide) => slide.querySelectorAll('video[controls]').forEach((video) => video.pause()));
+  const playing = inactive
     .flatMap((slide) => [...slide.querySelectorAll('iframe.adobetv[data-playing="true"]')]);
   if (!playing.length) return;
   import('../../../blocks/adobetv/adobetv.js')
@@ -291,7 +292,7 @@ function moveSlides(carouselEls, direction, e) {
   activeSlideIndicator.setAttribute('aria-current', 'location');
   carouselEls.activeClone = activeClone;
   carouselEls.activeSlide = activeSlide;
-  pauseInactiveMpcPlayers(allSlides, [activeSlide, activeClone]);
+  pauseInactiveMedia(allSlides, [activeSlide, activeClone]);
 
   slideAnimation(carouselEls, direction);
 

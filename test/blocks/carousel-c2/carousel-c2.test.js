@@ -207,6 +207,21 @@ describe('Carousel C2', () => {
     expect(authored.src).to.include('autoplay=true');
   });
 
+  it('pauses a native video with controls when its slide stops being active', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const video = document.createElement('video');
+    video.controls = true;
+    let paused = false;
+    video.pause = () => { paused = true; };
+    block.querySelector('.carousel-slide.active').append(video);
+
+    block.querySelector('button.next').click();
+
+    expect(paused, 'video paused').to.be.true;
+  });
+
   it('leaves arrow keys to a focused native video player', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.carousel-c2');
