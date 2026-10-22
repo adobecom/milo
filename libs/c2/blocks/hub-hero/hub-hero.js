@@ -239,45 +239,75 @@ const initHeaderPin = (hubHero, header) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
-// Exit experiments: sticky elements land on their sticky slot ahead of their scroll position.
-// The motion is a scroll-driven CSS animation (compositor-synced); JS only measures, in px of
-// hero scroll, where each lead starts, lands (--exit-<name>-lead-start/-land) and naturally sticks.
-const EXIT_LEADS = [
-  ['card', '.hub-hero-carousel-item[data-index="1"]'],
-  ['heading', '.hub-hero-carousel-header'],
-  ['card2', '.hub-hero-carousel-item[data-index="2"]'],
-];
+// Exit experiments: card 1, the carousel heading and card 2 land on their sticky slots ahead of
+// their scroll position, via scroll-driven CSS (compositor-synced). Timings are px of hero scroll,
+// like the image exits, so they hold on any screen height: card 1 lands at --exit-card-land (the
+// images clear at the same scroll on every screen); its reveal, the heading and card 2 are offset
+// from that landing. JS only measures sticky offsets and converts on resize.
 const LEAD_VARS = ['--lead-from', '--lead-land', '--lead-stick', '--lead-l', '--lead-big-l', '--lead-lp'];
 
 const initExitLeads = (hubHero) => {
   if (!MOBILE_EXIT_VARIANTS.some((v) => hubHero.classList.contains(`exit-${v}`))) return;
-  const targets = EXIT_LEADS
-    .map(([name, selector]) => [name, hubHero.querySelector(selector)])
-    .filter(([, el]) => el);
+  const card = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"]');
+  const heading = hubHero.querySelector('.hub-hero-carousel-header');
+  const card2 = hubHero.querySelector('.hub-hero-carousel-item[data-index="2"]');
+  const container = hubHero.querySelector('.hub-hero-carousel-container');
+  if (!card || !container) return;
   const mobileQuery = window.matchMedia('(width < 768px)');
 
+  const clear = () => {
+    [card, heading, card2].filter(Boolean)
+      .forEach((el) => LEAD_VARS.forEach((v) => el.style.removeProperty(v)));
+    ['--expand-start', '--expand-end'].forEach((v) => container.style.removeProperty(v));
+    ['--exit-heading-fade-from', '--exit-heading-fade-to'].forEach((v) => hubHero.style.removeProperty(v));
+  };
+
+  const stickOf = (el, heroTop) => {
+    // Static position: measure as a non-sticky, unanimated box.
+    el.style.position = 'static';
+    el.style.animation = 'none';
+    const staticTop = el.getBoundingClientRect().top + window.scrollY;
+    el.style.removeProperty('position');
+    el.style.removeProperty('animation');
+    return staticTop - (parseFloat(getComputedStyle(el).top) || 0) - heroTop;
+  };
+
+  const setLead = (el, land, run, stick) => {
+    const landPx = Math.max(Math.min(land, stick), 1);
+    const fromPx = Math.max(landPx - run, 0);
+    const values = [fromPx, landPx, stick, landPx - fromPx, stick - fromPx, stick - landPx];
+    LEAD_VARS.forEach((v, i) => el.style.setProperty(v, `${values[i]}px`));
+    return landPx;
+  };
+
   const measure = () => {
+    const { totalScrollRange: range, hubHeroAbsTop: heroTop } = getHubHeroScrollRange(hubHero);
+    if (!mobileQuery.matches || range <= 0) {
+      clear();
+      return;
+    }
     const style = getComputedStyle(hubHero);
-    const { totalScrollRange, hubHeroAbsTop } = getHubHeroScrollRange(hubHero);
-    targets.forEach(([name, el]) => {
-      const start = parseFloat(style.getPropertyValue(`--exit-${name}-lead-start`));
-      const land = parseFloat(style.getPropertyValue(`--exit-${name}-land`));
-      if (!mobileQuery.matches || totalScrollRange <= 0 || !(land > start)) {
-        LEAD_VARS.forEach((v) => el.style.removeProperty(v));
-        return;
-      }
-      // Static position: measure as a non-sticky, unanimated box.
-      el.style.position = 'static';
-      el.style.animation = 'none';
-      const staticTop = el.getBoundingClientRect().top + window.scrollY;
-      el.style.removeProperty('position');
-      el.style.removeProperty('animation');
-      const stickPx = staticTop - (parseFloat(getComputedStyle(el).top) || 0) - hubHeroAbsTop;
-      const fromPx = Math.min(start * totalScrollRange, stickPx);
-      const landPx = Math.min(Math.max(land * totalScrollRange, fromPx + 1), stickPx);
-      const values = [fromPx, landPx, stickPx, landPx - fromPx, stickPx - fromPx, stickPx - landPx];
-      LEAD_VARS.forEach((v, i) => el.style.setProperty(v, `${values[i]}px`));
-    });
+    const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
+
+    const cardStick = stickOf(card, heroTop);
+    const cardLand = setLead(card, px('--exit-card-land'), px('--exit-card-lead-run'), cardStick);
+    container.style.setProperty('--expand-start', (cardLand - px('--exit-expand-before')) / range);
+    container.style.setProperty('--expand-end', (cardLand + px('--exit-expand-after')) / range);
+
+    if (heading) {
+      const land = setLead(
+        heading,
+        cardLand + px('--exit-heading-after'),
+        px('--exit-heading-lead-run'),
+        stickOf(heading, heroTop),
+      );
+      hubHero.style.setProperty('--exit-heading-fade-from', `${land - px('--exit-heading-fade-before')}px`);
+      hubHero.style.setProperty('--exit-heading-fade-to', `${land + px('--exit-heading-fade-after')}px`);
+    }
+    if (card2) {
+      const stick = stickOf(card2, heroTop);
+      setLead(card2, cardLand + px('--exit-card2-after'), px('--exit-card2-lead-run'), stick);
+    }
   };
 
   let frame = 0;
