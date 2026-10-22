@@ -2361,21 +2361,25 @@
 @media (width < 768px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
     /*
-     * Converge: the center column is hidden; the side columns pull together and follow the CTA out.
+     * Converge: the center images drop and split into the side columns' empty third slots (top
+     * image left, bottom image right), then the side columns pull together and follow the CTA out.
      * All timings are px of hero scroll (not % or vh) so the motion is identical on any screen
      * height. Card 1, the carousel heading and the stacked cards then stick at set scroll
-     * positions anchored to card 1's landing (see initExitLeads).
+     * positions anchored to card 1's landing (see initExitLeads): card 1 fully reveals (expand,
+     * then chrome), then the heading fades in, then card 2 comes into view.
      */
     .hub-hero {
       --exit-pitch: calc(var(--grid-img-width-min) + var(--start-gap));
-      --exit-card-land: 490px;
+      --exit-card-land: 580px;
       --exit-card-lead-run: 225px;
+      --exit-card-rest-offset: 200px;
       --exit-expand-before: 170px;
       --exit-expand-after: 30px;
-      --exit-heading-after: 140px;
-      --exit-heading-fade-before: 85px;
+      --exit-heading-after: 200px;
+      --exit-heading-fade-before: 70px;
       --exit-heading-fade-after: 30px;
-      --exit-card2-after: 540px;
+      --exit-card2-enter: 220px;
+      --exit-chrome-reveal: 70px;
       --exit-card-step: 560px;
 
       /* hero heading/CTA fade over a fixed scroll distance (10% of this px range), like the images */
@@ -2384,26 +2388,51 @@
         animation-range: contain 0px contain 3040px;
       }
 
-      .hub-hero-image-grid-container-col:nth-child(3),
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) > div:nth-child(3) {
         visibility: hidden;
         animation: none;
       }
 
-      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) > div {
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
         animation: none;
         translate: none;
         opacity: 1;
       }
 
-      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) {
+      /* all three columns rise together; only the sides converge */
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
         --exit-lift: -664px;
 
         will-change: transform, translate, opacity;
+        animation: hubHeroExitRise cubic-bezier(0.6, 0, 0.9, 0.5) both, hubHeroExitFade linear both;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: contain 0px contain 531px, contain 0px contain 531px;
+      }
+
+      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) {
         animation: hubHeroExitConverge cubic-bezier(0.45, 0, 0.3, 1) both,
           hubHeroExitRise cubic-bezier(0.6, 0, 0.9, 0.5) both, hubHeroExitFade linear both;
         animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-        animation-range: contain 0px contain 200px, contain 0px contain 531px, contain 0px contain 531px;
+        animation-range: contain 120px contain 220px, contain 0px contain 531px, contain 0px contain 531px;
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(3) {
+        --exit-from: var(--grid-col-three-offset);
+      }
+
+      /*
+       * Center images: the bottom one drops and drifts right, then the top one drops and slides
+       * left, each tracking its side column through the converge (keyframes are solved so no two
+       * images overlap). --shuffle-dy, the drop to the empty slot, is measured in initExitLeads.
+       */
+      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(n) {
+        animation: hubHeroExitShuffleLeft linear both;
+        animation-timeline: --hub-hero;
+        animation-range: contain 0px contain 220px;
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(2) {
+        animation-name: hubHeroExitShuffleRight;
       }
 
       .hub-hero-image-grid-container-col:nth-child(2) {
@@ -2427,9 +2456,181 @@
         animation: hubHeroExitHeadingIn linear both, hubHeroExitHeadingOut ease forwards;
         animation-timeline: --hub-hero, --hub-hero;
         animation-range: contain var(--exit-heading-fade-from, 17%) contain var(--exit-heading-fade-to, 21%),
-          contain 25% contain 107%;
+          contain var(--exit-heading-fade-to, 25%) contain 107%;
       }
     }
+  }
+}
+
+@keyframes hubHeroExitShuffleLeft {
+  0% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  5% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  10% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  15% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  20% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  25% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  30% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  35% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  40% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.018);
+  }
+
+  45% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.108);
+  }
+
+  50% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.283);
+  }
+
+  55% {
+    translate: -0.1px calc(var(--shuffle-dy, 0px) * 0.523);
+  }
+
+  60% {
+    translate: -8.2px calc(var(--shuffle-dy, 0px) * 0.755);
+  }
+
+  65% {
+    translate: -30.6px calc(var(--shuffle-dy, 0px) * 0.915);
+  }
+
+  70% {
+    translate: -60.2px calc(var(--shuffle-dy, 0px) * 0.990);
+  }
+
+  75% {
+    translate: -82.5px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  80% {
+    translate: -93.1px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  85% {
+    translate: -95.3px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  90% {
+    translate: -92.6px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  95% {
+    translate: -89.1px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  100% {
+    translate: -88.0px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+}
+
+@keyframes hubHeroExitShuffleRight {
+  0% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+  }
+
+  5% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.015);
+  }
+
+  10% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.062);
+  }
+
+  15% {
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.147);
+  }
+
+  20% {
+    translate: 0.4px calc(var(--shuffle-dy, 0px) * 0.271);
+  }
+
+  25% {
+    translate: 5.7px calc(var(--shuffle-dy, 0px) * 0.425);
+  }
+
+  30% {
+    translate: 18.1px calc(var(--shuffle-dy, 0px) * 0.590);
+  }
+
+  35% {
+    translate: 38.3px calc(var(--shuffle-dy, 0px) * 0.742);
+  }
+
+  40% {
+    translate: 66.1px calc(var(--shuffle-dy, 0px) * 0.862);
+  }
+
+  45% {
+    translate: 98.9px calc(var(--shuffle-dy, 0px) * 0.944);
+  }
+
+  50% {
+    translate: 132.2px calc(var(--shuffle-dy, 0px) * 0.988);
+  }
+
+  55% {
+    translate: 161.2px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  60% {
+    translate: 179.8px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  65% {
+    translate: 182.0px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  70% {
+    translate: 163.8px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  75% {
+    translate: 134.7px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  80% {
+    translate: 113.1px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  85% {
+    translate: 100.1px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  90% {
+    translate: 92.7px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  95% {
+    translate: 89.1px calc(var(--shuffle-dy, 0px) * 1.000);
+  }
+
+  100% {
+    translate: 88.0px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 }
 

@@ -250,7 +250,8 @@ const initExitLeads = (hubHero) => {
   const clear = () => {
     shifted.forEach((el) => el.style.removeProperty('margin-top'));
     ['--card-lead-from', '--card-lead-land', '--card-lead-d'].forEach((v) => card.style.removeProperty(v));
-    ['--expand-start', '--expand-end'].forEach((v) => container.style.removeProperty(v));
+    ['--expand-start', '--expand-end', '--expand-fade-range']
+      .forEach((v) => container.style.removeProperty(v));
     ['--exit-heading-fade-from', '--exit-heading-fade-to'].forEach((v) => hubHero.style.removeProperty(v));
   };
 
@@ -278,6 +279,20 @@ const initExitLeads = (hubHero) => {
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
     const cardLand = px('--exit-card-land');
 
+    // Converge: each center image drops to a side column's (hidden) third slot.
+    const cols = [...hubHero.querySelectorAll('.hub-hero-image-grid-container-col')].slice(1, 4);
+    const [slotL, top, bottom, slotR] = [cols[0]?.children[2], cols[1]?.children[0],
+      cols[1]?.children[1], cols[2]?.children[2]];
+    if (slotL && top && bottom && slotR) {
+      const moving = [...cols, ...cols.flatMap((c) => [...c.children])];
+      moving.forEach((el) => { el.style.animation = 'none'; });
+      const y = (el) => el.getBoundingClientRect().top;
+      const [dyL, dyR] = [y(slotL) - y(top), y(slotR) - y(bottom)];
+      moving.forEach((el) => el.style.removeProperty('animation'));
+      top.style.setProperty('--shuffle-dy', `${dyL}px`);
+      bottom.style.setProperty('--shuffle-dy', `${dyR}px`);
+    }
+
     if (heading) {
       // Pull the carousel up for the heading; the container takes the shift back.
       const delta = shiftTo(heading, carousel, cardLand + px('--exit-heading-after'));
@@ -285,17 +300,24 @@ const initExitLeads = (hubHero) => {
     }
 
     const lead = -shiftTo(card, container, cardLand);
-    card.style.setProperty('--card-lead-d', `${Math.max(lead, 0)}px`);
+    card.style.setProperty('--card-lead-d', `${Math.max(lead, 0) + px('--exit-card-rest-offset')}px`);
     card.style.setProperty('--card-lead-from', `${Math.max(cardLand - px('--exit-card-lead-run'), 0)}px`);
     card.style.setProperty('--card-lead-land', `${cardLand}px`);
 
+    // Card 2 is timed by when it comes into view (its header clearing the fold), so it never
+    // shows up early on tall screens; later cards follow at a steady step.
+    let stackLand = 0;
     cards.slice(1).forEach((el, i) => {
-      shiftTo(el, el, cardLand + px('--exit-card2-after') + i * px('--exit-card-step'));
+      stackLand = i ? stackLand + px('--exit-card-step')
+        : cardLand + px('--exit-card2-enter') + window.innerHeight
+          - (parseFloat(getComputedStyle(el).top) || 0) + px('--slide-header-h');
+      shiftTo(el, el, stackLand);
     });
 
     const { totalScrollRange: range } = getHubHeroScrollRange(hubHero);
     container.style.setProperty('--expand-start', (cardLand - px('--exit-expand-before')) / range);
     container.style.setProperty('--expand-end', (cardLand + px('--exit-expand-after')) / range);
+    container.style.setProperty('--expand-fade-range', px('--exit-chrome-reveal') / range);
     if (heading) {
       const land = cardLand + px('--exit-heading-after');
       hubHero.style.setProperty('--exit-heading-fade-from', `${land - px('--exit-heading-fade-before')}px`);
