@@ -259,6 +259,13 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           if (!reinitializePromise) flushPendingMessages(client);
           mergedConfig.callbacks?.onReadyCallback?.(...args);
         },
+        windowStateCallback: (...args) => {
+          // States: hidden (closed/minimized), panel, maximised. BC blocks hide their
+          // floating entry points while the window is visible (see brand-concierge.css).
+          const state = args[0]?.state;
+          document.body.classList.toggle('acom-assistant-open', !!state && state !== 'hidden');
+          mergedConfig.callbacks?.windowStateCallback?.(...args);
+        },
         initErrorCallback: (...args) => {
           failInitialization(new Error(`init failed (${args[0]})`));
           mergedConfig.callbacks?.initErrorCallback?.(...args);

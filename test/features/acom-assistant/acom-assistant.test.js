@@ -37,6 +37,7 @@ describe('AcomAssistant shared client lifecycle', () => {
     clock.restore();
     window.AdobeMessagingExperienceClient = originalClient;
     window.lana = originalLana;
+    document.body.classList.remove('acom-assistant-open');
     sinon.restore();
   });
 
@@ -113,6 +114,21 @@ describe('AcomAssistant shared client lifecycle', () => {
     expect(client.sendUserMessage.args).to.deep.equal([[{ label: 'first' }], [{ label: 'second' }]]);
     await assistant.sendAcomAssistantUserMessage({ label: 'live' });
     expect(client.sendUserMessage.lastCall.args[0]).to.deep.equal({ label: 'live' });
+  });
+
+  it('toggles acom-assistant-open on the body from the window state', async () => {
+    const windowStateCallback = sinon.spy();
+    await assistant.loadAcomAssistant({ appid: 'surface-one', callbacks: { windowStateCallback } }, deps);
+    const { classList } = document.body;
+
+    callbacks.windowStateCallback({ state: 'panel' });
+    expect(classList.contains('acom-assistant-open')).to.be.true;
+    callbacks.windowStateCallback({ state: 'maximised' });
+    expect(classList.contains('acom-assistant-open')).to.be.true;
+    callbacks.windowStateCallback({ state: 'hidden' });
+    expect(classList.contains('acom-assistant-open')).to.be.false;
+    expect(windowStateCallback.args.map(([arg]) => arg.state))
+      .to.deep.equal(['panel', 'maximised', 'hidden']);
   });
 
   it('does not reinitialize BC for a callback-only registration', async () => {
