@@ -6,7 +6,6 @@ import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/product-marquee-grid/product-marquee-grid.js';
-import { loadStyle } from '../../../libs/utils/utils.js';
 
 const FEDERAL_SVG = 'https://main--federal--adobecom.aem.page/federal/assets/svgs/photoshop.svg';
 
