@@ -18,10 +18,11 @@ Content is supplied by
 The primary CTA preserves its authored URL. Continue as guest becomes a button
 that closes the enclosing shared C2 dialog, without navigating.
 Author the guest link with `#guest` as its destination, after the primary link.
-Separate paragraphs are recommended, but DA line breaks (`<br>`) between copy
-and CTA lines in a shared paragraph are also supported. The block separates
-those lines before identifying the actions, preserving inline copy formatting
-and the guest link's accessibility and analytics attributes.
+Separate paragraphs are recommended, but shared paragraphs are also supported,
+with or without DA line breaks (`<br>`) between the links. The block recognizes
+the `#guest` destination, uses the preceding link as the primary action, and
+separates the actions from the copy. Inline copy formatting and the guest link's
+accessibility and analytics attributes are preserved.
 
 ### Post-event authoring
 

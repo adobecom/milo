@@ -202,7 +202,7 @@ describe('MAX login prompt trigger', () => {
     expect(localStorage.getItem(DISMISSED_KEY)).to.equal('true');
   });
 
-  ['copy-and-actions', 'actions-only'].forEach((grouping) => {
+  ['copy-and-actions', 'actions-only', 'adjacent-actions', 'adjacent-copy-and-actions'].forEach((grouping) => {
     [375, 1280].forEach((width) => {
       it(`closes the guest action authored with ${grouping} in one paragraph at ${width}px`, async () => {
         const originalViewport = { width: window.innerWidth, height: window.innerHeight };
@@ -215,10 +215,12 @@ describe('MAX login prompt trigger', () => {
           copy.innerHTML = 'Build your <em>schedule</em>.<br><br>Sign in with your Adobe account.';
           primary.innerHTML = '<strong><a href="https://www.adobe.com/">Register/Sign in</a></strong>';
           guest.innerHTML = '<em><a href="/sessions?content=live#guest" aria-label="Continue without signing in" daa-ll="guest-action">Continue as guest</a></em>';
-          const first = grouping === 'copy-and-actions' ? 0 : 1;
+          const first = grouping.includes('copy-and-actions') ? 0 : 1;
           const combined = paragraphs[first];
           paragraphs.slice(first + 1).forEach((row) => {
-            combined.append(createTag('br'), createTag('br'), ...row.childNodes);
+            if (grouping.startsWith('adjacent')) combined.append(document.createTextNode(' '));
+            else combined.append(createTag('br'), createTag('br'));
+            combined.append(...row.childNodes);
             row.remove();
           });
           await loadAuthoredFragment('?delay=0', authored.innerHTML);

@@ -24,10 +24,11 @@ function decorate(block, root) {
   const lastRow = rows.at(-1);
   const previousRow = rows.at(-2);
   const hasGuest = !!previousRow?.querySelector('a') && !!lastRow?.querySelector('a');
-  const signInRow = hasGuest ? previousRow : lastRow;
-  const guestRow = hasGuest ? lastRow : null;
-  const signIn = signInRow?.querySelector('a');
-  const guest = guestRow?.querySelector('a');
+  const links = [...(content?.querySelectorAll('a') ?? [])]
+    .filter((link) => !logo?.contains(link));
+  const guest = links.find((link) => link.hash === '#guest')
+    ?? (hasGuest ? lastRow.querySelector('a') : null);
+  const signIn = guest ? links[links.indexOf(guest) - 1] : lastRow?.querySelector('a');
   if (!background?.querySelector('picture') || !logo || !heading || !signIn) {
     throw new Error('max26-login-prompt requires background artwork, a logo, a heading, and a primary link.');
   }
@@ -42,9 +43,12 @@ function decorate(block, root) {
 
   content.classList.add('max26-login-prompt-foreground');
   logo.classList.add('max26-login-prompt-logo');
+  const signInRow = createTag('p', null, signIn);
+  const guestRow = guest ? createTag('p', null, guest) : null;
   const copy = createTag('div', { class: 'max26-login-prompt-copy' });
   copy.append(...[...content.children].filter((child) => (
-    child !== logo && child !== signInRow && child !== guestRow
+    child !== logo && (child.tagName !== 'P'
+      || child.textContent.trim() || child.querySelector('picture, img'))
   )));
   const actions = createTag('div', { class: 'max26-login-prompt-actions' });
   actions.append(...(guestRow ? [signInRow, guestRow] : [signInRow]));
