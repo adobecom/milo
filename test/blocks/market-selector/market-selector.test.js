@@ -1,10 +1,11 @@
 /* eslint-disable no-underscore-dangle */
-import { readFile } from '@web/test-runner-commands';
+import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import init, { filterLang, isIetfMatchForPrefix } from '../../../libs/blocks/market-selector/market-selector.js';
+import { setupFooterKeyboardNav } from '../../../libs/c2/blocks/global-footer/footer-keyboard-navigation.js';
 
 const mockMarketsJson = {
   data: [
@@ -103,19 +104,49 @@ describe('Market selector block', () => {
   it('offers listener cleanup for the C2 footer lifecycle', async () => {
     const block = document.querySelector('.market-selector');
     const onCleanup = sinon.spy();
-    await init(block, { onCleanup });
+    await init(block, { onCleanup, focusOnPointerOpen: false, routeWheelToList: true });
     expect(onCleanup.calledOnce).to.equal(true);
+    block.querySelector('.market-selector-button').click();
+    const popover = block.querySelector('.market-selector-popover');
+    const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+    popover.dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).to.equal(true);
     const remove = sinon.spy(document, 'removeEventListener');
     onCleanup.firstCall.args[0]();
     expect(remove.withArgs('click').callCount).to.equal(2);
+    expect(remove.withArgs('keydown', sinon.match.func, true).callCount).to.equal(2);
+    const afterCleanup = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+    popover.dispatchEvent(afterCleanup);
+    expect(afterCleanup.defaultPrevented).to.equal(false);
+  });
+
+  it('leaves C1 wheel scrolling to the browser', () => {
+    const block = document.querySelector('.market-selector');
+    block.querySelector('.market-selector-button').click();
+    const wheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+    block.querySelector('.market-selector-popover').dispatchEvent(wheel);
+    expect(wheel.defaultPrevented).to.equal(false);
   });
 
   it('styles the existing controls only in a C2 footer', async () => {
     const block = document.querySelector('.market-selector');
+    getConfig().marketsConfig.languages.data.push(...Array.from({ length: 12 }, (_, index) => ({
+      prefix: `test-${index}`,
+      nativeName: `Language ${index}`,
+      supportedRegions: 'us',
+      defaultMarket: 'us',
+    })));
+    const onCleanup = sinon.spy();
+    await init(block, { onCleanup, focusOnPointerOpen: false, routeWheelToList: true });
     const footer = document.createElement('footer');
     footer.className = 'global-footer';
+    footer.style.setProperty('--s2a-spacing-xs', '8px');
+    footer.style.setProperty('--s2a-color-transparent-white-64', 'rgb(255 255 255 / 64%)');
+    footer.style.setProperty('--s2a-color-content-knockout', '#fff');
     block.replaceWith(footer);
     footer.append(block);
+    const c1Footer = footer.cloneNode(true);
+    const c1Popover = c1Footer.querySelector('.market-selector-popover');
     const style = document.createElement('style');
     style.textContent = await readFile({ path: '../../../libs/blocks/market-selector/market-selector.css' });
     const foundation = document.createElement('meta');
@@ -125,22 +156,280 @@ describe('Market selector block', () => {
     footerFoundation.name = 'footer-foundation';
     footerFoundation.content = 'c2';
     const popover = block.querySelector('.market-selector-popover');
+    const list = popover.querySelector('.market-selector-list');
+    const [languageButton, marketButton] = block.querySelectorAll('.market-selector-button');
+    const globe = languageButton.querySelector('.market-selector-globe');
     try {
       document.head.append(style, foundation);
+      document.body.append(c1Footer);
       expect(getComputedStyle(popover).position).to.equal('static');
+      expect(getComputedStyle(popover).overflowY).to.equal('visible');
+      expect(getComputedStyle(languageButton).color).to.equal('rgb(80, 80, 80)');
       foundation.content = 'c2';
+      expect(getComputedStyle(popover).position).to.equal('static');
+      expect(getComputedStyle(c1Popover).position).to.equal('static');
+      block.classList.add('market-selector-c2');
       expect(getComputedStyle(popover).position).not.to.equal('static');
+      expect(getComputedStyle(c1Popover).position).to.equal('static');
       foundation.content = 'c1';
       document.head.append(footerFoundation);
       expect(getComputedStyle(popover).position).not.to.equal('static');
+      expect(getComputedStyle(c1Popover).position).to.equal('static');
       expect(block.querySelectorAll('.market-selector-dropdown')).to.have.length(2);
       expect(getComputedStyle(popover).display).to.equal('none');
-      block.querySelector('.market-selector-button').click();
+      expect(getComputedStyle(languageButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(marketButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(globe).opacity).to.equal('0.64');
+      block.querySelectorAll('.market-selector-popover').forEach((dropdownPopover) => {
+        expect(getComputedStyle(dropdownPopover).overflowY).to.equal('hidden');
+        expect(getComputedStyle(dropdownPopover).overscrollBehaviorY).to.equal('contain');
+        expect(getComputedStyle(dropdownPopover.querySelector('.market-selector-list')).overflowY).to.equal('auto');
+      });
+      expect(getComputedStyle(list).maxHeight).to.equal('292px');
+      expect(getComputedStyle(list).scrollbarWidth).to.equal('thin');
+      expect(getComputedStyle(list).touchAction).to.equal('pan-y');
+      expect(getComputedStyle(list).paddingInlineEnd).to.equal('8px');
+      footer.dir = 'rtl';
+      expect(getComputedStyle(list).paddingLeft).to.equal('8px');
+      footer.dir = 'ltr';
+      languageButton.click();
       expect(getComputedStyle(popover).display).to.equal('block');
+      expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(marketButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(globe).opacity).to.equal('1');
+      expect(list.querySelectorAll('.market-selector-link').length).to.equal(14);
+      expect(list.scrollHeight).to.be.greaterThan(list.clientHeight);
+      const option = list.querySelector('.market-selector-link');
+      expect(list.getBoundingClientRect().right - option.getBoundingClientRect().right)
+        .to.be.at.least(8);
+      const footerWheel = sinon.spy();
+      footer.addEventListener('wheel', footerWheel);
+      list.scrollTop = list.scrollHeight;
+      expect(list.scrollTop).to.be.greaterThan(0);
+      list.scrollTop = 0;
+      const searchWheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+      popover.querySelector('.market-selector-search').dispatchEvent(searchWheel);
+      expect(searchWheel.defaultPrevented).to.equal(true);
+      expect(list.scrollTop).to.be.greaterThan(0);
+      expect(footerWheel.called).to.equal(false);
+      const scrolled = list.scrollTop;
+      const listWheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+      list.querySelector('.market-selector-link').dispatchEvent(listWheel);
+      expect(listWheel.defaultPrevented).to.equal(false);
+      expect(list.scrollTop).to.equal(scrolled);
+      expect(footerWheel.called).to.equal(false);
+      popover.querySelector('.market-selector-search').dispatchEvent(new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaY: 100000,
+      }));
+      expect(list.scrollTop).to.be.closeTo(list.scrollHeight - list.clientHeight, 1);
+      popover.querySelector('.market-selector-search').dispatchEvent(new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaY: -100000,
+      }));
+      expect(list.scrollTop).to.equal(0);
+      const lineWheel = new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaY: 3,
+        deltaMode: WheelEvent.DOM_DELTA_LINE,
+      });
+      popover.querySelector('.market-selector-search').dispatchEvent(lineWheel);
+      expect(list.scrollTop).to.equal(48);
+      const zoomWheel = new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        ctrlKey: true,
+        deltaY: 80,
+      });
+      list.dispatchEvent(zoomWheel);
+      expect(zoomWheel.defaultPrevented).to.equal(false);
+      expect(list.scrollTop).to.equal(48);
+      expect(footerWheel.calledOnce).to.equal(true);
+
+      const outsideWheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+      block.querySelector('.market-selector-button').dispatchEvent(outsideWheel);
+      expect(outsideWheel.defaultPrevented).to.equal(false);
+      expect(footerWheel.calledTwice).to.equal(true);
+
+      marketButton.click();
+      expect(getComputedStyle(languageButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(globe).opacity).to.equal('0.64');
+      const marketPopover = block.querySelectorAll('.market-selector-popover')[1];
+      const marketWheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });
+      marketPopover.querySelector('.market-selector-search').dispatchEvent(marketWheel);
+      expect(marketWheel.defaultPrevented).to.equal(true);
+      expect(footerWheel.calledTwice).to.equal(true);
     } finally {
+      onCleanup.firstCall.args[0]();
       style.remove();
       foundation.remove();
       footerFoundation.remove();
+      c1Footer.remove();
+    }
+  });
+
+  it('initializes the C2 footer market selector on a C1 page', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const pageFoundation = document.createElement('meta');
+    pageFoundation.name = 'foundation';
+    pageFoundation.content = 'c1';
+    let footer;
+    let styleUrl;
+    try {
+      document.head.append(pageFoundation);
+      await setViewport({ width: 1440, height: 900 });
+      setConfig({ ...getConfig(), codeRoot: '/libs' });
+      const { default: initFooter } = await import('../../../libs/c2/blocks/global-footer/global-footer.js');
+      const footerElement = document.createElement('footer');
+      footerElement.className = 'global-footer';
+      const observer = sinon.stub(window, 'IntersectionObserver').returns({
+        observe() {},
+        disconnect() {},
+      });
+      const timeout = sinon.stub(window, 'setTimeout').returns(0);
+      try {
+        footer = initFooter(footerElement);
+      } finally {
+        observer.restore();
+        timeout.restore();
+      }
+
+      const selector = document.createElement('div');
+      selector.className = 'market-selector';
+      selector.innerHTML = '<p>Search Language</p><p>Search Market</p><p>No language results</p><p>No market results</p>';
+      footer.body = document.createElement('div');
+      footer.body.append(selector);
+      styleUrl = `${getConfig().base}/blocks/market-selector/market-selector.css`;
+      expect(await footer.decorateRegionPicker()).to.equal(selector);
+      expect(selector.classList.contains('market-selector-c2')).to.equal(true);
+      footerElement.append(selector);
+      document.body.append(footerElement);
+      expect(getComputedStyle(selector.querySelector('.market-selector-popover')).position).to.equal('absolute');
+    } finally {
+      footer?.destroy();
+      if (styleUrl) document.head.querySelector(`link[href="${styleUrl}"]`)?.remove();
+      pageFoundation.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('stacks C2 mobile selectors, social links, and legal links without affecting other footers', async () => {
+    const block = document.querySelector('.market-selector');
+    const footer = document.createElement('footer');
+    footer.className = 'global-footer mobile';
+    block.classList.add('market-selector-c2');
+    footer.style.setProperty('--s2a-spacing-2xs', '4px');
+    footer.style.setProperty('--s2a-spacing-xs', '8px');
+    footer.style.setProperty('--s2a-spacing-md', '16px');
+    footer.style.setProperty('--s2a-spacing-lg', '24px');
+    const options = document.createElement('div');
+    options.className = 'feds-footer-options';
+    const social = document.createElement('ul');
+    social.className = 'feds-social';
+    social.style.width = '120px';
+    social.style.height = '20px';
+    const legal = document.createElement('div');
+    legal.className = 'feds-footer-miscLinks-legal';
+    legal.style.height = '60px';
+    block.replaceWith(footer);
+    footer.append(options);
+    options.append(block, social, legal);
+    const style = document.createElement('style');
+    style.textContent = `${await readFile({ path: '../../../libs/c2/blocks/global-footer/global-footer.css' })}
+      ${await readFile({ path: '../../../libs/blocks/market-selector/market-selector.css' })}`;
+    const foundation = document.createElement('meta');
+    foundation.name = 'footer-foundation';
+    foundation.content = 'c2';
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    try {
+      document.head.append(style, foundation);
+      [272, 327, 364, 720].forEach((width) => {
+        footer.style.width = `${width}px`;
+        expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
+        expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
+        const [language, market] = block.querySelectorAll('.market-selector-button');
+        expect(getComputedStyle(language.querySelector('.market-selector-globe')).display).to.equal('none');
+        expect(getComputedStyle(language).gap).to.equal('4px');
+        const regionBounds = block.getBoundingClientRect();
+        expect(language.getBoundingClientRect().left).to.be.at.least(regionBounds.left - 1);
+        expect(language.getBoundingClientRect().right).to.be.at.most(regionBounds.right + 1);
+        expect(market.getBoundingClientRect().right).to.be.at.most(regionBounds.right + 1);
+        expect(social.getBoundingClientRect().top).to.be.greaterThan(regionBounds.bottom);
+        expect(legal.getBoundingClientRect().top)
+          .to.be.greaterThan(Math.max(regionBounds.bottom, social.getBoundingClientRect().bottom));
+      });
+      footer.classList.remove('mobile');
+      await setViewport({ width: 412, height: 968 });
+      footer.style.width = '364px';
+      expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
+      expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
+      expect(getComputedStyle(block.querySelector('.market-selector-globe')).display).to.equal('none');
+      expect(block.querySelectorAll('.market-selector-button')[1].getBoundingClientRect().right)
+        .to.be.at.most(block.getBoundingClientRect().right + 1);
+      expect(social.getBoundingClientRect().top)
+        .to.be.greaterThan(block.getBoundingClientRect().bottom);
+      await setViewport({ width: 600, height: 900 });
+      expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
+      expect(getComputedStyle(block.querySelector('.market-selector-popover')).position).to.equal('fixed');
+      await setViewport({ width: 601, height: 900 });
+      expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
+      expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
+      expect(getComputedStyle(block.querySelector('.market-selector-popover')).position).to.equal('absolute');
+      await setViewport({ width: 768, height: 1024 });
+      footer.style.width = '720px';
+      expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region social" "legal legal"');
+      await setViewport({ width: 1032, height: 768 });
+      expect(getComputedStyle(options).display).to.equal('flex');
+      await setViewport({ width: 1440, height: 900 });
+      expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region legal social"');
+      await setViewport(initialViewport);
+      footer.classList.add('mobile');
+      const plainOptions = document.createElement('div');
+      plainOptions.className = 'feds-footer-options';
+      footer.append(plainOptions);
+      expect(getComputedStyle(plainOptions).gridTemplateAreas)
+        .to.equal('"region social" "legal legal"');
+      plainOptions.remove();
+      block.querySelector('.market-selector-button').click();
+      const popover = block.querySelector('.market-selector-popover');
+      expect(getComputedStyle(popover).position).to.equal('fixed');
+      expect(getComputedStyle(popover.querySelector('.market-selector-list')).overflowY).to.equal('auto');
+      block.querySelectorAll('.market-selector-button')[1].click();
+      const marketPopover = block.querySelectorAll('.market-selector-popover')[1];
+      expect(getComputedStyle(marketPopover).position).to.equal('fixed');
+    } finally {
+      await setViewport(initialViewport);
+      style.remove();
+      foundation.remove();
+    }
+  });
+
+  it('avoids pointer focus on C2 options but preserves keyboard focus and C1 behavior', async () => {
+    const block = document.querySelector('.market-selector');
+    const c1Button = block.querySelector('.market-selector-button');
+    c1Button.focus();
+    c1Button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+    await new Promise(requestAnimationFrame);
+    expect(document.activeElement.classList.contains('market-selector-link')).to.equal(true);
+
+    const onCleanup = sinon.spy();
+    await init(block, { onCleanup, focusOnPointerOpen: false });
+    try {
+      const c2Button = block.querySelector('.market-selector-button');
+      c2Button.focus();
+      c2Button.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+      await new Promise(requestAnimationFrame);
+      expect(document.activeElement).to.equal(c2Button);
+      c2Button.click();
+      c2Button.click();
+      await new Promise(requestAnimationFrame);
+      expect(document.activeElement.classList.contains('market-selector-link')).to.equal(true);
+    } finally {
+      onCleanup.firstCall.args[0]();
     }
   });
 
@@ -197,6 +486,58 @@ describe('Market selector block', () => {
     popover.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(popover.style.display).to.equal('none');
     expect(buttons[1].getAttribute('aria-expanded')).to.equal('false');
+  });
+
+  it('tabs through both C2 footer selector buttons and closes a pointer-opened dropdown on Escape', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const block = document.querySelector('.market-selector');
+    const footer = document.createElement('footer');
+    footer.className = 'global-footer';
+    const precedingLink = document.createElement('a');
+    precedingLink.className = 'feds-navLink';
+    precedingLink.href = '#previous';
+    precedingLink.textContent = 'Previous';
+    const followingLink = document.createElement('a');
+    followingLink.className = 'feds-social-link';
+    followingLink.href = '#next';
+    followingLink.textContent = 'Next';
+    block.replaceWith(footer);
+    footer.append(precedingLink, block, followingLink);
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/market-selector/market-selector.css' });
+    const foundation = document.createElement('meta');
+    foundation.name = 'footer-foundation';
+    foundation.content = 'c2';
+    const onCleanup = sinon.spy();
+    try {
+      document.head.append(style, foundation);
+      await setViewport({ width: 1440, height: 900 });
+      await init(block, { onCleanup, focusOnPointerOpen: false });
+      block.classList.add('market-selector-c2');
+      await setupFooterKeyboardNav();
+      const [languageButton, marketButton] = block.querySelectorAll('.market-selector-button');
+      precedingLink.focus();
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement).to.equal(languageButton);
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement).to.equal(marketButton);
+      marketButton.dispatchEvent(new MouseEvent('click', { bubbles: true, detail: 1 }));
+      expect(marketButton.getAttribute('aria-expanded')).to.equal('true');
+      precedingLink.focus();
+      await sendKeys({ press: 'Escape' });
+      expect(marketButton.getAttribute('aria-expanded')).to.equal('false');
+      expect(marketButton.nextElementSibling.dataset.open).to.be.undefined;
+      expect(document.activeElement).to.equal(marketButton);
+      await new Promise(requestAnimationFrame);
+      expect(marketButton.nextElementSibling.classList.contains('fixed-height')).to.equal(false);
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement).to.equal(followingLink);
+    } finally {
+      onCleanup.firstCall?.args[0]();
+      style.remove();
+      foundation.remove();
+      await setViewport(originalViewport);
+    }
   });
 
   it('closes the market popover when clicking outside', async () => {
