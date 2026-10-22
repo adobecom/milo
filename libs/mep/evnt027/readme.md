@@ -91,12 +91,14 @@ Keep `foundation: c2` and the treatment's block mapping above. Add the
 the trigger removes its parameters before fetching the fragment off-document,
 then opens that content in the shared C2 dialog.
 
-Do not insert a query-configured fragment link with `insertAfter` for this
-integration. The unchanged shared fragment loader appends `.plain.html` after
-query parameters; using metadata and `insertScript` avoids that dependency.
-The content fragment URL should not contain other query parameters.
-Direct content-fragment previews remain inline. Existing query-free authored
-fragment links still use the default trigger behavior.
+Alternatively, keep the existing Target `insertAfter` action with the configured
+fragment URL. This branch includes a shared fragment-loader fix that appends
+`.plain.html` to the pathname before query parameters, so `/fragment?delay=5`
+requests `/fragment.plain.html?delay=5`. The loaded MAX fragment hides itself
+and starts the trigger using its authored URL; it is moved into the dialog
+without being fetched again.
+Direct content-fragment previews remain inline. Query-free authored fragment
+links use the default trigger behavior.
 
 | URL parameter | Meaning |
 | --- | --- |
@@ -206,6 +208,12 @@ on its own.
 
 ### Target setup
 
+For the existing authored-link flow, keep the `useBlockCode` mapping and
+`insertAfter` action pointing to the MAX fragment URL with its trigger query
+parameters. Use this branch through `milolibs=max-login-prompt-c2` so the
+fragment-loader fix is included. No reauthoring is required.
+
+For the alternative metadata/script flow, do not also insert the fragment.
 Add an `insertScript` treatment action with the absolute URL
 `https://max-login-prompt-c2--milo--adobecom.aem.live/libs/mep/evnt027/insertScript.js`
 and configure:
@@ -219,7 +227,7 @@ and configure:
 The metadata can be authored on the page or supplied by the treatment's
 `updateMetadata` action. This integration loads content off-document before
 opening the same dialog. Trigger parameters are removed before this fetch.
-Do not also insert the modal fragment using `insertAfter`.
+Use either this metadata/script flow or the authored-link flow, not both.
 
 Adobe Target must apply the appropriate configuration to each page and event
 phase. Treatment eligibility owns signed-in exclusions and page targeting;

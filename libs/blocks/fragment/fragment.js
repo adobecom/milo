@@ -282,6 +282,8 @@ export default async function init(a) {
 
   let resp;
   let usedFallback = false;
+  const resourceUrl = new URL(resourcePath, window.location.href);
+  resourceUrl.pathname += '.plain.html';
 
   if (useDualFetch) {
     const origHref = a.dataset.originalHref;
@@ -293,7 +295,7 @@ export default async function init(a) {
       try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
     }
   } else {
-    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+    resp = await customFetch({ resource: resourceUrl.href, withCacheRules: true })
       .catch(() => ({}));
   }
 
@@ -382,7 +384,7 @@ export default async function init(a) {
     if (isMepLingoFragment) {
       lingoModule.removeMepLingoElement(a, false);
     }
-    const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourcePath}.plain.html`;
+    const message = `Could not get ${shouldFetchMepLingo ? 'mep-lingo ' : ''}fragment: ${resourceUrl.href}`;
     window.lana?.log(message, {
       tags: 'fragment',
       severity: 'error',
