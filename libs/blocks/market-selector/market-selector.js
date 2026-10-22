@@ -406,6 +406,7 @@ function createDropdown(
       renderItems(items);
       const focusActiveLink = focusOnPointerOpen || e.detail === 0;
       requestAnimationFrame(() => {
+        if (popover.dataset.open !== 'true') return;
         const popoverHeight = popover.offsetHeight;
         popover.style.setProperty('--dropdown-initial-height', `${popoverHeight}px`);
         popover.classList.add('fixed-height');
@@ -495,6 +496,20 @@ function createDropdown(
       button.focus();
     }
   });
+  const onEscapeFromButton = (e) => {
+    if (e.key !== 'Escape' || popover.dataset.open !== 'true') return;
+    e.preventDefault();
+    e.stopPropagation();
+    closePopoverElement(popover);
+    button.focus();
+  };
+  const onEscapeOutside = (e) => {
+    if (!container.contains(e.target)) onEscapeFromButton(e);
+  };
+  if (!focusOnPointerOpen) {
+    button.addEventListener('keydown', onEscapeFromButton);
+    document.addEventListener('keydown', onEscapeOutside, true);
+  }
   // Mobile: drag handle or list-at-top swipe down to close; popover follows finger, then animates
   const MIN_DRAG_PX = 5;
   const SWIPE_DOWN_THRESHOLD = 100;
@@ -652,6 +667,10 @@ function createDropdown(
     button,
     cleanup: () => {
       document.removeEventListener('click', onOutsideClick);
+      if (!focusOnPointerOpen) {
+        button.removeEventListener('keydown', onEscapeFromButton);
+        document.removeEventListener('keydown', onEscapeOutside, true);
+      }
       removeDragListeners();
       if (routeWheelToList) popover.removeEventListener('wheel', onPopoverWheel);
     },
