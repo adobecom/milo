@@ -203,6 +203,30 @@ describe('Product Marquee Grid', () => {
     });
   });
 
+  describe('merch-card authoring', () => {
+    let block;
+    beforeEach(async () => {
+      block = await initBlock('./mocks/merch-card.html');
+    });
+
+    it('puts the whole authored card in its own container, not pm-merch-card', () => {
+      const fullCard = block.querySelector('.pm-promo-area .pm-merch-card-full');
+      expect(fullCard).to.exist;
+      // The field-based pm-merch-card path is untouched and not used here.
+      expect(block.querySelector('.pm-merch-card')).to.be.null;
+      // The autoblock link (which MAS upgrades into <merch-card> in place) lives directly
+      // in pm-merch-card-full — not dismantled into separate fields.
+      const authored = fullCard.querySelector('a.merch-card-autoblock');
+      expect(authored).to.exist;
+      expect(authored.closest('.pm-merch-card-full')).to.equal(fullCard);
+    });
+
+    it('does not run the per-field extraction pipeline for a whole card', () => {
+      expect(block.querySelector('.pm-merch-ctas')).to.be.null;
+      expect(block.querySelector('.mas-description, .mas-price')).to.be.null;
+    });
+  });
+
   describe('fallback / negative branches', () => {
     it('leaves the promo area empty when there is no second column', async () => {
       const block = await initBlock('./mocks/no-promo.html');

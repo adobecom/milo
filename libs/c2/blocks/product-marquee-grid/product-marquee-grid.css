@@ -85,6 +85,10 @@
     }
   }
 
+  .pm-merch-card-full merch-card {
+    max-width: 100%;
+  }
+
   .pm-merch-content {
     align-items: flex-start;
     align-self: stretch;
