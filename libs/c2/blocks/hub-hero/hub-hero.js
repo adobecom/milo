@@ -279,18 +279,21 @@ const initExitLeads = (hubHero) => {
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
     const cardLand = px('--exit-card-land');
 
-    // Converge: each center image drops to a side column's (hidden) third slot.
+    // Converge: the side columns slide down by a center image (plus gap) and that center image
+    // rises into the freed top slot.
     const cols = [...hubHero.querySelectorAll('.hub-hero-image-grid-container-col')].slice(1, 4);
-    const [slotL, top, bottom, slotR] = [cols[0]?.children[2], cols[1]?.children[0],
-      cols[1]?.children[1], cols[2]?.children[2]];
-    if (slotL && top && bottom && slotR) {
+    const pairs = [[cols[0], cols[1]?.children[0]], [cols[2], cols[1]?.children[1]]];
+    if (pairs.every(([side, img]) => side?.children[1] && img)) {
       const moving = [...cols, ...cols.flatMap((c) => [...c.children])];
       moving.forEach((el) => { el.style.animation = 'none'; });
-      const y = (el) => el.getBoundingClientRect().top;
-      const [dyL, dyR] = [y(slotL) - y(top), y(slotR) - y(bottom)];
+      const rects = pairs.map(([side, img]) => [side.children[0], side.children[1], img]
+        .map((el) => el.getBoundingClientRect()));
       moving.forEach((el) => el.style.removeProperty('animation'));
-      top.style.setProperty('--shuffle-dy', `${dyL}px`);
-      bottom.style.setProperty('--shuffle-dy', `${dyR}px`);
+      pairs.forEach(([side, img], i) => {
+        const [first, second, center] = rects[i];
+        side.style.setProperty('--shuffle-down', `${center.height + second.top - first.bottom}px`);
+        img.style.setProperty('--shuffle-dy', `${first.top - center.top}px`);
+      });
     }
 
     if (heading) {
@@ -320,8 +323,10 @@ const initExitLeads = (hubHero) => {
     container.style.setProperty('--expand-fade-range', px('--exit-chrome-reveal') / range);
     if (heading) {
       const land = cardLand + px('--exit-heading-after');
-      hubHero.style.setProperty('--exit-heading-fade-from', `${land - px('--exit-heading-fade-before')}px`);
-      hubHero.style.setProperty('--exit-heading-fade-to', `${land + px('--exit-heading-fade-after')}px`);
+      // Fade in only once stuck, so the heading never visibly moves.
+      const from = land + px('--exit-heading-fade-delay');
+      hubHero.style.setProperty('--exit-heading-fade-from', `${from}px`);
+      hubHero.style.setProperty('--exit-heading-fade-to', `${from + px('--exit-heading-fade')}px`);
     }
   };
 
