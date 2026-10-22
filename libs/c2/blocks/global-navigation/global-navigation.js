@@ -16,7 +16,6 @@ import {
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
-const loadAupSdkModule = () => import('../../../blocks/global-navigation/utilities/aup-sdk.js');
 
 const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i;
 
@@ -109,7 +108,8 @@ export function initAupSdk({ imsReady, unavEnabled }) {
   let instancePromise = null;
   const fetchAUPSDKInstance = () => {
     if (!instancePromise) {
-      instancePromise = loadAupSdkModule().then(({ preloadAupSdk }) => preloadAupSdk());
+      instancePromise = import('../../../blocks/global-navigation/utilities/aup-sdk.js')
+        .then(({ preloadAupSdk }) => preloadAupSdk());
       instancePromise.catch(() => { instancePromise = null; });
     }
     return instancePromise;

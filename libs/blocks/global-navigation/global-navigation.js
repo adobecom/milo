@@ -1041,7 +1041,8 @@ class Gnav {
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
     if (isAupEnabled(this.useUniversalNav)) {
-      this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+      this.aupsdkInstancePromise = import('./utilities/aup-sdk.js')
+        .then(({ preloadAupSdk }) => preloadAupSdk());
       this.aupsdkInstancePromise.catch((e) => {
         this.aupsdkInstancePromise = null;
         lanaLog({
@@ -1176,11 +1177,6 @@ class Gnav {
     await this.decorateProfile();
   };
 
-  static preloadAupSdk = async () => {
-    const { preloadAupSdk } = await import('./utilities/aup-sdk.js');
-    return preloadAupSdk();
-  };
-
   decorateUniversalNav = async () => {
     performance.mark('Unav-Start');
     const signedOut = !window.adobeIMS?.isSignedInUser();
@@ -1245,7 +1241,8 @@ class Gnav {
       return {
         fetchAUPSDKInstance: async () => {
           if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
-          this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+          this.aupsdkInstancePromise = import('./utilities/aup-sdk.js')
+            .then(({ preloadAupSdk }) => preloadAupSdk());
           return this.aupsdkInstancePromise;
         },
       };
