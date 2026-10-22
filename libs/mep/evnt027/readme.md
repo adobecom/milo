@@ -17,6 +17,11 @@ Content is supplied by
 `https://main--upp--adobecom.aem.live/homepage/fragments/mep/max2026/login-modal`.
 The primary CTA preserves its authored URL. Continue as guest becomes a button
 that closes the enclosing shared C2 dialog, without navigating.
+Author the guest link with `#guest` as its destination, after the primary link.
+Separate paragraphs are recommended, but DA line breaks (`<br>`) between copy
+and CTA lines in a shared paragraph are also supported. The block separates
+those lines before identifying the actions, preserving inline copy formatting
+and the guest link's accessibility and analytics attributes.
 
 ### Post-event authoring
 

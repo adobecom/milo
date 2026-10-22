@@ -8,6 +8,18 @@ function decorate(block, root) {
   const content = contentRow?.firstElementChild;
   const logo = content?.querySelector(':scope > p:has(picture)');
   const heading = content?.querySelector('h1, h2, h3, h4, h5, h6');
+  // DA can serialize copy and CTA lines as one paragraph with explicit breaks.
+  content?.querySelectorAll(':scope > p:has(a):has(> br)').forEach((row) => {
+    if (row === logo) return;
+    const paragraphs = [createTag('p')];
+    [...row.childNodes].forEach((node) => {
+      if (node.nodeName === 'BR') paragraphs.push(createTag('p'));
+      else paragraphs.at(-1).append(node);
+    });
+    row.replaceWith(...paragraphs.filter((paragraph) => (
+      paragraph.textContent.trim() || paragraph.querySelector('picture, img')
+    )));
+  });
   const rows = [...(content?.children ?? [])];
   const lastRow = rows.at(-1);
   const previousRow = rows.at(-2);

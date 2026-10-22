@@ -81,10 +81,10 @@ describe('MAX login prompt trigger', () => {
     window.dispatchEvent(new Event('scroll'));
     await flush();
   };
-  const loadAuthoredFragment = async (query) => {
+  const loadAuthoredFragment = async (query, authoredBlock = AUTHORED_BLOCK) => {
     document.head.querySelector('meta[name="max26-login-prompt"]')?.remove();
     metadata('foundation', 'c2');
-    fragmentResponse = () => Promise.resolve(new Response(`<div>${AUTHORED_BLOCK}</div>`));
+    fragmentResponse = () => Promise.resolve(new Response(`<div>${authoredBlock}</div>`));
     const holder = createTag('div');
     const url = `${FRAGMENT_PATH}${query}`;
     const link = createTag('a', { href: url }, url);
@@ -200,6 +200,72 @@ describe('MAX login prompt trigger', () => {
       .to.equal(`${window.location.origin}${FRAGMENT_PATH}.plain.html${query}`);
     dialog.querySelector('.max26-login-prompt-guest').click();
     expect(localStorage.getItem(DISMISSED_KEY)).to.equal('true');
+  });
+
+  ['copy-and-actions', 'actions-only'].forEach((grouping) => {
+    [375, 1280].forEach((width) => {
+      it(`closes the guest action authored with ${grouping} in one paragraph at ${width}px`, async () => {
+        const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+        try {
+          await setViewport({ width, height: 800 });
+          const authored = createTag('div');
+          authored.innerHTML = AUTHORED_BLOCK;
+          const paragraphs = [...authored.querySelectorAll('p:not(:has(picture))')];
+          const [copy, primary, guest] = paragraphs;
+          copy.innerHTML = 'Build your <em>schedule</em>.<br><br>Sign in with your Adobe account.';
+          primary.innerHTML = '<strong><a href="https://www.adobe.com/">Register/Sign in</a></strong>';
+          guest.innerHTML = '<em><a href="/sessions?content=live#guest" aria-label="Continue without signing in" daa-ll="guest-action">Continue as guest</a></em>';
+          const first = grouping === 'copy-and-actions' ? 0 : 1;
+          const combined = paragraphs[first];
+          paragraphs.slice(first + 1).forEach((row) => {
+            combined.append(createTag('br'), createTag('br'), ...row.childNodes);
+            row.remove();
+          });
+          await loadAuthoredFragment('?delay=0', authored.innerHTML);
+          const dialog = modal();
+          const actions = dialog.querySelector('.max26-login-prompt-actions');
+          const button = actions.querySelector('button.max26-login-prompt-guest');
+          expect(button).to.exist;
+          expect(button.getAttribute('aria-label')).to.equal('Continue without signing in');
+          expect(button.getAttribute('daa-ll')).to.equal('guest-action');
+          expect(actions.children).to.have.length(2);
+          expect(actions.querySelectorAll('a')).to.have.length(1);
+          expect(actions.querySelector('a').href).to.equal('https://www.adobe.com/');
+          expect(actions.textContent).not.to.include('Build your');
+          expect(dialog.querySelector('.max26-login-prompt-copy em').textContent).to.equal('schedule');
+          const primaryBounds = actions.querySelector('a').getBoundingClientRect();
+          const guestBounds = button.getBoundingClientRect();
+          expect(guestBounds.top - primaryBounds.bottom).to.be.closeTo(width < 768 ? 24 : 29, 0.1);
+          expect(getComputedStyle(button).textDecorationLine).to.equal('underline');
+          const { hash } = window.location;
+          button.click();
+          await flush();
+          expect(modal()).to.be.null;
+          expect(document.querySelector('.modal-curtain')).to.be.null;
+          expect(localStorage.getItem(DISMISSED_KEY)).to.equal('true');
+          expect(window.location.hash).to.equal(hash);
+          expect(document.documentElement.classList.contains('disable-scroll')).to.be.false;
+        } finally {
+          await setViewport(originalViewport);
+        }
+      });
+    });
+  });
+
+  it('preserves the single primary action when post-event copy shares its paragraph', async () => {
+    const authored = createTag('div');
+    authored.innerHTML = AUTHORED_BLOCK;
+    const [copy, primary, guest] = authored.querySelectorAll('p:not(:has(picture))');
+    guest.remove();
+    copy.append(createTag('br'), createTag('br'), ...primary.childNodes);
+    primary.remove();
+    await loadAuthoredFragment('?delay=0', authored.innerHTML);
+    const dialog = modal();
+    expect(dialog.querySelector('.max26-login-prompt-copy').textContent).to.include('Build your schedule.');
+    const actions = dialog.querySelector('.max26-login-prompt-actions');
+    expect(actions.children).to.have.length(1);
+    expect(actions.querySelector('a').href).to.equal('https://www.adobe.com/');
+    expect(actions.querySelector('.max26-login-prompt-guest')).to.be.null;
   });
 
   it('opens the authored modal only after the selected row is passed and its delay expires', async () => {
