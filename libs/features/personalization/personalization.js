@@ -1536,7 +1536,6 @@ export async function applyPers({ manifests }) {
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
-  // shallow copies keep variants, which cleanAndSortManifestList deletes
   if (config.mep.lcpCheck) config.mep.lcpExperiments = experiments.map((exp) => exp && { ...exp });
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
