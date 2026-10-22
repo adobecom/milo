@@ -1310,6 +1310,29 @@ describe('merch-card-collection autoblock', () => {
       expect(emptyEl.innerHTML).to.equal('<p>none</p>');
     });
 
+    it('announces the counts from inside the drawer, once per change', () => {
+      const { collection, container } = mount();
+      const drawer = container.querySelector('.product-pricing-drawer');
+      const counts = drawer.querySelector('.product-pricing-drawer-counts');
+      container.querySelector('.product-pricing-filter-trigger').click();
+      expect(drawer.open).to.be.true;
+      // The open modal makes the page's own status inert, so the drawer needs one.
+      expect(counts.getAttribute('role')).to.equal('status');
+      expect(counts.getAttribute('aria-atomic')).to.equal('true');
+      const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
+        'merch-card-collection:literals-changed',
+        { detail: { resultCount } },
+      ));
+      emit(5);
+      expect(counts.textContent).to.equal('1 Applied5 Results');
+      const [applied, results] = [...counts.children].map((el) => el.firstChild);
+      // The same text is not rewritten, so it is not re-announced.
+      emit(5);
+      expect([...counts.children].map((el) => el.firstChild)).to.deep.equal([applied, results]);
+      emit(7);
+      expect(counts.textContent).to.equal('1 Applied7 Results');
+    });
+
     describe('accessibility', () => {
       it('names the search and marks it as a search landmark', () => {
         const { container } = mount();

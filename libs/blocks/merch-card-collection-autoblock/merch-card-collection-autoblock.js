@@ -493,7 +493,8 @@ function buildProductPricingDrawer(collection, groups) {
 
   const applied = createTag('span', { class: 'product-pricing-drawer-applied' });
   const results = createTag('span', { class: 'product-pricing-drawer-results' });
-  const counts = createTag('div', { class: 'product-pricing-drawer-counts' }, [applied, results]);
+  // The open drawer makes the rest of the page inert, so it announces its own counts.
+  const counts = createTag('div', { class: 'product-pricing-drawer-counts', role: 'status', 'aria-atomic': 'true' }, [applied, results]);
   const reset = createTag('button', { class: 'product-pricing-drawer-reset', type: 'button' }, placeholders.filtersReset);
   const subRow = createTag('div', { class: 'product-pricing-drawer-subrow' }, [counts, reset]);
 
@@ -647,9 +648,10 @@ export function mountProductPricingFilter(collection, container) {
   const renderLabels = (params) => {
     const off = isCategoryOff(params, offTags);
     const labels = filterBarLabels(params, activeGroups(params), placeholders, resultCount, off);
-    drawer.applied.textContent = labels.applied;
+    // Renders repeat for one change, and the drawer counts would re-announce the same text.
+    if (drawer.applied.textContent !== labels.applied) drawer.applied.textContent = labels.applied;
     bar.triggerLabel.textContent = labels.trigger;
-    drawer.results.textContent = labels.results;
+    if (drawer.results.textContent !== labels.results) drawer.results.textContent = labels.results;
     emptyEl.innerHTML = labels.empty;
     // Same text again would be re-announced.
     if (countEl.textContent !== labels.announce) countEl.textContent = labels.announce;
