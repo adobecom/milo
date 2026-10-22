@@ -233,6 +233,29 @@ describe('adobetv autoblock', () => {
       dupe.remove();
     });
 
+    it('pauses a player that starts playing after it was scrolled offscreen', async () => {
+      const nextFrames = () => new Promise((r) => {
+        requestAnimationFrame(() => requestAnimationFrame(r));
+      });
+      const wrapper = document.querySelector('#mpcPlayerPlain');
+      wrapper.style.cssText = 'position: absolute; top: 5000px;';
+      await init(wrapper.querySelector('a'));
+      const iframe = wrapper.querySelector('iframe');
+      const sent = [];
+      iframe.contentWindow.postMessage = (msg) => sent.push(msg);
+      await nextFrames();
+
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://video.tv.adobe.com',
+        source: iframe.contentWindow,
+        data: { type: 'mpcStatus', state: 'play', id: '888888' },
+      }));
+      await nextFrames();
+
+      expect(sent.some((msg) => msg.action === 'pause'), 'pause sent').to.be.true;
+      wrapper.style.cssText = '';
+    });
+
     it('tracks MPC play state on a cloned player iframe', async () => {
       const wrapper = document.querySelector('#mpcPlayerPlain');
       await init(wrapper.querySelector('a'));

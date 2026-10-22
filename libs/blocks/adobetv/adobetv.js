@@ -45,7 +45,11 @@ const onPlayerMessage = (event) => {
     .find((f) => f.contentWindow === event.source);
   if (!iframe) return;
   iframe.setAttribute('data-playing', state === 'play');
-  getPlayerObserver().observe(iframe);
+  if (state !== 'play') return;
+  // Re-observing delivers a fresh entry, so a player that starts offscreen is paused.
+  const observer = getPlayerObserver();
+  observer.unobserve(iframe);
+  observer.observe(iframe);
 };
 let playerListenerAdded = false;
 
