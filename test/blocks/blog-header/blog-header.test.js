@@ -300,6 +300,73 @@ describe('blog-header decoration', () => {
     expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
   });
 
+  [
+    { link: true, enabled: true, tag: 'A' },
+    { link: true, enabled: false, tag: 'SPAN' },
+    { link: false, enabled: true, tag: 'SPAN' },
+  ].forEach(({ link, enabled, tag }) => {
+    it(`renders authored names as text with link=${link} and enabled=${enabled}`, async () => {
+      fetchStub = mockFetch();
+      if (!enabled) setMetadata('article-author-link', 'off');
+      const { block } = buildBlock({ link, picture: true });
+      const name = '<img src=x onerror="void 0"> & Author';
+      const cell = block.children[2].firstElementChild;
+      (cell.querySelector('a') || cell.querySelector('p:not(:has(picture))')).textContent = name;
+      await init(block);
+      const authorName = block.querySelector('.blog-header-author-name');
+      expect(authorName.tagName).to.equal(tag);
+      expect(authorName.textContent).to.equal(name);
+      expect(authorName.children.length).to.equal(0);
+    });
+  });
+
+  it('renders names fetched from author profiles as text', async () => {
+    fetchStub = mockFetch({ profileMarkup: buildProfile({ name: '&lt;img src=x onerror="void 0"&gt; &amp; Author' }) });
+    const { block } = buildBlock({ name: null });
+    await init(block);
+    await waitFor(() => block.querySelector('.blog-header-author-name').textContent
+      === '<img src=x onerror="void 0"> & Author');
+    const authorName = block.querySelector('.blog-header-author-name');
+    expect(authorName.tagName).to.equal('A');
+    expect(authorName.children.length).to.equal(0);
+  });
+
+  [
+    // eslint-disable-next-line no-script-url -- payload must prove script URLs are rejected
+    'javascript:void(0)',
+    ' \tJaVa\nScRiPt:void(0)',
+    'data:text/html,test',
+    'vbscript:msgbox(1)',
+    'file:///author.html',
+    'https://[invalid',
+  ].forEach((href) => {
+    it(`rejects an unsafe or invalid author URL ${JSON.stringify(href)}`, async () => {
+      fetchStub = mockFetch();
+      const { block } = buildBlock({ metadata: false });
+      block.querySelector('a').setAttribute('href', href);
+      await init(block);
+      const authorName = block.querySelector('.blog-header-author-name');
+      expect(authorName.tagName).to.equal('SPAN');
+      expect(authorName.textContent).to.equal('Rachel Thornton');
+      expect(authorName.hasAttribute('href')).to.equal(false);
+      expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+      expect(window.lana.log.calledOnce).to.equal(true);
+      expect(window.lana.log.firstCall.args[0]).to.contain('author profile URL');
+    });
+  });
+
+  ['https://example.com/author', 'http://example.com/author', '//example.com/author']
+    .forEach((href) => {
+      it(`preserves an HTTP(S) author URL ${href}`, async () => {
+        fetchStub = mockFetch();
+        const { block } = buildBlock({ picture: true });
+        block.querySelector('a').setAttribute('href', href);
+        await init(block);
+        expect(block.querySelector('a.blog-header-author-name').getAttribute('href')).to.equal(href);
+        expect(window.lana.log.called).to.equal(false);
+      });
+    });
+
   it('fills title and company for a linked name without replacing the authored name', async () => {
     fetchStub = mockFetch();
     const { block } = buildBlock({ metadata: false });
@@ -1146,6 +1213,36 @@ describe('blog-header share modal', () => {
     expect(actions.length).to.equal(4);
     expect([...actions].map((action) => action.getAttribute('aria-label')))
       .to.deep.equal(['Share on X', 'Share via email', 'Share on LinkedIn', 'Copy link']);
+  });
+
+  [
+    { metadata: 'og:title', selector: '.blog-share-card-title strong' },
+    { metadata: 'og:description', selector: '.blog-share-card-desc' },
+    { metadata: 'description', selector: '.blog-share-card-desc' },
+  ].forEach(({ metadata, selector }) => {
+    it(`renders ${metadata} as text rather than HTML in the share card`, async () => {
+      const value = '<img src=x onerror="void 0"> & Article';
+      setMetadata(metadata, value);
+      const dialog = await openShareModal();
+      const element = dialog.querySelector(selector);
+      expect(element).to.exist;
+      expect(element.textContent).to.equal(value);
+      expect(element.children.length).to.equal(0);
+    });
+  });
+
+  it('renders the document title fallback as text rather than HTML in the share card', async () => {
+    const originalTitle = document.title;
+    const value = '<img src=x onerror="void 0"> & Article';
+    try {
+      document.title = value;
+      const dialog = await openShareModal();
+      const title = dialog.querySelector('.blog-share-card-title strong');
+      expect(title.textContent).to.equal(value);
+      expect(title.children.length).to.equal(0);
+    } finally {
+      document.title = originalTitle;
+    }
   });
 
   it('honors authored share order without duplicate actions', async () => {

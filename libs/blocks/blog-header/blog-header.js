@@ -149,9 +149,24 @@ function setAuthorMeta(info, details) {
 
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
-  return (href && name)
-    ? createTag('a', { class: 'blog-header-author-name', href }, name)
-    : createTag('span', { class: 'blog-header-author-name' }, name);
+  const el = (href && name)
+    ? createTag('a', { class: 'blog-header-author-name', href })
+    : createTag('span', { class: 'blog-header-author-name' });
+  el.textContent = name ?? '';
+  return el;
+}
+
+function getAuthorHref(href) {
+  if (!href) return null;
+  try {
+    const { protocol } = new URL(href, window.location.href);
+    if (protocol === 'https:' || protocol === 'http:') return href;
+  } catch (e) {
+    logError(`invalid author profile URL: ${e.message}`);
+    return null;
+  }
+  logError('unsupported author profile URL protocol');
+  return null;
 }
 
 function hideIcon(svg) {
@@ -195,7 +210,7 @@ function getAuthorData(row) {
   const nameP = paragraphs[nameIndex];
   const link = directLink || nameP?.querySelector('a');
   const name = (link || nameP)?.textContent.trim() || '';
-  const href = link?.getAttribute('href');
+  const href = getAuthorHref(link?.getAttribute('href'));
   const details = directLink ? paragraphs : paragraphs.slice(nameIndex + 1);
   const needsName = !!href
     && (!name || name === href || name === resolveUrl(href, window.location.href));
@@ -312,10 +327,13 @@ function buildShareCard(data) {
     }));
   }
   const text = createTag('div', { class: 'blog-share-card-text' });
-  const title = createTag('strong', null, data.title);
+  const title = createTag('strong');
+  title.textContent = data.title;
   text.append(createTag('p', { class: 'blog-share-card-title' }, title));
   if (data.description) {
-    text.append(createTag('p', { class: 'blog-share-card-desc' }, data.description));
+    const description = createTag('p', { class: 'blog-share-card-desc' });
+    description.textContent = data.description;
+    text.append(description);
   }
   card.append(text);
   return card;
