@@ -2361,9 +2361,9 @@
 @media (width < 768px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
     /*
-     * Converge: the side columns slide down while the center images rise and become their new top
-     * images (top image left, bottom image right); meanwhile the sides pull together, then the pair
-     * follows the CTA out.
+     * Converge: the left column slides down while the top center image rises into its top slot;
+     * the right column leads upward (stagger-like) and the bottom center image drops into its empty
+     * bottom slot. Meanwhile the sides pull together, then the pair follows the CTA out.
      * All timings are px of hero scroll (not % or vh) so the motion is identical on any screen
      * height. Card 1, the carousel heading and the stacked cards then stick at set scroll
      * positions anchored to card 1's landing (see initExitLeads): card 1 fully reveals (expand,
@@ -2374,6 +2374,7 @@
       --exit-card-land: 580px;
       --exit-card-lead-run: 225px;
       --exit-card-rest-offset: 200px;
+      --exit-right-lead: 90px;
       --exit-expand-before: 170px;
       --exit-expand-after: 30px;
       --exit-heading-after: 120px;
@@ -2422,9 +2423,9 @@
       }
 
       /*
-       * The side images slide down by --shuffle-down while the center images rise by --shuffle-dy
-       * into the freed top slots, tracking their side column through the converge (keyframes are
-       * solved so no two images overlap). Both distances are measured in initExitLeads.
+       * Side images shift by --shuffle-down and the center images by --shuffle-dy into their new
+       * slots, tracking their side column through the converge (keyframes are solved so no two
+       * images overlap). Distances are measured in initExitLeads.
        */
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) > div:nth-child(-n + 2) {
         animation: hubHeroExitShuffleDown cubic-bezier(0.45, 0, 0.55, 1) both;
@@ -2432,8 +2433,13 @@
         animation-range: contain 0px contain 100px;
       }
 
+      /* the right column leads instead (capped so it stays clear of the fading CTA) */
+      .hub-hero-image-grid-container-col:nth-child(4) {
+        --shuffle-down: calc(var(--exit-right-lead) * -1);
+      }
+
       .hub-hero-image-grid-container-col:nth-child(4) > div:nth-child(-n + 2) {
-        animation-range: contain 10px contain 160px;
+        animation-range: contain 0px contain 140px;
       }
 
       .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(n) {
@@ -2565,79 +2571,79 @@
   }
 
   5% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.012);
   }
 
   10% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.049);
   }
 
   15% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.117);
   }
 
   20% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.215);
   }
 
   25% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 0 calc(var(--shuffle-dy, 0px) * 0.342);
   }
 
   30% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 1.4px calc(var(--shuffle-dy, 0px) * 0.487);
   }
 
   35% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.000);
+    translate: 7.9px calc(var(--shuffle-dy, 0px) * 0.634);
   }
 
   40% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.026);
+    translate: 20.3px calc(var(--shuffle-dy, 0px) * 0.765);
   }
 
   45% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.105);
+    translate: 38.9px calc(var(--shuffle-dy, 0px) * 0.869);
   }
 
   50% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.245);
+    translate: 63.7px calc(var(--shuffle-dy, 0px) * 0.941);
   }
 
   55% {
-    translate: 0 calc(var(--shuffle-dy, 0px) * 0.437);
+    translate: 92.7px calc(var(--shuffle-dy, 0px) * 0.984);
   }
 
   60% {
-    translate: 2.2px calc(var(--shuffle-dy, 0px) * 0.643);
+    translate: 122.1px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   65% {
-    translate: 13.7px calc(var(--shuffle-dy, 0px) * 0.817);
+    translate: 143.2px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   70% {
-    translate: 32.7px calc(var(--shuffle-dy, 0px) * 0.933);
+    translate: 146.3px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   75% {
-    translate: 51.6px calc(var(--shuffle-dy, 0px) * 0.990);
+    translate: 130.8px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   80% {
-    translate: 66.6px calc(var(--shuffle-dy, 0px) * 1.000);
+    translate: 113.6px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   85% {
-    translate: 77.3px calc(var(--shuffle-dy, 0px) * 1.000);
+    translate: 101.3px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   90% {
-    translate: 83.8px calc(var(--shuffle-dy, 0px) * 1.000);
+    translate: 93.2px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   95% {
-    translate: 87.1px calc(var(--shuffle-dy, 0px) * 1.000);
+    translate: 89.2px calc(var(--shuffle-dy, 0px) * 1.000);
   }
 
   100% {

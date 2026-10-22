@@ -279,21 +279,21 @@ const initExitLeads = (hubHero) => {
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
     const cardLand = px('--exit-card-land');
 
-    // Converge: the side columns slide down by a center image (plus gap) and that center image
-    // rises into the freed top slot.
+    // Converge: the left column slides down by the top center image (plus gap) and that image
+    // rises into the freed top slot; the bottom center image drops into the right column's empty
+    // bottom slot as that column leads upward by --exit-right-lead.
     const cols = [...hubHero.querySelectorAll('.hub-hero-image-grid-container-col')].slice(1, 4);
-    const pairs = [[cols[0], cols[1]?.children[0]], [cols[2], cols[1]?.children[1]]];
-    if (pairs.every(([side, img]) => side?.children[1] && img)) {
+    const [left, center, right] = cols;
+    if (left?.children[1] && center?.children[1] && right?.children[2]) {
       const moving = [...cols, ...cols.flatMap((c) => [...c.children])];
       moving.forEach((el) => { el.style.animation = 'none'; });
-      const rects = pairs.map(([side, img]) => [side.children[0], side.children[1], img]
-        .map((el) => el.getBoundingClientRect()));
+      const rect = (el) => el.getBoundingClientRect();
+      const [l1, l2, c1, c2, slot] = [left.children[0], left.children[1], center.children[0],
+        center.children[1], right.children[2]].map(rect);
       moving.forEach((el) => el.style.removeProperty('animation'));
-      pairs.forEach(([side, img], i) => {
-        const [first, second, center] = rects[i];
-        side.style.setProperty('--shuffle-down', `${center.height + second.top - first.bottom}px`);
-        img.style.setProperty('--shuffle-dy', `${first.top - center.top}px`);
-      });
+      left.style.setProperty('--shuffle-down', `${c1.height + l2.top - l1.bottom}px`);
+      center.children[0].style.setProperty('--shuffle-dy', `${l1.top - c1.top}px`);
+      center.children[1].style.setProperty('--shuffle-dy', `${slot.top - c2.top - px('--exit-right-lead')}px`);
     }
 
     if (heading) {
