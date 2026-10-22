@@ -10,6 +10,7 @@ import {
 } from '../../../libs/blocks/merch/merch.js';
 import { getModal as getMiloModal, closeModal } from '../../../libs/blocks/modal/modal.js';
 import { getModal as getC2Modal, closeModal as closeC2Modal } from '../../../libs/c2/blocks/modal/modal.js';
+import { preloadAupSdk, sendAupDialogCloseAnalytics } from '../../../libs/blocks/global-navigation/utilities/aup-sdk.js';
 
 describe('AUP', () => {
   let gnav;
@@ -20,7 +21,6 @@ describe('AUP', () => {
   let previousLenis;
   let previousConfigs;
   let instance;
-  let preload;
   let meta;
   let foundation;
   let workflows;
@@ -46,8 +46,7 @@ describe('AUP', () => {
     return element;
   };
   const initializeHost = async () => {
-    preload.restore();
-    await gnav.constructor.preloadAupSdk();
+    await preloadAupSdk();
     return window.AUPSDK.preloadSDK.firstCall.args[1];
   };
   const createAction = async (hash = 'buy-test') => {
@@ -104,7 +103,6 @@ describe('AUP', () => {
     instance = { updateConfig: sinon.stub().resolves() };
     window.aupsdk = undefined;
     window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
-    preload = sinon.stub(gnav.constructor, 'preloadAupSdk').resolves(instance);
     sinon.stub(gnav, 'decorateUniversalNav').resolves();
     sinon.stub(gnav, 'decorateProfile').resolves();
     sinon.stub(gnav, 'setUpProductCTA').resolves();
@@ -186,7 +184,7 @@ describe('AUP', () => {
         await gnav.imsReady();
         await gnav.aupsdkInstancePromise;
 
-        expect(preload.callCount).to.equal(expected ? 1 : 0);
+        expect(window.AUPSDK.preloadSDK.callCount).to.equal(expected ? 1 : 0);
       });
     });
 
@@ -461,7 +459,7 @@ describe('AUP', () => {
     it('retains the original error when iframe dependencies cannot load', async () => {
       setConfig({ codeRoot: '/missing-aup-dialog-dependencies', imsClientId: 'milo', locales: { '': { ietf: 'en-US' } } });
       window.aupsdk = undefined;
-      await gnav.constructor.preloadAupSdk();
+      await preloadAupSdk();
       const failingHost = window.AUPSDK.preloadSDK.lastCall.args[1];
       const callback = sinon.spy();
       const error = await failingHost.showDialog(createElement('iframe'), {}, callback).catch((caught) => caught);
@@ -575,7 +573,6 @@ describe('AUP', () => {
     });
 
     it('defers the close event until Launch is ready', async () => {
-      const { sendAupDialogCloseAnalytics } = await import('../../../libs/blocks/global-navigation/utilities/aup-sdk.js');
       window._satellite = undefined;
       await sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
       window._satellite = { track: sinon.spy() };
