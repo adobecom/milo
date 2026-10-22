@@ -11,13 +11,6 @@ let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
-// Mobile grid-exit experiment, on by default; ?hub-hero-exit=off shows the default for comparison
-const MOBILE_EXIT_VARIANTS = ['converge'];
-const applyMobileExitVariant = (el) => {
-  if (new URLSearchParams(window.location.search).get('hub-hero-exit') === 'off') return;
-  el.classList.add(`exit-${MOBILE_EXIT_VARIANTS[0]}`);
-};
-
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const federateSvgSrc = (img) => { if (isSvgUrl(img?.src)) img.src = getFederatedUrl(img.src); };
 const unwrapParagraphs = (el) => el.querySelectorAll('p').forEach((p) => p.replaceWith(...p.childNodes));
@@ -239,7 +232,7 @@ const initHeaderPin = (hubHero, header) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
-// Exit experiments: card 1, the carousel heading and card 2 land on their sticky slots ahead of
+// Mobile exit: card 1, the carousel heading and card 2 land on their sticky slots ahead of
 // their scroll position, via scroll-driven CSS (compositor-synced). Timings are px of hero scroll,
 // like the image exits, so they hold on any screen height: card 1 lands at --exit-card-land (the
 // images clear at the same scroll on every screen); its reveal, the heading and card 2 are offset
@@ -247,7 +240,6 @@ const initHeaderPin = (hubHero, header) => {
 const LEAD_VARS = ['--lead-from', '--lead-land', '--lead-stick', '--lead-l', '--lead-big-l', '--lead-lp'];
 
 const initExitLeads = (hubHero) => {
-  if (!MOBILE_EXIT_VARIANTS.some((v) => hubHero.classList.contains(`exit-${v}`))) return;
   const card = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"]');
   const heading = hubHero.querySelector('.hub-hero-carousel-header');
   const card2 = hubHero.querySelector('.hub-hero-carousel-item[data-index="2"]');
@@ -847,7 +839,6 @@ const findSize = (classes, key) => classes.find((item) => item.match(key))?.spli
 
 export default async function init(el) {
   el.classList.toggle('touch-scroll', window.matchMedia(CAROUSEL_TOUCH_SCROLL_QUERY).matches);
-  applyMobileExitVariant(el);
 
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
