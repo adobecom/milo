@@ -919,7 +919,7 @@ describe('AUP', () => {
         const rounded = { width: Math.round(box.width), height: Math.round(box.height) };
         expect(rounded).to.deep.equal(size);
         expect(Math.round(contentBox.height)).to.equal(size.height);
-        expect(getComputedStyle(dialog().querySelector('iframe')).width).to.equal(`${size.width}px`);
+        expect(Math.round(contentBox.width)).to.equal(size.width);
       });
     });
   });

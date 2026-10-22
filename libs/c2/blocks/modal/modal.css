@@ -62,8 +62,7 @@
   box-sizing: border-box;
 }
 
-.three-in-one iframe,
-.aup-modal .aup-workflow-content > iframe {
+.three-in-one iframe {
   width: 100%;
 }
 
@@ -398,8 +397,7 @@
     width: fit-content;
   }
 
-  .dialog-modal.three-in-one,
-  .dialog-modal.aup-modal {
+  .dialog-modal.three-in-one {
     width: 100%;
   }
 
