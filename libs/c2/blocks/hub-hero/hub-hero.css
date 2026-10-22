@@ -2360,15 +2360,53 @@
 /** mobile grid exit variant (?hub-hero-exit=stagger) */
 @media (width < 768px) and (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+    /*
+     * Stagger: rigid columns rise at the same speed, each starting at a different time.
+     * All timings are px of hero scroll (not % or vh) so the motion is identical on any screen
+     * height. Card 1, the carousel heading and card 2 then land on their sticky slots early
+     * (see initExitLeads); their timings are anchored to card 1's landing.
+     */
     .hub-hero.exit-stagger {
-      --exit-pitch: calc(var(--grid-img-width-min) + var(--start-gap));
+      --exit-card-land: 490px;
+      --exit-card-lead-run: 270px;
+      --exit-expand-before: 175px;
+      --exit-expand-after: 30px;
+      --exit-heading-after: 85px;
+      --exit-heading-lead-run: 230px;
+      --exit-heading-fade-before: 85px;
+      --exit-heading-fade-after: 30px;
+      --exit-card2-after: 490px;
+      --exit-card2-lead-run: 400px;
 
-      .hub-hero-image-grid-container-col:nth-child(2) { --exit-from: var(--grid-col-two-offset); }
-      .hub-hero-image-grid-container-col:nth-child(3) { --exit-from: var(--grid-col-three-offset); }
-      .hub-hero-image-grid-container-col:nth-child(4) { --exit-from: var(--grid-col-four-offset); }
+      /* hero heading/CTA fade over a fixed scroll distance (10% of this px range), like the images */
+      .hub-hero-header,
+      .hub-hero-header > * {
+        animation-range: contain 0px contain 3040px;
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(2) {
+        --exit-from: var(--grid-col-two-offset);
+        --exit-range: contain 45px contain 450px;
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(3) {
+        --exit-from: var(--grid-col-three-offset);
+        --exit-range: contain 75px contain 360px;
+      }
+
+      .hub-hero-image-grid-container-col:nth-child(4) {
+        --exit-from: var(--grid-col-four-offset);
+        --exit-range: contain 100px contain 375px;
+      }
+
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
-        will-change: transform, translate, opacity;
+        --exit-lift: -564px;
+
+        will-change: transform, opacity;
+        animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFade linear both;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: var(--exit-range), var(--exit-range);
       }
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
@@ -2377,6 +2415,12 @@
         opacity: 1;
       }
 
+      /* tighten the center column's row gap so its top image trails the CTA further */
+      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(1) {
+        translate: 0 48px;
+      }
+
+      /* keeps the default layout's start gap (applied once the scroll timeline resolves) */
       .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(2) {
         --exit-img-from: var(--start-gap);
         --exit-img-lift: 0px;
@@ -2384,19 +2428,6 @@
         animation: hubHeroExitImgRise linear both;
         animation-timeline: --hub-hero;
       }
-
-      /*
-       * Card 1, the carousel heading and card 2 land on their sticky slots early (start/land are
-       * hero progress), so there's no dead scroll after the images leave. The stack is also pulled
-       * up (card 1 is still below the fold at rest).
-       */
-      --exit-card-lead-start: 0.06;
-      --exit-card-land: 0.15;
-      --exit-heading-lead-start: 0.12;
-      --exit-heading-land: 0.2;
-      --exit-heading-fade: contain 17% contain 21%;
-      --exit-card2-lead-start: 0.2;
-      --exit-card2-land: 0.34;
 
       .hub-hero-carousel-item[data-index="1"],
       .hub-hero-carousel-header {
@@ -2410,7 +2441,8 @@
       .hub-hero-carousel-header > div {
         animation: hubHeroExitHeadingIn linear both, hubHeroExitHeadingOut ease forwards;
         animation-timeline: --hub-hero, --hub-hero;
-        animation-range: var(--exit-heading-fade), contain 25% contain 107%;
+        animation-range: contain var(--exit-heading-fade-from, 17%) contain var(--exit-heading-fade-to, 21%),
+          contain 25% contain 107%;
       }
 
       /* card 2 keeps its stacking motion (minus the entry fade, which tracks its unled position) */
@@ -2420,36 +2452,6 @@
         animation-timeline: view(), --hub-hero, --hub-hero;
         animation-range: entry 0% exit 100%, contain var(--lead-from, 0px) contain var(--lead-land, 0px),
           contain var(--lead-land, 0px) contain var(--lead-stick, 0px);
-      }
-
-      .hub-hero-carousel-container {
-        --expand-start: var(--exit-expand-start, 0.09);
-        --expand-end: var(--exit-expand-end, 0.17);
-
-        margin-top: calc(var(--elastic-mobile-first-slide-offset) - var(--exit-card-advance, 150px));
-      }
-    }
-
-    /* stagger: rigid columns rise at the same speed, each starting at a different time */
-    .hub-hero.exit-stagger {
-      --exit-card-land: 0.17;
-      --exit-expand-end: 0.18;
-
-      .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
-        --exit-lift: -85vh;
-
-        animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFade linear both;
-        animation-timeline: --hub-hero, --hub-hero;
-        animation-range: var(--exit-range), var(--exit-range);
-      }
-
-      .hub-hero-image-grid-container-col:nth-child(2) { --exit-range: contain 1.5% contain 15.5%; }
-      .hub-hero-image-grid-container-col:nth-child(3) { --exit-range: contain 2.5% contain 12.5%; }
-      .hub-hero-image-grid-container-col:nth-child(4) { --exit-range: contain 3.5% contain 13%; }
-
-      /* tighten the center column's row gap so its top image trails the CTA further */
-      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(1) {
-        translate: 0 48px;
       }
     }
   }
