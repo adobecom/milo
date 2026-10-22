@@ -48,10 +48,10 @@ describe('AcomAssistant shared client lifecycle', () => {
     await start();
 
     expect(deps.loadScript.calledWith(
-      'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js',
+      'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.js',
     )).to.be.true;
     expect(deps.loadStyle.calledWith(
-      'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css',
+      'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.css',
     )).to.be.true;
   });
 
