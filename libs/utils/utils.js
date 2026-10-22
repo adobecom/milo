@@ -11,11 +11,14 @@ const C1_BLOCKS = [
   'action-item',
   'action-scroller',
   'adobetv',
+  'ai-summary',
   'article-feed',
   'article-header',
   'aside',
   'author-header',
   'blog-author',
+  'blog-side-navigation',
+  'blog-header',
   'brand-concierge',
   'brand-concierge-global',
   'brick',
@@ -77,10 +80,12 @@ const C1_BLOCKS = [
   'notification',
   'nps-csat-form',
   'pdf-viewer',
+  'project-tracking',
   'quote',
   'read-more',
   'recommended-articles',
   'region-nav',
+  'related-content-card',
   'review',
   'section-metadata',
   'slideshare',
@@ -99,6 +104,7 @@ const C1_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-cta',
   'tag-selector',
   'tiktok',
   'twitter',
@@ -387,10 +393,21 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
+
+export function getAupSelectValue() {
+  const value = new URLSearchParams(window.location.search).get('aup-select')
+    ?? getMetadata('aup-select');
+  const normalized = value?.trim().toLowerCase();
+  return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
+}
+
+export function isAupSelectOn() {
+  return getAupSelectValue() === 'on';
+}
+
 export function isAupEnabled(useUniversalNav = false) {
-  return (useUniversalNav && window.adobeIMS?.isSignedInUser())
-    || (new URLSearchParams(window.location.search).get('aup-select')
-      ?? getMetadata('aup-select')) === 'on';
+  return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectValue());
 }
 
 (() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
@@ -1544,7 +1561,8 @@ export const isValidHtmlUrl = (url) => {
 
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
-  if (!images.length) return;
+  if (!images.length) return [];
+  const imageVideoLinkPromises = [];
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
@@ -1562,15 +1580,22 @@ export function decorateImageLinks(el) {
         const aTag = createTag('a', { href, class: 'image-link' });
         picParent.insertBefore(aTag, pic);
         if (icon) {
-          import('./image-video-link.js').then((mod) => mod.default(picParent, aTag, icon));
+          imageVideoLinkPromises.push(
+            import('./image-video-link.js')
+              .then((mod) => mod.default(picParent, aTag, icon))
+              .catch((e) => {
+                window.lana?.log(`Failed to decorate image video link '${source.trim()}': ${e.message}`, { tags: 'utils', severity: 'error' });
+              }),
+          );
         } else {
           aTag.append(pic);
         }
       }
     } catch (e) {
-      console.log('Error:', `${e.message} '${source.trim()}'`);
+      window.lana?.log(`Failed to decorate image link '${source.trim()}': ${e.message}`, { tags: 'utils', severity: 'error' });
     }
   });
+  return imageVideoLinkPromises;
 }
 
 export function isTrustedAutoBlock(autoBlock, url) {
@@ -1778,16 +1803,16 @@ function processLinkDecoration(a, config, hasDnt) {
 
 function setupLinksDecoration(el) {
   const config = getConfig();
-  decorateImageLinks(el);
+  const imageVideoLinkPromises = decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
-  return { config, anchors, hostname, href };
+  return { config, anchors, hostname, href, imageVideoLinkPromises };
 }
 
 const decoratedLinks = new WeakSet();
 
 export async function decorateLinksAsync(el) {
-  const { config, anchors, hostname, href } = setupLinksDecoration(el);
+  const { config, anchors, hostname, href, imageVideoLinkPromises } = setupLinksDecoration(el);
 
   const linksPromises = [...anchors].map(async (a) => {
     if (decoratedLinks.has(a)) {
@@ -1809,6 +1834,7 @@ export async function decorateLinksAsync(el) {
   });
 
   const links = (await Promise.all(linksPromises)).filter(Boolean);
+  if (imageVideoLinkPromises?.length) await Promise.all(imageVideoLinkPromises);
   convertStageLinks({ anchors, config, hostname, href });
   return links;
 }
@@ -2305,6 +2331,10 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
   ],
+  'router-marquee': [
+    () => `${getConfig().base}/martech/attributes.js`,
+    () => `${getConfig().base}/utils/action.js`,
+  ],
 };
 
 const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
@@ -2671,7 +2701,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export async function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash, area = document, behavior = 'smooth') {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2683,7 +2713,7 @@ export async function scrollToHashedElement(hash) {
       severity: 'error',
     });
   }
-  if (!targetElement) return;
+  if (!targetElement || !area.contains(targetElement)) return;
 
   let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const isC2Gnav = getMetadata('foundation') === 'c2' || getMetadata('gnav-foundation') === 'c2';
@@ -2695,7 +2725,7 @@ export async function scrollToHashedElement(hash) {
   const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
-    behavior: 'smooth',
+    behavior,
   });
 }
 
@@ -3219,7 +3249,7 @@ export async function loadArea(area = document) {
   if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
-    scrollToHashedElement(currentHash);
+    scrollToHashedElement(currentHash, area);
   }
 
   if (isDoc) await documentPostSectionLoading(config);

@@ -395,7 +395,7 @@ export default {
     '--message-concierge-text': '#292929',
     '--message-max-width': '100%',
     '--message-padding': '8px 16px',
-    '--message-user-background': '#EBEEFF',
+    '--message-user-background': '#E1E1E1',
     '--message-user-text': '#292929',
     '--message-text-order': '1',
     '--message-multimodal-order': '2',

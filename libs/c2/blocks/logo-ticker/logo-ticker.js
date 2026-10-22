@@ -1,6 +1,7 @@
 import { createTag } from '../../../utils/utils.js';
 
 const SET_COUNT = 3;
+const MAX_SCROLL_DELTA = 100;
 
 const PLAY_SVG = '<svg class="logo-ticker-play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>';
 const PAUSE_SVG = '<svg class="logo-ticker-pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>';
@@ -51,18 +52,24 @@ function initPlayPause(button, el, playLabel, pauseLabel) {
   update(isPlaying);
 }
 
+const getScrollY = () => window.lenis?.animatedScroll ?? window.scrollY;
+
 function addScrollBoost(track, el, getIsPlaying) {
   let targetOffset = 0;
   let currentOffset = 0;
-  let lastScrollY = window.scrollY;
+  let lastScrollY = getScrollY();
   let isVisible = false;
   let rafId = null;
 
-  new IntersectionObserver(([entry]) => { isVisible = entry.isIntersecting; }).observe(el);
+  new IntersectionObserver(([entry]) => {
+    isVisible = entry.isIntersecting;
+    lastScrollY = getScrollY();
+    if (!isVisible) targetOffset = currentOffset;
+  }).observe(el);
 
   const step = () => {
-    const y = window.lenis?.animatedScroll ?? window.scrollY;
-    const delta = y - lastScrollY;
+    const y = getScrollY();
+    const delta = Math.max(-MAX_SCROLL_DELTA, Math.min(y - lastScrollY, MAX_SCROLL_DELTA));
     lastScrollY = y;
 
     if (getIsPlaying() && !track.classList.contains('is-static') && delta !== 0) {
