@@ -1,6 +1,13 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../utils/utils.js';
+import {
+  createTag,
+  getMetadata,
+  localizeLinkAsync,
+  loadStyle,
+  getConfig,
+  isTrustedUrl,
+} from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
@@ -18,8 +25,15 @@ let prevHash = '';
 let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
+function isUnsafeHash(id) {
+  let decoded = id;
+  try { decoded = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+  return /[<>"'`\s]/.test(decoded);
+}
+
 export async function findDetails(hash, el) {
   const id = hash.replace('#', '');
+  if (isUnsafeHash(id)) return { id: '', path: undefined, isHash: hash === window.location.hash, title: null };
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || await localizeLinkAsync(getMetadata(`-${id}`));
   const ariaLabel = a?.getAttribute('aria-label') || document.querySelector(`a[data-modal-id="${id}"]`)?.getAttribute('aria-label');
@@ -192,6 +206,10 @@ async function getPathModal(path, dialog) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     href = getFederatedUrl(path);
   }
+  if (!isTrustedUrl(href)) {
+    window.lana?.log(`Modal path blocked, untrusted URL: ${href}`, { tags: 'modal' });
+    return;
+  }
   const block = createTag('a', { href });
   dialog.append(block);
 
@@ -217,6 +235,7 @@ function addIframeKeydownListener(iframe, dialog) {
 export async function getModal(details, custom) {
   if (custom?.signal?.aborted) return null;
   if (!((details?.path && details?.id) || custom)) return null;
+  if (details && !custom && !isTrustedUrl(details.path)) return null;
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
   const activeElementData = document.activeElement.dataset;
