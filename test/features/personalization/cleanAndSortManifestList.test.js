@@ -5,6 +5,35 @@ import { getConfig } from '../../../libs/utils/utils.js';
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional test', () => {
+  it('records the placeholder column selected by the active locale', () => {
+    const config = getConfig();
+    const originalLocale = config.locale;
+    const originalMep = config.mep;
+    config.mep = { ...originalMep, prefix: '', experiments: [] };
+    const manifest = {
+      manifest: '/placeholder-column.json',
+      manifestPath: '/placeholder-column.json',
+      selectedVariantName: 'all',
+      variantNames: ['all'],
+      variants: { all: { commands: [], fragments: [] } },
+      source: [],
+      placeholderData: [
+        { key: 'market-name', us: 'United States', jp: 'Japan', fr: 'France' },
+      ],
+    };
+
+    try {
+      ['us', 'jp', 'fr'].forEach((region) => {
+        config.locale = { ietf: `${region}-XX`, region };
+        const [result] = cleanAndSortManifestList([{ ...manifest }], config);
+        expect(result.placeholderColumn).to.equal(region);
+      });
+    } finally {
+      config.locale = originalLocale;
+      config.mep = originalMep;
+    }
+  });
+
   it('Pzn before test, even when test is from Target', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestLists/two-manifests-one-from-target.json' });
     manifestJson = JSON.parse(manifestJson);

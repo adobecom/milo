@@ -984,8 +984,8 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
-export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
-  if (!placeholders?.length || selectedVariantName === 'default') return config;
+function getPlaceholderColumn(placeholders, config, selectedVariantName) {
+  if (!placeholders?.length || selectedVariantName === 'default') return null;
   const { countryIP } = config.mep || {};
   const valueNames = [
     selectedVariantName.toLowerCase(),
@@ -1002,7 +1002,12 @@ export function parsePlaceholders(placeholders, config, selectedVariantName = ''
     const modifiedStr = key.toLowerCase();
     return valueNames.includes(modifiedStr) || hasCountryMatch(modifiedStr, config);
   });
-  const key = keyVal?.[0];
+  return keyVal?.[0] ?? null;
+}
+
+export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
+  if (!placeholders?.length || selectedVariantName === 'default') return config;
+  const key = getPlaceholderColumn(placeholders, config, selectedVariantName);
 
   const seenKeys = new Set();
   const filteredPlaceholders = placeholders.filter((item) => {
@@ -1483,7 +1488,13 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
         manifestConfig.selectedVariantName = 'default';
         manifestConfig.selectedVariant = 'default';
       }
-      parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
+      const currentConfig = getConfig();
+      manifestConfig.placeholderColumn = getPlaceholderColumn(
+        placeholderData,
+        currentConfig,
+        manifestConfig.selectedVariantName,
+      )?.toLowerCase() ?? null;
+      parsePlaceholders(placeholderData, currentConfig, manifestConfig.selectedVariantName);
     } catch (e) {
       log(`MEP Error parsing manifests: ${e.toString()}`);
       window.lana?.log(`MEP Error parsing manifests: ${e.toString()}`);

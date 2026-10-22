@@ -313,6 +313,7 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
           source: 'adobe-target',
           countryRestriction: 'emea',
           consentType: 'promo or no offer changes',
+          placeholderColumn: 'us',
           disabled: false,
           event: { start: '2025-01-01T00:00:00Z', end: '2025-12-31T23:59:59Z' },
         },
@@ -355,6 +356,16 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
 
   it('countryRestriction is uppercased in manifest card (EMEA)', () => {
     expect(bodyEl.querySelector('.mep-manifest-card').textContent).to.include('EMEA');
+  });
+
+  it('always shows the applied placeholder set or None', () => {
+    const cards = bodyEl.querySelectorAll('.mep-manifest-card');
+    const columnValues = [...cards].map((card) => {
+      const row = [...card.querySelectorAll('.mep-card-body .mep-row')]
+        .find((item) => item.querySelector('h2')?.textContent === 'Placeholder Set');
+      return row?.querySelector('.mep-row-value')?.textContent;
+    });
+    expect(columnValues).to.deep.equal(['us', 'None']);
   });
 
   it('renders start/end dates and times inside the expandable body', () => {

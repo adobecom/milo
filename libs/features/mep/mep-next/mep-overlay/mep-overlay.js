@@ -294,6 +294,7 @@ function buildManifestCard(manifest) {
   if (manifest.countryRestriction) rows.push(buildRow('Allowed User Countries', manifest.countryRestriction));
   rows.push(buildRow('Type', manifest.manifestType || 'none'));
   rows.push(buildRow('Override Name', manifest.manifestOverrideName || 'none'));
+  rows.push(buildRow('Placeholder Set', manifest.placeholderColumn || 'None'));
   rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
 
