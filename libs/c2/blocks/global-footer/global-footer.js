@@ -523,6 +523,7 @@ class Footer {
           focusOnPointerOpen: false,
           routeWheelToList: true,
         });
+        selector.classList.add('market-selector-c2');
         this.elements.regionPicker = selector;
         return this.elements.regionPicker;
       } catch (error) {
