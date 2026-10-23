@@ -883,7 +883,6 @@
           max-width: none;
           margin: 0;
           aspect-ratio: auto;
-          border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
           border-right: none;
           padding: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-2xs) var(--s2a-spacing-2xs);
           border-radius: var(--s2a-border-radius-xs) 0 0 var(--s2a-border-radius-xs);
