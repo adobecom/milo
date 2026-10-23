@@ -5,6 +5,45 @@ import { getConfig } from '../../../libs/utils/utils.js';
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional test', () => {
+  it('records the placeholder column selected by the active locale', () => {
+    const config = getConfig();
+    const originalLocale = config.locale;
+    const originalMep = config.mep;
+    config.mep = { ...originalMep, prefix: '', experiments: [] };
+    const manifest = {
+      manifest: '/placeholder-column.json',
+      manifestPath: '/placeholder-column.json',
+      selectedVariantName: 'all',
+      variantNames: ['all'],
+      variants: { all: { commands: [], fragments: [] } },
+      source: [],
+      placeholderData: [
+        { key: 'market-name', jp: 'Japan', fr: 'France', us: 'United States' },
+      ],
+    };
+
+    try {
+      ['us', 'jp', 'fr'].forEach((region) => {
+        config.locale = { ietf: 'en-US', region };
+        const [result] = cleanAndSortManifestList([{ ...manifest }], config);
+        expect(result.placeholderColumn).to.equal(region);
+        expect(result.placeholderMatch).to.equal('region');
+      });
+
+      config.locale = { ietf: 'en-US', region: 'de' };
+      const noMatchManifest = {
+        ...manifest,
+        placeholderData: [{ key: 'market-name', jp: 'Japan', fr: 'France' }],
+      };
+      const [noMatch] = cleanAndSortManifestList([noMatchManifest], config);
+      expect(noMatch.placeholderColumn).to.be.null;
+      expect(noMatch.placeholderMatch).to.be.null;
+    } finally {
+      config.locale = originalLocale;
+      config.mep = originalMep;
+    }
+  });
+
   it('Pzn before test, even when test is from Target', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestLists/two-manifests-one-from-target.json' });
     manifestJson = JSON.parse(manifestJson);
