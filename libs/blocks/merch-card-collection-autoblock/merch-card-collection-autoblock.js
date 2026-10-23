@@ -48,9 +48,7 @@ function getTimeoutPromise(timeout) {
   });
 }
 
-async function loadDependencies(options) {
-  /** Load lit first as it's needed by MAS components */
-
+async function loadDependencies() {
   /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
@@ -58,13 +56,11 @@ async function loadDependencies(options) {
     throw new Error('Failed to initialize mas commerce service');
   }
 
-  const dependencyPromises = [
+  await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
     loadMasComponent(MAS_MERCH_CARD_COLLECTION),
-  ];
-  if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
-  await Promise.all(dependencyPromises);
+  ]);
 }
 
 // The sidenav, and the header it brings (search, filters, sort), are the only
@@ -737,7 +733,9 @@ async function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
-  await loadSpectrumDependencies();
+  // merch-sidenav is the only M@S component still built on Lit, so load it (and
+  // lit-all) only when the collection actually has a sidenav to render.
+  await Promise.all([loadSpectrumDependencies(), loadMasComponent(MAS_MERCH_SIDENAV)]);
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
@@ -1010,6 +1008,6 @@ export default async function init(el) {
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
-  await loadDependencies(options);
+  await loadDependencies();
   await createCollection(el, options);
 }
