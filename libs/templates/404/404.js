@@ -1,5 +1,6 @@
 import { getConfig, createTag, loadArea, getMetadata } from '../../utils/utils.js';
 import { sampleRUM } from '../../utils/samplerum.js';
+import { resolveGeoRegion } from './geo-locale-utils.js';
 
 const { base, contentRoot, locale } = getConfig();
 
@@ -8,7 +9,9 @@ async function get404(path, version) {
   let href = path || `${base}${prefix}/fragments/404#_dnt`;
 
   if (version === 'v2') {
-    const versionedPath = `${base}${prefix}/fragments/${version}/404`;
+    const region = await resolveGeoRegion();
+    const versionedPrefix = region?.prefix ?? prefix;
+    const versionedPath = `${base}${versionedPrefix}/fragments/${version}/404`;
     const resp = await fetch(`${versionedPath}.plain.html`).catch(() => null);
     if (resp?.ok) href = `${versionedPath}#_dnt`;
   }
