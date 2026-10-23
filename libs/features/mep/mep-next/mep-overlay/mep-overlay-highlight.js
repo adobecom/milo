@@ -100,7 +100,7 @@ export function setBadgeEventListeners() {
   }
 
   document.addEventListener('click', (e) => {
-    if (e.target.closest('.mep-preview-overlay')) return;
+    if (e.target.closest('.mep-fab, #mep-drawer')) return;
 
     const fragment = e.target.closest(FRAGMENT_SELECTOR);
     if (!fragment) return;

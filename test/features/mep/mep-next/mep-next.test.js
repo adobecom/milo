@@ -1184,7 +1184,7 @@ describe('getMepPopup', () => {
   afterEach(() => {
     popups.splice(0).forEach((popup) => popup.remove());
     document.querySelectorAll('[data-mas-block]').forEach((el) => el.remove());
-    document.querySelectorAll('meta[name="langfirst"]').forEach((el) => el.remove());
+    document.querySelectorAll('meta[name="langfirst"], meta[name="foundation"]').forEach((el) => el.remove());
     delete getConfig().locale.regions;
     delete config.locale.regions;
     if (originalMarketsConfig === undefined) {
@@ -1233,10 +1233,10 @@ describe('getMepPopup', () => {
       page: { ...basePage },
       activities: [buildActivity({ variantNames: [XSS], selectedVariantName: XSS })],
     });
-    expect(popup.querySelector('img'), 'no injected element from variant name').to.be.null;
+    expect(popup.querySelectorAll('img').length, 'no injected element from variant name').to.equal(0);
     const selected = popup.querySelector('.mep-selected-variant');
     expect(selected.textContent, 'variant rendered as literal text').to.include(XSS);
-    expect(selected.querySelector('img'), 'variant text not parsed as markup').to.be.null;
+    expect(selected.querySelectorAll('img').length, 'variant text not parsed as markup').to.equal(0);
   });
 
   it('does not let a malicious manifest url break out of the href/title attributes', async () => {
@@ -1246,12 +1246,12 @@ describe('getMepPopup', () => {
       page: { ...basePage },
       activities: [buildActivity({ url: `https://x/">${XSS}` })],
     });
-    expect(popup.querySelector('.mep-manifest-title img'), 'attribute break-out blocked').to.be.null;
+    expect(popup.querySelectorAll('.mep-manifest-title img').length, 'attribute break-out blocked').to.equal(0);
   });
 
   it('renders page summary values and Lingo region keys as text, not HTML', async () => {
     const langfirstMeta = createTag('meta', { name: 'langfirst', content: 'on' });
-    document.head.append(langfirstMeta);
+    document.head.append(langfirstMeta, createTag('meta', { name: 'foundation', content: XSS }));
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     getConfig().locale.regions = { [`x${XSS}_de`]: { prefix: '/ch_de' } };
@@ -1261,10 +1261,11 @@ describe('getMepPopup', () => {
       },
       activities: [buildActivity()],
     });
-    expect(popup.querySelector('img'), 'no injected element from page or region data').to.be.null;
+    expect(popup.querySelectorAll('img').length, 'no injected element from page or region data').to.equal(0);
     const summary = popup.querySelector('.mep-summary-body').textContent;
     expect(summary).to.include(XSS);
     expect(summary).to.include(XSS.toLowerCase());
+    expect(summary, 'foundation metadata rendered as text').to.include(XSS.toUpperCase());
     const regionOption = popup.querySelector('select[id^="mepLingoRegionSelect"] option:not([value=""])');
     expect(regionOption.textContent).to.equal(`x${XSS}_de`);
   });
@@ -1287,8 +1288,8 @@ describe('getMepPopup', () => {
       page: { ...basePage },
       activities: [buildActivity({ source: '<b>x</b>', consentType: '<b>x</b>', countryRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
     });
-    expect(popup.querySelector('.mep-section-data b'), 'section data values not parsed as markup').to.be.null;
-    expect(popup.querySelector('.target-activity-name b'), 'target activity name not parsed as markup').to.be.null;
+    expect(popup.querySelectorAll('.mep-section-data b').length, 'section data values not parsed as markup').to.equal(0);
+    expect(popup.querySelectorAll('.target-activity-name b').length, 'target activity name not parsed as markup').to.equal(0);
   });
 
   it('does not throw and renders default (control) when variantNames is undefined', async () => {

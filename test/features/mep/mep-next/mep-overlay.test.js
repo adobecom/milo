@@ -662,7 +662,7 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
   it('renders a malformed manifest error reason as literal text in the tooltip', () => {
     const tooltip = bodyEl.querySelector('.mep-manifest-error-tooltip');
     expect(tooltip, 'error tooltip rendered').to.exist;
-    expect(tooltip.querySelector('img')).to.be.null;
+    expect(tooltip.querySelectorAll('img').length).to.equal(0);
     expect(tooltip.textContent).to.equal(`${XSS} not found.`);
     expect(window.mepXssFired).to.not.equal(true);
   });
@@ -1832,5 +1832,35 @@ describe('buildCardContent: unknown header → safety fallback', () => {
     const result = __buildCardContent({ header: 'Custom Unknown Type' }, '');
     expect(result.tagName.toLowerCase()).to.equal('div');
     expect(result.textContent).to.equal('No content available');
+  });
+});
+
+describe('buildCardContent: card-derived strings render as inert text', () => {
+  const XSS = 'x"><img src=x onerror="window.mepXssFired = true">';
+
+  afterEach(() => { delete window.mepXssFired; });
+
+  it('renders nested section labels and sub-labels as text', async () => {
+    const nodes = await __buildCardContent({ header: 'Summary', getData: async () => [[XSS, [[XSS, XSS]]]] }, '');
+    const section = nodes[0];
+    expect(section.querySelectorAll('img').length).to.equal(0);
+    expect(section.querySelector('h2').textContent).to.equal(XSS);
+    expect(section.querySelector('.mep-surfaces-row').textContent).to.equal(`${XSS}${XSS}`);
+  });
+
+  it('renders toggle titles and descriptions as text', () => {
+    const rows = __buildCardContent({ header: 'Toggle', label: [[XSS, () => XSS]] }, '');
+    expect(rows[0].querySelectorAll('img').length).to.equal(0);
+    expect(rows[0].querySelector('h2').textContent).to.equal(XSS);
+    expect(rows[0].querySelector('p').textContent).to.equal(XSS);
+  });
+
+  it('renders spoof-geo radio labels as text', async () => {
+    const [row] = await __buildCardContent({ header: 'Spoof Country', label: [XSS] }, '');
+    const label = row.querySelector('label');
+    expect(row.querySelectorAll('img').length).to.equal(0);
+    expect(label.textContent).to.equal(XSS);
+    expect(label.dataset.value).to.equal(XSS);
+    expect(window.mepXssFired).to.not.equal(true);
   });
 });
