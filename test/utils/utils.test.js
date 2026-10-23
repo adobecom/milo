@@ -1365,6 +1365,7 @@ describe('Utils', () => {
       await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+      expect(a.closest('[data-footer-promo]')).to.exist;
     });
 
     it('loads from taxonomy in order on sheet', async () => {
