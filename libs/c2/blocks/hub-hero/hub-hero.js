@@ -550,7 +550,8 @@ const setCarouselSlideOffsets = (grid, carousel) => {
   const hubHero = carousel.closest('.hub-hero');
   if (!hubHero) return;
   const cols = [...grid.querySelectorAll('.hub-hero-image-grid-container-col')];
-  const gridHeight = grid.offsetHeight;
+  // The pinned header adds padding-top to the grid; exclude it so pin state doesn't skew results.
+  const gridHeight = grid.offsetHeight - (parseFloat(getComputedStyle(grid).paddingTop) || 0);
   // slide nth-child (1-based) → 0-based column index
   const colMap = { 1: 0, 2: 1, 4: 3, 5: 4 };
   Object.entries(colMap).forEach(([nthChild, colIdx]) => {
