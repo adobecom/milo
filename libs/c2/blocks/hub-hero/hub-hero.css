@@ -2370,7 +2370,7 @@
      * then chrome), then the heading fades in, then card 2 comes into view.
      */
     .hub-hero {
-      --exit-card-land: 550px;
+      --exit-card-land: 590px;
       --exit-card-lead-run: 270px;
       --exit-expand-before: 175px;
       --exit-expand-after: 30px;
@@ -2380,11 +2380,17 @@
       --exit-card2-enter: 220px;
       --exit-chrome-reveal: 70px;
       --exit-card-step: 560px;
+      --exit-col-gap: 20px;
 
       /* hero heading/CTA fade over a fixed scroll distance (10% of this px range), like the images */
       .hub-hero-header,
       .hub-hero-header > * {
         animation-range: contain 0px contain 3040px;
+      }
+
+      /* space between columns (default 40px, --start-gap) */
+      .hub-hero-image-grid-container {
+        column-gap: var(--exit-col-gap);
       }
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
@@ -2393,7 +2399,7 @@
 
       /* --align-dy (onto the row's center line) and --slide-x (off-screen) come from initExitLeads */
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) > div {
-        --slide-range: contain 140px contain 330px;
+        --slide-range: contain 200px contain 390px;
 
         opacity: 1;
         will-change: translate;
@@ -2405,11 +2411,11 @@
       }
 
       .hub-hero-image-grid-container-col > div:nth-child(2) {
-        --slide-range: contain 230px contain 420px;
+        --slide-range: contain 290px contain 480px;
       }
 
       .hub-hero-image-grid-container-col > div:nth-child(n + 3) {
-        --slide-range: contain 300px contain 490px;
+        --slide-range: contain 360px contain 550px;
       }
 
       /* card 1 sits below the images until it eases up into its sticky slot (initExitLeads) */
