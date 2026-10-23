@@ -2399,7 +2399,6 @@
         --slide-ease: cubic-bezier(0.42, 0, 1, 1);
 
         opacity: 1;
-
         /* separate properties (translate / transform) so both run on the compositor */
         will-change: translate, transform;
         animation: hubHeroExitAlign cubic-bezier(0.45, 0, 0.55, 1) both,
@@ -2416,21 +2415,6 @@
       .hub-hero-image-grid-container-col > div:nth-child(n + 3) {
         --slide-range: contain 360px contain 600px;
         --slide-ease: cubic-bezier(0.5, 0, 0.75, 0.5);
-      }
-
-      /* spring prototype (?hub-hero-slide=spring): wind up the other way, settle, then exit */
-      &.slide-spring .hub-hero-image-grid-container-col > div:nth-child(-n + 2) {
-        animation: hubHeroExitAlign cubic-bezier(0.45, 0, 0.55, 1) both, hubHeroExitSlideSpring linear both;
-        animation-timeline: --hub-hero, --hub-hero;
-        animation-range: contain 0px contain 140px, var(--slide-range);
-      }
-
-      &.slide-spring .hub-hero-image-grid-container-col > div:nth-child(1) {
-        --slide-range: contain 130px contain 560px;
-      }
-
-      &.slide-spring .hub-hero-image-grid-container-col > div:nth-child(2) {
-        --slide-range: contain 220px contain 560px;
       }
 
       /* card 1 sits below the images until it eases up into its sticky slot (initExitLeads) */
@@ -2458,27 +2442,6 @@
 
 @keyframes hubHeroExitSlide {
   to {
-    transform: translateX(var(--slide-x, 0px));
-  }
-}
-
-@keyframes hubHeroExitSlideSpring {
-  0% {
-    transform: translateX(0);
-    animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1);
-  }
-
-  32% {
-    transform: translateX(calc(var(--slide-wind, 0px) * 1.12));
-    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
-  }
-
-  44% {
-    transform: translateX(var(--slide-wind, 0px));
-    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
-  }
-
-  100% {
     transform: translateX(var(--slide-x, 0px));
   }
 }
