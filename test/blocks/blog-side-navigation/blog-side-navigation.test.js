@@ -138,7 +138,7 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
           .to.equal(mobile ? '700' : collapsedWeight);
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
-          .backgroundColor).to.equal(tablet ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
+          .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         if (mobile) {
           expect(getComputedStyle(block.querySelector(':scope > p')).fontSize).to.equal('16px');
           expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight).to.equal('400');
@@ -177,7 +177,7 @@ describe('blog-side-navigation section list', () => {
         const expandedWeight = width >= 1200 ? '700' : '600';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
           .to.equal(mobile ? '400' : expandedWeight);
-        if (width >= 1200) {
+        if (!mobile) {
           expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
             .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         }

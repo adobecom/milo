@@ -300,16 +300,16 @@
 
     max-width: none;
   }
+
+  .blog-side-navigation nav > ul > li:has(> a[aria-current="location"]) {
+    background: transparent;
+  }
 }
 
 @media (min-width: 1200px) {
   .blog-article-layout {
     grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
     gap: 56px;
-  }
-
-  .blog-side-navigation nav > ul > li:has(> a[aria-current="location"]) {
-    background: transparent;
   }
 
   .blog-side-navigation nav > ul > li > a[aria-current="location"] {
