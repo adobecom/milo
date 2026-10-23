@@ -161,7 +161,6 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
-  'youtube-c2',
 ];
 
 const AUTO_BLOCKS = [
@@ -196,7 +195,7 @@ const DO_NOT_INLINE = [
 ];
 
 // Blocks that read and load the links they contain themselves (no inlining or autoblocking).
-const SELF_LOADING_LINK_BLOCKS = ['scheduled-content', 'youtube-c2'];
+const SELF_LOADING_LINK_BLOCKS = ['scheduled-content'];
 
 const ENVS = {
   stage: {
