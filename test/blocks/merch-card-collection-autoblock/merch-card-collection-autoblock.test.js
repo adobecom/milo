@@ -133,10 +133,6 @@ describe('merch-card-collection autoblock', () => {
       expect(sidenavList.querySelector('sp-sidenav-item[label=All]')).to.exist;
       expect(sidenavList.querySelector('sp-sidenav-item[label=Cloud]')).to.exist;
       expect(sidenavList.querySelector('sp-sidenav-item[label=Photo]')).to.exist;
-      const litPreload = document.head.querySelector('link[rel="preload"][href$="/lit-all.min.js"]');
-      expect(litPreload).to.exist;
-      expect(litPreload.as).to.equal('script');
-      expect(litPreload.crossOrigin).to.equal('anonymous');
     });
 
     it('test analytics', async () => {
@@ -171,13 +167,11 @@ describe('merch-card-collection autoblock', () => {
       a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
       content.append(a);
       document.body.append(content);
-      document.head.querySelectorAll('link[href$="/lit-all.min.js"]').forEach((link) => link.remove());
       await init(a);
       const collection = document.querySelector('merch-card-collection');
       expect(collection).to.exist;
       const sidenav = document.querySelector('merch-sidenav');
       expect(sidenav).to.not.exist;
-      expect(document.head.querySelector('link[href$="/lit-all.min.js"]')).to.not.exist;
     });
 
     it('overrides collection if mep replace tells to do', async () => {

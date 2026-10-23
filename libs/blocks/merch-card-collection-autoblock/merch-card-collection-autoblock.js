@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadLink, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
@@ -11,8 +11,6 @@ import {
   overrideOptions,
   updateModalState,
   loadMasComponent,
-  getMasComponentUrl,
-  getMasLibs,
   createFragmentErrorEl,
   isMasErrorEnv,
   MAS_MERCH_CARD,
@@ -50,13 +48,7 @@ function getTimeoutPromise(timeout) {
   });
 }
 
-async function loadDependencies(options) {
-  // Only the sidenav still needs M@S Lit; fetch it while the service initializes.
-  if (options.sidenav) {
-    const litUrl = getMasComponentUrl('lit-all.min', getMasLibs(), window.location.hostname);
-    loadLink(litUrl, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-  }
-
+async function loadDependencies() {
   /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
@@ -64,13 +56,11 @@ async function loadDependencies(options) {
     throw new Error('Failed to initialize mas commerce service');
   }
 
-  const dependencyPromises = [
+  await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
     loadMasComponent(MAS_MERCH_CARD_COLLECTION),
-  ];
-  if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
-  await Promise.all(dependencyPromises);
+  ]);
 }
 
 // The sidenav, and the header it brings (search, filters, sort), are the only
@@ -743,7 +733,9 @@ async function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders, sidenavSettings } = collection.data;
   if (!hierarchy?.length) return null;
-  await loadSpectrumDependencies();
+  // merch-sidenav is the only M@S component still built on Lit, so load it (and
+  // lit-all) only when the collection actually has a sidenav to render.
+  await Promise.all([loadSpectrumDependencies(), loadMasComponent(MAS_MERCH_SIDENAV)]);
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '', 'close-text': placeholders?.catalogSidenavClose || '' });
 
@@ -1016,6 +1008,6 @@ export default async function init(el) {
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
-  await loadDependencies(options);
+  await loadDependencies();
   await createCollection(el, options);
 }
