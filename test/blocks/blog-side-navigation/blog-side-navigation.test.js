@@ -281,7 +281,7 @@ describe('blog-side-navigation section list', () => {
     expect(document.querySelector('.blog-article-layout')).not.to.exist;
   });
 
-  it('groups article sections without moving recommendations or footer content into the rail layout', async () => {
+  it('includes authored recommendations without moving the footer promo into the rail layout', async () => {
     const { main, block } = buildArticle('<h2>Article section</h2><p>Final paragraph.</p>');
     const section = main.querySelector('.content').parentElement;
     section.id = 'article-body';
@@ -289,7 +289,7 @@ describe('blog-side-navigation section list', () => {
       + '<p>Introduction.</p></div></div><div class="section"><div class="table">Table</div></div>');
     section.insertAdjacentHTML('beforeend', '<div class="text"><h2>Recommended for you</h2></div>'
       + '<div class="card-metadata"></div>');
-    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="fragment">Footer</div></div>');
+    main.insertAdjacentHTML('beforeend', '<div class="section" data-footer-promo><div class="fragment">Footer</div></div>');
     const recommended = main.querySelector('.text');
     const footer = main.lastElementChild;
     await init(block);
@@ -300,10 +300,108 @@ describe('blog-side-navigation section list', () => {
     expect(article.children.length).to.equal(3);
     expect(article.lastElementChild).to.equal(section);
     expect(section.id).to.equal('article-body');
-    expect(recommended.parentElement.parentElement).to.equal(main);
-    expect(recommended.parentElement.id).to.equal('');
+    expect(recommended.parentElement).to.equal(section);
     expect(main.lastElementChild).to.equal(footer);
     expect(main.querySelectorAll('#article-body').length).to.equal(1);
+  });
+
+  it('includes block-only sections after the last copy and skips metadata-only and hidden sections', async () => {
+    const { main, block } = buildArticle('<h2>Article section</h2><p>Final copy.</p>');
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="card-metadata"></div></div>'
+      + '<div class="section"><div class="tag-cta">Explore related resources</div></div>'
+      + '<div class="section"><div class="related-content-card">Related article</div></div>'
+      + '<div class="section"><div class="blog-author">Author biography</div>'
+      + '<div class="section-metadata"></div></div>'
+      + '<div class="section"><div class="metadata"></div><div class="section-metadata"></div></div>'
+      + '<div class="section" hidden><div class="content"><h2>Hidden section</h2></div></div>'
+      + '<div class="section" data-footer-promo><div class="content">Footer promo</div></div>');
+    const metadata = main.querySelector('.card-metadata').parentElement;
+    const pageMetadata = main.querySelector('.metadata').parentElement;
+    const hiddenSection = main.querySelector('.section[hidden]');
+    const footerPromo = main.lastElementChild;
+    await init(block);
+    const article = main.querySelector('.blog-article-content');
+    expect([...article.children].map((section) => section.firstElementChild.className))
+      .to.deep.equal(['content', 'tag-cta', 'related-content-card', 'blog-author']);
+    expect(article.querySelector('.blog-author + .section-metadata')).to.exist;
+    expect(metadata.parentElement).to.equal(main);
+    expect(pageMetadata.parentElement).to.equal(main);
+    expect(hiddenSection.parentElement).to.equal(main);
+    expect(footerPromo.parentElement).to.equal(main);
+    expect(block.querySelectorAll('nav a').length).to.equal(1);
+  });
+
+  it('discovers related content hidden while waiting to move into the sidenav', async () => {
+    const { main, block } = buildArticle('<h2>Article section</h2><p>Article copy.</p>');
+    main.querySelector('.content').parentElement.insertAdjacentHTML(
+      'beforebegin',
+      '<div class="section"><div class="blog-related-content" hidden '
+      + 'data-related-content-initialized="true">Related articles</div></div>',
+    );
+    const related = main.querySelector('.blog-related-content');
+    await init(block);
+    expect(related.parentElement).to.equal(block);
+    await init(block);
+    expect(related.parentElement).to.equal(block);
+    expect(main.querySelectorAll('.blog-article-layout').length).to.equal(1);
+    expect(block.querySelectorAll('nav a').length).to.equal(1);
+  });
+
+  [
+    '<div class="section blog-layout-end"><div class="section-metadata"></div></div>',
+    '<div class="section"><div class="section-metadata"><div><div>Style</div>'
+      + '<div>blog-layout-end</div></div></div></div>',
+  ].forEach((boundary, index) => {
+    it(`stops layout and jump links at the boundary from ${index ? 'authored metadata' : 'a decorated class'}`, async () => {
+      const { main, block } = buildArticle('<h2>Article section</h2><p>Final copy.</p>');
+      main.insertAdjacentHTML('beforeend', `${boundary}<div class="section">`
+        + '<div class="content"><h2>Outside the blog layout</h2></div>'
+        + '<div class="blog-related-content">Outside related content</div></div>');
+      const outside = main.lastElementChild;
+      await init(block);
+      expect(main.querySelector('.blog-article-content').children.length).to.equal(1);
+      expect(outside.parentElement).to.equal(main);
+      expect(outside.querySelector('.blog-related-content')).to.exist;
+      expect(block.querySelector('.blog-related-content')).not.to.exist;
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['Article section']);
+    });
+  });
+
+  it('stops at the site footer even when it is placed inside main', async () => {
+    const { main, block } = buildArticle('<h2>Article section</h2>');
+    main.insertAdjacentHTML('beforeend', '<footer><div class="content"><h2>Footer heading</h2></div></footer>');
+    const footer = main.lastElementChild;
+    await init(block);
+    expect(footer.parentElement).to.equal(main);
+    expect(main.querySelector('.blog-article-content').contains(footer)).to.equal(false);
+    expect(block.querySelectorAll('nav a').length).to.equal(1);
+  });
+
+  it('contains the final paragraph margin so the layout reaches the footer at every size', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    const footer = document.createElement('footer');
+    style.textContent = `${await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' })}
+      body { margin: 0; } .content p { margin: 0 0 18px; }`;
+    document.head.append(style);
+    const { main, block } = buildArticle('<h2>Article section</h2><p>Final paragraph.</p>');
+    main.style.setProperty('--grid-container-width', '80%');
+    footer.style.height = '20px';
+    main.after(footer);
+    try {
+      await init(block);
+      const layout = main.querySelector('.blog-article-layout');
+      for (const width of [375, 768, 1440]) {
+        await setViewport({ width, height: 900 });
+        expect(layout.getBoundingClientRect().bottom)
+          .to.be.closeTo(footer.getBoundingClientRect().top, 0.01);
+      }
+    } finally {
+      footer.remove();
+      style.remove();
+      await setViewport(originalViewport);
+    }
   });
 
   it('uses a compact sticky rail on tablet, a wider desktop layout, and full-width jump links only on mobile', async () => {
@@ -330,6 +428,7 @@ describe('blog-side-navigation section list', () => {
       expect(listStyle.backgroundColor).to.equal('rgb(255, 255, 255)');
       expect(listStyle.boxShadow).to.equal('rgba(0, 0, 0, 0.08) 1px 1px 4px 0px');
       expect(getComputedStyle(layout).columnGap).to.equal('56px');
+      expect(getComputedStyle(layout).marginBottom).to.equal('0px');
       expect(getComputedStyle(block).position).to.equal('sticky');
       expect(getComputedStyle(block).top).to.equal('88px');
       expect(getComputedStyle(block).overflowY).to.equal('auto');

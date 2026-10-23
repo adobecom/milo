@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadBlock, scrollToHashedElement } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { getBlogSections } from '../blog-header/blog-header.js';
 
 const sectionTrackers = new WeakMap();
 
@@ -148,30 +149,15 @@ function addCollapseControl(list, label, nav) {
   };
 }
 
-function createLayout(block, main) {
+function createLayout(block, headerSection, articleSections) {
   if (block.closest('.blog-article-layout')) return;
 
-  const sections = [...main.children];
-  const headerSection = sections.find((section) => section.querySelector('.blog-header'));
-  const followingSections = sections.slice(sections.indexOf(headerSection) + 1);
-  const lastSection = followingSections.filter((section) => section.querySelector(':scope > .content')).at(-1);
-  if (!lastSection) {
+  if (!articleSections.length) {
     window.lana?.log('Could not find article sections for blog side navigation layout.', {
       tags: 'blog-side-navigation',
       severity: 'warning',
     });
     return;
-  }
-
-  const articleSections = followingSections.slice(0, followingSections.indexOf(lastSection) + 1);
-  const children = [...lastSection.children];
-  const lastContent = children.filter((child) => child.classList.contains('content')).at(-1);
-  const trailingContent = children.slice(children.indexOf(lastContent) + 1);
-  if (trailingContent.some((child) => !child.matches('.section-metadata, .card-metadata, [hidden]'))) {
-    const remainder = lastSection.cloneNode(false);
-    remainder.removeAttribute('id');
-    remainder.append(...trailingContent);
-    lastSection.after(remainder);
   }
 
   const layout = createTag('div', { class: 'blog-article-layout' });
@@ -193,7 +179,14 @@ export default async function init(block) {
     return;
   }
 
-  const headings = [...main.querySelectorAll('.section > .content h2')].filter((heading) => (
+  const headerSection = main.querySelector('.blog-header').closest('.section');
+  const layout = block.closest('.blog-article-layout');
+  const articleSections = layout
+    ? [...layout.querySelectorAll(':scope > .blog-article-content > .section')]
+    : getBlogSections(headerSection);
+  const headings = articleSections.flatMap((section) => (
+    [...section.querySelectorAll(':scope > .content h2')]
+  )).filter((heading) => (
     heading.textContent.trim()
     && !heading.closest('.blog-header, nav, .fragment, [hidden], [aria-hidden="true"]')
     && block.compareDocumentPosition(heading) === Node.DOCUMENT_POSITION_FOLLOWING
@@ -222,11 +215,12 @@ export default async function init(block) {
   });
 
   const collapseControls = addCollapseControl(list, label, nav);
-  const relatedContent = main.querySelector('.blog-related-content');
+  const relatedContent = block.querySelector('.blog-related-content')
+    || articleSections.map((section) => section.querySelector('.blog-related-content')).find(Boolean);
   nav.append(list);
   block.replaceChildren(createTag('p', null, createTag('strong', null, label)), nav);
   block.hidden = false;
-  createLayout(block, main);
+  createLayout(block, headerSection, articleSections);
   const sectionTracker = trackActiveSection(block, headings, collapseControls);
   [...list.querySelectorAll(':scope > li > a')].forEach((link, index) => {
     const heading = headings[index];

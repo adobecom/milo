@@ -3,7 +3,6 @@
   gap: 32px;
   width: var(--grid-container-width);
   margin-inline: auto;
-  margin-bottom: 56px;
 }
 
 .blog-side-navigation {
@@ -195,7 +194,7 @@
 
 @media (width < 600px) {
   .blog-article-layout {
-    display: block;
+    display: flow-root;
     width: 100%;
   }
 

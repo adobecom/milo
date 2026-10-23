@@ -801,9 +801,7 @@ describe('blog-header author layout', () => {
 describe('blog-header section dividers', () => {
   let fetchStub;
 
-  /* Builds `main > .section` siblings the way loadArea() does, with an
-     optional `.card-metadata` marker standing in for the related-content
-     cards section, so divider boundary logic can be tested without a page. */
+  /* Builds top-level authored sections and an optional metadata-only section. */
   function buildSections({ noDividers = false, articleSections = 2, relatedContent = true } = {}) {
     const main = document.createElement('main');
     const headerSection = document.createElement('div');
@@ -825,7 +823,7 @@ describe('blog-header section dividers', () => {
     if (relatedContent) {
       const section = document.createElement('div');
       section.className = 'section';
-      section.innerHTML = '<div><div class="card-metadata"></div></div>';
+      section.innerHTML = '<div class="card-metadata" hidden></div>';
       main.append(section);
     }
 
@@ -861,7 +859,7 @@ describe('blog-header section dividers', () => {
     fetchStub?.restore();
   });
 
-  it('marks only the header section and ends the frame before related content', async () => {
+  it('marks only the header section and ignores the metadata-only section', async () => {
     fetchStub = mockFetch();
     const { main, headerSection, block } = buildSections();
     await init(block);
@@ -907,26 +905,26 @@ describe('blog-header section dividers', () => {
     expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastArticle), 0.01);
   });
 
-  it('includes leading article text in a mixed related-content section without framing its cards', async () => {
+  it('includes the full final section and refreshes when authored cards grow', async () => {
     fetchStub = mockFetch();
     const { main, headerSection, block } = buildSections();
     const relatedSection = main.lastElementChild;
     relatedSection.insertAdjacentHTML('afterbegin', '<div class="content"><p>Final article paragraph.</p></div>'
-      + '<div class="text"><h2>Recommended for you</h2></div>');
+      + '<div class="text"><h2>Recommended for you</h2></div>'
+      + '<div class="related-content-card" style="height: 100px"></div>');
     const articleEnd = relatedSection.firstElementChild;
     await init(block);
-    const expectedHeight = distance(headerSection, articleEnd);
+    const expectedHeight = distance(headerSection, relatedSection);
     expect(frameHeight(headerSection)).to.be.closeTo(expectedHeight, 0.01);
 
-    relatedSection.lastElementChild.insertAdjacentHTML('beforeend', '<div style="height: 200px"></div>');
-    await new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    });
-    expect(frameHeight(headerSection)).to.be.closeTo(expectedHeight, 0.01);
-
-    articleEnd.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    relatedSection.querySelector('.related-content-card').style.height = '300px';
     await waitFor(() => frameHeight(headerSection) > expectedHeight);
-    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, articleEnd), 0.01);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+
+    const afterCards = frameHeight(headerSection);
+    articleEnd.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    await waitFor(() => frameHeight(headerSection) > afterCards);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, relatedSection), 0.01);
   });
 
   it('detects the final article wrapper created after header initialization', async () => {
@@ -939,7 +937,29 @@ describe('blog-header section dividers', () => {
       + '<div class="text"><h2>Recommended for you</h2></div>');
     await waitFor(() => frameHeight(headerSection) > height);
     expect(frameHeight(headerSection))
-      .to.be.closeTo(distance(headerSection, relatedSection.firstElementChild), 0.01);
+      .to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+  });
+
+  it('frames trailing blocks without a sidenav and excludes the footer promo', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="tag-cta" style="height: 100px">'
+      + 'Explore related resources</div></div>'
+      + '<div class="section" data-footer-promo><div style="height: 200px">Footer promo</div></div>');
+    const lastSection = main.querySelector('.tag-cta').parentElement;
+    await init(block);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastSection), 0.01);
+  });
+
+  it('recognizes an undecorated authorable layout boundary without a sidenav', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections({ relatedContent: false });
+    const lastSection = main.lastElementChild;
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="section-metadata" hidden>'
+      + '<div><div>Style</div><div>blog-layout-end</div></div></div></div>'
+      + '<div class="section"><div style="height: 200px">Outside the layout</div></div>');
+    await init(block);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastSection), 0.01);
   });
 
   it('ends the frame with the side navigation layout once it wraps the article', async () => {
