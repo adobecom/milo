@@ -200,7 +200,104 @@ a.blog-header-author-name:hover {
   }
 }
 
-/* Blog Social share modal (appended to body by getModal) */
+/* Section dividers: decorative rules that never take up layout space. */
+.blog-divider-frame,
+.blog-divider-frame + .blog-article-layout {
+  --blog-divider-dots: var(--color-gray-400) 0 2px, transparent 2px 7px;
+  --blog-divider-gap: 48px;
+  --blog-divider-rule-size: 2px;
+  --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
+}
+
+@media (max-width: 599px) {
+  .blog-divider-frame,
+  .blog-divider-frame + .blog-article-layout {
+    --blog-divider-rule-size: 1.5px;
+    --blog-divider-rule-image: linear-gradient(#c0c0c0, #c0c0c0);
+  }
+}
+
+@media (min-width: 600px) {
+  .blog-divider-frame::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: max(0px, calc(var(--grid-margins-width) - 56px));
+    block-size: var(--blog-divider-height, 100%);
+    background-image:
+      repeating-linear-gradient(to bottom, var(--blog-divider-dots)),
+      repeating-linear-gradient(to bottom, var(--blog-divider-dots));
+    background-position: left top, right top;
+    background-repeat: repeat-y;
+    background-size: 2px 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+.blog-divider-frame::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--blog-divider-rule-size);
+  background-image: var(--blog-divider-rule-image);
+  pointer-events: none;
+}
+
+@media (max-width: 1199px) {
+  .blog-divider-frame:has(+ .blog-article-layout)::after {
+    content: none;
+  }
+
+  .blog-divider-frame + .blog-article-layout {
+    --blog-divider-space: 56px;
+
+    row-gap: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
+  }
+
+  .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
+    position: relative;
+  }
+
+  .blog-divider-frame + .blog-article-layout > .blog-side-navigation::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: calc(100% + var(--blog-divider-space));
+    block-size: var(--blog-divider-rule-size);
+    border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
+    pointer-events: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Reserved on the header so the article doesn't shift when the deferred sidenav layout loads. */
+  .blog-divider-frame {
+    margin-block-end: var(--blog-divider-gap);
+  }
+
+  .blog-divider-frame + .blog-article-layout {
+    position: relative;
+  }
+
+  .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
+    margin-block-start: calc(76px - var(--blog-divider-gap));
+  }
+
+  .blog-divider-frame + .blog-article-layout::before {
+    content: "";
+    position: absolute;
+    grid-column: 1 / 2;
+    inset-block: calc(-1 * var(--blog-divider-gap)) 0;
+    inset-inline-start: 100%;
+    inline-size: 2px;
+    background-image: repeating-linear-gradient(to bottom, var(--blog-divider-dots));
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
 .blog-share-modal.dialog-modal {
   width: fit-content;
   max-width: calc(100% - 2em);

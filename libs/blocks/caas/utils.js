@@ -1064,6 +1064,31 @@ export const getProducts = async (state) => {
   }
 };
 
+/**
+ * Chimera returns cards in order, with featured cards first. With the default `featured` sort
+ * the card library keeps that order, so when users can't filter, search or re-sort, only the
+ * first `totalCardsToShow` cards are ever shown and the rest of `collectionSize` is unused.
+ * Other sorts (and event filters) need the full set, including to backfill slots left by
+ * featured cards that are unavailable.
+ */
+export const getRequestSize = (state) => {
+  const collectionSize = parseInt(state.collectionSize, 10);
+  if (!collectionSize) return state.totalCardsToShow;
+  if (state.sortDefault !== 'featured' || state.filterEvent?.length) return state.collectionSize;
+
+  const shownLimit = parseInt(state.totalCardsToShow, 10);
+  if (!(shownLimit > 0) || collectionSize <= shownLimit) return state.collectionSize;
+
+  const hasUserControls = state.sortEnablePopup
+    || state.showFilters
+    || state.showSearch
+    || state.showBookmarksFilter
+    || state.onlyShowBookmarkedCards
+    || state.partialLoadEnabled
+    || state.container === 'categories';
+  return hasUserControls ? state.collectionSize : shownLimit;
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1153,7 +1178,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow
+      }&size=${getRequestSize(state)
       }${geoCountryParam
       }${localesQueryParam
       }${debug

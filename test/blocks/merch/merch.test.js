@@ -13,6 +13,7 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
+  polyfills,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
@@ -249,6 +250,30 @@ describe('Merch Block', () => {
   afterEach(() => {
     setSubscriptionsData();
     updateSearch();
+  });
+
+  it('fetches checkout configs before commerce loads and reuses them for checkout actions', async () => {
+    const originalPolyfills = polyfills.promise;
+    let releasePolyfills;
+    polyfills.promise = new Promise((resolve) => { releasePolyfills = resolve; });
+    const checkoutCalls = () => window.fetch.getCalls()
+      .filter(({ args: [url] }) => url.endsWith('/commerce/checkout-link.json')).length;
+    const beforeCalls = checkoutCalls();
+    const servicePromise = initService(true);
+
+    try {
+      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+      const configsPromise = fetchCheckoutLinkConfigs.promise;
+      expect(configsPromise).to.exist;
+      expect(document.head.querySelector('mas-commerce-service')).to.not.exist;
+      expect(await getCheckoutLinkConfig('PHOTOSHOP')).to.exist;
+      expect(fetchCheckoutLinkConfigs.promise).to.equal(configsPromise);
+      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+    } finally {
+      releasePolyfills();
+      await servicePromise;
+      polyfills.promise = originalPolyfills;
+    }
   });
 
   it('does not decorate merch with bad content', async () => {
@@ -1165,8 +1190,22 @@ describe('Merch Block', () => {
           reject(new Error('error'));
         }, 1);
       });
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      const offers = [{ productArrangement: {} }];
+      const action = await getCheckoutAction(offers, { entitlement: true }, imsSignedInPromise);
       expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: does not wait for IMS when no action needs it', async () => {
+      const action = getCheckoutAction([{ productArrangement: {} }], {}, new Promise(() => {}));
+      const timeout = new Promise((resolve) => { setTimeout(() => resolve('timeout'), 50); });
+      expect(await Promise.race([action, timeout])).to.be.undefined;
+    });
+
+    it('getCheckoutAction: waits for IMS for upgrade CTAs', async () => {
+      const offers = [{ productArrangement: {} }];
+      const action = getCheckoutAction(offers, { upgrade: true }, new Promise(() => {}));
+      const timeout = new Promise((resolve) => { setTimeout(() => resolve('timeout'), 50); });
+      expect(await Promise.race([action, timeout])).to.equal('timeout');
     });
 
     it('getCheckoutAction: returns undefined and does not throw on empty offers', async () => {
@@ -1629,6 +1668,8 @@ describe('Merch Block', () => {
       { content: 'on', calls: 2, aup: true },
       { content: 'off', query: 'on', aup: true },
       { content: 'on', query: 'off', legacy: true },
+      { content: 'enabled', calls: 2, aup: true },
+      { content: 'false', legacy: true },
       { content: 'off', legacy: true },
       { content: 'off', commercePreload: 'off' },
       { content: 'on', commercePreload: 'off' },

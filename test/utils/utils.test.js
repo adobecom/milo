@@ -119,25 +119,45 @@ describe('Utils', () => {
       }
     });
 
-    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
-      it(`requires exact on for metadata "${value}"`, () => {
+    const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
+    const flagged = ['on', 'ON'];
+
+    ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
+      const enabled = !disabled.includes(value);
+      const flag = flagged.includes(value);
+
+      it(`reads metadata "${value}"`, () => {
         meta.content = value;
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
       });
 
-      it(`reads query "${value}" with and without metadata`, () => {
+      it(`reads query "${value}" over metadata`, () => {
         const url = new URL(window.location.href);
         url.searchParams.set('aup-select', value);
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
-        meta.content = value === 'on' ? 'off' : 'on';
+        meta.content = value === 'enabled' ? 'on' : 'enabled';
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+        expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.isAupSelectOn()).to.equal(meta.content === 'on');
       });
+    });
+
+    it('does not report a value for signed-in Universal Nav users without aup-select', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled(true)).to.be.true;
+        expect(utils.getAupSelectValue()).to.be.null;
+        expect(utils.isAupSelectOn()).to.be.false;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
     });
   });
 
@@ -189,6 +209,34 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
       expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
+    });
+
+    it('preloads router-marquee imports alongside the block without evaluating it', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      utils.preloadLcpCodeFiles();
+
+      [
+        '/libs/c2/blocks/router-marquee/router-marquee.js',
+        '/libs/martech/attributes.js',
+        '/libs/utils/action.js',
+      ].forEach((href) => {
+        const links = document.head.querySelectorAll(`link[href="${window.location.origin}${href}"]`);
+        expect(links.length).to.equal(1);
+        expect(links[0].rel).to.equal('preload');
+        expect(links[0].as).to.equal('script');
+        expect(links[0].crossOrigin).to.equal('anonymous');
+      });
+      expect(document.querySelector('.router-marquee').dataset.blockStatus).to.be.undefined;
+    });
+
+    it('does not preload router-marquee imports without a visible first-section router-marquee', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee hide-block"></div></div><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href$="/libs/martech/attributes.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href$="/libs/utils/action.js"]')).to.not.exist;
     });
 
     it('preloads non-commerce autoblocks but excludes merch/mas', () => {
@@ -1191,6 +1239,45 @@ describe('Utils', () => {
       utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
       expect(scrollToCalled).to.be.true;
       expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
+  });
+
+  describe('loadArea hash scrolling', () => {
+    let originalUrl;
+    let originalScrollTo;
+    let area;
+    let articleHeading;
+    let scrollSpy;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      originalScrollTo = window.scrollTo;
+      scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      area = createTag('div');
+      area.innerHTML = '<div><h2 id="fragment-section">Fragment section</h2></div>';
+      articleHeading = createTag('h2', { id: 'article-section' }, 'Article section');
+      document.body.append(articleHeading, area);
+    });
+
+    afterEach(() => {
+      area.remove();
+      articleHeading.remove();
+      window.scrollTo = originalScrollTo;
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('does not revisit an article hash when an unrelated fragment finishes loading', async () => {
+      window.history.replaceState(null, '', '#article-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.called).to.be.false;
+    });
+
+    it('preserves deep links to headings inside the fragment being loaded', async () => {
+      window.history.replaceState(null, '', '#fragment-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
     });
   });
 

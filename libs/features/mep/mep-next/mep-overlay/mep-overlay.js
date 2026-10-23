@@ -66,6 +66,7 @@ const CARD_DATA = {
       ['Preview Link', 'Add mepButton=off'],
       ['Manifest Parameters', 'Exclude from URL'],
       ['Manifest Manager', 'Data for last 7 days'],
+      ['LCP Img Check', 'Add meplcp'],
     ]],
     ['Spoof Country', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
     ['Load Manifest', 'Enter manifest path'],
@@ -561,6 +562,12 @@ async function setDefaultValues() {
     checkbox.toggleAttribute('checked', true);
     toggleHighlight({ target: checkbox });
   });
+
+  const lcpCheckEl = document.querySelector('#toggle-lcp-img-check');
+  if (lcpCheckEl && getConfig().mep?.lcpCheck) {
+    lcpCheckEl.checked = true;
+    lcpCheckEl.toggleAttribute('checked', true);
+  }
 
   const excludeManifestsEl = document.querySelector('#toggle-manifest-parameters');
   if (excludeManifestsEl) excludeManifestsEl.checked = getExcludeManifestParams();
