@@ -177,6 +177,132 @@ describe('toggleHighlight', () => {
   });
 });
 
+describe('badge occlusion during stacking', () => {
+  let fixture;
+  let style;
+
+  beforeEach(() => {
+    style = document.createElement('style');
+    style.textContent = `
+      .badge-stacking-test > div {
+        position: absolute;
+        left: 0;
+        top: var(--badge-top-offset, 0px);
+        width: 140px;
+        height: 100px;
+      }
+      .badge-stacking-test > .mep-caas-edit-badge,
+      .badge-stacking-test > [data-fragment-default]::before {
+        width: 140px;
+        height: 35px;
+        padding: 0;
+        border: 0;
+      }
+      .badge-stacking-test > [data-fragment-default]::before {
+        content: 'Badge';
+        display: block;
+        position: absolute;
+        left: 0;
+        top: var(--badge-top-offset, 0px);
+      }
+    `;
+    document.head.append(style);
+    fixture = document.createElement('div');
+    fixture.className = 'badge-stacking-test';
+    fixture.style.cssText = 'position: fixed; left: 100px; top: 100px; width: 140px; height: 100px; z-index: 10000;';
+    document.body.append(fixture);
+  });
+
+  afterEach(() => {
+    toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: false } });
+    fixture.remove();
+    style.remove();
+    delete document.body.dataset.otherHighlight;
+  });
+
+  function addBadge(realDom) {
+    const badge = document.createElement('div');
+    if (realDom) {
+      badge.className = 'mep-caas-edit-badge';
+      badge.innerHTML = '<span>Badge</span>';
+    } else {
+      badge.dataset.fragmentDefault = '';
+    }
+    fixture.append(badge);
+    return badge;
+  }
+
+  [
+    [false, false], [true, true], [false, true], [true, false],
+  ].forEach(([firstReal, secondReal]) => {
+    it(
+      `stacks overlapping ${firstReal ? 'DOM' : 'pseudo'}`
+        + ` and ${secondReal ? 'DOM' : 'pseudo'} badges`,
+      () => {
+        const first = addBadge(firstReal);
+        const second = addBadge(secondReal);
+
+        toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: true } });
+
+        expect(first.style.getPropertyValue('--badge-top-offset')).to.equal('');
+        expect(second.style.getPropertyValue('--badge-top-offset')).to.equal('39px');
+      },
+    );
+  });
+
+  it('still excludes badges covered by an unrelated element', () => {
+    const first = addBadge(false);
+    const second = addBadge(true);
+    const blocker = document.createElement('div');
+    blocker.style.zIndex = '1';
+    fixture.append(blocker);
+
+    toggleHighlight({ target: { id: TOGGLE_KEYS.other, checked: true } });
+
+    expect(first.style.getPropertyValue('--badge-top-offset')).to.equal('');
+    expect(second.style.getPropertyValue('--badge-top-offset')).to.equal('');
+  });
+});
+
+describe('badge offset inheritance', () => {
+  let link;
+  let host;
+
+  before(async () => {
+    link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/libs/features/mep/mep-next/mep-overlay/mep-overlay-highlight.css';
+    const loaded = new Promise((resolve) => { link.onload = resolve; });
+    document.head.append(link);
+    await loaded;
+  });
+
+  after(() => link.remove());
+
+  beforeEach(() => {
+    document.body.dataset.mepMasHighlight = 'true';
+    host = document.createElement('div');
+    host.dataset.masBlock = 'inline';
+    host.style.setProperty('--badge-top-offset', '31px');
+    host.innerHTML = '<span data-mas-block="offer">50%</span>';
+    document.body.append(host);
+  });
+
+  afterEach(() => {
+    host.remove();
+    delete document.body.dataset.mepMasHighlight;
+  });
+
+  it('applies the offset to the host that has it', () => {
+    expect(getComputedStyle(host, '::before').top).to.equal('31px');
+  });
+
+  it('does not pass the offset down to a nested badge host', () => {
+    const nested = host.querySelector('[data-mas-block="offer"]');
+    expect(getComputedStyle(nested, '::before').top).to.equal('0px');
+  });
+});
+
 describe('getPageUpdates', () => {
   afterEach(() => {
     document.querySelectorAll(
