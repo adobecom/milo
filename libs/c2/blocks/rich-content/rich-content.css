@@ -657,8 +657,8 @@
     background-color: unset;
   }
 
-  /* Glass frame matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
-  &.glass-border .media-cell :is(picture, .video-container) {
+  /* Glass frame is the media default; matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
+  .media-cell :is(picture, .video-container) {
     box-sizing: border-box;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--s2a-spacing-xs);
@@ -869,26 +869,34 @@
       }
     }
 
-    &.full-width {
+   &.full-width {
       --grid-margin-width: 0px;
 
-      img {
-        max-width: 100%;
-        box-sizing: border-box;
-        aspect-ratio: 1/1;
-        border-radius: var(--s2a-border-radius-4);
-        border: none;
-      }
+      gap: var(--s2a-section-spacing-lg);
 
       .media-cell {
+        width: 100%;
+
         :is(picture, div.video-container) {
-          border: none;
-          border-radius: var(--s2a-border-radius-4);
-          padding: unset;
+          box-sizing: border-box;
+          width: 100%;
+          max-width: none;
+          margin: 0;
+          aspect-ratio: auto;
+          border-right: none;
+          padding: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-2xs) var(--s2a-spacing-2xs);
+          border-radius: var(--s2a-border-radius-xs) 0 0 var(--s2a-border-radius-xs);
+          overflow: hidden;
         }
 
-        .video-container {
-          aspect-ratio: 1/1;
+        :is(picture, div.video-container) :is(img, video) {
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          aspect-ratio: auto;
+          border: none;
+          border-radius: var(--s2a-border-radius-2xs) 0 0 var(--s2a-border-radius-2xs);
         }
       }
     }
