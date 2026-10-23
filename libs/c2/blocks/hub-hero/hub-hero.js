@@ -148,8 +148,49 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
 const initCarouselPosition = (hubHero) => {
   const header = document.querySelector('header');
   const carouselHeader = hubHero.querySelector('.hub-hero-carousel-header > div');
+  const carouselHeading = carouselHeader?.parentElement;
+  const card = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"]');
   if (!header && !carouselHeader) return;
   const headings = [...(carouselHeader?.children ?? [])];
+  const followProp = '--hub-hero-carousel-header-follow';
+  const exitProp = '--hub-hero-carousel-header-exit-start';
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+  let frame = 0;
+
+  const setProp = (prop, px) => {
+    const value = `${Math.max(px, 0)}px`;
+    if (Number.isFinite(px) && hubHero.style.getPropertyValue(prop) !== value) {
+      hubHero.style.setProperty(prop, value);
+    }
+  };
+
+  // Mobile: sticks the heading in sync with the first card and exits it with the card.
+  const syncFollow = () => {
+    frame = 0;
+    const headingStyle = getComputedStyle(carouselHeading);
+    const cardStyle = getComputedStyle(card);
+    if (!mobileQuery.matches || headingStyle.position !== 'sticky' || cardStyle.position !== 'sticky') {
+      hubHero.style.removeProperty(followProp);
+      hubHero.style.removeProperty(exitProp);
+      return;
+    }
+    const container = card.parentElement;
+    const cardTop = parseFloat(cardStyle.top);
+    const headingTop = parseFloat(headingStyle.top)
+      - (parseFloat(hubHero.style.getPropertyValue(followProp)) || 0);
+    const cardOffset = parseFloat(getComputedStyle(container).marginTop)
+      + parseFloat(cardStyle.marginTop);
+    setProp(followProp, cardTop - cardOffset - headingTop);
+    setProp(exitProp, container.getBoundingClientRect().bottom
+      - carouselHeading.parentElement.getBoundingClientRect().bottom
+      + document.documentElement.clientHeight - cardTop - card.offsetHeight);
+  };
+  const scheduleFollow = () => {
+    if (!carouselHeader || !card || frame || controller.signal.aborted) return;
+    if (!mobileQuery.matches && !hubHero.style.getPropertyValue(followProp)) return;
+    frame = requestAnimationFrame(syncFollow);
+  };
 
   const syncHeights = () => {
     if (header) hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
@@ -161,13 +202,20 @@ const initCarouselPosition = (hubHero) => {
     hubHero.style.setProperty('--hub-hero-carousel-header-height', `${height}px`);
   };
   syncHeights();
+  scheduleFollow();
 
-  const resizeObserver = new ResizeObserver(syncHeights);
-  if (header) resizeObserver.observe(header);
-  headings.forEach((heading) => resizeObserver.observe(heading));
+  const resizeObserver = new ResizeObserver((entries) => {
+    if (entries.some(({ target }) => target !== card)) syncHeights();
+    scheduleFollow();
+  });
+  [header, ...headings, card].filter(Boolean).forEach((el) => resizeObserver.observe(el));
+  window.addEventListener('resize', scheduleFollow, { signal: controller.signal });
+  mobileQuery.addEventListener('change', scheduleFollow, { signal: controller.signal });
 
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
+      controller.abort();
+      if (frame) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       observer.disconnect();
     }
@@ -265,67 +313,6 @@ const initCarouselContainerExpand = (hubHero) => {
   }).observe(document.body, { childList: true, subtree: true });
 };
 
-// Mobile: sticks the carousel heading in sync with the first card and exits it with the card.
-const initCarouselHeaderFollow = (hubHero) => {
-  const header = hubHero.querySelector('.hub-hero-carousel-header');
-  const card = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"]');
-  if (!header || !card) return;
-
-  const followProp = '--hub-hero-carousel-header-follow';
-  const exitProp = '--hub-hero-carousel-header-exit-start';
-  const mobileQuery = window.matchMedia('(width < 768px)');
-  const controller = new AbortController();
-  let frame = 0;
-
-  const setProp = (prop, px) => {
-    const value = `${Math.max(px, 0)}px`;
-    if (Number.isFinite(px) && hubHero.style.getPropertyValue(prop) !== value) {
-      hubHero.style.setProperty(prop, value);
-    }
-  };
-
-  const sync = () => {
-    frame = 0;
-    const headerStyle = getComputedStyle(header);
-    const cardStyle = getComputedStyle(card);
-    if (!mobileQuery.matches || headerStyle.position !== 'sticky' || cardStyle.position !== 'sticky') {
-      hubHero.style.removeProperty(followProp);
-      hubHero.style.removeProperty(exitProp);
-      return;
-    }
-    const container = card.parentElement;
-    const cardTop = parseFloat(cardStyle.top);
-    const headerTop = parseFloat(headerStyle.top)
-      - (parseFloat(hubHero.style.getPropertyValue(followProp)) || 0);
-    const cardOffset = parseFloat(getComputedStyle(container).marginTop)
-      + parseFloat(cardStyle.marginTop);
-    setProp(followProp, cardTop - cardOffset - headerTop);
-    setProp(exitProp, container.getBoundingClientRect().bottom
-      - header.parentElement.getBoundingClientRect().bottom
-      + document.documentElement.clientHeight - cardTop - card.offsetHeight);
-  };
-  const schedule = () => {
-    if (frame || controller.signal.aborted) return;
-    if (!mobileQuery.matches && !hubHero.style.getPropertyValue(followProp)) return;
-    frame = requestAnimationFrame(sync);
-  };
-
-  const resizeObserver = new ResizeObserver(schedule);
-  [card, ...(header.firstElementChild?.children ?? [])].forEach((el) => resizeObserver.observe(el));
-  window.addEventListener('resize', schedule, { signal: controller.signal });
-  mobileQuery.addEventListener('change', schedule, { signal: controller.signal });
-  schedule();
-
-  new MutationObserver((_, observer) => {
-    if (!document.contains(hubHero)) {
-      controller.abort();
-      if (frame) cancelAnimationFrame(frame);
-      resizeObserver.disconnect();
-      observer.disconnect();
-    }
-  }).observe(document.body, { childList: true, subtree: true });
-};
-
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -380,6 +367,16 @@ const clearCarouselState = ({ container, carousel }) => {
   clearTimeout(leaveTimeouts.get(container));
   clearCarouselAnchoring(container);
   removeHovered(carousel);
+};
+
+const onCarouselFocusOut = ({ relatedTarget }, context) => {
+  const { carousel } = context;
+  if (carousel.contains(relatedTarget) || document.querySelector('.modal-curtain')) return;
+  const slideEl = carousel.querySelector('.hub-hero-carousel-item.focused');
+  if (!slideEl || (slideEl.hash && slideEl.hash === window.location.hash)) return;
+  slideEl.classList.remove('focused');
+  onSlideLeave({ target: slideEl });
+  updateCarouselAnchoring(context);
 };
 
 const onCarouselLeave = (event, context) => {
@@ -576,6 +573,7 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   carouselContainer.addEventListener('mouseleave', leave);
   decoratedCarousel.addEventListener('mouseleave', leave);
   decoratedCarousel.addEventListener('mousemove', hover);
+  decoratedCarousel.addEventListener('focusout', (event) => onCarouselFocusOut(event, context));
   carouselContainer.querySelectorAll('[data-index]').forEach((slide) => slide.addEventListener('focus', hover));
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
@@ -837,6 +835,5 @@ export default async function init(el) {
   initCarouselPosition(el);
   initHeaderPin(el, heroHeader);
   initCarouselContainerExpand(el);
-  initCarouselHeaderFollow(el);
   if (isThreeSlides) handleSlidesThreeVideos(el);
 }

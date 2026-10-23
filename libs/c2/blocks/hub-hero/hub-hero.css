@@ -643,12 +643,12 @@
   }
 
   .hub-hero-carousel-header > div {
-    animation: hubHeroCarouselHeaderMobileLeave ease both,
+    animation: hubHeroCarouselHeaderMobileFadeIn ease both,
       hubHeroFirstCardLiftMobile var(--first-card-lift-easing) both,
       hubHeroCarouselHeaderMobileExit linear both;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: contain 8% contain 100%, var(--first-card-lift-range),
-      exit var(--hub-hero-carousel-header-exit-start, 0px) exit calc(100% + var(--hub-hero-carousel-header-exit-start, 0px));
+      exit var(--hub-hero-carousel-header-exit-start, 0px) exit calc(var(--hub-hero-carousel-header-exit-start, 0px) + 100vh);
     position: relative;
     top: calc(var(--hub-hero-carousel-header-follow, 0px) * -1);
     will-change: transform, opacity;
@@ -1075,8 +1075,9 @@
     width: max(var(--grid-img-width), var(--slide-max-width));
     max-width: var(--slide-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
-
-    transition: max-width var(--card-expand-duration) var(--card-expand-easing), width var(--card-expand-duration) var(--card-expand-easing), min-width var(--card-expand-duration) var(--card-expand-easing), background-color var(--card-expand-duration) var(--card-expand-easing);
+    transition-property: max-width, width, min-width, background-color;
+    transition-duration: var(--card-expand-duration);
+    transition-timing-function: var(--card-expand-easing);
   }
 
   @media (hover: hover) {
@@ -1819,7 +1820,7 @@
   }
 }
 
-@keyframes hubHeroCarouselHeaderMobileLeave {
+@keyframes hubHeroCarouselHeaderMobileFadeIn {
   0% {
     opacity: 0;
   }
@@ -1835,7 +1836,7 @@
 
 @keyframes hubHeroCarouselHeaderMobileExit {
   to {
-    transform: translateY(-100dvh);
+    transform: translateY(-100vh);
   }
 }
 

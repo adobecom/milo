@@ -51,8 +51,7 @@ function addCloseAnimation(el) {
 
 function addCurtainCloseAnimation(modal) {
   const curtain = modal.nextElementSibling;
-  if (!curtain?.matches('.modal-curtain') || curtain.dataset.tourFade) return;
-  curtain.dataset.tourFade = 'true';
+  if (!curtain?.matches('.modal-curtain') || curtain.classList.contains('tour-curtain')) return;
   curtain.classList.add('tour-curtain');
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const originalRemove = curtain.remove.bind(curtain);

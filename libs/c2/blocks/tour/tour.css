@@ -262,7 +262,6 @@
       }
     }
   }
-
 }
 
 .tour-curtain {
@@ -329,6 +328,7 @@
 @media (prefers-reduced-motion: no-preference) {
   .dialog-modal:has(.tour) {
     --tour-travel: 20vh;
+
     animation: tour-slide-in 0.3s ease-out forwards;
 
     &.is-snapping,
