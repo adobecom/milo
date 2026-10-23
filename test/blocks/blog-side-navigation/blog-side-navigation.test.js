@@ -128,7 +128,7 @@ describe('blog-side-navigation section list', () => {
     style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
     document.head.append(style);
     try {
-      for (const width of [390, 768, 1199, 1440]) {
+      for (const width of [390, 599, 600, 768, 1199, 1200, 1440]) {
         await setViewport({ width, height: 1000 });
         const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
         await init(block);
@@ -140,6 +140,8 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
           .to.equal(mobile ? '700' : '400');
+        expect(list.querySelector('[aria-current="location"]').getBoundingClientRect().height)
+          .to.equal(mobile ? 48 : 78);
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
           .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         if (mobile) {
@@ -189,6 +191,7 @@ describe('blog-side-navigation section list', () => {
           expect(getComputedStyle(item).borderWidth).to.equal('0px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineStart).to.equal('8px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineEnd).to.equal('8px');
+          expect(item.querySelector('a').getBoundingClientRect().height).to.equal(mobile ? 48 : 78);
           if (width < 600) {
             expect(item.getBoundingClientRect().width).to.be.closeTo(list.clientWidth, 1);
           }
