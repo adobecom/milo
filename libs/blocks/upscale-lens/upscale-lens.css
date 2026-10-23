@@ -20,7 +20,7 @@
   display: grid;
   gap: var(--spacing-l);
   align-items: center;
-  width: var(--grid-container-width);
+  width: min(100% - 2 * var(--spacing-m), 1920px);
   margin: 0 auto;
   padding: var(--spacing-l) 0;
 }
@@ -40,8 +40,8 @@
   --pan-x: 0px;
   --pan-y: 0px;
   /* stylelint-enable length-zero-no-unit */
-  --lens-w: calc(100% - 6rem);
-  --lens-h: calc(100% - 6rem);
+  --lens-w: 60%;
+  --lens-h: 60%;
   --lens-radius: 12px;
   --brightness: 1;
 
@@ -64,8 +64,8 @@
 }
 
 .upscale-lens-stage.active {
-  --lens-w: calc(100% - 10rem);
-  --lens-h: calc(100% - 10rem);
+  --lens-w: 45%;
+  --lens-h: 45%;
   --zoom: 2.5;
 }
 
@@ -91,10 +91,6 @@
   transition:
     scale 0.5s cubic-bezier(0.22, 1, 0.36, 1),
     filter 0.5s ease;
-}
-
-.upscale-lens-stage.auto-blur .before img {
-  filter: blur(6px) saturate(0.85) brightness(var(--brightness));
 }
 
 .upscale-lens-layer.after {
@@ -199,16 +195,17 @@
 }
 
 @media (min-width: 768px) {
+  /* The stage is 3:2, so the height share is 1.5x the width share to keep the lens square. */
   .upscale-lens-stage {
-    --lens-w: min(30rem, 100% - 2rem);
-    --lens-h: min(30rem, 100% - 2rem);
+    --lens-w: 36%;
+    --lens-h: 54%;
 
     aspect-ratio: 3 / 2;
   }
 
   .upscale-lens-stage.active {
-    --lens-w: min(20rem, 100% - 2rem);
-    --lens-h: min(20rem, 100% - 2rem);
+    --lens-w: 24%;
+    --lens-h: 36%;
   }
 }
 

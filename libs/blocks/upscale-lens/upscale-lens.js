@@ -132,13 +132,13 @@ function initLens(stage) {
   });
 }
 
-function buildStage(before, after, autoBlur) {
+function buildStage(before, after) {
   const beforeImg = before.querySelector('img');
   beforeImg?.setAttribute('loading', 'eager');
   beforeImg?.setAttribute('fetchpriority', 'high');
   after.querySelector('img')?.setAttribute('loading', 'eager');
 
-  const stage = createTag('div', { class: `upscale-lens-stage${autoBlur ? ' auto-blur' : ''}` }, [
+  const stage = createTag('div', { class: 'upscale-lens-stage' }, [
     createTag('div', { class: 'upscale-lens-layer before' }, before),
     createTag('div', { class: 'upscale-lens-layer after' }, after),
     createTag('div', { class: 'upscale-lens-box' }, [
@@ -161,14 +161,12 @@ export default function init(el) {
   const pictures = cells
     .filter((cell) => cell !== copyCell)
     .flatMap((cell) => [...cell.querySelectorAll('picture')]);
-  if (!pictures.length) {
-    window.lana?.log('upscale-lens: no image found', { tags: 'upscale-lens' });
+  if (pictures.length < 2) {
+    window.lana?.log('upscale-lens: needs a before and an after image', { tags: 'upscale-lens' });
     return;
   }
 
-  const [before, authoredAfter] = pictures;
-  const after = authoredAfter ?? before.cloneNode(true);
-  if (!authoredAfter) after.querySelector('img')?.setAttribute('alt', '');
+  const [before, after] = pictures;
 
   const children = [];
   el.classList.toggle('no-copy', !copyCell);
@@ -177,6 +175,6 @@ export default function init(el) {
     decorateBlockText(copy, ['xxl', 'm', 'm', 'l']);
     children.push(copy);
   }
-  children.push(buildStage(before, after, !authoredAfter));
+  children.push(buildStage(before, after));
   el.replaceChildren(...children);
 }

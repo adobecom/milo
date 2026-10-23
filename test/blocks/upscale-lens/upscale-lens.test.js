@@ -15,14 +15,11 @@ describe('Upscale lens', () => {
     expect(twoImages.querySelector('.before img').alt).to.equal('Before');
     expect(twoImages.querySelector('.after img').alt).to.equal('After');
     expect(twoImages.querySelector('.upscale-lens-copy h1')).to.exist;
-    expect(twoImages.querySelector('.upscale-lens-stage').classList.contains('auto-blur')).to.be.false;
   });
 
-  it('copies a single image and blurs the before layer', () => {
-    const stage = oneImage.querySelector('.upscale-lens-stage');
-    expect(stage.classList.contains('auto-blur')).to.be.true;
-    expect(oneImage.classList.contains('no-copy')).to.be.true;
-    expect(stage.querySelector('.after img').alt).to.equal('');
+  it('does nothing when only one image is authored', () => {
+    expect(oneImage.querySelector('.upscale-lens-stage')).to.not.exist;
+    expect(oneImage.querySelector('picture')).to.exist;
   });
 
   it('activates while the pointer is held and resets on release', () => {
