@@ -24,34 +24,49 @@ import {
   unwatchForCaasBlocks,
 } from './mep-caas.js';
 
-export function escapeHtml(str) {
-  if (str == null || str === '') return str;
-  const el = document.createElement('span');
-  el.textContent = String(str);
-  return el.innerHTML;
-}
-
-// escapeHtml only encodes & < > — safe for element TEXT. Values placed inside
-// quoted HTML attributes also need " and ' encoded so they can't close the attribute.
-export function escapeAttr(str) {
-  if (str == null || str === '') return str;
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 // Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
 export function safeUrl(url) {
   if (typeof url !== 'string') return '';
   try {
-    const { protocol } = new URL(url, window.location.origin);
+    // Fixed base: only the protocol is checked, so the page location isn't needed.
+    const { protocol } = new URL(url, 'https://www.adobe.com');
     return protocol === 'http:' || protocol === 'https:' ? url : '';
   } catch (e) {
     return '';
   }
+}
+
+// createTag parses string content as HTML; data-derived text must go through textContent.
+function createTextTag(tag, attrs, text) {
+  const el = createTag(tag, attrs);
+  el.textContent = text == null ? '' : String(text);
+  return el;
+}
+
+function createOption(value, text, selected = false) {
+  const option = createTextTag('option', { value }, text);
+  if (selected) option.setAttribute('selected', '');
+  return option;
+}
+
+function createCheckbox({
+  name, id, label, checked = false, value = 'true', wrapperAttrs = null,
+}) {
+  const input = createTag('input', { type: 'checkbox', name, id, value });
+  if (checked) input.setAttribute('checked', 'checked');
+  return createTag('div', wrapperAttrs, [input, createTextTag('label', { for: id }, label)]);
+}
+
+function createSummarySection(title, rows) {
+  const data = createTag('div', { class: 'mep-section-data' });
+  rows.forEach(([label, value, sub]) => {
+    data.append(createTextTag('span', sub ? { class: 'mep-mas-subitem' } : null, label));
+    data.append(createTextTag('span', null, value));
+  });
+  return createTag('div', { class: 'mep-section' }, [
+    createTextTag('h6', { class: 'mep-section-header' }, title),
+    data,
+  ]);
 }
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -259,7 +274,7 @@ function addDividers(node, selector) {
   });
 }
 
-// PRUNE — decide when the ?mepnext gate is removed (see preview.js header):
+// PRUNE (follow-up to the ?mepnext gate removal):
 // parsePageAndUrl, toActivity and parseMepConfig are duplicated in
 // mep-overlay-logic.js (a refactored variant). At prune time, choose the dedup —
 // e.g. extract them into a shared, UI-free config module that both this file and
@@ -337,7 +352,7 @@ function formatDate(dateTime, format = 'local') {
 function getManifestListDomAndParameter(mepConfig) {
   const { activities, page } = mepConfig;
   const { pageId = 0 } = page;
-  let manifestList = '';
+  const manifestList = [];
   const manifestParameter = [];
   activities?.forEach((manifest, mIdx) => {
     const {
@@ -359,74 +374,64 @@ function getManifestListDomAndParameter(mepConfig) {
     let variantNamesArray = [];
     if (Array.isArray(variantNames)) variantNamesArray = variantNames;
     else if (typeof variantNames === 'string') variantNamesArray = variantNames.split('||');
-    let options = '';
-    let isSelected = '';
+    const optionName = `${editPath}${pageId}`;
+    const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
+    select.append(createTextTag('option', { name: optionName, value: '', title: 'none' }, "None (Don't add manifest)"));
+    const defaultOption = createTextTag('option', { name: optionName, value: 'default', id: `${optionName}--default`, 'data-manifest': editPath, title: 'Default (control)' }, 'Default (control)');
     if (!variantNamesArray.includes(selectedVariantName) && pageId === 0) {
-      isSelected = 'selected';
+      defaultOption.setAttribute('selected', '');
       manifestParameter.push(`${editUrl}--default`);
     }
-    options += `<option name="${escapeAttr(editPath)}${pageId}" value="" title="none">None (Don't add manifest)</option>`;
-    options += `<option name="${escapeAttr(editPath)}${pageId}" value="default"
-    id="${escapeAttr(editPath)}${pageId}--default" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="Default (control)">Default (control)</option>`;
-    isSelected = '';
+    select.append(defaultOption);
     variantNamesArray.forEach((variant) => {
-      isSelected = '';
+      const option = createTextTag('option', { name: optionName, value: variant, id: `${optionName}--${variant}`, 'data-manifest': editPath, title: variant }, variant);
       if (variant === selectedVariantName) {
-        isSelected = 'selected';
+        option.setAttribute('selected', '');
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
-      options += `<option name="${escapeAttr(editPath)}${pageId}" value="${escapeAttr(variant)}"
-      id="${escapeAttr(editPath)}${pageId}--${escapeAttr(variant)}" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="${escapeAttr(variant)}">${escapeHtml(variant)}</option>`;
+      select.append(option);
     });
-    const expandSVG = `
+    const toggleSVGs = `
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
       <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
-    </svg>`;
-    const collapseSVG = `
+    </svg>
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-collapse">
       <path d="M200-440v-80h560v80H200Z"/>
     </svg>`;
-    manifestList += `
-    <div class="mep-section" title="Manifest location: ${escapeAttr(editUrl)}&#013;Analytics manifest name: ${escapeAttr(analyticsTitle || 'N/A for this manifest type')}">
-      <div class="mep-manifest-title">
-        <a class="mep-edit-manifest" href="${escapeAttr(safeUrl(editUrl))}" target="_blank" title="Open manifest">
-          ${mIdx + 1}. ${escapeHtml(getFileName(manifestPath))}
-        </a>
-        <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
-      </div>
-      <div class="mep-manifest-info">
-            ${targetActivityName ? `<div class="target-activity-name">${escapeHtml(targetActivityName)}</div>` : ''}
-              <div class="mep-section-data">
-                  <span class="mep-active">Experience</span>
-                ${!variantNamesArray.includes(selectedVariantName) ? `
-                  <span class="mep-active">default (control)</span>` : `
-                  <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
-                  <span>Source</span>
-                  <span>${escapeHtml(source)}</span>
-                  <span>Consent req</span>
-                  <span>${escapeHtml(consentType)}</span>
-                ${countryRestriction ? `
-                  <span>Allowed User Countries</span>
-                  <span>${escapeHtml(countryRestriction.toUpperCase())}</span>` : ''}
-                ${(eventStart && eventEnd) || disabled ? `
-                  <span>Active?</span>
-                  <span>${disabled ? 'inactive' : 'active'}</span>` : ''}
-                ${manifest.lastSeen ? `
-                  <span>Last Seen</span>
-                  <span>${formatDate(new Date(manifest.lastSeen))}</span>` : ''}  
-                ${eventStart && eventEnd ? `
-                  <span>On</span>
-                  <span>${formatDate(eventStart)} 
-                  <br><a target= "_blank" href="?instant=${formatDate(eventStart, 'iso')}">Instant</a>
-                  </span>
-                  <span>Off</span>
-                  <span>${formatDate(eventEnd)}</span>` : ''}
-              </div>
-      </div>
-      <div class="mep-experience-dropdown">
-        <select name="experiences" class="mep-manifest-variants">${options}</select>
-      </div>
-    </div>`;
+    const editLink = createTextTag('a', { class: 'mep-edit-manifest', href: safeUrl(editUrl), target: '_blank', title: 'Open manifest' }, `${mIdx + 1}. ${getFileName(manifestPath)}`);
+    const title = createTag('div', { class: 'mep-manifest-title' }, [
+      editLink,
+      createTag('div', { class: 'mep-manifest-toggle' }, toggleSVGs),
+    ]);
+
+    const data = createTag('div', { class: 'mep-section-data' });
+    const addRow = (label, value) => {
+      data.append(createTextTag('span', null, label));
+      data.append(value instanceof Node ? value : createTextTag('span', null, value));
+    };
+    data.append(createTextTag('span', { class: 'mep-active' }, 'Experience'));
+    data.append(variantNamesArray.includes(selectedVariantName)
+      ? createTextTag('span', { class: 'mep-active mep-selected-variant' }, selectedVariantName)
+      : createTextTag('span', { class: 'mep-active' }, 'default (control)'));
+    addRow('Source', source);
+    addRow('Consent req', consentType);
+    if (countryRestriction) addRow('Allowed User Countries', countryRestriction.toUpperCase());
+    if ((eventStart && eventEnd) || disabled) addRow('Active?', disabled ? 'inactive' : 'active');
+    if (manifest.lastSeen) addRow('Last Seen', formatDate(new Date(manifest.lastSeen)));
+    if (eventStart && eventEnd) {
+      const instantLink = createTextTag('a', { target: '_blank', href: `?instant=${formatDate(eventStart, 'iso')}` }, 'Instant');
+      addRow('On', createTag('span', null, [document.createTextNode(formatDate(eventStart)), createTag('br'), instantLink]));
+      addRow('Off', formatDate(eventEnd));
+    }
+
+    const info = createTag('div', { class: 'mep-manifest-info' });
+    if (targetActivityName) info.append(createTextTag('div', { class: 'target-activity-name' }, targetActivityName));
+    info.append(data);
+
+    manifestList.push(createTag('div', {
+      class: 'mep-section',
+      title: `Manifest location: ${editUrl}\rAnalytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}`,
+    }, [title, info, createTag('div', { class: 'mep-experience-dropdown' }, select)]));
   });
 
   return { manifestList, manifestParameter };
@@ -481,28 +486,15 @@ export async function getMepPopup(mepConfig) {
   const masHighlightParam = urlParams.get('mepMasHighlight');
   const masMarketParam = urlParams.get('mepMasMarket');
 
-  let mepHighlightChecked = '';
-  if (page?.highlight || highlightParam === 'true') {
-    mepHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepHighlight = true;
-  }
-  let mepFragmentsChecked = '';
-  if (page?.fragments || fragmentsParam === 'true') {
-    mepFragmentsChecked = 'checked="checked"';
-    document.body.dataset.mepFragments = true;
-  }
-  let mepCaasHighlightChecked = '';
-  if (caasHighlightParam === 'true') {
-    mepCaasHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepCaasHighlight = true;
-  }
-  let mepMasHighlightChecked = '';
-  if (masHighlightParam === 'true') {
-    mepMasHighlightChecked = 'checked="checked"';
-    document.body.dataset.mepMasHighlight = true;
-  }
+  const mepHighlightChecked = !!(page?.highlight || highlightParam === 'true');
+  if (mepHighlightChecked) document.body.dataset.mepHighlight = true;
+  const mepFragmentsChecked = !!(page?.fragments || fragmentsParam === 'true');
+  if (mepFragmentsChecked) document.body.dataset.mepFragments = true;
+  const mepCaasHighlightChecked = caasHighlightParam === 'true';
+  if (mepCaasHighlightChecked) document.body.dataset.mepCaasHighlight = true;
+  const mepMasHighlightChecked = masHighlightParam === 'true';
+  if (mepMasHighlightChecked) document.body.dataset.mepMasHighlight = true;
   const masMarketChecked = masMarketParam === 'true';
-  const mepMasMarketCheckedAttr = masMarketChecked ? 'checked="checked"' : '';
   const PREVIEW_BUTTON_ID = 'preview-button';
   const mepPopup = createTag('div', {
     class: 'mep-popup',
@@ -542,10 +534,9 @@ export async function getMepPopup(mepConfig) {
 
   function BuildOptionsManifestList() {
     const { manifestList } = getManifestListDomAndParameter(mepConfig);
-    const manifestTag = createTag('div', { class: 'mep-manifest-list' });
-    manifestTag.innerHTML = `<h6>Manifests</h6>
-      ${mepConfig.activities?.length ? manifestList : '<div class="mep-section">(0 manifests found.)</div>'}
-    `;
+    const manifestTag = createTag('div', { class: 'mep-manifest-list' }, '<h6>Manifests</h6>');
+    if (manifestList.length) manifestTag.append(...manifestList);
+    else manifestTag.append(createTextTag('div', { class: 'mep-section' }, '(0 manifests found.)'));
     mepPopupBody[0].append(manifestTag);
   }
   BuildOptionsManifestList();
@@ -566,34 +557,33 @@ export async function getMepPopup(mepConfig) {
   const lingoOk = lingoActive() && regionKeys.length > 0;
   const hasMas = hasMasSurfaces();
 
-  function buildOptionsLingoSelect() {
-    if (lingoOk) {
-      const regionOptions = regionKeys.map((key) => {
-        const country = key.split('_')[0];
-        // M@S Markets mode disables the Lingo dropdown — surfacing a "selected" option would
-        // mislead since its value no longer drives akamaiLocale.
-        const currentAkamaiLocale = masMarketChecked ? null : urlParams.get('akamaiLocale');
-        const selected = currentAkamaiLocale === country ? ' selected' : '';
-        return `<option value="${country}"${selected}>${key}</option>`;
-      }).join('');
-
-      const disabledAttr = masMarketChecked ? ' disabled' : '';
-      return `
-        <div class="mep-experience-dropdown">
-          <label for="mepLingoRegionSelect${pageId}">Supported Lingo Geos</label>
-          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants"${disabledAttr}>
-            <option value="">-- Select Region --</option>
-            ${regionOptions}
-          </select>
-        </div>`;
-    } return '<div>(No Lingo supported geos for this page.)</div>';
+  function createLabeledSelect(name, labelText, wrapperClass) {
+    const select = createTag('select', { name: `${name}${pageId}`, id: `${name}Select${pageId}`, class: 'mep-manifest-variants' });
+    const label = createTextTag('label', { for: select.id }, labelText);
+    const wrapper = createTag('div', { class: wrapperClass }, [label, select]);
+    return { wrapper, select };
   }
-  const regionDropdownHTML = buildOptionsLingoSelect();
+
+  function buildOptionsLingoSelect() {
+    if (!lingoOk) return createTag('div', null, '(No Lingo supported geos for this page.)');
+    // M@S Markets mode disables the Lingo dropdown — surfacing a "selected" option would
+    // mislead since its value no longer drives akamaiLocale.
+    const currentAkamaiLocale = masMarketChecked ? null : urlParams.get('akamaiLocale');
+    const { wrapper, select } = createLabeledSelect('mepLingoRegion', 'Supported Lingo Geos', 'mep-experience-dropdown');
+    select.disabled = masMarketChecked;
+    select.append(createOption('', '-- Select Region --'));
+    regionKeys.forEach((key) => {
+      const country = key.split('_')[0];
+      select.append(createOption(country, key, currentAkamaiLocale === country));
+    });
+    return wrapper;
+  }
+  const regionDropdown = buildOptionsLingoSelect();
 
   // Sync read from cache — do NOT await getMarketConfig(). Cold cache renders the placeholder;
-  // the deferred reload at the end of getMepPopup picks up live data. Returns '' on no M@S.
+  // the deferred reload at the end of getMepPopup picks up live data. Returns null on no M@S.
   function buildOptionsMasMarketSelect() {
-    if (!hasMas) return '';
+    if (!hasMas) return null;
     const cached = config?.marketsConfig;
     const languages = cached?.languages?.data ?? cached?.data ?? [];
     const lang = languages.length
@@ -606,81 +596,54 @@ export async function getMepPopup(mepConfig) {
     // Standalone (non-Lingo + M@S): always visible, pre-selected from
     // akamaiLocale. Lingo + M@S: hidden until the companion checkbox flips.
     const standalone = !lingoOk;
-    const hiddenAttr = standalone || masMarketChecked ? '' : 'hidden';
-    const currentAkamaiLocale = (standalone || masMarketChecked)
-      ? urlParams.get('akamaiLocale')
-      : null;
-    const opts = supported.map((c) => {
-      const selected = currentAkamaiLocale === c ? ' selected' : '';
-      return `<option value="${c}"${selected}>${c}</option>`;
-    }).join('');
+    const visible = standalone || masMarketChecked;
+    const currentAkamaiLocale = visible ? urlParams.get('akamaiLocale') : null;
+    const { wrapper, select } = createLabeledSelect(
+      'mepMasMarket',
+      'Supported M@S Markets',
+      `mep-experience-dropdown mep-mas-market-dropdown${standalone ? ' standalone' : ''}`,
+    );
+    wrapper.hidden = !visible;
     // Always emit <select> (disabled when empty) — keeps shape stable; no downstream branches.
-    const disabledAttr = supported.length === 0 ? ' disabled' : '';
-    const placeholderOpt = supported.length === 0
-      ? '<option value="">-- No M@S markets for this page --</option>'
-      : '<option value="">-- Select Market --</option>';
-    const standaloneClass = standalone ? ' standalone' : '';
-    return `
-      <div class="mep-experience-dropdown mep-mas-market-dropdown${standaloneClass}" ${hiddenAttr}>
-        <label for="mepMasMarketSelect${pageId}">Supported M@S Markets</label>
-        <select name="mepMasMarket${pageId}" id="mepMasMarketSelect${pageId}" class="mep-manifest-variants"${disabledAttr}>
-          ${placeholderOpt}
-          ${opts}
-        </select>
-      </div>`;
+    select.disabled = supported.length === 0;
+    select.append(createOption('', supported.length ? '-- Select Market --' : '-- No M@S markets for this page --'));
+    supported.forEach((c) => select.append(createOption(c, c, currentAkamaiLocale === c)));
+    return wrapper;
   }
   // Warm the cache for next popup open. Fire-and-forget.
   if (!config?.marketsConfig) getMarketConfig();
-  const masMarketDropdownHTML = buildOptionsMasMarketSelect();
+  const masMarketDropdown = buildOptionsMasMarketSelect();
   // Checkbox only makes sense between two dropdowns — suppress on non-Lingo (M@S alone).
-  const masMarketToggleHTML = (hasMas && lingoOk) ? `
-    <div class="mep-mas-market-toggle">
-      <input type="checkbox" name="mepMasMarket${pageId}"
-        id="mepMasMarketCheckbox${pageId}" ${mepMasMarketCheckedAttr} value="true">
-      <label for="mepMasMarketCheckbox${pageId}">Use M@S markets</label>
-    </div>` : '';
+  const masMarketToggle = (hasMas && lingoOk) ? createCheckbox({
+    name: `mepMasMarket${pageId}`,
+    id: `mepMasMarketCheckbox${pageId}`,
+    label: 'Use M@S markets',
+    checked: masMarketChecked,
+    wrapperAttrs: { class: 'mep-mas-market-toggle' },
+  }) : null;
 
   function buildOptionsToggles() {
-    const mepToggleOptions = createTag('div', { class: 'mep-section' });
-
-    mepToggleOptions.innerHTML = `
-    <h6 class="mep-section-header">
-      Toggles
-    </h6>
-    <div class="mep-manifest-variants">
-      <div>
-        <input type="checkbox" name="mepHighlight${pageId}"
-        id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
-        <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
-      </div>
-      <div>
-        <input type="checkbox" name="mepFragments${pageId}"
-        id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
-        <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
-      </div>
-      <div>
-        <input type="checkbox" name="mepCaasHighlight${pageId}"
-        id="mepCaasHighlightCheckbox${pageId}" ${mepCaasHighlightChecked} value="true">
-        <label for="mepCaasHighlightCheckbox${pageId}">Highlight CaaS</label>
-      </div>
-      <div>
-        <input type="checkbox" name="mepMasHighlight${pageId}"
-        id="mepMasHighlightCheckbox${pageId}" ${mepMasHighlightChecked} value="true">
-        <label for="mepMasHighlightCheckbox${pageId}">Highlight M@S</label>
-        <div class="mep-mas-no-content" hidden>No M@S content found on this page.</div>
-      </div>
-      <div>
-        <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
-        id="mepPreviewButtonCheckbox${pageId}" value="off">
-        <label for="mepPreviewButtonCheckbox${pageId}">Add mepButton=off to preview link</label>
-      </div>
-    </div>
-    ${regionDropdownHTML}
-    ${masMarketToggleHTML}
-    ${masMarketDropdownHTML}
-    <div>New manifest location or path*</div>
-    <input type="text" name="new-manifest${pageId}" class="new-manifest">
-  `;
+    const masHighlight = createCheckbox({
+      name: `mepMasHighlight${pageId}`,
+      id: `mepMasHighlightCheckbox${pageId}`,
+      label: 'Highlight M@S',
+      checked: mepMasHighlightChecked,
+    });
+    masHighlight.append(createTag('div', { class: 'mep-mas-no-content', hidden: '' }, 'No M@S content found on this page.'));
+    const variants = createTag('div', { class: 'mep-manifest-variants' }, [
+      createCheckbox({ name: `mepHighlight${pageId}`, id: `mepHighlightCheckbox${pageId}`, label: 'Highlight changes', checked: mepHighlightChecked }),
+      createCheckbox({ name: `mepFragments${pageId}`, id: `mepFragmentsCheckbox${pageId}`, label: 'Highlight fragments', checked: mepFragmentsChecked }),
+      createCheckbox({ name: `mepCaasHighlight${pageId}`, id: `mepCaasHighlightCheckbox${pageId}`, label: 'Highlight CaaS', checked: mepCaasHighlightChecked }),
+      masHighlight,
+      createCheckbox({ name: `mepPreviewButtonCheckbox${pageId}`, id: `mepPreviewButtonCheckbox${pageId}`, label: 'Add mepButton=off to preview link', value: 'off' }),
+    ]);
+    const mepToggleOptions = createTag('div', { class: 'mep-section' }, [
+      createTag('h6', { class: 'mep-section-header' }, 'Toggles'),
+      variants,
+      ...[regionDropdown, masMarketToggle, masMarketDropdown].filter(Boolean),
+      createTag('div', null, 'New manifest location or path*'),
+      createTag('input', { type: 'text', name: `new-manifest${pageId}`, class: 'new-manifest' }),
+    ]);
     mepPopupBody[0].append(mepToggleOptions);
   }
   buildOptionsToggles();
@@ -710,25 +673,14 @@ export async function getMepPopup(mepConfig) {
       lastSeen: formatDate(new Date(page.lastSeen)),
     };
 
-    const pageHTML = `
-    <h6 class="mep-section-header">Page</h6>
-    <div class="mep-section-data">
-        <span>Manifests Found</span>
-        <span>${pageData.manifestsFound}</span>
-        <span>Foundation</span>
-        <span>${pageData.foundation}</span>
-        <span>Target Integration</span>
-        <span>${escapeHtml(pageData.targetIntegration)}</span>
-        <span>Personalization</span>
-        <span>${escapeHtml(pageData.personalization)}</span>
-    ${page.lastSeen ? `
-        <span>Locale</span>
-        <span>${escapeHtml(pageData.locale)}</span>`
-    : ''}
-    </div>
-    `;
-
-    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, pageHTML));
+    const rows = [
+      ['Manifests Found', pageData.manifestsFound],
+      ['Foundation', pageData.foundation],
+      ['Target Integration', pageData.targetIntegration],
+      ['Personalization', pageData.personalization],
+    ];
+    if (page.lastSeen) rows.push(['Locale', pageData.locale]);
+    mepPopupBody[1].append(createSummarySection('Page', rows));
   }
   buildSummaryPage();
 
@@ -748,18 +700,11 @@ export async function getMepPopup(mepConfig) {
       total: regionalFragments.length + fallbackFragments.length,
     };
 
-    const lingoHTML = `
-    <h6 class="mep-section-header">Lingo</h6>
-    <div class="mep-section-data">
-        <span>Total</span>
-        <span>${lingoData.total}</span>
-        <span>Lang First / Lingo</span>
-        <span>${lingoData.langFirst}</span>
-        <span>Geo Folder</span>
-        <span>${escapeHtml(lingoData.geoFolder)}</span>
-    </div>
-  `;
-    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
+    mepPopupBody[1].append(createSummarySection('Lingo', [
+      ['Total', lingoData.total],
+      ['Lang First / Lingo', lingoData.langFirst],
+      ['Geo Folder', lingoData.geoFolder],
+    ]));
   }
   buildSummaryLingo();
 
@@ -806,10 +751,7 @@ export async function getMepPopup(mepConfig) {
     const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
     const pageMarketSource = liveCountry ? 'mas-commerce-service' : 'page locale';
 
-    const section = createTag('div', { class: 'mep-section' });
-    section.append(createTag('h6', { class: 'mep-section-header' }, 'M@S'));
-    const data = createTag('div', { class: 'mep-section-data' });
-    const rows = [
+    mepPopupBody[1].append(createSummarySection('M@S', [
       ['Mas Geo Detection', geoDetectionOn ? 'on' : 'off'],
       ['Geo Source', geoDetectionSource],
       ['Page Market', pageMarket],
@@ -820,15 +762,7 @@ export async function getMepPopup(mepConfig) {
       ['Cards', masCounts.card, true],
       ['Inline Fields', masCounts.inlineField, true],
       ['Standalone Offers', masCounts.standaloneOffer, true],
-    ];
-    rows.forEach(([label, value, sub]) => {
-      data.append(createTag('span', sub ? { class: 'mep-mas-subitem' } : null, label));
-      const valueSpan = createTag('span');
-      valueSpan.textContent = String(value);
-      data.append(valueSpan);
-    });
-    section.append(data);
-    mepPopupBody[1].append(section);
+    ]));
   }
   buildSummaryMas();
 
@@ -855,7 +789,7 @@ export async function getMepPopup(mepConfig) {
       if (!wrapper) return;
       const existingSelect = wrapper.querySelector('select');
       if (existingSelect?.value) return;
-      wrapper.outerHTML = buildOptionsMasMarketSelect();
+      wrapper.replaceWith(buildOptionsMasMarketSelect());
       const newSelect = mepPopup.querySelector(`select#mepMasMarketSelect${pageId}`);
       newSelect?.addEventListener('change', () => updatePreviewButton(mepPopup, pageId));
     });

@@ -626,6 +626,7 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
           disabled: false,
         },
       ],
+      manifestErrors: [{ name: 'xss-broken', manifestPath: '/frags/mep/broken.json', error: XSS, source: ['helix'] }],
     },
   };
 
@@ -656,6 +657,14 @@ describe('init: buildManifestCard — XSS payload renders as inert text', () => 
     expect(card.textContent).to.include(XSS);
     const option = [...card.querySelectorAll('option')].find((o) => o.textContent === XSS);
     expect(option, 'variant option label rendered as text').to.exist;
+  });
+
+  it('renders a malformed manifest error reason as literal text in the tooltip', () => {
+    const tooltip = bodyEl.querySelector('.mep-manifest-error-tooltip');
+    expect(tooltip, 'error tooltip rendered').to.exist;
+    expect(tooltip.querySelector('img')).to.be.null;
+    expect(tooltip.textContent).to.equal(`${XSS} not found.`);
+    expect(window.mepXssFired).to.not.equal(true);
   });
 });
 
