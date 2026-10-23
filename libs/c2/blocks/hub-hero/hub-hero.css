@@ -2371,7 +2371,7 @@
      * then chrome), then the heading fades in, then card 2 comes into view.
      */
     .hub-hero {
-      --exit-card-land: 590px;
+      --exit-card-land: 610px;
       --exit-card-lead-run: 270px;
       --exit-expand-before: 175px;
       --exit-expand-after: 30px;
