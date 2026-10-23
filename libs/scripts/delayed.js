@@ -11,6 +11,7 @@
  */
 
 import { isAcomAssistantEnabled } from '../utils/utils.js';
+import loadPrivacy from './loadPrivacy.js';
 
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
