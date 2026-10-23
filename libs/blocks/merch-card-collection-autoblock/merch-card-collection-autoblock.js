@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import { createTag, getConfig, loadLink, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
@@ -11,6 +11,8 @@ import {
   overrideOptions,
   updateModalState,
   loadMasComponent,
+  getMasComponentUrl,
+  getMasLibs,
   createFragmentErrorEl,
   isMasErrorEnv,
   MAS_MERCH_CARD,
@@ -49,7 +51,11 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load lit first as it's needed by MAS components */
+  // Only the sidenav still needs M@S Lit; fetch it while the service initializes.
+  if (options.sidenav) {
+    const litUrl = getMasComponentUrl('lit-all.min', getMasLibs(), window.location.hostname);
+    loadLink(litUrl, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  }
 
   /** Load service */
   const servicePromise = initService();
