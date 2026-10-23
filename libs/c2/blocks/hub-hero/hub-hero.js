@@ -304,6 +304,13 @@ const initExitLeads = (hubHero) => {
         // A whole row travels together, by its farthest image's distance.
         const travel = c ? Math.max(...row.map((x) => dir * off(x, dir))) * dir : off(el, dir);
         el.style.setProperty('--slide-x', `${travel}px`);
+        // Spring prototype: a whole row first winds up the other way, just enough to bring its
+        // clipped edge image fully on screen.
+        const edge = dir < 0 ? Math.min(...row.map((x) => rects.get(x).left))
+          : Math.max(...row.map((x) => rects.get(x).right));
+        const wind = dir < 0 ? Math.max(0, 16 - edge)
+          : -Math.max(0, edge - (window.innerWidth - 16));
+        el.style.setProperty('--slide-wind', `${c ? wind : 0}px`);
       });
     }
 
@@ -878,6 +885,8 @@ const findSize = (classes, key) => classes.find((item) => item.match(key))?.spli
 
 export default async function init(el) {
   el.classList.toggle('touch-scroll', window.matchMedia(CAROUSEL_TOUCH_SCROLL_QUERY).matches);
+  // Prototype: ?hub-hero-slide=spring winds each row up the other way before it exits.
+  el.classList.toggle('slide-spring', new URLSearchParams(window.location.search).get('hub-hero-slide') === 'spring');
 
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
