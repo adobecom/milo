@@ -41,12 +41,10 @@ async function getResults() {
     description: result.description,
   };
 
-  if (result.details) {
-    assetsWithMismatch.value = result.details.assetsWithMismatch || [];
-    assetsWithMatch.value = result.details.assetsWithMatch || [];
-    criticalAssetFailures.value = result.details.criticalAssetFailures || [];
-    warningAssetFailures.value = result.details.warningAssetFailures || [];
-  }
+  assetsWithMismatch.value = result.details?.assetsWithMismatch || [];
+  assetsWithMatch.value = result.details?.assetsWithMatch || [];
+  criticalAssetFailures.value = result.details?.criticalAssetFailures || [];
+  warningAssetFailures.value = result.details?.warningAssetFailures || [];
 }
 
 /**

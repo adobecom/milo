@@ -6,9 +6,11 @@ import loadDelayed, {
   loadGoogleLogin,
   addRUMCampaignTrackingParameters,
   loadPreflightResults,
+  isDaPreview,
   shouldAutoHighlight,
 } from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
+import { waitFor } from '../helpers/waitfor.js';
 
 describe('Delayed', () => {
   const loadScript = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
@@ -175,6 +177,21 @@ describe('loadPreflightResults', () => {
     expect(settled).to.equal(true);
     expect(fetchStub.calledWithMatch('.plain.html')).to.equal(true);
   });
+
+  it('shows only the draft status bar in DA Live Preview', async function test() {
+    this.timeout(10000);
+    const url = window.location.href;
+    document.body.innerHTML = '<main></main>';
+    window.history.replaceState(null, '', '?dapreview=local');
+    await loadPreflightResults();
+    window.history.replaceState(null, '', url);
+    const bar = document.documentElement.querySelector(':scope > .draft-status');
+    const diffFetched = fetchStub.getCalls().some(({ args }) => String(args[0]).includes('.plain.html'));
+    await waitFor(() => bar.dataset.status !== 'checking', 5000, 50);
+    bar.querySelector('.notification-close').click();
+    expect(bar !== null).to.equal(true);
+    expect(diffFetched).to.equal(false);
+  });
 });
 
 describe('shouldAutoHighlight', () => {
@@ -200,6 +217,26 @@ describe('shouldAutoHighlight', () => {
     it(`${expected ? 'highlights' : 'skips'} ${host} ${query ? `with ${query}` : 'without parameters'}`, () => {
       const params = new URLSearchParams(query);
       expect(shouldAutoHighlight({ ...hosts[host], params })).to.equal(expected);
+    });
+  });
+});
+
+describe('isDaPreview', () => {
+  [
+    ['main--da-bacom--adobecom.preview.da.live', '?quick-edit=on&controller=parent', true],
+    ['main--cc--adobecom.stage-preview.da.live', '?dapreview=on', true],
+    ['main--milo--adobecom.aem.page', '?quick-edit=on', true],
+    ['localhost', '?dapreview=local', true],
+    ['127.0.0.1', '?quick-edit=on', true],
+    ['main--milo--adobecom.aem.page', '', false],
+    ['localhost', '?quick-edit=', false],
+    ['main--milo--adobecom.aem.live', '?quick-edit=on', false],
+    ['www.adobe.com', '?dapreview=on', false],
+    ['main--milo--adobecom.preview.da.live.evil.com', '?quick-edit=on', false],
+    ['evil-preview.da.live', '?quick-edit=on', false],
+  ].forEach(([hostname, search, expected]) => {
+    it(`${expected ? 'detects' : 'ignores'} ${hostname}${search}`, () => {
+      expect(isDaPreview({ hostname, search })).to.equal(expected);
     });
   });
 });
