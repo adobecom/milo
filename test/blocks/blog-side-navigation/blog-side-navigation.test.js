@@ -742,10 +742,10 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('starts collapsible desktop navigation closed without changing tablet or short lists', async () => {
+  it('defaults desktop and tablet navigation open while keeping collapsible mobile lists closed', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     try {
-      for (const width of [1199, 1200, 1440]) {
+      for (const width of [390, 599, 600, 1199, 1200, 1440]) {
         await setViewport({ width, height: 1000 });
         for (const count of [3, 4]) {
           const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -754,7 +754,7 @@ describe('blog-side-navigation section list', () => {
           await init(block);
           const button = block.querySelector('button');
           const items = [...block.querySelectorAll('li')];
-          const open = count <= 3 || width < 1200;
+          const open = count <= 3 || width >= 600;
           expect(button.hidden).to.equal(count <= 3);
           expect(button.getAttribute('aria-expanded')).to.equal(String(open));
           expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);

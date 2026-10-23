@@ -96,7 +96,7 @@ function addCollapseControl(list, label, nav) {
   const items = [...list.children];
   items[0].append(button);
   const tablet = window.matchMedia('(min-width: 600px)');
-  const expanded = { tablet: !window.matchMedia('(min-width: 1200px)').matches, mobile: false };
+  const expanded = { tablet: true, mobile: false };
   const currentLabel = createTag('span', { class: 'blog-side-navigation-label' });
   const current = createTag('div', { class: 'blog-side-navigation-current', hidden: '' }, currentLabel);
   nav.append(current);
