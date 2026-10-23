@@ -152,13 +152,16 @@ const C2_BLOCKS = [
   'rich-content',
   'roller-carousel',
   'router-marquee',
+  'scheduled-content',
   'section-metadata',
+  'share-c2',
   'side-by-side',
   'social-proof',
   'split-aside-grid',
   'tabs',
   'tour',
   'visually-hidden',
+  'youtube-c2',
 ];
 
 const AUTO_BLOCKS = [
@@ -191,6 +194,9 @@ const DO_NOT_INLINE = [
   'z-pattern',
   'hub-hero',
 ];
+
+// Blocks that read and load the links they contain themselves (no inlining or autoblocking).
+const SELF_LOADING_LINK_BLOCKS = ['scheduled-content', 'youtube-c2'];
 
 const ENVS = {
   stage: {
@@ -2066,7 +2072,12 @@ async function decorateSection(section, idx) {
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
     const blockName = block.classList[0];
     const blocksList = getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS;
-    links.filter((link) => block.contains(link))
+    const ownLinks = links.filter((link) => block.contains(link));
+    if (SELF_LOADING_LINK_BLOCKS.includes(blockName) && blocksList.includes(blockName)) {
+      blkLinks.selfLoaded.push(...ownLinks);
+      return blkLinks;
+    }
+    ownLinks
       .forEach((link) => {
         if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
           link.href = link.href.replace('#_replacecell', '');
@@ -2083,9 +2094,13 @@ async function decorateSection(section, idx) {
         }
       });
     return blkLinks;
-  }, { inlineFrags: [], autoBlocks: [] });
+  }, { inlineFrags: [], autoBlocks: [], selfLoaded: [] });
 
-  const embeddedLinks = [...blockLinks.inlineFrags, ...blockLinks.autoBlocks];
+  const embeddedLinks = [
+    ...blockLinks.inlineFrags,
+    ...blockLinks.autoBlocks,
+    ...blockLinks.selfLoaded,
+  ];
   if (embeddedLinks.length) {
     links = links.filter((link) => !embeddedLinks.includes(link));
   }

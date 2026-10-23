@@ -1,0 +1,29 @@
+.share-c2 {
+  display: flex;
+
+  &.center {
+    justify-content: center;
+  }
+
+  &.right {
+    justify-content: flex-end;
+  }
+}
+
+.share-c2-button {
+  cursor: pointer;
+  font-family: inherit;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &.icon-only {
+    width: var(--s2a-spacing-2xl);
+    padding: 0;
+  }
+}
+
+.share-c2-label:empty {
+  display: none;
+}

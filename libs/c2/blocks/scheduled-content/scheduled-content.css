@@ -1,0 +1,7 @@
+.scheduled-content {
+  display: block;
+
+  &:empty {
+    display: none;
+  }
+}
