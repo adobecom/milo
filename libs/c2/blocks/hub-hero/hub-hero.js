@@ -288,14 +288,15 @@ const initExitLeads = (hubHero) => {
       const moving = [...cols, ...cols.flatMap((c) => [...c.children])];
       moving.forEach((el) => { el.style.animation = 'none'; });
       const rect = (el) => el.getBoundingClientRect();
-      const [l1, l2, c1, c2, slot] = [left.children[0], left.children[1], center.children[0],
-        center.children[1], right.children[2]].map(rect);
+      // Measure everything at rest, before the animations are restored.
+      const [l1, l2, c1, c2, slot, r1, r2] = [left.children[0], left.children[1],
+        center.children[0], center.children[1], right.children[2], right.children[0],
+        right.children[1]].map(rect);
       moving.forEach((el) => el.style.removeProperty('animation'));
       // The left column drops only --exit-left-drop; the top center image rises the rest.
       const drop = px('--exit-left-drop');
       const lead = px('--exit-right-lead');
       const gap = l2.top - l1.bottom;
-      const [r1, r2] = [right.children[0], right.children[1]].map(rect);
       // [element, top before, top after the vertical phase, height]
       const moves = [
         [center.children[0], c1.top, l1.top + drop - c1.height - gap, c1.height],
