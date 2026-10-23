@@ -68,6 +68,18 @@
   background: var(--s2a-color-orange-700);
 }
 
+.preflight-diff-ins {
+  color: var(--s2a-color-gray-900);
+  background: var(--s2a-color-green-200);
+  text-decoration: none;
+}
+
+.preflight-diff-del {
+  margin-inline: 0.25em;
+  color: var(--s2a-color-red-900);
+  background: var(--s2a-color-red-100);
+}
+
 .preflight-diff-highlight-control {
   position: fixed;
   inset: auto auto calc(var(--s2a-spacing-64) + var(--s2a-spacing-16)) var(--s2a-spacing-32);

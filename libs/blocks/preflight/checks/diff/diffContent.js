@@ -114,6 +114,22 @@ function lcsPairs(live, preview) {
   return pairs;
 }
 
+export function diffWords(liveText, previewText) {
+  const toWords = (text) => (text.match(/\S+/g) || []).map((sig) => ({ sig }));
+  const live = toWords(liveText);
+  const preview = toWords(previewText);
+  const words = [];
+  let i = 0;
+  let j = 0;
+  [...lcsPairs(live, preview), [live.length, preview.length]].forEach(([li, pj]) => {
+    live.slice(i, li).forEach(({ sig }) => words.push({ type: 'removed', text: sig }));
+    preview.slice(j, pj).forEach(({ sig }) => words.push({ type: 'added', text: sig }));
+    if (li < live.length) words.push({ type: 'same', text: live[li].sig });
+    [i, j] = [li + 1, pj + 1];
+  });
+  return words;
+}
+
 function isSameSlot(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag) return false;
   if (removedUnit.kind === 'block') {

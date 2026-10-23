@@ -1,6 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 import { normalizeText } from '../checks/diff/nodePath.js';
-import { SIMILARITY_THRESHOLD, textSimilarity } from '../checks/diff/diffContent.js';
+import { SIMILARITY_THRESHOLD, textSimilarity, diffWords } from '../checks/diff/diffContent.js';
 
 const OVERLAY_CLASS = 'preflight-diff-overlay';
 const ADDED_MODIFIER = 'is-added';
@@ -10,6 +10,8 @@ const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const CONTROL_CLASS = 'preflight-diff-highlight-control';
 const SR_ONLY_CLASS = 'preflight-diff-sr-only';
+const INS_CLASS = 'preflight-diff-ins';
+const DEL_CLASS = 'preflight-diff-del';
 
 const SR_LABEL = {
   [ADDED_MODIFIER]: 'Unpublished — new',
@@ -20,6 +22,7 @@ const CONTROL_LABEL_ON = 'Unpublished changes highlighted';
 const CONTROL_LABEL_OFF = 'Unpublished changes not highlighted';
 
 const VOID_HOST_TAGS = new Set(['IMG', 'VIDEO', 'IFRAME', 'AUDIO', 'EMBED', 'OBJECT', 'CANVAS', 'INPUT']);
+const INLINE_TAGS = new Set(['A', 'ABBR', 'B', 'CODE', 'EM', 'I', 'MARK', 'S', 'SMALL', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U']);
 
 function parsePath(path) {
   if (!path) return [];
@@ -101,6 +104,12 @@ function clearOverlays(root) {
     if (original) wrapper.replaceWith(original);
     else wrapper.remove();
   });
+  root.querySelectorAll(`.${INS_CLASS}, .${DEL_CLASS}`).forEach((mark) => {
+    const parent = mark.parentNode;
+    if (mark.classList.contains(DEL_CLASS)) mark.remove();
+    else mark.replaceWith(...mark.childNodes);
+    parent.normalize();
+  });
 }
 
 export function clearHighlights(root) {
@@ -122,6 +131,94 @@ function ensureOverlayHost(el) {
   }
   el.classList.add(ISOLATE_CLASS);
   return el;
+}
+
+function wordSpots(el) {
+  const spots = [];
+  let current = null;
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      [...node.data.matchAll(/\S+|\s+/g)].forEach(({ 0: text, index }) => {
+        if (!text.trim()) {
+          current = null;
+          return;
+        }
+        if (!current) {
+          current = { text: '', pieces: [] };
+          spots.push(current);
+        }
+        current.text += text;
+        current.pieces.push({ node, start: index, end: index + text.length });
+      });
+      return;
+    }
+    const inline = INLINE_TAGS.has(node.tagName);
+    if (!inline) current = null;
+    node.childNodes.forEach(walk);
+    if (!inline) current = null;
+  };
+  el.childNodes.forEach(walk);
+  return spots;
+}
+
+const textOf = (spots) => spots.map(({ text }) => text).join(' ');
+const firstPiece = ({ pieces }) => pieces[0];
+const lastPiece = ({ pieces }) => pieces[pieces.length - 1];
+
+function markWords(el, liveEl, previewEl) {
+  const spots = wordSpots(el);
+  const previewWords = textOf(wordSpots(previewEl));
+  if (!previewWords || previewWords !== textOf(spots)) return;
+  const liveSpots = wordSpots(liveEl);
+
+  const edits = [];
+  let removed = [];
+  let removedBeforeNext;
+  let ins = null;
+  let spot = 0;
+  let live = 0;
+  const pushRemoved = (beforeNext) => {
+    if (!removed.length) return;
+    const { node, start, end } = beforeNext ? firstPiece(spots[spot]) : lastPiece(spots[spot - 1]);
+    const at = beforeNext ? start : end;
+    edits.push({ node, start: at, end: at, del: removed.join(' ') });
+    removed = [];
+  };
+  diffWords(textOf(liveSpots), previewWords).forEach(({ type, text }) => {
+    if (type === 'removed') {
+      if (!removed.length) {
+        removedBeforeNext = !live
+          || lastPiece(liveSpots[live - 1]).node !== firstPiece(liveSpots[live]).node;
+      }
+      removed.push(text);
+      live += 1;
+      return;
+    }
+    pushRemoved(removedBeforeNext);
+    if (type === 'same') {
+      ins = null;
+      live += 1;
+    } else {
+      spots[spot].pieces.forEach(({ node, start, end }) => {
+        if (ins?.node === node) {
+          ins.end = end;
+        } else {
+          ins = { node, start, end };
+          edits.push(ins);
+        }
+      });
+    }
+    spot += 1;
+  });
+  pushRemoved(false);
+
+  edits.reverse().forEach(({ node, start, end, del }) => {
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    if (del) range.insertNode(createTag('del', { class: DEL_CLASS }, [del]));
+    else range.surroundContents(createTag('ins', { class: INS_CLASS }));
+  });
 }
 
 const DISMISS_KEY = 'preflight-diff-hidden';
@@ -184,6 +281,7 @@ export function highlightOnPage(diff, root, forceHighlights) {
         logUnmapped(change);
         return;
       }
+      if (change.liveEl) markWords(el, change.liveEl, change.previewEl);
       const host = ensureOverlayHost(el);
       const kindClass = change.kind === 'block' ? ' is-block' : '';
       const overlay = createTag('span', { class: `${OVERLAY_CLASS} ${modifierClass}${kindClass}`, 'aria-hidden': 'true' });
