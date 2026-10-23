@@ -1009,7 +1009,7 @@ describe('blog-header section dividers', () => {
       expect(navigation.getBoundingClientRect().top - headerBottom()).to.equal(76);
     });
 
-    it('draws the sidenav rule on the column gap edge from the header rule to the article end', async () => {
+    it('centers the sidenav rule in the column gap from the header rule to the article end', async () => {
       await setViewport({ width: 1440, height: 900 });
       const fixture = buildStyledSections();
       await init(fixture.block);
@@ -1020,7 +1020,7 @@ describe('blog-header section dividers', () => {
       expect(frame.content).to.equal('""');
       expect(frame.pointerEvents).to.equal('none');
       expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
-      expect(layoutRect.left + parseFloat(frame.left) + gap)
+      expect(layoutRect.left + parseFloat(frame.left) + gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
       expect(layoutRect.top + parseFloat(frame.top))
         .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
@@ -1041,8 +1041,22 @@ describe('blog-header section dividers', () => {
       const { layout, article } = await addSideNavigation(fixture);
       const gap = parseFloat(getComputedStyle(layout).columnGap);
       const frame = getComputedStyle(layout, '::before');
-      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap)
+      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().right, 0.5);
+    });
+
+    [600, 768, 1199, 1200, 1440].forEach((width) => {
+      it(`keeps space on both sides of the sidenav divider at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const fixture = buildStyledSections();
+        await init(fixture.block);
+        const { layout, article, navigation } = await addSideNavigation(fixture);
+        const rule = getComputedStyle(layout, '::before');
+        const dividerLeft = layout.getBoundingClientRect().left + parseFloat(rule.left);
+        const space = width < 1200 ? 32 : 56;
+        expect(dividerLeft - navigation.getBoundingClientRect().right).to.be.closeTo(space, 0.5);
+        expect(article.getBoundingClientRect().left - dividerLeft).to.be.closeTo(space, 0.5);
+      });
     });
 
     it('leaves the sidenav layout unchanged when no-dividers is set', async () => {
@@ -1098,7 +1112,7 @@ describe('blog-header section dividers', () => {
         expect(rule.content).to.equal('""');
         expect(getComputedStyle(article, '::before').content).to.equal('none');
         expect(getComputedStyle(navigation).position).to.equal('sticky');
-        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap)
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap / 2)
           .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
         expect(layout.getBoundingClientRect().top + parseFloat(rule.top))
           .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
@@ -1154,6 +1168,7 @@ describe('blog-header section dividers', () => {
 });
 
 describe('blog-header reading progress', () => {
+  const originalViewport = { width: window.innerWidth, height: window.innerHeight };
   let fetchStub;
   let scrollStub;
   let heightStub;
@@ -1222,6 +1237,7 @@ describe('blog-header reading progress', () => {
     scrollStub.restore();
     heightStub.restore();
     fetchStub.restore();
+    await setViewport(originalViewport);
   });
 
   it('fills between the article boundaries, clamps, and reverses without counting related cards', async () => {
@@ -1340,6 +1356,59 @@ describe('blog-header reading progress', () => {
     expect(progress(bar)).to.equal(before);
     await scrollTo(1800);
     expect(progress(bar)).to.equal(1);
+  });
+
+  [375, 599, 600, 768, 1199, 1200].forEach((width) => {
+    it(`follows the merged sidenav divider at ${width}px`, async () => {
+      await setViewport({ width, height: 900 });
+      style.textContent += sideNavigationCss;
+      const { block, headerSection } = buildArticle();
+      block.classList.remove('no-dividers');
+      scrollTop = 0;
+      await init(block);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      const article = navigation.nextElementSibling;
+      mockRect(article, 1200, 3600);
+      await nextFrame();
+      const bar = block.querySelector('.blog-progress-bar');
+      const expectedTop = width < 600
+        ? 1200 - parseFloat(getComputedStyle(article).marginBlockStart) / 2 - 4
+        : 400 - 1 - 4;
+      expect(parseFloat(bar.style.top)).to.be.closeTo(expectedTop, 0.01);
+
+      if (width < 600) {
+        navigation.insertAdjacentHTML('beforeend', '<div class="blog-related-content">Related cards</div>');
+        article.getBoundingClientRect.callsFake(
+          () => new DOMRect(0, 1500 - scrollTop, 600, 2400),
+        );
+        await nextFrame();
+        expect(parseFloat(bar.style.top)).to.be.closeTo(expectedTop + 300, 0.01);
+        await scrollTo(1500);
+        expect(parseFloat(bar.style.top)).to.equal(64);
+      }
+    });
+  });
+
+  it('positions the mobile bar independently of disabled dividers', async () => {
+    await setViewport({ width: 375, height: 900 });
+    style.textContent += sideNavigationCss;
+    const { block, headerSection } = buildArticle();
+    scrollTop = 0;
+    await init(block);
+    const navigation = document.createElement('div');
+    navigation.className = 'blog-side-navigation';
+    headerSection.append(navigation);
+    await initSideNavigation(navigation);
+    const article = navigation.nextElementSibling;
+    mockRect(article, 1200, 3600);
+    await nextFrame();
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(getComputedStyle(article, '::before').content).to.equal('none');
+    expect(bar.hidden).to.equal(false);
+    expect(parseFloat(bar.style.top)).to.equal(1200 - 32 / 2 - 4);
   });
 
   it('reuses article discovery and avoids unchanged style writes after completion', async () => {

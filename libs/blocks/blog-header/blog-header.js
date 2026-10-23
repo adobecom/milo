@@ -573,11 +573,11 @@ function decorateProgressBar(el, main) {
 
   const bar = createTag('div', { class: 'blog-progress-bar', 'aria-hidden': 'true' });
   el.append(bar);
-  const stacked = window.matchMedia('(max-width: 1199px)');
+  const stacked = window.matchMedia('(max-width: 599px)');
   let frame = 0;
   let discover = true;
   let articleCopy;
-  let navigation;
+  let article;
   let lastTop;
   let lastProgress;
 
@@ -589,7 +589,7 @@ function decorateProgressBar(el, main) {
     }
     if (discover) {
       articleCopy = findArticleCopy(headerSection);
-      navigation = main.querySelector('.blog-side-navigation:not([hidden])');
+      article = main.querySelector('.blog-article-layout > .blog-article-content');
       discover = false;
     }
     const first = articleCopy.first?.getBoundingClientRect();
@@ -599,8 +599,8 @@ function decorateProgressBar(el, main) {
       return;
     }
 
-    const dividerY = stacked.matches && navigation
-      ? (navigation.getBoundingClientRect().bottom + first.top) / 2
+    const dividerY = stacked.matches && article
+      ? article.getBoundingClientRect().top - parseFloat(getComputedStyle(article).marginBlockStart) / 2
       : headerSection.getBoundingClientRect().bottom - 1;
     const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
     const dividerTop = dividerY - BAR_HEIGHT / 2;
