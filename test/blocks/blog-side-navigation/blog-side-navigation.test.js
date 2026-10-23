@@ -90,6 +90,11 @@ describe('blog-side-navigation section list', () => {
           const links = [...block.querySelectorAll('nav > ul > li > a')];
           for (const expanded of [true, false]) {
             if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
+            if (expanded && width < 600) {
+              const current = block.querySelector('.blog-side-navigation-current > span');
+              expect(current.getBoundingClientRect().height)
+                .to.be.closeTo(parseFloat(getComputedStyle(current).lineHeight), 1);
+            }
             for (const link of links.filter((item) => !item.parentElement.hidden)) {
               const text = link.querySelector('.blog-side-navigation-label');
               const textStyle = getComputedStyle(text);
@@ -174,7 +179,7 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
         const expandedWeight = width >= 1200 ? '700' : '600';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(mobile ? '400' : expandedWeight);
+          .to.equal(mobile ? '700' : expandedWeight);
         if (!mobile) {
           expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
             .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
@@ -189,6 +194,62 @@ describe('blog-side-navigation section list', () => {
           }
         }
         main.remove();
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('shows the current section above all mobile options only when the dropdown is open', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
+    document.head.append(style);
+    try {
+      for (const width of [390, 599]) {
+        await setViewport({ width, height: 1000 });
+        for (const count of [3, 4]) {
+          const titles = ['First', 'Second', 'Third', 'Fourth'].slice(0, count);
+          const { main, block } = buildArticle(titles.map((title) => `<h2>${title}</h2>`).join(''));
+          await init(block);
+          const button = block.querySelector('button');
+          const current = block.querySelector('.blog-side-navigation-current');
+          const list = block.querySelector('ul');
+          const links = [...list.querySelectorAll('a')];
+          expect(current.hidden).to.equal(true);
+          if (count > 3) {
+            button.focus();
+            button.click();
+            expect(current.hidden).to.equal(false);
+            expect(current.nextElementSibling).to.equal(list);
+            expect(current.querySelector('.blog-side-navigation-label').textContent).to.equal('First');
+            expect(current.contains(button)).to.equal(true);
+            expect(getComputedStyle(current).fontWeight).to.equal('700');
+            expect(getComputedStyle(current).borderBottomWidth).to.equal('1px');
+            expect(getComputedStyle(current.querySelector('.blog-side-navigation-label'))
+              .webkitLineClamp).to.equal('1');
+            expect(links.map((link) => link.textContent)).to.deep.equal(titles);
+            expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
+            expect(getComputedStyle(links[0]).fontWeight).to.equal('700');
+            expect(getComputedStyle(links[0].parentElement).backgroundColor)
+              .to.equal('rgb(242, 242, 242)');
+            expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
+            expect(document.activeElement).to.equal(button);
+            await setViewport({ width: 768, height: 1000 });
+            await new Promise(requestAnimationFrame);
+            expect(current.hidden).to.equal(true);
+            expect(button.parentElement).to.equal(links[0].parentElement);
+            await setViewport({ width, height: 1000 });
+            await new Promise(requestAnimationFrame);
+            expect(current.hidden).to.equal(false);
+            expect(current.contains(button)).to.equal(true);
+            button.click();
+            expect(current.hidden).to.equal(true);
+            expect(button.parentElement).to.equal(links[0].parentElement);
+          }
+          main.remove();
+        }
       }
     } finally {
       style.remove();
@@ -326,8 +387,9 @@ describe('blog-side-navigation section list', () => {
             expect(button.getBoundingClientRect().width).to.equal(32);
             expect(button.getBoundingClientRect().left).to.be.at.least(0);
             expect(button.getBoundingClientRect().right).to.be.at.most(width);
-            const link = button.parentElement.querySelector('a');
-            const text = link.querySelector('span');
+            const link = button.parentElement.querySelector('a')
+              || button.parentElement.querySelector('.blog-side-navigation-label');
+            const text = link.querySelector('span') || link;
             const textLeft = link.getBoundingClientRect().left
               + parseFloat(getComputedStyle(link).paddingInlineStart);
             expect(textLeft).to.be.closeTo(block.querySelector(':scope > p')
@@ -937,7 +999,7 @@ describe('blog-side-navigation section list', () => {
       mockTablet(tablet);
       const titles = ['First', 'Second', 'Third', 'Fourth'].slice(0, count);
       const { main, block } = buildArticle(titles.map((title) => `<h2>${title}</h2>`).join(''));
-      const positions = titles.map((_, index) => 20 + index * 200);
+      const positions = titles.map((_, index) => 20 + index * 1000);
       let scrollTop = 0;
       const scrollPosition = stub(window, 'scrollY').get(() => scrollTop);
       const rectangles = [...main.querySelectorAll('h2')].map((heading, index) => (
@@ -979,8 +1041,23 @@ describe('blog-side-navigation section list', () => {
         button.click();
         expect(items.every((item) => !item.hidden)).to.equal(true);
         expect(links.map((link) => link.textContent)).to.deep.equal(titles);
-        expect(button.parentElement === items[0]).to.equal(true);
+        const expandedControl = tablet ? items[0] : block.querySelector('.blog-side-navigation-current');
+        expect(button.parentElement === expandedControl).to.equal(true);
         expect(document.activeElement === button).to.equal(true);
+        if (!tablet) {
+          expect(expandedControl.querySelector('.blog-side-navigation-label').textContent)
+            .to.equal(titles[1]);
+          scrollTop = positions[2] + 10;
+          window.dispatchEvent(new Event('scroll'));
+          await new Promise(requestAnimationFrame);
+          expect(expandedControl.querySelector('.blog-side-navigation-label').textContent)
+            .to.equal(titles[2]);
+          expect(getComputedStyle(links[2]).fontWeight).to.equal('700');
+          expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
+          scrollTop = positions[1] + 10;
+          window.dispatchEvent(new Event('scroll'));
+          await new Promise(requestAnimationFrame);
+        }
         links[0].focus({ preventScroll: true });
         button.click();
         expect(items[1].hidden).to.equal(false);

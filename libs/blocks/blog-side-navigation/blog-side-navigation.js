@@ -80,7 +80,7 @@ function trackActiveSection(block, headings, collapseControls) {
   return { setActiveIndex };
 }
 
-function addCollapseControl(list, label) {
+function addCollapseControl(list, label, nav) {
   if (list.children.length <= 1) return undefined;
 
   list.id = 'blog-side-navigation-sections';
@@ -97,12 +97,19 @@ function addCollapseControl(list, label) {
   items[0].append(button);
   const tablet = window.matchMedia('(min-width: 600px)');
   const expanded = { tablet: !window.matchMedia('(min-width: 1200px)').matches, mobile: false };
+  const currentLabel = createTag('span', { class: 'blog-side-navigation-label' });
+  const current = createTag('div', { class: 'blog-side-navigation-current', hidden: '' }, currentLabel);
+  nav.append(current);
   let activeIndex = 0;
   const render = () => {
     const collapsible = items.length > 3;
     const open = !collapsible || expanded[tablet.matches ? 'tablet' : 'mobile'];
     const focusedElement = document.activeElement;
-    const visibleItem = open ? items[0] : items[activeIndex];
+    const showCurrent = collapsible && open && !tablet.matches;
+    current.hidden = !showCurrent;
+    currentLabel.textContent = items[activeIndex].querySelector('a').textContent;
+    let visibleItem = open ? items[0] : items[activeIndex];
+    if (showCurrent) visibleItem = current;
     button.hidden = !collapsible;
     visibleItem.hidden = false;
     if (button.parentElement !== visibleItem) {
@@ -133,7 +140,7 @@ function addCollapseControl(list, label) {
     },
     setActiveIndex(index) {
       activeIndex = index;
-      if (button.getAttribute('aria-expanded') === 'false') render();
+      render();
     },
     cleanup() {
       tablet.removeEventListener('change', render);
@@ -214,7 +221,7 @@ export default async function init(block) {
     list.append(createTag('li', null, link));
   });
 
-  const collapseControls = addCollapseControl(list, label);
+  const collapseControls = addCollapseControl(list, label, nav);
   const relatedContent = main.querySelector('.blog-related-content');
   nav.append(list);
   block.replaceChildren(createTag('p', null, createTag('strong', null, label)), nav);
