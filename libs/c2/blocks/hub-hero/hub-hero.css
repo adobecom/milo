@@ -2440,7 +2440,7 @@
       }
 
       .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(n) {
-        --shuffle-dx: calc((var(--grid-img-width-min) + 12px) / -2);
+        --shuffle-dx: calc((var(--grid-img-width-min) + var(--start-gap)) / -2);
 
         animation: hubHeroExitShuffleY cubic-bezier(0.45, 0, 0.55, 1) both,
           hubHeroExitShuffleX cubic-bezier(0.45, 0, 0.3, 1) both;
@@ -2455,17 +2455,17 @@
       }
 
       .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(2) {
-        --shuffle-dx: calc((var(--grid-img-width-min) + 12px) / 2);
+        --shuffle-dx: calc((var(--grid-img-width-min) + var(--start-gap)) / 2);
       }
 
       .hub-hero-image-grid-container-col:nth-child(2) {
         --exit-from: var(--grid-col-two-offset);
-        --exit-x: calc(var(--exit-pitch) - (var(--grid-img-width-min) + 12px) / 2);
+        --exit-x: calc(var(--exit-pitch) - (var(--grid-img-width-min) + var(--start-gap)) / 2);
       }
 
       .hub-hero-image-grid-container-col:nth-child(4) {
         --exit-from: var(--grid-col-four-offset);
-        --exit-x: calc((var(--exit-pitch) - (var(--grid-img-width-min) + 12px) / 2) * -1);
+        --exit-x: calc((var(--exit-pitch) - (var(--grid-img-width-min) + var(--start-gap)) / 2) * -1);
         --shuffle-down: calc(var(--exit-right-lead) * -1);
       }
 

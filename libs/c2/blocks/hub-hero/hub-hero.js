@@ -293,10 +293,27 @@ const initExitLeads = (hubHero) => {
       moving.forEach((el) => el.style.removeProperty('animation'));
       // The left column drops only --exit-left-drop; the top center image rises the rest.
       const drop = px('--exit-left-drop');
+      const lead = px('--exit-right-lead');
       const gap = l2.top - l1.bottom;
-      left.style.setProperty('--shuffle-down', `${drop}px`);
-      center.children[0].style.setProperty('--shuffle-dy', `${l1.top + drop - c1.height - gap - c1.top}px`);
-      center.children[1].style.setProperty('--shuffle-dy', `${slot.top - c2.top - px('--exit-right-lead')}px`);
+      const [r1, r2] = [right.children[0], right.children[1]].map(rect);
+      // [element, top before, top after the vertical phase, height]
+      const moves = [
+        [center.children[0], c1.top, l1.top + drop - c1.height - gap, c1.height],
+        [left.children[0], l1.top, l1.top + drop, l1.height],
+        [left.children[1], l2.top, l2.top + drop, l2.height],
+        [right.children[0], r1.top, r1.top - lead, r1.height],
+        [right.children[1], r2.top, r2.top - lead, r2.height],
+        [center.children[1], c2.top, slot.top - lead, c2.height],
+      ];
+      // Rows of the final pair (left, right) share one center line.
+      [[0, 3], [1, 4], [2, 5]].forEach((row) => {
+        const mid = (i) => moves[i][2] + moves[i][3] / 2;
+        const line = (mid(row[0]) + mid(row[1])) / 2;
+        row.forEach((i) => { moves[i][2] += line - mid(i); });
+      });
+      moves.forEach(([el, from, to], i) => {
+        el.style.setProperty(i === 0 || i === 5 ? '--shuffle-dy' : '--shuffle-down', `${to - from}px`);
+      });
     }
 
     if (heading) {
