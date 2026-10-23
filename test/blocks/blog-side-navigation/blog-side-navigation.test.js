@@ -131,8 +131,13 @@ describe('blog-side-navigation section list', () => {
         const icon = button.querySelector('span');
         const list = block.querySelector('ul');
         const mobile = width < 600;
+        const tablet = width >= 600 && width < 1200;
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
+        expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
+          .to.equal(tablet ? '600' : '400');
+        expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
+          .backgroundColor).to.equal(tablet ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
         if (mobile) {
           expect(getComputedStyle(block.querySelector(':scope > p')).fontSize).to.equal('16px');
           expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight).to.equal('400');
@@ -168,8 +173,13 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(icon).borderRadius).to.equal('50%');
         expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
         expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
+        const expandedWeight = width >= 1200 ? '700' : '600';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(width < 600 ? '400' : '600');
+          .to.equal(mobile ? '400' : expandedWeight);
+        if (width >= 1200) {
+          expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
+            .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
+        }
         for (const item of list.children) {
           expect(item.hidden).to.equal(false);
           expect(getComputedStyle(item).borderWidth).to.equal('0px');
@@ -263,7 +273,7 @@ describe('blog-side-navigation section list', () => {
       expect(getComputedStyle(block.querySelector('[aria-current="location"]'))
         .borderInlineStartWidth).to.equal('0px');
       expect(getComputedStyle(block.querySelector('[aria-current="location"]').parentElement)
-        .backgroundColor).to.equal('rgb(242, 242, 242)');
+        .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
       expect(block.getBoundingClientRect().width).to.be.at.most(280);
       expect(article.getBoundingClientRect().left)
         .to.be.greaterThan(block.getBoundingClientRect().right);
@@ -899,10 +909,10 @@ describe('blog-side-navigation section list', () => {
         expect(current()).to.deep.equal([links[activeIndex]]);
         links.forEach((link, index) => {
           expect(getComputedStyle(link.parentElement).backgroundColor)
-            .to.equal(index === activeIndex ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
+            .to.equal('rgba(0, 0, 0, 0)');
           expect(getComputedStyle(link).borderInlineStartWidth).to.equal('0px');
           expect(getComputedStyle(link).paddingInlineStart).to.equal('8px');
-          expect(getComputedStyle(link).fontWeight).to.equal(index === activeIndex ? '600' : '400');
+          expect(getComputedStyle(link).fontWeight).to.equal(index === activeIndex ? '700' : '400');
         });
         expect(document.activeElement).to.equal(links[0]);
         expect(window.location.href).to.equal(url);
@@ -955,13 +965,13 @@ describe('blog-side-navigation section list', () => {
           expect(visible[0].querySelector('a').textContent).to.equal(titles[activeIndex]);
           expect(visible[0].querySelector('a').getAttribute('href')).to.equal(`#section-${activeIndex + 1}`);
           expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
-          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal(tablet ? '600' : '400');
+          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal('400');
           expect(button.parentElement === visible[0]).to.equal(true);
           expect(button.getAttribute('aria-expanded')).to.equal('false');
           expect(getComputedStyle(visible[0]).display).to.equal('flex');
           expect(getComputedStyle(visible[0]).borderTopWidth).to.equal('0px');
           expect(getComputedStyle(visible[0]).backgroundColor)
-            .to.equal(tablet ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
+            .to.equal('rgba(0, 0, 0, 0)');
           expect(items.filter((item) => getComputedStyle(item).display !== 'none').length).to.equal(1);
           expect(document.activeElement === button).to.equal(true);
           expect(window.location.href).to.equal(url);

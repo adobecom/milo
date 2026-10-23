@@ -304,4 +304,16 @@
     grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
     gap: 56px;
   }
+
+  .blog-side-navigation nav > ul > li:has(> a[aria-current="location"]) {
+    background: transparent;
+  }
+
+  .blog-side-navigation nav > ul > li > a[aria-current="location"] {
+    font-weight: 700;
+  }
+
+  .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) > a[aria-current="location"] {
+    font-weight: 400;
+  }
 }
