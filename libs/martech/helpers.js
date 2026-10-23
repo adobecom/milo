@@ -929,4 +929,23 @@ export async function sendAnalytics(val) {
   }
 }
 
+const INVALID_CHARACTERS = /[^\u00C0-\u1FFF\u2C00-\uD7FF\w]+/g;
+const LEAD_UNDERSCORES = /^_+|_+$/g;
+
+export function processTrackingLabels(text, config, charLimit) {
+  let analyticsValue = text?.replace(INVALID_CHARACTERS, ' ').replace(LEAD_UNDERSCORES, '').trim();
+  if (config) {
+    const { analyticLocalization, mep } = config;
+    const mepLoc = mep?.analyticLocalization?.[analyticsValue];
+    if (mepLoc) {
+      analyticsValue = mepLoc;
+    } else {
+      const loc = analyticLocalization?.[analyticsValue];
+      if (loc) analyticsValue = loc;
+    }
+  }
+  if (charLimit) return analyticsValue.slice(0, charLimit);
+  return analyticsValue;
+}
+
 export default { loadAnalyticsAndInteractionData };
