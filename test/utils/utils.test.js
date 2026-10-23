@@ -211,6 +211,34 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
     });
 
+    it('preloads router-marquee imports alongside the block without evaluating it', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      utils.preloadLcpCodeFiles();
+
+      [
+        '/libs/c2/blocks/router-marquee/router-marquee.js',
+        '/libs/martech/attributes.js',
+        '/libs/utils/action.js',
+      ].forEach((href) => {
+        const links = document.head.querySelectorAll(`link[href="${window.location.origin}${href}"]`);
+        expect(links.length).to.equal(1);
+        expect(links[0].rel).to.equal('preload');
+        expect(links[0].as).to.equal('script');
+        expect(links[0].crossOrigin).to.equal('anonymous');
+      });
+      expect(document.querySelector('.router-marquee').dataset.blockStatus).to.be.undefined;
+    });
+
+    it('does not preload router-marquee imports without a visible first-section router-marquee', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee hide-block"></div></div><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href$="/libs/martech/attributes.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href$="/libs/utils/action.js"]')).to.not.exist;
+    });
+
     it('preloads non-commerce autoblocks but excludes merch/mas', () => {
       document.body.innerHTML = `<main><div>
         <a href="https://www.youtube.com/watch?v=abc">watch</a>

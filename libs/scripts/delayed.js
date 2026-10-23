@@ -127,22 +127,29 @@ export const isDaPreview = ({ hostname, search }) => {
   return isDaHost && ['dapreview', 'quick-edit'].some((name) => params.get(name));
 };
 
+export const shouldAutoHighlight = ({ isLocal, isPreview, params }) => {
+  const hasDaPreviewParam = params.has('dapreview') || params.has('quick-edit');
+  const mode = params.get('autoHighlight');
+  return !hasDaPreviewParam && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
+};
+
 export const loadPreflightResults = async () => {
   if (isDaPreview(window.location)) {
     const { default: showDraftStatus } = await import('../features/preflight/draft-status.js');
     showDraftStatus();
     return;
   }
-  const { hostname } = window.location;
+  const { hostname, search } = window.location;
   const isLocal = isLocalHost(hostname);
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
+  const params = new URLSearchParams(search);
 
   const run = async () => {
-    if (isLocal || isPreview) {
+    if (shouldAutoHighlight({ isLocal, isPreview, params })) {
       const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
-      await autoHighlightUnpublished();
+      await autoHighlightUnpublished(params.get('autoHighlight') === 'on');
     }
     if (!isLocal) {
       const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
