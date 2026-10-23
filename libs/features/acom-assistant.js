@@ -159,7 +159,7 @@ async function getAutoDefaults() {
 
 function assistantBase(env) {
   return env === 'stage'
-    ? 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient'
+    ? 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient'
     : 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
 }
 
@@ -259,6 +259,13 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           if (!reinitializePromise) flushPendingMessages(client);
           mergedConfig.callbacks?.onReadyCallback?.(...args);
         },
+        windowStateCallback: (...args) => {
+          // States: hidden (closed/minimized), panel, maximised. BC blocks hide their
+          // floating entry points while the window is visible (see brand-concierge.css).
+          const state = args[0]?.state;
+          document.body.classList.toggle('acom-assistant-open', !!state && state !== 'hidden');
+          mergedConfig.callbacks?.windowStateCallback?.(...args);
+        },
         initErrorCallback: (...args) => {
           failInitialization(new Error(`init failed (${args[0]})`));
           mergedConfig.callbacks?.initErrorCallback?.(...args);
@@ -272,7 +279,7 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           footerAppId = null;
           return mergedConfig.callbacks?.getContextCallback?.(...args) || {
             appid: footer?.['jarvis-surface-id'] || mergedConfig.appid,
-            appver: footer?.['jarvis-surface-version'] || mergedConfig.appver,
+            appver: footer?.['jarvis-surface-version'] || mergedConfig.appver || '1.0',
           };
         },
       },
@@ -300,7 +307,7 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
 export function getAcomAssistantIdentity() {
   const { jarvis } = getConfig();
   const appid = getMetadata('jarvis-surface-id') || jarvis?.id;
-  const appver = getMetadata('jarvis-surface-version') || jarvis?.version;
+  const appver = getMetadata('jarvis-surface-version') || jarvis?.version || '1.0';
   // Neither the page nor the site config has an app ID. Log it so it's easy to spot.
   if (!appid) logError(new Error('no app ID (set jarvis-surface-id metadata or config.jarvis.id)'));
   return { appid, appver };

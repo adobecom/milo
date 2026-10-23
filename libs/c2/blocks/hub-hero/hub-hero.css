@@ -627,6 +627,7 @@
     --hub-hero-nav-h: 124px;
     --carousel-header-top: max(20%, calc(var(--hub-hero-nav-h) + var(--s2a-spacing-md)));
     --carousel-items-top: calc(var(--carousel-header-top) + var(--hub-hero-carousel-header-height, calc(2 * var(--s2a-typography-font-size-heading-2))) + var(--slide-header-h) + var(--s2a-spacing-3xl));
+    --carousel-items-floor: calc(var(--carousel-header-top) + var(--hub-hero-carousel-header-height, calc(2 * var(--s2a-typography-font-size-heading-2))) + var(--slide-header-h));
   }
 
   .hub-hero-carousel-header {
@@ -777,7 +778,11 @@
   .hub-hero-carousel-item {
     position: sticky;
     overflow: visible;
-    top: min(var(--carousel-items-top), calc(100dvh - var(--slide-content-height, 0px) - var(--s2a-spacing-lg)));
+
+    --stack-lift: calc(var(--offset-adjuster) - var(--stack-offset, var(--offset-adjuster)));
+    --viewport-fit: calc(100dvh - var(--slide-content-height, 0px) - var(--s2a-spacing-lg));
+    
+    top: max(min(var(--carousel-items-top), var(--viewport-fit)), calc(min(var(--carousel-items-floor), var(--viewport-fit)) + var(--stack-lift)));
     width: 100%;
     max-width: var(--media-mobile-max-width);
     color: var(--s2a-color-gray-25);
@@ -921,10 +926,6 @@
     opacity: 1;
     max-width: 20%;
     padding-inline: var(--s2a-spacing-md);
-  }
-
-  .hub-hero-carousel-item-footer *:not(svg) {
-    margin: var(--s2a-spacing-md) 0 0 0;
   }
 
 }
