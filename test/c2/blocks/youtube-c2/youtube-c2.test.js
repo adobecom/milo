@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
-import init, { getVideoId, readConfig } from '../../../../libs/c2/blocks/youtube-c2/youtube-c2.js';
+import sinon from 'sinon';
+import init, { controlPlayback, getVideoId, readConfig } from '../../../../libs/c2/blocks/youtube-c2/youtube-c2.js';
 
 const ID = 'dQw4w9WgXcQ';
 
@@ -114,5 +115,54 @@ describe('youtube-c2', () => {
     const el = makeBlock([['video', 'https://example.com/video']]);
     init(el);
     expect(el.isConnected).to.be.false;
+  });
+
+  describe('playback during a smooth scroll', () => {
+    const YT_ORIGIN = 'https://www.youtube-nocookie.com';
+
+    function report(iframe, data) {
+      window.dispatchEvent(new MessageEvent('message', { origin: YT_ORIGIN, source: iframe.contentWindow, data: JSON.stringify(data) }));
+    }
+
+    it('toggles playback through the YouTube iframe API', () => {
+      const iframe = document.createElement('iframe');
+      document.body.append(iframe);
+      const post = sinon.stub(iframe.contentWindow, 'postMessage');
+      const player = controlPlayback(iframe);
+
+      report(iframe, { event: 'onStateChange', info: 1 });
+      player.toggle();
+      expect(JSON.parse(post.lastCall.args[0]).func).to.equal('pauseVideo');
+      expect(post.lastCall.args[1]).to.equal(YT_ORIGIN);
+      player.toggle();
+      expect(JSON.parse(post.lastCall.args[0]).func).to.equal('playVideo');
+
+      report(iframe, { event: 'infoDelivery', info: { playerState: 2 } });
+      player.toggle();
+      expect(JSON.parse(post.lastCall.args[0]).func).to.equal('playVideo');
+
+      window.dispatchEvent(new MessageEvent('message', { origin: 'https://evil.example', source: iframe.contentWindow, data: JSON.stringify({ event: 'onStateChange', info: 1 }) }));
+      player.toggle();
+      expect(JSON.parse(post.lastCall.args[0]).func).to.equal('pauseVideo');
+      iframe.remove();
+    });
+
+    it('pauses the video when it is pressed while the page is gliding', () => {
+      const el = makeBlock([['video', ID]]);
+      init(el);
+      el.querySelector('.youtube-c2-poster').click();
+      const iframe = el.querySelector('iframe');
+      const post = sinon.stub(iframe.contentWindow, 'postMessage');
+      report(iframe, { event: 'onStateChange', info: 1 });
+
+      const video = el.querySelector('.youtube-c2-video');
+      video.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+      expect(post.called).to.be.false;
+
+      document.documentElement.classList.add('lenis-smooth');
+      video.dispatchEvent(new PointerEvent('pointerdown', { button: 0, bubbles: true }));
+      document.documentElement.classList.remove('lenis-smooth');
+      expect(JSON.parse(post.lastCall.args[0]).func).to.equal('pauseVideo');
+    });
   });
 });

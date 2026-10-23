@@ -64,7 +64,7 @@ function preconnect() {
 }
 
 function buildEmbedUrl(videoId, config, { autoplay, mute }) {
-  const params = new URLSearchParams({ rel: '0', playsinline: '1', enablejsapi: '1' });
+  const params = new URLSearchParams({ rel: '0', playsinline: '1', enablejsapi: '1', origin: window.location.origin });
   if (autoplay) params.set('autoplay', '1');
   if (mute) params.set('mute', '1');
   if (isOff(config.controls)) params.set('controls', '0');
@@ -80,6 +80,38 @@ function createIframe(src, title, cls) {
     allowfullscreen: '',
     referrerpolicy: 'strict-origin-when-cross-origin',
   });
+}
+
+/**
+ * Tracks playback through the YouTube iframe API so the block can toggle it itself.
+ * @param {HTMLIFrameElement} iframe
+ * @returns {{ toggle: () => void }}
+ */
+export function controlPlayback(iframe) {
+  const { origin } = new URL(EMBED_BASE);
+  let playing = false;
+  const send = (message) => iframe.contentWindow?.postMessage(JSON.stringify(message), origin);
+
+  window.addEventListener('message', (e) => {
+    if (e.origin !== origin || e.source !== iframe.contentWindow) return;
+    let data;
+    try {
+      data = JSON.parse(e.data);
+    } catch {
+      return;
+    }
+    const state = data?.event === 'onStateChange' ? data.info : data?.info?.playerState;
+    // 1 = playing, 3 = buffering
+    if (typeof state === 'number') playing = state === 1 || state === 3;
+  });
+  iframe.addEventListener('load', () => send({ event: 'listening', id: iframe.id, channel: 'widget' }));
+
+  return {
+    toggle() {
+      send({ event: 'command', func: playing ? 'pauseVideo' : 'playVideo', args: [] });
+      playing = !playing;
+    },
+  };
 }
 
 function loadChat(chat, videoId, title) {
@@ -126,11 +158,14 @@ export default function init(el) {
     ? createTag('div', { class: 'youtube-c2-chat' }, createTag('p', { class: 'youtube-c2-chat-placeholder' }, 'Live chat loads when the video starts.'), { parent: stream })
     : null;
 
+  let player = null;
   // Browsers only allow autoplay without a click when muted.
   const play = (fromClick) => {
     const mute = !fromClick || isOn(config.mute);
     const src = buildEmbedUrl(videoId, config, { autoplay: true, mute });
     const iframe = createIframe(src, title, 'youtube-c2-frame');
+    iframe.id = `youtube-c2-${videoId}-${Math.random().toString(36).slice(2, 8)}`;
+    player = controlPlayback(iframe);
     video.replaceChildren(iframe);
     if (fromClick) iframe.focus();
     loadChat(chat, videoId, title);
@@ -144,5 +179,10 @@ export default function init(el) {
   }
 
   el.replaceChildren(stream);
-  guardPlayerScroll(el);
+  // A press during a smooth scroll never reaches the iframe, so pause/play it for the viewer.
+  guardPlayerScroll(el, {
+    onInertPress: (e) => {
+      if (video.contains(e.target)) player?.toggle();
+    },
+  });
 }
