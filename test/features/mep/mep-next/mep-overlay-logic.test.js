@@ -938,6 +938,31 @@ describe('setPreviewButton', () => {
     expect(href).to.include('mepButton=off');
   });
 
+  it('adds a bare meplcp param when toggle-lcp-img-check is checked', async () => {
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-lcp-img-check';
+    cb.checked = true;
+    drawer.append(cb);
+    await setPreviewButton();
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.match(/[?&]meplcp(&|#|$)/);
+    expect(href).to.not.include('meplcp=');
+  });
+
+  it('removes meplcp from href when toggle-lcp-img-check is unchecked', async () => {
+    window.history.replaceState({}, '', `${window.location.pathname}?meplcp`);
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.id = 'toggle-lcp-img-check';
+    cb.checked = false;
+    drawer.append(cb);
+    await setPreviewButton();
+    window.history.replaceState({}, '', window.location.pathname);
+    const href = drawer.querySelector('.mep-footer a.con-button').getAttribute('href');
+    expect(href).to.not.include('meplcp');
+  });
+
   it('excludes mepButton from href when toggle-preview-link is unchecked', async () => {
     const cb = document.createElement('input');
     cb.type = 'checkbox';
