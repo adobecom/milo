@@ -134,8 +134,9 @@ describe('blog-side-navigation section list', () => {
         const tablet = width >= 600 && width < 1200;
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
+        const collapsedWeight = tablet ? '600' : '400';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(tablet ? '600' : '400');
+          .to.equal(mobile ? '700' : collapsedWeight);
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
           .backgroundColor).to.equal(tablet ? 'rgb(242, 242, 242)' : 'rgba(0, 0, 0, 0)');
         if (mobile) {
@@ -147,7 +148,7 @@ describe('blog-side-navigation section list', () => {
           expect(getComputedStyle(button).borderRadius).to.equal('6px');
           expect(getComputedStyle(button).backgroundColor).to.equal('rgb(248, 248, 248)');
           expect(getComputedStyle(button.parentElement).backgroundColor).to.equal('rgba(0, 0, 0, 0)');
-          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('400');
+          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('700');
         }
         expect(getComputedStyle(icon, '::before').width).to.equal('12px');
         expect(getComputedStyle(icon, '::before').height).to.equal('2px');
@@ -965,7 +966,7 @@ describe('blog-side-navigation section list', () => {
           expect(visible[0].querySelector('a').textContent).to.equal(titles[activeIndex]);
           expect(visible[0].querySelector('a').getAttribute('href')).to.equal(`#section-${activeIndex + 1}`);
           expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
-          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal('400');
+          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal(tablet ? '400' : '700');
           expect(button.parentElement === visible[0]).to.equal(true);
           expect(button.getAttribute('aria-expanded')).to.equal('false');
           expect(getComputedStyle(visible[0]).display).to.equal('flex');

@@ -270,9 +270,12 @@
     scroll-margin-top: calc(var(--global-height-nav, 64px) + var(--blog-side-navigation-height, 0px) + 24px);
   }
 
-  .blog-side-navigation nav > ul > li > a[aria-current="location"],
-  .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) > a {
+  .blog-side-navigation nav > ul > li > a[aria-current="location"] {
     font-weight: 400;
+  }
+
+  .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) > a {
+    font-weight: 700;
   }
 }
 
