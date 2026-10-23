@@ -131,12 +131,10 @@ describe('blog-side-navigation section list', () => {
         const icon = button.querySelector('span');
         const list = block.querySelector('ul');
         const mobile = width < 600;
-        const tablet = width >= 600 && width < 1200;
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
-        const collapsedWeight = tablet ? '600' : '400';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(mobile ? '700' : collapsedWeight);
+          .to.equal(mobile ? '700' : '400');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
           .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         if (mobile) {
