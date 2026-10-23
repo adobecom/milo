@@ -1,4 +1,4 @@
-import { createTag, customFetch, decorateLinksAsync, getMetadata, loadStyle } from '../../utils/utils.js';
+import { createTag, customFetch, decorateLinksAsync, getMetadata } from '../../utils/utils.js';
 import { getModal } from '../../c2/blocks/modal/modal.js';
 import decorateContent from './modal/content.js';
 
@@ -9,7 +9,12 @@ let activeTrigger;
 
 export default function init({ path: authoredPath } = {}) {
   if (activeTrigger) return activeTrigger;
-  if (localStorage.getItem(DISMISSED_KEY)) return null;
+  try {
+    if (localStorage.getItem(DISMISSED_KEY)) return null;
+  } catch (error) {
+    window.lana?.log(`EVNT027 dismissal: ${error.message}`, { tags: 'evnt027', severity: 'error' });
+    return null;
+  }
 
   const fragmentPath = authoredPath ?? getMetadata('max26-login-prompt');
   if (!fragmentPath) throw new Error('Missing max26-login-prompt fragment metadata.');
@@ -74,9 +79,17 @@ export default function init({ path: authoredPath } = {}) {
   let preparing = false;
   let content;
   let timer;
+  let frame;
   const listeners = [];
   const viewedPlayers = new WeakSet();
-  const observer = new MutationObserver(() => check()); // eslint-disable-line no-use-before-define
+  const scheduleCheck = () => {
+    if (stopped || frame !== undefined) return;
+    frame = requestAnimationFrame(() => {
+      frame = undefined;
+      check(); // eslint-disable-line no-use-before-define
+    });
+  };
+  const observer = new MutationObserver(scheduleCheck);
 
   const isVideoBlocking = () => {
     let blocked = false;
@@ -96,6 +109,8 @@ export default function init({ path: authoredPath } = {}) {
   const stop = () => {
     stopped = true;
     clearTimeout(timer);
+    if (frame !== undefined) cancelAnimationFrame(frame);
+    frame = undefined;
     observer.disconnect();
     listeners.forEach(([target, type, handler]) => target.removeEventListener(type, handler));
     if (activeTrigger === stop) activeTrigger = null;
@@ -131,7 +146,6 @@ export default function init({ path: authoredPath } = {}) {
       if (!canOpen()) return;
       preparing = true;
       if (!content) {
-        loadStyle(new URL('./modal/modal.css', import.meta.url).href);
         const response = await customFetch({ resource: path, withCacheRules: true });
         if (!response.ok) throw new Error(`Could not load MAX login prompt fragment: ${path} (${response.status})`);
         const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
@@ -171,15 +185,14 @@ export default function init({ path: authoredPath } = {}) {
     }
   }
 
-  const listen = (target, type, handler = check) => {
+  const listen = (target, type, handler = scheduleCheck) => {
     target.addEventListener(type, handler, { passive: true });
     listeners.push([target, type, handler]);
   };
   listen(window, 'scroll');
   listen(window, 'resize');
   listen(window, 'storage');
-  // The shared modal dispatches its close event before removing the dialog.
-  listen(window, 'milo:modal:closed', () => queueMicrotask(check));
+  listen(window, 'milo:modal:closed');
   listen(document, 'visibilitychange');
   window.addEventListener('pagehide', stop, { once: true });
   listeners.push([window, 'pagehide', stop]);
@@ -190,7 +203,9 @@ export default function init({ path: authoredPath } = {}) {
     attributeFilter: ['class', 'style', 'hidden', 'open', 'src'],
   });
   activeTrigger = stop;
-  if (hasDelay) timer = setTimeout(check, Math.max(0, Math.ceil(delay - performance.now())));
-  queueMicrotask(check);
+  if (hasDelay) {
+    timer = setTimeout(scheduleCheck, Math.max(0, Math.ceil(delay - performance.now())));
+  }
+  scheduleCheck();
   return stop;
 }

@@ -2,7 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateBlockBg, decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { closeModal } from '../../../c2/blocks/modal/modal.js';
 
-function decorate(block, root) {
+function decorate(block) {
   const [background, contentRow] = block.children;
   const content = contentRow?.firstElementChild;
   const logo = content?.querySelector(':scope > p:has(picture)');
@@ -19,15 +19,10 @@ function decorate(block, root) {
       paragraph.textContent.trim() || paragraph.querySelector('picture, img')
     )));
   });
-  const rows = [...(content?.children ?? [])];
-  const lastRow = rows.at(-1);
-  const previousRow = rows.at(-2);
-  const hasGuest = !!previousRow?.querySelector('a') && !!lastRow?.querySelector('a');
   const links = [...(content?.querySelectorAll('a') ?? [])]
     .filter((link) => !logo?.contains(link));
-  const guest = links.find((link) => link.hash === '#guest')
-    ?? (hasGuest ? lastRow.querySelector('a') : null);
-  const signIn = guest ? links[links.indexOf(guest) - 1] : lastRow?.querySelector('a');
+  const guest = links.find((link) => link.hash === '#guest');
+  const signIn = guest ? links[links.indexOf(guest) - 1] : links.at(-1);
   if (!background?.querySelector('picture') || !logo || !heading || !signIn) {
     throw new Error('max26-login-prompt requires background artwork, a logo, a heading, and a primary link.');
   }
@@ -69,12 +64,6 @@ function decorate(block, root) {
     });
     guestButton.append(...guest.childNodes);
     guestRow.replaceChildren(guestButton);
-  }
-
-  const dialog = root.closest('.dialog-modal');
-  if (dialog) {
-    heading.id = `${dialog.id}-max26-login-prompt-heading`;
-    dialog.setAttribute('aria-labelledby', heading.id);
   }
 }
 
