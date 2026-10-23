@@ -948,12 +948,6 @@
     }
   }
 
-  .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
-    display: block;
-    -webkit-line-clamp: unset;
-    overflow: visible;
-  }
-
   @media (hover: none) {
     .hub-hero-carousel-item {
       --slide-max-height: none;
@@ -1043,8 +1037,7 @@
   }
 
   .hub-hero-carousel {
-    height: auto;
-    min-height: var(--hub-hero-carousel-container-height);
+    height: var(--hub-hero-carousel-container-height);
   }
 
   .hub-hero-carousel-scroll {
@@ -1224,13 +1217,6 @@
     line-height: var(--s2a-typography-line-height-eyebrow);
     top: 0;
     transform: translateY(-100%);
-  }
-
-  .hub-hero-carousel-item[data-index]:is(.hovered, .focused, :focus-visible) {
-    /* Expanded text must not inherit the scroll animation's card-height cap. */
-    --slide-max-height: none;
-
-    align-self: flex-start;
   }
 
   @media (prefers-reduced-motion: no-preference) {
