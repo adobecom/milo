@@ -13,6 +13,7 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
+  polyfills,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
@@ -249,6 +250,30 @@ describe('Merch Block', () => {
   afterEach(() => {
     setSubscriptionsData();
     updateSearch();
+  });
+
+  it('fetches checkout configs before commerce loads and reuses them for checkout actions', async () => {
+    const originalPolyfills = polyfills.promise;
+    let releasePolyfills;
+    polyfills.promise = new Promise((resolve) => { releasePolyfills = resolve; });
+    const checkoutCalls = () => window.fetch.getCalls()
+      .filter(({ args: [url] }) => url.endsWith('/commerce/checkout-link.json')).length;
+    const beforeCalls = checkoutCalls();
+    const servicePromise = initService(true);
+
+    try {
+      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+      const configsPromise = fetchCheckoutLinkConfigs.promise;
+      expect(configsPromise).to.exist;
+      expect(document.head.querySelector('mas-commerce-service')).to.not.exist;
+      expect(await getCheckoutLinkConfig('PHOTOSHOP')).to.exist;
+      expect(fetchCheckoutLinkConfigs.promise).to.equal(configsPromise);
+      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+    } finally {
+      releasePolyfills();
+      await servicePromise;
+      polyfills.promise = originalPolyfills;
+    }
   });
 
   it('does not decorate merch with bad content', async () => {

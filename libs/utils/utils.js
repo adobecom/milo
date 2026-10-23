@@ -104,6 +104,7 @@ const C1_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-cta',
   'tag-selector',
   'tiktok',
   'twitter',
@@ -2329,6 +2330,10 @@ const STATIC_BLOCK_DEPS = {
   merch: [
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
+  ],
+  'router-marquee': [
+    () => `${getConfig().base}/martech/attributes.js`,
+    () => `${getConfig().base}/utils/action.js`,
   ],
 };
 

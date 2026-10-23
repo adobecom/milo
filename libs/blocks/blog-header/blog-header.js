@@ -149,9 +149,24 @@ function setAuthorMeta(info, details) {
 
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
-  return (href && name)
-    ? createTag('a', { class: 'blog-header-author-name', href }, name)
-    : createTag('span', { class: 'blog-header-author-name' }, name);
+  const el = (href && name)
+    ? createTag('a', { class: 'blog-header-author-name', href })
+    : createTag('span', { class: 'blog-header-author-name' });
+  el.textContent = name ?? '';
+  return el;
+}
+
+function getAuthorHref(href) {
+  if (!href) return null;
+  try {
+    const { protocol } = new URL(href, window.location.href);
+    if (protocol === 'https:' || protocol === 'http:') return href;
+  } catch (e) {
+    logError(`invalid author profile URL: ${e.message}`);
+    return null;
+  }
+  logError('unsupported author profile URL protocol');
+  return null;
 }
 
 function hideIcon(svg) {
@@ -195,7 +210,7 @@ function getAuthorData(row) {
   const nameP = paragraphs[nameIndex];
   const link = directLink || nameP?.querySelector('a');
   const name = (link || nameP)?.textContent.trim() || '';
-  const href = link?.getAttribute('href');
+  const href = getAuthorHref(link?.getAttribute('href'));
   const details = directLink ? paragraphs : paragraphs.slice(nameIndex + 1);
   const needsName = !!href
     && (!name || name === href || name === resolveUrl(href, window.location.href));
@@ -312,10 +327,13 @@ function buildShareCard(data) {
     }));
   }
   const text = createTag('div', { class: 'blog-share-card-text' });
-  const title = createTag('strong', null, data.title);
+  const title = createTag('strong');
+  title.textContent = data.title;
   text.append(createTag('p', { class: 'blog-share-card-title' }, title));
   if (data.description) {
-    text.append(createTag('p', { class: 'blog-share-card-desc' }, data.description));
+    const description = createTag('p', { class: 'blog-share-card-desc' });
+    description.textContent = data.description;
+    text.append(description);
   }
   card.append(text);
   return card;
@@ -479,6 +497,56 @@ async function buildByline(authorRows, config, base) {
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 }
 
+const dividerObservers = new WeakMap();
+
+function decorateDividers(el) {
+  if (el.classList.contains('no-dividers')) return;
+  const headerSection = el.closest('.section');
+  if (!headerSection) return;
+
+  headerSection.classList.add('blog-divider-frame');
+  const sections = [headerSection];
+  let section = headerSection.nextElementSibling;
+  while (section?.classList.contains('section') && !section.querySelector('.card-metadata')) {
+    sections.push(section);
+    section = section.nextElementSibling;
+  }
+  const relatedSection = section?.classList.contains('section') ? section : null;
+
+  const findEndpoint = () => {
+    const layout = headerSection.nextElementSibling;
+    if (layout?.classList.contains('blog-article-layout')) return layout;
+    // The related section can start with article text, wrapped during later decoration.
+    return relatedSection?.querySelector(':scope > .content:first-child') || sections.at(-1);
+  };
+
+  let endpoint;
+  const updateFrame = (entries, observer) => {
+    if (!headerSection.isConnected) {
+      observer.disconnect();
+      dividerObservers.delete(headerSection);
+      return;
+    }
+    const nextEndpoint = findEndpoint();
+    if (nextEndpoint !== endpoint) {
+      if (endpoint && !sections.includes(endpoint)) observer.unobserve(endpoint);
+      endpoint = nextEndpoint;
+      observer.observe(endpoint);
+    }
+    const height = endpoint.getBoundingClientRect().bottom
+      - headerSection.getBoundingClientRect().top;
+    headerSection.style.setProperty('--blog-divider-height', `${height}px`);
+  };
+
+  dividerObservers.get(headerSection)?.disconnect();
+  const observer = new ResizeObserver(updateFrame);
+  dividerObservers.set(headerSection, observer);
+  [...sections, relatedSection, headerSection.parentElement]
+    .filter(Boolean)
+    .forEach((target) => observer.observe(target));
+  updateFrame([], observer);
+}
+
 export default async function init(el) {
   const main = el.closest('main');
   const readingTime = main ? getReadingTime(main) : 0;
@@ -500,6 +568,7 @@ export default async function init(el) {
   el.prepend(eyebrow);
   authorRows.forEach((row) => row.remove());
   el.append(byline);
+  decorateDividers(el);
 
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;
