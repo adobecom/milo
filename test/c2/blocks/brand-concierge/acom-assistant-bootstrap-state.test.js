@@ -15,7 +15,7 @@ describe('C2 Brand Concierge Assistant GNav state', () => {
     const holder = document.createElement('div');
     holder.innerHTML = `
       <script type="javascript/blocked" data-loaded="true"
-        src="https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js"></script>
+        src="https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.js"></script>
       <meta name="gnav-brand-concierge-state" content="collapsed">
     `;
     nodes = [...holder.children];

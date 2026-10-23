@@ -1314,6 +1314,12 @@
   }
 }
 
+/* AcomAssistant window is open (windowStateCallback in features/acom-assistant.js).
+   Kept after the floating variant display rules so it wins at equal specificity. */
+.acom-assistant-open .bc-floating-element {
+  display: none;
+}
+
 /* marquee */
 /* stylelint-disable no-descending-specificity */
 .brand-concierge.marquee {
