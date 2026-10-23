@@ -1,6 +1,8 @@
 // part of the code is an optimized version of lite-vimeo-embed -> https://github.com/luwes/lite-vimeo-embed
 import { replaceKey } from '../../features/placeholders.js';
-import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLink } from '../../utils/utils.js';
+import {
+  createIntersectionObserver, createTag, getConfig, isInTextNode, loadLink, guardPlayerOnC2,
+} from '../../utils/utils.js';
 
 class LiteVimeo extends HTMLElement {
   static preconnected = false;
@@ -96,6 +98,7 @@ export default async function init(a) {
     });
     const wrapper = createTag('div', { class: 'embed-vimeo' }, liteVimeo);
     a.parentElement.replaceChild(wrapper, a);
+    guardPlayerOnC2(wrapper);
   };
 
   createIntersectionObserver({ el: a, callback: embedVimeo });

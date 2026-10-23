@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, guardPlayerOnC2 } from '../../utils/utils.js';
 
 const ALLOWED_MESSAGE_ORIGINS = [
   'https://stage.plan.adobe.com',
@@ -74,4 +74,5 @@ export default function init(el) {
 
   el.insertAdjacentElement('afterend', embed);
   el.remove();
+  guardPlayerOnC2(embed);
 }

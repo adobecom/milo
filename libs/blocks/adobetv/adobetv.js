@@ -1,5 +1,5 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
-import { createTag, getConfig, getFederatedContentRoot } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedContentRoot, guardPlayerOnC2 } from '../../utils/utils.js';
 
 let captionsLangMapPromise = null;
 
@@ -32,6 +32,7 @@ const createIframe = (a, href) => {
   });
   const embed = createTag('div', { class: 'milo-video' }, iframe);
   a.insertAdjacentElement('afterend', embed);
+  guardPlayerOnC2(embed);
 
   const idMatch = videoHref.match(/\/v\/(\d+)/);
   const videoId = idMatch ? idMatch[1] : null;

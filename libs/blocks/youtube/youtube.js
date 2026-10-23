@@ -1,5 +1,7 @@
 // part of the code is an optimized version of lite-youtube-embed -> https://github.com/paulirish/lite-youtube-embed
-import { createIntersectionObserver, createTag, isInTextNode, loadLink, getConfig } from '../../utils/utils.js';
+import {
+  createIntersectionObserver, createTag, isInTextNode, loadLink, getConfig, guardPlayerOnC2,
+} from '../../utils/utils.js';
 
 class LiteYTEmbed extends HTMLElement {
   connectedCallback() {
@@ -122,6 +124,7 @@ export default async function init(a) {
     const ytContainer = createTag('div', { class: 'milo-video dark-background' }, liteYTElement);
     a.insertAdjacentElement('afterend', ytContainer);
     a.remove();
+    guardPlayerOnC2(ytContainer);
 
     if (document.readyState === 'complete') {
       // eslint-disable-next-line no-underscore-dangle

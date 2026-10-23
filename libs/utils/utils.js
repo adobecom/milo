@@ -399,6 +399,12 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+// C2's smooth scroll makes iframes ignore clicks mid-glide; the guard keeps players clickable.
+export function guardPlayerOnC2(player) {
+  if (!player || getMetadata('foundation') !== 'c2') return;
+  import('../c2/utils/player-scroll-guard.js').then(({ default: guard }) => guard(player));
+}
+
 const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
 
 export function getAupSelectValue() {
