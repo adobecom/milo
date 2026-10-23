@@ -2430,7 +2430,7 @@
       }
 
       &.slide-spring .hub-hero-image-grid-container-col > div:nth-child(2) {
-        --slide-range: contain 130px contain 560px;
+        --slide-range: contain 220px contain 560px;
       }
 
       /* card 1 sits below the images until it eases up into its sticky slot (initExitLeads) */
@@ -2463,15 +2463,19 @@
 }
 
 @keyframes hubHeroExitSlideSpring {
-  /* compress (ease-out into the turn), then release (ease-in from it): one smooth reversal */
   0% {
     transform: translateX(0);
-    animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
+    animation-timing-function: cubic-bezier(0.3, 0, 0.3, 1);
   }
 
-  35% {
+  32% {
+    transform: translateX(calc(var(--slide-wind, 0px) * 1.12));
+    animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+  }
+
+  44% {
     transform: translateX(var(--slide-wind, 0px));
-    animation-timing-function: cubic-bezier(0.6, 0, 0.75, 0.4);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
   }
 
   100% {
