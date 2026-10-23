@@ -279,8 +279,8 @@ const initExitLeads = (hubHero) => {
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
     const cardLand = px('--exit-card-land');
 
-    // Converge: the left column slides down by the top center image (plus gap) and that image
-    // rises into the freed top slot; the bottom center image drops into the right column's empty
+    // Converge: the left column slides down and the top center image rises into the slot freed
+    // above it; the bottom center image drops into the right column's empty
     // bottom slot as that column leads upward by --exit-right-lead.
     const cols = [...hubHero.querySelectorAll('.hub-hero-image-grid-container-col')].slice(1, 4);
     const [left, center, right] = cols;
@@ -291,8 +291,11 @@ const initExitLeads = (hubHero) => {
       const [l1, l2, c1, c2, slot] = [left.children[0], left.children[1], center.children[0],
         center.children[1], right.children[2]].map(rect);
       moving.forEach((el) => el.style.removeProperty('animation'));
-      left.style.setProperty('--shuffle-down', `${c1.height + l2.top - l1.bottom}px`);
-      center.children[0].style.setProperty('--shuffle-dy', `${l1.top - c1.top}px`);
+      // The left column drops only --exit-left-drop; the top center image rises the rest.
+      const drop = px('--exit-left-drop');
+      const gap = l2.top - l1.bottom;
+      left.style.setProperty('--shuffle-down', `${drop}px`);
+      center.children[0].style.setProperty('--shuffle-dy', `${l1.top + drop - c1.height - gap - c1.top}px`);
       center.children[1].style.setProperty('--shuffle-dy', `${slot.top - c2.top - px('--exit-right-lead')}px`);
     }
 

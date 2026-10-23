@@ -2372,12 +2372,14 @@
      */
     .hub-hero {
       --exit-pitch: calc(var(--grid-img-width-min) + var(--start-gap));
-      --exit-card-land: 580px;
-      --exit-card-lead-run: 225px;
-      --exit-card-rest-offset: 200px;
+      --exit-card-land: 650px;
+      --exit-card-lead-run: 420px;
+      --exit-card-rest-offset: 100px;
       --exit-right-lead: 70px;
-      --exit-v-range: contain 0px contain 160px;
-      --exit-h-range: contain 160px contain 280px;
+      --exit-left-drop: 150px;
+      --exit-v-range: contain 0px contain 210px;
+      --exit-c1-v-range: contain 40px contain 210px;
+      --exit-h-range: contain 210px contain 365px;
       --exit-expand-before: 170px;
       --exit-expand-after: 30px;
       --exit-heading-after: 120px;
@@ -2411,14 +2413,14 @@
         will-change: transform, translate, opacity;
         animation: hubHeroExitRise cubic-bezier(0.6, 0, 0.9, 0.5) both, hubHeroExitFade linear both;
         animation-timeline: --hub-hero, --hub-hero;
-        animation-range: contain 0px contain 531px, contain 0px contain 531px;
+        animation-range: contain 0px contain 690px, contain 0px contain 690px;
       }
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) {
         animation: hubHeroExitConverge cubic-bezier(0.45, 0, 0.3, 1) both,
           hubHeroExitRise cubic-bezier(0.6, 0, 0.9, 0.5) both, hubHeroExitFade linear both;
         animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-        animation-range: var(--exit-h-range), contain 0px contain 531px, contain 0px contain 531px;
+        animation-range: var(--exit-h-range), contain 0px contain 690px, contain 0px contain 690px;
       }
 
       .hub-hero-image-grid-container-col:nth-child(3) {
@@ -2445,6 +2447,11 @@
         animation-composition: replace, add;
         animation-timeline: --hub-hero, --hub-hero;
         animation-range: var(--exit-v-range), var(--exit-h-range);
+      }
+
+      /* the top center image starts rising once the left column has begun to make room */
+      .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(1) {
+        animation-range: var(--exit-c1-v-range), var(--exit-h-range);
       }
 
       .hub-hero-image-grid-container-col:nth-child(3) > div:nth-child(2) {
