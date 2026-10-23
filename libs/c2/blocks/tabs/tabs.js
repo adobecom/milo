@@ -90,6 +90,180 @@ function moveIndicator(indicator, target, container) {
   indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
 }
 
+// Mirror the checked radio into the SM dropdown (radio stays the source of truth)
+function syncTabDropdown(radio) {
+  const dropdown = radio.closest('.tabs-wrapper')?.querySelector('.tab-dropdown');
+  if (!dropdown) return;
+  const options = dropdown.querySelectorAll('[role="option"]');
+  options.forEach((option) => {
+    const isSelected = option.dataset.radioId === radio.id;
+    option.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    if (isSelected) dropdown.querySelector('.tab-dropdown-value').textContent = option.textContent;
+  });
+}
+
+function initTabDropdown(dropdown) {
+  const trigger = dropdown.querySelector('.tab-dropdown-trigger');
+  const list = dropdown.querySelector('.tab-dropdown-list');
+  const options = [...list.querySelectorAll('[role="option"]')];
+  let highlightedIndex = 0;
+
+  const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
+  const getSelectedIndex = () => Math.max(options.findIndex((o) => o.getAttribute('aria-selected') === 'true'), 0);
+
+  const highlight = (index) => {
+    highlightedIndex = Math.min(Math.max(index, 0), options.length - 1);
+    options.forEach((o, i) => o.classList.toggle('highlighted', i === highlightedIndex));
+    const option = options[highlightedIndex];
+    trigger.setAttribute('aria-activedescendant', option.id);
+    // Keep the highlighted option visible when the list itself scrolls
+    if (option.offsetTop < list.scrollTop) {
+      list.scrollTop = option.offsetTop;
+    } else if (option.offsetTop + option.offsetHeight > list.scrollTop + list.clientHeight) {
+      list.scrollTop = option.offsetTop + option.offsetHeight - list.clientHeight;
+    }
+  };
+
+  const close = () => {
+    if (!isOpen()) return;
+    list.hidden = true;
+    trigger.setAttribute('aria-expanded', 'false');
+    trigger.removeAttribute('aria-activedescendant');
+    options.forEach((o) => o.classList.remove('highlighted'));
+  };
+
+  const open = (index = getSelectedIndex()) => {
+    list.hidden = false;
+    trigger.setAttribute('aria-expanded', 'true');
+    // Flip above the trigger when there is no room below
+    dropdown.removeAttribute('data-placement');
+    const listRect = list.getBoundingClientRect();
+    const roomAbove = trigger.getBoundingClientRect().top;
+    if (listRect.bottom > window.innerHeight && roomAbove > listRect.height) {
+      dropdown.setAttribute('data-placement', 'top');
+    }
+    highlight(index);
+  };
+
+  const select = (index) => {
+    const radio = document.getElementById(options[index].dataset.radioId);
+    close();
+    if (!radio || radio.checked) return;
+    // Check the radio and reuse changeTabs via its change listener
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
+  // Pointer and assistive tech activation
+  trigger.addEventListener('click', () => (isOpen() ? close() : open()));
+
+  trigger.addEventListener('keydown', (e) => {
+    const expanded = isOpen();
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        if (expanded) highlight(highlightedIndex + 1);
+        else open();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        if (expanded) highlight(highlightedIndex - 1);
+        else open();
+        break;
+      case 'Home':
+        e.preventDefault();
+        if (expanded) highlight(0);
+        else open(0);
+        break;
+      case 'End':
+        e.preventDefault();
+        if (expanded) highlight(options.length - 1);
+        else open(options.length - 1);
+        break;
+      case 'Enter':
+      case ' ':
+        // Suppress the native button click so the key doesn't toggle twice
+        e.preventDefault();
+        if (expanded) select(highlightedIndex);
+        else open();
+        break;
+      case 'Escape':
+        if (expanded) {
+          e.preventDefault();
+          close();
+        }
+        break;
+      case 'Tab':
+        // Commit the highlighted option, let focus move on
+        if (expanded) select(highlightedIndex);
+        break;
+      default:
+        break;
+    }
+  });
+  // Firefox activates buttons on Space keyup
+  trigger.addEventListener('keyup', (e) => {
+    if (e.key === ' ') e.preventDefault();
+  });
+
+  options.forEach((option, i) => {
+    // Keep focus on the trigger while clicking an option
+    option.addEventListener('mousedown', (e) => e.preventDefault());
+    option.addEventListener('mousemove', () => {
+      if (i !== highlightedIndex) highlight(i);
+    });
+    option.addEventListener('click', () => {
+      select(i);
+      trigger.focus();
+    });
+  });
+
+  document.addEventListener('pointerdown', (e) => {
+    if (!dropdown.contains(e.target)) close();
+  });
+  dropdown.addEventListener('focusout', (e) => {
+    if (!dropdown.contains(e.relatedTarget)) close();
+  });
+  // Close if the viewport crosses into the radio layout while open
+  window.matchMedia('(width >= 768px)').addEventListener('change', close);
+}
+
+function createTabDropdown(tabListContainer, tabId, labelEl, ariaLabel) {
+  const listId = `tab-dropdown-list-${tabId}`;
+  const dropdown = createTag('div', { class: 'tab-dropdown' });
+  const triggerAttrs = {
+    type: 'button',
+    class: 'tab-dropdown-trigger',
+    role: 'combobox',
+    'aria-haspopup': 'listbox',
+    'aria-expanded': 'false',
+    'aria-controls': listId,
+  };
+  // Reuse the radiogroup's visible label, else fall back to the pretext config
+  if (labelEl) triggerAttrs['aria-labelledby'] = labelEl.id;
+  else if (ariaLabel) triggerAttrs['aria-label'] = ariaLabel;
+  const trigger = createTag('button', triggerAttrs);
+  if (labelEl) trigger.append(createTag('span', { class: 'tab-dropdown-prefix', 'aria-hidden': 'true' }, labelEl.textContent.trim()));
+  trigger.append(createTag('span', { class: 'tab-dropdown-value' }));
+
+  const list = createTag('ul', { class: 'tab-dropdown-list', id: listId, role: 'listbox', hidden: '' });
+  if (labelEl) list.setAttribute('aria-labelledby', labelEl.id);
+  tabListContainer.querySelectorAll('input[type="radio"]').forEach((radio) => {
+    const option = createTag('li', {
+      id: `tab-dropdown-option-${radio.id}`,
+      class: 'tab-dropdown-option',
+      role: 'option',
+      'aria-selected': 'false',
+      'data-radio-id': radio.id,
+      'daa-ll': radio.getAttribute('daa-ll'),
+    }, radio.nextElementSibling?.textContent || '');
+    list.append(option);
+  });
+
+  dropdown.append(trigger, list);
+  return dropdown;
+}
+
 function changeTabs(e, config) {
   const { target } = e;
   const isRadio = target.matches('input[type="radio"]');
@@ -116,6 +290,8 @@ function changeTabs(e, config) {
         if (t !== target) t.style.backgroundColor = '';
       });
     }
+    // Keep the SM dropdown in step with deeplinks, remember, and desktop clicks
+    syncTabDropdown(target);
   } else {
     parent.querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`).forEach((t) => {
       t.setAttribute('aria-selected', 'false');
@@ -357,6 +533,14 @@ const init = async (block) => {
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
+  // SM-only dropdown alternative to the radio row (WCAG 1.4.10 reflow)
+  let tabDropdown;
+  if (isRadio) {
+    const labelEl = tabListLabelEl?.isConnected ? tabListLabelEl : null;
+    tabDropdown = createTabDropdown(tabListContainer, tabId, labelEl, config.pretext);
+    tabsWrapper.append(tabDropdown);
+  }
+
   let indicator;
   if (!isRadio && !isQuiet) {
     indicator = createTag('div', { class: 'tab-indicator' });
@@ -398,6 +582,13 @@ const init = async (block) => {
   }));
   handleDeferredImages(block);
   initTabs(block, config, rootElem);
+
+  if (tabDropdown) {
+    initTabDropdown(tabDropdown);
+    // Initial value; deeplinks/remember already synced via changeTabs
+    const checkedRadio = tabListContainer.querySelector('input[type="radio"]:checked');
+    if (checkedRadio) syncTabDropdown(checkedRadio);
+  }
 
   requestAnimationFrame(() => {
     const activeTab = tabListContainer.querySelector('[aria-selected="true"], input[type="radio"]:checked');
