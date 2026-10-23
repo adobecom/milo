@@ -5,6 +5,9 @@ import {
   localizeLinkAsync,
   loadIms,
   getLocale,
+  getCookie,
+  getCountry,
+  normCountryCode,
 } from '../../../utils/utils.js';
 import { closeModal } from '../modal/modal.js';
 
@@ -20,6 +23,7 @@ const FORM_METADATA = {
   'sign-in': 'signIn',
   'runtime-endpoint': 'runtimeEndpoint',
   'consent-id': 'consentId',
+  'entry-point': 'entryPoint',
 };
 
 export async function localizeFederatedUrl(url) {
@@ -304,6 +308,33 @@ export async function fetchConsentString(metadataConsentId) {
   }
 }
 
+const MARKETING_CONSENT_ID = 'cs1D';
+
+function isMarketingConsent(consentId) {
+  const [consentCode] = consentId?.split(';') ?? [];
+  return consentCode === MARKETING_CONSENT_ID;
+}
+
+// Geo IP is optional, so a failed lookup (e.g. blocked sessionStorage) must not block submit
+const getGeoCountry = () => getCountry().catch(() => null);
+
+export function getFormTrigger(el) {
+  const getSection = (node) => node?.closest('body > *') ?? null;
+  const dialog = el?.closest('.dialog-modal');
+  const focused = document.activeElement;
+
+  if (focused && focused !== document.body && !dialog?.contains(focused)) {
+    const section = getSection(focused);
+    if (section) return section;
+  }
+
+  // Safari/iOS don't focus clicked links: use the first link that opens this modal
+  if (!dialog?.id) return null;
+  const link = [...document.querySelectorAll(`[data-modal-hash="#${CSS.escape(dialog.id)}"]`)]
+    .find((node) => !dialog.contains(node));
+  return getSection(link);
+}
+
 export const [getFormData, setFormData] = (() => {
   let formData;
   return [
@@ -331,7 +362,7 @@ export const [getFormData, setFormData] = (() => {
       });
 
       if (!fields.email
-        || !metadata.mpsSname
+        || (!metadata.mpsSname && !isMarketingConsent(metadata.consentId))
         || (!metadata.subscriptionName && !metadata.consentId)) return 'Section metadata is missing email/mps-sname/subscription-name/consent-id field';
 
       if ((fields['phone-number'] && !fields['phone-country-code'])
@@ -341,6 +372,10 @@ export const [getFormData, setFormData] = (() => {
 
       formData.consent = fetchConsentString(formData.metadata.consentId);
       formData.config = fetchFormConfig(fetchConfigParams);
+      formData.trigger = getFormTrigger(el);
+      if (!fields.country && isMarketingConsent(metadata.consentId)) {
+        formData.geoCountry = getGeoCountry();
+      }
 
       return null;
     },
@@ -354,6 +389,67 @@ export function getApiEndpoint(action = 'submit') {
   if (env.name !== 'prod' && runtimeEndpoint) endPoint = runtimeEndpoint;
 
   return endPoint + (action === 'is-subscribed' ? '/is-subscribed' : '/form-submit');
+}
+
+// The `country` cookie is the market cookie (setMarket) and can hold region codes like `latam`,
+// so only 2-letter country codes are accepted from any source
+const toCountryCode = (value) => {
+  const code = normCountryCode(value);
+  return /^[a-z]{2}$/.test(code ?? '') ? code.toUpperCase() : null;
+};
+
+export async function getUserCountry() {
+  const cookieCountry = toCountryCode(getCookie('country'));
+  if (cookieCountry) return cookieCountry;
+
+  const ims = await getIMS();
+  if (ims?.isSignedInUser()) {
+    const imsCountry = toCountryCode((await getIMSProfile())?.country);
+    if (imsCountry) return imsCountry;
+  }
+
+  return toCountryCode(await (getFormData('geoCountry') ?? getGeoCountry()));
+}
+
+export async function getFormCountry({ consentId, fieldCountry, profileCountry }) {
+  const { country: countryField } = getFormData('fields') ?? {};
+  if (countryField) return { countryCode: profileCountry ?? fieldCountry };
+  if (!isMarketingConsent(consentId)) return {};
+
+  const countryCode = await getUserCountry();
+  return countryCode ? { countryCode } : {};
+}
+
+function getEntryPoint() {
+  const { entryPoint } = getFormData('metadata') ?? {};
+  if (entryPoint) return entryPoint;
+
+  const trigger = getFormData('trigger')?.tagName ?? '';
+
+  const pagePath = new URL(window.location.href).pathname
+    .replace(/^\//, '')
+    .replace(/\.html$/, '')
+    .replaceAll('/', '|');
+  return `${trigger.toLowerCase()}_${pagePath}`;
+}
+
+// Lingo language (URL is source of truth) > locale ietf language
+function getCommsLanguage() {
+  const { locale } = getConfig();
+  if (locale?.language) return locale.language.toLowerCase();
+  return locale?.ietf?.split(/[-_]/)[0]?.toLowerCase();
+}
+
+export async function getMarketingPayload(consentId) {
+  if (!isMarketingConsent(consentId)) return {};
+
+  return {
+    marketing: {
+      entryPoint: getEntryPoint(),
+      language: getCommsLanguage(),
+      currentUrl: `${window.location.origin}${window.location.pathname}`,
+    },
+  };
 }
 
 export function disableForm(form, disable = true) {

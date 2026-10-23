@@ -19,6 +19,8 @@ import {
   normalizePhoneNumber,
   getPhoneFieldConfig,
   validatePhoneNumber,
+  getMarketingPayload,
+  getFormCountry,
 } from './utils.js';
 
 const miloConfig = getConfig();
@@ -351,15 +353,21 @@ async function submitForm(form) {
     const { imsClientId } = miloConfig;
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
-    const { country: countryField, 'phone-number': phoneNumberField } = getFormData('fields');
+    const { 'phone-number': phoneNumberField } = getFormData('fields');
     const { country: profileCountry, userId: guid } = await getIMSProfile();
 
     const phoneNumberObject = phoneNumberField && phoneNumber ? {
       phoneNumber: normalizePhoneNumber(phoneNumber),
       phoneCountryCode: getPhoneFieldConfig().code.replace('+', ''),
     } : {};
-
+    const userCountry = await getFormCountry({
+      consentId,
+      fieldCountry: country,
+      profileCountry,
+    });
+    const marketingPayload = await getMarketingPayload(consentId);
     const { ecid, aepCmp, aepOtherConsents } = await getAEPData();
+
     const bodyData = {
       ecid,
       guid,
@@ -373,8 +381,9 @@ async function submitForm(form) {
       aepCmp,
       aepOtherConsents,
       isGuest,
-      ...(countryField && { countryCode: profileCountry ?? country }),
+      ...userCountry,
       ...phoneNumberObject,
+      ...marketingPayload,
     };
 
     const { error, data, status } = await runtimePost(
@@ -581,7 +590,7 @@ async function checkIsSubscribed() {
   const { mpsSname } = getFormData('metadata');
   const { email } = await getIMSProfile();
 
-  const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname, isGuest });
+  const { data, error, status } = await runtimePost(getApiEndpoint('is-subscribed'), { email, mpsSname, isGuest, consentId });
   const { subscribed } = data || {};
 
   if (subscribed) showHideMessage({ subscribed, email });
