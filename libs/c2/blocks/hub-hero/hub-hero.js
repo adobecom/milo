@@ -292,10 +292,14 @@ const initCarouselContainerExpand = (hubHero) => {
   const mobileQuery = window.matchMedia('(width < 768px)');
   const controller = new AbortController();
   let ticking = false;
+  let progress;
   const update = () => {
     ticking = false;
     if (!mobileQuery.matches) return;
-    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
+    const next = getHubHeroProgress(hubHero);
+    if (next === progress) return;
+    progress = next;
+    container.style.setProperty('--expand-progress', progress);
   };
   window.addEventListener('scroll', () => {
     if (ticking) return;

@@ -329,7 +329,7 @@
   .dialog-modal:has(.tour) {
     --tour-travel: 20vh;
 
-    animation: tour-slide-in 0.3s ease-out forwards;
+    animation: tour-slide-in 0.3s ease-out;
 
     &.is-snapping,
     &.is-dismissing {
@@ -342,7 +342,7 @@
   }
 
   .modal-curtain.tour-curtain.is-open {
-    animation: tour-curtain-in 0.3s ease-out forwards;
+    animation: tour-curtain-in 0.3s ease-out;
   }
 
   .tour-curtain.is-closing {

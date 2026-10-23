@@ -624,7 +624,6 @@
     --start-gap: 40px;
     --end-gap: 12rem;
     --grid-gap-animation-range: 20% 100%;
-    --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
     --hub-hero-grip-col-float-mobile: -5%;
     --hub-hero-nav-h: 124px;
@@ -747,7 +746,6 @@
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
-    --slide-one-header-footer-reveal: 45% 50%;
     --stack-edge-gap: 6px;
     --first-card-lift: 12vh;
     --first-card-lift-easing: cubic-bezier(0.45, 0, 0.55, 1);
@@ -906,9 +904,6 @@
   .hub-hero-carousel-item-media {
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
-  }
-
-  .hub-hero-carousel-item-media {
     --reveal-shrink: calc(1 - max(0, min(1, (var(--expand-progress) - var(--expand-start)) / (var(--expand-end) - var(--expand-start)))));
 
     clip-path: inset(
@@ -1662,18 +1657,6 @@
 
   75%, 100% {
     --invisible-slide-width: 0px;
-  }
-}
-
-@keyframes hubHeroGridCarouselSlideHover {
-  0% {
-    width: var(--grid-img-width-min);
-    transform: translateY(0%);
-  }
-
-  100% {
-    width: var(--hub-hero-carousel-width-mobile);
-    transform: translateY(-80px);
   }
 }
 
