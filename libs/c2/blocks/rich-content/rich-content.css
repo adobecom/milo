@@ -657,8 +657,8 @@
     background-color: unset;
   }
 
-  /* Glass frame matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
-  &.glass-border .media-cell :is(picture, .video-container) {
+  /* Glass frame is the media default; matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
+  .media-cell :is(picture, .video-container) {
     box-sizing: border-box;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--s2a-spacing-xs);
@@ -883,9 +883,10 @@
           max-width: none;
           margin: 0;
           aspect-ratio: auto;
-          border: none;
-          padding: 0;
-          border-radius: var(--s2a-border-radius-2xs) 0 0 var(--s2a-border-radius-2xs);
+          border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
+          border-right: none;
+          padding: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-2xs) var(--s2a-spacing-2xs);
+          border-radius: var(--s2a-border-radius-xs) 0 0 var(--s2a-border-radius-xs);
           overflow: hidden;
         }
 
@@ -897,15 +898,6 @@
           aspect-ratio: auto;
           border: none;
           border-radius: var(--s2a-border-radius-2xs) 0 0 var(--s2a-border-radius-2xs);
-        }
-      }
-
-      &.glass-border .media-cell {
-        :is(picture, div.video-container) {
-          border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
-          border-right: none;
-          padding: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-2xs) var(--s2a-spacing-2xs);
-          border-radius: var(--s2a-border-radius-xs) 0 0 var(--s2a-border-radius-xs);
         }
       }
     }
