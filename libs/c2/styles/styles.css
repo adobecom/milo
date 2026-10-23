@@ -1232,6 +1232,7 @@ span.hang-opening-quote {
     [class*="parallax-"]::before,
     [class*="parallax-"]::after {
       animation: none !important;
+      will-change: auto !important;
     }
 
     .section.parallax-move-up-fast {
@@ -1317,7 +1318,6 @@ span.hang-opening-quote {
       animation-fill-mode: both;
       animation-timeline: --parallax-stagger-timeline;
       animation-range: var(--parallax-range-start) var(--parallax-range-end);
-      will-change: transform;
     }
 
     /* Column count per -up class */
@@ -1383,6 +1383,7 @@ span.hang-opening-quote {
 
     @media (width >= 768px) {
       animation-name: none;
+      will-change: auto;
 
       > :not([class*="section-"]) {
         animation-name: enable-parallax-stagger;
