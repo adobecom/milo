@@ -333,6 +333,12 @@ body:has(header.local-nav) .product-marquee-grid {
       align-self: center;
       text-align: start;
     }
+
+    .pm-merch-ctas {
+      flex: none;
+      align-self: center;
+      margin-top: 0;
+    }
   }
 
   .dark.product-marquee-grid .pm-merch-card,

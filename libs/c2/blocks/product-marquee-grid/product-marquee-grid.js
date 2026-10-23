@@ -46,7 +46,7 @@ function buildChicletRow(iconEl, heading) {
   return chicletRow;
 }
 
-function buildMerchCard(col) {
+function buildMerchCard(col, { pillCtas = false } = {}) {
   // A whole card can be authored as a single autoblock link, which MAS upgrades into
   // <merch-card> in place (async). Put that card — or its not-yet-upgraded link — directly
   // inside its own container, skipping the per-field pm-merch-content extraction below.
@@ -75,18 +75,21 @@ function buildMerchCard(col) {
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
-  // Group the CTA paragraphs in place (preserving authored order) so the buttons stay
-  // inside pm-merch-content. Key off stable markup: MAS ctas resolve .con-button late.
-  const isCtaPara = (el) => !!el.querySelector('.con-button, a[data-wcs-osi], mas-field[field^="ctas"]');
+  const merchCard = createTag('div', { class: 'pm-merch-card' });
+  merchCard.append(cardContent);
+
+  // Group the CTAs into .pm-merch-ctas. Normally the group sits inside .pm-merch-content
+  // (CTAs stacked under the copy). cta-pill lays the card out as a horizontal pill, so the
+  // group is mounted as a sibling of the content — the card row then puts copy | CTA.
+  const isCtaPara = (el) => !!el.querySelector('.con-button, mas-field[field^="ctas"]');
   const ctaParas = [...cardContent.children].filter(isCtaPara);
   if (ctaParas.length) {
     const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-    ctaParas[0].replaceWith(ctaWrapper);
+    if (pillCtas) merchCard.append(ctaWrapper);
+    else ctaParas[0].replaceWith(ctaWrapper);
     ctaParas.forEach((para) => ctaWrapper.append(para));
   }
 
-  const merchCard = createTag('div', { class: 'pm-merch-card' });
-  merchCard.append(cardContent);
   return merchCard;
 }
 
@@ -121,7 +124,7 @@ function decorate(block, blockEl = block) {
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];
   if (col2?.children.length) {
-    const merchCard = buildMerchCard(col2);
+    const merchCard = buildMerchCard(col2, { pillCtas: blockEl.classList.contains('cta-pill') });
     // special-promo inverts the card vs the hero: light hero -> dark card,
     // dark hero -> light card. The mode class flips its content via tokens.
     if (blockEl.classList.contains('special-promo')) {
