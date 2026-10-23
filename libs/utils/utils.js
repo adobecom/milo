@@ -108,6 +108,7 @@ const C1_BLOCKS = [
   'tag-selector',
   'tiktok',
   'twitter',
+  'upscale-lens',
   'video',
   'vimeo',
   'youtube',

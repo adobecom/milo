@@ -1,0 +1,217 @@
+@property --lens-w {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --lens-h {
+  syntax: '<length-percentage>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --zoom {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+.upscale-lens {
+  display: grid;
+  gap: var(--spacing-l);
+  align-items: center;
+  width: min(100% - 2 * var(--spacing-m), 1920px);
+  margin: 0 auto;
+  padding: var(--spacing-l) 0;
+}
+
+.upscale-lens-copy .action-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.upscale-lens-stage {
+  /* Units are required: these values are used inside calc(). */
+  /* stylelint-disable length-zero-no-unit */
+  --lens-x: 0px;
+  --lens-y: 0px;
+  --pan-x: 0px;
+  --pan-y: 0px;
+  /* stylelint-enable length-zero-no-unit */
+  --lens-w: 60%;
+  --lens-h: 60%;
+  --lens-radius: 12px;
+  --brightness: 1;
+
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: #1a1a1a;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-touch-callout: none;
+
+  /* Registered custom properties (@property) can transition by name. */
+  /* stylelint-disable custom-property-no-missing-var-function */
+  transition:
+    --lens-w 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+    --lens-h 0.35s cubic-bezier(0.25, 1, 0.5, 1),
+    --zoom 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+  /* stylelint-enable custom-property-no-missing-var-function */
+}
+
+.upscale-lens-stage.active {
+  --lens-w: 45%;
+  --lens-h: 45%;
+  --zoom: 2.5;
+}
+
+.upscale-lens-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.upscale-lens-layer picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.upscale-lens-layer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translate(var(--pan-x), var(--pan-y)) scale(var(--zoom));
+  filter: brightness(var(--brightness));
+  transition:
+    scale 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.5s ease;
+}
+
+.upscale-lens-layer.after {
+  clip-path: inset(
+    calc(50% + var(--lens-y) - var(--lens-h) / 2)
+    calc(50% - var(--lens-x) - var(--lens-w) / 2)
+    calc(50% - var(--lens-y) - var(--lens-h) / 2)
+    calc(50% + var(--lens-x) - var(--lens-w) / 2)
+    round var(--lens-radius)
+  );
+}
+
+.upscale-lens-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: var(--lens-w);
+  height: var(--lens-h);
+  border: 2px solid rgb(255 255 255 / 85%);
+  border-radius: var(--lens-radius);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 15%);
+  transform: translate(calc(-50% + var(--lens-x)), calc(-50% + var(--lens-y)));
+  pointer-events: none;
+}
+
+.upscale-lens-label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.upscale-lens-move {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  cursor: grab;
+  pointer-events: auto;
+  touch-action: none;
+  animation: upscale-lens-pulse 1.5s infinite;
+}
+
+.upscale-lens-move:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.upscale-lens-stage.active .upscale-lens-move {
+  cursor: grabbing;
+  animation: none;
+}
+
+@keyframes upscale-lens-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(255 255 255 / 60%);
+  }
+
+  50% {
+    box-shadow: 0 0 0 8px rgb(255 255 255 / 0%);
+  }
+}
+
+@media (hover: hover) {
+  .upscale-lens-stage:hover {
+    --brightness: 1.05;
+  }
+
+  .upscale-lens-stage:hover img {
+    scale: 1.025;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upscale-lens-stage,
+  .upscale-lens-layer img {
+    transition: none;
+  }
+
+  .upscale-lens-move {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  /* The stage is 3:2, so the height share is 1.5x the width share to keep the lens square. */
+  .upscale-lens-stage {
+    --lens-w: 36%;
+    --lens-h: 54%;
+
+    aspect-ratio: 3 / 2;
+  }
+
+  .upscale-lens-stage.active {
+    --lens-w: 24%;
+    --lens-h: 36%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .upscale-lens:not(.no-copy) {
+    grid-template-columns: 1fr 2fr;
+    gap: var(--spacing-xxl);
+  }
+}
