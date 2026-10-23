@@ -60,6 +60,7 @@ const ANIM_CONFIG = {
   baseColumnSpread: 1.20,
   baseRowGap: 0.60,
   columnCompressionTarget: 0.675,
+  topRowPanLag: 0.42,
   cardScaleDesktop: 1.035,
 
   // Mockup positioning (resize-time, not scroll-driven)
@@ -948,6 +949,11 @@ function mountMotion(el) {
       return;
     }
     const rowAnchor = -0.2 + 0.7 * ANIM_STATE.phase.arcToGrid;
+    const topRowLag = Math.min(
+      ANIM_STATE.verticalPan.arcGridY * ANIM_CONFIG.topRowPanLag,
+      Math.max(0, viewportHeight * ANIM_STATE.cardGridLayout.rowGap
+        - (ROW_METRIC_HEIGHT + LABEL_CLEARANCE) * ANIM_CONFIG.cardScaleDesktop),
+    );
     sceneCards.forEach((card) => {
       const centerX = mirrorX(getDeskCardCenterX(
         viewportWidth,
@@ -955,7 +961,8 @@ function mountMotion(el) {
         ANIM_STATE.cardGridLayout.columnSpread,
       ), viewportWidth);
       const centerY = viewportHeight
-        * (0.5 + (card.rowIdx - rowAnchor) * ANIM_STATE.cardGridLayout.rowGap);
+        * (0.5 + (card.rowIdx - rowAnchor) * ANIM_STATE.cardGridLayout.rowGap)
+        + (card.rowIdx === 0 ? topRowLag : 0);
       card.baseX = centerX - card.width / 2;
       card.baseY = centerY - card.height / 2;
     });

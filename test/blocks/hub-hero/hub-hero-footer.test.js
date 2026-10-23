@@ -109,6 +109,66 @@ describe('hub-hero footer and assembly', () => {
       ));
     };
 
+    describe('reduced-motion layout', () => {
+      let originalStyles;
+
+      before(() => {
+        originalStyles = styles.textContent;
+        // Activate the reduced-motion CSS branch in the unit-test browser.
+        styles.textContent = originalStyles
+          .replaceAll('(prefers-reduced-motion: reduce)', '(min-width: 0px)')
+          .replaceAll('(prefers-reduced-motion: no-preference)', '(max-width: 0px)');
+      });
+
+      beforeEach(() => {
+        const nativeMatchMedia = window.matchMedia.bind(window);
+        sinon.stub(window, 'matchMedia').callsFake((query) => nativeMatchMedia(
+          query === '(prefers-reduced-motion: reduce)' ? '(min-width: 0px)' : query,
+        ));
+      });
+
+      after(() => {
+        styles.textContent = originalStyles;
+      });
+
+      [1470, 1200, 1024, 800].forEach((width) => {
+        [3, 4].forEach((slideCount) => {
+          it(`keeps ${slideCount}-slide cards inside clipping ancestors at ${width}x800`, async () => {
+            await setViewport({ width, height: 800 });
+            const block = await loadCarousel(slideCount, 'h3');
+            const section = document.createElement('section');
+            section.style.overflow = 'clip';
+            block.before(section);
+            section.append(block);
+            const following = document.createElement('div');
+            following.style.height = '800px';
+            section.after(following);
+            await settleLayout();
+
+            const carousel = block.querySelector('.hub-hero-carousel');
+            expect(getComputedStyle(carousel).animationName).to.equal('none');
+            expect(getComputedStyle(carousel).position).to.equal('relative');
+            for (const scrollY of [0, Math.max(block.offsetHeight - 600, 0)]) {
+              window.scrollTo(0, scrollY);
+              await settleLayout();
+              const blockBottom = block.getBoundingClientRect().bottom;
+              const sectionBottom = section.getBoundingClientRect().bottom;
+              const followingTop = following.getBoundingClientRect().top;
+              block.querySelectorAll('.hub-hero-carousel-item[data-index]').forEach((card) => {
+                const cardBottom = card.getBoundingClientRect().bottom;
+                expect(cardBottom, 'card inside hub').to.be.at.most(blockBottom + 1);
+                expect(cardBottom, 'card inside section').to.be.at.most(sectionBottom + 1);
+                expect(cardBottom, 'card before following content').to.be.at.most(followingTop + 1);
+                const footer = card.querySelector('.hub-hero-carousel-item-footer');
+                expect(footer.getBoundingClientRect().bottom, 'footer inside card')
+                  .to.be.at.most(cardBottom + 1);
+              });
+            }
+          });
+        });
+      });
+    });
+
     [
       { width: 1280, height: 800, expectedGridWidth: 256, finalWidth: 240 },
       { width: 1440, height: 760, expectedGridWidth: 288, finalWidth: 222 },
