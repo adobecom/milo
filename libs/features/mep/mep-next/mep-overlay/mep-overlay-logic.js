@@ -606,13 +606,15 @@ export async function setPreviewButton() {
   }
 
   applyGeoSpoof(simulateHref.searchParams, getSpoofGeoParams(popup));
+  if (getCheckboxParam(popup, 'toggle-lcp-img-check')) simulateHref.searchParams.set('meplcp', '');
+  else simulateHref.searchParams.delete('meplcp');
   setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
-  // URLSearchParams serializes an empty value as `mep=`; drop the `=` for a bare `mep`.
-  const href = simulateHref.href.replace(/([?&]mep)=(?=[&#]|$)/, '$1');
+  // URLSearchParams serializes an empty value as `mep=`; drop the `=` for bare `mep`/`meplcp`.
+  const href = simulateHref.href.replace(/([?&](?:mep|meplcp))=(?=[&#]|$)/g, '$1');
   popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', href);
 }
 
