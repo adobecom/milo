@@ -24,6 +24,7 @@ const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 // federal's authored .svg icon anchors into <picture> (MWPW-198294).
 async function localizeGnavLinks(body) {
   await Promise.all([...body.querySelectorAll('a')].map(async (a) => {
+    if (a.href.includes('#_dnt')) return;
     a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   }));
 }
