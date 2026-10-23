@@ -2378,7 +2378,7 @@
       --exit-card-rest-offset: 100px;
       --exit-right-lead: 70px;
       --exit-pair-gap: 20px; /* gap between the converged columns */
-      --exit-ease-in: cubic-bezier(0.42, 0, 1, 1);
+      --exit-ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
       --exit-left-drop: 150px;
       --exit-v-range: contain 0px contain 210px;
       --exit-c1-v-range: contain 40px contain 210px;
@@ -2420,7 +2420,7 @@
       }
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(4)) {
-        animation: hubHeroExitConverge var(--exit-ease-in) both,
+        animation: hubHeroExitConverge var(--exit-ease-in-out) both,
           hubHeroExitRise cubic-bezier(0.6, 0, 0.9, 0.5) both, hubHeroExitFade linear both;
         animation-timeline: --hub-hero, --hub-hero, --hub-hero;
         animation-range: var(--exit-h-range), contain 0px contain 690px, contain 0px contain 690px;
@@ -2447,8 +2447,8 @@
 
         /* separate properties (translate / transform) so both run on the compositor */
         will-change: translate, transform;
-        animation: hubHeroExitShuffleY var(--exit-ease-in) both,
-          hubHeroExitShuffleX var(--exit-ease-in) both;
+        animation: hubHeroExitShuffleY var(--exit-ease-in-out) both,
+          hubHeroExitShuffleX var(--exit-ease-in-out) both;
         animation-timeline: --hub-hero, --hub-hero;
         animation-range: var(--exit-v-range), var(--exit-h-range);
       }
