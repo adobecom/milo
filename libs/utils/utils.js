@@ -2351,7 +2351,6 @@ function getMasDepUrl(component) {
 
 const STATIC_BLOCK_DEPS = {
   'merch-card-autoblock': [
-    getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
   ],
