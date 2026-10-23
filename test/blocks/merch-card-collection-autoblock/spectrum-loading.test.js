@@ -15,6 +15,11 @@ const spectrumRequests = () => performance.getEntriesByType('resource')
   .map(({ name }) => name)
   .filter((name) => name.includes('/features/spectrum-web-components/'));
 
+// merch-sidenav is the only M@S component that pulls in Lit (lit-all.min.js).
+const sidenavRequests = () => performance.getEntriesByType('resource')
+  .map(({ name }) => name)
+  .filter((name) => name.endsWith('/merch-sidenav.js'));
+
 const spectrumElements = ['sp-theme', 'sp-button', 'sp-search', 'sp-action-menu', 'sp-sidenav', 'sp-checkbox'];
 const definedSpectrumElements = () => spectrumElements.filter((tag) => customElements.get(tag));
 
@@ -68,6 +73,7 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
       expect(document.querySelector('merch-sidenav')).to.not.exist;
       expect(spectrumRequests()).to.deep.equal([]);
       expect(definedSpectrumElements()).to.deep.equal([]);
+      expect(sidenavRequests()).to.deep.equal([]);
     });
 
     it('requests no Spectrum on interactions', async () => {
@@ -85,6 +91,7 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
       await mount(BLADE, '&sidenav=false');
       expect(spectrumRequests()).to.deep.equal([]);
       expect(definedSpectrumElements()).to.deep.equal([]);
+      expect(sidenavRequests()).to.deep.equal([]);
     });
   });
 
@@ -95,12 +102,14 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
       expect(document.querySelector('merch-sidenav')).to.not.exist;
       expect(spectrumRequests()).to.deep.equal([]);
       expect(definedSpectrumElements()).to.deep.equal([]);
+      expect(sidenavRequests()).to.deep.equal([]);
     });
 
     it('loads Spectrum when the sidenav is rendered', async () => {
       await mount(COLLECTION);
       const sidenav = document.querySelector('merch-sidenav');
       expect(sidenav).to.exist;
+      expect(sidenavRequests()).to.have.lengthOf(1);
       expect(definedSpectrumElements()).to.deep.equal(spectrumElements);
       ['theme', 'base', 'shared', 'button', 'search', 'action-menu', 'sidenav', 'checkbox'].forEach((dep) => {
         expect(spectrumRequests().some((name) => name.endsWith(`/${dep}.js`)), dep).to.be.true;
