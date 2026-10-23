@@ -24,6 +24,31 @@
       display: flex;
     }
 
+    /* MPC MP4s match the MPC player: card media box, letterboxed on black. Other MP4s keep stage sizing. */
+    .video-container:has(> video[data-video-source*="tv.adobe.com"]),
+    video[data-video-source*="tv.adobe.com"] {
+      width: 100%;
+    }
+
+    video[data-video-source*="tv.adobe.com"] {
+      display: block;
+      aspect-ratio: 4/3;
+      object-fit: contain;
+      background: var(--s2a-color-gray-1000);
+    }
+
+    /* Native video controls sit above the card link. */
+    video[controls] {
+      pointer-events: auto;
+    }
+
+    .milo-video:has(> iframe.adobetv) {
+      height: auto;
+      padding-bottom: 0;
+      aspect-ratio: 4/3;
+      pointer-events: auto;
+    }
+
     .icon {
       height: 24px;
       width: 24px;
@@ -152,7 +177,9 @@
         }
       }
 
-      .media picture:not(.icon) img {
+      .media picture:not(.icon) img,
+      .media .milo-video:has(> iframe.adobetv),
+      .media video[data-video-source*="tv.adobe.com"] {
         aspect-ratio: 2.2/1;
       }
     }

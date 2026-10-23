@@ -1559,9 +1559,26 @@ export const isValidHtmlUrl = (url) => {
   return regex.test(url);
 };
 
+export const isMpcPlayerUrl = (href) => {
+  try {
+    const url = new URL(href);
+    return url.protocol === 'https:'
+      && /^(stage-)?video\.tv\.adobe\.com$/.test(url.hostname)
+      && /^\/v\/\d+/.test(url.pathname);
+  } catch {
+    return false;
+  }
+};
+
+const isMpcPosterAlt = (alt) => {
+  const [source, , icon] = alt.split('|');
+  return !icon && isMpcPlayerUrl(source.trim());
+};
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return [];
+  const isC2Page = getMetadata('foundation') === 'c2';
   const imageVideoLinkPromises = [];
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
@@ -1569,10 +1586,11 @@ export function decorateImageLinks(el) {
       if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
+      const isMpcPoster = isC2Page && isMpcPosterAlt(img.alt);
       img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
-      if (href.includes('.mp4')) {
+      if (href.includes('.mp4') || isMpcPoster) {
         const a = createTag('a', { href: url, 'data-video-poster': pic.outerHTML });
         a.innerHTML = url;
         pic.replaceWith(a);
@@ -2395,6 +2413,10 @@ export function preloadLcpCodeFiles(area = document) {
   });
   if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
     autoNames.add('video');
+  }
+  if (getMetadata('foundation') === 'c2'
+    && [...firstSection.querySelectorAll('img[alt*="video.tv.adobe.com"]')].some((img) => isMpcPosterAlt(img.alt))) {
+    autoNames.add('adobetv');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);

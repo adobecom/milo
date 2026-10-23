@@ -4,3 +4,35 @@
 a[href*='.mp4'].hide-video {
   visibility: hidden !important;
 }
+
+.mpc-poster.modal-img-link {
+  display: block;
+  width: 100%;
+}
+
+.mpc-poster picture,
+.mpc-poster img {
+  display: block;
+  width: 100%;
+}
+
+.mpc-poster .consonant-play-btn {
+  border: 0;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.mpc-poster.is-playing {
+  position: relative;
+}
+
+.mpc-poster.is-playing picture {
+  visibility: hidden;
+}
+
+.mpc-poster.is-playing .milo-video {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  padding-bottom: 0;
+}
