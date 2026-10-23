@@ -277,7 +277,10 @@ a.blog-header-author-name:hover {
   }
 
   .blog-divider-frame + .blog-article-layout {
+    --blog-divider-inline-space: 32px;
+
     position: relative;
+    column-gap: calc(2 * var(--blog-divider-inline-space));
   }
 
   .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
@@ -289,11 +292,17 @@ a.blog-header-author-name:hover {
     position: absolute;
     grid-column: 1 / 2;
     inset-block: calc(-1 * var(--blog-divider-gap)) 0;
-    inset-inline-start: 100%;
+    inset-inline-start: calc(100% + var(--blog-divider-inline-space));
     inline-size: 2px;
     background-image: repeating-linear-gradient(to bottom, var(--blog-divider-dots));
     pointer-events: none;
     z-index: 1;
+  }
+}
+
+@media (min-width: 1200px) {
+  .blog-divider-frame + .blog-article-layout {
+    --blog-divider-inline-space: 56px;
   }
 }
 

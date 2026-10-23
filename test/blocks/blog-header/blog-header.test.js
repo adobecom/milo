@@ -1009,7 +1009,7 @@ describe('blog-header section dividers', () => {
       expect(navigation.getBoundingClientRect().top - headerBottom()).to.equal(76);
     });
 
-    it('draws the sidenav rule on the column gap edge from the header rule to the article end', async () => {
+    it('draws the sidenav rule midway through the gap from the header rule to the article end', async () => {
       await setViewport({ width: 1440, height: 900 });
       const fixture = buildStyledSections();
       await init(fixture.block);
@@ -1020,7 +1020,11 @@ describe('blog-header section dividers', () => {
       expect(frame.content).to.equal('""');
       expect(frame.pointerEvents).to.equal('none');
       expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
-      expect(layoutRect.left + parseFloat(frame.left) + gap)
+      expect(gap).to.equal(112);
+      expect(navigation.getBoundingClientRect().width).to.equal(280);
+      expect(layoutRect.left + parseFloat(frame.left) - navigation.getBoundingClientRect().right)
+        .to.be.closeTo(56, 0.5);
+      expect(layoutRect.left + parseFloat(frame.left) + gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
       expect(layoutRect.top + parseFloat(frame.top))
         .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
@@ -1041,7 +1045,8 @@ describe('blog-header section dividers', () => {
       const { layout, article } = await addSideNavigation(fixture);
       const gap = parseFloat(getComputedStyle(layout).columnGap);
       const frame = getComputedStyle(layout, '::before');
-      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap)
+      expect(gap).to.equal(112);
+      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().right, 0.5);
     });
 
@@ -1054,6 +1059,7 @@ describe('blog-header section dividers', () => {
       expect(top).to.equal(fixture.headerSection.getBoundingClientRect().bottom);
       expect(article.getBoundingClientRect().top).to.equal(top);
       expect(navigation.getBoundingClientRect().top).to.equal(top);
+      expect(getComputedStyle(layout).columnGap).to.equal('56px');
       expect(getComputedStyle(layout, '::before').content).to.equal('none');
       expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
     });
@@ -1098,7 +1104,10 @@ describe('blog-header section dividers', () => {
         expect(rule.content).to.equal('""');
         expect(getComputedStyle(article, '::before').content).to.equal('none');
         expect(getComputedStyle(navigation).position).to.equal('sticky');
-        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap)
+        expect(gap).to.equal(64);
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left)
+          - navigation.getBoundingClientRect().right).to.be.closeTo(32, 0.5);
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap / 2)
           .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
         expect(layout.getBoundingClientRect().top + parseFloat(rule.top))
           .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
