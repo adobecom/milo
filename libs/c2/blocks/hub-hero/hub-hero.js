@@ -277,7 +277,11 @@ const initExitLeads = (hubHero) => {
     if (!mobileQuery.matches || getHubHeroScrollRange(hubHero).totalScrollRange <= 0) return;
     const style = getComputedStyle(hubHero);
     const px = (name) => parseFloat(style.getPropertyValue(name)) || 0;
-    const cardLand = px('--exit-card-land');
+    // Card 1 parks lower on taller screens while the images sit at the same height, so land it
+    // earlier by (its sticky top - --exit-card-ref-top) * --exit-card-tall-factor.
+    const slotDrop = Math.max(0, (parseFloat(getComputedStyle(cards[0]).top) || 0) - px('--exit-card-ref-top'));
+    const cardLand = px('--exit-card-land')
+      - slotDrop * (parseFloat(style.getPropertyValue('--exit-card-tall-factor')) || 0);
 
     // Converge: the left column slides down and the top center image rises into the slot freed
     // above it; the bottom center image drops into the right column's empty
