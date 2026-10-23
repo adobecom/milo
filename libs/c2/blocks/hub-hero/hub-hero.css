@@ -2369,7 +2369,7 @@
      * then chrome), then the heading fades in, then card 2 comes into view.
      */
     .hub-hero {
-      --exit-card-land: 550px;
+      --exit-card-land: 510px;
       --exit-card-lead-run: 270px;
       --exit-expand-before: 175px;
       --exit-expand-after: 30px;
@@ -2395,18 +2395,18 @@
       .hub-hero-image-grid-container-col:nth-child(3) {
         --exit-from: var(--grid-col-three-offset);
         --exit-range: contain 75px contain 431px;
-        --exit-fade-range: contain 380px contain 440px;
+        --exit-fade-range: contain 371px contain 431px;
       }
 
       .hub-hero-image-grid-container-col:nth-child(4) {
         --exit-from: var(--grid-col-four-offset);
         --exit-range: contain 100px contain 444px;
-        --exit-fade-range: contain 405px contain 475px;
+        --exit-fade-range: contain 374px contain 444px;
       }
 
 
       .hub-hero-image-grid-container-col:is(:nth-child(2), :nth-child(3), :nth-child(4)) {
-        --exit-lift: -564px;
+        --exit-lift: -480px;
 
         will-change: transform, opacity;
         animation: hubHeroExitRise cubic-bezier(0.45, 0, 0.75, 0.45) both, hubHeroExitFadeOut linear both;
