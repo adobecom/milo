@@ -947,7 +947,7 @@
     }
   }
 
-  .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+  .hub-hero-carousel-item:is(.hovered, .focused) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
     display: block;
     -webkit-line-clamp: unset;
     overflow: visible;
@@ -1076,8 +1076,7 @@
 
   @media (hover: hover) {
     .hub-hero-carousel-item.hovered,
-    .hub-hero-carousel-item.focused,
-    .hub-hero-carousel-item:focus-visible {
+    .hub-hero-carousel-item.focused {
       --hover-w: min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5));
       --slide-min-w: var(--hover-w);
       width: var(--hover-w);
@@ -1095,23 +1094,19 @@
 
   @media (hover: hover) {
     .hub-hero-carousel-item.hovered .hub-hero-carousel-item-media img,
-    .hub-hero-carousel-item.focused .hub-hero-carousel-item-media img,
-    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-media img {
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-media img {
       transform: scale(1.2);
     }
 
     .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
     .hub-hero-carousel-item.hovered .hub-hero-carousel-item-header *,
     .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *,
-    .hub-hero-carousel-item.focused .hub-hero-carousel-item-header *,
-    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *,
-    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-header * {
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-header * {
       color: var(--s2a-color-gray-25);
     }
 
     .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span, svg),
-    .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *:not(span, svg),
-    .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span, svg) {
+    .hub-hero-carousel-item.focused .hub-hero-carousel-item-footer *:not(span, svg) {
       max-width: calc(100% - var(--footer-icon-size) - var(--s2a-spacing-xs));
     }
 
@@ -1150,11 +1145,11 @@
         transition: opacity .1s ease-out, color .1s var(--paralax-easing);
       }
 
-      .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
+      .hub-hero-carousel-item:is(.hovered, .focused) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
         max-width: calc(var(--hover-w) - 2 * var(--s2a-spacing-lg) - var(--footer-icon-size) - var(--s2a-spacing-xs));
       }
 
-      .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) .hub-hero-carousel-item-footer span {
+      .hub-hero-carousel-item:is(.hovered, .focused) .hub-hero-carousel-item-footer span {
         opacity: 1;
         max-width: none;
         transition: opacity .1s ease-out .3s, color .1s var(--paralax-easing);
@@ -1225,7 +1220,7 @@
     transform: translateY(-100%);
   }
 
-  .hub-hero-carousel-item[data-index]:is(.hovered, .focused, :focus-visible) {
+  .hub-hero-carousel-item[data-index]:is(.hovered, .focused) {
     /* Expanded text must not inherit the scroll animation's card-height cap. */
     --slide-max-height: none;
 
@@ -1384,7 +1379,7 @@
   }
 
   @media (hover: hover) {
-    .hub-hero-carousel-item:is(.hovered, .focused, :focus-visible) {
+    .hub-hero-carousel-item:is(.hovered, .focused) {
       --hover-w: max(
         calc(var(--slide-max-width) + var(--footer-icon-size) + var(--s2a-spacing-xs)),
         min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5))
@@ -1491,8 +1486,7 @@
   }
 
   .hub-hero-carousel-item.hovered,
-  .hub-hero-carousel-item.focused,
-  .hub-hero-carousel-item:focus-visible {
+  .hub-hero-carousel-item.focused {
     width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
 

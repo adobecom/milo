@@ -552,19 +552,17 @@ describe('hub-hero footer and assembly', () => {
       });
     });
 
-    it('reveals the footer icon for native keyboard focus without a focused class', async () => {
+    it('reveals the footer icon for keyboard focus', async () => {
       await setViewport({ width: 1470, height: 800 });
       const block = await loadCarousel();
       window.scrollTo(0, 1800);
       await settleLayout();
-      const original = block.querySelector('.hub-hero-carousel-item[data-index]');
-      const card = original.cloneNode(true);
-      original.replaceWith(card);
+      const card = block.querySelector('.hub-hero-carousel-item[data-index]');
       const text = card.querySelector('.hub-hero-carousel-item-footer-text');
       text.textContent = 'Read the complete description on keyboard focus. '.repeat(12);
       card.focus();
       expect(card.matches(':focus-visible')).to.be.true;
-      expect(card.classList.contains('focused')).to.be.false;
+      expect(card.classList.contains('focused')).to.be.true;
       finishTransitions(block);
       expect(getComputedStyle(card.querySelector('.hub-hero-carousel-item-footer span')).opacity)
         .to.equal('1');
