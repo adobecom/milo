@@ -55,24 +55,4 @@ describe('C2 player scroll guard', () => {
     player.dispatchEvent(new PointerEvent('pointerdown'));
     expect(window.lenis.scrollTo.called).to.be.false;
   });
-
-  it('reports presses that a smooth scroll kept from reaching the player', () => {
-    const onInertPress = sinon.spy();
-    const other = document.createElement('div');
-    document.body.append(other);
-    const stop = guardPlayerScroll(other, { onInertPress });
-
-    other.dispatchEvent(new PointerEvent('pointerdown', { button: 0 }));
-    expect(onInertPress.called).to.be.false;
-
-    document.documentElement.classList.add('lenis-smooth');
-    other.dispatchEvent(new PointerEvent('pointerdown', { button: 2 }));
-    expect(onInertPress.called).to.be.false;
-    other.dispatchEvent(new PointerEvent('pointerdown', { button: 0 }));
-    expect(onInertPress.calledOnce).to.be.true;
-
-    document.documentElement.classList.remove('lenis-smooth');
-    stop();
-    other.remove();
-  });
 });

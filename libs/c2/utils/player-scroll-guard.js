@@ -22,12 +22,9 @@ function endWheelGlide() {
  * Ends a wheel-driven Lenis glide when the pointer moves over `player` (once wheel input has
  * stopped) or presses on it.
  * @param {HTMLElement} player Element that contains an iframe or video player.
- * @param {object} [options]
- * @param {(e: PointerEvent) => void} [options.onInertPress] Called for a press that the player's
- *   iframe never received because a smooth scroll had made it inert, so the player can act on it.
  * @returns {() => void} Cleanup.
  */
-export default function guardPlayerScroll(player, { onInertPress } = {}) {
+export default function guardPlayerScroll(player) {
   if (!wheelTracked) {
     wheelTracked = true;
     window.addEventListener('wheel', () => { lastWheelAt = performance.now(); }, { capture: true, passive: true });
@@ -58,11 +55,7 @@ export default function guardPlayerScroll(player, { onInertPress } = {}) {
     if (!timer) settle();
   }, opts);
   player.addEventListener('pointerleave', () => { intent = false; }, opts);
-  player.addEventListener('pointerdown', (e) => {
-    const inert = document.documentElement.classList.contains('lenis-smooth');
-    endWheelGlide();
-    if (inert && e.button === 0 && e.target.tagName !== 'IFRAME') onInertPress?.(e);
-  }, opts);
+  player.addEventListener('pointerdown', endWheelGlide, opts);
 
   return () => {
     controller.abort();
