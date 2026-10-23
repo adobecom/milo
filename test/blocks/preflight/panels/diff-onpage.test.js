@@ -431,6 +431,113 @@ describe('preflight diff-onpage', () => {
     });
   });
 
+  describe('word-level marks on changed elements', () => {
+    let root;
+    const source = (html) => Object.assign(document.createElement('p'), { innerHTML: html });
+    const changed = (liveHtml, previewHtml) => ({
+      added: [],
+      modified: [{
+        type: 'modified', kind: 'leaf', tag: 'P', path: '/div[1]/p[1]', liveEl: source(liveHtml), previewEl: source(previewHtml),
+      }],
+    });
+    const preview = 'Starting at <strong>$29.99/mo</strong> today';
+    const marks = (tag) => [...root.querySelectorAll(tag)].map((el) => el.textContent);
+
+    beforeEach(() => {
+      root = document.createElement('main');
+      root.innerHTML = `<div><p>${preview}</p></div>`;
+      document.body.append(root);
+    });
+
+    afterEach(() => {
+      clearHighlights(root);
+      root.remove();
+    });
+
+    it('marks added words and inserts removed words before them, keeping the changed frame', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', preview), root);
+
+      const p = root.querySelector('p');
+      expect(marks('ins')).to.deep.equal(['$29.99/mo', 'today']);
+      const del = p.querySelector('del');
+      expect(del.textContent).to.equal('$19.99/mo');
+      expect(del.nextElementSibling.textContent).to.equal('$29.99/mo');
+      expect(p.querySelector(':scope > .preflight-diff-overlay.is-modified')).to.exist;
+    });
+
+    it('treats line breaks as word boundaries and joins neighboring added words', () => {
+      root.innerHTML = '<div><p>changed from live<br>HELLO</p></div>';
+      highlightOnPage(changed('changed<br>HELLO', 'changed from live<br>HELLO'), root);
+
+      expect(marks('ins')).to.deep.equal(['from live']);
+      expect(marks('del')).to.deep.equal([]);
+    });
+
+    it('appends words removed from the end', () => {
+      root.innerHTML = '<div><p>Buy now</p></div>';
+      highlightOnPage(changed('Buy now today only', 'Buy now'), root);
+
+      expect(root.querySelector('del').textContent).to.equal('today only');
+    });
+
+    it('keeps removed words with the text they were removed from', () => {
+      root.innerHTML = '<div><p><strong>Heading</strong> Body text</p></div>';
+      highlightOnPage(changed('<strong>Heading old tail</strong> Body text', '<strong>Heading</strong> Body text'), root);
+
+      expect(root.querySelector('del').parentElement.tagName).to.equal('STRONG');
+    });
+
+    it('keeps a word whole when inline formatting splits it on the page', () => {
+      root.innerHTML = '<div><p>Try Photo<strong>shop</strong> tomorrow</p></div>';
+      highlightOnPage(changed('Try Photoshop today', 'Try Photo<strong>shop</strong> tomorrow'), root);
+
+      expect(marks('ins')).to.deep.equal(['tomorrow']);
+      expect(marks('del')).to.deep.equal(['today']);
+    });
+
+    it('keeps a word whole when inline formatting that split it was removed', () => {
+      root.innerHTML = '<div><p>Try Photoshop tomorrow</p></div>';
+      highlightOnPage(changed('Try Photo<strong>shop</strong> today', 'Try Photoshop tomorrow'), root);
+
+      expect(marks('ins')).to.deep.equal(['tomorrow']);
+      expect(marks('del')).to.deep.equal(['today']);
+    });
+
+    it('marks every part of an added word that spans inline formatting', () => {
+      root.innerHTML = '<div><p>Try Photo<strong>shop</strong> today</p></div>';
+      highlightOnPage(changed('Try today', 'Try Photo<strong>shop</strong> today'), root);
+
+      expect(marks('ins')).to.deep.equal(['Photo', 'shop']);
+      clearHighlights(root);
+      expect(root.querySelector('p').innerHTML).to.equal('Try Photo<strong>shop</strong> today');
+    });
+
+    it('adds no word marks when the page text differs from the preview source, keeping the frame', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', 'Starting at {{price}} today'), root);
+
+      const p = root.querySelector('p');
+      expect(p.querySelectorAll('ins, del').length).to.equal(0);
+      expect(p.querySelector(':scope > .preflight-diff-overlay.is-modified')).to.exist;
+    });
+
+    it('inserts removed text as text, never as markup', () => {
+      highlightOnPage(changed('Starting at &lt;b&gt;bold&lt;/b&gt; today', preview), root);
+
+      expect(root.querySelectorAll('b').length).to.equal(0);
+      expect(root.querySelector('del').textContent).to.equal('<b>bold</b>');
+    });
+
+    it('restores the original text nodes when highlights are cleared', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', preview), root);
+      clearHighlights(root);
+
+      const p = root.querySelector('p');
+      expect(p.textContent).to.equal('Starting at $29.99/mo today');
+      expect(p.childNodes).to.have.length(3);
+      expect(p.querySelector('strong').childNodes).to.have.length(1);
+    });
+  });
+
   describe('on-page Hide/Show toggle control', () => {
     let root;
     let diff;

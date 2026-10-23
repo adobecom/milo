@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import diffContent from '../../../../../libs/blocks/preflight/checks/diff/diffContent.js';
+import diffContent, { diffWords } from '../../../../../libs/blocks/preflight/checks/diff/diffContent.js';
 
 function root(htmlStr) {
   const el = document.createElement('main');
@@ -167,5 +167,25 @@ describe('preflight diffContent', () => {
       expect(r.modified[0].previewText).to.equal('A paragraph that HAS BEEN modified');
       expect(r.modified[0].liveText).to.equal('A paragraph that will be modified');
     });
+  });
+});
+
+describe('preflight diffWords', () => {
+  it('marks a replaced word as removed then added, keeping unchanged words', () => {
+    expect(diffWords('Starting at $19.99/mo', 'Starting at $29.99/mo')).to.deep.equal([
+      { type: 'same', text: 'Starting' },
+      { type: 'same', text: 'at' },
+      { type: 'removed', text: '$19.99/mo' },
+      { type: 'added', text: '$29.99/mo' },
+    ]);
+  });
+
+  it('reports a word removed in the middle and one added at the end', () => {
+    expect(diffWords('one two three', 'one three four')).to.deep.equal([
+      { type: 'same', text: 'one' },
+      { type: 'removed', text: 'two' },
+      { type: 'same', text: 'three' },
+      { type: 'added', text: 'four' },
+    ]);
   });
 });
