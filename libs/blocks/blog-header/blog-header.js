@@ -547,6 +547,110 @@ function decorateDividers(el) {
   updateFrame([], observer);
 }
 
+const BAR_HEIGHT = 8;
+
+function findArticleCopy(headerSection) {
+  const contents = [];
+  let section = headerSection.nextElementSibling;
+  if (section?.classList.contains('blog-article-layout')) {
+    section = section.querySelector('.blog-article-content > .section');
+  }
+  while (section) {
+    if (section.querySelector('.card-metadata')) {
+      const finalCopy = section.querySelector(':scope > .content:first-child');
+      if (finalCopy) contents.push(finalCopy);
+      break;
+    }
+    contents.push(...section.querySelectorAll(':scope > .content'));
+    section = section.nextElementSibling || section.parentElement?.closest('.blog-article-layout')?.nextElementSibling;
+  }
+  return { first: contents[0], last: contents.at(-1) };
+}
+
+function decorateProgressBar(el, main) {
+  const headerSection = el.closest('.section');
+  if (el.classList.contains('no-progress-bar') || !main || !headerSection) return;
+
+  const bar = createTag('div', { class: 'blog-progress-bar', 'aria-hidden': 'true' });
+  el.append(bar);
+  const stacked = window.matchMedia('(max-width: 1199px)');
+  let frame = 0;
+  let discover = true;
+  let articleCopy;
+  let navigation;
+  let lastTop;
+  let lastProgress;
+
+  const update = () => {
+    frame = 0;
+    if (!el.isConnected) {
+      cleanup(); // eslint-disable-line no-use-before-define
+      return;
+    }
+    if (discover) {
+      articleCopy = findArticleCopy(headerSection);
+      navigation = main.querySelector('.blog-side-navigation:not([hidden])');
+      discover = false;
+    }
+    const first = articleCopy.first?.getBoundingClientRect();
+    const last = articleCopy.last?.getBoundingClientRect();
+    if (!first) {
+      if (!bar.hidden) bar.hidden = true;
+      return;
+    }
+
+    const dividerY = stacked.matches && navigation
+      ? (navigation.getBoundingClientRect().bottom + first.top) / 2
+      : headerSection.getBoundingClientRect().bottom - 1;
+    const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
+    const dividerTop = dividerY - BAR_HEIGHT / 2;
+    const top = Math.max(globalNav, dividerTop);
+    // Start filling when the first article copy reaches the bar below the global nav.
+    const start = window.scrollY + first.top - globalNav;
+
+    const distance = last.bottom + window.scrollY - window.innerHeight - start;
+    const hidden = distance <= 0;
+    if (bar.hidden !== hidden) bar.hidden = hidden;
+    if (hidden) return;
+    const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
+    if (top !== lastTop) {
+      bar.style.top = `${top}px`;
+      lastTop = top;
+    }
+    if (progress !== lastProgress) {
+      bar.style.transform = `scaleX(${progress})`;
+      lastProgress = progress;
+    }
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  const invalidate = (records) => {
+    if (records.every((record) => record.target === bar)) return;
+    discover = true;
+    schedule();
+  };
+  const mutations = new MutationObserver(invalidate);
+  const observer = new ResizeObserver(schedule);
+  const cleanup = () => {
+    window.removeEventListener('scroll', schedule);
+    window.removeEventListener('resize', schedule);
+    observer.disconnect();
+    mutations.disconnect();
+    cancelAnimationFrame(frame);
+  };
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule);
+  observer.observe(main);
+  mutations.observe(main, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'hidden'],
+  });
+  update();
+}
+
 export default async function init(el) {
   const main = el.closest('main');
   const readingTime = main ? getReadingTime(main) : 0;
@@ -569,6 +673,7 @@ export default async function init(el) {
   authorRows.forEach((row) => row.remove());
   el.append(byline);
   decorateDividers(el);
+  decorateProgressBar(el, main);
 
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;
