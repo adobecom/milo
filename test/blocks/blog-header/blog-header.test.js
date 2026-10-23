@@ -1058,7 +1058,7 @@ describe('blog-header section dividers', () => {
       expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
     });
 
-    [1199, 600, 599, 375].forEach((width) => {
+    [599, 375].forEach((width) => {
       it(`moves the header rule below the sidenav in the stacked layout at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
         const fixture = buildStyledSections();
@@ -1070,9 +1070,9 @@ describe('blog-header section dividers', () => {
         expect(getComputedStyle(navigation).marginBlockStart).to.equal('0px');
         expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
 
-        const rule = getComputedStyle(navigation, '::after');
-        const navRect = navigation.getBoundingClientRect();
-        const ruleTop = navRect.top + parseFloat(rule.top);
+        const rule = getComputedStyle(article, '::before');
+        const navRect = navigation.querySelector('nav').getBoundingClientRect();
+        const ruleTop = article.getBoundingClientRect().top + parseFloat(rule.top);
         expect(rule.content).to.equal('""');
         expect(rule.pointerEvents).to.equal('none');
         expect(rule.blockSize).to.equal(width < 600 ? '1.5px' : '2px');
@@ -1083,6 +1083,25 @@ describe('blog-header section dividers', () => {
         expect(ruleTop - navRect.bottom).to.equal(56);
         expect(article.getBoundingClientRect().top - (ruleTop + parseFloat(rule.height)))
           .to.equal(56);
+      });
+    });
+
+    [600, 768, 1199].forEach((width) => {
+      it(`keeps header and vertical sidenav rules in the tablet rail layout at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const fixture = buildStyledSections();
+        await init(fixture.block);
+        const { layout, article, navigation } = await addSideNavigation(fixture);
+        const gap = parseFloat(getComputedStyle(layout).columnGap);
+        const rule = getComputedStyle(layout, '::before');
+        expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('""');
+        expect(rule.content).to.equal('""');
+        expect(getComputedStyle(article, '::before').content).to.equal('none');
+        expect(getComputedStyle(navigation).position).to.equal('sticky');
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap)
+          .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
+        expect(layout.getBoundingClientRect().top + parseFloat(rule.top))
+          .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
       });
     });
 
