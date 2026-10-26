@@ -15,7 +15,7 @@
   --gg-hang-max: 0.8em;
   --gg-runway-height: 550vh;
   --gg-formation-vh: 380vh;
-  --gg-pq-hold: 100vh; /* the WebGL quote's extra runway; see .globe-gallery-pq-webgl */
+  --gg-pq-hold: 100vh; /* the particle quote's extra runway; see .globe-gallery-pq-particles */
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;
@@ -359,7 +359,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   /* Yields on short viewports so a long quote can't outgrow the band. */
   --gg-pq-gap: min(var(--gg-pq-ideal-gap), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
-  --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
 
   position: absolute;
@@ -413,30 +412,6 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
   color: var(--gg-pq-ink);
   margin: 0;
-}
-
-/* Reduced motion's line split. Flex so the lines' negative bleed margins meet without collapsing. */
-.globe-gallery-pullquote-lines {
-  display: flex;
-  flex-direction: column;
-}
-
-.globe-gallery-pullquote-line {
-  display: block;
-  overflow: hidden;
-
-  /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
-  padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
-  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-hang-max) * -1);
-}
-
-.globe-gallery-pullquote-line-inner {
-  display: inline-block;
-}
-
-.globe-gallery-pullquote-sr {
-  -webkit-user-select: none;
-  user-select: none;
 }
 
 .globe-gallery-pullquote-name {
@@ -956,9 +931,9 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   transform: none;
 }
 
-/* With the WebGL quote the runway gains a hold after the zoom: the cards' flight into the text
+/* With the particle quote the runway gains a hold after the zoom: the cards' flight into the text
    and some reading time before the world un-sticks. */
-.globe-gallery.globe-gallery-pq-webgl {
+.globe-gallery.globe-gallery-pq-particles {
   height: calc(var(--gg-runway-height) + var(--gg-pq-hold));
 }
 
@@ -966,7 +941,7 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
    no ink of its own until JS hands the finished quote over to it (--gg-pq-dom 0 → 1, see
    updateQuoteSwap), after which the canvas is hidden. is-dom (forced colours, or a failed raster)
    gives the ink back outright. */
-.globe-gallery-pq-webgl .globe-gallery-pullquote:not(.is-dom) {
+.globe-gallery-pq-particles .globe-gallery-pullquote:not(.is-dom) {
   --gg-pq-dom-pct: calc(var(--gg-pq-dom, 0) * 100%);
 
   /* Canvas text can't take the page's `antialiased` smoothing; the DOM copy drops it too, so the
@@ -988,18 +963,18 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   }
 }
 
-.globe-gallery-pq-webgl .globe-gallery-pullquote.is-dom {
+.globe-gallery-pq-particles .globe-gallery-pullquote.is-dom {
   opacity: 0;
   transition: opacity 0.4s;
 }
 
-.globe-gallery-pq-webgl .globe-gallery-pullquote.is-dom.is-live {
+.globe-gallery-pq-particles .globe-gallery-pullquote.is-dom.is-live {
   opacity: 1;
 }
 
 /* Forced colours repaints even transparent text; keep the copy off the globe until it lands. */
 @media (forced-colors: active) {
-  .globe-gallery-pq-webgl .globe-gallery-pullquote:not(.is-live) {
+  .globe-gallery-pq-particles .globe-gallery-pullquote:not(.is-live) {
     opacity: 0;
   }
 }

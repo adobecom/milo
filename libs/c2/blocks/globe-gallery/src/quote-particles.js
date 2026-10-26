@@ -4,10 +4,10 @@ import {
   QUOTE_FLIGHT as F, QUOTE_CRISP_P, QUOTE_ARRIVE_JITTER,
 } from './shaders.js';
 
-// The WebGL pull quote: card pixels scatter and fly into the quote's glyphs, then hand over to a
+// The pull-quote transition: card pixels swirl into the quote's glyphs, then hand over to a
 // crisp raster of the same text. The DOM figure stays the layout source and the a11y copy; this
 // module only draws what it measured. All coordinates are CSS px from the top-left of the rail,
-// which shares its box with the canvas while the quote is on screen. See README (WebGL pull quote).
+// which shares its box with the canvas while the quote is on screen. See README (Pull quote).
 
 const INK_ALPHA = 128; // raster alpha that counts as a target pixel
 const PROBE = 24; // grid that finds the on-screen part of each card
@@ -30,7 +30,7 @@ function textLines(el, ox, oy) {
   const lines = [];
   const range = document.createRange();
   // The DOM's own baseline offset from a zero-size inline-block probe: canvas font metrics round
-  // differently, which would put small text a pixel off the DOM copy the hybrid swaps to.
+  // differently, which would put small text a pixel off the DOM copy the quote swaps to at rest.
   const probe = document.createElement('span');
   probe.style.cssText = 'display:inline-block;width:0;height:0';
   el.prepend(probe);
@@ -156,7 +156,7 @@ function rasterize(m, dpr) {
     const sx = tm.width > 0 ? Math.min(1.1, Math.max(0.9, domW / tm.width)) : 1;
     ctx.save();
     // Layout snaps the figure's offset and each baseline within it to device pixels, separately;
-    // canvas doesn't. Snap the same way, so the raster matches the DOM copy the hybrid swaps to.
+    // canvas doesn't. Snap the same way, so the raster matches the DOM copy swapped in at rest.
     const snap = (v) => Math.round(v * dpr) / dpr;
     const base = snap(m.figTop) + snap(run.top + ascent - m.figTop);
     ctx.translate(run.rtl ? run.right : run.left, base);
@@ -378,7 +378,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const v = uvs[j * 2 + 1];
       const inner = card ? Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v)) : Math.random();
       edge[j] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random();
-      rand.set([PENDING, releaseAt(edge[j]), Math.random() * 2 - 1, PENDING], j * 4);
+      rand.set([PENDING, releaseAt(edge[j]), 0, PENDING], j * 4);
     }
     geo.setAttribute('position', new THREE.BufferAttribute(dst, 3));
     geo.setAttribute('aUv', new THREE.BufferAttribute(uvs, 2));

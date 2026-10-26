@@ -256,7 +256,7 @@ export const TEXT_FRAG = [
 // texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
 // so at rest the tiles are the card, pixel for pixel. Released rim first, each particle's own
 // camera eases off the dolly to a stop (velocity-continuous); later it departs and travels to its
-// text target in px. aRand = (departure p, release p, wobble −1…1, arrival p). Sources and
+// text target in px. aRand = (departure p, release p, unused, arrival p). Sources and
 // targets are paired by a 2D quantile order (quote-particles.js), so neighbours stay neighbours.
 // Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
 // together, and the crisp text plane reveals each pixel with that same function: the text goes
@@ -280,10 +280,36 @@ export const QUOTE_FLIGHT = {
 };
 export const QUOTE_CRISP_P = QUOTE_FLIGHT.arriveStart + QUOTE_FLIGHT.arriveSpan
   + 2 * QUOTE_ARRIVE_JITTER + QUOTE_SETTLE;
-const QUOTE_WOBBLE = 0.06; // sideways wobble, as a share of the path length
+// The swirl: every path rides one shared curl-noise flow, so neighbours move as ribbons. Its
+// displacement is AMP × the viewport's short side times sin(π · eased progress), so it is zero at
+// the hand-off and at landing, and the flow drifts with scroll (uP) only, so it reverses exactly.
+export const QUOTE_SWIRL_AMP = 0.1;
+const QUOTE_SWIRL_SCALE = 0.35; // flow feature size, as a share of the short side
+const QUOTE_SWIRL_DRIFT = 1.5; // how far the flow evolves over the flight, noise units
 const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
 const QUOTE_RELEASE_REACH = 0.5; // share of its remaining depth a released particle still closes
 const QUOTE_TILE_MAX = 128; // CSS px
+
+// Value noise and its curl: a divergence-free 2D flow, deterministic in its inputs.
+const CURL_NOISE = [
+  'float vnoise(vec2 p) {',
+  '  vec2 i = floor(p); vec2 f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);',
+  '  return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), u.x),',
+  '    mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), u.x), u.y);',
+  '}',
+  'float flowField(vec2 p) { return vnoise(p) + 0.5 * vnoise(p * 2.03 + 17.1); }',
+  'vec2 curl(vec2 p) {',
+  '  const float e = 0.05;',
+  '  float dx = flowField(p + vec2(e, 0.0)) - flowField(p - vec2(e, 0.0));',
+  '  float dy = flowField(p + vec2(0.0, e)) - flowField(p - vec2(0.0, e));',
+  '  vec2 c = vec2(dy, -dx) / (2.0 * e);',
+  '  return c / (1.0 + length(c));', // bounded below 1
+  '}',
+];
+
+// JS mirror of the shader's envelope on the swirl (and the path's easing), for tests.
+export const smoother = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+export const swirlEnvelope = (t) => Math.sin(Math.PI * smoother(Math.min(1, Math.max(0, t))));
 
 const PX_TO_CLIP = [
   'vec4 pxToClip(vec2 p, vec2 view) {',
@@ -315,6 +341,8 @@ export const QUOTE_POINTS_VERT = [
   'varying float vInkK;',
   'varying float vFade;',
   ...PX_TO_CLIP,
+  ...HASH21,
+  ...CURL_NOISE,
   // Mirrors TL.camZAtZoomT, for the camera at a given flight progress.
   'float camZAt(float p) {',
   '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
@@ -354,9 +382,10 @@ export const QUOTE_POINTS_VERT = [
   '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
   '  float te = smoother(t);', // still at both ends: velocity-continuous at departure and landing
   '  vec2 pos = mix(s, dst, te);',
-  // Direct, with a slight sideways wobble that is 0 at both ends: hand-off and landing are exact.
-  '  vec2 path = dst - s;',
-  `  pos += vec2(-path.y, path.x) * aRand.z * ${glf(QUOTE_WOBBLE)} * sin(3.14159 * te);`,
+  // Carried by the shared flow, zero at both ends: hand-off and landing are exact.
+  '  float vmin = min(uView.x, uView.y);',
+  `  vec2 flow = curl(pos / (${glf(QUOTE_SWIRL_SCALE)} * vmin) + uP * ${glf(QUOTE_SWIRL_DRIFT)});`,
+  `  pos += flow * ${glf(QUOTE_SWIRL_AMP)} * vmin * sin(3.14159 * te);`,
   // The bounding square of the projected cell, so neighbouring tiles always overlap.
   '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
   '  float g = smoothstep(0.0, 0.4, t);',

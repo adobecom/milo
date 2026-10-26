@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
+import { swirlEnvelope, QUOTE_SWIRL_AMP } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
 import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 
 function mount(quote = 'Creativity connects us.') {
@@ -213,5 +214,53 @@ describe('globe-gallery: quote particles', () => {
       return sum / pos.count;
     };
     expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
+  });
+
+  it('swirls at most AMP of the short side, and not at all at hand-off or landing', () => {
+    expect(QUOTE_SWIRL_AMP).to.be.within(0.05, 0.15);
+    expect(swirlEnvelope(0)).to.be.closeTo(0, 1e-9);
+    expect(swirlEnvelope(1)).to.be.closeTo(0, 1e-9);
+    expect(swirlEnvelope(0.5)).to.be.closeTo(1, 1e-9);
+    // Eased: no kink as a particle leaves its card or lands.
+    expect(swirlEnvelope(0.01)).to.be.below(0.001);
+    expect(swirlEnvelope(0.99)).to.be.below(0.001);
+    for (let t = 0; t <= 1; t += 0.05) expect(swirlEnvelope(t)).to.be.within(0, 1 + 1e-9);
+  });
+});
+
+describe('globe-gallery: DOM swap at rest', () => {
+  afterEach(() => { document.body.innerHTML = ''; document.head.querySelector('#gg-css')?.remove(); });
+
+  it('keeps the DOM quote transparent while the canvas draws it, and inks it on the swap', async () => {
+    const link = document.createElement('link');
+    link.id = 'gg-css';
+    link.rel = 'stylesheet';
+    link.href = '/libs/c2/blocks/globe-gallery/globe-gallery.css';
+    await new Promise((r) => { link.onload = r; document.head.append(link); });
+    document.body.innerHTML = `
+      <div class="globe-gallery globe-gallery-pq-particles">
+        <figure class="globe-gallery-pullquote">
+          <blockquote class="globe-gallery-pullquote-quote" style="--gg-pq-ink:rgb(250, 250, 250)">Q</blockquote>
+        </figure>
+      </div>`;
+    const fig = document.querySelector('.globe-gallery-pullquote');
+    const quote = document.querySelector('.globe-gallery-pullquote-quote');
+    const alpha = () => {
+      const c = getComputedStyle(quote).color;
+      const m = c.match(/[\d.]+/g).map(Number);
+      return m.length > 3 ? m[3] : 1;
+    };
+    expect(alpha()).to.equal(0);
+    // Still positioned and in the a11y tree: only the ink is gone.
+    expect(getComputedStyle(fig).display).to.not.equal('none');
+    expect(getComputedStyle(fig).visibility).to.equal('visible');
+    fig.style.setProperty('--gg-pq-dom', '1');
+    expect(alpha()).to.equal(1);
+    fig.style.setProperty('--gg-pq-dom', '0.5');
+    expect(alpha()).to.be.closeTo(0.5, 0.01);
+    // Forced colours / failed raster: the DOM keeps its own ink regardless.
+    fig.style.removeProperty('--gg-pq-dom');
+    fig.classList.add('is-dom');
+    expect(alpha()).to.equal(1);
   });
 });

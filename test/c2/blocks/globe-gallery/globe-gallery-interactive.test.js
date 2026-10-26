@@ -14,10 +14,7 @@ import {
   loadModalTexture,
   createClickDragTexture,
 } from '../../../../libs/c2/blocks/globe-gallery/src/materials.js';
-import {
-  fetchFragmentCards,
-  layoutQuote,
-} from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
+import { fetchFragmentCards } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 
 function dispatch(target, type, props = {}) {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -845,34 +842,6 @@ describe('globe-gallery: quote layout and fragment edge cases', () => {
 
   afterEach(() => {
     fetchStub?.restore();
-  });
-
-  it('re-typesets from the authored quote and preserves accessible full text', () => {
-    const quote = document.createElement('blockquote');
-    quote.textContent = 'One two three four';
-    Object.defineProperty(HTMLElement.prototype, 'offsetTop', {
-      configurable: true,
-      get() {
-        const index = [...this.parentNode?.children || []].indexOf(this);
-        return index >= 2 ? 20 : 0;
-      },
-    });
-
-    const first = layoutQuote(quote);
-    const second = layoutQuote(quote);
-    expect(first).to.have.length.above(1);
-    expect(second).to.have.length(first.length);
-    expect(quote.querySelector('.globe-gallery-pullquote-sr').textContent)
-      .to.equal('One two three four');
-    expect([...quote.querySelectorAll('.globe-gallery-pullquote-line-inner')]
-      .map((line) => line.textContent).join(' ')).to.equal('One two three four');
-  });
-
-  it('returns an empty layout for missing or blank quotes', () => {
-    const blank = document.createElement('blockquote');
-    expect(layoutQuote(null)).to.deep.equal([]);
-    expect(layoutQuote(blank)).to.deep.equal([]);
-    expect(blank.classList.contains('globe-gallery-pullquote-lines')).to.be.false;
   });
 
   it('parses image badges, unlinked badges, nested wrappers, and image-first cards', async () => {

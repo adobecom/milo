@@ -1,7 +1,7 @@
 import * as THREE from '../../../deps/three.js';
 import {
   parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
-  optimizeImgUrl, layoutQuote, plainQuote, scatterCards,
+  optimizeImgUrl, plainQuote, scatterCards,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
@@ -106,7 +106,7 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-// WebGL pull quote: scroll it takes the card pixels to fly into the text, as a share of the
+// Pull-quote particles: scroll it takes the card pixels to fly into the text, as a share of the
 // viewport height, and how many there are.
 const PQ_FLY_VH = 0.8;
 // zoomT over which spin, inertia, hover and drag warp ease to rest before the hand-off.
@@ -403,7 +403,7 @@ function createGlobeGalleryRuntime(
   let blockHeight = 0; // its full scroll length
   // zoomT the last card leaves the screen at; see publishPqAppearZoomT.
   let pqAppearZoomT = 0.5;
-  // zoomT the WebGL quote takes the cards over at: the deepest card starts its near-camera fade.
+  // zoomT the quote particles take the cards over at: the deepest card starts its near-camera fade.
   let pqStartZoomT = 0.5;
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let holdVh = 0; // from --gg-pq-hold: runway past the zoom end, held by the quote
@@ -1056,7 +1056,7 @@ function createGlobeGalleryRuntime(
   // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
   // together. sphereFormT saturates at 1 for the whole zoom tail, so the pull-quote cue is what
   // actually ends the pointer-interactive stretch.
-  // With the WebGL quote the cards turn to particles at pqStartZoomT, and the globe goes with them.
+  // With particles the cards hand over at pqStartZoomT, and the globe stops being live with them.
   const globeLive = () => globeFormed()
     && frameState.zoomT < (pq.fx ? pqStartZoomT - PQ_SPIN_EASE_T : pqAppearZoomT);
 
@@ -1323,7 +1323,7 @@ function createGlobeGalleryRuntime(
       return;
     }
     const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
-    // Without a WebGL quote the scene is empty past the reveal, so the draw is skipped. With one,
+    // Without particles the scene is empty past the reveal, so the draw is skipped. With one,
     // the canvas carries the quote until the runway has scrolled off. The modal is the exception
     // either way: its backdrop blurs this canvas, so hiding it would leave nothing to blur.
     // With the quote handed to the DOM (swapT 1) the canvas has nothing left to show.
@@ -1367,8 +1367,7 @@ function createGlobeGalleryRuntime(
     }
   }
 
-  // RM splits the quote into lines; the motion path keeps it plain, fits it to the band, and has
-  // the WebGL quote re-measure and re-rasterize it.
+  // Plain text everywhere; the motion path also fits it to the band and re-rasterizes it.
   function relayoutQuote(force) {
     if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
     const key = `${pqEl.clientWidth}x${H}|${navH}|${capDpr()}`;
@@ -1376,11 +1375,8 @@ function createGlobeGalleryRuntime(
     pq.layoutKey = key;
     pq.quoteEl.style.removeProperty('font-size');
     pq.quoteEl.style.removeProperty('letter-spacing');
-    if (reducedMotion || !pq.fx) {
-      layoutQuote(pq.quoteEl);
-      return;
-    }
     plainQuote(pq.quoteEl);
+    if (reducedMotion || !pq.fx) return;
     fitQuote();
     pq.fx.layout({ dpr: capDpr() });
   }
@@ -1390,10 +1386,8 @@ function createGlobeGalleryRuntime(
     if (sel && !sel.isCollapsed && pqEl.contains(sel.anchorNode)) sel.removeAllRanges();
   }
 
-  // The DOM figure is the transparent a11y twin of the drawn quote. It takes the pointer (for
-  // selection) once the text has landed; is-dom hands it the ink when WebGL can't draw it.
-  // The swap: past QUOTE_LIVE_P the canvas holds a still, fully crisp quote, which the DOM copy
-  // fades in over; under it, the DOM fades back out over the (re-shown) canvas.
+  // Past QUOTE_LIVE_P the canvas holds a still, fully crisp quote, which the DOM copy fades in
+  // over; under it, the DOM fades back out over the (re-shown) canvas.
   function updateQuoteSwap() {
     const want = particlesOn() && pq.p >= QUOTE_LIVE_P;
     const step = (frameState.dtScale * TL.FRAME_MS) / PQ_SWAP_MS;
@@ -1404,6 +1398,8 @@ function createGlobeGalleryRuntime(
     pqEl.style.setProperty('--gg-pq-dom', str);
   }
 
+  // The DOM figure is the a11y copy of the drawn quote: transparent while the canvas draws it, and
+  // selectable once live. is-dom hands it the ink outright when WebGL can't draw it.
   function updatePullQuote() {
     if (reducedMotion || !pq.fx) return;
     updateQuoteSwap();
@@ -2117,7 +2113,7 @@ function createGlobeGalleryRuntime(
       });
       scene.add(pq.fx.object);
     }
-    root.classList.toggle('globe-gallery-pq-webgl', !!pq.fx);
+    root.classList.toggle('globe-gallery-pq-particles', !!pq.fx);
     doLayout();
     // A webfont landing after first layout retypesets the quote.
     if (document.fonts && document.fonts.ready) {
@@ -2271,7 +2267,7 @@ function createGlobeGalleryRuntime(
     if (pq.fx) { pq.fx.dispose(); pq.fx = null; }
     pq.swapT = 0;
     pq.swapStr = '';
-    root.classList.remove('globe-gallery-pq-webgl');
+    root.classList.remove('globe-gallery-pq-particles');
     if (pqEl) {
       pqEl.style.cssText = '';
       pqEl.classList.remove('is-live', 'is-dom');

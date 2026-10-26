@@ -63,11 +63,6 @@ export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
 
 export const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
 
-// zoomT is a fraction of the ZOOM span; the CSS pin and hold ceiling reason in fractions of the
-// whole tail. Identical only while PROGRESS_ZOOM_END is 1, so convert at the boundary.
-export const ZOOM_TO_TAIL_T = (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS)
-  / (1 - SPHERE_FORMED_PROGRESS);
-
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
