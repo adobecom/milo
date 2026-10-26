@@ -272,7 +272,7 @@ describe('Market selector block', () => {
     }
   });
 
-  it('initializes the C2 footer market selector on a C1 page', async () => {
+  it('orders C2 market selector footer options on a C1 page', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const pageFoundation = document.createElement('meta');
     pageFoundation.name = 'foundation';
@@ -306,9 +306,38 @@ describe('Market selector block', () => {
       styleUrl = `${getConfig().base}/blocks/market-selector/market-selector.css`;
       expect(await footer.decorateRegionPicker()).to.equal(selector);
       expect(selector.classList.contains('market-selector-c2')).to.equal(true);
-      footerElement.append(selector);
+      const options = document.createElement('div');
+      options.className = 'feds-footer-options';
+      const legal = document.createElement('div');
+      legal.className = 'feds-footer-miscLinks-legal';
+      const social = document.createElement('ul');
+      social.className = 'feds-social';
+      options.append(selector, legal, social);
+      footer.elements.footer = document.createElement('div');
+      footer.elements.footer.append(options);
+      footerElement.append(footer.elements.footer);
       document.body.append(footerElement);
       expect(getComputedStyle(selector.querySelector('.market-selector-popover')).position).to.equal('absolute');
+      footer.initFooterOptionsOrderSync();
+      expect(footer.footerOrderMediaQuery.media).to.equal('(max-width: 1439px)');
+      expect([...options.children]).to.deep.equal([selector, legal, social]);
+      await setViewport({ width: 1426, height: 900 });
+      await new Promise(requestAnimationFrame);
+      expect(footer.isFooterMobileLayout()).to.equal(false);
+      expect([...options.children]).to.deep.equal([selector, social, legal]);
+      await setViewport({ width: 1440, height: 900 });
+      await new Promise(requestAnimationFrame);
+      expect([...options.children]).to.deep.equal([selector, legal, social]);
+      footerElement.classList.add('mobile');
+      footer.syncFooterOptionsOrder();
+      expect([...options.children]).to.deep.equal([selector, social, legal]);
+      footerElement.classList.remove('mobile');
+      footer.syncFooterOptionsOrder();
+      expect([...options.children]).to.deep.equal([selector, legal, social]);
+      selector.classList.remove('market-selector-c2');
+      await setViewport({ width: 1426, height: 900 });
+      footer.syncFooterOptionsOrder();
+      expect([...options.children]).to.deep.equal([selector, legal, social]);
     } finally {
       footer?.destroy();
       if (styleUrl) document.head.querySelector(`link[href="${styleUrl}"]`)?.remove();
@@ -326,6 +355,7 @@ describe('Market selector block', () => {
     footer.style.setProperty('--s2a-spacing-xs', '8px');
     footer.style.setProperty('--s2a-spacing-md', '16px');
     footer.style.setProperty('--s2a-spacing-lg', '24px');
+    footer.style.setProperty('--s2a-blur-24', '24px');
     footer.style.setProperty('--s2a-typography-font-size-caption', '12px');
     footer.style.setProperty('--s2a-typography-line-height-caption', '16px');
     footer.style.setProperty('--s2a-typography-font-size-body-md', '16px');
@@ -349,12 +379,23 @@ describe('Market selector block', () => {
     foundation.name = 'footer-foundation';
     foundation.content = 'c2';
     const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    const expectSocialOnSelectorRow = () => {
+      const regionBounds = block.getBoundingClientRect();
+      const socialBounds = social.getBoundingClientRect();
+      expect(socialBounds.left).to.be.at.least(regionBounds.right - 1);
+      expect(socialBounds.right).to.be.at.most(options.getBoundingClientRect().right + 1);
+      expect(legal.scrollWidth).to.be.at.most(legal.clientWidth + 1);
+      expect(socialBounds.top).to.be.lessThan(regionBounds.bottom + 1);
+      expect(socialBounds.bottom).to.be.greaterThan(regionBounds.top - 1);
+    };
     try {
       document.head.append(style, foundation);
       [272, 327, 364, 720].forEach((width) => {
         footer.style.width = `${width}px`;
         expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
-        expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
+        const wrapperStyle = getComputedStyle(block.querySelector('.market-selector-wrapper'));
+        expect(wrapperStyle.flexWrap).to.equal('nowrap');
+        expect(wrapperStyle.gap).to.equal('24px');
         const [language, market] = block.querySelectorAll('.market-selector-button');
         expect(getComputedStyle(language.querySelector('.market-selector-globe')).display).to.equal('none');
         expect(getComputedStyle(language).gap).to.equal('5px');
@@ -385,6 +426,7 @@ describe('Market selector block', () => {
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
       const wrapper = block.querySelector('.market-selector-wrapper');
       expect(getComputedStyle(wrapper).flexWrap).to.equal('nowrap');
+      expect(getComputedStyle(wrapper).gap).to.equal('24px');
       expect(getComputedStyle(wrapper).paddingTop).to.equal('0px');
       expect(getComputedStyle(wrapper).paddingBottom).to.equal('0px');
       expect(getComputedStyle(wrapper).marginBottom).to.equal('0px');
@@ -396,11 +438,13 @@ describe('Market selector block', () => {
         .to.be.greaterThan(block.getBoundingClientRect().bottom);
       await setViewport({ width: 600, height: 900 });
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
+      expect(getComputedStyle(wrapper).gap).to.equal('24px');
       expect(getComputedStyle(block.querySelector('.market-selector-popover')).position).to.equal('fixed');
       expect(getComputedStyle(wrapper).paddingBottom).to.equal('0px');
       expect(getComputedStyle(wrapper).marginBottom).to.equal('0px');
       block.classList.remove('market-selector-c2');
       expect(getComputedStyle(wrapper).paddingTop).to.equal('7px');
+      expect(getComputedStyle(wrapper).gap).to.equal('16px');
       expect(getComputedStyle(wrapper).marginBottom).to.equal('4px');
       expect(getComputedStyle(block.querySelector('.market-selector-button')).gap).to.equal('8px');
       expect(getComputedStyle(block.querySelector('.market-selector-button'), '::after').clipPath)
@@ -409,16 +453,46 @@ describe('Market selector block', () => {
       await setViewport({ width: 601, height: 900 });
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
       expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
+      expect(getComputedStyle(wrapper).gap).to.equal('24px');
       expect(getComputedStyle(block.querySelector('.market-selector-popover')).position).to.equal('absolute');
       expect(getComputedStyle(block.querySelector('.market-selector-button')).fontSize).to.equal('12px');
       expect(getComputedStyle(block.querySelector('.market-selector-button')).gap).to.equal('5px');
+      await setViewport({ width: 767, height: 1024 });
+      expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
+      expect(social.getBoundingClientRect().top)
+        .to.be.greaterThan(block.getBoundingClientRect().bottom);
       await setViewport({ width: 768, height: 1024 });
       footer.style.width = '720px';
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region social" "legal legal"');
+      expectSocialOnSelectorRow();
+      legal.style.height = 'auto';
+      legal.textContent = [
+        '© 2026 Adobe Inc. Adobe. All rights reserved.',
+        'Privacy Terms of Use Cookie preferences',
+        'Do not sell or share my personal information Site Map Adobe',
+      ].join(' ');
+      await setViewport({ width: 1024, height: 768 });
+      expect(getComputedStyle(options).display).to.equal('flex');
+      expect(getComputedStyle(options).flexWrap).to.equal('wrap');
+      expectSocialOnSelectorRow();
+      expect(legal.getBoundingClientRect().top)
+        .to.be.greaterThan(social.getBoundingClientRect().bottom);
       await setViewport({ width: 1032, height: 768 });
       expect(getComputedStyle(options).display).to.equal('flex');
+      expectSocialOnSelectorRow();
+      await setViewport({ width: 1426, height: 900 });
+      footer.style.width = '1200px';
+      expect(getComputedStyle(options).flexWrap).to.equal('wrap');
+      expectSocialOnSelectorRow();
+      expect(legal.getBoundingClientRect().top)
+        .to.be.greaterThan(social.getBoundingClientRect().bottom);
+      await setViewport({ width: 1439, height: 900 });
+      expectSocialOnSelectorRow();
+      legal.textContent = '';
+      legal.style.height = '60px';
       await setViewport({ width: 1440, height: 900 });
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region legal social"');
+      expectSocialOnSelectorRow();
       expect(getComputedStyle(block.querySelector('.market-selector-button')).fontSize).to.equal('12px');
       expect(getComputedStyle(block.querySelector('.market-selector-button')).gap).to.equal('5px');
       expect(getComputedStyle(block.querySelector('.market-selector-popover')).fontSize).to.equal('16px');

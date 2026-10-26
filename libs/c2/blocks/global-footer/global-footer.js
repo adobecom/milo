@@ -103,6 +103,7 @@ const CONFIG = {
 };
 const FOOTER_IN_VIEW_CLASS = 'feds-footer-in-view';
 const FOOTER_MENU_STACKED_CLASS = 'feds-menu-content--stacked';
+const MARKET_SELECTOR_OPTIONS_MEDIA = '(max-width: 1439px)';
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
@@ -890,7 +891,9 @@ class Footer {
 
     if (!region || !legal || !social) return;
 
-    if (this.isFooterMobileLayout()) {
+    if (this.isFooterMobileLayout()
+      || (region.classList.contains('market-selector-c2')
+        && window.matchMedia(MARKET_SELECTOR_OPTIONS_MEDIA).matches)) {
       options.append(region, social, legal);
     } else {
       options.append(region, legal, social);
@@ -900,7 +903,9 @@ class Footer {
 
   initFooterOptionsOrderSync = () => {
     if (!this.footerOrderMediaQuery) {
-      this.footerOrderMediaQuery = window.matchMedia('(max-width: 899px)');
+      const breakpoint = this.elements.regionPicker?.classList?.contains('market-selector-c2')
+        ? MARKET_SELECTOR_OPTIONS_MEDIA : '(max-width: 899px)';
+      this.footerOrderMediaQuery = window.matchMedia(breakpoint);
     }
     if (!this.footerOrderMediaQueryHandler) {
       this.footerOrderMediaQueryHandler = () => this.syncFooterOptionsOrder();

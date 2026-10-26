@@ -158,7 +158,7 @@
   & .market-selector-wrapper {
     display: flex;
     align-items: center;
-    gap: var(--s2a-spacing-lg);
+    gap: var(--s2a-blur-24);
     min-width: 0;
   }
 
@@ -387,7 +387,7 @@
   @media (max-width: 600px) {
     & .market-selector-wrapper {
       flex-wrap: nowrap;
-      gap: var(--s2a-spacing-md);
+      gap: var(--s2a-blur-24);
       margin-bottom: 0;
       padding: 0;
     }
@@ -423,7 +423,7 @@
 
   &.mobile .market-selector-wrapper {
     flex-wrap: nowrap;
-    gap: var(--s2a-spacing-md);
+    gap: var(--s2a-blur-24);
   }
 
   &.mobile .market-selector-popover {
