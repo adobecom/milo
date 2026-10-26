@@ -212,6 +212,28 @@ describe('AUP', () => {
       });
     });
 
+    it('creates the SDK once for concurrent preloads', async () => {
+      await Promise.all([preloadAupSdk(), preloadAupSdk()]);
+      expect(window.AUPSDK.preloadSDK.calledOnce).to.be.true;
+      expect(window.aupsdk === instance).to.be.true;
+    });
+
+    it('refreshes features from a late mas-commerce-service aup-select', async () => {
+      setSelect('enabled');
+      await preloadAupSdk();
+      const service = document.createElement('mas-commerce-service');
+      service.setAttribute('aup-select', 'on');
+      document.head.append(service);
+      try {
+        await preloadAupSdk();
+      } finally {
+        service.remove();
+      }
+      expect(window.AUPSDK.preloadSDK.calledOnce).to.be.true;
+      expect(instance.updateConfig.lastCall.args[0])
+        .to.deep.equal({ miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } });
+    });
+
     it('requests an IMS profile only while signed in and preserves profile errors', async () => {
       const { getProfile } = await initializeHost();
       const profile = { userId: 'test-user' };

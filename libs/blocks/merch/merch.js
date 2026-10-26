@@ -927,6 +927,19 @@ let aupSdkTimeoutLogged = false;
 export const AUP_SDK_READY_EVENT = 'milo:aupsdk:ready';
 const AUP_SDK_READY_TIMEOUT = 10000;
 
+const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
+
+/**
+ * aup-select as mas-commerce-service resolves it: URL param, then the service attribute.
+ * Without a service, falls back to the page value (URL param or metadata).
+ */
+export function getEffectiveAupSelect(service = document.querySelector('mas-commerce-service')) {
+  if (!service) return getAupSelectValue();
+  const value = (new URLSearchParams(window.location.search).get('aup-select')
+    ?? service.getAttribute('aup-select'))?.trim().toLowerCase();
+  return value && !AUP_SELECT_DISABLED_VALUES.includes(value) ? value : null;
+}
+
 const isAupSdkReady = () => typeof window.aupsdk?.getOrchestratorContext === 'function';
 
 export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT, { signal, onTimeout } = {}) {
@@ -966,7 +979,7 @@ function cancelModalRestores() {
 async function openModalFromHash(cta, hash) {
   const { signal } = modalRestoreController;
   let timedOut = false;
-  if (isAupEnabled() && !isAupSdkReady()) {
+  if ((isAupEnabled() || getEffectiveAupSelect()) && !isAupSdkReady()) {
     await waitForAupSdk(AUP_SDK_READY_TIMEOUT, {
       signal,
       onTimeout: () => { timedOut = true; },
@@ -1186,7 +1199,9 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
     window.milo.deferredPromise.then(() => {
       setTimeout(() => {
         // Target may turn aup-select on after the modal CTA is decorated.
-        whenTargetReady().then(() => { if (isAupEnabled()) getAupSelectPreload(); });
+        whenTargetReady().then(() => {
+          if (isAupEnabled() || getEffectiveAupSelect()) getAupSelectPreload();
+        });
         // AUP Select still renders the commerce.adobe.com segmentation iframe,
         // so warm its assets on both paths.
         const baseUrl = getCommercePreloadUrl();
@@ -1284,10 +1299,28 @@ function isAnnualPriceEnabled(params) {
 }
 
 let aupSelectController;
+let aupSdkValue = null;
+
+/*
+ * Gnav only loads the AUP SDK when aup-select is on at IMS-ready. MAS needs window.aupsdk to
+ * open the AUP flow, so load it (or refresh its features) when aup-select is enabled later.
+ */
+function syncAupSdk(service) {
+  const value = getEffectiveAupSelect(service);
+  if (!value || value === aupSdkValue) return;
+  aupSdkValue = value;
+  import('../global-navigation/utilities/aup-sdk.js')
+    .then(({ preloadAupSdk }) => preloadAupSdk())
+    .catch((e) => {
+      if (aupSdkValue === value) aupSdkValue = null;
+      window.lana?.log(`AUP SDK load after late aup-select failed: ${e?.message}`, { tags: 'merch', errorType: 'i' });
+    });
+}
 
 function applyAupSelect(service) {
   aupSelectController?.abort();
   aupSelectController = new AbortController();
+  aupSdkValue = null;
   const { signal } = aupSelectController;
   let applied = false;
   const setValue = () => {
@@ -1304,7 +1337,13 @@ function applyAupSelect(service) {
   setValue();
   // Personalization may still change aup-select until target is ready.
   whenTargetReady({ signal }).then(() => {
-    if (!signal.aborted) setValue();
+    if (signal.aborted) return;
+    setValue();
+    syncAupSdk(service);
+    // aup-select can still be set on the service later (e.g. by other personalization).
+    const observer = new MutationObserver(() => syncAupSdk(service));
+    observer.observe(service, { attributes: true, attributeFilter: ['aup-select'] });
+    signal.addEventListener('abort', () => observer.disconnect(), { once: true });
   });
 }
 

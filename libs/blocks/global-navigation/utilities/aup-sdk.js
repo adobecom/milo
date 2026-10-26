@@ -3,7 +3,6 @@ import {
   getConfig,
   getMetadata,
   getLingoRegion,
-  isAupSelectOn,
   lingoActive,
   loadScript,
 } from '../../../utils/utils.js';
@@ -12,6 +11,7 @@ import {
   AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
   getAupModalTitle,
+  getEffectiveAupSelect,
 } from '../../merch/merch.js';
 
 // Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
@@ -20,7 +20,7 @@ export async function sendAupDialogCloseAnalytics(modalHash, source) {
   sendAnalytics(`${modalHash?.replace('#', '') || 'aup-workflow'}:modalClose:${source}`);
 }
 
-export async function preloadAupSdk() {
+async function createAupSdk() {
   const config = getConfig();
   const { imsClientId } = config;
   const cdnEnvironment = config.env.name === 'prod' ? 'prod' : 'stage';
@@ -43,7 +43,7 @@ export async function preloadAupSdk() {
   let cancelActiveDialog;
   let dialogRequest = 0;
   const claimedAupModalHashes = new WeakSet();
-  window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
+  return window.AUPSDK.preloadSDK('adobe-com-stable', {
     appId: 'adobe_com',
     apiKey: imsClientId,
     getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
@@ -199,9 +199,21 @@ export async function preloadAupSdk() {
       }
     },
   });
+}
+
+let pendingAupSdk;
+
+// Safe to call repeatedly: the SDK is created once (concurrent callers share it) and every call
+// re-applies features, so a late aup-select change reaches an already loaded SDK.
+export async function preloadAupSdk() {
+  if (!window.aupsdk) {
+    pendingAupSdk ??= createAupSdk().finally(() => { pendingAupSdk = undefined; });
+    const sdk = await pendingAupSdk;
+    window.aupsdk = window.aupsdk || sdk;
+  }
 
   const features = ['useToasts'];
-  if (isAupSelectOn()) features.push('tmp_aupsdk_ucv3_in_iframe');
+  if (getEffectiveAupSelect() === 'on') features.push('tmp_aupsdk_ucv3_in_iframe');
   await window.aupsdk.updateConfig({ miniAppContext: { features } });
   window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
   return window.aupsdk;
