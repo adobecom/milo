@@ -66,11 +66,9 @@ function buildMerchCard(col, { pillCtas = false } = {}) {
     .forEach((p) => p.classList.add('body-md'));
   normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
-  let allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md, )')]
+  let allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div)')]
     .filter((el) => el.textContent.trim() || el.matches('mas-field')
       || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
-  // Franklin leaves single-line cell content unwrapped (bare text + inline links, no <p>).
-  // When nothing block-level matched, wrap the loose content so it reads as one paragraph.
   if (!allParas.length && col.textContent.trim()) {
     const para = createTag('p');
     para.append(...col.childNodes);
@@ -130,7 +128,7 @@ function decorate(block, blockEl = block) {
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];
-  if (col2?.children.length) {
+  if (col2 && (col2.children.length || col2.textContent.trim())) {
     const merchCard = buildMerchCard(col2, { pillCtas: blockEl.classList.contains('cta-pill') });
     // special-promo inverts the card vs the hero: light hero -> dark card,
     // dark hero -> light card. The mode class flips its content via tokens.
