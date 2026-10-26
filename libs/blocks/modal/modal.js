@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../utils/utils.js';
+import {
+  createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig, whenTargetReady,
+} from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
@@ -422,6 +424,8 @@ export function delayedModal(el) {
 
 // Deep link-based
 export default async function init(el) {
+  // Personalization may change the modal content or aup-select, so wait before opening.
+  await whenTargetReady();
   const { modalHash, modalPath } = el.dataset;
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   const normalizedHash = modalHash?.replace(/#_button-[a-zA-Z-]+/g, '');
