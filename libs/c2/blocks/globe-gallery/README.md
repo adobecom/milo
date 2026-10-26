@@ -2004,18 +2004,24 @@ the tiles are the card, pixel for pixel, up to the release.
 **Source layout: a pure function of the runway.** `setSources(cards, view)` never reads the live
 frame. It projects with the canonical camera of the runway (`camZAt(zoom, p)`, the shader's
 `camZAt`), so a fling that first sees p = 0.25 gets the same layout as a slow scroll. Every card in
-view at p 0 converts whole, on a grid. The budget is shared by each card's on-screen area at p 0,
-with a floor so even a card mostly off screen gets tiles no bigger than `TILE_MAX_K` × the view's
-even share √(W·H / count) (a few of its particles fly in from just off screen; fine). All draws are
+view at p 0 converts whole, on a grid. The budget (exactly the particle count) is shared by each
+card's on-screen area at p 0 plus `OFF_VIEW_K` (¼) of its off-screen area, so a card mostly off
+screen still breaks into fine tiles (a few of its particles fly in from just off screen; fine). All
+draws are
 seeded (`seededRandom`); the pairing runs over the next two frames, and until it is ready the
 particles stay hidden and the cards stay drawn (`isPaired()`).
 
-**Release.** Each particle's release p is set mostly by its distance from its card's edge
-(`EDGE_LEAD`), so cards tear from the rim, and comes no later than the dolly growing its tile past
-`TILE_MAX_K` shares, so a big card never breaks into big chunks. At release the particle gets its own
+**Release.** Each particle's release p is mostly random, with a light rim lead
+(`QUOTE_EDGE_LEAD` 0.2, shared with the near layer), so a card breaks up all over at once rather
+than in a ring travelling inward, and comes no later than the dolly growing its tile past
+`TILE_MAX_K` shares (but not before the first release, so the hand-off is the card), so a big card
+never breaks into big chunks. At release the particle gets its own
 camera, which carries on at the live camera's speed and decays to a stop `QUOTE_RELEASE_REACH` of
 the way to `QUOTE_MIN_DEPTH` in front of it: simple inertia, velocity-continuous, no clamping (brief
-off-screen excursions are fine).
+off-screen excursions are fine). A released tile turns into a round dot right away
+(`QUOTE_DETACH_P`) and, while it waits to depart, drifts a little: the swirl flow up to
+`QUOTE_WAIT_DRIFT` of the view's short side plus up to half a tile of its own jitter, so the waiting
+dots lose the card's grid. The flight takes the drift back over as it departs.
 
 **Pairing (soft).** Card pixels are matched to glyph targets by position on the frames after the
 hand-off (the sort runs one animation frame later, `fillDraw` the frame after), so the hand-off frame
@@ -2039,9 +2045,11 @@ turns to the text colour.
 that feathers the wave's edge. `QUOTE_PLANE_FRAG` recomputes the same order per pixel and reveals the
 crisp raster from a region's mean arrival to past its latest one; landed particles grow into solid
 squares and fade out after that. The quote goes crisp in one reading-order wave behind the landing,
-with no global fill-in. The crosshair's rules take the last `1 − QUOTE_TEXT_END` (20%) of the order
-(horizontals left to right, verticals top to bottom), so the text forms first and the lines draw in
-after the last glyph from the remaining particles; the per-pixel reveal follows the same order.
+with no global fill-in. The crosshair is a plain left-to-right wave (order = x across the box), so
+the horizontal rules draw in left to right and each vertical rule forms whole when the wave reaches
+it; its pixels weigh `RULE_WEIGHT` (3×) in the target pick, so the lines are visibly built from a
+stream of dots (from the same budget). The per-pixel reveal finds the rules from `uRules` and
+follows the same order.
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
 authored text (`plainQuote`, which also hangs the opening mark), shrinks the font if the box is
@@ -2463,10 +2471,13 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   the card and lists it with its dissolve `d = 1 − proxFade`; `updateCardScatter` draws it as one
   `Points` draw of the quote particles' shaders in scatter mode (`uScatterP = d`). So both layers
   break up into the same tiles, sampling the real card texture through a per-pixel ray (pixel for
-  pixel the card at `d = 0`). Each tile detaches rim first (`SCATTER_RIM_LEAD`, all within
-  `SCATTER_SPAN` 0.55 of the band) and flies out from the card's centre and the view's (past the
-  camera), at its own speed and ±23° angle, accelerating (t²), shrinking to a dot and fading by
-  `d = 1`, where the stage used to hide the card.
+  pixel the card at `d = 0`). Each tile detaches at a mostly random time, with the far side's light
+  rim lead (`QUOTE_EDGE_LEAD`; all within `SCATTER_SPAN` 0.55 of the band), so there is no ring and flies out from the card's centre and the view's (past the
+  camera), at its own speed and ±23° angle, accelerating (t²), fading by `d = 1`, where the stage
+  used to hide the card. A tile stays a square, contiguous with its neighbours, until its own
+  detach; within 3% of its own flight it becomes a round dot about two thirds of its cell, then
+  shrinks to a third, so a big near card never reads as a field of bricks. Far-side tiles do the
+  same the moment they are released.
   - **A pure function of the card's state.** Tile positions are card-local (`aUv` on the plane of
     the card's live `matrixWorld`) and their progress is the card's own `d`, so spin, drag and scroll
     in either direction re-evaluate them; nothing is snapshotted, nothing can strand.

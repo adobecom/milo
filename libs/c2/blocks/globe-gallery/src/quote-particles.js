@@ -2,7 +2,7 @@ import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
   QUOTE_FLIGHT as F, QUOTE_CRISP_P, QUOTE_ARRIVE_JITTER,
-  QUOTE_MIN_DEPTH, QUOTE_RELEASE_REACH, QUOTE_TEXT_END,
+  QUOTE_MIN_DEPTH, QUOTE_RELEASE_REACH, QUOTE_EDGE_LEAD,
 } from './shaders.js';
 
 // The pull-quote transition: card pixels swirl into the quote's glyphs, then hand over to a
@@ -15,9 +15,10 @@ const PROBE = 24; // grid that finds the on-screen part of each card
 // A tile leaves its card no later than when the dolly has grown it to this many even shares of the
 // view (√(W·H / count)), so a card that is big on screen never breaks into big chunks.
 const TILE_MAX_K = 1.5;
+const OFF_VIEW_K = 0.25;
 const SEED = 20240611; // every draw below is seeded: a scroll position always looks the same
 const DST_SIZE = 2; // until the first layout measures the spacing
-const EDGE_LEAD = 0.75; // share of the departure order set by distance from the card's edge
+const RULE_WEIGHT = 3; // a crosshair pixel's share of the targets, against a text pixel's
 const RASTER_PAD = 6; // px around the figure so antialiased edges are not clipped
 // The last glyph is crisp here; the whole quote is the crisp raster from then on.
 const CRISP_P = QUOTE_CRISP_P;
@@ -314,11 +315,24 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   function writeTargets(r, m, dpr) {
     const { data } = r.ctx.getImageData(0, 0, r.w, r.h);
     const step = Math.max(1, Math.round(dpr));
+    // The crosshair as QUOTE_PLANE_FRAG finds it: rule centre lines (left, right x; top, bottom y).
+    const [top, bottom, left, right] = m.rules;
+    const rw = left[2];
+    const ru = planeMat.uniforms.uRules.value;
+    [ru.x, ru.y, ru.z, ru.w] = [left[0], right[0], top[1], bottom[1]].map((v) => v + rw / 2);
+    planeMat.uniforms.uRuleW.value = rw;
+    const tol = rw / 2 + 1;
+    const onRule = (px, py) => Math.min(Math.abs(py - ru.z), Math.abs(py - ru.w)) <= tol
+      || Math.min(Math.abs(px - ru.x), Math.abs(px - ru.y)) <= tol;
     const cand = [];
     for (let y = 0; y < r.h; y += step) {
       for (let x = 0; x < r.w; x += step) {
         const k = (y * r.w + x) * 4;
-        if (data[k + 3] >= INK_ALPHA) cand.push(k);
+        if (data[k + 3] >= INK_ALPHA) {
+          // Rule pixels count RULE_WEIGHT times, so the lines are built from a visible stream.
+          const reps = onRule((r.x0 + x + 0.5) / dpr, (r.y0 + y + 0.5) / dpr) ? RULE_WEIGHT : 1;
+          for (let c = 0; c < reps; c += 1) cand.push(k);
+        }
       }
     }
     if (!cand.length) return false;
@@ -333,13 +347,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const { box } = m;
     planeMat.uniforms.uBox.value = { x: box.x, y: box.y, z: box.w, w: box.h };
     planeMat.uniforms.uRtl.value = m.rtl ? 1 : 0;
-    // Crosshair line centres, from the rules' rects (see measure).
-    const [top, bottom, left, right] = m.rules;
-    const rw = left[2];
-    const ru = planeMat.uniforms.uRules.value;
-    [ru.x, ru.y, ru.z, ru.w] = [left[0], right[0], top[1], bottom[1]].map((v) => v + rw / 2);
-    planeMat.uniforms.uRuleW.value = rw;
-    const tol = rw / 2 + 1;
     // Landed dots a little wider than their spacing, so a glyph's particles read as a fill.
     const spacing = Math.sqrt(cand.length / n);
     shared.uDstSize.value = Math.min(4, Math.max(1.6, DST_SPACING * spacing));
@@ -354,17 +361,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       tCol.set([data[k] / 255, data[k + 1] / 255, data[k + 2] / 255], i * 3);
       const xn = (px - box.x) / Math.max(1, box.w);
       const yn = (py - box.y) / Math.max(1, box.h);
-      // Must match QUOTE_PLANE_FRAG's order, which reveals the crisp text pixel by pixel.
-      const nx = Math.min(1, Math.max(0, m.rtl ? 1 - xn : xn));
-      const ny = Math.min(1, Math.max(0, yn));
-      const { x, y, z, w } = planeMat.uniforms.uRules.value;
-      if (Math.min(Math.abs(py - z), Math.abs(py - w)) <= tol) {
-        tOrder[i] = QUOTE_TEXT_END + (1 - QUOTE_TEXT_END) * nx;
-      } else if (Math.min(Math.abs(px - x), Math.abs(px - y)) <= tol) {
-        tOrder[i] = QUOTE_TEXT_END + (1 - QUOTE_TEXT_END) * ny;
-      } else {
-        tOrder[i] = (nx * 0.7 + ny * 0.3) * QUOTE_TEXT_END;
-      }
+      // Must match QUOTE_PLANE_FRAG's order, which reveals the crisp text pixel by pixel: reading
+      // order for the text, a plain left-to-right wave for the crosshair.
+      const nx = m.rtl ? 1 - xn : xn;
+      tOrder[i] = Math.min(1, Math.max(0, onRule(px, py) ? xn : nx * 0.7 + yn * 0.3));
     }
     const xs = new Float32Array(n);
     const ys = new Float32Array(n);
@@ -567,7 +567,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         / Math.max(1, Math.hypot(q2[0] - q0[0], q2[1] - q0[1]));
       plans.push({ card: { ...card, mirror }, aspect, area, full });
     });
-    const total = plans.reduce((sum, pl) => sum + pl.area, 0);
+    // Each card's share: its area in view, plus a little (OFF_VIEW_K) of the rest, so a card mostly
+    // off screen still breaks into fine tiles.
+    plans.forEach((pl) => { pl.weight = pl.area + OFF_VIEW_K * (pl.full - pl.area); });
+    const total = plans.reduce((sum, pl) => sum + pl.weight, 0);
     const grids = [];
     if (!plans.length) {
       const uvs = new Float32Array(n * 2).map(() => rnd());
@@ -580,10 +583,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       });
     }
     const tileMax = TILE_MAX_K * Math.sqrt((W * H) / n);
-    plans.forEach(({ card, aspect, area, full }) => {
-      // Its share by area in view, but tiles at most tileMax at p 0 even where little of it is.
-      const fine = Math.min(n / 3, full / tileMax ** 2);
-      const want = Math.max(fine, Math.floor((n * area) / Math.max(1, total)));
+    plans.forEach(({ card, aspect, weight }) => {
+      const want = Math.floor((n * weight) / Math.max(1, total));
       const cols = Math.max(1, Math.round(Math.sqrt(want * aspect)));
       const rows = Math.max(1, Math.floor(want / cols));
       // The depth at which a tile is tileMax px.
@@ -602,9 +603,9 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         uvs.set([u, v], j * 2);
         cells.set([1 / cols, 1 / rows], j * 2);
         const inner = Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v));
-        edge[j] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * rnd();
+        edge[j] = QUOTE_EDGE_LEAD * inner + (1 - QUOTE_EDGE_LEAD) * rnd();
         const [x, y, z] = at(card, u, v);
-        release[j] = Math.max(0, Math.min(releaseAt(edge[j]), pAtCamZ(zoom, z + tileD)));
+        release[j] = Math.max(F.release[0], Math.min(releaseAt(edge[j]), pAtCamZ(zoom, z + tileD)));
         // Paired from where it waits once released, as QUOTE_POINTS_VERT draws it at zPair.
         const zDep = camZAt(zoom, release[j]);
         const d = QUOTE_RELEASE_REACH * Math.max(0.001, zDep - z - QUOTE_MIN_DEPTH);

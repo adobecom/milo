@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
-import { swirlEnvelope, QUOTE_SWIRL_AMP, QUOTE_TEXT_END } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
+import { swirlEnvelope, QUOTE_SWIRL_AMP } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
 import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder, seededRandom, camZAt } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 
 // A static camera at z 0 (zoom span 0), fov 60 over an 800 × 600 view.
@@ -131,35 +131,32 @@ describe('globe-gallery: quote particles', () => {
     expect(fx.object.visible).to.be.false;
   });
 
-  it('lands each glyph by reading order, the crosshair last, and is still once crisp', async () => {
+  it('lands each glyph by reading order and is still once the last one is crisp', async () => {
     const { figureEl, railEl } = mount();
-    fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
+    fx = createQuoteParticles({ figureEl, railEl, count: 800 });
     await fx.layout({ dpr: 1 });
     await fx.setSources([], VIEW);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const { position, aRand } = points.geometry.attributes;
-    const textEnd = 0.45 + 0.35 * QUOTE_TEXT_END;
-    // The figure sits at (50, 100), 600 wide, padded 24: its rules are 1px lines inside that.
-    const onRule = (x, y) => Math.abs(y - 124.5) < 1.5 || Math.abs(x - 74.5) < 1.5
-      || Math.abs(x - 625.5) < 1.5;
-    let left = 0; let right = 0; let nl = 0; let nr = 0; let rules = 0;
+    let left = 0; let right = 0; let nl = 0; let nr = 0;
     for (let i = 0; i < position.count; i += 1) {
       const arrive = aRand.array[i * 4 + 3];
-      const [x, y] = [position.array[i * 3], position.array[i * 3 + 1]];
       expect(arrive).to.be.within(0.45 - 0.02, 0.8 + 0.02 + 1e-6); // ± the arrival jitter
       expect(arrive - aRand.array[i * 4]).to.be.at.least(0.15 - 1e-6); // no rushed flight
-      if (onRule(x, y)) {
-        rules += 1;
-        expect(arrive).to.be.at.least(textEnd - 0.02 - 1e-6);
-      } else if (x < 300) {
+      if (position.array[i * 3] < 300) {
         left += arrive; nl += 1;
       } else {
         right += arrive; nr += 1;
       }
     }
-    expect(rules).to.be.above(0);
     expect(left / nl).to.be.below(right / nr);
-    expect(right / nr).to.be.below(textEnd);
+    // The crosshair's left rule (x ≈ 74.5) is one left-to-right instant, top to bottom alike.
+    const rule = [];
+    for (let i = 0; i < position.count; i += 1) {
+      if (Math.abs(position.array[i * 3] - 74.5) < 1) rule.push(aRand.array[i * 4 + 3]);
+    }
+    expect(rule.length).to.be.above(10);
+    expect(Math.max(...rule) - Math.min(...rule)).to.be.at.most(2 * 0.02 + 0.01);
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update(QUOTE_LIVE_P, view);
     expect(points.visible).to.be.false;
