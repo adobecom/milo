@@ -70,30 +70,9 @@ export const CARD_VERT = [
   '}',
 ].join('\n');
 
-// Card dissolve + near-camera dispersion dials.
+// The texture-ready reveal's grain.
 const GRAIN_CELLS = 160;
-const DISPERSE_EXPAND = 2.5;
-const DISPERSE_JITTER = 0.2;
-const DISPERSE_CHUNKS = 44;
-const DISPERSE_ERODE = 0.22;
-const DISPERSE_EDGE_LEAD = 1.4;
-const DISPERSE_MARGIN = 2 * DISPERSE_JITTER * DISPERSE_EXPAND; // derived so the stages can't drift
 const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
-
-// CARD_VERT plus the dispersion overscan.
-export const CARD_DISPERSE_VERT = [
-  'uniform float uDisperse;',
-  'uniform float uAspect;',
-  'varying vec2 vUv;',
-  'void main() {',
-  `  float s = 1.0 + uDisperse * ${glf(DISPERSE_EXPAND)};`,
-  `  float j = uDisperse * ${glf(DISPERSE_MARGIN)};`,
-  '  vec2 grow = s + j / vec2(max(uAspect, 0.0001), 1.0);',
-  '  vUv = (uv - 0.5) * grow + 0.5;',
-  '  vec3 p = vec3(position.xy * grow, position.z);',
-  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
-  '}',
-].join('\n');
 
 export const CARD_FRAG = [
   'uniform sampler2D uMap;',
@@ -106,8 +85,7 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
-  'uniform float uDissolve;', // near-camera dissolve (0 = solid, 1 = expanded + smeared + dispersed)
-  'uniform float uDisperse;', // near-camera explosion (0 = grains stay put); see README
+  'uniform float uDissolve;', // texture-ready reveal's dissolve (0 = solid, 1 = grain + smear)
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
   'varying vec2 vUv;',
@@ -122,30 +100,7 @@ export const CARD_FRAG = [
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float shapeA = 1.0 - smoothstep(-px, px, dsd);', // solid box alpha, for the contour
-  // Uniform-gated, so other phases pay nothing.
-  '  vec2 sUv = fUv;',
-  '  float srcSD = dsd;',
   '  float a = shapeA;',
-  '  if (uDisperse > 0.0) {',
-  `    vec2 chunk = floor(fUv * vec2(uAspect, 1.0) * ${glf(DISPERSE_CHUNKS)});`,
-  '    float h1 = hash21(chunk + vec2(13.10, 71.90));',
-  '    float h2 = hash21(chunk + vec2(3.70, 47.10));',
-  '    float rim = 1.0 - smoothstep(0.0, 0.35, -dsd);',
-  `    float det = h1 / (1.0 + rim * ${glf(DISPERSE_EDGE_LEAD)});`,
-  `    float erode = ${glf(DISPERSE_ERODE)} * uDisperse * fract(h1 * 43.7);`,
-  '    float sg = 1.0;',
-  '    if (det < uDisperse) {',
-  '      float spd = 0.25 + 0.75 * h2;',
-  '      float t = (uDisperse - det) / max(1.0 - det, 1e-4);',
-  `      sg = 1.0 + ${glf(DISPERSE_EXPAND)} * spd * t;`,
-  '      vec2 jit = fract(vec2(h1, h2) * vec2(97.13, 61.70)) * 2.0 - 1.0;',
-  `      vec2 wSrc = (pos - jit * (${glf(DISPERSE_JITTER)} * (sg - 1.0))) / sg;`,
-  '      sUv = wSrc / vec2(uAspect, 1.0) + 0.5;',
-  '    }',
-  '    float pxs = px / sg;',
-  '    srcSD = rrSDF((sUv - 0.5) * vec2(uAspect, 1.0), vec2(uAspect * 0.5, 0.5), uRadius) + erode;',
-  '    a = 1.0 - smoothstep(-pxs, pxs, srcSD);',
-  '  }',
   // Particle grain, eaten edge-first.
   '  float dR = 1.0; float dG = 1.0; float dB = 1.0;',
   '  if (uDissolve > 0.0) {',
@@ -153,7 +108,7 @@ export const CARD_FRAG = [
   '    float nR = hash21(cell + vec2(0.00,  0.00));',
   '    float nG = hash21(cell + vec2(2.10,  1.30));',
   '    float nB = hash21(cell + vec2(1.70, -0.50));',
-  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -srcSD);',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
   '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.4, 0.0, 1.0);',
   '    float pedge = 0.10;',
   '    dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
@@ -167,16 +122,14 @@ export const CARD_FRAG = [
   // The photo alpha is already dispersing when uDissolve > 0, so the reveal reads as the same
   // edge-first un-dissolve.
   '  float outA = mix(contourA, a * uOpacity, uReveal);',
-  // Bail BEFORE the texture fetches — load-bearing for the dispersion's fill cost.
+  // Bail BEFORE the texture fetches.
   '  if (outA < 0.002) discard;',
-  '  vec2 d  = sUv - uHoverPos;',
+  '  vec2 d  = fUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  // Net of uDisperse, so the explosion owns the motion in the sphere phase and this is left to
-  // the texture-ready reveal.
-  '  vec2 mdir = sUv - 0.5;',
+  '  vec2 mdir = fUv - 0.5;',
   '  vec2 meltUv = warpedUv;',
-  '  float melt = max(uDissolve - uDisperse, 0.0);',
+  '  float melt = uDissolve;',
   '  if (melt > 0.0) {',
   '    meltUv = (warpedUv - 0.5) / (1.0 + melt * 1.8) + 0.5;',
   '  }',
@@ -297,6 +250,9 @@ export const QUOTE_RELEASE_REACH = 0.5;
 export const QUOTE_TILE_MAX_K = 1.5;
 export const PENDING_P = 9; // departure/arrival p of an unpaired particle: beyond any flight
 const QUOTE_TILE_CAP = 256; // CSS px; only the card-only remnant tiles ever get near it
+// A near card's scatter: how far out from the view's centre a particle flies, as a multiple of
+// its offset, by the time it is gone.
+const SCATTER_OUT = 0.6;
 
 // Value noise and its curl: a divergence-free 2D flow, deterministic in its inputs.
 const CURL_NOISE = [
@@ -337,6 +293,9 @@ export const QUOTE_POINTS_VERT = [
   'uniform vec3 uAxisU;', // across the card's width, world
   'uniform vec3 uAxisV;', // down the card's height, world
   'uniform float uScreenSrc;', // 1: no card; aUv is a viewport fraction
+  // ≥ 0: a near card's scatter (CardScatter), at this progress of its near-camera dissolve; the
+  // particles ride the card's live pose, break up edge first (aRand.x) and drift out to nothing.
+  'uniform float uScatterP;',
   'attribute vec2 aUv;', // u right, v down the card as seen
   'attribute vec2 aCell;', // the particle's cell, in card uv
   'attribute vec4 aRand;',
@@ -378,7 +337,7 @@ export const QUOTE_POINTS_VERT = [
   // Until its release the particle sees the live camera; after, a camera that carries on at the
   // same speed and eases to a stop short of it — no kink, and never past it.
   // aRand.z is the camera z it stops at; a remnant (never paired) rides the dolly off screen.
-  `    if (camZ < zDep && aRand.w < ${glf(PENDING_P)}) {`,
+  `    if (uScatterP < 0.0 && camZ < zDep && aRand.w < ${glf(PENDING_P)}) {`,
   '      float d = max(zDep - aRand.z, 0.001);',
   '      zEff = zDep - d * (1.0 - exp(-(zDep - camZ) / d));',
   '    }',
@@ -387,22 +346,29 @@ export const QUOTE_POINTS_VERT = [
   '    su = toPx(w + uAxisU * aCell.x, zEff) - s;',
   '    sv = toPx(w + uAxisV * aCell.y, zEff) - s;',
   '  }',
-  '  vec2 dst = position.xy;',
+  'bool scatter = uScatterP >= 0.0;',
+  // Scatter: no target, it flies on outward from the view's centre.
+  `  vec2 dst = scatter ? s + (s - 0.5 * uView) * ${glf(SCATTER_OUT)} : position.xy;`,
   // One leg from the card to the glyph: `t` drives the tile → dot change, landing and ink.
-  '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
+  '  float t = scatter',
+  '    ? clamp((uScatterP - aRand.x) / max(1.0 - aRand.x, 0.001), 0.0, 1.0)',
+  '    : clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
   '  float te = smoother(t);', // still at both ends: velocity-continuous at departure and landing
   '  vec2 pos = mix(s, dst, te);',
-  // Carried by the shared flow, zero at both ends: hand-off and landing are exact.
+  // Carried by the shared flow, zero at both ends: hand-off and landing are exact. A scatter
+  // keeps it to the end, where it is gone.
   '  float vmin = min(uView.x, uView.y);',
-  `  vec2 flow = curl(pos / (${glf(QUOTE_SWIRL_SCALE)} * vmin) + uP * ${glf(QUOTE_SWIRL_DRIFT)});`,
-  `  pos += flow * ${glf(QUOTE_SWIRL_AMP)} * vmin * sin(3.14159 * te);`,
+  '  float flowT = scatter ? uScatterP : uP;',
+  `  vec2 flow = curl(pos / (${glf(QUOTE_SWIRL_SCALE)} * vmin) + flowT * ${glf(QUOTE_SWIRL_DRIFT)});`,
+  `  pos += flow * ${glf(QUOTE_SWIRL_AMP)} * vmin * (scatter ? te : sin(3.14159 * te));`,
   // The bounding square of the projected cell, so neighbouring tiles always overlap.
   '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
   '  float g = smoothstep(0.0, 0.4, t);',
   // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
   // solid for the moment before the crisp text takes it over.
-  '  float land = smoothstep(0.85, 1.0, t);',
+  '  float land = scatter ? 0.0 : smoothstep(0.85, 1.0, t);',
   `  float size = mix(min(tile, ${glf(QUOTE_TILE_CAP)}), uDstSize, g) * (1.0 + 0.3 * land);`,
+  '  if (scatter) size *= 1.0 - 0.7 * smoothstep(0.5, 1.0, t);',
   '  gl_Position = pxToClip(pos, uView);',
   '  gl_PointSize = max(1.0, size * uDpr);',
   // Where the sprite's texels come from: around the source point, seen by the particle's camera.
@@ -420,6 +386,7 @@ export const QUOTE_POINTS_VERT = [
   '  vInk = aDstCol;',
   `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
   '  vInkK = ink * ink;',
+  '  if (scatter) { vFade = 1.0 - smoothstep(0.3, 1.0, t); vInkK = 0.0; }',
   '}',
 ].join('\n');
 

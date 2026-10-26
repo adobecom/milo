@@ -1986,8 +1986,8 @@ and the extra scroll goes to the flight and the reading hold.
 
 **One resolve, frozen globe, moving camera.** While particles are on (`particlesOn()`: not forced
 colours, raster ready), `placeSphereCard` gives cards behind the centre plane `proxFade = 1`, so the
-far side never runs the stage dissolve; the particles are its only break-up. Near-side cards are
-unchanged. Over `PQ_SPIN_EASE_T` (0.04 zoomT) before `pqStartZoomT`, `quoteSpinScale` eases
+far side never runs the near-camera scatter; the quote particles are its only break-up. Near-side
+cards scatter as they pass the camera (Near-camera dissolve). Over `PQ_SPIN_EASE_T` (0.04 zoomT) before `pqStartZoomT`, `quoteSpinScale` eases
 auto-spin, drag inertia, hover and drag warp to 0, and the pointer retires. While the particles own
 the cards (`quoteOwnsCards()`), the orientation is held exactly, so the cards come back where the
 particles left them. The camera keeps dollying at the stage's pace throughout.
@@ -2466,77 +2466,21 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     card back from where it was released; upward drag is clamped to 0). matchMedia-less → no
     gestures. The gesture code transforms the canvas, not the chrome, so it's layout-agnostic
     across the sm scrim and the md full-height panel.
-- **Near-camera dissolve EXPLODES past the card box** (`uDisperse`, set from `proxDis` in
-  `placeSphereCard` only). The plain particle dissolve (`uDissolve`) can never draw outside the
-  rounded rect — the quad IS the card, and `rrSDF` zeroes everything beyond it — so the fade read as
-  pixels dying inside a frame. In `CARD_FRAG` / `CARD_DISPERSE_VERT`:
-  - **The quad overscans.** `CARD_DISPERSE_VERT` scales `position.xy` by `s + j/(uAspect, 1)`, where
-    `s = 1 + uDisperse × DISPERSE_EXPAND` is the cloud's radial reach and `j` is `DISPERSE_MARGIN`,
-    jitter's share of it (absolute,
-    in card heights — hence the `/uAspect`), and stretches `vUv` to match. Card-space uv therefore
-    runs *past* `[0,1]`, which is the room the flying grains need. Hit-testing is untouched (raycasts
-    use the geometry, not the shader).
-  - **Per-CHUNK lift-off, not a uniform expansion.** Each chunk holds a lottery number `det`; once
-    `uDisperse` passes it, that chunk has detached and is `t` of the way
-    through its flight, so `sg = 1 + EXPAND × spd × t`. A detached chunk drawn at `pos` reads its
-    content from `pos / sg`; a chunk that hasn't lifted off keeps `sg = 1` and renders exactly as
-    before. **That split is the whole trick**: at any instant most of the card is still in place, so
-    the photo stays readable while the detached part spreads over a growing cloud. `t` is normalised
-    by `1 − det` so a flight is monotonic — using the lottery value as the speed instead makes chunks
-    fly out and then come *back* as the ramp advances.
-  - **Two grain scales, on purpose.** Flight is decided on a COARSE grid (`DISPERSE_CHUNKS` per card
-    height) while the RGB kill-dither stays on the finer `GRAIN_CELLS` grid. Chunks carry a coherent piece of
-    photo, so what flies reads as *debris* — deciding flight on the fine grid instead sprays
-    structureless 1px dust, which looks like noise rather than a card coming apart. The fine dither
-    on top keeps eroding each chunk while it travels.
-  - **Lift-off is rim-first** (`DISPERSE_EDGE_LEAD`): `det` is divided by `1 + rim × EDGE_LEAD`, where
-    `rim` is the destination's proximity to the card's edge, so the outline is the first thing to go.
-  - **The silhouette is eroded per chunk** (`DISPERSE_ERODE`, card heights, scaled by `uDisperse`) — a random
-    bite added straight onto `srcSD`. Without it the surviving in-place chunks still trace a clean
-    rounded rect with 1px AA, so the card's **border stays legible right through the explosion**,
-    which is exactly the "still bounded by a box" read this is meant to avoid.
-  - **No thinning term, and nothing keyed to the border.** A fragment at radius `f` only draws if its
-    own cell's flight reached that far, so coverage outward is just the odds of a grain being that
-    fast — the falloff is free, and it's continuous through the card's old edge. Do not gate the
-    scatter to *outside* the box (an `ow` gate puts a hard seam at the border and reads as a box
-    inside a box — a 回), and do not expand *every* grain (it scrambles the still-opaque photo, and
-    with a density-conserving `1/sg²` thinning it dusts the card away before it reaches the lens).
-  - **The melt is netted against `uDisperse`** (`melt = max(uDissolve − uDisperse, 0)`). The melt is
-    a *uniform* magnification of the whole card, so running it alongside the explosion reads as the
-    image swelling from its centre on one clock while debris leaves on another — two motions, out of
-    sync. The explosion owns the motion in the sphere phase; the melt is left to the texture-ready
-    reveal, which is the path that still needs it (`uDisperse` is 0 there).
-  - **`DISPERSE_EXPAND` is the "how dramatic" dial**, and what it costs is **fill**: the quad grows
-    to `1 + DISPERSE_EXPAND` per axis plus `DISPERSE_MARGIN`, and the square of that is the card's
-    pixel count at full dispersion (an order of magnitude at the current setting). Three things keep
-    it affordable, all load-bearing. The effect costs ~10% of frame time in the zoom-through, and the
-    cost tracks the grains actually drawn rather than the bounding box:
-    - **`placeSphereCard` skips the draw once `proxFade` hits 0** (`mesh.visible`). Those cards are
-      fully transparent *and* at maximum overscan, so they were the most expensive thing on screen
-      while contributing nothing: culling them cut the worst frame's overscan-weighted card area
-      by ~3×. It sets `visible` rather than returning early — an early return leaves the
-      transform stale, which scroll jitter shows as a flash.
-    - **`CARD_FRAG` resolves alpha first and discards before its three texture fetches**, so the
-      empty part of the cloud's bounding box costs a few ALU ops. Keep that ordering.
-    - **Both effect blocks are gated on a uniform** (`uDisperse > 0`, `uDissolve > 0`), so the branch
-      is coherent across the draw and a card in any other phase pays nothing: no chunk/grain hashes,
-      and `srcSD`/`a` fall back to the plain `dsd`/`shapeA` instead of a second `rrSDF`.
-    The lift-off ramp (`NEAR_FADE_DISPERSE_RAMP`, deliberately < 1) is applied **in the core**, not
-    the shader — it's uniform-valued, so a `pow` per vertex *and* per fragment bought nothing. It
-    front-loads lift-off because `uDisperse` near 1 means the card is nearly transparent — a late
-    ramp hides the whole effect. For the same reason the prox opacity ramp is biased late
-    (`NEAR_FADE_OPACITY_BIAS`): the grain mask already carries the fade, and a linear ramp muted
-    the grains exactly as they flew.
-  - **The mask is evaluated at the grain's ORIGIN** (`srcSD`), so a detached grain draws only if it
-    started inside the card; its AA band is `px / sg`, since one destination pixel is `1/sg` of a
-    pixel back at the origin. The UNdisplaced `dsd` stays the source for the contour and the `fwidth`
-    AA width (a displaced `fwidth` explodes on per-cell noise).
-  - **Chunk randomness comes from two hashes, not five.** `det`/`spd` are hashed; `erode` and the
-    jitter vector are `fract`-derived off them. Visually indistinguishable, and this is the hot path.
-  - **Dispersion is near-camera only.** `uDissolve` is shared with the texture-ready reveal (see
-    Progressive texture loading), which must un-dissolve *in place* — hence a second uniform, reset
-    to 0 every frame in the non-sphere default block. With `uDisperse` at 0 every added term is
-    identity (`sg = 1`, `grow = 1`), so that path renders bit-for-bit as it did before.
+- **Near-camera dissolve: the card's own tiles scatter** (`src/card-scatter.js`). Across the near
+  band (`bp.NEAR_FADE_START` → `NEAR_FADE_END` card-heights of depth) `placeSphereCard` hides the
+  card and lists it with its dissolve `d = 1 − proxFade`; `updateCardScatter` draws it as one
+  `Points` draw of the quote particles' shaders in scatter mode (`uScatterP = d`). So both layers
+  break up the same way: tiles that sample the real card texture through a per-pixel ray (pixel for
+  pixel the card at `d = 0`), released rim first (`EDGE_LEAD`, all by `RELEASE_SPAN` 0.55 of the
+  band), shrinking to dots as they fly out from the view's centre (`SCATTER_OUT`) along the same
+  swirl flow, and fading to nothing by `d = 1`, where the stage used to hide the card.
+  - **A pure function of the card's state.** Tile positions are card-local (`aUv` on the plane of
+    the card's live `matrixWorld`) and their progress is the card's own `d`, so spin, drag and scroll
+    in either direction re-evaluate them; nothing is snapshotted, nothing can strand.
+  - **One shared geometry.** Every card uses the same grid (`NEAR_TILE_PX` ≈ 4.5 CSS px at the
+    band's start, from the projection and `NEAR_FADE_START` only: ~5.5k tiles on desktop, ~4.8k on
+    mobile), seeded; each dissolving card only adds a material slot (pooled) and a draw.
+  - Reduced motion never reaches the band; without a scatter the card would just fade.
 - **Sphere rotation — clamped Euler pitch/yaw (yaw free, pitch capped ±60°).** The orientation
   SOURCE is a pitch/yaw pair (`sphereOrient.x`, `sphereOrient.y`); the shared `sphereRotQuat` every
   consumer reads (card transforms, modal close, snap) is **rebuilt from it each frame**
@@ -2899,11 +2843,8 @@ self-evident from the name:
 | `GRID_PEEL_JITTER` | fanT | per-card random offset on the peel delay (organic cascade); `2 × GRID_PEEL_STAGGER` |
 | `ARC_DENSE_SPLIT` | fanT | boundary between the clustered off-screen flank and the visible spread |
 | `NEAR_FADE_START` / `_END` | card-heights | depth in front of the lens where the near-camera dissolve starts / completes |
-| `NEAR_FADE_OPACITY_BIAS` | exponent | on the prox opacity ramp; `< 1` holds the card visible longer so the dispersing grains read (the grain mask carries the fade) |
-| `NEAR_FADE_DISPERSE_RAMP` | exponent | on `uDisperse`; `< 1` front-loads lift-off. Applied here, not in the shader — it's uniform-valued, so a per-fragment `pow` bought nothing |
-| `DISPERSE_EXPAND` / `_JITTER` (`shaders.js`) | × card radius / fraction of own flight | how far the fastest chunk flies (the "how dramatic" dial) / its sideways wander. Both feed the vertex overscan AND the fragment scatter, via `DISPERSE_MARGIN` (derived — never hand-copy it, or the two stages drift and chunks clip at the quad edge) |
-| `DISPERSE_CHUNKS` / `_ERODE` / `_EDGE_LEAD` (`shaders.js`) | per card height / card-heights / ratio | debris grid the flight is decided on / random bite out of the silhouette, so no clean border survives the explosion / extra lift-off odds at the rim vs the middle |
-| `GRAIN_CELLS` (`shaders.js`) | per card height | the dissolve's RGB grain grid — finer than `DISPERSE_CHUNKS`. Both grids are laid out in the card's OWN uv (× `uAspect`, so cells stay square and travel with the card rather than swimming in screen space) |
+| `NEAR_TILE_PX` | CSS px | near-camera scatter tile size at the band's start (`card-scatter.js`) |
+| `GRAIN_CELLS` (`shaders.js`) | per card height | the texture-ready reveal's RGB grain grid, laid out in the card's OWN uv (× `uAspect`, so cells stay square and travel with the card rather than swimming in screen space) |
 | `SPHERE_DRAG_WARP_BASELINE` / `_VEL` / `_MAX` / `_EASE` | uWarp, last per 60fps frame | barrel-warp while dragging: constant baseline + a velocity-driven burst (decays with `DRAG_FRICTION`), capped, then eased toward that target |
 | `TEXT_BEHIND_GAP` | world units | how far the hint plane sits behind the sphere's back surface |
 | `TEXT_WARP_ENTER_MAX` | uWarp | at the hint's entrance (barrel distortion) |

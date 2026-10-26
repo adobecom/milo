@@ -427,6 +427,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         uAxisU: { value: card ? card.axisU : new THREE.Vector3(1, 0, 0) },
         uAxisV: { value: card ? card.axisV : new THREE.Vector3(0, -1, 0) },
         uScreenSrc: { value: card ? 0 : 1 },
+        uScatterP: { value: -1 },
       },
       vertexShader: QUOTE_POINTS_VERT,
       fragmentShader: QUOTE_POINTS_FRAG,

@@ -14,6 +14,7 @@ import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
 import createQuoteParticles, { QUOTE_LIVE_P } from './src/quote-particles.js';
+import createCardScatter from './src/card-scatter.js';
 import {
   easeOutCubic, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
@@ -160,11 +161,11 @@ const MASONRY_MORPH_RATE = 0.05; // per-frame
 // Near-camera proximity fade, in card-heights of depth.
 const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-out band
 const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE
-// Near-camera fade. The BAND is per breakpoint (bp.NEAR_FADE_START/END, in mean card-heights of
-// camera depth) — sm cards are far larger against the viewport, so the two can want a different
-// feel. The RAMP SHAPE below is shared: it is how the band is spent, not how wide it is.
-const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
-const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
+// Near-camera dissolve. The BAND is per breakpoint (bp.NEAR_FADE_START/END, in mean card-heights
+// of camera depth) — sm cards are far larger against the viewport, so the two can want a
+// different feel. Across it the card breaks up into tiles of about this size (CSS px, at the
+// band's start), see createCardScatter.
+const NEAR_TILE_PX = 4.5;
 
 const CARD_ORDER_STEPS = 1000;
 const CARD_ORDER_HANDOVER_T = 0.5;
@@ -405,6 +406,8 @@ function createGlobeGalleryRuntime(
   let pqAppearZoomT = 0.5;
   // zoomT the quote particles take the cards over at: the deepest card starts its near-camera fade.
   let pqStartZoomT = 0.5;
+  let scatter = null; // createCardScatter instance; motion path only
+  const nearCards = []; // [{ card, d }] in the near band this frame (placeSphereCard)
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
   let holdVh = 0; // from --gg-pq-hold: runway past the zoom end, held by the quote
   let W = 0;
@@ -1419,37 +1422,62 @@ function createGlobeGalleryRuntime(
   // while the particles own the cards, so the planes hold for the whole flight and a reversal
   // lands the cards exactly where the particles left them; the camera keeps dollying, and the
   // particles are projected with it every frame.
+  // A sphere card's plane as drawn: world origin (top-left), axes along its width and down its
+  // height, and what the card shader needs to draw the same pixels.
+  function cardPlane(card) {
+    const { mesh } = card;
+    const u = mesh.material.uniforms;
+    const world = (cu, cv) => new THREE.Vector3(
+      (cu - 0.5) * bp.CARD_W_SPHERE,
+      (0.5 - cv) * bp.CARD_H_SPHERE,
+      0,
+    ).applyMatrix4(mesh.matrixWorld);
+    const origin = world(0, 0);
+    return {
+      origin,
+      axisU: world(1, 0).sub(origin),
+      axisV: world(0, 1).sub(origin),
+      tex: u.uMap.value,
+      repeat: u.uRepeat.value.clone(),
+      offset: u.uOffset.value.clone(),
+      aspect: u.uAspect.value,
+      radius: u.uRadius.value,
+      alpha: card.revealT ** 2, // as the card's uOpacity × uReveal
+      order: mesh.renderOrder,
+    };
+  }
+
   function cardPlanes() {
     sphereGroup.updateMatrixWorld(true);
     const out = [];
     cards.forEach((card) => {
-      const { mesh } = card;
       // Not mesh.visible: on a fling the live camera may already be past the card (setSources
       // drops what is behind the canonical camera instead).
       if (!card.onSphere || modal.isCardManaged(card)) return;
-      const u = mesh.material.uniforms;
-      const alpha = card.revealT ** 2; // as the card's uOpacity × uReveal on the far side
-      if (alpha <= 0.002) return;
-      const world = (cu, cv) => new THREE.Vector3(
-        (cu - 0.5) * bp.CARD_W_SPHERE,
-        (0.5 - cv) * bp.CARD_H_SPHERE,
-        0,
-      ).applyMatrix4(mesh.matrixWorld);
-      const origin = world(0, 0);
-      out.push({
-        origin,
-        axisU: world(1, 0).sub(origin),
-        axisV: world(0, 1).sub(origin),
-        tex: u.uMap.value,
-        repeat: u.uRepeat.value.clone(),
-        offset: u.uOffset.value.clone(),
-        aspect: u.uAspect.value,
-        radius: u.uRadius.value,
-        alpha,
-        order: mesh.renderOrder,
-      });
+      const plane = cardPlane(card);
+      if (plane.alpha > 0.002) out.push(plane);
     });
     return out;
+  }
+
+  // The near-camera dissolve's draws, one per card in the band, on the card's live pose.
+  function updateCardScatter() {
+    if (!scatter) return;
+    const tile = NEAR_TILE_PX;
+    const hPx = (camera.projectionMatrix.elements[5] * H) / 2 / bp.NEAR_FADE_START;
+    scatter.setGrid(Math.ceil((hPx * CARD_ASPECT) / tile), Math.ceil(hPx / tile));
+    sphereGroup.updateMatrixWorld(true);
+    camera.updateMatrixWorld();
+    const list = nearCards.map(({ card, d }) => {
+      const plane = cardPlane(card);
+      // Screen winding tells a back face, which the card shader mirrors in u.
+      const pts = [plane.origin, plane.origin.clone().add(plane.axisU),
+        plane.origin.clone().add(plane.axisV)].map((v) => v.clone().project(camera));
+      const cross = (pts[1].x - pts[0].x) * (pts[2].y - pts[0].y)
+        - (pts[1].y - pts[0].y) * (pts[2].x - pts[0].x);
+      return { ...plane, d, mirror: cross > 0 };
+    });
+    scatter.update(list, { W, H, dpr: capDpr() });
   }
 
   // After the card stage. The source layout is read off the canonical camera of the runway, so it
@@ -1557,12 +1585,15 @@ function createGlobeGalleryRuntime(
     applyCardFacing(mesh);
     // Behind the camera: hidden, but its transform is fresh (cardPlanes reads it on any frame).
     if (depth <= 0) { mesh.visible = false; return; }
-    // Max dissolve, min opacity, so neither un-hides what the other hides.
+    // Across the near band the card is its scatter's tiles (updateCardScatter); without one
+    // (reduced motion, which never gets this close) it would simply fade.
     const proxDis = 1 - proxFade;
-    const revealDis = 1 - card.revealT;
-    mesh.material.opacity = Math.min(proxFade ** NEAR_FADE_OPACITY_BIAS, card.revealT);
-    mesh.material.uniforms.uDissolve.value = Math.max(proxDis, revealDis);
-    mesh.material.uniforms.uDisperse.value = proxDis ** NEAR_FADE_DISPERSE_RAMP;
+    if (scatter && proxDis > 0) {
+      mesh.visible = false;
+      if (proxFade > 0) nearCards.push({ card, d: proxDis });
+    }
+    mesh.material.opacity = Math.min(scatter ? 1 : proxFade, card.revealT);
+    mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = proxFade;
     if (CA_ENABLED) {
@@ -1773,12 +1804,10 @@ function createGlobeGalleryRuntime(
       }
     }
 
-    // uDissolve is shared with the sphere phase's near-camera dissolve, so it must be reset
-    // every frame.
+    // The texture-ready reveal; placeSphereCard sets the same uniforms, so reset every frame.
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = 1;
     mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
-    mesh.material.uniforms.uDisperse.value = 0;
 
     const prevMeshX = mesh.position.x;
     const prevMeshY = mesh.position.y;
@@ -1801,6 +1830,7 @@ function createGlobeGalleryRuntime(
     if (masonryMorph.active) {
       masonryMorph.t = Math.min(1, masonryMorph.t + MASONRY_MORPH_RATE * frame.dtScale);
     }
+    nearCards.length = 0;
     for (let i = 0; i < bp.N_TOTAL; i += 1) updateCardTransform(i, frame);
     if (masonryMorph.active && masonryMorph.t >= 1) {
       masonryMorph.active = false;
@@ -1879,6 +1909,7 @@ function createGlobeGalleryRuntime(
 
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateCardTransforms(frame);
+    updateCardScatter();
     updateQuoteParticles();
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
     updateHintExit(frame);
@@ -2101,6 +2132,10 @@ function createGlobeGalleryRuntime(
       relayoutQuote();
     }
     // Before the first layout: the class adds the quote's hold to the runway being measured.
+    if (!reducedMotion) {
+      scatter = createCardScatter();
+      scene.add(scatter.object);
+    }
     if (!reducedMotion && pqEl && pq.railEl) {
       pq.fx = createQuoteParticles({
         figureEl: pqEl,
@@ -2261,6 +2296,7 @@ function createGlobeGalleryRuntime(
     a11y.teardown();
     if (arcCopy.el) arcCopy.el.style.cssText = '';
     if (pq.fx) { pq.fx.dispose(); pq.fx = null; }
+    if (scatter) { scatter.dispose(); scatter = null; }
     pq.swapT = 0;
     pq.swapStr = '';
     root.classList.remove('globe-gallery-pq-particles');
