@@ -1283,20 +1283,16 @@ function isAnnualPriceEnabled(params) {
 }
 
 let aupSelectController;
-let aupSdkValue = null;
 
 /*
  * Gnav only loads the AUP SDK when aup-select is on at IMS-ready. MAS needs window.aupsdk to
  * open the AUP flow, so load it (or refresh its features) when aup-select is enabled later.
  */
 function syncAupSdk() {
-  const value = getAupSelectValue();
-  if (!value || value === aupSdkValue) return;
-  aupSdkValue = value;
+  if (!getAupSelectValue()) return;
   import('../global-navigation/utilities/aup-sdk.js')
     .then(({ preloadAupSdk }) => preloadAupSdk())
     .catch((e) => {
-      if (aupSdkValue === value) aupSdkValue = null;
       window.lana?.log(`AUP SDK load after late aup-select failed: ${e?.message}`, { tags: 'merch', errorType: 'i' });
     });
 }
@@ -1304,7 +1300,6 @@ function syncAupSdk() {
 function applyAupSelect(service) {
   aupSelectController?.abort();
   aupSelectController = new AbortController();
-  aupSdkValue = null;
   const { signal } = aupSelectController;
   let applied = false;
   const setValue = () => {
