@@ -38,7 +38,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
 
   await initBlock(element);
   if (blockConfig.targetEl === 'footer') {
-    const { default: loadPrivacy } = await import('../scripts/loadPrivacy.js');
+    const { loadPrivacy } = await import('../scripts/delayed.js');
     setTimeout(() => {
       loadPrivacy(getConfig, loadScript);
     }, blockConfig.delay);
