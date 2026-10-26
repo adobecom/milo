@@ -329,7 +329,7 @@ describe('Market selector block', () => {
       document.body.append(footerElement);
       expect(getComputedStyle(selector.querySelector('.market-selector-popover')).position).to.equal('absolute');
       footer.initFooterOptionsOrderSync();
-      expect(footer.footerOrderMediaQuery.media).to.equal('(max-width: 1439px)');
+      expect(footer.footerOrderMediaQuery.media).to.equal('(width < 1440px)');
       expect([...options.children]).to.deep.equal([selector, legal, social]);
       await setViewport({ width: 1426, height: 900 });
       await new Promise(requestAnimationFrame);
