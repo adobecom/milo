@@ -70,8 +70,9 @@ function revealCta(ctaEl) {
   let isAtOutro = false;
 
   const anchor = ctaEl.tagName === 'A' ? ctaEl : ctaEl.querySelector('a');
+  const hasKeyboardFocus = () => document.activeElement === anchor && anchor.matches(':focus-visible');
   const update = () => {
-    if (document.activeElement === anchor) return;
+    if (hasKeyboardFocus()) return;
     ctaEl.classList.remove('disable-animation');
     ctaEl.classList.toggle('active', isPastIntro && !isAtOutro);
   };
@@ -91,7 +92,7 @@ function revealCta(ctaEl) {
   });
 
   anchor?.addEventListener('focus', () => {
-    if (!isAtOutro) return;
+    if (!isAtOutro || !hasKeyboardFocus()) return;
     ctaEl.classList.add('disable-animation');
   });
   anchor?.addEventListener('blur', update);
