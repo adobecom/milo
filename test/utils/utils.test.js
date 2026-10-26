@@ -12,6 +12,7 @@ import {
   getMarketConfig,
   marketsLangForLocale,
   getValidatedMarket,
+  isSupportedMarket,
 } from '../../libs/utils/utils.js';
 
 const utils = {};
@@ -4499,5 +4500,44 @@ describe('utils.js market — getValidatedMarket()', () => {
     } finally {
       Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
     }
+  });
+});
+
+describe('utils.js market — isSupportedMarket()', () => {
+  const marketsConfig = {
+    languages: {
+      data: [
+        { prefix: '', defaultMarket: 'us', supportedRegions: 'us, GB,de' },
+        { prefix: 'fr', defaultMarket: 'fr', supportedRegions: 'fr,be' },
+      ],
+    },
+  };
+
+  afterEach(() => {
+    sinon.restore();
+    setConfig({});
+  });
+
+  it('returns false when no country is given', async () => {
+    setConfig({ marketsConfig, locale: { prefix: '' } });
+    expect(await isSupportedMarket()).to.be.false;
+    expect(await isSupportedMarket('')).to.be.false;
+  });
+
+  it('returns true for a supported country, ignoring case and spaces', async () => {
+    setConfig({ marketsConfig, locale: { prefix: '' } });
+    expect(await isSupportedMarket('gb')).to.be.true;
+    expect(await isSupportedMarket('DE')).to.be.true;
+  });
+
+  it('returns false for a country not supported by the current language', async () => {
+    setConfig({ marketsConfig, locale: { prefix: '' } });
+    expect(await isSupportedMarket('fr')).to.be.false;
+  });
+
+  it('returns false when the market config cannot be loaded', async () => {
+    setConfig({ locale: { prefix: '' } });
+    sinon.stub(window, 'fetch').callsFake(() => Promise.reject(new Error('fail')));
+    expect(await isSupportedMarket('us')).to.be.false;
   });
 });
