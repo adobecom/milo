@@ -142,6 +142,7 @@ describe('Market selector block', () => {
     footer.className = 'global-footer';
     footer.style.setProperty('--s2a-spacing-xs', '8px');
     footer.style.setProperty('--s2a-color-transparent-white-64', 'rgb(255 255 255 / 64%)');
+    footer.style.setProperty('--s2a-color-gray-25', '#fff');
     footer.style.setProperty('--s2a-color-content-knockout', '#fff');
     block.replaceWith(footer);
     footer.append(block);
