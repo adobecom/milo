@@ -2135,6 +2135,7 @@ function createGlobeGalleryRuntime(
     if (!reducedMotion) {
       scatter = createCardScatter();
       scene.add(scatter.object);
+      scatter.warm(renderer, camera);
     }
     if (!reducedMotion && pqEl && pq.railEl) {
       pq.fx = createQuoteParticles({

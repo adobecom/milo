@@ -21,7 +21,7 @@ describe('globe-gallery: near-camera card scatter', () => {
   let fx;
   afterEach(() => { fx?.dispose(); fx = null; });
 
-  it('tiles every card with one shared grid, released rim first within the band', () => {
+  it('tiles every card with one shared grid', () => {
     fx = createCardScatter();
     fx.setGrid(40, 60);
     expect(fx.tileCount()).to.equal(2400);
@@ -30,17 +30,7 @@ describe('globe-gallery: near-camera card scatter', () => {
     expect(draws).to.have.length(2);
     expect(draws[0].geometry).to.equal(draws[1].geometry);
     expect(draws[1].material.uniforms.uScatterP.value).to.equal(0.6);
-    const { aUv, aRand } = draws[0].geometry.attributes;
-    let rim = 0; let mid = 0; let nr = 0; let nm = 0;
-    for (let i = 0; i < aUv.count; i += 1) {
-      const u = aUv.array[i * 2]; const v = aUv.array[i * 2 + 1];
-      const rel = aRand.array[i * 4];
-      expect(rel).to.be.within(0, 0.55);
-      const inner = Math.min(u, 1 - u, v, 1 - v);
-      if (inner < 0.05) { rim += rel; nr += 1; }
-      if (inner > 0.4) { mid += rel; nm += 1; }
-    }
-    expect(rim / nr).to.be.below(mid / nm);
+    expect(draws[0].geometry.attributes.aUv.array[0]).to.be.closeTo(1 / 80, 1e-6);
   });
 
   it('pools its draws and keeps the grid until it changes', () => {

@@ -1,17 +1,12 @@
 import * as THREE from '../../../../deps/three.js';
 import { QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG } from './shaders.js';
-import { seededRandom } from './quote-particles.js';
 
 // The near-camera dissolve: a card the camera is about to pass breaks up into the same tiles as
-// the quote's particles (QUOTE_POINTS_* in scatter mode), rim first, and drifts out along the
-// swirl flow to nothing. Every card shares one grid geometry; each dissolving card is one draw
-// of it, with its live pose, texture and dissolve progress as uniforms, so it is a pure
-// function of the card's state on that frame: spin, drag and scroll in either direction just
-// re-evaluate it. See README (Near-camera dissolve).
-
-const EDGE_LEAD = 0.75; // share of a tile's release set by its distance from the card's edge
-const RELEASE_SPAN = 0.55; // every tile has left its card by this much of the dissolve
-const SEED = 7;
+// the quote's particles (QUOTE_POINTS_* in scatter mode), which burst out in mosaic chunks, rim
+// first, and crumble to nothing (all timing is in the shader). Every card shares one grid
+// geometry; each dissolving card is one draw of it, with its live pose, texture and dissolve
+// progress as uniforms, so it is a pure function of the card's state on that frame: spin, drag
+// and scroll in either direction just re-evaluate it. See README (Near-camera dissolve).
 
 export default function createCardScatter() {
   const group = new THREE.Group();
@@ -29,16 +24,14 @@ export default function createCardScatter() {
   const slots = []; // [{ points, mat }], grown on demand and reused
   let used = 0;
 
-  // cols × rows tiles over a card, edge first. Rebuilt only when the grid changes (layout).
+  // cols × rows tiles over a card. Rebuilt only when the grid changes (layout).
   function setGrid(cols, rows) {
     const key = `${cols}x${rows}`;
     if (key === gridKey) return;
     gridKey = key;
     const k = cols * rows;
-    const rnd = seededRandom(SEED);
     const uvs = new Float32Array(k * 2);
     const cells = new Float32Array(k * 2);
-    const rand = new Float32Array(k * 4);
     for (let r = 0; r < rows; r += 1) {
       for (let c = 0; c < cols; c += 1) {
         const j = r * cols + c;
@@ -46,8 +39,6 @@ export default function createCardScatter() {
         const v = (r + 0.5) / rows;
         uvs.set([u, v], j * 2);
         cells.set([1 / cols, 1 / rows], j * 2);
-        const inner = Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v));
-        rand[j * 4] = RELEASE_SPAN * (EDGE_LEAD * inner + (1 - EDGE_LEAD) * rnd());
       }
     }
     const next = new THREE.BufferGeometry();
@@ -55,7 +46,7 @@ export default function createCardScatter() {
     next.setAttribute('aUv', new THREE.BufferAttribute(uvs, 2));
     next.setAttribute('aCell', new THREE.BufferAttribute(cells, 2));
     next.setAttribute('aDstCol', new THREE.BufferAttribute(new Float32Array(k * 3), 3));
-    next.setAttribute('aRand', new THREE.BufferAttribute(rand, 4));
+    next.setAttribute('aRand', new THREE.BufferAttribute(new Float32Array(k * 4), 4));
     slots.forEach(({ points }) => { points.geometry = next; });
     if (geo) geo.dispose();
     geo = next;
@@ -119,8 +110,18 @@ export default function createCardScatter() {
     for (let i = used; i < slots.length; i += 1) slots[i].points.visible = false;
   }
 
+  // Compiles the particle program (the quote's too) up front, not on the first band frame.
+  function warm(renderer, camera) {
+    setGrid(1, 1);
+    const { points } = slot(0);
+    points.visible = true;
+    renderer.compile(group, camera);
+    points.visible = false;
+  }
+
   return {
     object: group,
+    warm,
     setGrid,
     update,
     tileCount: () => (geo ? geo.attributes.aUv.count : 0),

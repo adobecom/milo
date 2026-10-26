@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
-import { swirlEnvelope, QUOTE_SWIRL_AMP } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
+import { swirlEnvelope, QUOTE_SWIRL_AMP, QUOTE_TEXT_END } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
 import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder, seededRandom, camZAt } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 
 // A static camera at z 0 (zoom span 0), fov 60 over an 800 × 600 view.
@@ -85,10 +85,10 @@ describe('globe-gallery: quote particles', () => {
       expect(u).to.be.within(0, 1);
       expect(v).to.be.within(0, 1);
       const inner = Math.min(u, 1 - u, v, 1 - v);
-      if (inner < 0.1) { edge += aRand.array[i * 4]; ne += 1; }
-      if (inner > 0.4) { centre += aRand.array[i * 4]; nc += 1; }
+      if (inner < 0.1) { edge += aRand.array[i * 4 + 1]; ne += 1; }
+      if (inner > 0.4) { centre += aRand.array[i * 4 + 1]; nc += 1; }
     }
-    // Edge first: the rim departs well before the middle.
+    // Edge first: the rim is released well before the middle.
     expect(edge / ne).to.be.below(centre / nc);
     expect(points.material.uniforms.uMap.value).to.be.instanceOf(THREE.Texture);
     await fx.setSources([], VIEW);
@@ -131,25 +131,35 @@ describe('globe-gallery: quote particles', () => {
     expect(fx.object.visible).to.be.false;
   });
 
-  it('lands each glyph by reading order and is still once the last one is crisp', async () => {
+  it('lands each glyph by reading order, the crosshair last, and is still once crisp', async () => {
     const { figureEl, railEl } = mount();
-    fx = createQuoteParticles({ figureEl, railEl, count: 800 });
+    fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
     await fx.layout({ dpr: 1 });
     await fx.setSources([], VIEW);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const { position, aRand } = points.geometry.attributes;
-    let left = 0; let right = 0; let nl = 0; let nr = 0;
+    const textEnd = 0.45 + 0.35 * QUOTE_TEXT_END;
+    // The figure sits at (50, 100), 600 wide, padded 24: its rules are 1px lines inside that.
+    const onRule = (x, y) => Math.abs(y - 124.5) < 1.5 || Math.abs(x - 74.5) < 1.5
+      || Math.abs(x - 625.5) < 1.5;
+    let left = 0; let right = 0; let nl = 0; let nr = 0; let rules = 0;
     for (let i = 0; i < position.count; i += 1) {
       const arrive = aRand.array[i * 4 + 3];
+      const [x, y] = [position.array[i * 3], position.array[i * 3 + 1]];
       expect(arrive).to.be.within(0.45 - 0.02, 0.8 + 0.02 + 1e-6); // ± the arrival jitter
       expect(arrive - aRand.array[i * 4]).to.be.at.least(0.15 - 1e-6); // no rushed flight
-      if (position.array[i * 3] < 300) {
+      if (onRule(x, y)) {
+        rules += 1;
+        expect(arrive).to.be.at.least(textEnd - 0.02 - 1e-6);
+      } else if (x < 300) {
         left += arrive; nl += 1;
       } else {
         right += arrive; nr += 1;
       }
     }
+    expect(rules).to.be.above(0);
     expect(left / nl).to.be.below(right / nr);
+    expect(right / nr).to.be.below(textEnd);
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update(QUOTE_LIVE_P, view);
     expect(points.visible).to.be.false;
@@ -212,7 +222,7 @@ describe('globe-gallery: quote particles', () => {
     expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
   });
 
-  it('lays sources out from the runway, not the frame: in view at release, fine and repeatable', async () => {
+  it('lays sources out from the runway, not the frame: whole cards, budget by area in view', async () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
     await fx.layout({ dpr: 1 });
@@ -220,34 +230,19 @@ describe('globe-gallery: quote particles', () => {
     // screen early, one in the middle stays.
     const view = { ...VIEW, zoom: [0, 1, 0, 25] };
     const cards = [cardAt(600, 250, 190, 140), cardAt(300, 200, 200, 150)];
-    const snapshot = () => fx.object.children.filter((o) => o instanceof THREE.Points)
+    const draws = () => fx.object.children.filter((o) => o instanceof THREE.Points);
+    const snapshot = () => draws()
       .map((o) => [...o.geometry.attributes.aRand.array, ...o.geometry.attributes.aUv.array]);
     await fx.setSources(cards, view);
     const first = snapshot();
-    const stats = fx.getStats();
-    expect(stats.remnant).to.be.above(0); // what leaves before it is released rides off as card
-    let paired = 0;
-    fx.object.children.filter((o) => o instanceof THREE.Points).forEach((o, ci) => {
-      const { aRand, aUv, aCell } = o.geometry.attributes;
-      const c = cards[ci];
-      for (let i = 0; i < aRand.count; i += 1) {
-        if (aRand.array[i * 4 + 3] < 9) {
-          paired += 1;
-          // Where it stops easing off the dolly is in view, and its tile is still fine.
-          const zStop = aRand.array[i * 4 + 2];
-          const w = c.origin.clone().addScaledVector(c.axisU, aUv.array[i * 2])
-            .addScaledVector(c.axisV, aUv.array[i * 2 + 1]);
-          const D = zStop - w.z;
-          const x = ((E[0] * w.x) / D + 1) * 400;
-          const y = (1 - (E[5] * w.y) / D) * 300;
-          expect(x).to.be.within(0, 800);
-          expect(y).to.be.within(0, 600);
-          const tile = (E[0] * c.axisU.length() * aCell.array[i * 2] * 400) / D;
-          expect(tile).to.be.below(2 * Math.sqrt((800 * 600) / 3000));
-        }
-      }
+    const [edgeCard, midCard] = draws().map((o) => o.geometry.attributes.aUv);
+    // Each converts whole: its grid spans the card.
+    [edgeCard, midCard].forEach((uv) => {
+      const us = uv.array.filter((_, i) => i % 2 === 0);
+      expect(Math.min(...us)).to.be.below(0.05);
+      expect(Math.max(...us)).to.be.above(0.95);
     });
-    expect(paired).to.equal(stats.paired);
+    expect(edgeCard.count).to.be.below(midCard.count);
     // The same cards and runway give the same particles, whenever it runs.
     await fx.setSources(cards, view);
     expect(snapshot()).to.deep.equal(first);

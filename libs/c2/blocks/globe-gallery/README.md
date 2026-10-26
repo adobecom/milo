@@ -1980,7 +1980,7 @@ and the extra scroll goes to the flight and the reading hold.
 | `p` | What |
 | --- | --- |
 | 0 | Cards as before. Once p > 0 and the pairing is ready, they hide and their particles take over, identical on screen. |
-| 0.1 → 0.2 | Particles release from the camera dolly, card rims first (earlier for a card the dolly carries off screen sooner). |
+| 0.02 → 0.08 | Particles release from the camera dolly, card rims first (a tile the dolly has grown too big goes earlier). |
 | 0.45 → 0.8 | Landings in reading order (± jitter), each region turning crisp as it lands. |
 | 0.88 (`QUOTE_LIVE_P`) | The whole quote is the crisp raster; the DOM takes over and the canvas hides. |
 
@@ -2003,28 +2003,19 @@ the tiles are the card, pixel for pixel, up to the release.
 
 **Source layout: a pure function of the runway.** `setSources(cards, view)` never reads the live
 frame. It projects with the canonical camera of the runway (`camZAt(zoom, p)`, the shader's
-`camZAt`), so a fling that first sees p = 0.25 gets the same layout as a slow scroll. Per card:
-- its release window is `QUOTE_FLIGHT.release` ([0.1, 0.2]), ended earlier (from `MIN_LATE` 0.04) at
-  the p where less than `KEEP_SEEN` (half) of what is seen of it at p 0 is still in view. Narrow
-  views dolly cards off screen fast, so there they break up sooner, while still visible;
-- the part in view at the end of that window (24×24 probe) gets paired particles. The budget is
-  shared by that on-screen area (at least `MIN_TILES` per card), so tiles are about the even share
-  of the view, √(W·H / count), when they leave: ≤ ~6 CSS px;
-- the rest of what is on screen at p 0 is coarse card-only remnant tiles (`REMNANT_K` × the share)
-  that ride the dolly off screen and never pair (arrival `PENDING_P`). Particles next to that seam
-  hold on until the window's end (`SEAM_RAMP`), when the seam is at the view's edge, so the card
-  never shows a straight cut;
-- a particle out of view at its own release is a remnant too. So every paired particle leaves its
-  card on screen: the quote is made of what the user saw dissolve.
-All draws are seeded (`seededRandom`), and the pairing runs over the next two frames; until it is
-ready the particles stay hidden and the cards stay drawn (`isPaired()`).
+`camZAt`), so a fling that first sees p = 0.25 gets the same layout as a slow scroll. Every card in
+view at p 0 converts whole, on a grid. The budget is shared by each card's on-screen area at p 0,
+with a floor so even a card mostly off screen gets tiles no bigger than `TILE_MAX_K` × the view's
+even share √(W·H / count) (a few of its particles fly in from just off screen; fine). All draws are
+seeded (`seededRandom`); the pairing runs over the next two frames, and until it is ready the
+particles stay hidden and the cards stay drawn (`isPaired()`).
 
 **Release.** Each particle's release p is set mostly by its distance from its card's edge
-(`EDGE_LEAD`), so cards tear from the rim. At release the particle gets its own camera, which starts
-at the live camera's position and speed and eases to a stop (`aRand.z`): naturally
-`QUOTE_RELEASE_REACH` of its remaining depth, with the outward drift softly limited (tanh) to the
-room left inside `STOP_BOUND` of the view and the tile to `QUOTE_TILE_MAX_K` × the share. No
-velocity kink, no particle drifting off screen, and no pile-up on the edge.
+(`EDGE_LEAD`), so cards tear from the rim, and comes no later than the dolly growing its tile past
+`TILE_MAX_K` shares, so a big card never breaks into big chunks. At release the particle gets its own
+camera, which carries on at the live camera's speed and decays to a stop `QUOTE_RELEASE_REACH` of
+the way to `QUOTE_MIN_DEPTH` in front of it: simple inertia, velocity-continuous, no clamping (brief
+off-screen excursions are fine).
 
 **Pairing (soft).** Card pixels are matched to glyph targets by position on the frames after the
 hand-off (the sort runs one animation frame later, `fillDraw` the frame after), so the hand-off frame
@@ -2048,7 +2039,9 @@ turns to the text colour.
 that feathers the wave's edge. `QUOTE_PLANE_FRAG` recomputes the same order per pixel and reveals the
 crisp raster from a region's mean arrival to past its latest one; landed particles grow into solid
 squares and fade out after that. The quote goes crisp in one reading-order wave behind the landing,
-with no global fill-in, and the crosshair forms the same way.
+with no global fill-in. The crosshair's rules take the last `1 − QUOTE_TEXT_END` (20%) of the order
+(horizontals left to right, verticals top to bottom), so the text forms first and the lines draw in
+after the last glyph from the remaining particles; the per-pixel reveal follows the same order.
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
 authored text (`plainQuote`, which also hangs the opening mark), shrinks the font if the box is
@@ -2100,8 +2093,7 @@ view (about 3–12) plus the text plane. The scene renders only while something 
 median frame stays at 60 fps.
 
 **Known limitations.**
-- A paired particle near the view's edge decelerates over a shorter reach, so a card running off
-  screen visibly slows at the edge as it tears.
+- A card running off screen still converts whole, so some particles fly in from just off screen.
 - Ligatures and kerning come from canvas shaping, so an individual glyph in the raster can differ by
   a pixel from the DOM's (the swap's 0.06 mean is mostly that).
 - `--gg-pq-hold` is a fixed 100vh; a very long quote on a short viewport gets less reading time.
@@ -2466,20 +2458,21 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     card back from where it was released; upward drag is clamped to 0). matchMedia-less → no
     gestures. The gesture code transforms the canvas, not the chrome, so it's layout-agnostic
     across the sm scrim and the md full-height panel.
-- **Near-camera dissolve: the card's own tiles scatter** (`src/card-scatter.js`). Across the near
-  band (`bp.NEAR_FADE_START` → `NEAR_FADE_END` card-heights of depth) `placeSphereCard` hides the
-  card and lists it with its dissolve `d = 1 − proxFade`; `updateCardScatter` draws it as one
+- **Near-camera dissolve: the card bursts into its own tiles** (`src/card-scatter.js`). Across the
+  near band (`bp.NEAR_FADE_START` → `NEAR_FADE_END` card-heights of depth) `placeSphereCard` hides
+  the card and lists it with its dissolve `d = 1 − proxFade`; `updateCardScatter` draws it as one
   `Points` draw of the quote particles' shaders in scatter mode (`uScatterP = d`). So both layers
-  break up the same way: tiles that sample the real card texture through a per-pixel ray (pixel for
-  pixel the card at `d = 0`), released rim first (`EDGE_LEAD`, all by `RELEASE_SPAN` 0.55 of the
-  band), shrinking to dots as they fly out from the view's centre (`SCATTER_OUT`) along the same
-  swirl flow, and fading to nothing by `d = 1`, where the stage used to hide the card.
+  break up into the same tiles, sampling the real card texture through a per-pixel ray (pixel for
+  pixel the card at `d = 0`). Each tile detaches rim first (`SCATTER_RIM_LEAD`, all within
+  `SCATTER_SPAN` 0.55 of the band) and flies out from the card's centre and the view's (past the
+  camera), at its own speed and ±23° angle, accelerating (t²), shrinking to a dot and fading by
+  `d = 1`, where the stage used to hide the card.
   - **A pure function of the card's state.** Tile positions are card-local (`aUv` on the plane of
     the card's live `matrixWorld`) and their progress is the card's own `d`, so spin, drag and scroll
     in either direction re-evaluate them; nothing is snapshotted, nothing can strand.
   - **One shared geometry.** Every card uses the same grid (`NEAR_TILE_PX` ≈ 4.5 CSS px at the
-    band's start, from the projection and `NEAR_FADE_START` only: ~5.5k tiles on desktop, ~4.8k on
-    mobile), seeded; each dissolving card only adds a material slot (pooled) and a draw.
+    band's start: ~5.5k tiles on desktop, ~4.8k on mobile); each dissolving card only adds a material
+    slot (pooled) and a draw. The program is compiled at init (`warm`), not on the first band frame.
   - Reduced motion never reaches the band; without a scatter the card would just fade.
 - **Sphere rotation — clamped Euler pitch/yaw (yaw free, pitch capped ±60°).** The orientation
   SOURCE is a pitch/yaw pair (`sphereOrient.x`, `sphereOrient.y`); the shared `sphereRotQuat` every

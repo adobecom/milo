@@ -208,15 +208,16 @@ export const TEXT_FRAG = [
 // with the LIVE camera, so it rides the dolly. Its point sprite is a window onto the real card
 // texture (per-fragment uv from a ray through the card's plane, so it stays exact under any
 // perspective and tile size), masked by the card's corner SDF, so at rest the tiles are the card,
-// pixel for pixel. Released rim first, each particle's own camera eases off the dolly to a stop
-// (velocity-continuous; short enough that it stays on screen with its tile at most
-// QUOTE_TILE_MAX_K, see quote-particles.js); later it departs and travels to its text target.
-// aRand = (departure p, release p, camera z it eases to, arrival p); a card-only remnant tile is
-// never paired (arrival PENDING_P) and rides the dolly off screen. Sources and
-// targets are paired by a 2D quantile order (quote-particles.js), so neighbours stay neighbours.
+// pixel for pixel. Released rim first, each particle's own camera keeps a decaying share of the
+// dolly (velocity-continuous, no clamp); later it departs and travels to its text target.
+// aRand = (departure p, release p, unused, arrival p). Sources and targets are paired by a 2D
+// quantile order (quote-particles.js), so neighbours stay neighbours.
 // Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
 // together, and the crisp text plane reveals each pixel with that same function: the text goes
 // crisp in one wave with the landing, with no global fill-in afterwards.
+// Share of the reading order the text takes; the crosshair lines draw in over the rest, after the
+// last glyph, from the particles left.
+export const QUOTE_TEXT_END = 0.8;
 export const QUOTE_SETTLE = 0.04; // a region's particles hand over to the crisp text in this window
 export const QUOTE_INK_FROM = 0.7; // share of a particle's own travel after which it turns to ink
 // ± p on each particle's reading-order arrival, so the landing wave's edge is feathered and a dense
@@ -230,7 +231,7 @@ export const QUOTE_ARRIVE_JITTER = 0.02;
 export const QUOTE_FLIGHT = {
   arriveStart: 0.45,
   arriveSpan: 0.35,
-  release: [0.1, 0.1],
+  release: [0.02, 0.06],
   fly: 0.3,
   edgeFly: 0.5,
 };
@@ -245,14 +246,12 @@ const QUOTE_SWIRL_DRIFT = 1.5; // how far the flow evolves over the flight, nois
 export const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
 // Share of its remaining depth a released particle still closes.
 export const QUOTE_RELEASE_REACH = 0.5;
-// A paired tile's largest on-screen size when it leaves its card, as a multiple of the even share
-// of the view (√(W·H / count)): it is released before the dolly magnifies it past that.
-export const QUOTE_TILE_MAX_K = 1.5;
-export const PENDING_P = 9; // departure/arrival p of an unpaired particle: beyond any flight
-const QUOTE_TILE_CAP = 256; // CSS px; only the card-only remnant tiles ever get near it
-// A near card's scatter: how far out from the view's centre a particle flies, as a multiple of
-// its offset, by the time it is gone.
-const SCATTER_OUT = 0.6;
+const QUOTE_TILE_CAP = 256; // CSS px, a sanity cap
+// A near card's scatter: the share of its dissolve over which tiles detach (rim first, by
+// SCATTER_RIM_LEAD), and how far out they fly, in multiples of their offset from the card centre.
+const SCATTER_SPAN = 0.55;
+const SCATTER_RIM_LEAD = 0.75;
+const SCATTER_EXPAND = 1.5;
 
 // Value noise and its curl: a divergence-free 2D flow, deterministic in its inputs.
 const CURL_NOISE = [
@@ -296,6 +295,7 @@ export const QUOTE_POINTS_VERT = [
   // ≥ 0: a near card's scatter (CardScatter), at this progress of its near-camera dissolve; the
   // particles ride the card's live pose, break up edge first (aRand.x) and drift out to nothing.
   'uniform float uScatterP;',
+  'uniform float uAspect;', // the card's width / height
   'attribute vec2 aUv;', // u right, v down the card as seen
   'attribute vec2 aCell;', // the particle's cell, in card uv
   'attribute vec4 aRand;',
@@ -336,9 +336,8 @@ export const QUOTE_POINTS_VERT = [
   `    float minZ = w.z + ${glf(QUOTE_MIN_DEPTH)};`,
   // Until its release the particle sees the live camera; after, a camera that carries on at the
   // same speed and eases to a stop short of it — no kink, and never past it.
-  // aRand.z is the camera z it stops at; a remnant (never paired) rides the dolly off screen.
-  `    if (uScatterP < 0.0 && camZ < zDep && aRand.w < ${glf(PENDING_P)}) {`,
-  '      float d = max(zDep - aRand.z, 0.001);',
+  '    if (uScatterP < 0.0 && camZ < zDep) {',
+  `      float d = max(zDep - minZ, 0.001) * ${glf(QUOTE_RELEASE_REACH)};`,
   '      zEff = zDep - d * (1.0 - exp(-(zDep - camZ) / d));',
   '    }',
   '    zEff = max(zEff, minZ);',
@@ -347,23 +346,30 @@ export const QUOTE_POINTS_VERT = [
   '    sv = toPx(w + uAxisV * aCell.y, zEff) - s;',
   '  }',
   'bool scatter = uScatterP >= 0.0;',
-  // Scatter: no target, it flies on outward from the view's centre.
-  `  vec2 dst = scatter ? s + (s - 0.5 * uView) * ${glf(SCATTER_OUT)} : position.xy;`,
   // One leg from the card to the glyph: `t` drives the tile → dot change, landing and ink.
-  '  float t = scatter',
-  '    ? clamp((uScatterP - aRand.x) / max(1.0 - aRand.x, 0.001), 0.0, 1.0)',
-  '    : clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
+  '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
   '  float te = smoother(t);', // still at both ends: velocity-continuous at departure and landing
-  '  vec2 pos = mix(s, dst, te);',
-  // Carried by the shared flow, zero at both ends: hand-off and landing are exact. A scatter
-  // keeps it to the end, where it is gone.
+  '  vec2 pos = mix(s, position.xy, te);',
+  // Carried by the shared flow, zero at both ends: hand-off and landing are exact.
   '  float vmin = min(uView.x, uView.y);',
-  '  float flowT = scatter ? uScatterP : uP;',
-  `  vec2 flow = curl(pos / (${glf(QUOTE_SWIRL_SCALE)} * vmin) + flowT * ${glf(QUOTE_SWIRL_DRIFT)});`,
-  `  pos += flow * ${glf(QUOTE_SWIRL_AMP)} * vmin * (scatter ? te : sin(3.14159 * te));`,
+  `  vec2 flow = curl(pos / (${glf(QUOTE_SWIRL_SCALE)} * vmin) + uP * ${glf(QUOTE_SWIRL_DRIFT)});`,
+  `  pos += flow * ${glf(QUOTE_SWIRL_AMP)} * vmin * sin(3.14159 * te);`,
+  // Scatter: the card bursts outward, rim first: each tile flies from the card's centre (and the
+  // view's, past the camera) at its own speed and angle, accelerating. Exact at t = 0.
+  '  if (scatter) {',
+  '    float h1 = hash21(aUv * 97.0 + 13.1);',
+  '    float h2 = hash21(aUv * 61.0 + 3.7);',
+  '    float rim = min(1.0, 2.0 * min(min(aUv.x, 1.0 - aUv.x), min(aUv.y, 1.0 - aUv.y)));',
+  `    float det = ${glf(SCATTER_SPAN)} * (${glf(SCATTER_RIM_LEAD)} * rim + ${glf(1 - SCATTER_RIM_LEAD)} * h1);`,
+  '    t = clamp((uScatterP - det) / (1.0 - det), 0.0, 1.0);',
+  '    vec2 dir = s - toPx(uOrigin + 0.5 * (uAxisU + uAxisV), zEff);',
+  '    float a = (h2 - 0.5) * 0.8;',
+  '    dir = mat2(cos(a), sin(a), -sin(a), cos(a)) * dir;',
+  `    pos = s + (dir * (0.5 + h2) * ${glf(SCATTER_EXPAND)} + (s - 0.5 * uView) * 0.5) * t * t;`,
+  '  }',
   // The bounding square of the projected cell, so neighbouring tiles always overlap.
   '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
-  '  float g = smoothstep(0.0, 0.4, t);',
+  '  float g = scatter ? smoothstep(0.3, 0.8, t) : smoothstep(0.0, 0.4, t);',
   // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
   // solid for the moment before the crisp text takes it over.
   '  float land = scatter ? 0.0 : smoothstep(0.85, 1.0, t);',
@@ -381,12 +387,10 @@ export const QUOTE_POINTS_VERT = [
   // Keyed past the latest arrival in its region, so early landers stay until the crisp text is in.
   `  float fadeAt = aRand.w + ${glf(QUOTE_ARRIVE_JITTER)};`,
   `  vFade = 1.0 - smoothstep(fadeAt + ${glf(QUOTE_SETTLE * 0.3)}, fadeAt + ${glf(QUOTE_SETTLE * 0.8)}, uP);`,
-  // A remnant is card only, and off screen by its release: gone by then anyway.
-  `  if (aRand.w >= ${glf(PENDING_P)}) vFade = 1.0 - smoothstep(aRand.y, aRand.y + 0.02, uP);`,
   '  vInk = aDstCol;',
   `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
   '  vInkK = ink * ink;',
-  '  if (scatter) { vFade = 1.0 - smoothstep(0.3, 1.0, t); vInkK = 0.0; }',
+  '  if (scatter) { vFade = 1.0 - smoothstep(0.45, 1.0, t); vInkK = 0.0; }',
   '}',
 ].join('\n');
 
@@ -463,11 +467,21 @@ export const QUOTE_PLANE_FRAG = [
   'uniform float uP;',
   'uniform vec4 uBox;', // the reading-order box (x, y, w, h), px
   'uniform float uRtl;',
+  'uniform vec4 uRules;', // crosshair line centres (left x, right x, top y, bottom y), px
+  'uniform float uRuleW;',
   'varying vec2 vUv;',
   'varying vec2 vPx;',
   'void main() {',
-  '  vec2 n = (vPx - uBox.xy) / max(uBox.zw, vec2(1.0));',
-  '  float order = clamp((uRtl > 0.5 ? 1.0 - n.x : n.x) * 0.7 + n.y * 0.3, 0.0, 1.0);',
+  '  vec2 n = clamp((vPx - uBox.xy) / max(uBox.zw, vec2(1.0)), 0.0, 1.0);',
+  '  float nx = uRtl > 0.5 ? 1.0 - n.x : n.x;',
+  // Must match quote-particles.js readingOrder: the text first, then the crosshair draws in.
+  `  float order = (nx * 0.7 + n.y * 0.3) * ${glf(QUOTE_TEXT_END)};`,
+  '  float tol = uRuleW * 0.5 + 1.0;',
+  '  if (min(abs(vPx.y - uRules.z), abs(vPx.y - uRules.w)) <= tol) {',
+  `    order = ${glf(QUOTE_TEXT_END)} + ${glf(1 - QUOTE_TEXT_END)} * nx;`,
+  '  } else if (min(abs(vPx.x - uRules.x), abs(vPx.x - uRules.y)) <= tol) {',
+  `    order = ${glf(QUOTE_TEXT_END)} + ${glf(1 - QUOTE_TEXT_END)} * n.y;`,
+  '  }',
   `  float arrive = ${glf(QUOTE_FLIGHT.arriveStart)} + ${glf(QUOTE_FLIGHT.arriveSpan)} * order;`,
   // From the region's mean arrival to past its latest one: crisp only once most particles are in.
   `  float reveal = smoothstep(arrive, arrive + ${glf(QUOTE_SETTLE * 0.6 + QUOTE_ARRIVE_JITTER)}, uP);`,
