@@ -433,9 +433,17 @@ describe('AcomAssistant shared client lifecycle', () => {
     it('logs an error when there is no app ID', () => {
       setConfig({});
       expect(assistant.getAcomAssistantIdentity())
-        .to.deep.equal({ appid: undefined, appver: undefined });
+        .to.deep.equal({ appid: undefined, appver: '1.0' });
       expect(window.lana.log.calledOnce).to.be.true;
       expect(window.lana.log.firstCall.args[0]).to.include('no app ID');
+    });
+
+    it('defaults the app version to 1.0 when none is authored', () => {
+      setConfig({});
+      addMeta('jarvis-surface-id', 'page-id');
+      expect(assistant.getAcomAssistantIdentity())
+        .to.deep.equal({ appid: 'page-id', appver: '1.0' });
+      expect(window.lana.log.called).to.be.false;
     });
 
     it('reports footer section metadata for a single open', async () => {
