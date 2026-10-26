@@ -915,7 +915,7 @@ function createGlobeGalleryRuntime(
 
   function snapToBrowseView() {
     if (suppressFocusSnap) return;
-    const top = blockDocTop;
+    const top = Math.ceil(blockDocTop);
     // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
     // before the callback below lands. Above the block that tick would reset the orientation and
     // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
@@ -1170,7 +1170,10 @@ function createGlobeGalleryRuntime(
     if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
     const { mesh } = cards[idx];
     mesh.getWorldPosition(ringWorld);
-    if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
+    if (canvasHidden || !mesh.visible || camera.position.z - ringWorld.z <= 0.01) {
+      a11y.setFocusRect(0, 0, 0, 0);
+      return;
+    }
     const groupScale = sphereGroup.scale.x;
     ringEdge.set(
       ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,

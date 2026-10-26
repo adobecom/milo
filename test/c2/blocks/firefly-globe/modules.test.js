@@ -152,13 +152,42 @@ describe('firefly-globe accessibility gallery', () => {
     expect(center.lastCall.args).to.deep.equal([2]);
     gallery.setFocusRect(20, 30, 40, 50);
     expect(cards.firstElementChild.style.borderRadius).to.equal('1.75px');
+    expect(cards.firstElementChild.style.opacity).to.equal('');
+    gallery.setFocusRect(20, 30, 0, 0);
+    expect(cards.firstElementChild.style.opacity).to.equal('0');
     gallery.focusCard(1);
     expect(gallery.getFocusedIdx()).to.equal(1);
+    expect(cards.firstElementChild.getAttribute('style')).to.equal(null);
     expect(focus.called).to.equal(true);
     document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(gallery.isBrowsing()).to.equal(false);
     expect(cards.inert).to.equal(true);
     expect(document.activeElement).to.equal(widget);
+  });
+
+  it('moves Tab/Shift+Tab between cards itself, without native focus scrolling', () => {
+    gallery.setup();
+    root.querySelector('.firefly-globe-a11y').click();
+    const tab = (shiftKey) => {
+      const e = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
+      document.activeElement.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+    try {
+      expect(tab(false)).to.equal(true);
+      expect(document.activeElement.dataset.idx).to.equal('0');
+      expect(focusSpy.lastCall.args).to.deep.equal([{ preventScroll: true }]);
+      expect(tab(false)).to.equal(true);
+      expect(document.activeElement.dataset.idx).to.equal('1');
+      expect(tab(false)).to.equal(false);
+      expect(tab(true)).to.equal(true);
+      expect(document.activeElement.dataset.idx).to.equal('0');
+      expect(tab(true)).to.equal(true);
+      expect(tab(true)).to.equal(false);
+    } finally {
+      focusSpy.restore();
+    }
   });
 
   it('gates tab stops during modal, tracks canvas opens without opening, and tears down', () => {

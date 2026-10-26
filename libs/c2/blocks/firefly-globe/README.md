@@ -29,6 +29,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Opening quote | Measured in canvas, hung with a negative `text-indent` | Wrapped in C2's `span.hang-opening-quote` (`styles.css`: absolute, `translateX(-100%)`), so the mark takes no inline space and is not kerned against the first letter; the letter's advance box sits on the column. Marks: `Ps`, `Pi`, `Pf`, ASCII `"` `'`. A mark ≥ 0.8em or wider than the gutter (`--fg-copy-pad`) stays inline: each quote line is an `overflow: hidden` mask with `--fg-hang-max` (0.8em) of side bleed, so a wider mark would be clipped; a CJK `「` needs both raised. |
 | Modules | `math.js` + `timeline.js` | `src/utils.js` (easings, `coverFit`, camera constants, the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`). |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
+| Keyboard browse | Native Tab between card buttons; `.globe-gallery-a11y-cards` is `position: fixed` | `a11y.js` moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
 
 ## Authoring
 
@@ -122,8 +123,25 @@ From the pin the camera travels through the sphere, so globe-gallery's inside-sp
 unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
 `cardCenterYawPitch` default to it. The keyboard focus snap
 (`centerCardOnScreen(i, !suppressFocusSnap)`) solves for the outside side; `snapToBrowseView` lands
-at `blockDocTop`, the first formed scroll position. Orientation and inertia reset only while not
-yet interactive.
+at `Math.ceil(blockDocTop)`, the first formed scroll position. `blockDocTop` is measured layout and
+usually fractional (1/64px layout units) while scroll offsets land on whole pixels, so an unrounded
+target ends ~0.2px above the block: not yet formed, world not quite stuck. Orientation and inertia
+reset only while not yet interactive.
+
+Browse mode moves focus itself: `onCardKeydown` handles Tab/Shift+Tab between cards (letting it
+through natively only past the first/last card), and every programmatic focus uses
+`focus({ preventScroll: true })`. Chrome scrolls a newly focused descendant of a sticky element into
+view even when it already is, so native Tab scrolled the page by ±300–400px and moved the
+scroll-driven globe (dropped to the bottom of the screen, or zoomed inside). Making the layer
+`position: fixed` (as globe-gallery does) is not enough: Milo section effects such as
+`parallax-video-garage-door` put `transform`/`filter`/`will-change` on the section, which makes the
+section the containing block and brings the bug back. The layer stays `absolute` in the world, so the
+ring's canvas coordinates need no mapping.
+
+When the focused card can't be projected (behind the camera, faded, or canvas hidden),
+`updateA11yFocusRing` passes a 0×0 rect, which `setFocusRect` turns into `opacity: 0`: hidden, but
+still focused so browse mode survives. Blurred buttons drop their inline rect, so stale boxes can't
+sit over the canvas and catch clicks.
 
 Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
 `LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)`, which damps steps smaller than
