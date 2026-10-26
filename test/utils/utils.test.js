@@ -148,6 +148,21 @@ describe('Utils', () => {
       });
     });
 
+    it('sets aup-select on mas-commerce-service once a value is available', () => {
+      const service = document.createElement('mas-commerce-service');
+      document.head.append(service);
+      try {
+        utils.syncAupSelectToCommerceService();
+        expect(service.hasAttribute('aup-select')).to.be.false;
+        meta.content = 'on';
+        document.head.append(meta);
+        utils.syncAupSelectToCommerceService();
+        expect(service.getAttribute('aup-select')).to.equal('on');
+      } finally {
+        service.remove();
+      }
+    });
+
     it('does not report a value for signed-in Universal Nav users without aup-select', () => {
       const { adobeIMS } = window;
       try {

@@ -406,6 +406,11 @@ export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
 }
 
+export function syncAupSelectToCommerceService() {
+  const value = getAupSelectValue();
+  if (value) document.head.querySelector('mas-commerce-service')?.setAttribute('aup-select', value);
+}
+
 export function isAupEnabled(useUniversalNav = false) {
   return !!((useUniversalNav && window.adobeIMS?.isSignedInUser()) || getAupSelectValue());
 }
@@ -2585,6 +2590,7 @@ async function loadPostLCP(config) {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
+    syncAupSelectToCommerceService();
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
@@ -3194,6 +3200,7 @@ export async function loadArea(area = document) {
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
+    syncAupSelectToCommerceService();
     initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
