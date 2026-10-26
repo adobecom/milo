@@ -10,8 +10,9 @@ import {
   lingoActive,
   normCountryCode,
   resolveDetectedMarketCountry,
+  getMarketConfig,
+  marketsLangForLocale,
 } from '../../utils/utils.js';
-import { getMarketConfig, marketsLangForLocale } from '../../utils/market.js';
 import { mepCaasConfigUrls } from '../../blocks/caas/utils.js';
 import { mepMasStudioUrls } from '../../blocks/merch/mas-mep-utils.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../blocks/merch/merch.js';

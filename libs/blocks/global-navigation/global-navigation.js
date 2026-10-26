@@ -1230,7 +1230,7 @@ class Gnav {
     let countryCode = getMiloLocaleSettings(getConfig().locale)?.country || 'US';
     if (isMasGeoDetectionEnabled?.()) {
       const base = getConfig().miloLibs || getConfig().codeRoot;
-      const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+      const { getValidatedMarket } = await import(`${base}/utils/utils.js`);
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 

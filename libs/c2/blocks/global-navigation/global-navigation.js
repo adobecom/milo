@@ -220,7 +220,7 @@ export default async function init(el) {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
     const base = config.miloLibs || config.codeRoot;
-    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+    const { getValidatedMarket } = await import(`${base}/utils/utils.js`);
     return (await getValidatedMarket())?.toUpperCase();
   })().catch(() => undefined);
 
