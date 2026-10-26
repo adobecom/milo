@@ -421,6 +421,8 @@ function createGlobeGalleryRuntime(
     p: 0, // 0 → 1 scroll progress of the card → text flight
     live: false,
     sourced: false, // particle sources sampled for the current flight
+    planes: [], // ...from these card planes
+    viewKey: '', // ...for this view and runway
     canvasPos: '', // cached inline canvas position / pointer-events
     swapT: 0, // 0 → 1: the DOM quote has taken over from the canvas (see updateQuoteSwap)
     swapStr: '',
@@ -1413,49 +1415,34 @@ function createGlobeGalleryRuntime(
     pqEl.style.pointerEvents = live ? 'auto' : 'none';
   }
 
-  const quadCorner = new THREE.Vector3();
-
   // The far-side cards on the hand-off frame, as world-space planes. The orientation is frozen
   // while the particles own the cards, so the planes hold for the whole flight and a reversal
   // lands the cards exactly where the particles left them; the camera keeps dollying, and the
   // particles are projected with it every frame.
-  function projectCardQuads() {
-    camera.updateMatrixWorld();
+  function cardPlanes() {
     sphereGroup.updateMatrixWorld(true);
     const out = [];
     cards.forEach((card) => {
       const { mesh } = card;
-      if (!mesh.visible || modal.isCardManaged(card)) return;
+      // Not mesh.visible: on a fling the live camera may already be past the card (setSources
+      // drops what is behind the canonical camera instead).
+      if (!card.onSphere || modal.isCardManaged(card)) return;
       const u = mesh.material.uniforms;
-      const alpha = u.uOpacity.value * u.uReveal.value;
+      const alpha = card.revealT ** 2; // as the card's uOpacity × uReveal on the far side
       if (alpha <= 0.002) return;
       const world = (cu, cv) => new THREE.Vector3(
         (cu - 0.5) * bp.CARD_W_SPHERE,
         (0.5 - cv) * bp.CARD_H_SPHERE,
         0,
       ).applyMatrix4(mesh.matrixWorld);
-      let behind = false;
-      const project = (cu, cv) => {
-        quadCorner.copy(world(cu, cv));
-        if (camera.position.z - quadCorner.z < camera.near) behind = true;
-        quadCorner.project(camera);
-        return [(quadCorner.x + 1) * 0.5 * W, (1 - quadCorner.y) * 0.5 * H];
-      };
-      const pts = [[0, 0], [1, 0], [0, 1]].map(([cu, cv]) => project(cu, cv));
-      if (behind) return;
       const origin = world(0, 0);
-      // Screen winding tells a back face, which the card shader mirrors in u.
-      const cross = (pts[1][0] - pts[0][0]) * (pts[2][1] - pts[0][1])
-        - (pts[1][1] - pts[0][1]) * (pts[2][0] - pts[0][0]);
       out.push({
-        project,
         origin,
         axisU: world(1, 0).sub(origin),
         axisV: world(0, 1).sub(origin),
         tex: u.uMap.value,
         repeat: u.uRepeat.value.clone(),
         offset: u.uOffset.value.clone(),
-        mirror: cross < 0,
         aspect: u.uAspect.value,
         radius: u.uRadius.value,
         alpha,
@@ -1465,26 +1452,35 @@ function createGlobeGalleryRuntime(
     return out;
   }
 
-  // After the card stage. From the first frame of p > 0 the particles are the far-side cards,
-  // pixel for pixel, so the cards hide; at p = 0 it is all cards again.
+  // After the card stage. The source layout is read off the canonical camera of the runway, so it
+  // is the same whichever frame first sees p > 0; the cards stay until it is paired, then the
+  // particles are the far-side cards, pixel for pixel. At p = 0 it is all cards again.
   function updateQuoteParticles() {
     if (!pq.fx) return;
     const owns = quoteOwnsCards();
-    if (owns) {
-      if (!pq.sourced) {
-        pq.fx.setSources(projectCardQuads(), W, H);
-        pq.sourced = true;
-      }
-      cards.forEach((card) => {
-        if (!modal.isCardManaged(card)) card.mesh.visible = false;
-      });
-    } else {
-      pq.sourced = false; // re-sampled on the next crossing
-    }
     const formPx = formedScrollPx();
     const zoomPx = Math.max(1, blockHeight - holdPx() - formPx);
     const { CAM_Z_SPHERE, CAM_Z_END } = bp;
     const zoom = [pqStartZoomT, (PQ_FLY_VH * H) / zoomPx, CAM_Z_SPHERE, CAM_Z_SPHERE - CAM_Z_END];
+    if (owns) {
+      // The planes are taken once per crossing; a resize only lays them out again.
+      const e = camera.projectionMatrix.elements;
+      const view = { W, H, zoom, proj: [e[0], e[5], e[8], e[9]] };
+      const key = JSON.stringify(view);
+      if (!pq.sourced) pq.planes = cardPlanes();
+      if (!pq.sourced || key !== pq.viewKey) {
+        pq.fx.setSources(pq.planes, view);
+        pq.sourced = true;
+        pq.viewKey = key;
+      }
+      if (pq.fx.isPaired()) {
+        cards.forEach((card) => {
+          if (!modal.isCardManaged(card)) card.mesh.visible = false;
+        });
+      }
+    } else {
+      pq.sourced = false; // re-sampled on the next crossing
+    }
     pq.fx.update(pq.p, { W, H, dpr: capDpr(), active: owns, zoom });
   }
 
@@ -1540,10 +1536,7 @@ function createGlobeGalleryRuntime(
     } else {
       mesh.position.copy(card.spherePos);
     }
-    // Return early ONLY at depth ≤ 0 — a return leaves the transform stale, which scroll jitter
-    // shows as a flash.
     const depth = camera.position.z - (sphGroupZ + mesh.position.z);
-    if (depth <= 0) { mesh.visible = false; return; }
     // One band for the whole wall, so the order is purely by depth.
     const fadeEnd = cardVanishDepth();
     const fadeStart = bp.NEAR_FADE_START * fadeRefH;
@@ -1562,6 +1555,8 @@ function createGlobeGalleryRuntime(
       mesh.quaternion.copy(card.sphereQuat);
     }
     applyCardFacing(mesh);
+    // Behind the camera: hidden, but its transform is fresh (cardPlanes reads it on any frame).
+    if (depth <= 0) { mesh.visible = false; return; }
     // Max dissolve, min opacity, so neither un-hides what the other hides.
     const proxDis = 1 - proxFade;
     const revealDis = 1 - card.revealT;
@@ -1789,6 +1784,7 @@ function createGlobeGalleryRuntime(
     const prevMeshY = mesh.position.y;
 
     // Latest phase first. Sphere + settled-grid skip the stage compute.
+    card.onSphere = fdE >= 1;
     if (fdE >= 1) {
       placeSphereCard(card, mesh, frame);
     } else if (gpE >= 1 && fdE === 0) {

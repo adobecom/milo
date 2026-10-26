@@ -2,6 +2,7 @@ import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
   QUOTE_FLIGHT as F, QUOTE_CRISP_P, QUOTE_ARRIVE_JITTER,
+  QUOTE_MIN_DEPTH, QUOTE_RELEASE_REACH, QUOTE_TILE_MAX_K, PENDING_P,
 } from './shaders.js';
 
 // The pull-quote transition: card pixels swirl into the quote's glyphs, then hand over to a
@@ -11,6 +12,9 @@ import {
 
 const INK_ALPHA = 128; // raster alpha that counts as a target pixel
 const PROBE = 24; // grid that finds the on-screen part of each card
+const REMNANT_K = 4; // a remnant tile's size at the hand-off, in even shares of the view
+const MIN_TILES = 256; // per card on screen at the release, however small
+const SEED = 20240611; // every draw below is seeded: a scroll position always looks the same
 const DST_SIZE = 2; // until the first layout measures the spacing
 const EDGE_LEAD = 0.75; // share of the departure order set by distance from the card's edge
 const RASTER_PAD = 6; // px around the figure so antialiased edges are not clipped
@@ -169,7 +173,34 @@ function rasterize(m, dpr) {
   };
 }
 
-const PENDING = 9; // departure/arrival p before pairing: beyond any flight
+const PENDING = PENDING_P;
+// A released particle's stop stays inside this share of the view: what is left of its room to the
+// edge is shared out softly (tanh), so stops never pile up on the edge.
+const STOP_BOUND = 0.96;
+const SEAM_RAMP = 0.3; // share of the paired window, from a remnant seam, that holds on longer
+// A card's release window ends by the p at which less than KEEP_SEEN of what is seen of it at p 0
+// is still in view (scanned in SCAN_STEP on a SCAN_PROBE grid), but not before MIN_LATE.
+const KEEP_SEEN = 0.5;
+const SCAN_STEP = 0.01;
+const SCAN_PROBE = 8;
+const MIN_LATE = 0.04;
+
+// Park–Miller: a small seeded PRNG in (0, 1), exact in doubles.
+export function seededRandom(seed) {
+  let a = (Math.abs(Math.floor(seed)) % 2147483646) + 1;
+  return () => {
+    a = (a * 16807) % 2147483647;
+    return (a - 1) / 2147483646;
+  };
+}
+
+// The camera at flight progress p, as the shaders' camZAt (TL.camZAtZoomT along the runway);
+// zoom = [zoomT at p 0, zoomT per unit p, CAM_Z_SPHERE, z span].
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+export function camZAt(zoom, p) {
+  const z = clamp01(zoom[0] + p * zoom[1]);
+  return zoom[2] - zoom[3] * (1 - (1 - z) ** 3);
+}
 const PAIR_BANDS = 8; // x bands of the 2D quantile order (8 measured best of 4–32)
 
 // Indices of the first `count` points sorted by `key`, via one native typed-array sort of packed
@@ -250,6 +281,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   };
   let draws = []; // [{ points, mat, geo }]
   let lastQuads = null;
+  let sourcesPaired = false; // the current sources have their targets
 
   const planeGeo = new THREE.BufferGeometry();
   planeGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3));
@@ -296,8 +328,9 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     // Partial Fisher-Yates: a uniform pick when there is ink to spare, a cycle when there is not.
     const pick = Uint32Array.from(cand);
     const take = Math.min(n, pick.length);
+    const rnd = seededRandom(SEED);
     for (let i = 0; i < take; i += 1) {
-      const j = i + Math.floor(Math.random() * (pick.length - i));
+      const j = i + Math.floor(rnd() * (pick.length - i));
       [pick[i], pick[j]] = [pick[j], pick[i]];
     }
     const { box } = m;
@@ -310,8 +343,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     for (let i = 0; i < n; i += 1) {
       const k = pick[i % take];
       const p = k / 4;
-      const px = (r.x0 + (p % r.w) + 0.5) / dpr + (Math.random() - 0.5) * jitter;
-      const py = (r.y0 + Math.floor(p / r.w) + 0.5) / dpr + (Math.random() - 0.5) * jitter;
+      const px = (r.x0 + (p % r.w) + 0.5) / dpr + (rnd() - 0.5) * jitter;
+      const py = (r.y0 + Math.floor(p / r.w) + 0.5) / dpr + (rnd() - 0.5) * jitter;
       tDst[i * 2] = px;
       tDst[i * 2 + 1] = py;
       tCol.set([data[k] / 255, data[k + 1] / 255, data[k + 2] / 255], i * 3);
@@ -356,32 +389,28 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const releaseAt = (edge) => F.release[0] + F.release[1] * edge;
 
   // [departure, arrival] p once the particle is paired with a target of reading order `order`.
-  function flight(order, edge, jitter = 0) {
+  function flight(order, edge, release, jitter = 0) {
     const arrive = F.arriveStart + F.arriveSpan * order + jitter;
-    const release = releaseAt(edge);
     // A fixed flight ending at the particle's own arrival, so only a band is airborne at once;
     // rim particles fly longer so they still leave first. Never before the release.
     const leave = arrive - F.fly * (1 + F.edgeFly * (1 - edge));
     return [Math.min(arrive - 0.5 * F.fly, Math.max(release, leave)), arrive];
   }
 
-  // One card's (or the fallback's) particles, drawn as tiles from the hand-off frame on. Their
-  // targets come with the pairing (fillDraw); until then they hold at PENDING, never reached.
-  function addDraw(card, uvs, cell) {
+  // One card's (or the fallback's) particles: the `paired` first, then card-only remnant tiles.
+  // Targets and departures come with the pairing (fillDraw); until then they hold at PENDING.
+  function addDraw(card, {
+    uvs, cells, edge, release, stop, paired,
+  }) {
     const k = uvs.length / 2;
     const geo = new THREE.BufferGeometry();
-    const dst = new Float32Array(k * 3);
     const rand = new Float32Array(k * 4);
-    const edge = new Float32Array(k);
     for (let j = 0; j < k; j += 1) {
-      const u = uvs[j * 2];
-      const v = uvs[j * 2 + 1];
-      const inner = card ? Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v)) : Math.random();
-      edge[j] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * Math.random();
-      rand.set([PENDING, releaseAt(edge[j]), 0, PENDING], j * 4);
+      rand.set([PENDING, release[j], j < paired ? stop[j] : 0, PENDING], j * 4);
     }
-    geo.setAttribute('position', new THREE.BufferAttribute(dst, 3));
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(k * 3), 3));
     geo.setAttribute('aUv', new THREE.BufferAttribute(uvs, 2));
+    geo.setAttribute('aCell', new THREE.BufferAttribute(cells, 2));
     geo.setAttribute('aDstCol', new THREE.BufferAttribute(new Float32Array(k * 3), 3));
     geo.setAttribute('aRand', new THREE.BufferAttribute(rand, 4));
     const mat = new THREE.ShaderMaterial({
@@ -395,9 +424,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         uRadius: { value: card ? card.radius : 0 },
         uCardAlpha: { value: card ? card.alpha : 1 },
         uOrigin: { value: card ? card.origin : new THREE.Vector3() },
-        uAxisU: { value: card ? card.axisU : new THREE.Vector3() },
-        uAxisV: { value: card ? card.axisV : new THREE.Vector3() },
-        uCell: { value: new THREE.Vector2(cell[0], cell[1]) },
+        uAxisU: { value: card ? card.axisU : new THREE.Vector3(1, 0, 0) },
+        uAxisV: { value: card ? card.axisV : new THREE.Vector3(0, -1, 0) },
         uScreenSrc: { value: card ? 0 : 1 },
       },
       vertexShader: QUOTE_POINTS_VERT,
@@ -410,18 +438,20 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     points.frustumCulled = false;
     points.renderOrder = 1e6 + (card ? card.order : 0) / 1e4; // the cards' own depth order
     group.add(points);
-    draws.push({ points, mat, geo, count: k, edge });
+    draws.push({
+      points, mat, geo, count: k, paired, edge, release,
+    });
   }
 
-  // A draw's targets from the coherent rank each particle took.
-  function fillDraw({ geo, edge }, ranks) {
+  // A draw's targets from the coherent rank each paired particle took.
+  function fillDraw({ geo, edge, release }, ranks, rnd) {
     const { position, aDstCol, aRand } = geo.attributes;
     for (let j = 0; j < ranks.length; j += 1) {
       const i = tSorted[ranks[j]];
       position.array.set([tDst[i * 2], tDst[i * 2 + 1]], j * 3);
       aDstCol.array.set([tCol[i * 3], tCol[i * 3 + 1], tCol[i * 3 + 2]], j * 3);
-      const jitter = (Math.random() * 2 - 1) * QUOTE_ARRIVE_JITTER;
-      const [leave, arrive] = flight(tOrder[i], edge[j], jitter);
+      const jitter = (rnd() * 2 - 1) * QUOTE_ARRIVE_JITTER;
+      const [leave, arrive] = flight(tOrder[i], edge[j], release[j], jitter);
       aRand.array[j * 4] = leave;
       aRand.array[j * 4 + 3] = arrive;
     }
@@ -437,7 +467,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const q = i % n;
       random += Math.hypot(tDst[q * 2] - sx[i], tDst[q * 2 + 1] - sy[i]);
     }
-    return { count: k, meanPath: paired / Math.max(1, k), meanPathRandom: random / Math.max(1, k) };
+    return { meanPath: paired / Math.max(1, k), meanPathRandom: random / Math.max(1, k) };
   }
 
   // Source order r takes the r-th quantile of the targets' coherent order.
@@ -448,22 +478,22 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   }
 
   // Each source's target rank under soft pairing (see SOFT_X).
-  function softRanks(xs, ys, k) {
+  function softRanks(xs, ys, k, rnd) {
     const bw = (SOFT_X * extent(xs, k)) / PAIR_BANDS;
     const bh = SOFT_Y * extent(ys, k);
     const nx = new Float32Array(k);
     const ny = new Float32Array(k);
     for (let i = 0; i < k; i += 1) {
-      nx[i] = xs[i] + (Math.random() * 2 - 1) * bw;
-      ny[i] = ys[i] + (Math.random() * 2 - 1) * bh;
+      nx[i] = xs[i] + (rnd() * 2 - 1) * bw;
+      ny[i] = ys[i] + (rnd() * 2 - 1) * bh;
     }
     const order = coherentOrder(nx, ny, k);
     const ranks = quantileRanks(order, k);
     // Swaps along the order, so a target trades its source with a nearby target's.
     const span = Math.max(1, Math.round(SOFT_SWAP_SPAN * k));
     for (let r = 0; r < k; r += 1) {
-      if (Math.random() < SOFT_SWAP) {
-        const q = Math.min(k - 1, Math.max(0, r + Math.round((Math.random() * 2 - 1) * span)));
+      if (rnd() < SOFT_SWAP) {
+        const q = Math.min(k - 1, Math.max(0, r + Math.round((rnd() * 2 - 1) * span)));
         const [a, b] = [order[r], order[q]];
         [ranks[a], ranks[b]] = [ranks[b], ranks[a]];
       }
@@ -471,116 +501,305 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     return ranks;
   }
 
-  // cards: [{ project(u, v) → [x, y] px now, origin, axisU, axisV (world), tex, repeat, offset,
-  // mirror, aspect, radius, alpha, order }], u right and v down the card as seen. The particle
-  // budget is shared by the on-screen area of each card's visible part and laid on a grid over it.
-  function setSources(cards, W, H) {
-    lastQuads = { cards, W, H };
+  // The source layout. cards: [{ origin, axisU, axisV (world; u right, v down the card's front),
+  // tex, repeat, offset, aspect, radius, alpha, order }]; view: { W, H, zoom (as update), proj:
+  // [P00, P11, P02, P12] of the camera's projection }. Everything is read off the CANONICAL camera
+  // (camZAt), never the frame that happened to run it, so the layout is a pure function of the
+  // cards and the runway: a fling and a slow scroll get the same particles. Each card is tiled:
+  // - where it is still on screen at the end of its release window: paired tiles, the budget
+  //   shared by that on-screen area, each easing to a stop in view with a fine tile, so the quote
+  //   is made of what the user saw dissolve, in fine grains (see README, Source layout);
+  // - the rest of what is on screen at p 0: coarse card-only tiles that ride the dolly off screen.
+  function setSources(cards, view) {
+    lastQuads = { cards, view };
     clearDraws();
+    sourcesPaired = false;
+    pairing = null;
     if (!ready) return Promise.resolve(null);
-    const inView = ([x, y]) => x > -0.05 * W && x < 1.05 * W && y > -0.05 * H && y < 1.05 * H;
-    const windows = cards.map(({ project }) => {
-      let u0 = 1; let u1 = 0; let v0 = 1; let v1 = 0;
+    const { W, H, zoom, proj: [P00, P11, P02, P12] } = view;
+    const t0 = performance.now();
+    const rnd = seededRandom(SEED);
+    const z0 = camZAt(zoom, 0);
+    const lateP = F.release[0] + F.release[1]; // the last release
+    const share = Math.sqrt((W * H) / n); // px per tile, were the view evenly shared
+    const toPx = (x, y, z, cz) => {
+      const D = cz - z;
+      if (D < 0.05) return null;
+      return [((P00 * x) / D - P02 + 1) * 0.5 * W, (1 - ((P11 * y) / D - P12)) * 0.5 * H];
+    };
+    const at = (card, u, v) => [
+      card.origin.x + card.axisU.x * u + card.axisV.x * v,
+      card.origin.y + card.axisU.y * u + card.axisV.y * v,
+      card.origin.z + card.axisU.z * u + card.axisV.z * v,
+    ];
+    const project = (card, u, v, cz) => toPx(...at(card, u, v), cz);
+    // How many of a coarse probe grid's points on the card are in view at camera cz.
+    const hitsAt = (card, cz) => {
+      let hits = 0;
+      for (let a = 0; a <= SCAN_PROBE; a += 1) {
+        for (let b = 0; b <= SCAN_PROBE; b += 1) {
+          const q = project(card, a / SCAN_PROBE, b / SCAN_PROBE, cz);
+          if (q && q[0] >= 0 && q[0] <= W && q[1] >= 0 && q[1] <= H) hits += 1;
+        }
+      }
+      return hits;
+    };
+    // The uv box of the card's part inside the view (margin m) at camera cz; probe-padded.
+    const windowAt = (card, cz, m) => {
+      const inView = (q) => q && q[0] > -m * W && q[0] < (1 + m) * W
+        && q[1] > -m * H && q[1] < (1 + m) * H;
+      let u0 = 1; let u1 = 0; let v0 = 1; let v1 = 0; let hits = 0;
       for (let a = 0; a <= PROBE; a += 1) {
         for (let b = 0; b <= PROBE; b += 1) {
-          if (inView(project(a / PROBE, b / PROBE))) {
+          if (inView(project(card, a / PROBE, b / PROBE, cz))) {
+            hits += 1;
             u0 = Math.min(u0, a / PROBE); u1 = Math.max(u1, a / PROBE);
             v0 = Math.min(v0, b / PROBE); v1 = Math.max(v1, b / PROBE);
           }
         }
       }
-      if (u1 < u0) {
-        // A sliver between probe points still counts: the whole card, if its box meets the view.
-        const pts = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([u, v]) => project(u, v));
-        const xs = pts.map((q) => q[0]);
-        const ys = pts.map((q) => q[1]);
-        const meets = Math.max(...xs) > 0 && Math.min(...xs) < W
-          && Math.max(...ys) > 0 && Math.min(...ys) < H;
-        return meets ? { u0: 0, u1: 1, v0: 0, v1: 1 } : null;
-      }
+      if (!hits) return null;
       const pad = 1 / PROBE;
       return {
         u0: Math.max(0, u0 - pad),
         u1: Math.min(1, u1 + pad),
         v0: Math.max(0, v0 - pad),
         v1: Math.min(1, v1 + pad),
+        hits,
       };
-    });
-    const area = cards.map(({ project }, ci) => {
-      const win = windows[ci];
-      if (!win) return 0;
-      const pts = [[win.u0, win.v0], [win.u1, win.v0], [win.u1, win.v1], [win.u0, win.v1]]
-        .map(([u, v]) => project(u, v));
+    };
+    const quadArea = (card, w, cz) => {
+      const pts = [[w.u0, w.v0], [w.u1, w.v0], [w.u1, w.v1], [w.u0, w.v1]]
+        .map(([u, v]) => project(card, u, v, cz));
+      if (pts.some((q) => !q)) return 0;
       let a2 = 0; // shoelace
       pts.forEach(([x, y], k) => { const [nx, ny] = pts[(k + 1) % 4]; a2 += x * ny - nx * y; });
       return Math.abs(a2) / 2;
+    };
+    const span = (w) => [w.u1 - w.u0, w.v1 - w.v0];
+    // Cut [a0, a1] into cells about `step` wide, on lines from a0; returns the cell edges.
+    const cuts = (a0, a1, step) => {
+      const m = Math.max(1, Math.ceil((a1 - a0) / Math.max(1e-6, step) - 1e-6));
+      return Array.from({ length: m + 1 }, (_, i) => a0 + ((a1 - a0) * i) / m);
+    };
+    const snapIn = (edges, lo, hi) => {
+      let i0 = 0; let i1 = edges.length - 1;
+      while (i0 < edges.length - 1 && edges[i0 + 1] <= lo) i0 += 1;
+      while (i1 > 0 && edges[i1 - 1] >= hi) i1 -= 1;
+      return [i0, i1];
+    };
+    const plans = [];
+    cards.forEach((card) => {
+      const corners = [[0, 0], [1, 0], [0, 1]].map(([u, v]) => project(card, u, v, z0));
+      if (corners.some((q) => !q)) return; // reaches behind the camera: never the far side
+      const outer = windowAt(card, z0, 0.05);
+      if (!outer) return;
+      // Screen winding tells a back face, which the card shader mirrors in u.
+      const [q0, q1, q2] = corners;
+      const mirror = (q1[0] - q0[0]) * (q2[1] - q0[1]) - (q1[1] - q0[1]) * (q2[0] - q0[0]) < 0;
+      // Coarse remnant grid over the p-0 part; the paired window is snapped out to its lines so a
+      // remnant tile never overlaps a paired one.
+      const [ou, ov] = span(outer);
+      const w0 = project(card, outer.u0, outer.v0, z0);
+      const wu = project(card, outer.u1, outer.v0, z0);
+      const wv = project(card, outer.u0, outer.v1, z0);
+      const pxU = Math.hypot(wu[0] - w0[0], wu[1] - w0[1]) / Math.max(1e-6, ou);
+      const pxV = Math.hypot(wv[0] - w0[0], wv[1] - w0[1]) / Math.max(1e-6, ov);
+      const eu = cuts(outer.u0, outer.u1, (REMNANT_K * share) / Math.max(1e-6, pxU));
+      const ev = cuts(outer.v0, outer.v1, (REMNANT_K * share) / Math.max(1e-6, pxV));
+      // Its release window: the design's, or earlier if the dolly takes half of what is seen of it
+      // at p 0 off screen before then (narrow views), so it always dissolves while in view.
+      const seen0 = hitsAt(card, z0);
+      let late = lateP;
+      for (let q = SCAN_STEP; q < lateP; q += SCAN_STEP) {
+        if (hitsAt(card, camZAt(zoom, q)) < KEEP_SEEN * seen0) {
+          late = Math.max(MIN_LATE, q);
+          break;
+        }
+      }
+      const early = Math.min(F.release[0], late / 2);
+      const zLate = camZAt(zoom, late);
+      const seen = windowAt(card, zLate, 0);
+      let fine = null;
+      let area = 0;
+      if (seen) {
+        const [iu0, iu1] = snapIn(eu, seen.u0, seen.u1);
+        const [iv0, iv1] = snapIn(ev, seen.v0, seen.v1);
+        fine = {
+          u0: eu[iu0], u1: eu[iu1], v0: ev[iv0], v1: ev[iv1], iu0, iu1, iv0, iv1,
+        };
+        // Its projected box, times the share of the box's probes actually in view.
+        const [su, sv] = span(seen);
+        const probes = (su * PROBE + 1) * (sv * PROBE + 1);
+        area = quadArea(card, seen, zLate) * Math.min(1, seen.hits / probes);
+      }
+      plans.push({
+        card: { ...card, mirror }, eu, ev, fine, area, early, late, zLate,
+      });
     });
-    const total = area.reduce((a, b) => a + b, 0);
-    const t0 = performance.now();
-    pairing = null;
-    // Every particle's cell, and roughly where it sits on screen now (bilinear over the window's
-    // projected corners: plenty for pairing, and far cheaper than projecting each one).
+    // The remnant tiles first: what is left of the budget is shared by the paired areas.
+    let remnant = 0;
+    plans.forEach((pl) => {
+      const cu = pl.eu.length - 1;
+      const cv = pl.ev.length - 1;
+      const inner = pl.fine ? (pl.fine.iu1 - pl.fine.iu0) * (pl.fine.iv1 - pl.fine.iv0) : 0;
+      pl.remnant = cu * cv - inner;
+      remnant += pl.remnant;
+    });
+    const total = plans.reduce((sum, pl) => sum + pl.area, 0);
+    const nFine = Math.max(Math.floor(n / 2), n - remnant);
     const grids = [];
+    const focal = 0.5 * P00 * W; // px per world unit at depth 1
+    const tileMax = QUOTE_TILE_MAX_K * share;
     if (!total) {
-      const uvs = new Float32Array(n * 2).map(() => Math.random());
-      grids.push({ card: null, uvs, cell: [0, 0] });
+      const k = nFine;
+      const uvs = new Float32Array(k * 2).map(() => rnd());
+      const edge = new Float32Array(k).map(() => rnd());
+      const release = edge.map((e) => releaseAt(e));
+      const sx = new Float32Array(k);
+      const sy = new Float32Array(k);
+      for (let j = 0; j < k; j += 1) { sx[j] = uvs[j * 2] * W; sy[j] = uvs[j * 2 + 1] * H; }
+      const cells = new Float32Array(k * 2);
+      grids.push({
+        card: null, uvs, cells, edge, release, stop: edge, paired: k, sx, sy,
+      });
     } else {
-      cards.forEach((card, ci) => {
-        const win = windows[ci];
-        const share = Math.floor((n * area[ci]) / total);
-        if (share < 1 || !win) return;
-        const [ax, ay] = card.project(win.u0, win.v0);
-        const [bx, by] = card.project(win.u1, win.v0);
-        const [cx, cy] = card.project(win.u0, win.v1);
-        const wPx = Math.hypot(bx - ax, by - ay);
-        const hPx = Math.hypot(cx - ax, cy - ay);
-        const cols = Math.max(1, Math.round(Math.sqrt((share * wPx) / Math.max(1, hPx))));
-        const rows = Math.max(1, Math.floor(share / cols));
-        const du = (win.u1 - win.u0) / cols;
-        const dv = (win.v1 - win.v0) / rows;
-        const uvs = new Float32Array(cols * rows * 2);
-        for (let r = 0; r < rows; r += 1) {
-          for (let c = 0; c < cols; c += 1) {
-            uvs[(r * cols + c) * 2] = win.u0 + (c + 0.5) * du;
-            uvs[(r * cols + c) * 2 + 1] = win.v0 + (r + 0.5) * dv;
+      plans.forEach(({
+        card, eu, ev, fine, area, early, late, zLate,
+      }) => {
+        let cols = 0; let rows = 0;
+        if (fine && area > 0) {
+          const want = Math.max(MIN_TILES, Math.floor((nFine * area) / total));
+          const a = project(card, fine.u0, fine.v0, zLate);
+          const b = project(card, fine.u1, fine.v0, zLate);
+          const c = project(card, fine.u0, fine.v1, zLate);
+          const wPx = a && b ? Math.hypot(b[0] - a[0], b[1] - a[1]) : 1;
+          const hPx = a && c ? Math.hypot(c[0] - a[0], c[1] - a[1]) : 1;
+          cols = Math.max(1, Math.round(Math.sqrt((want * wPx) / Math.max(1, hPx))));
+          rows = Math.max(1, Math.floor(want / cols));
+        }
+        const kf = cols * rows;
+        const rest = (eu.length - 1) * (ev.length - 1)
+          - (fine && kf ? (fine.iu1 - fine.iu0) * (fine.iv1 - fine.iv0) : 0);
+        const k = kf + rest;
+        if (!k) return;
+        const uvs = new Float32Array(k * 2);
+        const cells = new Float32Array(k * 2);
+        const release = new Float32Array(k);
+        const stop = new Float32Array(kf);
+        const edge = new Float32Array(kf);
+        const sx = new Float32Array(kf);
+        const sy = new Float32Array(kf);
+        let kp = 0; // paired, from the front
+        let kr = k; // remnant, from the back
+        const put = (j, u, v, du, dv, rel) => {
+          uvs[j * 2] = u; uvs[j * 2 + 1] = v;
+          cells[j * 2] = du; cells[j * 2 + 1] = dv;
+          release[j] = rel;
+        };
+        if (kf) {
+          const lenU = Math.hypot(card.axisU.x, card.axisU.y, card.axisU.z);
+          const lenV = Math.hypot(card.axisV.x, card.axisV.y, card.axisV.z);
+          const spanU = fine.u1 - fine.u0;
+          const spanV = fine.v1 - fine.v0;
+          const du = spanU / cols;
+          const dv = spanV / rows;
+          const ext = Math.max(lenU * du, lenV * dv);
+          for (let r = 0; r < rows; r += 1) {
+            for (let c = 0; c < cols; c += 1) {
+              const u = fine.u0 + (c + 0.5) * du;
+              const v = fine.v0 + (r + 0.5) * dv;
+              const inner = Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v));
+              const e = EDGE_LEAD * inner + (1 - EDGE_LEAD) * rnd();
+              // Next to the remnant (where the card runs off screen by lateP) it holds on until
+              // lateP, when that seam is on the view's edge, so the tear is never a straight cut.
+              const seam = Math.min(
+                fine.u0 > 0 ? (u - fine.u0) / spanU : 1,
+                fine.u1 < 1 ? (fine.u1 - u) / spanU : 1,
+                fine.v0 > 0 ? (v - fine.v0) / spanV : 1,
+                fine.v1 < 1 ? (fine.v1 - v) / spanV : 1,
+              );
+              const hold = Math.min(1, ((0.75 + 0.5 * rnd()) * seam) / SEAM_RAMP);
+              const rel = early + (late - early) * Math.max(e, 1 - hold);
+              const [x, y, z] = at(card, u, v);
+              const zDep = camZAt(zoom, rel);
+              const dRel = zDep - z;
+              // rho(D) = dEdge / D: its offset from the view's centre, 1 on the edge, at depth D.
+              const dx = (P00 * Math.abs(x)) / Math.max(1e-6, 1 + Math.sign(x) * P02);
+              const dy = (P11 * Math.abs(y)) / Math.max(1e-6, 1 + Math.sign(y) * P12);
+              const dEdge = Math.max(dx, dy);
+              const rhoRel = dEdge / Math.max(1e-6, dRel);
+              if (rhoRel >= STOP_BOUND) {
+                // Out of view by its release: rides the dolly off with the rest of the card.
+                kr -= 1;
+                put(kr, u, v, du, dv, rel);
+              } else {
+                // Its natural stop (QUOTE_RELEASE_REACH of the depth left), its outward drift
+                // softly limited to the room left in view, and its tile to tileMax.
+                const dNat = dRel - QUOTE_RELEASE_REACH * Math.max(0.001, dRel - QUOTE_MIN_DEPTH);
+                const room = STOP_BOUND - rhoRel;
+                const rho = rhoRel + room * Math.tanh((dEdge / dNat - rhoRel) / room);
+                const dStop = Math.max(dNat, dEdge / Math.max(1e-6, rho), (focal * ext) / tileMax);
+                const zStop = z + Math.min(dRel, dStop);
+                put(kp, u, v, du, dv, rel);
+                stop[kp] = zStop;
+                edge[kp] = e;
+                [sx[kp], sy[kp]] = toPx(x, y, z, zStop);
+                kp += 1;
+              }
+            }
           }
         }
-        const box = [[win.u0, win.v0], [win.u1, win.v0], [win.u1, win.v1], [win.u0, win.v1]];
-        const corners = box.map(([u, v]) => card.project(u, v));
-        grids.push({ card, uvs, cell: [du, dv], corners, win });
+        for (let a = 0; a < eu.length - 1; a += 1) {
+          for (let b = 0; b < ev.length - 1; b += 1) {
+            const inFine = fine && kf && a >= fine.iu0 && a < fine.iu1
+              && b >= fine.iv0 && b < fine.iv1;
+            if (!inFine) {
+              kr -= 1;
+              put(
+                kr,
+                (eu[a] + eu[a + 1]) / 2,
+                (ev[b] + ev[b + 1]) / 2,
+                eu[a + 1] - eu[a],
+                ev[b + 1] - ev[b],
+                late,
+              );
+            }
+          }
+        }
+        grids.push({
+          card,
+          uvs,
+          cells,
+          release,
+          stop,
+          edge,
+          paired: kp,
+          sx: sx.subarray(0, kp),
+          sy: sy.subarray(0, kp),
+        });
       });
     }
-    const k = grids.reduce((sum, g) => sum + g.uvs.length / 2, 0);
+    const k = grids.reduce((sum, g) => sum + g.paired, 0);
     const sx = new Float32Array(k);
     const sy = new Float32Array(k);
     let o = 0;
-    grids.forEach(({ uvs, corners, win }) => {
-      for (let j = 0; j < uvs.length / 2; j += 1) {
-        if (!corners) {
-          sx[o] = uvs[j * 2] * W;
-          sy[o] = uvs[j * 2 + 1] * H;
-        } else {
-          const a = (uvs[j * 2] - win.u0) / Math.max(1e-6, win.u1 - win.u0);
-          const b = (uvs[j * 2 + 1] - win.v0) / Math.max(1e-6, win.v1 - win.v0);
-          const [p0, p1, p2, p3] = corners;
-          sx[o] = (1 - b) * ((1 - a) * p0[0] + a * p1[0]) + b * ((1 - a) * p3[0] + a * p2[0]);
-          sy[o] = (1 - b) * ((1 - a) * p0[1] + a * p1[1]) + b * ((1 - a) * p3[1] + a * p2[1]);
-        }
-        o += 1;
-      }
-    });
-    o = 0;
-    const slices = grids.map(({ card, uvs, cell }) => {
-      addDraw(card, uvs, cell);
-      const slice = [o, o + uvs.length / 2];
+    const slices = grids.map((g) => {
+      addDraw(g.card, g);
+      sx.set(g.sx, o);
+      sy.set(g.sy, o);
+      const slice = [o, o + g.paired];
       [, o] = slice;
       return slice;
     });
-    stats = { count: k, handoffMs: performance.now() - t0 };
+    const all = grids.reduce((sum, g) => sum + g.uvs.length / 2, 0);
+    const handoffMs = performance.now() - t0;
+    stats = { count: all, paired: k, remnant: all - k, cards: grids.length, handoffMs };
     performance.measure?.('globe-gallery pq sources', { start: t0, detail: { ...stats } });
     version += 1;
     // The pairing waits, off the hand-off frame, and is split in two: the sort on the next frame,
-    // the buffer fill on the one after. Nothing departs before its release, many frames later.
+    // the buffer fill on the one after. Until it is done the particles stay hidden and the caller
+    // keeps the cards (isPaired); the layout above already fixes where everything will be.
     const token = {};
     pairing = token;
     const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
@@ -588,15 +807,16 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     return nextFrame().then(() => {
       if (!live()) return null;
       const t1 = performance.now();
-      const ranks = softRanks(sx, sy, k);
+      const ranks = softRanks(sx, sy, k, rnd);
       const sortMs = performance.now() - t1;
       return nextFrame().then(() => {
         if (!live()) return null;
         const t2 = performance.now();
-        draws.forEach((d, di) => fillDraw(d, ranks.subarray(...slices[di])));
+        draws.forEach((d, di) => fillDraw(d, ranks.subarray(...slices[di]), rnd));
         const fillMs = performance.now() - t2;
         stats = { ...stats, ...pathStats(sx, sy, ranks, k), sortMs, fillMs };
         performance.measure?.('globe-gallery pq pairing', { start: t1, detail: { ...stats } });
+        sourcesPaired = true;
         version += 1;
         return stats;
       });
@@ -617,7 +837,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const r = rasterize(m, dpr);
     ready = writeTargets(r, m, dpr);
     if (ready) writePlane(r, dpr);
-    if (ready && lastQuads) setSources(lastQuads.cards, lastQuads.W, lastQuads.H);
+    if (ready && lastQuads) setSources(lastQuads.cards, lastQuads.view);
     version += 1;
     return ready;
   }
@@ -626,7 +846,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   // departed particle knows where the camera was when it left. active: false hides everything.
   function update(p, { W, H, dpr, active = true, zoom = [0, 0, 0, 0] }) {
     lastP = p;
-    const show = ready && active;
+    const show = ready && active && sourcesPaired;
     group.visible = show;
     shared.uP.value = p;
     shared.uView.value.set(W, H);
@@ -646,6 +866,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     setSources,
     update,
     isReady: () => ready,
+    isPaired: () => sourcesPaired,
     drawCount: () => draws.length + 1,
     getStats: () => stats,
     // Settled and already on the canvas: the caller may skip the draw.

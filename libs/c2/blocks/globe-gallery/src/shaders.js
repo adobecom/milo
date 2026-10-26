@@ -253,10 +253,13 @@ export const TEXT_FRAG = [
 // Pull-quote particles: one Points draw per far-side card. Each particle is a cell of the card,
 // a world-space point (uOrigin + uAxisU·u + uAxisV·v, the card frozen at the hand-off) projected
 // with the LIVE camera, so it rides the dolly. Its point sprite is a window onto the real card
-// texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
-// so at rest the tiles are the card, pixel for pixel. Released rim first, each particle's own
-// camera eases off the dolly to a stop (velocity-continuous); later it departs and travels to its
-// text target in px. aRand = (departure p, release p, unused, arrival p). Sources and
+// texture (per-fragment uv from a ray through the card's plane, so it stays exact under any
+// perspective and tile size), masked by the card's corner SDF, so at rest the tiles are the card,
+// pixel for pixel. Released rim first, each particle's own camera eases off the dolly to a stop
+// (velocity-continuous; short enough that it stays on screen with its tile at most
+// QUOTE_TILE_MAX_K, see quote-particles.js); later it departs and travels to its text target.
+// aRand = (departure p, release p, camera z it eases to, arrival p); a card-only remnant tile is
+// never paired (arrival PENDING_P) and rides the dolly off screen. Sources and
 // targets are paired by a 2D quantile order (quote-particles.js), so neighbours stay neighbours.
 // Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
 // together, and the crisp text plane reveals each pixel with that same function: the text goes
@@ -286,9 +289,14 @@ export const QUOTE_CRISP_P = QUOTE_FLIGHT.arriveStart + QUOTE_FLIGHT.arriveSpan
 export const QUOTE_SWIRL_AMP = 0.1;
 const QUOTE_SWIRL_SCALE = 0.35; // flow feature size, as a share of the short side
 const QUOTE_SWIRL_DRIFT = 1.5; // how far the flow evolves over the flight, noise units
-const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
-const QUOTE_RELEASE_REACH = 0.5; // share of its remaining depth a released particle still closes
-const QUOTE_TILE_MAX = 128; // CSS px
+export const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
+// Share of its remaining depth a released particle still closes.
+export const QUOTE_RELEASE_REACH = 0.5;
+// A paired tile's largest on-screen size when it leaves its card, as a multiple of the even share
+// of the view (√(W·H / count)): it is released before the dolly magnifies it past that.
+export const QUOTE_TILE_MAX_K = 1.5;
+export const PENDING_P = 9; // departure/arrival p of an unpaired particle: beyond any flight
+const QUOTE_TILE_CAP = 256; // CSS px; only the card-only remnant tiles ever get near it
 
 // Value noise and its curl: a divergence-free 2D flow, deterministic in its inputs.
 const CURL_NOISE = [
@@ -328,13 +336,14 @@ export const QUOTE_POINTS_VERT = [
   'uniform vec3 uOrigin;', // the card's top-left corner, world
   'uniform vec3 uAxisU;', // across the card's width, world
   'uniform vec3 uAxisV;', // down the card's height, world
-  'uniform vec2 uCell;', // one particle's cell, in card uv
   'uniform float uScreenSrc;', // 1: no card; aUv is a viewport fraction
   'attribute vec2 aUv;', // u right, v down the card as seen
+  'attribute vec2 aCell;', // the particle's cell, in card uv
   'attribute vec4 aRand;',
   'attribute vec3 aDstCol;',
-  'varying vec2 vUv;',
-  'varying vec4 vJinv;',
+  'varying vec2 vSrc;',
+  'varying float vCamZ;',
+  'varying vec4 vProj;',
   'varying float vSize;',
   'varying float vRound;',
   'varying vec3 vInk;',
@@ -357,6 +366,7 @@ export const QUOTE_POINTS_VERT = [
   'float smoother(float t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }', // still at ends
   'void main() {',
   '  vec2 s; vec2 su; vec2 sv;',
+  '  float zEff = cameraPosition.z;',
   '  if (uScreenSrc > 0.5) {',
   '    s = aUv * uView; su = vec2(2.0, 0.0); sv = vec2(0.0, 2.0);',
   '  } else {',
@@ -367,15 +377,15 @@ export const QUOTE_POINTS_VERT = [
   `    float minZ = w.z + ${glf(QUOTE_MIN_DEPTH)};`,
   // Until its release the particle sees the live camera; after, a camera that carries on at the
   // same speed and eases to a stop short of it — no kink, and never past it.
-  '    float zEff = camZ;',
-  '    if (camZ < zDep) {',
-  `      float d = max(zDep - minZ, 0.001) * ${glf(QUOTE_RELEASE_REACH)};`,
+  // aRand.z is the camera z it stops at; a remnant (never paired) rides the dolly off screen.
+  `    if (camZ < zDep && aRand.w < ${glf(PENDING_P)}) {`,
+  '      float d = max(zDep - aRand.z, 0.001);',
   '      zEff = zDep - d * (1.0 - exp(-(zDep - camZ) / d));',
   '    }',
   '    zEff = max(zEff, minZ);',
   '    s = toPx(w, zEff);',
-  '    su = toPx(w + uAxisU * uCell.x, zEff) - s;',
-  '    sv = toPx(w + uAxisV * uCell.y, zEff) - s;',
+  '    su = toPx(w + uAxisU * aCell.x, zEff) - s;',
+  '    sv = toPx(w + uAxisV * aCell.y, zEff) - s;',
   '  }',
   '  vec2 dst = position.xy;',
   // One leg from the card to the glyph: `t` drives the tile → dot change, landing and ink.
@@ -392,21 +402,21 @@ export const QUOTE_POINTS_VERT = [
   // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
   // solid for the moment before the crisp text takes it over.
   '  float land = smoothstep(0.85, 1.0, t);',
-  `  float size = mix(min(tile, ${glf(QUOTE_TILE_MAX)}), uDstSize, g) * (1.0 + 0.3 * land);`,
+  `  float size = mix(min(tile, ${glf(QUOTE_TILE_CAP)}), uDstSize, g) * (1.0 + 0.3 * land);`,
   '  gl_Position = pxToClip(pos, uView);',
   '  gl_PointSize = max(1.0, size * uDpr);',
-  // px → card uv for the fragment's offset inside the sprite.
-  '  float a = su.x / uCell.x; float b = sv.x / uCell.y;',
-  '  float c = su.y / uCell.x; float d = sv.y / uCell.y;',
-  '  float det = a * d - b * c;',
-  '  vJinv = vec4(d, -b, -c, a) / (abs(det) > 1e-6 ? det : 1e-6);',
-  '  vUv = aUv;',
+  // Where the sprite's texels come from: around the source point, seen by the particle's camera.
+  '  vSrc = s;',
+  '  vCamZ = zEff;',
+  '  vProj = vec4(projectionMatrix[0][0], projectionMatrix[1][1], projectionMatrix[2][0], projectionMatrix[2][1]);',
   '  vSize = size;',
   '  vRound = g * (1.0 - land);',
   // Out over the second half of the region's settle window, as the crisp text comes in under it.
   // Keyed past the latest arrival in its region, so early landers stay until the crisp text is in.
   `  float fadeAt = aRand.w + ${glf(QUOTE_ARRIVE_JITTER)};`,
   `  vFade = 1.0 - smoothstep(fadeAt + ${glf(QUOTE_SETTLE * 0.3)}, fadeAt + ${glf(QUOTE_SETTLE * 0.8)}, uP);`,
+  // A remnant is card only, and off screen by its release: gone by then anyway.
+  `  if (aRand.w >= ${glf(PENDING_P)}) vFade = 1.0 - smoothstep(aRand.y, aRand.y + 0.02, uP);`,
   '  vInk = aDstCol;',
   `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
   '  vInkK = ink * ink;',
@@ -423,8 +433,13 @@ export const QUOTE_POINTS_FRAG = [
   'uniform float uCardAlpha;',
   'uniform float uAlpha;',
   'uniform float uScreenSrc;',
-  'varying vec2 vUv;',
-  'varying vec4 vJinv;',
+  'uniform vec2 uView;',
+  'uniform vec3 uOrigin;',
+  'uniform vec3 uAxisU;',
+  'uniform vec3 uAxisV;',
+  'varying vec2 vSrc;',
+  'varying float vCamZ;',
+  'varying vec4 vProj;',
   'varying float vSize;',
   'varying float vRound;',
   'varying vec3 vInk;',
@@ -439,8 +454,15 @@ export const QUOTE_POINTS_FRAG = [
   '  if (uScreenSrc > 0.5) {',
   '    alpha *= vRound;', // nothing to break up: these only appear as they fly
   '  } else {',
-  '    vec2 o = pc * vSize;',
-  '    vec2 uv = vUv + vec2(dot(vJinv.xy, o), dot(vJinv.zw, o));',
+  // The fragment's ray at the source, through the card's plane: exact card uv under perspective.
+  '    vec2 px = vSrc + pc * vSize;',
+  '    vec2 ndc = vec2(px.x / uView.x * 2.0 - 1.0, 1.0 - px.y / uView.y * 2.0);',
+  '    vec3 dir = vec3((ndc.x + vProj.z) / vProj.x, (ndc.y + vProj.w) / vProj.y, -1.0);',
+  '    vec3 cam = vec3(0.0, 0.0, vCamZ);',
+  '    vec3 nrm = cross(uAxisU, uAxisV);',
+  '    float den = dot(dir, nrm);',
+  '    vec3 hit = cam + dir * (dot(uOrigin - cam, nrm) / (abs(den) > 1e-6 ? den : 1e-6)) - uOrigin;',
+  '    vec2 uv = vec2(dot(hit, uAxisU) / dot(uAxisU, uAxisU), dot(hit, uAxisV) / dot(uAxisV, uAxisV));',
   // The card's own GL uv (v up), mirrored on back faces exactly as CARD_FRAG does.
   '    vec2 fUv = vec2(uMirror > 0.5 ? 1.0 - uv.x : uv.x, 1.0 - uv.y);',
   '    vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',

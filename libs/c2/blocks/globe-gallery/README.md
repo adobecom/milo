@@ -1979,8 +1979,8 @@ and the extra scroll goes to the flight and the reading hold.
 
 | `p` | What |
 | --- | --- |
-| 0 | Cards as before. At p > 0 they hide and their particles take over, identical on screen. |
-| 0.1 → 0.2 | Particles release from the camera dolly, card rims first. |
+| 0 | Cards as before. Once p > 0 and the pairing is ready, they hide and their particles take over, identical on screen. |
+| 0.1 → 0.2 | Particles release from the camera dolly, card rims first (earlier for a card the dolly carries off screen sooner). |
 | 0.45 → 0.8 | Landings in reading order (± jitter), each region turning crisp as it lands. |
 | 0.88 (`QUOTE_LIVE_P`) | The whole quote is the crisp raster; the DOM takes over and the canvas hides. |
 
@@ -1992,19 +1992,39 @@ auto-spin, drag inertia, hover and drag warp to 0, and the pointer retires. Whil
 the cards (`quoteOwnsCards()`), the orientation is held exactly, so the cards come back where the
 particles left them. The camera keeps dollying at the stage's pace throughout.
 
-**Hand-off: the particles are the card.** On the first owned frame, `projectCardQuads()` turns each
-far-side card still drawn into a world-space plane (`origin`, `axisU`, `axisV`). Each card is one
-`Points` draw. `setSources` finds the card's on-screen uv window (24×24 probe), shares the particle
-budget across cards by projected area, and lays a grid of cells over each window. In
-`QUOTE_POINTS_VERT` each particle is projected with the live camera (it only translates along z) and
-sized to its projected cell. The fragment shader maps the sprite back to card uv through the cell's
-inverse screen Jacobian and samples the real card texture with the card's crop, mirror, corner SDF
-and gamma. So on the hand-off frame the tiles are the card, pixel for pixel.
+**Hand-off: the particles are the card.** On the first owned frame, `cardPlanes()` turns each
+sphere card into a world-space plane (`origin`, `axisU`, `axisV`), from its sphere pose rather than
+from what the frame drew (`placeSphereCard` keeps the transform fresh even behind the camera). Each
+card is one `Points` draw. In `QUOTE_POINTS_VERT` each particle is projected with the live camera
+(it only translates along z) and sized to its projected cell (`aCell`). The fragment shader casts
+each sprite pixel's ray through the card's plane, so its card uv is exact under any perspective and
+tile size, and samples the real card texture with the card's crop, mirror, corner SDF and gamma. So
+the tiles are the card, pixel for pixel, up to the release.
+
+**Source layout: a pure function of the runway.** `setSources(cards, view)` never reads the live
+frame. It projects with the canonical camera of the runway (`camZAt(zoom, p)`, the shader's
+`camZAt`), so a fling that first sees p = 0.25 gets the same layout as a slow scroll. Per card:
+- its release window is `QUOTE_FLIGHT.release` ([0.1, 0.2]), ended earlier (from `MIN_LATE` 0.04) at
+  the p where less than `KEEP_SEEN` (half) of what is seen of it at p 0 is still in view. Narrow
+  views dolly cards off screen fast, so there they break up sooner, while still visible;
+- the part in view at the end of that window (24×24 probe) gets paired particles. The budget is
+  shared by that on-screen area (at least `MIN_TILES` per card), so tiles are about the even share
+  of the view, √(W·H / count), when they leave: ≤ ~6 CSS px;
+- the rest of what is on screen at p 0 is coarse card-only remnant tiles (`REMNANT_K` × the share)
+  that ride the dolly off screen and never pair (arrival `PENDING_P`). Particles next to that seam
+  hold on until the window's end (`SEAM_RAMP`), when the seam is at the view's edge, so the card
+  never shows a straight cut;
+- a particle out of view at its own release is a remnant too. So every paired particle leaves its
+  card on screen: the quote is made of what the user saw dissolve.
+All draws are seeded (`seededRandom`), and the pairing runs over the next two frames; until it is
+ready the particles stay hidden and the cards stay drawn (`isPaired()`).
 
 **Release.** Each particle's release p is set mostly by its distance from its card's edge
 (`EDGE_LEAD`), so cards tear from the rim. At release the particle gets its own camera, which starts
-at the live camera's position and speed and eases to a stop at least `QUOTE_MIN_DEPTH` in front of
-it: no velocity kink, and waiting particles hold still on screen instead of dollying away.
+at the live camera's position and speed and eases to a stop (`aRand.z`): naturally
+`QUOTE_RELEASE_REACH` of its remaining depth, with the outward drift softly limited (tanh) to the
+room left inside `STOP_BOUND` of the view and the tile to `QUOTE_TILE_MAX_K` × the share. No
+velocity kink, no particle drifting off screen, and no pile-up on the edge.
 
 **Pairing (soft).** Card pixels are matched to glyph targets by position on the frames after the
 hand-off (the sort runs one animation frame later, `fillDraw` the frame after), so the hand-off frame
@@ -2080,7 +2100,8 @@ view (about 3–12) plus the text plane. The scene renders only while something 
 median frame stays at 60 fps.
 
 **Known limitations.**
-- On mobile the cards are large, so cells leaving a card's edge show as ~10px squares for a moment.
+- A paired particle near the view's edge decelerates over a shorter reach, so a card running off
+  screen visibly slows at the edge as it tears.
 - Ligatures and kerning come from canvas shaping, so an individual glyph in the raster can differ by
   a pixel from the DOM's (the swap's 0.06 mean is mostly that).
 - `--gg-pq-hold` is a fixed 100vh; a very long quote on a short viewport gets less reading time.

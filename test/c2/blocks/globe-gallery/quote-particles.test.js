@@ -1,7 +1,29 @@
 import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
 import { swirlEnvelope, QUOTE_SWIRL_AMP } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
-import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder, seededRandom, camZAt } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+
+// A static camera at z 0 (zoom span 0), fov 60 over an 800 × 600 view.
+const cam = new THREE.PerspectiveCamera(60, 800 / 600, 0.1, 100);
+const E = cam.projectionMatrix.elements;
+const VIEW = { W: 800, H: 600, zoom: [0, 0, 0, 0], proj: [E[0], E[5], E[8], E[9]] };
+// A card facing the camera at depth D whose screen box is (x0, y0, w, h) px from the static camera.
+function cardAt(x0, y0, w, h, D = 30) {
+  const X = (x) => ((2 * x) / 800 - 1) * (D / E[0]);
+  const Y = (y) => (1 - (2 * y) / 600) * (D / E[5]);
+  return {
+    origin: new THREE.Vector3(X(x0), Y(y0), -D),
+    axisU: new THREE.Vector3(X(x0 + w) - X(x0), 0, 0),
+    axisV: new THREE.Vector3(0, Y(y0 + h) - Y(y0), 0),
+    tex: new THREE.Texture(),
+    repeat: new THREE.Vector2(1, 1),
+    offset: new THREE.Vector2(0, 0),
+    aspect: w / h,
+    radius: 0.03,
+    alpha: 1,
+    order: 0,
+  };
+}
 
 function mount(quote = 'Creativity connects us.') {
   document.body.innerHTML = `
@@ -31,7 +53,7 @@ describe('globe-gallery: quote particles', () => {
     fx = createQuoteParticles({ figureEl, railEl, count: 2000 });
     expect(await fx.layout({ dpr: 1 })).to.be.true;
     expect(fx.isReady()).to.be.true;
-    await fx.setSources([], 800, 600);
+    await fx.setSources([], VIEW);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
     expect(points.geometry.attributes.position.count).to.equal(2000);
@@ -50,21 +72,8 @@ describe('globe-gallery: quote particles', () => {
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
     // A 100 × 200 px card at (100, 100), seen straight on; a second one fully off screen.
-    const card = (x0) => ({
-      project: (u, v) => [x0 + 100 * u, 100 + 200 * v],
-      origin: new THREE.Vector3(-1, 2, -30),
-      axisU: new THREE.Vector3(2, 0, 0),
-      axisV: new THREE.Vector3(0, -4, 0),
-      tex: new THREE.Texture(),
-      repeat: new THREE.Vector2(1, 1),
-      offset: new THREE.Vector2(0, 0),
-      mirror: false,
-      aspect: 0.5,
-      radius: 0.03,
-      alpha: 1,
-      order: -5,
-    });
-    await fx.setSources([card(100), card(5000)], 800, 600);
+    const card = (x0) => cardAt(x0, 100, 100, 200);
+    await fx.setSources([card(100), card(5000)], VIEW);
     expect(fx.drawCount()).to.equal(2); // one card draw + the text plane
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const { aUv, aRand } = points.geometry.attributes;
@@ -82,7 +91,7 @@ describe('globe-gallery: quote particles', () => {
     // Edge first: the rim departs well before the middle.
     expect(edge / ne).to.be.below(centre / nc);
     expect(points.material.uniforms.uMap.value).to.be.instanceOf(THREE.Texture);
-    await fx.setSources([], 800, 600);
+    await fx.setSources([], VIEW);
     expect(fx.drawCount()).to.equal(2);
     const fallback = fx.object.children.find((o) => o instanceof THREE.Points);
     expect(fallback.material.uniforms.uScreenSrc.value).to.equal(1);
@@ -92,7 +101,7 @@ describe('globe-gallery: quote particles', () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
-    await fx.setSources([], 800, 600);
+    await fx.setSources([], VIEW);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
     const view = { W: 800, H: 600, dpr: 1 };
@@ -126,7 +135,7 @@ describe('globe-gallery: quote particles', () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 800 });
     await fx.layout({ dpr: 1 });
-    await fx.setSources([], 800, 600);
+    await fx.setSources([], VIEW);
     const points = fx.object.children.find((o) => o instanceof THREE.Points);
     const { position, aRand } = points.geometry.attributes;
     let left = 0; let right = 0; let nl = 0; let nr = 0;
@@ -177,21 +186,8 @@ describe('globe-gallery: quote particles', () => {
     await fx.layout({ dpr: 1 });
     // Cards spread around the quote, as on the page: pixels should go to the nearer glyphs,
     // not across the figure.
-    const card = (x0, y0) => ({
-      project: (u, v) => [x0 + 200 * u, y0 + 150 * v],
-      origin: new THREE.Vector3(),
-      axisU: new THREE.Vector3(1, 0, 0),
-      axisV: new THREE.Vector3(0, -1, 0),
-      tex: new THREE.Texture(),
-      repeat: new THREE.Vector2(1, 1),
-      offset: new THREE.Vector2(0, 0),
-      mirror: false,
-      aspect: 1.2,
-      radius: 0.03,
-      alpha: 1,
-      order: 0,
-    });
-    await fx.setSources([card(0, 400), card(560, 0)], 800, 600);
+    const card = (x0, y0) => cardAt(x0, y0, 200, 150);
+    await fx.setSources([card(30, 400), card(560, 30)], VIEW);
     const stats = fx.getStats();
     expect(stats.count).to.be.within(2800, 3000);
     expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
@@ -214,6 +210,56 @@ describe('globe-gallery: quote particles', () => {
       return sum / pos.count;
     };
     expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
+  });
+
+  it('lays sources out from the runway, not the frame: in view at release, fine and repeatable', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
+    await fx.layout({ dpr: 1 });
+    // The camera dollies from z 0 to −25 over the flight: a card near the right edge runs off
+    // screen early, one in the middle stays.
+    const view = { ...VIEW, zoom: [0, 1, 0, 25] };
+    const cards = [cardAt(600, 250, 190, 140), cardAt(300, 200, 200, 150)];
+    const snapshot = () => fx.object.children.filter((o) => o instanceof THREE.Points)
+      .map((o) => [...o.geometry.attributes.aRand.array, ...o.geometry.attributes.aUv.array]);
+    await fx.setSources(cards, view);
+    const first = snapshot();
+    const stats = fx.getStats();
+    expect(stats.remnant).to.be.above(0); // what leaves before it is released rides off as card
+    let paired = 0;
+    fx.object.children.filter((o) => o instanceof THREE.Points).forEach((o, ci) => {
+      const { aRand, aUv, aCell } = o.geometry.attributes;
+      const c = cards[ci];
+      for (let i = 0; i < aRand.count; i += 1) {
+        if (aRand.array[i * 4 + 3] < 9) {
+          paired += 1;
+          // Where it stops easing off the dolly is in view, and its tile is still fine.
+          const zStop = aRand.array[i * 4 + 2];
+          const w = c.origin.clone().addScaledVector(c.axisU, aUv.array[i * 2])
+            .addScaledVector(c.axisV, aUv.array[i * 2 + 1]);
+          const D = zStop - w.z;
+          const x = ((E[0] * w.x) / D + 1) * 400;
+          const y = (1 - (E[5] * w.y) / D) * 300;
+          expect(x).to.be.within(0, 800);
+          expect(y).to.be.within(0, 600);
+          const tile = (E[0] * c.axisU.length() * aCell.array[i * 2] * 400) / D;
+          expect(tile).to.be.below(2 * Math.sqrt((800 * 600) / 3000));
+        }
+      }
+    });
+    expect(paired).to.equal(stats.paired);
+    // The same cards and runway give the same particles, whenever it runs.
+    await fx.setSources(cards, view);
+    expect(snapshot()).to.deep.equal(first);
+  });
+
+  it('draws the same numbers from the same seed', () => {
+    const a = seededRandom(7);
+    const b = seededRandom(7);
+    const xs = Array.from({ length: 50 }, () => a());
+    expect(xs).to.deep.equal(Array.from({ length: 50 }, () => b()));
+    xs.forEach((x) => expect(x).to.be.within(0, 1));
+    expect(camZAt([0.2, 0.5, 57, 117], 0)).to.be.closeTo(57 - 117 * (1 - 0.8 ** 3), 1e-9);
   });
 
   it('swirls at most AMP of the short side, and not at all at hand-off or landing', () => {
