@@ -35,7 +35,7 @@ import init, {
   selectCategory,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getFedsPlaceholderConfig, setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -990,6 +990,10 @@ describe('merch-card-collection autoblock', () => {
       return { collection, container };
     };
 
+    // The clear button's label comes from the gnav placeholders; no fetch in tests.
+    before(() => setConfig({ ...conf, placeholders: { 'clear-results': 'Clear results' } }));
+    after(() => setConfig(conf));
+
     afterEach(() => {
       window.location.hash = '';
       document.body.innerHTML = '';
@@ -1363,6 +1367,82 @@ describe('merch-card-collection autoblock', () => {
           const target = container.querySelector(`#${toggle.getAttribute('aria-controls')}`);
           expect(target.classList.contains('product-pricing-group-pills')).to.be.true;
         });
+      });
+
+      it('clears the search from a named button, back to the prior filters', async () => {
+        window.location.hash = 'filter=photo';
+        const { container } = mount();
+        const search = container.querySelector('.product-pricing-filter-search-input');
+        const clear = container.querySelector('[role="search"] .product-pricing-filter-search-clear');
+        expect(clear.tagName).to.equal('BUTTON');
+        expect(clear.type).to.equal('button');
+        // Untracked, so later daa-ll positions don't shift.
+        expect(clear.classList.contains('no-track')).to.be.true;
+        // Named asynchronously, from the gnav's translated label.
+        expect(clear.hasAttribute('aria-label')).to.be.false;
+        await delay(0);
+        expect(clear.getAttribute('aria-label')).to.equal('Clear results');
+        search.focus();
+        search.value = 'acro';
+        search.dispatchEvent(new Event('input', { bubbles: true }));
+        await delay(400);
+        const params = () => new URLSearchParams(window.location.hash.slice(1));
+        expect(params().get('search')).to.equal('acro');
+        clear.click();
+        expect(search.value).to.equal('');
+        // The button hides once the field is empty, so focus goes back to the field.
+        expect(document.activeElement).to.equal(search);
+        await delay(400);
+        expect(params().has('search')).to.be.false;
+        expect(params().get('filter')).to.equal('photo');
+      });
+
+      it('shows the clear button only for a term, and only once it is named', async () => {
+        // Hold the gnav placeholders request, so the button exists before its name does.
+        const { placeholders } = getFedsPlaceholderConfig();
+        delete placeholders['clear-results'];
+        window.mph ||= {};
+        let respond;
+        const { fetch } = window;
+        window.fetch = () => new Promise((resolve) => { respond = resolve; });
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.css';
+        await new Promise((resolve) => { css.onload = resolve; document.head.append(css); });
+        try {
+          // A deep-linked search fills the field on load.
+          window.location.hash = 'filter=all&search=acro';
+          const { container } = mount();
+          const wrapper = container.querySelector('.product-pricing-filter-search');
+          const search = wrapper.querySelector('.product-pricing-filter-search-input');
+          const clear = wrapper.querySelector('.product-pricing-filter-search-clear');
+          const magnifier = wrapper.querySelector(':scope > .product-pricing-icon');
+          search.placeholder = 'Search';
+          const shown = (el) => getComputedStyle(el).display !== 'none';
+          await delay(50);
+          expect(search.value).to.equal('acro');
+          // Pending: no name yet, so not shown and not focusable.
+          expect(clear.hasAttribute('aria-label')).to.be.false;
+          expect(shown(clear)).to.be.false;
+          respond(new Response(JSON.stringify({ data: [{ key: 'clear-results', value: 'Clear results' }] })));
+          await delay(50);
+          expect(clear.getAttribute('aria-label')).to.equal('Clear results');
+          expect(shown(clear)).to.be.true;
+          // The term hides the magnifier but not the clear button's own icon.
+          expect(shown(magnifier)).to.be.false;
+          expect(shown(clear.querySelector('.product-pricing-icon'))).to.be.true;
+          // An empty authored value keeps it hidden.
+          clear.setAttribute('aria-label', '');
+          expect(shown(clear)).to.be.false;
+          clear.setAttribute('aria-label', 'Clear results');
+          search.value = '';
+          expect(shown(clear)).to.be.false;
+          expect(shown(magnifier)).to.be.true;
+        } finally {
+          window.fetch = fetch;
+          placeholders['clear-results'] = 'Clear results';
+          css.remove();
+        }
       });
     });
 
