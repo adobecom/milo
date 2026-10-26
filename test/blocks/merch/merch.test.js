@@ -362,15 +362,6 @@ describe('Merch Block', () => {
 
       const features = () => sdk.updateConfig.lastCall?.args[0].miniAppContext.features;
 
-      it('loads the SDK when aup-select is set on the service after target is ready', async () => {
-        const service = await initService(true);
-        await targetReady();
-        expect(sdk.updateConfig.called).to.be.false;
-        service.setAttribute('aup-select', 'on');
-        await waitFor(() => sdk.updateConfig.called);
-        expect(features()).to.include('tmp_aupsdk_ucv3_in_iframe');
-      });
-
       it('loads the SDK when target turns aup-select on', async () => {
         await initService(true);
         setMeta('on');
@@ -378,29 +369,6 @@ describe('Merch Block', () => {
         await targetReady();
         await waitFor(() => sdk.updateConfig.called);
         expect(features()).to.include('tmp_aupsdk_ucv3_in_iframe');
-      });
-
-      it('only reloads the SDK when the enabled value changes', async () => {
-        const service = await initService(true, { 'aup-select': 'enabled' });
-        await targetReady();
-        await waitFor(() => sdk.updateConfig.calledOnce);
-        expect(features()).to.not.include('tmp_aupsdk_ucv3_in_iframe');
-        service.setAttribute('aup-select', 'enabled');
-        service.setAttribute('aup-select', 'off');
-        await delay(10);
-        expect(sdk.updateConfig.calledOnce).to.be.true;
-        service.setAttribute('aup-select', 'on');
-        await waitFor(() => sdk.updateConfig.calledTwice);
-        expect(features()).to.include('tmp_aupsdk_ucv3_in_iframe');
-      });
-
-      it('stops observing a replaced service', async () => {
-        const oldService = await initService(true);
-        await initService(true);
-        await targetReady();
-        oldService.setAttribute('aup-select', 'on');
-        await delay(10);
-        expect(sdk.updateConfig.called).to.be.false;
       });
     });
   });

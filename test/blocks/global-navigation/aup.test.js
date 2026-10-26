@@ -218,17 +218,11 @@ describe('AUP', () => {
       expect(window.aupsdk === instance).to.be.true;
     });
 
-    it('refreshes features from a late mas-commerce-service aup-select', async () => {
+    it('refreshes features when target turns aup-select on late', async () => {
       setSelect('enabled');
       await preloadAupSdk();
-      const service = document.createElement('mas-commerce-service');
-      service.setAttribute('aup-select', 'on');
-      document.head.append(service);
-      try {
-        await preloadAupSdk();
-      } finally {
-        service.remove();
-      }
+      meta.content = 'on';
+      await preloadAupSdk();
       expect(window.AUPSDK.preloadSDK.calledOnce).to.be.true;
       expect(instance.updateConfig.lastCall.args[0])
         .to.deep.equal({ miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } });

@@ -185,22 +185,6 @@ describe('Utils', () => {
       }
     });
 
-    it('falls back to the mas-commerce-service attribute unless pageOnly', () => {
-      const service = utils.createTag('mas-commerce-service', { 'aup-select': 'on' });
-      document.body.append(service);
-      try {
-        expect(utils.getAupSelectValue()).to.equal('on');
-        expect(utils.isAupEnabled()).to.be.true;
-        expect(utils.getAupSelectValue({ pageOnly: true })).to.be.null;
-        meta.content = 'off';
-        document.head.append(meta);
-        expect(utils.getAupSelectValue()).to.equal('on');
-        expect(utils.getAupSelectValue({ pageOnly: true })).to.be.null;
-      } finally {
-        service.remove();
-      }
-    });
-
     it('whenTargetReady stops waiting after the target timeout', async () => {
       const savedUrl = window.location.href;
       window.history.replaceState(null, '', `${window.location.pathname}?target-timeout=2000`);

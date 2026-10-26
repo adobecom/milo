@@ -395,14 +395,9 @@ export function getMetadata(name, doc = document) {
 
 const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
 
-/*
- * Single source of truth for aup-select, resolved like mas-commerce-service does: URL param, then
- * the service attribute, then page metadata. `pageOnly` skips the attribute (the value merch
- * applies to the service).
- */
-export function getAupSelectValue({ pageOnly = false } = {}) {
+// Single source of truth for aup-select: URL param, then page metadata (which Target can change).
+export function getAupSelectValue() {
   const value = new URLSearchParams(window.location.search).get('aup-select')
-    ?? (pageOnly ? null : document.querySelector('mas-commerce-service')?.getAttribute('aup-select'))
     ?? getMetadata('aup-select');
   const normalized = value?.trim().toLowerCase();
   return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
