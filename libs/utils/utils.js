@@ -406,9 +406,23 @@ export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
 }
 
-export function syncAupSelectToCommerceService() {
-  const value = getAupSelectValue();
-  if (value) document.head.querySelector('mas-commerce-service')?.setAttribute('aup-select', value);
+export const TARGET_READY_EVENT = 'milo:target-ready';
+
+export function isTargetReady() {
+  return window.miloTargetReady === true;
+}
+
+function notifyTargetReady() {
+  if (isTargetReady()) return;
+  window.miloTargetReady = true;
+  window.dispatchEvent(new CustomEvent(TARGET_READY_EVENT));
+}
+
+export function whenTargetReady({ signal } = {}) {
+  if (isTargetReady()) return Promise.resolve();
+  return new Promise((resolve) => {
+    window.addEventListener(TARGET_READY_EVENT, () => resolve(), { once: true, signal });
+  });
 }
 
 export function isAupEnabled(useUniversalNav = false) {
@@ -2227,21 +2241,31 @@ export async function loadMartech({
 } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
+    notifyTargetReady();
     return true;
   }
 
   if (PAGE_URL.searchParams.get('martech') === 'off'
     || PAGE_URL.searchParams.get('marketingtech') === 'off'
     || getMetadata('martech') === 'off') {
+    notifyTargetReady();
     return false;
   }
 
   window.targetGlobalSettings = { bodyHidingEnabled: false };
   loadIms().catch(() => { });
 
-  const { default: initMartech } = await import('../martech/martech.js');
-  await initMartech({ persEnabled, persManifests, postLCP });
-  isMartechLoaded = true;
+  try {
+    const { default: initMartech } = await import('../martech/martech.js');
+    await initMartech({ persEnabled, persManifests, postLCP });
+    isMartechLoaded = true;
+  } catch (e) {
+    // Target can't apply anything without martech, so stop consumers from waiting.
+    notifyTargetReady();
+    throw e;
+  }
+  // Post-LCP target changes are applied by loadPostLCP, which notifies once they land.
+  if (getConfig().mep?.targetEnabled !== 'postlcp') notifyTargetReady();
 
   return true;
 }
@@ -2589,8 +2613,11 @@ async function loadPostLCP(config) {
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
-    await init({ postLCP: true });
-    syncAupSelectToCommerceService();
+    try {
+      await init({ postLCP: true });
+    } finally {
+      notifyTargetReady();
+    }
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
@@ -3200,7 +3227,6 @@ export async function loadArea(area = document) {
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
-    syncAupSelectToCommerceService();
     initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

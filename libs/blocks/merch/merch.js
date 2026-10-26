@@ -1,6 +1,7 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
+  getAupSelectValue, whenTargetReady,
 } from '../../utils/utils.js';
 import { getValidatedMarket, isSupportedMarket } from '../../utils/market.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
@@ -1184,7 +1185,8 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
       setTimeout(() => {
-        if (isAupEnabled()) getAupSelectPreload();
+        // Target may turn aup-select on after the modal CTA is decorated.
+        whenTargetReady().then(() => { if (isAupEnabled()) getAupSelectPreload(); });
         // AUP Select still renders the commerce.adobe.com segmentation iframe,
         // so warm its assets on both paths.
         const baseUrl = getCommercePreloadUrl();
@@ -1279,6 +1281,31 @@ function isAnnualPriceEnabled(params) {
     return params?.get('annual') !== 'false';
   }
   return undefined;
+}
+
+let aupSelectController;
+
+function applyAupSelect(service) {
+  aupSelectController?.abort();
+  aupSelectController = new AbortController();
+  const { signal } = aupSelectController;
+  let applied = false;
+  const setValue = () => {
+    const value = getAupSelectValue();
+    if (value) {
+      service.setAttribute('aup-select', value);
+      applied = true;
+    } else if (applied) {
+      // Only undo what we set; keep aup-select passed via attributes or commerce config.
+      service.removeAttribute('aup-select');
+      applied = false;
+    }
+  };
+  setValue();
+  // Personalization may still change aup-select until target is ready.
+  whenTargetReady({ signal }).then(() => {
+    if (!signal.aborted) setValue();
+  });
 }
 
 /**
@@ -1388,6 +1415,7 @@ export async function initService(force = false, attributes = {}) {
         }
         if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
+      applyAupSelect(service);
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }

@@ -148,18 +148,42 @@ describe('Utils', () => {
       });
     });
 
-    it('sets aup-select on mas-commerce-service once a value is available', () => {
-      const service = document.createElement('mas-commerce-service');
-      document.head.append(service);
+    it('marks target ready once, when martech is disabled', async () => {
+      const onReady = sinon.spy();
+      window.addEventListener(utils.TARGET_READY_EVENT, onReady);
+      const martechMeta = utils.createTag('meta', { name: 'martech', content: 'off' });
+      document.head.append(martechMeta);
       try {
-        utils.syncAupSelectToCommerceService();
-        expect(service.hasAttribute('aup-select')).to.be.false;
-        meta.content = 'on';
-        document.head.append(meta);
-        utils.syncAupSelectToCommerceService();
-        expect(service.getAttribute('aup-select')).to.equal('on');
+        delete window.miloTargetReady;
+        expect(utils.isTargetReady()).to.be.false;
+        const ready = utils.whenTargetReady();
+        expect(await utils.loadMartech()).to.be.false;
+        expect(utils.isTargetReady()).to.be.true;
+        await ready;
+        await utils.loadMartech();
+        expect(onReady.calledOnce).to.be.true;
+        await utils.whenTargetReady();
       } finally {
-        service.remove();
+        window.removeEventListener(utils.TARGET_READY_EVENT, onReady);
+        martechMeta.remove();
+        delete window.miloTargetReady;
+      }
+    });
+
+    it('marks target ready when Launch is already on the page', async () => {
+      const { marketingtech, _satellite: satellite } = window;
+      window.marketingtech = { adobe: { launch: {} } };
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = {};
+      try {
+        delete window.miloTargetReady;
+        expect(await utils.loadMartech()).to.be.true;
+        expect(utils.isTargetReady()).to.be.true;
+      } finally {
+        window.marketingtech = marketingtech;
+        // eslint-disable-next-line no-underscore-dangle
+        window._satellite = satellite;
+        delete window.miloTargetReady;
       }
     });
 

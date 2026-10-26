@@ -50,7 +50,7 @@ import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/bl
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, getConfig, TARGET_READY_EVENT } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -281,6 +281,72 @@ describe('Merch Block', () => {
     expect(await merch(el)).to.be.undefined;
     el = document.querySelector('.merch.bad-content');
     expect(await merch(el)).to.be.null;
+  });
+
+  describe('aup-select', () => {
+    const setMeta = (content) => {
+      document.head.querySelector('meta[name="aup-select"]')?.remove();
+      if (content) document.head.append(createTag('meta', { name: 'aup-select', content }));
+    };
+    const targetReady = async () => {
+      window.miloTargetReady = true;
+      window.dispatchEvent(new CustomEvent(TARGET_READY_EVENT));
+      await delay(0);
+    };
+
+    beforeEach(() => { delete window.miloTargetReady; });
+
+    afterEach(async () => {
+      setMeta(null);
+      delete window.miloTargetReady;
+      await initService(true);
+    });
+
+    it('sets aup-select on the service when the value is already available', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('sets aup-select once target is ready', async () => {
+      const service = await initService(true);
+      expect(service.hasAttribute('aup-select')).to.be.false;
+      setMeta('on');
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('removes aup-select it set when target turns it off', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      setMeta('off');
+      await targetReady();
+      expect(service.hasAttribute('aup-select')).to.be.false;
+    });
+
+    it('keeps aup-select passed in by the caller', async () => {
+      const service = await initService(true, { 'aup-select': 'on' });
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('only updates once target is ready', async () => {
+      window.miloTargetReady = true;
+      setMeta('on');
+      const service = await initService(true);
+      setMeta('off');
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('stops updating a replaced service', async () => {
+      const oldService = await initService(true);
+      const newService = await initService(true);
+      setMeta('on');
+      await targetReady();
+      expect(oldService.hasAttribute('aup-select')).to.be.false;
+      expect(newService.getAttribute('aup-select')).to.equal('on');
+    });
   });
 
   describe('locale settings', () => {
@@ -1679,13 +1745,24 @@ describe('Merch Block', () => {
       { content: 'on', failure: 'getOrchestratorContext', aup: true },
       { content: 'on', failure: 'loadUIComponent', aup: true },
       { content: 'on', modal: false },
+      { content: 'off', targetContent: 'on', aup: true },
+      { content: 'on', targetContent: 'off', legacy: true },
     ].forEach(({
-      content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
+      content, query, commercePreload, lateContent, targetContent, missingSdk, failure, calls = 1,
       modal = true, aup = false, legacy = false,
     }) => {
       it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
-        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
+        content,
+        query,
+        commercePreload,
+        lateContent,
+        targetContent,
+        missingSdk,
+        failure,
+        calls,
+        modal,
       })}`, async () => {
+        window.miloTargetReady = !targetContent;
         const previousUrl = window.location.href;
         const previousDeferred = window.milo.deferredPromise;
         const previousSdk = window.aupsdk;
@@ -1735,6 +1812,13 @@ describe('Merch Block', () => {
           expect(sdk.loadUIComponent.called).to.be.false;
           expect(scripts).to.be.empty;
           await clock.tickAsync(1);
+          if (targetContent) {
+            expect(sdk.getOrchestratorContext.called).to.be.false;
+            meta.content = targetContent;
+            window.miloTargetReady = true;
+            window.dispatchEvent(new CustomEvent(TARGET_READY_EVENT));
+            await clock.tickAsync(0);
+          }
           expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
           expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
           const commerce = aup || legacy;
@@ -1747,6 +1831,7 @@ describe('Merch Block', () => {
           window.history.replaceState(null, '', previousUrl);
           window.milo.deferredPromise = previousDeferred;
           window.aupsdk = previousSdk;
+          delete window.miloTargetReady;
         }
       });
     });
