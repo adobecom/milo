@@ -150,6 +150,7 @@
     align-self: stretch;
 
     > p,
+    > .action-area,
     mas-field {
       display: contents;
     }
@@ -323,6 +324,12 @@ body:has(header.local-nav) .product-marquee-grid {
       align-items: flex-start;
       align-self: center;
       text-align: start;
+    }
+
+    .pm-merch-ctas {
+      flex: none;
+      align-self: center;
+      margin-top: 0;
     }
   }
 
