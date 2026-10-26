@@ -1282,7 +1282,7 @@ function isAnnualPriceEnabled(params) {
   return undefined;
 }
 
-let aupSelectController;
+let aupSelectObserver;
 
 /*
  * Gnav only loads the AUP SDK when aup-select is on at IMS-ready. MAS needs window.aupsdk to
@@ -1298,9 +1298,9 @@ function syncAupSdk() {
 }
 
 function applyAupSelect(service) {
-  aupSelectController?.abort();
-  aupSelectController = new AbortController();
-  const { signal } = aupSelectController;
+  aupSelectObserver?.disconnect();
+  const observer = new MutationObserver(syncAupSdk);
+  aupSelectObserver = observer;
   let applied = false;
   const setValue = () => {
     const value = getAupSelectValue({ pageOnly: true });
@@ -1316,13 +1316,11 @@ function applyAupSelect(service) {
   setValue();
   // Personalization may still change aup-select until target is ready.
   whenTargetReady().then(() => {
-    if (signal.aborted) return;
+    if (aupSelectObserver !== observer) return;
     setValue();
     syncAupSdk();
     // aup-select can still be set on the service later (e.g. by other personalization).
-    const observer = new MutationObserver(syncAupSdk);
     observer.observe(service, { attributes: true, attributeFilter: ['aup-select'] });
-    signal.addEventListener('abort', () => observer.disconnect(), { once: true });
   });
 }
 

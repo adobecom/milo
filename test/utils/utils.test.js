@@ -154,6 +154,7 @@ describe('Utils', () => {
       try {
         utils.resetTargetReady();
         const onReady = sinon.spy();
+        console.log('DBG', window.location.href, document.querySelector('meta[name="target-timeout"]')?.content);
         const ready = utils.whenTargetReady().then(onReady);
         await Promise.resolve();
         expect(onReady.called).to.be.false;
@@ -200,19 +201,22 @@ describe('Utils', () => {
       }
     });
 
-    it('whenTargetReady stops waiting after a timeout', async () => {
+    it('whenTargetReady stops waiting after the target timeout', async () => {
+      const savedUrl = window.location.href;
+      window.history.replaceState(null, '', `${window.location.pathname}?target-timeout=2000`);
       const clock = sinon.useFakeTimers();
       try {
         utils.resetTargetReady();
         const onReady = sinon.spy();
         const ready = utils.whenTargetReady().then(onReady);
-        await clock.tickAsync(4999);
+        await clock.tickAsync(1999);
         expect(onReady.called).to.be.false;
         await clock.tickAsync(1);
         await ready;
         expect(onReady.calledOnce).to.be.true;
       } finally {
         clock.restore();
+        window.history.replaceState(null, '', savedUrl);
         utils.resetTargetReady();
       }
     });

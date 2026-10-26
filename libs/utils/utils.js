@@ -412,6 +412,10 @@ export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
 }
 
+const getTargetTimeout = () => parseInt(new URLSearchParams(window.location.search).get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
+
 let targetReady;
 export function resetTargetReady() {
   targetReady = {};
@@ -423,13 +427,11 @@ export function notifyTargetReady() {
   targetReady.resolve();
 }
 
-const TARGET_READY_MAX_WAIT_MS = 5000;
-
 // Never rejects and never waits forever, so awaiting it can't break the calling flow.
 export function whenTargetReady() {
   let timer;
   const timeout = new Promise((resolve) => {
-    timer = setTimeout(resolve, TARGET_READY_MAX_WAIT_MS);
+    timer = setTimeout(resolve, getTargetTimeout());
   });
   return Promise.race([targetReady.promise, timeout])
     .catch(() => {})
@@ -2266,15 +2268,9 @@ export async function loadMartech({
   window.targetGlobalSettings = { bodyHidingEnabled: false };
   loadIms().catch(() => { });
 
-  try {
-    const { default: initMartech } = await import('../martech/martech.js');
-    await initMartech({ persEnabled, persManifests, postLCP });
-    isMartechLoaded = true;
-  } catch (e) {
-    // Target can't apply anything without martech, so stop consumers from waiting.
-    notifyTargetReady();
-    throw e;
-  }
+  const { default: initMartech } = await import('../martech/martech.js');
+  await initMartech({ persEnabled, persManifests, postLCP });
+  isMartechLoaded = true;
   // Post-LCP target changes are applied by loadPostLCP, which notifies once they land.
   if (getConfig().mep?.targetEnabled !== 'postlcp') notifyTargetReady();
 
@@ -2517,10 +2513,7 @@ async function checkForPageMods() {
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
-    const params = new URL(window.location.href).searchParams;
-    calculatedTimeout = parseInt(params.get('target-timeout'), 10)
-      || parseInt(getMetadata('target-timeout'), 10)
-      || TARGET_TIMEOUT_MS;
+    calculatedTimeout = getTargetTimeout();
 
     const { locale } = getConfig();
     targetInteractionPromise = (async () => {
@@ -2624,11 +2617,8 @@ async function loadPostLCP(config) {
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
-    try {
-      await init({ postLCP: true });
-    } finally {
-      notifyTargetReady();
-    }
+    await init({ postLCP: true });
+    notifyTargetReady();
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
