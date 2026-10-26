@@ -144,6 +144,10 @@
 }
 
 @media (min-width: 1200px) {
+  .blog-side-navigation a {
+    font-weight: 800;
+  }
+
   .blog-article-layout {
     grid-template-columns: minmax(0, 2fr) minmax(0, 5fr);
     gap: 56px;

@@ -133,6 +133,7 @@ describe('blog-side-navigation section list', () => {
       expect(getComputedStyle(block).overflowY).to.equal('auto');
       expect(getComputedStyle(block.querySelector('[aria-current="location"]'))
         .borderInlineStartWidth).to.equal('3px');
+      expect(getComputedStyle(block.querySelector('nav a')).fontWeight).to.equal('800');
       expect(block.getBoundingClientRect().width).to.be.at.most(280);
       expect(article.getBoundingClientRect().left)
         .to.be.greaterThan(block.getBoundingClientRect().right);
@@ -154,9 +155,10 @@ describe('blog-side-navigation section list', () => {
         .to.be.closeTo(layout.getBoundingClientRect().bottom, 1);
       window.scrollTo({ top: 0, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      for (const width of [768, 390]) {
+      for (const width of [1199, 768, 390]) {
         await setViewport({ width, height: 1000 });
         expect(getComputedStyle(block).position).to.equal('static');
+        expect(getComputedStyle(block.querySelector('nav a')).fontWeight).to.equal('700');
         expect(article.getBoundingClientRect().top)
           .to.be.greaterThan(block.getBoundingClientRect().bottom);
         expect(article.getBoundingClientRect().width).to.equal(block.getBoundingClientRect().width);
