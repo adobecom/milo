@@ -12,6 +12,7 @@ import {
   loadIms,
   isAcomAssistantEnabled,
   isAupEnabled,
+  getValidatedMarket,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -219,8 +220,6 @@ export default async function init(el) {
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
-    const base = config.miloLibs || config.codeRoot;
-    const { getValidatedMarket } = await import(`${base}/utils/utils.js`);
     return (await getValidatedMarket())?.toUpperCase();
   })().catch(() => undefined);
 
