@@ -22,8 +22,10 @@ const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
 // Resolve hrefs only; decorateLinksAsync would also run decorateSVG and turn
 // federal's authored .svg icon anchors into <picture> (MWPW-198294).
-async function localizeGnavLinks(body) {
+// #_dnt links are left intact so federal can honor the marker itself.
+export async function localizeGnavLinks(body) {
   await Promise.all([...body.querySelectorAll('a')].map(async (a) => {
+    if (a.href.includes('#_dnt')) return;
     a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   }));
 }

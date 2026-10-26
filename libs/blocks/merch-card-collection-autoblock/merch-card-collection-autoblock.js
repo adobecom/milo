@@ -1,4 +1,5 @@
-import { createTag, getConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import { createTag, getConfig, getFedsPlaceholderConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
@@ -259,7 +260,7 @@ export function filterBarLabels(params, groups, placeholders, resultCount, categ
     applied: `${applied} ${placeholders.filtersApplied}`,
     trigger: `${placeholders.allFilters} (${applied})`,
     results,
-    // Zero results is announced by the empty state.
+    // Zero is left to the caller, which announces the empty state's text.
     announce: resultCount ? results : '',
     empty: resultCount === 0 ? emptyResultsMarkup(placeholders, {
       resultCount,
@@ -587,7 +588,12 @@ function buildProductPricingBar(collection, groups) {
   const row = createTag('div', { class: 'product-pricing-filter-row' }, [prev, pills, next]);
 
   const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText, 'aria-label': placeholders.searchText });
-  const search = createTag('div', { class: 'product-pricing-filter-search', role: 'search' }, [searchInput, svgIcon(SEARCH_ICON)]);
+  // A real button: the native clear of type=search has no name and no keyboard access.
+  // no-track keeps the existing daa-ll positions of every later button and link.
+  const clearBtn = createTag('button', { class: 'product-pricing-filter-search-clear no-track', type: 'button' }, svgIcon(CLOSE_ICON));
+  // Gnav search's translated label for its own clear button. Hidden by CSS until set.
+  replaceKey('clear-results', getFedsPlaceholderConfig()).then((label) => clearBtn.setAttribute('aria-label', label));
+  const search = createTag('div', { class: 'product-pricing-filter-search', role: 'search' }, [searchInput, svgIcon(SEARCH_ICON), clearBtn]);
 
   const root = createTag('div', { class: 'product-pricing-filter-bar' }, [row, search]);
   const update = () => {
@@ -605,7 +611,7 @@ function buildProductPricingBar(collection, groups) {
   // Stacking resizes the bar, so update on the next frame.
   const resize = new ResizeObserver(() => requestAnimationFrame(update));
   [root, pills, ...pills.children].forEach((el) => resize.observe(el));
-  return { root, trigger, triggerLabel, searchInput };
+  return { root, trigger, triggerLabel, searchInput, clearBtn };
 }
 
 export function mountProductPricingFilter(collection, container) {
@@ -640,9 +646,10 @@ export function mountProductPricingFilter(collection, container) {
 
   const { placeholders = {} } = collection.data;
   const { searchInput } = bar;
-  // Replaces the grid when a filter set matches nothing.
-  const emptyEl = createTag('div', { class: 'product-pricing-results', role: 'status', 'aria-live': 'polite' });
-  // Screen readers get the count, which the empty state does not cover.
+  // Replaces the grid when a filter set matches nothing. Not live: it is
+  // display:none until filled, and a region that appears filled is not announced.
+  const emptyEl = createTag('div', { class: 'product-pricing-results' });
+  // Always rendered, so screen readers hear the count or the empty state's text.
   const countEl = createTag('div', { class: 'sr-only', role: 'status', 'aria-live': 'polite' });
   let resultCount;
   const renderLabels = (params) => {
@@ -654,7 +661,8 @@ export function mountProductPricingFilter(collection, container) {
     if (drawer.results.textContent !== labels.results) drawer.results.textContent = labels.results;
     emptyEl.innerHTML = labels.empty;
     // Same text again would be re-announced.
-    if (countEl.textContent !== labels.announce) countEl.textContent = labels.announce;
+    const announce = labels.announce || emptyEl.textContent.trim() || labels.results;
+    if (countEl.textContent !== announce) countEl.textContent = announce;
   };
   // The selected pill stays live. Search is ignored.
   const renderAvailability = (params) => {
@@ -700,6 +708,13 @@ export function mountProductPricingFilter(collection, container) {
     beforeSearch = next.saved;
     if (next.params) writeHash(next.params);
   }));
+
+  // Same path as deleting the term, so the prior filters come back.
+  bar.clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.focus();
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 
   surfaces.forEach((root) => root.addEventListener('change', (e) => {
     const input = e.target.closest('.product-pricing-pill input');
