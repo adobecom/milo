@@ -159,12 +159,15 @@ describe('Market selector block', () => {
     const list = popover.querySelector('.market-selector-list');
     const [languageButton, marketButton] = block.querySelectorAll('.market-selector-button');
     const globe = languageButton.querySelector('.market-selector-globe');
+    languageButton.style.transition = 'none';
+    marketButton.style.transition = 'none';
     try {
       document.head.append(style, foundation);
       document.body.append(c1Footer);
       expect(getComputedStyle(popover).position).to.equal('static');
       expect(getComputedStyle(popover).overflowY).to.equal('visible');
       expect(getComputedStyle(languageButton).color).to.equal('rgb(80, 80, 80)');
+      expect(getComputedStyle(languageButton).opacity).to.equal('1');
       foundation.content = 'c2';
       expect(getComputedStyle(popover).position).to.equal('static');
       expect(getComputedStyle(c1Popover).position).to.equal('static');
@@ -177,8 +180,10 @@ describe('Market selector block', () => {
       expect(getComputedStyle(c1Popover).position).to.equal('static');
       expect(block.querySelectorAll('.market-selector-dropdown')).to.have.length(2);
       expect(getComputedStyle(popover).display).to.equal('none');
-      expect(getComputedStyle(languageButton).color).to.equal('rgba(255, 255, 255, 0.64)');
-      expect(getComputedStyle(marketButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(languageButton).opacity).to.equal('0.6');
+      expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(marketButton).opacity).to.equal('0.6');
       expect(getComputedStyle(globe).display).to.equal('none');
       block.querySelectorAll('.market-selector-popover').forEach((dropdownPopover) => {
         expect(getComputedStyle(dropdownPopover).overflowY).to.equal('hidden');
@@ -195,7 +200,9 @@ describe('Market selector block', () => {
       languageButton.click();
       expect(getComputedStyle(popover).display).to.equal('block');
       expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
-      expect(getComputedStyle(marketButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(languageButton).opacity).to.equal('1');
+      expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(marketButton).opacity).to.equal('0.6');
       expect(getComputedStyle(globe).display).to.equal('none');
       expect(list.querySelectorAll('.market-selector-link').length).to.equal(14);
       expect(list.scrollHeight).to.be.greaterThan(list.clientHeight);
@@ -255,8 +262,10 @@ describe('Market selector block', () => {
       expect(footerWheel.calledTwice).to.equal(true);
 
       marketButton.click();
-      expect(getComputedStyle(languageButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(languageButton).opacity).to.equal('0.6');
       expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
+      expect(getComputedStyle(marketButton).opacity).to.equal('1');
       expect(getComputedStyle(globe).display).to.equal('none');
       const marketPopover = block.querySelectorAll('.market-selector-popover')[1];
       const marketWheel = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 80 });

@@ -153,7 +153,6 @@
   }
 }
 
-
 .global-footer:has(.market-selector-c2) {
   & .market-selector-wrapper {
     display: flex;
@@ -175,7 +174,8 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--s2a-color-transparent-white-64);
+    color: var(--s2a-color-gray-25);
+    opacity: 0.6;
     font: inherit;
     font-size: var(--s2a-typography-font-size-caption);
     line-height: var(--s2a-typography-line-height-caption);
@@ -184,8 +184,10 @@
   }
 
   & .market-selector-button:hover,
-  & .market-selector-button[aria-expanded='true'] {
+  & .market-selector-button[aria-expanded='true'],
+  & .market-selector-button:focus-visible {
     color: var(--s2a-color-content-knockout);
+    opacity: 1;
   }
 
   & .market-selector-button span {
