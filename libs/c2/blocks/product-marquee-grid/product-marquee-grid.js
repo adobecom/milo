@@ -67,8 +67,11 @@ function buildMerchCard(col, { pillCtas = false } = {}) {
   normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
   const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div)')]
-    .filter((el) => el.textContent.trim() || el.matches('mas-field')
-      || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
+    .filter((el) => {
+      console.log(el);
+      return el.textContent.trim() || el.matches('mas-field')
+        || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]');
+    });
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
