@@ -66,7 +66,7 @@ function buildMerchCard(col, { pillCtas = false } = {}) {
     .forEach((p) => p.classList.add('body-md'));
   normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
-  const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div)')]
+  const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md, a)')]
     .filter((el) => {
       console.log(el);
       return el.textContent.trim() || el.matches('mas-field')
