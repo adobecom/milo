@@ -1345,9 +1345,13 @@ describe('merch-card-collection autoblock', () => {
         expect(input.closest('[role="search"]')).to.exist;
       });
 
-      it('announces the count, once per change, and leaves zero to the empty state', () => {
+      it('announces the count, or the empty state text for zero results', () => {
         const { collection, container } = mount();
         const status = container.querySelector('.sr-only[role="status"]');
+        const emptyEl = container.querySelector('.product-pricing-results');
+        // The visible empty state appears already filled, so it is not the live region.
+        expect(emptyEl.hasAttribute('role')).to.be.false;
+        expect(emptyEl.hasAttribute('aria-live')).to.be.false;
         const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
           'merch-card-collection:literals-changed',
           { detail: { resultCount } },
@@ -1356,7 +1360,34 @@ describe('merch-card-collection autoblock', () => {
         emit(5);
         expect(status.textContent).to.equal('5 Results');
         emit(0);
-        expect(status.textContent).to.equal('');
+        expect(status.textContent).to.equal('none');
+      });
+
+      it('announces the search term when a search finds nothing', async () => {
+        const original = data.placeholders.noSearchResultsText;
+        data.placeholders.noSearchResultsText = '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p>';
+        try {
+          window.location.hash = 'filter=all&search=test';
+          const { collection, container } = mount();
+          await delay(50);
+          collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 0 } }));
+          expect(container.querySelector('.sr-only[role="status"]').textContent)
+            .to.equal('Your search for test did not yield any results');
+        } finally {
+          data.placeholders.noSearchResultsText = original;
+        }
+      });
+
+      it('falls back to the count when no empty state text is authored', () => {
+        const original = data.placeholders.noResultsText;
+        delete data.placeholders.noResultsText;
+        try {
+          const { collection, container } = mount();
+          collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 0 } }));
+          expect(container.querySelector('.sr-only[role="status"]').textContent).to.equal('0 Results');
+        } finally {
+          data.placeholders.noResultsText = original;
+        }
       });
 
       it('points each group toggle at its pill list', () => {

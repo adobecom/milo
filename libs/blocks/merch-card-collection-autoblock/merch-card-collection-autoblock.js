@@ -260,7 +260,7 @@ export function filterBarLabels(params, groups, placeholders, resultCount, categ
     applied: `${applied} ${placeholders.filtersApplied}`,
     trigger: `${placeholders.allFilters} (${applied})`,
     results,
-    // Zero results is announced by the empty state.
+    // Zero is left to the caller, which announces the empty state's text.
     announce: resultCount ? results : '',
     empty: resultCount === 0 ? emptyResultsMarkup(placeholders, {
       resultCount,
@@ -646,9 +646,10 @@ export function mountProductPricingFilter(collection, container) {
 
   const { placeholders = {} } = collection.data;
   const { searchInput } = bar;
-  // Replaces the grid when a filter set matches nothing.
-  const emptyEl = createTag('div', { class: 'product-pricing-results', role: 'status', 'aria-live': 'polite' });
-  // Screen readers get the count, which the empty state does not cover.
+  // Replaces the grid when a filter set matches nothing. Not live: it is
+  // display:none until filled, and a region that appears filled is not announced.
+  const emptyEl = createTag('div', { class: 'product-pricing-results' });
+  // Always rendered, so screen readers hear the count or the empty state's text.
   const countEl = createTag('div', { class: 'sr-only', role: 'status', 'aria-live': 'polite' });
   let resultCount;
   const renderLabels = (params) => {
@@ -660,7 +661,8 @@ export function mountProductPricingFilter(collection, container) {
     if (drawer.results.textContent !== labels.results) drawer.results.textContent = labels.results;
     emptyEl.innerHTML = labels.empty;
     // Same text again would be re-announced.
-    if (countEl.textContent !== labels.announce) countEl.textContent = labels.announce;
+    const announce = labels.announce || emptyEl.textContent.trim() || labels.results;
+    if (countEl.textContent !== announce) countEl.textContent = announce;
   };
   // The selected pill stays live. Search is ignored.
   const renderAvailability = (params) => {
