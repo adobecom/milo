@@ -536,6 +536,33 @@ describe('preflight diff-onpage', () => {
       expect(p.childNodes).to.have.length(3);
       expect(p.querySelector('strong').childNodes).to.have.length(1);
     });
+
+    it('inserts words removed from the start before the first word', () => {
+      root.innerHTML = '<div><p>price $10</p></div>';
+      highlightOnPage(changed('Old price $10', 'price $10'), root);
+
+      const p = root.querySelector('p');
+      expect(p.firstElementChild.tagName).to.equal('DEL');
+      expect(p.textContent.startsWith('Oldprice $10')).to.equal(true);
+      expect(marks('del')).to.deep.equal(['Old']);
+      expect(marks('ins')).to.deep.equal([]);
+    });
+
+    it('marks added words on both sides of an unchanged word separately', () => {
+      root.innerHTML = '<div><p>new one same new two</p></div>';
+      highlightOnPage(changed('same', 'new one same new two'), root);
+
+      expect(marks('ins')).to.deep.equal(['new one', 'new two']);
+    });
+
+    it('does not join a word with the text of a following block element', () => {
+      root.innerHTML = '<div><p>foo</p></div>';
+      root.querySelector('p').append(Object.assign(document.createElement('div'), { textContent: 'baz' }));
+      highlightOnPage(changed('foo<div>bar</div>', 'foo<div>baz</div>'), root);
+
+      expect(marks('ins')).to.deep.equal(['baz']);
+      expect(marks('del')).to.deep.equal(['bar']);
+    });
   });
 
   describe('on-page Hide/Show toggle control', () => {
