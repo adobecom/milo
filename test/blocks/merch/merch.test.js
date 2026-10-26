@@ -330,12 +330,13 @@ describe('Merch Block', () => {
     });
 
     it('only updates once target is ready', async () => {
-      notifyTargetReady();
       setMeta('on');
       const service = await initService(true);
       setMeta('off');
-      await targetReady();
+      await delay(0);
       expect(service.getAttribute('aup-select')).to.equal('on');
+      await targetReady();
+      expect(service.hasAttribute('aup-select')).to.be.false;
     });
 
     it('stops updating a replaced service', async () => {

@@ -927,19 +927,6 @@ let aupSdkTimeoutLogged = false;
 export const AUP_SDK_READY_EVENT = 'milo:aupsdk:ready';
 const AUP_SDK_READY_TIMEOUT = 10000;
 
-const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
-
-/**
- * aup-select as mas-commerce-service resolves it: URL param, then the service attribute.
- * Without a service, falls back to the page value (URL param or metadata).
- */
-export function getEffectiveAupSelect(service = document.querySelector('mas-commerce-service')) {
-  if (!service) return getAupSelectValue();
-  const value = (new URLSearchParams(window.location.search).get('aup-select')
-    ?? service.getAttribute('aup-select'))?.trim().toLowerCase();
-  return value && !AUP_SELECT_DISABLED_VALUES.includes(value) ? value : null;
-}
-
 const isAupSdkReady = () => typeof window.aupsdk?.getOrchestratorContext === 'function';
 
 export function waitForAupSdk(timeout = AUP_SDK_READY_TIMEOUT, { signal, onTimeout } = {}) {
@@ -979,7 +966,7 @@ function cancelModalRestores() {
 async function openModalFromHash(cta, hash) {
   const { signal } = modalRestoreController;
   let timedOut = false;
-  if ((isAupEnabled() || getEffectiveAupSelect()) && !isAupSdkReady()) {
+  if (isAupEnabled() && !isAupSdkReady()) {
     await waitForAupSdk(AUP_SDK_READY_TIMEOUT, {
       signal,
       onTimeout: () => { timedOut = true; },
@@ -1302,8 +1289,8 @@ let aupSdkValue = null;
  * Gnav only loads the AUP SDK when aup-select is on at IMS-ready. MAS needs window.aupsdk to
  * open the AUP flow, so load it (or refresh its features) when aup-select is enabled later.
  */
-function syncAupSdk(service) {
-  const value = getEffectiveAupSelect(service);
+function syncAupSdk() {
+  const value = getAupSelectValue();
   if (!value || value === aupSdkValue) return;
   aupSdkValue = value;
   import('../global-navigation/utilities/aup-sdk.js')
@@ -1321,7 +1308,7 @@ function applyAupSelect(service) {
   const { signal } = aupSelectController;
   let applied = false;
   const setValue = () => {
-    const value = getAupSelectValue();
+    const value = getAupSelectValue({ pageOnly: true });
     if (value) {
       service.setAttribute('aup-select', value);
       applied = true;
@@ -1336,9 +1323,9 @@ function applyAupSelect(service) {
   whenTargetReady().then(() => {
     if (signal.aborted) return;
     setValue();
-    syncAupSdk(service);
+    syncAupSdk();
     // aup-select can still be set on the service later (e.g. by other personalization).
-    const observer = new MutationObserver(() => syncAupSdk(service));
+    const observer = new MutationObserver(syncAupSdk);
     observer.observe(service, { attributes: true, attributeFilter: ['aup-select'] });
     signal.addEventListener('abort', () => observer.disconnect(), { once: true });
   });

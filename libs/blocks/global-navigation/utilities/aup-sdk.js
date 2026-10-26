@@ -2,6 +2,7 @@
 import {
   getConfig,
   getMetadata,
+  isAupSelectOn,
   getLingoRegion,
   lingoActive,
   loadScript,
@@ -11,7 +12,6 @@ import {
   AUP_SDK_READY_EVENT,
   getAupModalHashCleanup,
   getAupModalTitle,
-  getEffectiveAupSelect,
 } from '../../merch/merch.js';
 
 // Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
@@ -213,7 +213,7 @@ export async function preloadAupSdk() {
   }
 
   const features = ['useToasts'];
-  if (getEffectiveAupSelect() === 'on') features.push('tmp_aupsdk_ucv3_in_iframe');
+  if (isAupSelectOn()) features.push('tmp_aupsdk_ucv3_in_iframe');
   await window.aupsdk.updateConfig({ miniAppContext: { features } });
   window.dispatchEvent(new CustomEvent(AUP_SDK_READY_EVENT));
   return window.aupsdk;

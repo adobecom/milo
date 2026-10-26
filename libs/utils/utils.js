@@ -395,8 +395,14 @@ export function getMetadata(name, doc = document) {
 
 const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
 
-export function getAupSelectValue() {
+/*
+ * Single source of truth for aup-select, resolved like mas-commerce-service does: URL param, then
+ * the service attribute, then page metadata. `pageOnly` skips the attribute (the value merch
+ * applies to the service).
+ */
+export function getAupSelectValue({ pageOnly = false } = {}) {
   const value = new URLSearchParams(window.location.search).get('aup-select')
+    ?? (pageOnly ? null : document.querySelector('mas-commerce-service')?.getAttribute('aup-select'))
     ?? getMetadata('aup-select');
   const normalized = value?.trim().toLowerCase();
   return normalized && !AUP_SELECT_DISABLED_VALUES.includes(normalized) ? normalized : null;
@@ -417,8 +423,17 @@ export function notifyTargetReady() {
   targetReady.resolve();
 }
 
+const TARGET_READY_MAX_WAIT_MS = 5000;
+
+// Never rejects and never waits forever, so awaiting it can't break the calling flow.
 export function whenTargetReady() {
-  return targetReady.promise;
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(resolve, TARGET_READY_MAX_WAIT_MS);
+  });
+  return Promise.race([targetReady.promise, timeout])
+    .catch(() => {})
+    .finally(() => clearTimeout(timer));
 }
 
 export function isAupEnabled(useUniversalNav = false) {

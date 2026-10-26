@@ -184,6 +184,39 @@ describe('Utils', () => {
       }
     });
 
+    it('falls back to the mas-commerce-service attribute unless pageOnly', () => {
+      const service = utils.createTag('mas-commerce-service', { 'aup-select': 'on' });
+      document.body.append(service);
+      try {
+        expect(utils.getAupSelectValue()).to.equal('on');
+        expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.getAupSelectValue({ pageOnly: true })).to.be.null;
+        meta.content = 'off';
+        document.head.append(meta);
+        expect(utils.getAupSelectValue()).to.equal('on');
+        expect(utils.getAupSelectValue({ pageOnly: true })).to.be.null;
+      } finally {
+        service.remove();
+      }
+    });
+
+    it('whenTargetReady stops waiting after a timeout', async () => {
+      const clock = sinon.useFakeTimers();
+      try {
+        utils.resetTargetReady();
+        const onReady = sinon.spy();
+        const ready = utils.whenTargetReady().then(onReady);
+        await clock.tickAsync(4999);
+        expect(onReady.called).to.be.false;
+        await clock.tickAsync(1);
+        await ready;
+        expect(onReady.calledOnce).to.be.true;
+      } finally {
+        clock.restore();
+        utils.resetTargetReady();
+      }
+    });
+
     it('does not report a value for signed-in Universal Nav users without aup-select', () => {
       const { adobeIMS } = window;
       try {
