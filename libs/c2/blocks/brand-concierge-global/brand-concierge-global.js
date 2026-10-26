@@ -1,4 +1,4 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled } from '../../../utils/utils.js';
 import {
   aiIcon,
   decorateInput,
@@ -81,12 +81,16 @@ function decorateGnav(cards, input, topNav, el) {
     bcGnav.appendChild(gnavButtonSection);
 
     window.addEventListener('bc:side-modal-open', () => {
+      document.body.classList.add('bc-side-open');
+      localStorage.setItem('bc-side-overlay', 'open');
       if (!bcGnav.classList.contains('has-chat-history')) {
         bcGnav.classList.add('has-chat-history');
       }
     });
     // remove the has-chat-history class if the overlay is closed before chat history is written
     window.addEventListener('bc:side-modal-close', () => {
+      document.body.classList.remove('bc-side-open');
+      localStorage.setItem('bc-side-overlay', 'closed');
       if (!hasChatCookie()) {
         bcGnav.classList.remove('has-chat-history');
       }
@@ -135,7 +139,12 @@ function decorateGnav(cards, input, topNav, el) {
   }
 }
 
-export default function init(el) {
+export default async function init(el) {
+  if (isAcomAssistantEnabled()) {
+    const { decorateAcomAssistantGnavBlock } = await import('../../../features/acom-assistant-gnav.js');
+    decorateAcomAssistantGnavBlock(el);
+    return;
+  }
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));

@@ -1,8 +1,9 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForElement, waitFor, delay } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { getAuthoredGnavCards } from '../../../libs/features/acom-assistant-gnav.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
@@ -65,6 +66,17 @@ describe('Brand Concierge Global', () => {
     expect(block.children.length).to.equal(0);
   });
 
+  it('decorates when the navigation is added after block initialization', async () => {
+    const header = document.querySelector('header.global-navigation');
+    header.remove();
+
+    init(block);
+    document.body.prepend(header);
+
+    const bcGnav = await waitForElement('.bc-gnav');
+    expect(header.querySelector('.feds-bc-wrapper .bc-gnav')).to.equal(bcGnav);
+  });
+
   it('sets the --bc-side-overlay-top CSS variable when the gnav is present', () => {
     document.documentElement.style.removeProperty('--bc-side-overlay-top');
     sideOverlayTop();
@@ -78,6 +90,29 @@ describe('Brand Concierge Global', () => {
 
     const buttonSection = document.querySelector('.feds-bc-wrapper .bc-gnav-button');
     expect(buttonSection.classList.contains('no-gnav-mobile')).to.be.true;
+  });
+
+  it('does not mount Assistant below 900px with no-gnav-mobile when the block loads directly', async () => {
+    const viewport = { width: window.innerWidth, height: window.innerHeight };
+    const metadata = document.createElement('meta');
+    metadata.name = 'acom-assistant';
+    metadata.content = 'on';
+    document.head.append(metadata);
+    await setViewport({ width: 899, height: 900 });
+    block.classList.add('no-gnav-mobile');
+    const cards = block.firstElementChild;
+    try {
+      init(block);
+      await waitFor(() => getAuthoredGnavCards() === cards);
+
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+      expect(document.querySelector('.bc-gnav')).to.be.null;
+      expect(block.children).to.have.lengthOf(0);
+      expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
+    } finally {
+      metadata.remove();
+      await setViewport(viewport);
+    }
   });
 
   it('activates the input and cards on focus and deactivates on blur', async () => {

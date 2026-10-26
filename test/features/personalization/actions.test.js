@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleCommands } from '../../../libs/features/personalization/personalization.js';
+import { init, handleCommands, replaceInner } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -77,6 +77,73 @@ describe('replace action', () => {
     await initFragments(inlineReplacemeFrag);
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.be.null;
     expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
+  });
+
+  it('reuses the replaced element\'s media in the fragment so it is not fetched again', async () => {
+    const pageSrc = '/products/media_15dedupe.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-dedupe';
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="dedupe-hero"><picture><img src="${pageSrc}"></picture></div>`;
+    document.body.append(rootEl);
+    window.fetch = stub();
+    window.fetch.withArgs(`${window.location.origin}${fragPath}.plain.html`)
+      .returns(getFetchPromise('<div><picture><img src="./media_15dedupe.png?width=750&format=png&optimize=medium"></picture></div>', 'text'));
+
+    try {
+      await handleCommands([{ action: 'replace', selector: '.dedupe-hero', content: fragPath }], rootEl, false, true);
+      expect(rootEl.querySelector('.dedupe-hero')).to.be.null;
+      await initFragments(rootEl.querySelector('a'));
+      expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      rootEl.remove();
+      delete getConfig().mep.removedMedia;
+    }
+  });
+
+  it('reuses media of an element MEP removed in a fragment inserted elsewhere', async () => {
+    const pageSrc = '/products/media_15rm.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-rm';
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="dedupe-removed"><picture><img src="${pageSrc}"></picture></div><div class="dedupe-anchor"></div>`;
+    document.body.append(rootEl);
+    window.fetch = stub();
+    window.fetch.withArgs(`${window.location.origin}${fragPath}.plain.html`)
+      .returns(getFetchPromise('<div><picture><img src="./media_15rm.png?width=750&format=png&optimize=medium"></picture></div>', 'text'));
+
+    try {
+      await handleCommands([
+        { action: 'remove', selector: '.dedupe-removed', content: 'true' },
+        { action: 'insertafter', selector: '.dedupe-anchor', content: fragPath },
+      ], rootEl, false, true);
+      expect(rootEl.querySelector('.dedupe-removed')).to.be.null;
+      await initFragments(rootEl.querySelector('a'));
+      expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      rootEl.remove();
+      delete getConfig().mep.removedMedia;
+    }
+  });
+
+  it('reuses the original page media in fragments from replacePage content', async () => {
+    const pageSrc = '/products/media_15rp.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-rp';
+    const main = document.createElement('div');
+    main.innerHTML = `<div><picture><img src="${pageSrc}"></picture></div>`;
+    document.body.append(main);
+    window.fetch = stub().callsFake((url) => {
+      if (`${url}`.includes('replacement.plain.html')) return getFetchPromise(`<div><a href="${fragPath}">frag</a></div>`, 'text');
+      return getFetchPromise('<div><picture><img src="./media_15rp.png?width=750&format=png&optimize=medium"></picture></div>', 'text');
+    });
+
+    try {
+      await replaceInner('/products/replacement', main);
+      expect(main.querySelector(`img[src="${pageSrc}"]`)).to.be.null;
+      await initFragments(main.querySelector('a'));
+      expect(main.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      main.remove();
+      delete getConfig().mep.removedMedia;
+    }
   });
 });
 

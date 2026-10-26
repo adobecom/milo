@@ -158,6 +158,24 @@ export function decorateBlockText(el, config = blockTextConfig, type = null) {
   if (type === 'merch') decorateIconStack(el);
 }
 
+export function normalizeMasFieldText(cell, bodySize, fieldSelector = 'mas-field') {
+  cell.querySelectorAll(`:scope > ${fieldSelector}, :scope > p.body-${bodySize} > ${fieldSelector}`)
+    .forEach((field) => {
+      if (field.querySelector('h1, h2, h3, h4, h5, h6') || field.getAttribute('field')?.startsWith('ctas')) return;
+      const parent = field.parentElement;
+      const body = createTag('div', { class: `body-${bodySize}` });
+      // A div survives merch.js unwrapping block-valued fields, unlike an authored p.
+      if (parent === cell) {
+        field.before(body);
+        body.append(field);
+      } else {
+        [...parent.attributes].forEach(({ name, value }) => body.setAttribute(name, value));
+        body.append(...parent.childNodes);
+        parent.replaceWith(body);
+      }
+    });
+}
+
 export function handleFocalpoint(pic, child, removeChild) {
   const image = pic.querySelector('img');
   if (!child || !image) return;
@@ -605,6 +623,9 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   // Router Marquee poster deferred to a private attr
   // until slide activates, avoiding eager fetch when hidden.
   if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
+  else if (anchorTag.closest('.hero-marquee') && !getConfig().mep?.blocks?.['hero-marquee']) {
+    attrs = attrs.replace("poster='", "data-hm-poster='");
+  }
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
@@ -625,6 +646,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
+      if (videoEl.dataset.hmPoster) {
+        videoEl.setAttribute('poster', videoEl.dataset.hmPoster);
+        delete videoEl.dataset.hmPoster;
+      }
       if (videoEl.querySelector('source')) return;
       videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
@@ -694,8 +719,16 @@ function isEmptyCell(el) {
   return !el.children.length && !el.textContent?.trim();
 }
 
+export function cloneWithPreviewMetadata(source) {
+  const clone = source.cloneNode(true);
+  if (getConfig()?.mep?.preview && source.nodeType === Node.ELEMENT_NODE) {
+    document.dispatchEvent(new CustomEvent('mep:content-cloned', { detail: { source, clone } }));
+  }
+  return clone;
+}
+
 function cloneChildren(source) {
-  return [...source.childNodes].map((child) => child.cloneNode(true));
+  return [...source.childNodes].map(cloneWithPreviewMetadata);
 }
 
 function parseVariants(text) {

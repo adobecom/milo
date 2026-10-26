@@ -17,6 +17,9 @@ import init, {
   scrollOffset,
   categoryOffTags,
   isCategoryOff,
+  categoryRules,
+  groupsFor,
+  pruneParams,
   isStacked,
   searchWidth,
   fixProductPricingVariant,
@@ -486,6 +489,41 @@ describe('merch-card-collection autoblock', () => {
     });
   });
 
+  describe('category rules', () => {
+    const groups = [
+      { deeplink: 'filter', category: true, options: [{ value: 'all' }, { value: 'photo' }] },
+      { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }, { value: 'students' }] },
+    ];
+    const meta = { 'pricing-off-for': { text: 'all' }, 'exclude-in-photo': { text: 'pricing:students' } };
+    const rules = categoryRules(meta, groups);
+
+    it('reads off-for per group and exclude-in per category', () => {
+      expect(rules).to.deep.equal({ off: { pricing: ['all'] }, exclude: { all: [], photo: ['pricing:students'] } });
+      expect(categoryRules({}, [])).to.deep.equal({ off: {}, exclude: {} });
+      const many = categoryRules({ 'exclude-in-photo': { text: 'pricing:individuals, pricing:students' } }, groups);
+      expect(many.exclude.photo).to.deep.equal(['pricing:individuals', 'pricing:students']);
+    });
+
+    it('drops an off group under its category and an excluded option under its own', () => {
+      expect(groupsFor(groups, 'all', rules).map((g) => g.deeplink)).to.deep.equal(['filter']);
+      const photo = groupsFor(groups, 'photo', rules);
+      expect(photo[1].options.map((o) => o.value)).to.deep.equal(['individuals']);
+      expect(groupsFor(groups, null, rules)).to.have.length(2);
+    });
+
+    it('prunes hash values the category rules out and keeps the rest', () => {
+      const prune = (hash, category) => pruneParams(
+        new URLSearchParams(hash),
+        groups,
+        groupsFor(groups, category, rules),
+      ).toString();
+      expect(prune('filter=all&pricing=students', 'all')).to.equal('filter=all');
+      expect(prune('filter=photo&pricing=students', 'photo')).to.equal('filter=photo');
+      expect(prune('filter=photo&pricing=individuals', 'photo')).to.equal('filter=photo&pricing=individuals');
+      expect(prune('filter=photo&pricing=bogus', 'photo')).to.equal('filter=photo&pricing=bogus');
+    });
+  });
+
   describe('category-off-for', () => {
     const tags = categoryOffTags({ 'category-off-for': { text: 'pricing:business, pricing:students-and-teachers' } });
 
@@ -579,8 +617,7 @@ describe('merch-card-collection autoblock', () => {
       ];
       const count = (hash) => countApplied(new URLSearchParams(hash), groups);
       expect(count('')).to.equal(0);
-      // 'all' means unfiltered.
-      expect(count('filter=all')).to.equal(0);
+      expect(count('filter=all')).to.equal(1);
       expect(count('filter=featured')).to.equal(1);
       expect(count('filter=featured&pricing=individuals')).to.equal(2);
       expect(count('filter=photo&types=desktop&pricing=business')).to.equal(3);
@@ -1135,7 +1172,7 @@ describe('merch-card-collection autoblock', () => {
           hierarchy: [{ label: 'All', queryLabel: 'all' }, { label: 'Featured', queryLabel: 'featured' }],
           sidenavSettings: {
             tagFilters: [
-              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }] },
+              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }, { name: 'students', label: 'S' }] },
             ],
           },
         };
@@ -1162,6 +1199,28 @@ describe('merch-card-collection autoblock', () => {
         expect(categoryInputs().every((input) => input.disabled)).to.be.true;
         expect(label()).to.equal('All Filters (1)');
       });
+
+      it('greys the pricing group and strips its value under an off category', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['pricing-off-for', 'all']]);
+        const pricing = () => [...container.querySelectorAll('.product-pricing-drawer input[data-deeplink="pricing"]')];
+        await delay(50);
+        expect(pricing().some((input) => input.disabled)).to.be.false;
+        window.location.hash = 'filter=all&pricing=business';
+        await delay(50);
+        expect(params().has('pricing')).to.be.false;
+        expect(pricing()).to.have.length(3);
+        expect(pricing().every((input) => input.disabled)).to.be.true;
+        expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (1)');
+      });
+
+      it('greys an excluded option, hands the rule to the collection and strips a deep link to it', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['exclude-in-all', 'pricing:students']]);
+        window.location.hash = 'filter=all&pricing=students';
+        await delay(50);
+        expect(params().has('pricing')).to.be.false;
+        const off = [...container.querySelectorAll('.product-pricing-drawer input[data-deeplink="pricing"]:disabled')].map((i) => i.value);
+        expect(off).to.deep.equal(['students']);
+      });
     });
 
     it('mounts once per collection', () => {
@@ -1179,19 +1238,35 @@ describe('merch-card-collection autoblock', () => {
       expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('desktop');
     });
 
-    it('opens and closes the drawer, tracking aria-expanded', async () => {
+    it('opens the drawer on its close button and closes it', () => {
       const { container } = mount();
       const drawer = container.querySelector('.product-pricing-drawer');
       const trigger = container.querySelector('.product-pricing-filter-trigger');
-      expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+      const close = container.querySelector('.product-pricing-drawer-close');
+      // A dialog trigger, not a disclosure.
+      expect(trigger.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(trigger.hasAttribute('aria-expanded')).to.be.false;
+      trigger.focus();
       trigger.click();
       expect(drawer.open).to.be.true;
-      expect(trigger.getAttribute('aria-expanded')).to.equal('true');
-      container.querySelector('.product-pricing-drawer-close').click();
+      expect(document.activeElement).to.equal(close);
+      expect(trigger.hasAttribute('aria-expanded')).to.be.false;
+      close.click();
       expect(drawer.open).to.be.false;
-      // <dialog> fires 'close' asynchronously, which is what clears the flag.
-      await delay(50);
-      expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+      // Native <dialog> hands focus back to the trigger.
+      expect(document.activeElement).to.equal(trigger);
+    });
+
+    it('names the drawer by its heading, with a unique id per drawer', () => {
+      const first = mount().container.querySelector('.product-pricing-drawer');
+      const second = mount().container.querySelector('.product-pricing-drawer');
+      [first, second].forEach((drawer) => {
+        expect(drawer.hasAttribute('aria-label')).to.be.false;
+        const title = document.getElementById(drawer.getAttribute('aria-labelledby'));
+        expect(title).to.equal(drawer.querySelector('h2.product-pricing-drawer-title'));
+        expect(title.textContent).to.equal('All Filters');
+      });
+      expect(first.getAttribute('aria-labelledby')).to.not.equal(second.getAttribute('aria-labelledby'));
     });
 
     it('opts the drawer out of Lenis scrolling', () => {
@@ -1233,6 +1308,29 @@ describe('merch-card-collection autoblock', () => {
       expect(emptyEl.innerHTML).to.equal('');
       emit(0);
       expect(emptyEl.innerHTML).to.equal('<p>none</p>');
+    });
+
+    it('announces the counts from inside the drawer, once per change', () => {
+      const { collection, container } = mount();
+      const drawer = container.querySelector('.product-pricing-drawer');
+      const counts = drawer.querySelector('.product-pricing-drawer-counts');
+      container.querySelector('.product-pricing-filter-trigger').click();
+      expect(drawer.open).to.be.true;
+      // The open modal makes the page's own status inert, so the drawer needs one.
+      expect(counts.getAttribute('role')).to.equal('status');
+      expect(counts.getAttribute('aria-atomic')).to.equal('true');
+      const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
+        'merch-card-collection:literals-changed',
+        { detail: { resultCount } },
+      ));
+      emit(5);
+      expect(counts.textContent).to.equal('1 Applied5 Results');
+      const [applied, results] = [...counts.children].map((el) => el.firstChild);
+      // The same text is not rewritten, so it is not re-announced.
+      emit(5);
+      expect([...counts.children].map((el) => el.firstChild)).to.deep.equal([applied, results]);
+      emit(7);
+      expect(counts.textContent).to.equal('1 Applied7 Results');
     });
 
     describe('accessibility', () => {

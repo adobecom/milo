@@ -1,7 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
-import { loadMasComponent, MAS_MERCH_SECURE_TRANSACTION } from '../merch/merch.js';
-
-const { base } = getConfig();
+import { createTag } from '../../utils/utils.js';
 
 const planTypes = ['ABM', 'PUF', 'M2M'];
 
@@ -37,18 +34,7 @@ export default async function init(el) {
     el.replaceWith(merchAddonTemplate);
     return merchAddonTemplate;
   }
-  const commonsDeps = [
-    import(`${base}/deps/lit-all.min.js`),
-    import(`${base}/features/spectrum-web-components/dist/theme.js`),
-  ];
-
   if (el.classList.contains('secure-transaction')) {
-    await Promise.all([
-      ...commonsDeps,
-      import(`${base}/features/spectrum-web-components/dist/overlay.js`),
-      import(`${base}/features/spectrum-web-components/dist/popover.js`),
-      loadMasComponent(MAS_MERCH_SECURE_TRANSACTION),
-    ]);
     const [label, tooltip] = el.querySelectorAll('h5, p');
     const merchSecureTransaction = createTag('merch-secure-transaction', { icon: true, label: label.innerText, tooltip: tooltip.innerText });
     el.replaceWith(merchSecureTransaction);
