@@ -1,6 +1,6 @@
 {
   "name": "@adobecom/standalone-feds",
-  "version": "0.0.35-mimefix-test3",
+  "version": "0.0.35",
   "description": "",
   "main": "dist/navigation.js",
   "type": "module",
