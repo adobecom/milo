@@ -638,6 +638,17 @@ describe('globe-gallery: timeline', () => {
     expect(derive(4000).zoomT).to.equal(1);
   });
 
+  it('ends the zoom a quote hold before the runway end, and inverts that mapping', () => {
+    const span = { blockDocTop: 1000, blockHeight: 3000, formPx: 1000, holdPx: 800 };
+    expect(derive(2600, { holdPx: 800 }).zoomT).to.be.closeTo(0.5, 1e-12);
+    expect(derive(3200, { holdPx: 800 }).zoomT).to.equal(1);
+    expect(derive(4000, { holdPx: 800 }).zoomT).to.equal(1);
+    expect(TL.scrollYAtZoomT(0, span)).to.equal(2000);
+    expect(TL.scrollYAtZoomT(0.5, span)).to.equal(2600);
+    expect(TL.scrollYAtZoomT(1, { ...span, holdPx: 0 })).to.equal(4000);
+    expect(derive(TL.scrollYAtZoomT(0.3, span), { holdPx: 800 }).zoomT).to.be.closeTo(0.3, 1e-12);
+  });
+
   it('derives entry progress before the block reaches its pin', () => {
     expect(derive(600).arcCopyEntryT).to.equal(0);
     expect(derive(1020).arcCopyEntryT).to.be.closeTo(0.5, 1e-12);

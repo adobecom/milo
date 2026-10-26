@@ -69,6 +69,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock**, and fires the injected `onDrag()` once per gesture the first time travel clears `CLICK_MAX_MOVE` (see Behavior notes). Sole owner of the canvas cursor — `none` while the custom cursor is up, then native `grab`/`grabbing`/`pointer`, all written through `applyCursor()` (see Behavior notes). |
 | `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the retirement fade, `isActive()` gating interaction's cursor. No-op on touch and on the barrel. |
+| `quote-particles.js` | `createQuoteParticles({ figureEl, railEl, count })` → `{ object, layout, setSources, update, isReady, isIdle, markDrawn, invalidate, dispose }`. The WebGL pull quote: measures the transparent DOM figure, rasterizes it at DPR, samples particle targets from it, and owns the `Points` + crisp text plane. See **WebGL pull quote**. |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 
@@ -745,12 +746,10 @@ a CSS-only edit. The CSS is **mobile-first**: the base `.globe-gallery` rule is 
 |---|---|---|
 | `--gg-runway-height` | total height = formation + tail | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
 | `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
-| `--gg-pq-hold` | the quote's hold (particle hand-off only) | extra runway after the zoom's end, applied by `.globe-gallery-pq-particles`; the zoom's pacing is unchanged |
+| `--gg-pq-hold` | quote hold, added to the runway only under `.globe-gallery-pq-webgl` | lengthens the WebGL quote's flight + reading time; `deriveFrame` subtracts it from the zoom tail, so the zoom pace is unchanged |
 
 > The `vh` figures in this section were taken at a 540 / 304 budget (tail 236). The budget is now split
 > per breakpoint, so read them as worked examples of the formulas, not as current values.
-
-The pull-quote pin no longer reads any JS-published prop; see **Pull-quote box**.
 
 **No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale literal.
 The zero-box gate means `readCssVars()` always finds the block's properties, so the two rules below
@@ -802,8 +801,16 @@ Two consequences of depending on `fadeRefH`:
 - **The doc snippet can only approximate it**, using `CARD_H_SPHERE` in place of the measured mean,
   landing within ~1vh. For the real number, log `fadeRefH`.
 
-**The pin no longer rides this number.** It shares the world's sticky box (see **Pull-quote box**);
-`pqAppearZoomT` now anchors the particle flight and the quote cue instead (see **Particle hand-off**).
+**The WebGL quote starts a little earlier, at `pqStartZoomT`** — the same derivation with
+`NEAR_FADE_START` in place of `NEAR_FADE_END`, i.e. where the deepest card *starts* fading. Both are
+JS-only now; nothing is published to CSS.
+
+This also bounds the overlap. At the reveal the runway end (= the next section's top) is
+`(1 − appear-t) × tail` down the viewport — **155vh md / 184vh sm** — below the quote's own bottom edge
+(~78vh md, ~102vh sm for a tall one). During the hold the quote stays put while the section keeps
+rising, so that gap is spent — all of it, since the hold *is* the gap. The rail releases exactly as
+the section's top reaches the quote's bottom edge, and `Math.max(0, …)` floors the hold, so the
+section can never climb over the quote.
 
 **What the runway still controls.** Whatever is left is the stretch where the camera has passed the
 shell's centre but not its far wall — a few far-pole cards, then nothing. That is `≈0.20` of the tail on
@@ -845,9 +852,10 @@ stay longer than half the quote box, or the section arrives on top of it.
 
 #### The hold
 
-With particles the hold is explicit: `--gg-pq-hold` (70vh) of runway past the zoom's end, taken off
-the zoom tail by `deriveFrame` (`holdPx`). The quote is fully formed at `p = 1` and held until the
-pin releases at the block's end. Without particles there is no extra runway.
+The quote's reading time is runway, not a residual: `.globe-gallery-pq-webgl` adds `--gg-pq-hold`
+(100vh) to the block height, and `deriveFrame` takes `input.holdPx` back off the zoom tail so the
+zoom keeps its pace. The flight (`PQ_FLY_VH`) starts at `pqStartZoomT`; whatever scroll remains
+before the world un-sticks is the hold. See **CSS → WebGL pull quote**.
 
 ### Zero-box gate
 
@@ -1115,7 +1123,7 @@ from `globe-gallery.css`; `progress` and the gate columns are runway-independent
 | ~376 | ~0.457 | camera passes the shell's centre | on **md** the shell is thinning; the last card does not vanish for another ~16vh | `updateActiveCamera` |
 | 382 | 0.480 | `zoomT ≥ pqAppearZoomT` (sm 0.2337) | **sm**: last card vanishes into the prox fade → quote revealed centred and the hold begins; the crosshair draw starts here, nothing was on screen before it; globe controls fade out (also leave the tab order); **hint text reaches 0** — it fades linearly across the whole zoom, so it lands here by construction | `updatePullQuote` + CSS, `controls.update`, `updateClickDragText` |
 | 392 | 0.519 | `zoomT ≥ pqAppearZoomT` (md 0.2904) | **md**: same, one card-shell radius later, controls **and the hint text's zero** included; next section's top is 128vh down the viewport. Both breakpoints then hold centred until the pin's bottom edge arrives — the draw and the copy play out over 700ms from the cue, and the rest of the pin is still — and un-stick at its end | `updatePullQuote` + CSS, `controls.update` |
-| 391 / 401 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` (no particles); with particles, flight `p = 1` and `revealT === 1` — see **Particle hand-off** | canvas `display:none` **and `renderer.render` skipped** — sm at 391vh, md at 401vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 620vh (the observer's `100%` rootMargin puts its window at −200vh..620vh), so the skip covers that tail too, plus the ~150vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
+| 391 / 401 | — | `zoomT ≥ pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | canvas `display:none` **and `renderer.render` skipped** — sm at 391vh, md at 401vh. Every card is prox-faded out at the reveal and the hint text went earlier, so the scene has nothing left to draw. The loop still runs to 620vh (the observer's `100%` rootMargin puts its window at −200vh..620vh), so the skip covers that tail too, plus the ~150vh before the canvas is first shown | `updateCanvasVisibility`, `renderScene` |
 | 520 | 1.000 | runway end | quote is long gone; next section's top reaches the viewport top | CSS |
 
 Also on the timeline but **not** scroll-driven, so absent from the charts: texture loading
@@ -1771,12 +1779,11 @@ a `calc()` — an unregistered prop computes as-specified, so `getPropertyValue`
 stream, and `parseFloat` copes with `304` or `350` but not with `calc(72px + 52px)`. That is also
 why `--gg-modal-anim-ms` is unitless and CSS multiplies it back (`calc(var(--gg-modal-anim-ms) *
 1ms)`) rather than storing `350ms` and having JS strip the unit. **JS
-writes no budget prop** (the pull-quote pin no longer needs one), and the
-narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
+writes no layout props** — the narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
 (`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
-retune stays a CSS-only edit and no magic number is stranded in JS. The pull-quote cue is the one
-value CSS cannot compute — it comes off the WebGL camera curve and the shell radius — so it stays in JS
-(`pqAppearZoomT`, which drives the particle flight). Anything that
+retune stays a CSS-only edit and no magic number is stranded in JS. The pull-quote cue comes off the WebGL
+camera curve and stays in JS; the quote's pinning is the world's own sticky box (see **WebGL pull
+quote**). Anything that
 *could* be a CSS number must not follow it out of the stylesheet. **No upstream (`--feds-*`)
 property is read either.** The control layer is `fixed` and would otherwise sit under the sticky
 gnav, so the whole nav band has to be reckoned with. **Do not reach for `var(--feds-height-nav, 63px)`
@@ -1919,27 +1926,9 @@ taper the first line lands under the nav no matter where the box is centred. The
 whitespace in the box, so it is what yields. Raising the ceiling above 160px runs the top edge into
 the localnav at lg/xl, so re-check that clearance first.
 
-**The pin is fixed while held, not sticky.** `.globe-gallery-pullquote-pin` is a full-viewport layer
-(sibling of the world, after the arc copy, so the quote follows it in reading order). `updatePin`
-(from the `scroll` event and every tick) sets `.is-held` → `position: fixed` while the block covers
-the viewport, and `.is-released` → `position: absolute; bottom: 0` once the block's bottom reaches the
-viewport's, so the quote scrolls away with the page; before the block it is `absolute; top: 0`. Both
-swaps land on the same pixels. A sticky layer was used before; under Lenis' fractional programmatic
-scroll writes its offset is recomputed every frame, which is the likeliest source of the held quote's
-reported 1px wobble — a fixed layer has no scroll term at all. `pinTopPx()` mirrors the pin's top from
-scroll for the particle targets. The figure is `position: absolute; top: var(--gg-optical-center)`
-inside the pin.
-
-Consequences worth knowing:
-
-- **The figure's `transform` keeps `translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`.** A box
-  shorter than the band is optically centred; a taller one pins its top under the nav and overflows
-  downward only. Reduced motion resets `transform: none` and the pin goes `position: static` so the
-  quote flows after the globe.
-- **The quote releases when the block's bottom meets the viewport's bottom**, i.e. after the
-  `--gg-pq-hold` added to the runway (see **Particle hand-off → The hold**).
-- No `overflow` handling: a pathologically long quote spills past the viewport rather than scrolling.
-  Adding a scroller here would need `data-lenis-prevent`.
+The figure is centred on `--gg-optical-center` inside the viewport-tall rail by
+`transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: centred while it fits the band,
+top-anchored (overflowing downward only) once it doesn't. See **WebGL pull quote** for pinning.
 
 ### Crosshair frame
 
@@ -1971,179 +1960,216 @@ at the corners, so the runs **cross** and read as a crosshair rather than a clos
 frame tracks the content-sized box, so both follow a copy or `--gg-pq-gap` change with no second number
 to update.
 
-#### Particle hand-off (PoC)
+### WebGL pull quote (PoC)
 
-The near side of the globe keeps the stage behaviour exactly (its near-camera mosaic/dispersion
-dissolve). Only the **far side** — the last cards the camera flies through — breaks into particles,
-which fly into the quote's glyphs; then the real DOM text cross-fades in over them. Code:
-`src/quote-particles.js` (rasteriser + particle system), the `QUOTE_PARTICLE_*` shaders in
-`src/shaders.js`, and the runtime glue `projectFarQuads`, `updateQuoteParticles`, `quoteFlightP`,
-`updatePin` and `rebuildQuoteFx`.
+The pull quote is drawn **in the globe's canvas**. Card pixels break up, scatter and fly into the
+quote's glyphs, then cross-fade into a crisp raster of the same text. There is no visible DOM quote
+on the motion path. Reduced motion is unchanged: a static, line-split DOM figure after the globe, no
+particles. Module: `src/quote-particles.js`. Shaders: `QUOTE_*` in `src/shaders.js`.
 
-**Targets come from the real DOM layout.** `rasterizeQuote` walks the figure's visible text nodes
-(skipping the `.sr-only` copy), measures every word with a `Range`, and `fillText`s it into an
-offscreen 2D canvas at that box, in the element's computed font, colour and `letter-spacing`. The
-baseline is the font box centred in the range box, so canvas and DOM agree per word. Opaque pixels
-(alpha ≥ 128) are randomly subsampled to the budget (**16k sm, 48k md**) and become the particles'
-`position` (x in viewport px, y relative to the pin's top) and target colour; arrival is staggered in
-reading order. Dot size follows the ink-per-particle spacing. Fonts not yet loaded
-(`document.fonts.check`) are drawn with the fallback and requested once; their load re-rasterises.
+**Scroll.** `pqStartZoomT` is where the camera crosses the globe's centre (`zoomTAtCamZ(0)`, see
+`publishPqAppearZoomT`). By then every near-side card is behind the camera, and no far-side card in
+view has started a near fade. From that scroll position (`TL.scrollYAtZoomT`), `p` runs 0 → 1 over
+`PQ_FLY_VH` (0.8) viewport heights. It is a pure function of scroll, so it reverses when you scroll
+back. `.globe-gallery-pq-webgl` adds `--gg-pq-hold` (100vh) to the runway. `deriveFrame` takes that
+`holdPx` back off the zoom tail, so the zoom pace is unchanged and the extra scroll goes to the
+flight and the reading hold.
 
-**One continuous resolve, from intact far-side cards.** `pqStartZoomT` is where the camera crosses
-the globe's centre: every near-side card is behind it (they have run their stage mosaic/dispersion
-fade exactly as on stage), and the far side is still whole. With particles on, a card behind the
-centre plane **skips the stage near-camera fade entirely** (`placeSphereCard`), so the far side is
-broken up only once, by the particles. Spin, drag inertia, hover and drag-warp all ease to zero over
-the `PQ_SPIN_EASE_T` (0.04 zoomT) before the start (`quoteSpinScale`; the pointer retires at its
-beginning), and while the particles own the cards (`quoteOwnsCards`) the **orientation** is held.
-The **camera keeps dollying** at its normal scroll pace throughout. Spin resumes, eased, above that
-range.
+**One resolve, no mosaic on the far side.** While particles are on (`particlesOn()`: not forced
+colours, raster ready), `placeSphereCard` gives cards behind the centre plane (`mesh.position.z < 0`)
+`proxFade = 1`. They never run the stage dissolve or dispersion; the particles are their only
+break-up. Near-side cards keep the stage behaviour exactly.
 
-**The tiles are the card.** On the first frame of the flight, `farCardSources` reads every
-still-drawn card's live mesh as world-space data (its plane, texture, cover-crop, corner radius,
-aspect, CA, back-face flag, opacity), and `setSources` lays the particle budget (**30k sm, 60k md**,
-always full) over the on-screen part of those cards by projected area, as a grid of tiles in **one
-contiguous draw group per card** (≈10 draw calls). Each tile's source is a world point on its card,
-projected every frame through the live camera in the vertex shader (the camera only dollies on z,
-so the shader evaluates `camZAtZoomT` itself from `uZoom`/`uCamZ`). Each tile covers its cell, and
-the fragment shader samples **the card's own texture** at every fragment through the inverse
-screen Jacobian of the card's projection, with the card shader's cover-crop, CA and rounded-corner
-SDF. So at the start the tiles are pixel-identical to the card, and the cards simply fade out under
-them across `PQ_HANDOFF_P` (2%) before any tile moves.
+**Frozen orientation, moving camera.** Over `PQ_SPIN_EASE_T` (0.04 zoomT) before
+`pqStartZoomT`, `quoteSpinScale` eases auto-spin, drag inertia, hover and drag warp to 0. The
+pointer retires at the start of that window. While `quoteOwnsCards()` (p > 0),
+`updateSphereRotation` returns early, so the orientation is held exactly. The camera is **not** held:
+it keeps dollying along `camZAtZoomT(zoomT)` at the stage's scroll pace. Scrolling back puts the
+cards exactly where the particles left them, and spin resumes along the same ease.
 
-**Coherent pairing.** Which card pixel flies to which glyph point is decided by position, not at
-random: `coherentOrder` ranks a point set by `PAIR_BANDS` (8) equal-count x bands, each read top to
-bottom (a linear counting sort, ~2.5 ms for 30k points), and the r-th source by screen position takes
-the r-th target in the same order, built once with the targets. Left cards feed the left of the
-quote, neighbours stay neighbours and paths don't cross. Plain band pairing maps each card's contiguous pixels onto one
-contiguous rectangle of the text, which then lands as a single-colour block with hard seams, so
-the sources are ranked with `softOrder`: the band keys get per-particle noise (±1 band width in x,
-±12% of the height in y), then 20% of particles swap with a rank up to 1/32 of the order away.
-Neighbouring cards interleave and colours dither across the seams, while paths stay short. On the page this halves the mean path
-(soft: desktop ≈ 300 vs 590 px, mobile ≈ 190 vs 320 px; `getStats()`). The sources' screen positions are
-taken on the hand-off frame, but the pairing runs on the **next** frame, so the hand-off frame's cost
-is unchanged; until then every particle is parked at a departure beyond any flight.
+**Hand-off: the particles are the card.** On the first owned frame, `projectCardQuads()` turns
+every far-side card still drawn into a world-space plane: its top-left `origin` plus `axisU` and
+`axisV` from the mesh's `matrixWorld`. The particles keep that plane for the whole flight. Each card
+gets one `Points` draw. `setSources` finds the card's on-screen uv window with a 24×24 probe; a card
+whose box meets the view but falls between probe points gets the whole card. It shares the particle
+budget across cards by projected area and lays it out as a grid of cells over each window.
 
-**Release, then a fixed flight.** Three separate beats per particle:
-1. *Release* (`aRelease`: card rim first, nearer cards first, jittered). The tile lets go of the
-   camera's dolly on a C¹ exponential tail (`QUOTE_DETACH_*`) and then holds still on screen.
-   Waiting particles must not stay attached to the moving camera, or their cards dolly off screen
-   and fly back in.
-2. *Flight* (`flightWindow`): a fixed `QUOTE_FLY` (rim particles up to `QUOTE_EDGE_FLY` longer)
-   ending at the particle's own reading-order arrival, never before its release. Only a band of the
-   quote is airborne at once. The path is direct, with a slight sideways wobble
-   (`QUOTE_WOBBLE`, 6% of the path, zero at both ends) and no radial burst or random scatter. The
-   tile turns into a dot over the first quarter of its flight.
-3. *Landing and reveal*, below.
+In `QUOTE_POINTS_VERT`, each particle is projected with the **live** `projectionMatrix` and
+`cameraPosition`. The camera only translates along z, so the view matrix is `w.z − camZ`. The
+sprite is sized to the bounding square of its projected cell. The fragment shader turns the sprite
+offset back into card uv through the inverse screen Jacobian of the cell. It then samples the real
+card texture with the card's `uRepeat`/`uOffset` crop and back-face mirror, masks the card's
+rounded-rect SDF, and applies the same `pow(1/2.2)` as `CARD_FRAG`. On the hand-off frame the tiles
+are therefore the card, pixel for pixel, with no downsampled copy and no stationary cross-fade. The
+cards simply hide at p > 0.
 
-**Landing is a reading-order wave, and the text is crisp as it lands.** Arrival is keyed to the
-particle's *target*: a text point at reading-order position `o` (`readingOrder`, mostly along the
-line, a little down the block, RTL-aware) lands at `QUOTE_ARRIVE_FROM + o · QUOTE_ARRIVE_SPREAD`,
-± a per-particle `QUOTE_ARRIVE_JITTER` (0.02) that feathers the wave's leading edge. The reveal
-lag (`QUOTE_REVEAL_LAG`, 0.03) clears that jitter, so a region's crisp DOM text and its particles'
-fade wait for its latest particles. Each particle keeps its photo colour in flight, turns to the
-text colour over the last `1 − QUOTE_INK_FROM` (30%) of its travel, and swells (`QUOTE_LANDED_GROW`) so
-landed dots read solid. `QUOTE_REVEAL_LAG` later that region of the **DOM text** turns crisp over
-`QUOTE_REVEAL_DUR` while its particles fade out over the same window. The DOM can't reveal per
-pixel, so each rendered line (`layoutQuote`'s line inners) and the name and role carry a
-`linear-gradient` mask whose stops (`--gg-pq-m0/1`, direction `--gg-pq-m-dir`) `writeQuoteMasks`
-places from `revealFront(p)` intersected with that line's row; a mask, never visibility, so the copy
-stays in the a11y tree. There is no global cross-fade after landing: any point of the text is dotted
-for ≈ 3–4vh of scroll, and the whole quote is crisp at `p ≈ 0.94`. The crosshair still draws on the
-`revealT` tween. Everything is a function of scroll, so a reversal re-forms the
-tiles on the cards (the camera retraces its path), the cards fade back in under them, and at `p = 0`
-the cards are back exactly where they were.
+**Release and break-up.** Each particle has a release p (`aRand.y`), set mostly by distance from
+its card's edge (`EDGE_LEAD`) plus some randomness, so the cards tear from the rim. At release the
+particle stops following the dolly: it gets its own camera, which starts at the live camera's
+position and speed (`camZAt(aRand.y)` mirrors `TL.camZAtZoomT`). That camera then eases
+exponentially over `QUOTE_RELEASE_REACH` of the remaining depth and stops at least
+`QUOTE_MIN_DEPTH` in front of the particle, so there is no velocity kink and the particle can never
+pass behind the camera. Later, at its departure p (`aRand.x`), the particle leaves for the text. Its
+sprite shrinks from cell size to the text dot size and rounds off over the first 40% of the leg. It
+keeps sampling its own photo pixels and turns to the ink only over the last 30% of its own travel
+(`QUOTE_INK_FROM`).
 
-**One scroll clock.** `p = quoteFlightP()` runs 0 → 1 over `PQ_FLY_VH` (0.4 viewport heights) of
-scroll from `scrollYAtZoomT(pqStartZoomT)`. At `p = 1` `advanceReveal` tweens `revealT`
-0 → 1 over `PQ_REVEAL_IN_MS`: the DOM text fades in (`--gg-pq-text-o`, opacity only) while the
-particles fade by `1 − revealT`; back under `p = 1` it reverses over `PQ_REVEAL_OUT_MS`. The
-crosshair frame draws on `revealT`.
+**Pairing.** Card pixels are matched to glyph targets on the frames after the hand-off. The tiles
+are drawn on the hand-off frame with `PENDING` timings. The sort runs on the next animation frame
+(`softRanks`), and `fillDraw` writes the buffers on the frame after. Nothing departs before its
+release, many frames later.
 
-**Rendering stops once the DOM has taken over** (`p = 1` and `revealT = 1`): the canvas is hidden and
-`renderer.render` skipped. Without particles (no quote, RM, forced colours, targets not built) the
-old `pqAppearZoomT + CANVAS_HIDE_MARGIN_T` cut and `pqAppearZoomT` cue apply.
+The base is `coherentOrder`, a 2D quantile order: 8 equal-count x bands (`PAIR_BANDS`), each read
+top to bottom, over each set's own extent. Rank r of the sources takes rank r of the targets. On its
+own that maps each card's contiguous pixels onto a contiguous rectangle of the text, so card colours
+would tile the quote with hard seams. Soft pairing loosens it:
+- **Noisy sort keys.** Each source's keys get per-particle noise of ±`SOFT_X` (1 band width) in x and
+  ±`SOFT_Y` (12% of the height) in y, so neighbouring cards interleave at the seams.
+- **Near-rank swaps.** `SOFT_SWAP` (20%) of target ranks trade sources with a rank up to
+  `SOFT_SWAP_SPAN` (1/32 of all) away.
 
-**The hold.** With particles the root gets `.globe-gallery-pq-particles`, which adds `--gg-pq-hold`
-(70vh) to the runway. `deriveFrame` takes it off the zoom tail (`frameInput.holdPx`), so the zoom
-paces exactly as on stage and the extra scroll is pure hold: ~70vh md / ~60vh sm of fully formed
-quote before release, about stage's.
+Colours dither across the text instead of forming rectangles, and paths stay about half the random
+pairing's (1440: 289 px vs 589; 390: 182 vs 313).
 
-**Rebuilds.** Targets are rebuilt (debounced `PQ_FX_REBUILD_MS`, or at once mid-flight) whenever
-`relayoutQuote` re-splits, on any viewport-size `doLayout` (resize, zoom), and on `fonts.ready`;
-existing sources are re-applied to the new buffers.
+**Arrival feathering.** Each particle's arrival gets a fixed random offset of
+±`QUOTE_ARRIVE_JITTER` (0.02 p), so the landing wave's leading edge is feathered and a dense region
+never lands at one instant. The crisp reveal (`QUOTE_PLANE_FRAG`) ramps from a region's mean arrival
+to past its latest one, and particles fade only after that, so the crisp text never shows before
+most of its particles are in. The ink blend starts at 70% of each particle's travel (was 78%), so
+near-landing particles converge on the text colour. `QUOTE_CRISP_P` grows by the
+jitter (0.88).
 
-**vendored three.js.** `deps/three.js` is a tree-shaken subset with no `Points`, `BufferGeometry` or
-`BufferAttribute`, and is not changed: the geometry is a stripped `PlaneGeometry` (whose attribute
-class supplies `BufferAttribute`), and the particle object is a `Mesh` flagged `isPoints`, which
-three draws as `gl.POINTS`.
+**Flight.** Particles release in a short common window (p 0.10–0.20, rim first; `QUOTE_FLIGHT.release`),
+so the cards stay compact while they wait. Each then departs `fly` (0.3) before its own arrival, and
+rim particles up to `edgeFly` (×1.5) earlier, so only a band is airborne at any moment while the cards
+erode and the text writes itself in reading order. Arrivals run 0.45 → 0.80. Paths are direct, with
+a sideways wobble of ±`QUOTE_WOBBLE` (6%) of the path length × `sin(π·te)`. That wobble is 0 at both
+ends, and smootherstep `te` keeps departure and landing velocity-continuous.
 
-**Accessibility.** The canvas stays `aria-hidden`; the `figure` / `blockquote` / `figcaption` stay in
-the a11y tree and reading order at all times (opacity only, never `display`/`visibility`), with the
-split lines `aria-hidden` and the `.sr-only` copy as before. `pointer-events` (and so selection) flips
-on at `p = 1`, and `dropQuoteSelection` still clears a selection on the way back. In
-**forced-colors** mode the particles are skipped and the system-coloured DOM text fades in.
-**Reduced motion** never creates the particles: the quote is static after the globe, as before.
+**Landing = crisp, locally.** A particle's arrival `aRand.w` depends only on its target's reading
+order: `QUOTE_FLIGHT.arriveStart` + `arriveSpan` × order, where order is x·0.7 + y·0.3
+across the figure box, mirrored for RTL. Every particle of a glyph therefore lands together.
+`QUOTE_PLANE_FRAG` recomputes the same order per pixel from `uBox`/`uRtl` and reveals the crisp
+raster over the first 60% of `QUOTE_SETTLE` (0.04) after that pixel's arrival. The particles land
+as solid squares (rounding undone, +30% size, dot size from the target spacing) and fade out over
+the same window. So the quote goes crisp in one reading-order wave behind the landing, with no
+global fill-in, and every region is speckled for only ~3vh of scroll.
 
-**Perf.** The particle program is compiled when the targets are built, and a pool of per-card
-materials is prepared then too, so the hand-off frame only re-aims them. At 4× CPU throttle
-(headless): the hand-off frame is unchanged from before the pairing (~41–47 ms mobile), and the
-pairing adds one ~30 ms frame after it (~60 ms at 60k on desktop).
-
-**Known limits (PoC).** A card partly off screen only gets tiles for its visible part; one draw per
-far card (no atlas); particles draw over anything else on the canvas.
-
-#### Frame mechanics
-
-- **Every rule is masked to the fraction of itself that is drawn, along its own clockwise direction.**
-  The gradient's direction (`to right` / `to bottom` / `to left` / `to top`) encodes the clockwise sense,
-  so a var never needs to know which edge it is on. There are **two** vars, not four — `--gg-pq-h` for
-  both horizontals, `--gg-pq-v` for both verticals — because horizontals lead verticals and that is the
-  only split the draw makes. JS writes them per frame; the CSS fallbacks are `100%`, so a no-JS or
-  pre-first-frame render is the complete crosshair.
-- **A pair is one element, so the two rules are separated by the mask, not the DOM.** `::before` paints
-  *both* horizontals; give each of its two mask layers **half the box height** and pin it to a diagonal
-  corner, and the `left top` layer can only uncover the top border while the `right bottom` layer can
-  only uncover the bottom one. `::after` is the same with the axes swapped: half the *width*, pinned
-  `right top` / `left top`. Four independent directions, no extra elements.
-- **The halves are 51%, not 50%,** so a subpixel box height can't leave a rule half-masked. They overlap
-  across the middle, where there is nothing to draw; mask layers composite with `add`, so the overlap
-  costs nothing.
-- **Border colour comes from `--gg-pq-rule-color` and width from `--gg-crosshair-width`, never from a
-  second `border:` shorthand** — a shorthand silently resets the `border-block-width` /
-  `border-inline-width` the shared rules already set, and the rule renders as nothing. If a rule
-  vanishes, suspect a shorthand before you suspect the mask.
-- **Style writes are memoised** on the joined interval string (the `arcCopy` pattern), so a frame that
-  moves nothing costs no writes.
-- **The container has no opacity or transform of its own.** The frame is masked to zero-length intervals
-  and the copy vars sit at 0, so there is nothing for a container fade to hide, and a growing box would
-  stretch the rules while they draw. Don't add one.
-- **Name and role each use one 0..1 var** (`--gg-pq-copy-n` / `-r`), already eased and staggered in JS.
-  The CSS is `opacity: var(…, 1)` plus a rise of `--gg-pq-copy-rise * (1 − var)`. Quote lines instead
-  use separate position and opacity vars so their fade stays visible after each line clears its mask.
-
-Reduced-motion constraints:
-
-- The reduced-motion pull-quote is `position: **relative**`, not `static`. Static would drop it as a
-  containing block and the pseudos would resolve against `.globe-gallery`, stretching the frame over the
-  whole runway.
-- Reduced motion kills the draw with `mask-image: none` (a full reveal) and forces both the line masks
-  and line inners to their fully visible, untransformed state. This also covers reduced motion being
-  toggled after progress vars were already written.
-- The block padding lives in `--gg-pq-pad-block`, which feeds both `padding-block` and the `::before`
-  `inset-block`. It holds *two* values, so the reduced-motion variant overrides the one property
-  (`10vh 8vh`) and the crosshair follows — no second rule, and no way to move the padding without the
-  lines moving with it.
-- Widening the padding gives the hanging quote more room, which is what makes the measured hang's fit
-  test breakpoint-dependent — see **Localization → Hanging the opening mark**.
+| `p` | What |
+| --- | --- |
+| 0 | Cards render as before. At p > 0 they hide and their particles take over, identical on screen. |
+| 0.1 → 0.2 | Releases from the dolly, rim first. |
+| 0.45 → 0.8 | Landings, in reading order, each glyph turning crisp as it lands. |
+| ≤ 0.88 | Everything is the crisp raster (`QUOTE_LIVE_P` marks the DOM figure `is-live`). Rendering stops (see below). |
 
 
+**Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
+authored text (`plainQuote`, which also hangs the opening mark), shrinks the font size if the box is
+taller than the band, then calls `layout()`. That waits for `document.fonts.load` on each element's
+computed font, then in one task:
+
+1. **Measures** one Range per character, grouped into lines by their top. This works for any
+   wrapping, bidi direction or script the browser lays out.
+2. **Rasterizes** each line at `devicePixelRatio` with the element's computed font, letter-spacing,
+   direction and `--gg-pq-ink` colour. The baseline sits one `fontBoundingBoxAscent` below the Range
+   top. The advance is scaled (±10% max) onto the DOM line width, so the drawn text and the hidden
+   text share a box. The crosshair's four 1px rules are drawn into the same raster, from the
+   figure's padding and `--gg-pq-rule-color`, snapped to device pixels.
+3. **Samples targets.** Each ~1 CSS px cell with alpha ≥ 128 is a candidate. N of them are picked
+   at random, or cycled with sub-pixel jitter if there are fewer than N. The candidate pixel's colour
+   is the particle's final colour.
+4. **Builds the text plane.** The same canvas becomes a `CanvasTexture` on a quad with
+   integer-device-pixel corners, one texel per device pixel, so the resting text is as sharp as DOM
+   text.
+
+Coordinates are CSS px from the top-left of `.globe-gallery-pullquote-rail`. Both shaders map px
+straight to clip space and ignore the scene camera. The layout re-runs whenever the figure width,
+viewport height, nav height or DPR changes, and again on `fonts.ready`.
+
+**Particle counts.** `PQ_PARTICLES_SM` is 40k and `PQ_PARTICLES_MD` is 56k. There is one `THREE.Points`
+draw per far-side card in view (about 3–12) plus the text plane. Attributes: `position` (target), `aSrc`, `aSrcCol`, `aDstCol`, `aRand`.
+
+**Pinning.** There is no separate quote pin any more. Once `p > 0` the canvas swaps from
+`position: fixed` to `absolute` inside `.globe-gallery-world`, which is sticky and already stuck by
+then, so the swap is seamless. The canvas also drops `pointer-events`. When the runway ends the world
+un-sticks, and the canvas, with the quote on it, scrolls away with the page. The canvas is hidden
+only once the block has fully left the viewport (`updateCanvasVisibility`). `-pin` is now
+`position: absolute; inset: 0` and `-rail` is `position: sticky; top: 0; height: 100vh`. Together
+they form a viewport-sized layer that mirrors the world, so the transparent figure pins and releases
+on exactly the same frames as the canvas that draws it. Reduced motion still flattens both to
+static.
+
+**Render on demand.** The scene is drawn only while something changes. Past `QUOTE_LIVE_P`, once a frame
+with the same progress, layout version and viewport has been drawn (`isIdle`/`markDrawn`),
+`renderScene` skips the draw and the canvas keeps its last frame. Resizing, a re-layout, the canvas
+being re-shown, or the modal opening forces a redraw. Measured: 0 draw calls per second while the
+quote is held.
+
+**Accessibility.** The canvas carries no content. The real `figure > blockquote + figcaption` stays
+in the DOM, in reading order after the arc copy. Its text is `color: transparent`, never
+`display: none` or `visibility: hidden`, so it stays in the accessibility tree, and it sits exactly
+over the drawn text. The VoiceOver cursor and the selection highlight therefore land on the
+rendered glyphs. Once the quote is `is-live` the figure takes the pointer. Selection works and uses
+a translucent white `::selection`. Leaving the quote drops a selection anchored inside it. The
+globe stops being pointer-live (`globeLive`) at `pqStartZoomT − PQ_SPIN_EASE_T`, as the globe eases to rest.
+Keyboard behaviour is unchanged.
+
+**Forced colours / fallback.** WebGL ignores forced colours, so under `(forced-colors: active)` the
+figure gets `is-dom`. The particles and the plane are not drawn, and the DOM text, forced to system
+colours, fades in at `is-live`. The same fallback covers a raster that found no ink. A CSS
+forced-colours rule also keeps the figure at `opacity: 0` until it is live, because forced colours
+repaints even transparent text.
+
+**Zoom / resize.** At 200% zoom the CSS viewport shrinks, and the `doLayout` resize path re-runs the
+fit, the measurement and the raster at the new size and DPR.
+
+**Known limitations (PoC).**
+- On mobile the cards are close and large, so the cells (and the chunks that leave the edge) are
+  ~10px squares at the start of the break-up. At rest they are invisible (exact texture windows),
+  but the squares show as they leave.
+- `setSources` runs on the hand-off frame (window probe and grid for ~40k particles), so that one
+  frame costs more. With a 4× CPU throttle it shows as a p95 spike.
+- Ligatures and kerning come from canvas text shaping, not the DOM. Per-line advance correction
+  keeps the boxes aligned, but an individual glyph can differ by a pixel.
+- A CJK or Thai quote is measured by character Ranges, which is correct. The scale correction
+  assumes the canvas and the DOM pick the same fallback fonts.
+- There is no reveal choreography for the crosshair beyond the particles: it forms with the text.
+- `--gg-pq-hold` is a fixed 100vh. A very long quote on a short viewport gets less reading time.
 
 ## Analytics
 
 The block answers one question: **what fraction of card opens lead to a clickthrough to a
 product page.** Nothing is tracked per-card — with ~50 cards that is cardinality nobody asked
 for. Card identity appears nowhere.
+
+#### Hybrid: the resting quote is the real DOM text
+
+This branch is the WebGL pull quote above, plus one step at the end. The whole transition (hand-off,
+flight, crosshair formed by particles, per-pixel crisp reveal) is the same code and draws the same
+pixels. Once the quote has gone live (`QUOTE_LIVE_P`: every glyph and rule is the finished raster,
+so nothing on the canvas changes any more), `updateQuoteSwap` tweens `--gg-pq-dom` 0 → 1 over
+`PQ_SWAP_MS` (120 ms). The DOM copy's ink and the CSS crosshair's border colour mix in from
+transparent (`color-mix`), and then `updateCanvasVisibility` hides the canvas, so the hold draws
+nothing (0 frames). Under `QUOTE_LIVE_P` the tween runs back and the canvas is shown again before
+the reverse flight starts.
+
+**Why the swap is invisible.** The raster is drawn from the DOM's own layout, so glyph positions
+already agree. Three things have to match exactly as well:
+
+- **Font smoothing:** canvas text can't take the page's `-webkit-font-smoothing: antialiased`, so
+  the motion-path figure sets `auto`.
+- **Baseline:** `textLines` measures the DOM's ascent with a zero-size inline-block probe, rather
+  than trusting canvas font metrics.
+- **Pixel snapping:** `rasterize` snaps the figure's offset and each baseline within it to device
+  pixels separately, as layout does.
+
+The frames right before and after the swap differ by a mean of 0.06 (out of 255) at 1440×900, with
+no pixel off by more than 32. At 390×844 it is 0.03 / 0.02%.
+
+**A11y.** Unchanged from the WebGL branch: the figure is always in the a11y tree and reading order,
+transparent but positioned while the canvas draws it, and selectable once live. After the swap it is
+simply the visible text. Forced colours (`is-dom`) skip the particles. The canvas is then hidden past
+the reveal, as in the no-particle path.
 
 ### Why this needs any custom code
 
@@ -2959,7 +2985,7 @@ bare names — are:
 | `ARC_COPY_IN_ENTRY_T` | `arcCopyEntryT` | arc-copy fade-**in** completes here (the fade-out is a fold-window fraction — see Arc-copy fade-out) |
 | `SPHERE_ORIENT_RESET_T` | `sphereFormT` | below this a scroll-out resets the sphere orientation **and drag inertia** (a brief dip mid-scroll keeps both) |
 | `FRAME_MS` / `DT_SCALE_MIN` / `_MAX` | ms / ratio | the frame every per-frame rate is authored against (`1000/60`), and the clamp on `frame.dtScale` — a stall must not teleport what it drives, a very short frame must not underflow a decay (see Drag physics) |
-| `CANVAS_HIDE_MARGIN_T` | offset on `pqAppearZoomT` | the only `zoomT` threshold near the reveal that is still a number, because the canvas is a hard cut rather than a fade and wants slack: it is dropped (and the draw skipped) this far **past** the point the scene is empty. Only used when the particle hand-off is off. Hint text and controls take `pqAppearZoomT` itself |
+| `CANVAS_HIDE_MARGIN_T` | offset on `pqAppearZoomT` | the only `zoomT` threshold near the reveal that is still a number, because the canvas is a hard cut rather than a fade and wants slack: it is dropped (and the draw skipped) this far **past** the point the scene is empty. Hint text and controls take `pqAppearZoomT` itself |
 | `ZOOM_TO_TAIL_T` | ratio | converts a `zoomT` fraction into a fraction of the whole **tail**, which is the space the CSS pin reasons in. `1` while `PROGRESS_ZOOM_END` is `1`; applied at the one boundary (`publishPqAppearZoomT`) so the pin can't quietly release at the wrong scroll position if it ever isn't |
 | `GRID_PEEL_WINDOW` | `gridFormT` | `1 − GRID_PEEL_STAGGER`; the span each card's peel occupies after its stagger delay (`frame.gpWin`) |
 | `GRID_ARC_RANGE` / `FOLD_WINDOW` | — | derived spans: `PROGRESS_GRID_ARC_END − _START`, and `SPHERE_FORMED_PROGRESS − FOLD_FIRST_PROGRESS` |
@@ -3000,7 +3026,7 @@ Constraints when adding cases:
   it with `Object.defineProperties` alongside faked `scrollHeight`/`clientHeight`.
 
 Not covered: per-frame transform and easing values, which are left unasserted so tuning passes don't
-break the suite; `entryLiftPx`, `entryRelease` and the particle glue (`updateQuoteParticles`), which are closures inside
+break the suite; `entryLiftPx`, `entryRelease` and `updatePullQuoteCopy`, which are closures inside
 `createGlobeGalleryRuntime` and unreachable from a test; and the WebGL path, which has no Nala/E2E.
 
 ## Open items / backlog

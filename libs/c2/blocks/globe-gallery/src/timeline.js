@@ -167,9 +167,9 @@ export function deriveFrame(frame, input) {
   return frame;
 }
 
-// Inverse of deriveFrame's tail mapping (zoomT → scroll), for scroll-px windows keyed to a zoomT.
+// Inverse of the tail mapping: the scroll position at which the zoom reaches zoomT.
 export function scrollYAtZoomT(zoomT, { blockDocTop, blockHeight, formPx, holdPx = 0 }) {
-  return blockDocTop + formPx + zoomT * ZOOM_TO_TAIL_T * Math.max(1, blockHeight - holdPx - formPx);
+  return blockDocTop + formPx + zoomT * Math.max(1, blockHeight - holdPx - formPx);
 }
 
 export function cardFoldStartProgress(gpDelay) {

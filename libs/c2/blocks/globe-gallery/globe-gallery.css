@@ -14,8 +14,8 @@
 .globe-gallery {
   --gg-hang-max: 0.8em;
   --gg-runway-height: 550vh;
-  --gg-pq-hold: 70vh; /* extra runway the particle quote holds through; see -pq-particles */
   --gg-formation-vh: 380vh;
+  --gg-pq-hold: 100vh; /* the WebGL quote's extra runway; see .globe-gallery-pq-webgl */
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;
@@ -43,11 +43,6 @@
     height: auto;
     min-height: 0;
   }
-}
-
-/* Set by JS with the particle hand-off: the quote's hold runs past the zoom's end. */
-.globe-gallery.globe-gallery-pq-particles:not(.globe-gallery-reduced, .globe-gallery-empty) {
-  height: calc(var(--gg-runway-height) + var(--gg-pq-hold));
 }
 
 /* Custom cursor (src/cursor.js). */
@@ -344,25 +339,18 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   margin: 0;
 }
 
-/* A full-viewport layer over the canvas the particles land in. Fixed while held, not sticky: a
-   sticky layer under Lenis' scroll writes snaps a pixel differently frame to frame and the held
-   quote wobbles. JS (updatePin) swaps the states; absolute either side lands on the same pixels at
-   the swap. A sibling of the world keeps the quote after the arc copy in reading order. */
+/* A viewport-tall sticky layer that mirrors .globe-gallery-world, so the transparent a11y quote
+   pins and lets go exactly with the canvas that draws it. Reduced motion flows it instead. */
 .globe-gallery-pullquote-pin {
   position: absolute;
-  top: 0;
-  inset-inline: 0;
-  height: 100vh;
+  inset: 0;
   pointer-events: none;
 }
 
-.globe-gallery-pullquote-pin.is-held {
-  position: fixed;
-}
-
-.globe-gallery-pullquote-pin.is-released {
-  top: auto;
-  bottom: 0;
+.globe-gallery-pullquote-rail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
 .globe-gallery-pullquote {
@@ -371,6 +359,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   /* Yields on short viewports so a long quote can't outgrow the band. */
   --gg-pq-gap: min(var(--gg-pq-ideal-gap), calc(var(--gg-band-h) * 0.2));
   --gg-pq-pad-block: var(--gg-copy-pad);
+  --gg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --gg-pq-rule-color: var(--s2a-color-gray-800);
 
   position: absolute;
@@ -391,7 +380,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)));
 }
 
-/* Four rules at the same insets, drawn by masking. */
+/* Crosshair: four rules at the same insets. quote-particles.js draws the same geometry. */
 .globe-gallery-pullquote::before,
 .globe-gallery-pullquote::after {
   content: '';
@@ -403,64 +392,30 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   border-style: solid;
   border-width: 0;
   border-color: var(--gg-pq-rule-color, currentcolor);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
 }
 
-/* Each rule is masked to the fraction of itself that is drawn, measured along its OWN clockwise
-   direction — top runs left→right, right top→bottom, bottom right→left, left bottom→top. The
-   gradient's direction encodes that clockwise sense, so a var never needs to know which edge it is
-   on — and since the horizontals always share a fraction, as do the verticals, two vars cover four
-   rules. JS writes them per frame; the 100% fallbacks mean no-JS renders the complete crosshair. */
 .globe-gallery-pullquote::before {
   inset-block: var(--gg-pq-pad-block);
   inset-inline: 0;
   border-block-width: var(--gg-crosshair-width);
-  -webkit-mask-image:
-    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
-    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
-  mask-image:
-    linear-gradient(to right, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%)),
-    linear-gradient(to left, #000 var(--gg-pq-h, 100%), transparent var(--gg-pq-h, 100%));
-  -webkit-mask-position: left top, left bottom;
-  mask-position: left top, left bottom;
-  -webkit-mask-size: 100% 51%;
-  mask-size: 100% 51%;
 }
 
-/* 51% per half so a subpixel box height can't leave a rule half-masked; the halves overlap across
-   the middle, where there is nothing to draw. */
 .globe-gallery-pullquote::after {
   inset-block: 0;
   inset-inline: var(--gg-copy-pad);
   border-inline-width: var(--gg-crosshair-width);
-  -webkit-mask-image:
-    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
-    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
-  mask-image:
-    linear-gradient(to bottom, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%)),
-    linear-gradient(to top, #000 var(--gg-pq-v, 100%), transparent var(--gg-pq-v, 100%));
-  -webkit-mask-position: right top, left top;
-  mask-position: right top, left top;
-  -webkit-mask-size: 51% 100%;
-  mask-size: 51% 100%;
 }
 
 /* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See
-   README. */
+   README. --gg-pq-ink is also what the WebGL raster paints with. */
 .globe-gallery-pullquote-quote {
-  color: var(--s2a-color-gray-25);
+  --gg-pq-ink: var(--s2a-color-gray-25);
+
+  color: var(--gg-pq-ink);
   margin: 0;
 }
 
-/* Opacity only, never visibility: the copy stays in the a11y tree. JS cross-fades it with the
-   particles; the 1 fallback is the rest state (RM, no JS). */
-.globe-gallery-pullquote-quote,
-.globe-gallery-pullquote-attribution {
-  opacity: var(--gg-pq-text-o, 1);
-}
-
-/* Written by the split; one block per rendered line. */
+/* Reduced motion's line split. Flex so the lines' negative bleed margins meet without collapsing. */
 .globe-gallery-pullquote-lines {
   display: flex;
   flex-direction: column;
@@ -468,6 +423,11 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 
 .globe-gallery-pullquote-line {
   display: block;
+  overflow: hidden;
+
+  /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
+  padding: var(--gg-pq-line-bleed) var(--gg-hang-max);
+  margin: calc(var(--gg-pq-line-bleed) * -1) calc(var(--gg-hang-max) * -1);
 }
 
 .globe-gallery-pullquote-line-inner {
@@ -480,33 +440,19 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 }
 
 .globe-gallery-pullquote-name {
+  --gg-pq-ink: var(--s2a-color-gray-25);
+
   font-family: var(--body-font-family);
-  color: var(--s2a-color-gray-25);
+  color: var(--gg-pq-ink);
   margin: 0;
 }
 
 .globe-gallery-pullquote-role {
-  font-family: var(--body-font-family);
-  color: var(--s2a-color-gray-400);
-  margin: 0;
-}
+  --gg-pq-ink: var(--s2a-color-gray-400);
 
-/* Particle hand-off: each line (and the name and role) turns crisp in the particles' landing
-   wave. JS writes the stops per element (writeQuoteMasks); the 100% fallbacks show it all. A mask,
-   never visibility, so the copy stays in the a11y tree. */
-.globe-gallery-pq-particles .globe-gallery-pullquote-line-inner,
-.globe-gallery-pq-particles .globe-gallery-pullquote-name,
-.globe-gallery-pq-particles .globe-gallery-pullquote-role {
-  -webkit-mask-image: linear-gradient(
-    var(--gg-pq-m-dir, to right),
-    #000 var(--gg-pq-m0, 100%),
-    transparent var(--gg-pq-m1, 100%)
-  );
-  mask-image: linear-gradient(
-    var(--gg-pq-m-dir, to right),
-    #000 var(--gg-pq-m0, 100%),
-    transparent var(--gg-pq-m1, 100%)
-  );
+  font-family: var(--body-font-family);
+  color: var(--gg-pq-ink);
+  margin: 0;
 }
 
 .globe-gallery-modal {
@@ -993,8 +939,9 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   display: none;
 }
 
-/* Flows normally after the globe: no pin, static with a gap above. */
-.globe-gallery-reduced .globe-gallery-pullquote-pin {
+/* Flows normally after the globe: no pin/rail/sticky, static with a gap above. */
+.globe-gallery-reduced .globe-gallery-pullquote-pin,
+.globe-gallery-reduced .globe-gallery-pullquote-rail {
   position: static;
   height: auto;
   pointer-events: auto;
@@ -1009,12 +956,52 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   transform: none;
 }
 
-/* Full reveal. The copy needs no override: updatePullQuote returns early, so its vars stay unset
-   at their 1 fallback. */
-.globe-gallery-reduced .globe-gallery-pullquote::before,
-.globe-gallery-reduced .globe-gallery-pullquote::after {
-  -webkit-mask-image: none;
-  mask-image: none;
+/* With the WebGL quote the runway gains a hold after the zoom: the cards' flight into the text
+   and some reading time before the world un-sticks. */
+.globe-gallery.globe-gallery-pq-webgl {
+  height: calc(var(--gg-runway-height) + var(--gg-pq-hold));
+}
+
+/* The canvas draws the quote; the figure stays in place, in the a11y tree and selectable, with
+   no ink of its own until JS hands the finished quote over to it (--gg-pq-dom 0 → 1, see
+   updateQuoteSwap), after which the canvas is hidden. is-dom (forced colours, or a failed raster)
+   gives the ink back outright. */
+.globe-gallery-pq-webgl .globe-gallery-pullquote:not(.is-dom) {
+  --gg-pq-dom-pct: calc(var(--gg-pq-dom, 0) * 100%);
+
+  /* Canvas text can't take the page's `antialiased` smoothing; the DOM copy drops it too, so the
+     two render the same weight and the swap is invisible. */
+  -webkit-font-smoothing: auto;
+
+  :is(.globe-gallery-pullquote-quote, .globe-gallery-pullquote-name, .globe-gallery-pullquote-role) {
+    color: color-mix(in srgb, var(--gg-pq-ink) var(--gg-pq-dom-pct), transparent);
+  }
+
+  &::before,
+  &::after {
+    border-color: color-mix(in srgb, var(--gg-pq-rule-color) var(--gg-pq-dom-pct), transparent);
+  }
+
+  ::selection {
+    color: color-mix(in srgb, currentcolor var(--gg-pq-dom-pct), transparent);
+    background: rgb(255 255 255 / 25%);
+  }
+}
+
+.globe-gallery-pq-webgl .globe-gallery-pullquote.is-dom {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.globe-gallery-pq-webgl .globe-gallery-pullquote.is-dom.is-live {
+  opacity: 1;
+}
+
+/* Forced colours repaints even transparent text; keep the copy off the globe until it lands. */
+@media (forced-colors: active) {
+  .globe-gallery-pq-webgl .globe-gallery-pullquote:not(.is-live) {
+    opacity: 0;
+  }
 }
 
 @media (height <= 460px) {

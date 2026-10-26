@@ -250,157 +250,210 @@ export const TEXT_FRAG = [
   '}',
 ].join('\n');
 
-// Pull-quote particles. Each starts as a tile of a far-side card: aSrcWorld is its point on the
-// card plane (orientation frozen), projected with the live camera, so the tiles keep riding the
-// zoom; aUv is its geometry uv, and the fragment shader samples the card's own texture across the
-// tile (inverse screen Jacobian), masked by the card's corner SDF, so at uP = 0 the tiles are the
-// card, pixel for pixel. Three separate beats per particle (see README, Particle hand-off):
-// - release (aRelease, edge-first, near cards first): it eases off the camera's dolly on a C¹
-//   tail and holds still on screen, so a card that waits doesn't dolly away and fly back;
-// - flight (aSeed.y → aSeed.w): a fixed-length, direct path to the paired glyph target
-//   (`position`, px), with only a slight sideways wobble, ending at its own reading-order arrival,
-//   so only a band of the quote is airborne at once;
-// - reveal: the DOM text over that region turns crisp while the landed dots fade.
-// Arrival is keyed to the TARGET: a text point at reading-order position o lands at
-// ARRIVE_FROM + o · ARRIVE_SPREAD (± ARRIVE_JITTER); REVEAL_LAG later the DOM text there turns
-// crisp over REVEAL_DUR (revealFront in quote-particles.js mirrors this).
-export const QUOTE_ARRIVE_FROM = 0.6;
-export const QUOTE_ARRIVE_SPREAD = 0.24;
-export const QUOTE_ARRIVE_JITTER = 0.02; // ± per particle: feathers the landing wave's edge
-// Past the region's latest arrival (base + ARRIVE_JITTER): crisp only once its particles are in.
-export const QUOTE_REVEAL_LAG = 0.03;
-export const QUOTE_REVEAL_DUR = 0.05; // FROM + SPREAD + LAG + DUR must stay ≤ 1
-export const QUOTE_FLY = 0.3; // a flight's length in uP; rim particles fly up to EDGE_FLY longer
-export const QUOTE_EDGE_FLY = 0.5;
-export const QUOTE_WOBBLE = 0.06; // sideways wobble, as a share of the path length
-export const QUOTE_LANDED_GROW = 1.6; // landed dot size over the ink spacing-derived base
-export const QUOTE_DETACH_AT = 0.04; // after its release, a tile stops riding the camera
-export const QUOTE_DETACH_TAU = 0.05;
-export const QUOTE_RELEASE_MAX = 0.26; // max aRelease
-// Share of a particle's own travel after which it turns from its photo colour to the text's.
-export const QUOTE_INK_FROM = 0.7;
+// Pull-quote particles: one Points draw per far-side card. Each particle is a cell of the card,
+// a world-space point (uOrigin + uAxisU·u + uAxisV·v, the card frozen at the hand-off) projected
+// with the LIVE camera, so it rides the dolly. Its point sprite is a window onto the real card
+// texture (per-fragment uv through the inverse screen Jacobian), masked by the card's corner SDF,
+// so at rest the tiles are the card, pixel for pixel. Released rim first, each particle's own
+// camera eases off the dolly to a stop (velocity-continuous); later it departs and travels to its
+// text target in px. aRand = (departure p, release p, wobble −1…1, arrival p). Sources and
+// targets are paired by a 2D quantile order (quote-particles.js), so neighbours stay neighbours.
+// Arrival is a function of the TARGET's reading order only, so every particle of a glyph lands
+// together, and the crisp text plane reveals each pixel with that same function: the text goes
+// crisp in one wave with the landing, with no global fill-in afterwards.
+export const QUOTE_SETTLE = 0.04; // a region's particles hand over to the crisp text in this window
+export const QUOTE_INK_FROM = 0.7; // share of a particle's own travel after which it turns to ink
+// ± p on each particle's reading-order arrival, so the landing wave's edge is feathered and a dense
+// region never lands at one instant. The crisp reveal and the particle fade allow for it.
+export const QUOTE_ARRIVE_JITTER = 0.02;
+// The flight. Reading order 0 → 1 lands across [arriveStart, arriveStart + arriveSpan]; the last
+// glyph is crisp at QUOTE_CRISP_P. Particles ease off the dolly in a short common window `release`
+// (start, spread; rim first) so each card stays compact while it waits, then each flies a fixed
+// `fly` ending at its own arrival, rim particles up to `edgeFly` longer so they still leave first:
+// only a band is airborne at once.
+export const QUOTE_FLIGHT = {
+  arriveStart: 0.45,
+  arriveSpan: 0.35,
+  release: [0.1, 0.1],
+  fly: 0.3,
+  edgeFly: 0.5,
+};
+export const QUOTE_CRISP_P = QUOTE_FLIGHT.arriveStart + QUOTE_FLIGHT.arriveSpan
+  + 2 * QUOTE_ARRIVE_JITTER + QUOTE_SETTLE;
+const QUOTE_WOBBLE = 0.06; // sideways wobble, as a share of the path length
+const QUOTE_MIN_DEPTH = 2; // world units a released particle's camera stays in front of it
+const QUOTE_RELEASE_REACH = 0.5; // share of its remaining depth a released particle still closes
+const QUOTE_TILE_MAX = 128; // CSS px
 
-const PX_FROM_CLIP = [
-  'vec2 pxOf(vec4 c, vec2 view) {',
-  '  return vec2((c.x / c.w + 1.0) * 0.5 * view.x, (1.0 - c.y / c.w) * 0.5 * view.y);',
+const PX_TO_CLIP = [
+  'vec4 pxToClip(vec2 p, vec2 view) {',
+  '  return vec4(p.x / view.x * 2.0 - 1.0, 1.0 - p.y / view.y * 2.0, 0.0, 1.0);',
   '}',
 ];
 
-export const QUOTE_PARTICLE_VERT = [
-  'attribute vec3 aSrcWorld;',
-  'attribute vec2 aUv;',
-  'attribute float aRelease;',
-  'attribute vec3 aDstColor;',
-  'attribute vec4 aSeed;', // x = target reading order, y = departure p, z = wobble, w = arrival p
-  'uniform mat4 uProj;',
-  // The camera only dollies along z (it never rotates), so its z as a function of uP is the whole
-  // view: zoomT = uZoom.x + uP * uZoom.y, eased like TL.camZAtZoomT between uCamZ.x and uCamZ.y.
-  'uniform vec2 uZoom;',
-  'uniform vec2 uCamZ;',
-  'uniform vec3 uAxisU;', // world vector per unit of geometry u on this card
-  'uniform vec3 uAxisV;',
-  'uniform vec2 uCell;', // a tile's uv extent
-  'uniform vec2 uViewport;',
-  'uniform float uDpr;',
-  'uniform float uPinTop;',
+export const QUOTE_POINTS_VERT = [
   'uniform float uP;',
-  'uniform float uFade;',
-  'uniform float uSize;',
-  'uniform float uMinDepth;', // view depth the sources are clamped to, and where they break up
-  'varying vec2 vUv;',
-  'varying vec4 vJinv;', // d(geometry uv) / d(px), column-major mat2
-  'varying float vSize;', // css px
-  'varying float vE;',
-  'varying float vInk;',
-  'varying float vAlpha;',
-  'varying vec3 vDst;',
-  ...PX_FROM_CLIP,
-  'float camZAt(float p) {',
-  '  float t = clamp(uZoom.x + p * uZoom.y, 0.0, 1.0);',
-  '  return mix(uCamZ.x, uCamZ.y, 1.0 - pow(1.0 - t, 3.0));',
-  '}',
-  'float camZ;',
-  'vec4 clipOf(vec3 w) {',
-  '  vec4 v = vec4(w.xy, min(w.z - camZ, -uMinDepth), 1.0);',
-  '  return uProj * v;',
-  '}',
-  'float smoother(float t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }', // still at ends
-  'void main() {',
-  // Rides the live camera until its release, then lets go of it on an exponential tail (C¹).
-  `  float rel = aRelease + ${glf(QUOTE_DETACH_AT)};`,
-  `  float pd = uP <= rel ? uP : rel + ${glf(QUOTE_DETACH_TAU)} * (1.0 - exp(-(uP - rel) / ${glf(QUOTE_DETACH_TAU)}));`,
-  '  camZ = camZAt(pd);',
-  '  vec4 cs = clipOf(aSrcWorld);',
-  '  float depth = camZ - aSrcWorld.z;',
-  '  vec2 src = pxOf(cs, uViewport);',
-  '  vec2 du = pxOf(clipOf(aSrcWorld + uAxisU * uCell.x), uViewport) - src;',
-  '  vec2 dv = pxOf(clipOf(aSrcWorld + uAxisV * uCell.y), uViewport) - src;',
-  '  mat2 m = mat2(du / uCell.x, dv / uCell.y);', // px per unit uv
-  '  float det = m[0][0] * m[1][1] - m[1][0] * m[0][1];',
-  '  mat2 inv = abs(det) > 1e-6 ? mat2(m[1][1], -m[0][1], -m[1][0], m[0][0]) / det : mat2(0.0);',
-  '  vJinv = vec4(inv[0], inv[1]);',
-  '  float tile = max(abs(du.x) + abs(dv.x), abs(du.y) + abs(dv.y)) * 1.02;',
-  '  float t = clamp((uP - aSeed.y) / max(aSeed.w - aSeed.y, 0.001), 0.0, 1.0);',
-  '  float te = smoother(t);',
-  // A tile turns into a dot as it departs; a source the camera is about to reach does so anyway.
-  '  float near = 1.0 - smoothstep(uMinDepth, uMinDepth * 4.0, depth);',
-  '  float e = max(smoothstep(0.0, 0.25, t), near);',
-  '  vec2 dst = position.xy + vec2(0.0, uPinTop);',
-  '  vec2 path = dst - src;',
-  // Direct, with a slight sideways wobble that is 0 at both ends.
-  `  vec2 p = mix(src, dst, te) + vec2(-path.y, path.x) * aSeed.z * ${glf(QUOTE_WOBBLE)} * sin(3.14159 * te);`,
-  '  gl_Position = vec4(p.x / uViewport.x * 2.0 - 1.0, 1.0 - p.y / uViewport.y * 2.0, 0.0, 1.0);',
-  // Landed dots swell to close the gaps between them, so a landed glyph reads solid.
-  `  float size = mix(mix(tile, max(2.4, uSize * 1.2), e), uSize * ${glf(QUOTE_LANDED_GROW)}, te);`,
-  '  gl_PointSize = clamp(size * uDpr, 1.0, 256.0);',
-  '  vSize = gl_PointSize / uDpr;',
-  '  vUv = aUv;',
-  '  vE = e;',
-  `  vInk = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
-  '  vDst = aDstColor;',
-  `  float base = ${glf(QUOTE_ARRIVE_FROM)} + aSeed.x * ${glf(QUOTE_ARRIVE_SPREAD)};`,
-  `  float reveal = smoothstep(base + ${glf(QUOTE_REVEAL_LAG)}, base + ${glf(QUOTE_REVEAL_LAG + QUOTE_REVEAL_DUR)}, uP);`,
-  '  vAlpha = uFade * (1.0 - reveal);',
-  '}',
-].join('\n');
-
-export const QUOTE_PARTICLE_FRAG = [
-  'uniform sampler2D uMap;',
-  'uniform vec2 uRepeat;',
-  'uniform vec2 uOffset;',
-  'uniform float uAspect;',
-  'uniform float uRadius;',
-  'uniform float uCA;',
-  'uniform float uMirror;',
+  'uniform vec2 uView;',
+  'uniform float uDpr;',
+  'uniform float uDstSize;',
   'uniform float uAlpha;',
+  'uniform vec2 uZoomT;', // (zoomT at p = 0, zoomT per unit p)
+  'uniform vec2 uCamZ;', // (CAM_Z_SPHERE, CAM_Z_SPHERE − CAM_Z_END)
+  'uniform vec3 uOrigin;', // the card's top-left corner, world
+  'uniform vec3 uAxisU;', // across the card's width, world
+  'uniform vec3 uAxisV;', // down the card's height, world
+  'uniform vec2 uCell;', // one particle's cell, in card uv
+  'uniform float uScreenSrc;', // 1: no card; aUv is a viewport fraction
+  'attribute vec2 aUv;', // u right, v down the card as seen
+  'attribute vec4 aRand;',
+  'attribute vec3 aDstCol;',
   'varying vec2 vUv;',
   'varying vec4 vJinv;',
   'varying float vSize;',
-  'varying float vE;',
-  'varying float vInk;',
-  'varying float vAlpha;',
-  'varying vec3 vDst;',
+  'varying float vRound;',
+  'varying vec3 vInk;',
+  'varying float vInkK;',
+  'varying float vFade;',
+  ...PX_TO_CLIP,
+  // Mirrors TL.camZAtZoomT, for the camera at a given flight progress.
+  'float camZAt(float p) {',
+  '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
+  '  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, 3.0));',
+  '}',
+  // The camera only dollies along z and looks down −z, so its view matrix is a translation.
+  'vec2 toPx(vec3 w, float camZ) {',
+  '  vec4 c = projectionMatrix * vec4(w.xy, w.z - camZ, 1.0);',
+  '  vec2 n = c.xy / c.w;',
+  '  return vec2((n.x + 1.0) * 0.5 * uView.x, (1.0 - n.y) * 0.5 * uView.y);',
+  '}',
+  'float smoother(float t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }', // still at ends
+  'void main() {',
+  '  vec2 s; vec2 su; vec2 sv;',
+  '  if (uScreenSrc > 0.5) {',
+  '    s = aUv * uView; su = vec2(2.0, 0.0); sv = vec2(0.0, 2.0);',
+  '  } else {',
+  '    vec3 w = uOrigin + uAxisU * aUv.x + uAxisV * aUv.y;',
+  '    float camZ = cameraPosition.z;',
+  // Released (edge first) from the dolly before it departs, so a late band still waits on screen.
+  '    float zDep = camZAt(aRand.y);',
+  `    float minZ = w.z + ${glf(QUOTE_MIN_DEPTH)};`,
+  // Until its release the particle sees the live camera; after, a camera that carries on at the
+  // same speed and eases to a stop short of it — no kink, and never past it.
+  '    float zEff = camZ;',
+  '    if (camZ < zDep) {',
+  `      float d = max(zDep - minZ, 0.001) * ${glf(QUOTE_RELEASE_REACH)};`,
+  '      zEff = zDep - d * (1.0 - exp(-(zDep - camZ) / d));',
+  '    }',
+  '    zEff = max(zEff, minZ);',
+  '    s = toPx(w, zEff);',
+  '    su = toPx(w + uAxisU * uCell.x, zEff) - s;',
+  '    sv = toPx(w + uAxisV * uCell.y, zEff) - s;',
+  '  }',
+  '  vec2 dst = position.xy;',
+  // One leg from the card to the glyph: `t` drives the tile → dot change, landing and ink.
+  '  float t = clamp((uP - aRand.x) / max(aRand.w - aRand.x, 0.001), 0.0, 1.0);',
+  '  float te = smoother(t);', // still at both ends: velocity-continuous at departure and landing
+  '  vec2 pos = mix(s, dst, te);',
+  // Direct, with a slight sideways wobble that is 0 at both ends: hand-off and landing are exact.
+  '  vec2 path = dst - s;',
+  `  pos += vec2(-path.y, path.x) * aRand.z * ${glf(QUOTE_WOBBLE)} * sin(3.14159 * te);`,
+  // The bounding square of the projected cell, so neighbouring tiles always overlap.
+  '  float tile = max(abs(su.x) + abs(sv.x), abs(su.y) + abs(sv.y)) * 1.05 + 0.5;',
+  '  float g = smoothstep(0.0, 0.4, t);',
+  // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
+  // solid for the moment before the crisp text takes it over.
+  '  float land = smoothstep(0.85, 1.0, t);',
+  `  float size = mix(min(tile, ${glf(QUOTE_TILE_MAX)}), uDstSize, g) * (1.0 + 0.3 * land);`,
+  '  gl_Position = pxToClip(pos, uView);',
+  '  gl_PointSize = max(1.0, size * uDpr);',
+  // px → card uv for the fragment's offset inside the sprite.
+  '  float a = su.x / uCell.x; float b = sv.x / uCell.y;',
+  '  float c = su.y / uCell.x; float d = sv.y / uCell.y;',
+  '  float det = a * d - b * c;',
+  '  vJinv = vec4(d, -b, -c, a) / (abs(det) > 1e-6 ? det : 1e-6);',
+  '  vUv = aUv;',
+  '  vSize = size;',
+  '  vRound = g * (1.0 - land);',
+  // Out over the second half of the region's settle window, as the crisp text comes in under it.
+  // Keyed past the latest arrival in its region, so early landers stay until the crisp text is in.
+  `  float fadeAt = aRand.w + ${glf(QUOTE_ARRIVE_JITTER)};`,
+  `  vFade = 1.0 - smoothstep(fadeAt + ${glf(QUOTE_SETTLE * 0.3)}, fadeAt + ${glf(QUOTE_SETTLE * 0.8)}, uP);`,
+  '  vInk = aDstCol;',
+  `  float ink = smoothstep(${glf(QUOTE_INK_FROM)}, 1.0, t);`,
+  '  vInkK = ink * ink;',
+  '}',
+].join('\n');
+
+export const QUOTE_POINTS_FRAG = [
+  'uniform sampler2D uMap;',
+  'uniform vec2 uRepeat;',
+  'uniform vec2 uOffset;',
+  'uniform float uMirror;',
+  'uniform float uAspect;',
+  'uniform float uRadius;',
+  'uniform float uCardAlpha;',
+  'uniform float uAlpha;',
+  'uniform float uScreenSrc;',
+  'varying vec2 vUv;',
+  'varying vec4 vJinv;',
+  'varying float vSize;',
+  'varying float vRound;',
+  'varying vec3 vInk;',
+  'varying float vInkK;',
+  'varying float vFade;',
   ...RR_SDF,
   'void main() {',
-  // While on the card each fragment samples its own uv; breaking up collapses the tile to a dot.
-  '  vec2 dpx = (gl_PointCoord - 0.5) * vSize;',
-  '  vec2 uv = vUv + mat2(vJinv.xy, vJinv.zw) * dpx * (1.0 - vE);',
-  '  vec2 fUv = uMirror > 0.5 ? vec2(1.0 - uv.x, uv.y) : uv;',
-  // The card shader's own corner mask and AA, so the tiles' union is the card.
-  '  vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
-  '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
-  '  float px = fwidth(pos.y);',
-  '  float shapeA = 1.0 - smoothstep(-px, px, dsd);',
-  '  float dotA = 1.0 - smoothstep(0.3, 0.5, length(gl_PointCoord - 0.5));',
-  '  float a = uAlpha * vAlpha * mix(shapeA, dotA, smoothstep(0.0, 0.3, vE));',
-  '  if (a < 0.002) discard;',
-  '  vec2 base = fUv * uRepeat + uOffset;',
-  '  vec2 radial = (fUv - 0.5) * uCA;',
-  '  vec3 rgb = vec3(texture2D(uMap, base + radial).r, texture2D(uMap, base).g, texture2D(uMap, base - radial).b);',
-  '  vec3 photo = pow(max(rgb, 0.0), vec3(1.0 / 2.2));',
-  // Scattering lifts the photo colours a touch, so dark cards still read as they break up; the
-  // letters assemble in photo colour and take the text's only as each particle lands.
-  '  photo = mix(photo, vec3(1.0), 0.12 * vE);',
-  '  gl_FragColor = vec4(mix(photo, vDst, vInk), a);',
+  '  vec2 pc = gl_PointCoord - 0.5;',
+  '  float dotA = 1.0 - smoothstep(0.16, 0.25, dot(pc, pc));',
+  '  float alpha = uAlpha * vFade * mix(1.0, dotA, vRound);',
+  '  vec3 col = vInk;',
+  '  if (uScreenSrc > 0.5) {',
+  '    alpha *= vRound;', // nothing to break up: these only appear as they fly
+  '  } else {',
+  '    vec2 o = pc * vSize;',
+  '    vec2 uv = vUv + vec2(dot(vJinv.xy, o), dot(vJinv.zw, o));',
+  // The card's own GL uv (v up), mirrored on back faces exactly as CARD_FRAG does.
+  '    vec2 fUv = vec2(uMirror > 0.5 ? 1.0 - uv.x : uv.x, 1.0 - uv.y);',
+  '    vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
+  '    float aa = fwidth(pos.y);',
+  '    alpha *= uCardAlpha * (1.0 - smoothstep(-aa, aa, rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius)));',
+  '    vec3 tex = texture2D(uMap, fUv * uRepeat + uOffset).rgb;',
+  '    col = mix(pow(max(tex, 0.0), vec3(1.0 / 2.2)), vInk, vInkK);',
+  '  }',
+  '  if (alpha < 0.004) discard;',
+  '  gl_FragColor = vec4(col, alpha);',
+  '}',
+].join('\n');
+
+// The settled quote: the same raster the targets were sampled from, one texel per device pixel.
+// The settled quote: the same raster the targets were sampled from, one texel per device pixel,
+// each pixel revealed by the same reading-order arrival as the particles that land on it.
+export const QUOTE_PLANE_VERT = [
+  'uniform vec2 uView;',
+  'varying vec2 vUv;',
+  'varying vec2 vPx;',
+  ...PX_TO_CLIP,
+  'void main() {',
+  '  vUv = uv;',
+  '  vPx = position.xy;',
+  '  gl_Position = pxToClip(position.xy, uView);',
+  '}',
+].join('\n');
+
+export const QUOTE_PLANE_FRAG = [
+  'uniform sampler2D uMap;',
+  'uniform float uP;',
+  'uniform vec4 uBox;', // the reading-order box (x, y, w, h), px
+  'uniform float uRtl;',
+  'varying vec2 vUv;',
+  'varying vec2 vPx;',
+  'void main() {',
+  '  vec2 n = (vPx - uBox.xy) / max(uBox.zw, vec2(1.0));',
+  '  float order = clamp((uRtl > 0.5 ? 1.0 - n.x : n.x) * 0.7 + n.y * 0.3, 0.0, 1.0);',
+  `  float arrive = ${glf(QUOTE_FLIGHT.arriveStart)} + ${glf(QUOTE_FLIGHT.arriveSpan)} * order;`,
+  // From the region's mean arrival to past its latest one: crisp only once most particles are in.
+  `  float reveal = smoothstep(arrive, arrive + ${glf(QUOTE_SETTLE * 0.6 + QUOTE_ARRIVE_JITTER)}, uP);`,
+  '  vec4 t = texture2D(uMap, vUv);',
+  '  gl_FragColor = vec4(t.rgb, t.a * reveal);',
   '}',
 ].join('\n');

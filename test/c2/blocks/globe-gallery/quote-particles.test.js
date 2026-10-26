@@ -1,263 +1,217 @@
 import { expect } from '@esm-bundle/chai';
-import createQuoteParticles, {
-  rasterizeQuote, pendingFonts, readingOrder, readingX, revealFront,
-  coherentOrder, softOrder, flightWindow,
-} from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
-import { Vector3 } from '../../../../libs/deps/three.js';
-import { buildGlobeDom } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
-import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
+import * as THREE from '../../../../libs/deps/three.js';
+import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
 
-function mountFigure() {
+function mount(quote = 'Creativity connects us.') {
   document.body.innerHTML = `
-    <div class="pin" style="position:relative;padding-top:40px">
-      <figure class="fig" style="margin:0;width:400px;font:32px sans-serif;color:rgb(250, 250, 250)">
-        <blockquote style="margin:0">Hello world again</blockquote>
-        <span class="sr-only">Hidden duplicate copy</span>
-        <figcaption style="color:rgb(198, 198, 198)">Name</figcaption>
+    <div class="rail" style="position:relative;height:600px;width:800px">
+      <figure class="fig" style="position:absolute;top:100px;left:50px;width:600px;margin:0;padding:24px;
+        --gg-crosshair-width:1px;--gg-pq-rule-color:#444">
+        <blockquote class="globe-gallery-pullquote-quote" style="--gg-pq-ink:#fafafa;font:40px/48px sans-serif;margin:0">${quote}</blockquote>
+        <p class="globe-gallery-pullquote-name" style="--gg-pq-ink:#fafafa;font:16px sans-serif;margin:0">Alex</p>
       </figure>
     </div>`;
   return {
-    pin: document.querySelector('.pin'),
-    fig: document.querySelector('.fig'),
+    figureEl: document.querySelector('.fig'),
+    railEl: document.querySelector('.rail'),
   };
 }
 
 describe('globe-gallery: quote particles', () => {
-  afterEach(() => { document.body.innerHTML = ''; });
+  let fx;
+  afterEach(() => {
+    fx?.dispose();
+    fx = null;
+    document.body.innerHTML = '';
+  });
 
-  it('rasterizes the DOM text into in-box targets relative to the origin', () => {
-    const { pin, fig } = mountFigure();
-    const originTop = pin.getBoundingClientRect().top;
-    const box = fig.getBoundingClientRect();
-    const t = rasterizeQuote(fig, originTop, 5000);
-    expect(t).to.exist;
-    expect(t.count).to.equal(5000);
-    expect(t.dst).to.have.length(t.count * 3);
-    expect(t.color).to.have.length(t.count * 3);
-    for (let i = 0; i < t.count; i += 1) {
-      expect(t.dst[i * 3]).to.be.within(box.left, box.right + 1);
-      expect(t.dst[i * 3 + 1] + originTop).to.be.within(box.top, box.bottom + 1);
+  it('samples every target from the drawn quote inside the figure box', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 2000 });
+    expect(await fx.layout({ dpr: 1 })).to.be.true;
+    expect(fx.isReady()).to.be.true;
+    await fx.setSources([], 800, 600);
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
+    expect(points.geometry.attributes.position.count).to.equal(2000);
+    const pos = points.geometry.attributes.position.array;
+    const box = figureEl.getBoundingClientRect();
+    const rail = railEl.getBoundingClientRect();
+    for (let i = 0; i < pos.length; i += 3) {
+      expect(pos[i]).to.be.within(box.left - rail.left - 6, box.right - rail.left + 6);
+      expect(pos[i + 1]).to.be.within(box.top - rail.top - 6, box.bottom - rail.top + 6);
     }
-    expect(t.size).to.be.within(1.2, 4);
+    expect(plane.material.uniforms.uMap.value).to.be.instanceOf(THREE.CanvasTexture);
   });
 
-  it('always fills the budget, cycling the ink when it is short, and skips sr-only text', () => {
-    const { fig } = mountFigure();
-    expect(rasterizeQuote(fig, 0, 200).count).to.equal(200);
-    const many = rasterizeQuote(fig, 0, 200000);
-    expect(many.count).to.equal(200000);
-    const before = rasterizeQuote(fig, 0, 5000);
-    fig.querySelector('.sr-only').textContent = 'Something much longer that would add a lot of ink';
-    const after = rasterizeQuote(fig, 0, 5000);
-    // The same ink either way: the dot size (ink per particle) is unchanged.
-    expect(after.size).to.be.closeTo(before.size, 0.05);
-  });
-
-  it('returns null with nothing to draw', () => {
-    const { fig } = mountFigure();
-    expect(rasterizeQuote(fig, 0, 0)).to.be.null;
-    fig.querySelectorAll('blockquote, figcaption').forEach((el) => { el.textContent = ''; });
-    expect(rasterizeQuote(fig, 0, 1000)).to.be.null;
-  });
-
-  it('reports no pending fonts for a system font', () => {
-    const { fig } = mountFigure();
-    expect(pendingFonts(fig)).to.be.an('array');
-  });
-
-  it('lays tiles over the far-side cards in world space, one draw per card, and disposes', () => {
-    const { fig } = mountFigure();
-    const added = [];
-    const scene = {
-      add: (o) => added.push(o),
-      remove: (o) => added.splice(added.indexOf(o), 1),
-    };
-    const fx = createQuoteParticles(scene, 1000);
-    expect(fx.isBuilt()).to.be.false;
-    const targets = rasterizeQuote(fig, 0, 500);
-    // Two cards: a 100×200 px one and a 50×50 px one, on the z = −10 plane in world space.
-    const card = (x0, y0, w, h) => ({
-      project: (u, v) => [x0 + w * u, y0 + h * v],
-      world: (u, v, out) => out.set(x0 + w * u, -(y0 + h * v), -10),
-      axisU: new Vector3(w, 0, 0),
-      axisV: new Vector3(0, h, 0),
-      depth: 10,
-      texture: { isTexture: true },
-      repeat: { x: 1, y: 1 },
-      offset: { x: 0, y: 0 },
-      aspect: w / h,
-      radius: 0.03,
-      ca: 0,
+  it('tiles each card with a draw over its real texture, or spreads over the view', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 500 });
+    await fx.layout({ dpr: 1 });
+    // A 100 × 200 px card at (100, 100), seen straight on; a second one fully off screen.
+    const card = (x0) => ({
+      project: (u, v) => [x0 + 100 * u, 100 + 200 * v],
+      origin: new THREE.Vector3(-1, 2, -30),
+      axisU: new THREE.Vector3(2, 0, 0),
+      axisV: new THREE.Vector3(0, -4, 0),
+      tex: new THREE.Texture(),
+      repeat: new THREE.Vector2(1, 1),
+      offset: new THREE.Vector2(0, 0),
       mirror: false,
-      alpha: 0.5,
-    });
-    // Sources set before the build are kept and applied to it.
-    fx.setSources([card(100, 100, 100, 200), card(400, 100, 50, 50)], 800, 600);
-    fx.build(targets);
-    expect(fx.isBuilt()).to.be.true;
-    expect(added).to.have.length(1);
-    const pts = added[0];
-    expect(pts.isPoints).to.be.true;
-    expect(pts.isMesh).to.be.false;
-    expect(pts.frustumCulled).to.be.false;
-    expect(pts.visible).to.be.false;
-    // One contiguous group per card, sized by on-screen area (20000 : 2500 px²).
-    const { groups } = pts.geometry;
-    expect(fx.getDrawCount()).to.equal(2);
-    expect(groups[0].count + groups[1].count).to.equal(500);
-    expect(groups[0].count).to.be.within(440, 450);
-    expect(pts.material[0].uniforms.uAlpha.value).to.equal(0.5);
-    const w = pts.geometry.getAttribute('aSrcWorld').array;
-    const uv = pts.geometry.getAttribute('aUv').array;
-    const rel = pts.geometry.getAttribute('aRelease').array;
-    for (let i = 0; i < groups[0].count; i += 1) {
-      expect(w[i * 3]).to.be.within(100, 200);
-      expect(-w[i * 3 + 1]).to.be.within(100, 300);
-      expect(w[i * 3 + 2]).to.equal(-10);
-      expect(uv[i * 2]).to.be.within(0, 1);
-    }
-    // Edge-first: a rim tile is released before a centre tile.
-    let rimRel = Infinity; let midRel = -Infinity;
-    for (let i = 0; i < groups[0].count; i += 1) {
-      const edge = Math.min(uv[i * 2], 1 - uv[i * 2], uv[i * 2 + 1], 1 - uv[i * 2 + 1]);
-      if (edge < 0.05) rimRel = Math.min(rimRel, rel[i]);
-      if (edge > 0.4) midRel = Math.max(midRel, rel[i]);
-    }
-    expect(rimRel).to.be.below(midRel);
-    // No far-side card left: one invisible stand-in group.
-    fx.setSources([], 800, 600);
-    expect(fx.getDrawCount()).to.equal(1);
-    expect(pts.material[0].uniforms.uAlpha.value).to.equal(0);
-    fx.setFrame({
-      p: 0.5, fade: 1, pinTop: 0, W: 800, H: 600, dpr: 1, zoom: [0.2, 0.1], camZ: [57, -60],
-    });
-    expect(pts.material[0].uniforms.uP.value).to.equal(0.5);
-    expect(pts.material[0].uniforms.uZoom.value.x).to.equal(0.2);
-    fx.setVisible(true);
-    expect(pts.visible).to.be.true;
-    fx.dispose();
-    expect(added).to.have.length(0);
-    expect(fx.isBuilt()).to.be.false;
-  });
-
-  it('pairs sources with targets by position, holding them on the cards until paired', async () => {
-    const { fig } = mountFigure();
-    const scene = { add: () => {}, remove: () => {} };
-    const fx = createQuoteParticles(scene, 1000);
-    const targets = rasterizeQuote(fig, 0, 2000);
-    let pts = null;
-    fx.build(targets);
-    scene.add = (o) => { pts = o; };
-    // Four cards tiling the area the quote lands in, as the far side does around the view centre.
-    const card = (x0, y0) => ({
-      project: (u, v) => [x0 + 210 * u, y0 + 110 * v],
-      world: (u, v, out) => out.set(x0 + 210 * u, -(y0 + 110 * v), -10),
-      axisU: new Vector3(210, 0, 0),
-      axisV: new Vector3(0, 110, 0),
-      depth: 10,
-      texture: { isTexture: true },
-      repeat: { x: 1, y: 1 },
-      offset: { x: 0, y: 0 },
-      aspect: 210 / 110,
+      aspect: 0.5,
       radius: 0.03,
-      ca: 0,
-      mirror: false,
       alpha: 1,
+      order: -5,
     });
-    const cards = [card(0, 0), card(210, 0), card(0, 110), card(210, 110)];
-    fx.build(targets);
-    const pending = fx.setSources(cards, 800, 600);
-    // The hand-off frame: nothing departs or reveals yet.
-    const seed = pts.geometry.getAttribute('aSeed').array;
-    expect(seed[1]).to.be.above(1);
-    const stats = await pending;
-    // Locality: the coherent pairing's mean path is far shorter than a random pairing's.
-    // (The fixture's source and target extents differ, which sets a floor on any pairing's path.)
-    expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.75);
-    // Every particle now departs after its release and lands in reading order.
-    const rel = pts.geometry.getAttribute('aRelease').array;
-    for (let i = 0; i < 2000; i += 1) {
-      expect(seed[i * 4 + 1]).to.be.at.least(rel[i]);
-      expect(seed[i * 4 + 3]).to.be.above(seed[i * 4 + 1]);
-      expect(seed[i * 4 + 3]).to.be.at.most(1);
+    await fx.setSources([card(100), card(5000)], 800, 600);
+    expect(fx.drawCount()).to.equal(2); // one card draw + the text plane
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const { aUv, aRand } = points.geometry.attributes;
+    expect(aUv.count).to.be.within(450, 500);
+    let edge = 0; let centre = 0; let ne = 0; let nc = 0;
+    for (let i = 0; i < aUv.count; i += 1) {
+      const u = aUv.array[i * 2];
+      const v = aUv.array[i * 2 + 1];
+      expect(u).to.be.within(0, 1);
+      expect(v).to.be.within(0, 1);
+      const inner = Math.min(u, 1 - u, v, 1 - v);
+      if (inner < 0.1) { edge += aRand.array[i * 4]; ne += 1; }
+      if (inner > 0.4) { centre += aRand.array[i * 4]; nc += 1; }
     }
-    fx.dispose();
+    // Edge first: the rim departs well before the middle.
+    expect(edge / ne).to.be.below(centre / nc);
+    expect(points.material.uniforms.uMap.value).to.be.instanceOf(THREE.Texture);
+    await fx.setSources([], 800, 600);
+    expect(fx.drawCount()).to.equal(2);
+    const fallback = fx.object.children.find((o) => o instanceof THREE.Points);
+    expect(fallback.material.uniforms.uScreenSrc.value).to.equal(1);
   });
 
-  it('orders points by x bands then y, and flies a fixed time ending at the arrival', () => {
-    const xs = Float32Array.from({ length: 64 }, (_, i) => i % 8);
-    const ys = Float32Array.from({ length: 64 }, (_, i) => Math.floor(i / 8));
-    const order = [...coherentOrder(xs, ys)];
-    expect(new Set(order).size).to.equal(64);
-    // The first band is the leftmost column, read top to bottom.
-    expect(order.slice(0, 8).map((i) => xs[i])).to.deep.equal(new Array(8).fill(0));
-    expect(order.slice(0, 8).map((i) => ys[i])).to.deep.equal([0, 1, 2, 3, 4, 5, 6, 7]);
-    const [leave, arrive] = flightWindow(1, 1, 0.05);
-    expect(arrive - leave).to.be.closeTo(0.3, 0.001);
-    const [early] = flightWindow(0, 1, 0.25);
-    expect(early).to.be.at.least(0.29); // never before it has let go of the camera
+  it('crosses from points to the text plane and idles once drawn at rest', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 500 });
+    await fx.layout({ dpr: 1 });
+    await fx.setSources([], 800, 600);
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
+    const view = { W: 800, H: 600, dpr: 1 };
+    fx.update(0, { ...view, active: false });
+    expect(fx.object.visible).to.be.false;
+    fx.update(0.3, view);
+    expect(fx.object.visible).to.be.true;
+    expect(points.visible).to.be.true;
+    expect(plane.visible).to.be.false;
+    fx.update(1, view);
+    expect(points.visible).to.be.false;
+    expect(plane.visible).to.be.true;
+    expect(plane.material.uniforms.uP.value).to.equal(1);
+    expect(QUOTE_LIVE_P).to.be.below(1);
+    expect(fx.isIdle()).to.be.false;
+    fx.markDrawn();
+    expect(fx.isIdle()).to.be.true;
+    fx.update(1, { ...view, W: 900 });
+    expect(fx.isIdle()).to.be.false;
+    fx.markDrawn();
+    fx.invalidate();
+    expect(fx.isIdle()).to.be.false;
+    fx.update(0.5, { ...view, zoom: [0.2, 0.4, 57, 117] });
+    expect(points.material.uniforms.uZoomT.value.toArray()).to.deep.equal([0.2, 0.4]);
+    expect(points.material.uniforms.uCamZ.value.toArray()).to.deep.equal([57, 117]);
+    fx.update(1, { ...view, active: false });
+    expect(fx.object.visible).to.be.false;
   });
 
-  it('soft order stays local but breaks each source region up across the targets', () => {
-    const n = 4000;
-    const sx = new Float32Array(n).map(() => Math.random() * 800);
-    const sy = new Float32Array(n).map(() => Math.random() * 600);
-    const tx = new Float32Array(n).map(() => 100 + Math.random() * 600);
-    const ty = new Float32Array(n).map(() => 150 + Math.random() * 300);
-    const tOrd = coherentOrder(tx, ty, n);
-    const path = (ord) => ord.reduce((sum, src, r) => sum
-      + Math.hypot(tx[tOrd[r]] - sx[src], ty[tOrd[r]] - sy[src]), 0) / n;
-    const soft = softOrder(sx, sy, n);
-    expect(new Set(soft).size).to.equal(n);
-    const random = path(Uint32Array.from({ length: n }, (_, i) => i));
-    expect(path(soft)).to.be.below(random * 0.6);
-    // Sources from one corner region no longer land in one contiguous run of the target order.
-    const band = coherentOrder(sx, sy, n);
-    const corner = (i) => sx[i] < 100 && sy[i] < 150;
-    const runs = (ord) => ord.reduce(
-      (c, src, r) => c + (corner(src) && !(r && corner(ord[r - 1]))),
-      0,
-    );
-    expect(runs(soft)).to.be.above(runs(band) * 3);
+  it('lands each glyph by reading order and is still once the last one is crisp', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 800 });
+    await fx.layout({ dpr: 1 });
+    await fx.setSources([], 800, 600);
+    const points = fx.object.children.find((o) => o instanceof THREE.Points);
+    const { position, aRand } = points.geometry.attributes;
+    let left = 0; let right = 0; let nl = 0; let nr = 0;
+    for (let i = 0; i < position.count; i += 1) {
+      const arrive = aRand.array[i * 4 + 3];
+      expect(arrive).to.be.within(0.45 - 0.02, 0.8 + 0.02 + 1e-6); // ± the arrival jitter
+      expect(arrive - aRand.array[i * 4]).to.be.at.least(0.15 - 1e-6); // no rushed flight
+      if (position.array[i * 3] < 300) {
+        left += arrive; nl += 1;
+      } else {
+        right += arrive; nr += 1;
+      }
+    }
+    expect(left / nl).to.be.below(right / nr);
+    const view = { W: 800, H: 600, dpr: 1 };
+    fx.update(QUOTE_LIVE_P, view);
+    expect(points.visible).to.be.false;
+    fx.markDrawn();
+    fx.update(0.97, view);
+    expect(fx.isIdle()).to.be.true; // nothing left to fill in after the last landing
   });
 
-  it('reveals the text in the same reading-order wave the particles land in', () => {
-    const box = { x0: 0, x1: 1000, y0: 0, y1: 500, rtl: false };
-    expect(readingOrder(0, 0, box)).to.equal(0);
-    expect(readingOrder(1000, 500, box)).to.equal(1);
-    expect(readingX(readingOrder(420, 250, box), 250, box)).to.be.closeTo(420, 1e-6);
-    const rtl = { ...box, rtl: true };
-    expect(readingX(readingOrder(420, 250, rtl), 250, rtl)).to.be.closeTo(420, 1e-6);
-    // Nothing crisp before the first arrival; all of it crisp before the flight ends.
-    expect(revealFront(0.5).o0).to.be.below(0);
-    expect(revealFront(1).o1).to.be.above(1);
-    const mid = revealFront(0.75);
-    expect(mid.o1).to.be.below(mid.o0);
+  it('stays unready for an empty figure', async () => {
+    const { figureEl, railEl } = mount('');
+    figureEl.querySelector('p').textContent = '';
+    fx = createQuoteParticles({ figureEl, railEl, count: 100 });
+    expect(await fx.layout({ dpr: 1 })).to.be.false;
+    expect(fx.isReady()).to.be.false;
   });
 
-  it('maps a zoomT back to scroll, net of the quote hold', () => {
-    const span = { blockDocTop: 1000, blockHeight: 6200, formPx: 3600, holdPx: 700 };
-    const y = TL.scrollYAtZoomT(0.3, span);
-    const frame = TL.createFrame();
-    const input = { ...TL.createFrameInput(), ...span, scrollY: y, viewportH: 1000, arcScale: 1 };
-    TL.deriveFrame(frame, input);
-    expect(frame.zoomT).to.be.closeTo(0.3, 1e-6);
-    input.scrollY = span.blockDocTop + span.blockHeight - span.holdPx + 10;
-    TL.deriveFrame(frame, input);
-    expect(frame.zoomT).to.equal(1);
+  it('orders points so consecutive points are near each other', () => {
+    const N = 4096;
+    const xs = new Float32Array(N).map(() => Math.random() * 1000);
+    const ys = new Float32Array(N).map(() => Math.random() * 600);
+    const order = coherentOrder(xs, ys);
+    expect(new Set(order).size).to.equal(N);
+    let step = 0; let rand = 0;
+    for (let i = 1; i < N; i += 1) {
+      step += Math.hypot(xs[order[i]] - xs[order[i - 1]], ys[order[i]] - ys[order[i - 1]]);
+      rand += Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]);
+    }
+    expect(step).to.be.below(rand / 6);
   });
 
-  it('builds the pin as a single sticky wrapper around the figure', () => {
-    const el = document.createElement('div');
-    document.body.append(el);
-    buildGlobeDom(el, {}, {
-      arcCopy: { title: 'T', body: [] },
-      pullQuote: { quote: 'Q', name: 'N', role: 'R' },
-      touchHint: { paras: [], text: 'hint' },
+  it('pairs card pixels with nearby targets', async () => {
+    const { figureEl, railEl } = mount();
+    fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
+    await fx.layout({ dpr: 1 });
+    // Cards spread around the quote, as on the page: pixels should go to the nearer glyphs,
+    // not across the figure.
+    const card = (x0, y0) => ({
+      project: (u, v) => [x0 + 200 * u, y0 + 150 * v],
+      origin: new THREE.Vector3(),
+      axisU: new THREE.Vector3(1, 0, 0),
+      axisV: new THREE.Vector3(0, -1, 0),
+      tex: new THREE.Texture(),
+      repeat: new THREE.Vector2(1, 1),
+      offset: new THREE.Vector2(0, 0),
+      mirror: false,
+      aspect: 1.2,
+      radius: 0.03,
+      alpha: 1,
+      order: 0,
     });
-    const pin = el.querySelector('.globe-gallery-pullquote-pin');
-    expect(pin.firstElementChild.matches('figure.globe-gallery-pullquote')).to.be.true;
-    expect(el.querySelector('.globe-gallery-pullquote-rail')).to.be.null;
-    expect(pin.previousElementSibling.matches('.globe-gallery-arc-copy')).to.be.true;
+    await fx.setSources([card(0, 400), card(560, 0)], 800, 600);
+    const stats = fx.getStats();
+    expect(stats.count).to.be.within(2800, 3000);
+    expect(stats.meanPath).to.be.below(stats.meanPathRandom * 0.8);
+    const draws = fx.object.children.filter((o) => o instanceof THREE.Points);
+    expect(draws).to.have.length(2);
+    draws.forEach((d) => {
+      const { aRand } = d.geometry.attributes;
+      for (let i = 0; i < aRand.count; i += 1) {
+        const [leave, arrive] = [aRand.array[i * 4], aRand.array[i * 4 + 3]];
+        expect(leave).to.be.at.least(0);
+        expect(arrive).to.be.above(leave);
+        expect(arrive).to.be.at.most(QUOTE_LIVE_P);
+      }
+    });
+    // The left card mostly feeds glyphs further left than the right card does.
+    const meanX = (d) => {
+      const pos = d.geometry.attributes.position;
+      let sum = 0;
+      for (let i = 0; i < pos.count; i += 1) sum += pos.array[i * 3];
+      return sum / pos.count;
+    };
+    expect(meanX(draws[0])).to.be.below(meanX(draws[1]));
   });
 });
