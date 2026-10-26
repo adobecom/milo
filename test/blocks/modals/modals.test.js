@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 import { mockFetch } from '../../helpers/generalHelpers.js';
-import { getConfig, createTag } from '../../../libs/utils/utils.js';
+import { getConfig, createTag, notifyTargetReady } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -20,6 +20,7 @@ const satellite = { track: sinon.spy() };
 const ogFetch = window.fetch;
 
 describe('Modals', () => {
+  before(() => notifyTargetReady());
   beforeEach(() => {
     window._satellite = satellite;
     window._satellite.track.called = false;

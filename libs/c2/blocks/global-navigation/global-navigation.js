@@ -11,8 +11,9 @@ import {
   getFederatedUrl,
   loadIms,
   isAcomAssistantEnabled,
+  isAupEnabled,
 } from '../../../utils/utils.js';
-import { isDesktop, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
 
@@ -101,6 +102,36 @@ export async function loadBrandConcierge(block) {
   await initBrandConcierge(block);
 }
 
+// Mirrors c1 gnav's AUP SDK lifecycle: eager preload once IMS is ready (or after a
+// late IMS load), lazy init via fetchAUPSDKInstance, and retry after a failed preload.
+export function initAupSdk({ imsReady, unavEnabled }) {
+  let instancePromise = null;
+  const fetchAUPSDKInstance = () => {
+    if (!instancePromise) {
+      instancePromise = import('../../../blocks/global-navigation/utilities/aup-sdk.js')
+        .then(({ preloadAupSdk }) => preloadAupSdk());
+      instancePromise.catch(() => { instancePromise = null; });
+    }
+    return instancePromise;
+  };
+  const preload = () => {
+    if (!isAupEnabled(unavEnabled)) return;
+    fetchAUPSDKInstance().catch((e) => lanaLog({
+      message: 'GNAV: eager AUP SDK preload failed; falling back to lazy init',
+      e,
+      tags: 'universalnav',
+      errorType: 'i',
+      severity: 'info',
+    }));
+  };
+  imsReady.then(preload, (error) => {
+    if (error?.message === 'IMS timeout') {
+      window.addEventListener('onImsLibInstance', preload, { once: true });
+    }
+  });
+  return fetchAUPSDKInstance;
+}
+
 export default async function init(el) {
   const config = getConfig();
   const isLingo = lingoActive();
@@ -126,6 +157,11 @@ export default async function init(el) {
       errorType: 'i',
     });
   });
+
+  const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
+  const unavEnabled = universalNavMeta === 'on'
+    || !!universalNavMeta?.split(',').map((option) => option.trim()).filter(Boolean).length;
+  const fetchAUPSDKInstance = initAupSdk({ imsReady, unavEnabled });
 
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
@@ -180,9 +216,6 @@ export default async function init(el) {
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
-  const universalNavMeta = getMetadata('universal-nav')?.toLowerCase();
-  const unavEnabled = universalNavMeta === 'on'
-    || !!universalNavMeta?.split(',').map((option) => option.trim()).filter(Boolean).length;
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
@@ -201,6 +234,7 @@ export default async function init(el) {
     mountpoint: el,
     unavEnabled,
     imsReady,
+    fetchAUPSDKInstance,
     placeholders: placeholdersPromise,
     miloConfig: config,
     countryCode: countryCodePromise,

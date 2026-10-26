@@ -395,6 +395,7 @@ export function getMetadata(name, doc = document) {
 
 const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
 
+// Single source of truth for aup-select: URL param, then page metadata (which Target can change).
 export function getAupSelectValue() {
   const value = new URLSearchParams(window.location.search).get('aup-select')
     ?? getMetadata('aup-select');
@@ -404,6 +405,32 @@ export function getAupSelectValue() {
 
 export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
+}
+
+const getTargetTimeout = () => parseInt(new URLSearchParams(window.location.search).get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
+
+let targetReady;
+export function resetTargetReady() {
+  targetReady = {};
+  targetReady.promise = new Promise((resolve) => { targetReady.resolve = resolve; });
+}
+resetTargetReady();
+
+export function notifyTargetReady() {
+  targetReady.resolve();
+}
+
+// Never rejects and never waits forever, so awaiting it can't break the calling flow.
+export function whenTargetReady() {
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(resolve, getTargetTimeout());
+  });
+  return Promise.race([targetReady.promise, timeout])
+    .catch(() => {})
+    .finally(() => clearTimeout(timer));
 }
 
 export function isAupEnabled(useUniversalNav = false) {
@@ -2222,12 +2249,14 @@ export async function loadMartech({
 } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
+    notifyTargetReady();
     return true;
   }
 
   if (PAGE_URL.searchParams.get('martech') === 'off'
     || PAGE_URL.searchParams.get('marketingtech') === 'off'
     || getMetadata('martech') === 'off') {
+    notifyTargetReady();
     return false;
   }
 
@@ -2237,6 +2266,8 @@ export async function loadMartech({
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({ persEnabled, persManifests, postLCP });
   isMartechLoaded = true;
+  // Post-LCP target changes are applied by loadPostLCP, which notifies once they land.
+  if (getConfig().mep?.targetEnabled !== 'postlcp') notifyTargetReady();
 
   return true;
 }
@@ -2477,10 +2508,7 @@ async function checkForPageMods() {
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
-    const params = new URL(window.location.href).searchParams;
-    calculatedTimeout = parseInt(params.get('target-timeout'), 10)
-      || parseInt(getMetadata('target-timeout'), 10)
-      || TARGET_TIMEOUT_MS;
+    calculatedTimeout = getTargetTimeout();
 
     const { locale } = getConfig();
     targetInteractionPromise = (async () => {
@@ -2585,6 +2613,7 @@ async function loadPostLCP(config) {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
+    notifyTargetReady();
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 

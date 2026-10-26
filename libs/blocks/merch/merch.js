@@ -1,6 +1,7 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
+  getAupSelectValue, whenTargetReady,
 } from '../../utils/utils.js';
 import { getValidatedMarket, isSupportedMarket } from '../../utils/market.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
@@ -1281,6 +1282,44 @@ function isAnnualPriceEnabled(params) {
   return undefined;
 }
 
+let aupSelectService;
+
+/*
+ * Gnav only loads the AUP SDK when aup-select is on at IMS-ready. MAS needs window.aupsdk to
+ * open the AUP flow, so load it (or refresh its features) when aup-select is enabled later.
+ */
+function syncAupSdk() {
+  if (!getAupSelectValue()) return;
+  import('../global-navigation/utilities/aup-sdk.js')
+    .then(({ preloadAupSdk }) => preloadAupSdk())
+    .catch((e) => {
+      window.lana?.log(`AUP SDK load after late aup-select failed: ${e?.message}`, { tags: 'merch', errorType: 'i' });
+    });
+}
+
+function applyAupSelect(service) {
+  aupSelectService = service;
+  let applied = false;
+  const setValue = () => {
+    const value = getAupSelectValue();
+    if (value) {
+      service.setAttribute('aup-select', value);
+      applied = true;
+    } else if (applied) {
+      // Only undo what we set; keep aup-select passed via attributes or commerce config.
+      service.removeAttribute('aup-select');
+      applied = false;
+    }
+  };
+  setValue();
+  // Personalization may still change aup-select until target is ready.
+  whenTargetReady().then(() => {
+    if (aupSelectService !== service) return;
+    setValue();
+    syncAupSdk();
+  });
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -1388,6 +1427,7 @@ export async function initService(force = false, attributes = {}) {
         }
         if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
+      applyAupSelect(service);
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
