@@ -155,10 +155,11 @@
     /* Parent is align-items: flex-start, so stretch to the card's full width. */
     align-self: stretch;
 
-    /* Collapse the CTA wrappers (the paragraph, and the mas-field around a MAS CTA)
-       so every button becomes a direct flex item — whether the two CTAs are authored
-       as one paragraph or split across two. One flex rule then lays them out. */
+    /* Collapse the CTA wrappers (the paragraph, the mas-field around a MAS CTA, and the
+       action-area div around a plain link) so every button becomes a direct flex item —
+       whether the CTAs are authored as one paragraph or split across two. */
     > p,
+    > .action-area,
     mas-field {
       display: contents;
     }
