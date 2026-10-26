@@ -103,7 +103,7 @@ const CONFIG = {
 };
 const FOOTER_IN_VIEW_CLASS = 'feds-footer-in-view';
 const FOOTER_MENU_STACKED_CLASS = 'feds-menu-content--stacked';
-const MARKET_SELECTOR_OPTIONS_MEDIA = '(max-width: 1439px)';
+const MARKET_SELECTOR_OPTIONS_MEDIA = '(width < 1440px)';
 
 let cachedDecorateMenu;
 export async function loadDecorateMenu() {
