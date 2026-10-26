@@ -16,7 +16,7 @@ export async function generateM7Link(href) {
 
   let marketCountry;
   if (isMasGeoDetectionEnabled()) {
-    const { getValidatedMarket } = await import('../../utils/market.js');
+    const { getValidatedMarket } = await import('../../utils/utils.js');
     const validatedMarket = await getValidatedMarket();
     if (validatedMarket) marketCountry = validatedMarket.toUpperCase();
   }

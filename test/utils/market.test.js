@@ -1,14 +1,14 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig } from '../../libs/utils/utils.js';
 import {
+  setConfig,
   norm,
   getMarketConfig,
   marketsLangForLocale,
   getValidatedMarket,
-} from '../../libs/utils/market.js';
+} from '../../libs/utils/utils.js';
 
-describe('market.js — norm()', () => {
+describe('utils.js market — norm()', () => {
   it('returns undefined for null', () => {
     expect(norm(null)).to.be.undefined;
   });
@@ -47,7 +47,7 @@ describe('market.js — norm()', () => {
   });
 });
 
-describe('market.js — getMarketConfig()', () => {
+describe('utils.js market — getMarketConfig()', () => {
   afterEach(() => {
     sinon.restore();
     setConfig({});
@@ -105,7 +105,7 @@ describe('market.js — getMarketConfig()', () => {
   });
 });
 
-describe('market.js — marketsLangForLocale()', () => {
+describe('utils.js market — marketsLangForLocale()', () => {
   const languages = [
     { prefix: '', langName: 'English', defaultMarket: 'us' },
     { prefix: 'de', langName: 'German', defaultMarket: 'de' },
@@ -148,7 +148,7 @@ describe('market.js — marketsLangForLocale()', () => {
   });
 });
 
-describe('market.js — getValidatedMarket()', () => {
+describe('utils.js market — getValidatedMarket()', () => {
   afterEach(() => {
     sinon.restore();
     setConfig({});

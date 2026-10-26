@@ -1,9 +1,8 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
-  getAupSelectValue, whenTargetReady,
+  getAupSelectValue, whenTargetReady, getValidatedMarket, isSupportedMarket,
 } from '../../utils/utils.js';
-import { getValidatedMarket, isSupportedMarket } from '../../utils/market.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';

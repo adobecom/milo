@@ -70,9 +70,11 @@ export const normCountryCode = (country) => {
 export const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
 
 // Unused directly by these tests; needed because merch.js statically imports
-// decorate.js, autoblock.js and market.js, which import these from utils.js.
+// decorate.js and autoblock.js, which import these from utils.js.
 export const isBot = () => false;
 export const getMarketsUrl = () => '';
+export const getValidatedMarket = () => Promise.resolve(null);
+export const isSupportedMarket = () => Promise.resolve(false);
 export const createIntersectionObserver = stub();
 export const getFederatedContentRoot = () => '';
 export const getFedsPlaceholderConfig = () => ({});
