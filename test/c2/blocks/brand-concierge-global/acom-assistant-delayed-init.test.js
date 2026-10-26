@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setViewport } from '@web/test-runner-commands';
 import { loadBrandConcierge } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 import { decorateAcomAssistantGnav, loadAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
@@ -26,7 +27,8 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     metadata.name = 'acom-assistant';
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await setViewport({ width: 1200, height: 900 });
     setConfig({
       codeRoot: '/libs',
       env: { name: 'stage' },
@@ -74,6 +76,27 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     setConfig(originalConfig);
   });
 
+  it('retains no-gnav-mobile authoring when Federal supplies the block before navigation mounts', async () => {
+    await setViewport({ width: 899, height: 900 });
+    block.classList.add('no-gnav-mobile');
+    const header = document.querySelector('header');
+    header.remove();
+    const clock = sinon.useFakeTimers();
+    try {
+      await loadBrandConcierge(block);
+      document.body.prepend(header);
+      expect(decorateAcomAssistantGnav(header)).to.be.null;
+      await clock.tickAsync(100);
+      await loadAcomAssistantGnav();
+
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+      expect(window.milo?.brandConcierge?.brandConciergeGlobal).not.to.be.true;
+      expect(initialize.called).to.be.false;
+    } finally {
+      clock.restore();
+    }
+  });
+
   it('retains authored prompts supplied before navigation mounts for delayed initialization', async () => {
     const header = document.querySelector('header');
     header.remove();
@@ -88,11 +111,11 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     foundation.content = 'c2';
     const script = document.createElement('script');
     script.type = 'javascript/blocked';
-    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    script.src = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
     script.dataset.loaded = 'true';
     const style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+    style.href = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
     document.head.append(foundation, script, style);
 
     try {

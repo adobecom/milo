@@ -34,7 +34,7 @@
     --floating-cta-radius: var(--s2a-border-radius-8) var(--s2a-border-radius-8) 0 0;
 
     backdrop-filter: blur(27px); /* no token */
-    background: var(--s2a-color-transparent-black-48);
+    background: var(--s2a-color-transparent-black-64);
     border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
     border-radius: var(--floating-cta-radius);
     inset-block-end: 0;
@@ -50,6 +50,7 @@
       transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
       opacity 0.3s cubic-bezier(0.33, 1, 0.68, 1);
     will-change: transform, opacity;
+    pointer-events: none;
 
     .floating-cta-content,
     .floating-cta-lockup,
@@ -98,6 +99,7 @@
     &.active {
       transform: translateY(0);
       opacity: 1;
+      pointer-events: auto;
     }
 
     &.disable-animation {
@@ -114,6 +116,7 @@
     &.disable-animation:focus-within {
       transform: translateY(0);
       opacity: 1;
+      pointer-events: auto;
     }
   }
 

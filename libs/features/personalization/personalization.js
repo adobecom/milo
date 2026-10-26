@@ -217,6 +217,24 @@ const getUpdatedHref = (el, content, action) => {
   return newContent;
 };
 
+const MEDIA_SEL = 'img[src*="media_"], source[srcset*="media_"]';
+
+const isBrokenImage = (el) => {
+  const img = el.tagName === 'IMG' ? el : el.parentElement?.querySelector('img');
+  return !!img?.complete && !img.naturalWidth;
+};
+
+const recordRemovedMedia = (el) => {
+  const { mep } = getConfig();
+  if (!mep) return;
+  [el, ...el.querySelectorAll(MEDIA_SEL)]
+    .filter((m) => m.matches(MEDIA_SEL) && !isBrokenImage(m))
+    .forEach((m) => {
+      mep.removedMedia ??= new Set();
+      mep.removedMedia.add(m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset'));
+    });
+};
+
 const createFrag = async (el, action, content, manifestId, targetManifestId) => {
   if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   let href = content;
@@ -442,6 +460,7 @@ export async function replaceInner(path, element) {
   const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
+  recordRemovedMedia(element);
   element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
@@ -740,7 +759,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 
 export const deleteMarkedEls = (rootEl = document) => {
   [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
+    .forEach((el) => {
+      recordRemovedMedia(el);
+      el.remove();
+    });
 };
 
 export function addSectionAnchors(rootEl = document) {
@@ -1514,6 +1536,7 @@ export async function applyPers({ manifests }) {
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
+  if (config.mep.lcpCheck) config.mep.lcpExperiments = experiments.map((exp) => exp && { ...exp });
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
@@ -1757,10 +1780,12 @@ export async function init(enablements = {}) {
     isPostLCP = true;
   } else {
     for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
+    const preview = mepButton !== 'off'
+      && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton);
     config.mep = {
       updateFragDataProps,
-      preview: (mepButton !== 'off'
-        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+      preview,
+      lcpCheck: preview && new URLSearchParams(window.location.search.toLowerCase()).has('meplcp'),
       variantOverride: parseMepParam(mepParam),
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
@@ -1773,6 +1798,8 @@ export async function init(enablements = {}) {
       akamaiCode: akamaiCode?.toLowerCase(),
       consentState: getMepConsentConfig(),
     };
+    const lcpEl = config.mep.lcpCheck && document.querySelector('body > main > div');
+    if (lcpEl) config.mep.lcpSection = { clone: lcpEl.cloneNode(true) };
 
     manifests = manifests.concat(await combineMepSources(
       pzn,
@@ -1814,6 +1841,11 @@ export async function init(enablements = {}) {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });
+      if (config.mep.lcpCheck) {
+        import('../mep/mep-next/mep-lcp-check.js')
+          .then(({ default: checkLcpImages }) => checkLcpImages())
+          .catch((e) => log(`MEP LCP check error: ${e.toString()}`));
+      }
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);

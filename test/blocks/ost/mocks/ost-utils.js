@@ -68,7 +68,7 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
   };
   const params = { ...defaultParams, ...overrideParams };
 
-  window.fetch = sinon.stub()
+  const fetchStub = sinon.stub()
     .onFirstCall()
     .callsFake(
       () => (
@@ -85,6 +85,10 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
           : mockRes({ payload: `<head><meta name="checkout-workflow" content="${options.workflow}"></head>` })
       ),
     );
+  // initService eagerly fetches checkout-link.json; keep it out of the call-order stub.
+  window.fetch = (url, ...args) => (String(url).includes('checkout-link.json')
+    ? mockRes({ payload: { data: [] } })
+    : fetchStub(url, ...args));
 
   window.adobeIMS = {
     isSignedInUser: sinon.stub().returns(false),

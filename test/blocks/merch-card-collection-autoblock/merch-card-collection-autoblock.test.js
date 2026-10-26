@@ -17,6 +17,9 @@ import init, {
   scrollOffset,
   categoryOffTags,
   isCategoryOff,
+  categoryRules,
+  groupsFor,
+  pruneParams,
   isStacked,
   searchWidth,
   fixProductPricingVariant,
@@ -32,7 +35,7 @@ import init, {
   selectCategory,
   mountProductPricingFilter,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getFedsPlaceholderConfig, setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -486,6 +489,41 @@ describe('merch-card-collection autoblock', () => {
     });
   });
 
+  describe('category rules', () => {
+    const groups = [
+      { deeplink: 'filter', category: true, options: [{ value: 'all' }, { value: 'photo' }] },
+      { deeplink: 'pricing', optional: false, options: [{ value: 'individuals' }, { value: 'students' }] },
+    ];
+    const meta = { 'pricing-off-for': { text: 'all' }, 'exclude-in-photo': { text: 'pricing:students' } };
+    const rules = categoryRules(meta, groups);
+
+    it('reads off-for per group and exclude-in per category', () => {
+      expect(rules).to.deep.equal({ off: { pricing: ['all'] }, exclude: { all: [], photo: ['pricing:students'] } });
+      expect(categoryRules({}, [])).to.deep.equal({ off: {}, exclude: {} });
+      const many = categoryRules({ 'exclude-in-photo': { text: 'pricing:individuals, pricing:students' } }, groups);
+      expect(many.exclude.photo).to.deep.equal(['pricing:individuals', 'pricing:students']);
+    });
+
+    it('drops an off group under its category and an excluded option under its own', () => {
+      expect(groupsFor(groups, 'all', rules).map((g) => g.deeplink)).to.deep.equal(['filter']);
+      const photo = groupsFor(groups, 'photo', rules);
+      expect(photo[1].options.map((o) => o.value)).to.deep.equal(['individuals']);
+      expect(groupsFor(groups, null, rules)).to.have.length(2);
+    });
+
+    it('prunes hash values the category rules out and keeps the rest', () => {
+      const prune = (hash, category) => pruneParams(
+        new URLSearchParams(hash),
+        groups,
+        groupsFor(groups, category, rules),
+      ).toString();
+      expect(prune('filter=all&pricing=students', 'all')).to.equal('filter=all');
+      expect(prune('filter=photo&pricing=students', 'photo')).to.equal('filter=photo');
+      expect(prune('filter=photo&pricing=individuals', 'photo')).to.equal('filter=photo&pricing=individuals');
+      expect(prune('filter=photo&pricing=bogus', 'photo')).to.equal('filter=photo&pricing=bogus');
+    });
+  });
+
   describe('category-off-for', () => {
     const tags = categoryOffTags({ 'category-off-for': { text: 'pricing:business, pricing:students-and-teachers' } });
 
@@ -579,8 +617,7 @@ describe('merch-card-collection autoblock', () => {
       ];
       const count = (hash) => countApplied(new URLSearchParams(hash), groups);
       expect(count('')).to.equal(0);
-      // 'all' means unfiltered.
-      expect(count('filter=all')).to.equal(0);
+      expect(count('filter=all')).to.equal(1);
       expect(count('filter=featured')).to.equal(1);
       expect(count('filter=featured&pricing=individuals')).to.equal(2);
       expect(count('filter=photo&types=desktop&pricing=business')).to.equal(3);
@@ -953,6 +990,10 @@ describe('merch-card-collection autoblock', () => {
       return { collection, container };
     };
 
+    // The clear button's label comes from the gnav placeholders; no fetch in tests.
+    before(() => setConfig({ ...conf, placeholders: { 'clear-results': 'Clear results' } }));
+    after(() => setConfig(conf));
+
     afterEach(() => {
       window.location.hash = '';
       document.body.innerHTML = '';
@@ -1135,7 +1176,7 @@ describe('merch-card-collection autoblock', () => {
           hierarchy: [{ label: 'All', queryLabel: 'all' }, { label: 'Featured', queryLabel: 'featured' }],
           sidenavSettings: {
             tagFilters: [
-              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }] },
+              { title: 'Pricing', deeplink: 'pricing', checkboxes: [{ name: 'individuals', label: 'I' }, { name: 'business', label: 'B' }, { name: 'students', label: 'S' }] },
             ],
           },
         };
@@ -1162,6 +1203,28 @@ describe('merch-card-collection autoblock', () => {
         expect(categoryInputs().every((input) => input.disabled)).to.be.true;
         expect(label()).to.equal('All Filters (1)');
       });
+
+      it('greys the pricing group and strips its value under an off category', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['pricing-off-for', 'all']]);
+        const pricing = () => [...container.querySelectorAll('.product-pricing-drawer input[data-deeplink="pricing"]')];
+        await delay(50);
+        expect(pricing().some((input) => input.disabled)).to.be.false;
+        window.location.hash = 'filter=all&pricing=business';
+        await delay(50);
+        expect(params().has('pricing')).to.be.false;
+        expect(pricing()).to.have.length(3);
+        expect(pricing().every((input) => input.disabled)).to.be.true;
+        expect(container.querySelector('.product-pricing-trigger-label').textContent).to.equal('All Filters (1)');
+      });
+
+      it('greys an excluded option, hands the rule to the collection and strips a deep link to it', async () => {
+        const container = withMeta([['default-filter', 'featured'], ['exclude-in-all', 'pricing:students']]);
+        window.location.hash = 'filter=all&pricing=students';
+        await delay(50);
+        expect(params().has('pricing')).to.be.false;
+        const off = [...container.querySelectorAll('.product-pricing-drawer input[data-deeplink="pricing"]:disabled')].map((i) => i.value);
+        expect(off).to.deep.equal(['students']);
+      });
     });
 
     it('mounts once per collection', () => {
@@ -1179,19 +1242,35 @@ describe('merch-card-collection autoblock', () => {
       expect(new URLSearchParams(window.location.hash.slice(1)).get('types')).to.equal('desktop');
     });
 
-    it('opens and closes the drawer, tracking aria-expanded', async () => {
+    it('opens the drawer on its close button and closes it', () => {
       const { container } = mount();
       const drawer = container.querySelector('.product-pricing-drawer');
       const trigger = container.querySelector('.product-pricing-filter-trigger');
-      expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+      const close = container.querySelector('.product-pricing-drawer-close');
+      // A dialog trigger, not a disclosure.
+      expect(trigger.getAttribute('aria-haspopup')).to.equal('dialog');
+      expect(trigger.hasAttribute('aria-expanded')).to.be.false;
+      trigger.focus();
       trigger.click();
       expect(drawer.open).to.be.true;
-      expect(trigger.getAttribute('aria-expanded')).to.equal('true');
-      container.querySelector('.product-pricing-drawer-close').click();
+      expect(document.activeElement).to.equal(close);
+      expect(trigger.hasAttribute('aria-expanded')).to.be.false;
+      close.click();
       expect(drawer.open).to.be.false;
-      // <dialog> fires 'close' asynchronously, which is what clears the flag.
-      await delay(50);
-      expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+      // Native <dialog> hands focus back to the trigger.
+      expect(document.activeElement).to.equal(trigger);
+    });
+
+    it('names the drawer by its heading, with a unique id per drawer', () => {
+      const first = mount().container.querySelector('.product-pricing-drawer');
+      const second = mount().container.querySelector('.product-pricing-drawer');
+      [first, second].forEach((drawer) => {
+        expect(drawer.hasAttribute('aria-label')).to.be.false;
+        const title = document.getElementById(drawer.getAttribute('aria-labelledby'));
+        expect(title).to.equal(drawer.querySelector('h2.product-pricing-drawer-title'));
+        expect(title.textContent).to.equal('All Filters');
+      });
+      expect(first.getAttribute('aria-labelledby')).to.not.equal(second.getAttribute('aria-labelledby'));
     });
 
     it('opts the drawer out of Lenis scrolling', () => {
@@ -1235,6 +1314,29 @@ describe('merch-card-collection autoblock', () => {
       expect(emptyEl.innerHTML).to.equal('<p>none</p>');
     });
 
+    it('announces the counts from inside the drawer, once per change', () => {
+      const { collection, container } = mount();
+      const drawer = container.querySelector('.product-pricing-drawer');
+      const counts = drawer.querySelector('.product-pricing-drawer-counts');
+      container.querySelector('.product-pricing-filter-trigger').click();
+      expect(drawer.open).to.be.true;
+      // The open modal makes the page's own status inert, so the drawer needs one.
+      expect(counts.getAttribute('role')).to.equal('status');
+      expect(counts.getAttribute('aria-atomic')).to.equal('true');
+      const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
+        'merch-card-collection:literals-changed',
+        { detail: { resultCount } },
+      ));
+      emit(5);
+      expect(counts.textContent).to.equal('1 Applied5 Results');
+      const [applied, results] = [...counts.children].map((el) => el.firstChild);
+      // The same text is not rewritten, so it is not re-announced.
+      emit(5);
+      expect([...counts.children].map((el) => el.firstChild)).to.deep.equal([applied, results]);
+      emit(7);
+      expect(counts.textContent).to.equal('1 Applied7 Results');
+    });
+
     describe('accessibility', () => {
       it('names the search and marks it as a search landmark', () => {
         const { container } = mount();
@@ -1243,9 +1345,13 @@ describe('merch-card-collection autoblock', () => {
         expect(input.closest('[role="search"]')).to.exist;
       });
 
-      it('announces the count, once per change, and leaves zero to the empty state', () => {
+      it('announces the count, or the empty state text for zero results', () => {
         const { collection, container } = mount();
         const status = container.querySelector('.sr-only[role="status"]');
+        const emptyEl = container.querySelector('.product-pricing-results');
+        // The visible empty state appears already filled, so it is not the live region.
+        expect(emptyEl.hasAttribute('role')).to.be.false;
+        expect(emptyEl.hasAttribute('aria-live')).to.be.false;
         const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
           'merch-card-collection:literals-changed',
           { detail: { resultCount } },
@@ -1254,7 +1360,34 @@ describe('merch-card-collection autoblock', () => {
         emit(5);
         expect(status.textContent).to.equal('5 Results');
         emit(0);
-        expect(status.textContent).to.equal('');
+        expect(status.textContent).to.equal('none');
+      });
+
+      it('announces the search term when a search finds nothing', async () => {
+        const original = data.placeholders.noSearchResultsText;
+        data.placeholders.noSearchResultsText = '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p>';
+        try {
+          window.location.hash = 'filter=all&search=test';
+          const { collection, container } = mount();
+          await delay(50);
+          collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 0 } }));
+          expect(container.querySelector('.sr-only[role="status"]').textContent)
+            .to.equal('Your search for test did not yield any results');
+        } finally {
+          data.placeholders.noSearchResultsText = original;
+        }
+      });
+
+      it('falls back to the count when no empty state text is authored', () => {
+        const original = data.placeholders.noResultsText;
+        delete data.placeholders.noResultsText;
+        try {
+          const { collection, container } = mount();
+          collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 0 } }));
+          expect(container.querySelector('.sr-only[role="status"]').textContent).to.equal('0 Results');
+        } finally {
+          data.placeholders.noResultsText = original;
+        }
       });
 
       it('points each group toggle at its pill list', () => {
@@ -1265,6 +1398,82 @@ describe('merch-card-collection autoblock', () => {
           const target = container.querySelector(`#${toggle.getAttribute('aria-controls')}`);
           expect(target.classList.contains('product-pricing-group-pills')).to.be.true;
         });
+      });
+
+      it('clears the search from a named button, back to the prior filters', async () => {
+        window.location.hash = 'filter=photo';
+        const { container } = mount();
+        const search = container.querySelector('.product-pricing-filter-search-input');
+        const clear = container.querySelector('[role="search"] .product-pricing-filter-search-clear');
+        expect(clear.tagName).to.equal('BUTTON');
+        expect(clear.type).to.equal('button');
+        // Untracked, so later daa-ll positions don't shift.
+        expect(clear.classList.contains('no-track')).to.be.true;
+        // Named asynchronously, from the gnav's translated label.
+        expect(clear.hasAttribute('aria-label')).to.be.false;
+        await delay(0);
+        expect(clear.getAttribute('aria-label')).to.equal('Clear results');
+        search.focus();
+        search.value = 'acro';
+        search.dispatchEvent(new Event('input', { bubbles: true }));
+        await delay(400);
+        const params = () => new URLSearchParams(window.location.hash.slice(1));
+        expect(params().get('search')).to.equal('acro');
+        clear.click();
+        expect(search.value).to.equal('');
+        // The button hides once the field is empty, so focus goes back to the field.
+        expect(document.activeElement).to.equal(search);
+        await delay(400);
+        expect(params().has('search')).to.be.false;
+        expect(params().get('filter')).to.equal('photo');
+      });
+
+      it('shows the clear button only for a term, and only once it is named', async () => {
+        // Hold the gnav placeholders request, so the button exists before its name does.
+        const { placeholders } = getFedsPlaceholderConfig();
+        delete placeholders['clear-results'];
+        window.mph ||= {};
+        let respond;
+        const { fetch } = window;
+        window.fetch = () => new Promise((resolve) => { respond = resolve; });
+        const css = document.createElement('link');
+        css.rel = 'stylesheet';
+        css.href = '/libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.css';
+        await new Promise((resolve) => { css.onload = resolve; document.head.append(css); });
+        try {
+          // A deep-linked search fills the field on load.
+          window.location.hash = 'filter=all&search=acro';
+          const { container } = mount();
+          const wrapper = container.querySelector('.product-pricing-filter-search');
+          const search = wrapper.querySelector('.product-pricing-filter-search-input');
+          const clear = wrapper.querySelector('.product-pricing-filter-search-clear');
+          const magnifier = wrapper.querySelector(':scope > .product-pricing-icon');
+          search.placeholder = 'Search';
+          const shown = (el) => getComputedStyle(el).display !== 'none';
+          await delay(50);
+          expect(search.value).to.equal('acro');
+          // Pending: no name yet, so not shown and not focusable.
+          expect(clear.hasAttribute('aria-label')).to.be.false;
+          expect(shown(clear)).to.be.false;
+          respond(new Response(JSON.stringify({ data: [{ key: 'clear-results', value: 'Clear results' }] })));
+          await delay(50);
+          expect(clear.getAttribute('aria-label')).to.equal('Clear results');
+          expect(shown(clear)).to.be.true;
+          // The term hides the magnifier but not the clear button's own icon.
+          expect(shown(magnifier)).to.be.false;
+          expect(shown(clear.querySelector('.product-pricing-icon'))).to.be.true;
+          // An empty authored value keeps it hidden.
+          clear.setAttribute('aria-label', '');
+          expect(shown(clear)).to.be.false;
+          clear.setAttribute('aria-label', 'Clear results');
+          search.value = '';
+          expect(shown(clear)).to.be.false;
+          expect(shown(magnifier)).to.be.true;
+        } finally {
+          window.fetch = fetch;
+          placeholders['clear-results'] = 'Clear results';
+          css.remove();
+        }
       });
     });
 
