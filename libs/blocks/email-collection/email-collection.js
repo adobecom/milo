@@ -582,7 +582,7 @@ function decorateText(elChildren) {
 
 async function checkIsSubscribed() {
   const { consentId } = await getFormData('consent');
-  if (consentId?.toLowerCase().startsWith('cs8a')) return false;
+  if (consentId?.startsWith('cs8A')) return false;
 
   const isGuest = await isUserGuest();
   if (isGuest) return false;

@@ -310,6 +310,7 @@ export async function fetchConsentString(metadataConsentId) {
 
 const MARKETING_CONSENT_ID = 'cs1D';
 
+// Consent ids are matched case-sensitively on purpose, like the backend (e.g. only 'cs1D', 'cs8A')
 function isMarketingConsent(consentId) {
   const [consentCode] = consentId?.split(';') ?? [];
   return consentCode === MARKETING_CONSENT_ID;
