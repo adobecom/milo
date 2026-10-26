@@ -1800,10 +1800,8 @@ describe('Merch Block', () => {
       { content: 'on', failure: 'getOrchestratorContext', aup: true },
       { content: 'on', failure: 'loadUIComponent', aup: true },
       { content: 'on', modal: false },
-      { content: 'off', targetContent: 'on', aup: true },
-      { content: 'on', targetContent: 'off', legacy: true },
     ].forEach(({
-      content, query, commercePreload, lateContent, targetContent, missingSdk, failure, calls = 1,
+      content, query, commercePreload, lateContent, missingSdk, failure, calls = 1,
       modal = true, aup = false, legacy = false,
     }) => {
       it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
@@ -1811,14 +1809,11 @@ describe('Merch Block', () => {
         query,
         commercePreload,
         lateContent,
-        targetContent,
         missingSdk,
         failure,
         calls,
         modal,
       })}`, async () => {
-        resetTargetReady();
-        if (!targetContent) notifyTargetReady();
         const previousUrl = window.location.href;
         const previousDeferred = window.milo.deferredPromise;
         const previousSdk = window.aupsdk;
@@ -1868,12 +1863,6 @@ describe('Merch Block', () => {
           expect(sdk.loadUIComponent.called).to.be.false;
           expect(scripts).to.be.empty;
           await clock.tickAsync(1);
-          if (targetContent) {
-            expect(sdk.getOrchestratorContext.called).to.be.false;
-            meta.content = targetContent;
-            notifyTargetReady();
-            await clock.tickAsync(0);
-          }
           expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
           expect(sdk.loadUIComponent.calledOnceWithExactly('commerce-select')).to.equal(aup);
           const commerce = aup || legacy;
@@ -1886,7 +1875,6 @@ describe('Merch Block', () => {
           window.history.replaceState(null, '', previousUrl);
           window.milo.deferredPromise = previousDeferred;
           window.aupsdk = previousSdk;
-          resetTargetReady();
         }
       });
     });

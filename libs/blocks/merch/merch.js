@@ -1198,10 +1198,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (el?.isOpen3in1Modal && preload) {
     window.milo.deferredPromise.then(() => {
       setTimeout(() => {
-        // Target may turn aup-select on after the modal CTA is decorated.
-        whenTargetReady().then(() => {
-          if (isAupEnabled() || getEffectiveAupSelect()) getAupSelectPreload();
-        });
+        if (isAupEnabled()) getAupSelectPreload();
         // AUP Select still renders the commerce.adobe.com segmentation iframe,
         // so warm its assets on both paths.
         const baseUrl = getCommercePreloadUrl();
