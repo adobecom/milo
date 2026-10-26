@@ -160,7 +160,11 @@ describe('Modal (c2)', () => {
 
     it('waits for target before opening a deep-linked modal', async () => {
       resetTargetReady();
-      const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
+      const prevHash = window.location.hash;
+      window.location.hash = '#wait-open';
+      const existing = createTag('div', { id: 'wait-open', class: 'dialog-modal' });
+      document.body.append(existing);
+      const anchor = createTag('a', { 'data-modal-hash': '#wait-open', 'data-modal-path': '/path/x' });
       let settled = false;
       const pending = init(anchor).then(() => { settled = true; });
       await new Promise((resolve) => { setTimeout(resolve, 20); });
@@ -168,6 +172,15 @@ describe('Modal (c2)', () => {
       notifyTargetReady();
       await pending;
       expect(settled).to.be.true;
+      existing.remove();
+      window.location.hash = prevHash;
+    });
+
+    it('does not wait for target when the page hash does not match', async () => {
+      resetTargetReady();
+      const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
+      expect(await init(anchor)).to.be.null;
+      notifyTargetReady();
     });
   });
 });

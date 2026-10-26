@@ -424,11 +424,11 @@ export function delayedModal(el) {
 
 // Deep link-based
 export default async function init(el) {
-  // Personalization may change the modal content or aup-select, so wait before opening.
-  await whenTargetReady();
   const { modalHash, modalPath } = el.dataset;
-  if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   const normalizedHash = modalHash?.replace(/#_button-[a-zA-Z-]+/g, '');
+  // Personalization may change the modal content or aup-select, so wait before opening.
+  if (window.location.hash === normalizedHash) await whenTargetReady();
+  if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== normalizedHash || document.querySelector(`div.dialog-modal${normalizedHash}`)) return null;
   if (dialogLoadingSet.has(normalizedHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = await findDetails(window.location.hash, el);
