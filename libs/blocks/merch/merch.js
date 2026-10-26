@@ -1336,7 +1336,7 @@ function applyAupSelect(service) {
   };
   setValue();
   // Personalization may still change aup-select until target is ready.
-  whenTargetReady({ signal }).then(() => {
+  whenTargetReady().then(() => {
     if (signal.aborted) return;
     setValue();
     syncAupSdk(service);

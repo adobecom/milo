@@ -50,7 +50,7 @@ import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/bl
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig, getConfig, TARGET_READY_EVENT } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, getConfig, notifyTargetReady, resetTargetReady } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -289,16 +289,15 @@ describe('Merch Block', () => {
       if (content) document.head.append(createTag('meta', { name: 'aup-select', content }));
     };
     const targetReady = async () => {
-      window.miloTargetReady = true;
-      window.dispatchEvent(new CustomEvent(TARGET_READY_EVENT));
+      notifyTargetReady();
       await delay(0);
     };
 
-    beforeEach(() => { delete window.miloTargetReady; });
+    beforeEach(() => { resetTargetReady(); });
 
     afterEach(async () => {
       setMeta(null);
-      delete window.miloTargetReady;
+      resetTargetReady();
       await initService(true);
     });
 
@@ -331,7 +330,7 @@ describe('Merch Block', () => {
     });
 
     it('only updates once target is ready', async () => {
-      window.miloTargetReady = true;
+      notifyTargetReady();
       setMeta('on');
       const service = await initService(true);
       setMeta('off');
@@ -1818,7 +1817,8 @@ describe('Merch Block', () => {
         calls,
         modal,
       })}`, async () => {
-        window.miloTargetReady = !targetContent;
+        resetTargetReady();
+        if (!targetContent) notifyTargetReady();
         const previousUrl = window.location.href;
         const previousDeferred = window.milo.deferredPromise;
         const previousSdk = window.aupsdk;
@@ -1871,8 +1871,7 @@ describe('Merch Block', () => {
           if (targetContent) {
             expect(sdk.getOrchestratorContext.called).to.be.false;
             meta.content = targetContent;
-            window.miloTargetReady = true;
-            window.dispatchEvent(new CustomEvent(TARGET_READY_EVENT));
+            notifyTargetReady();
             await clock.tickAsync(0);
           }
           expect(sdk.getOrchestratorContext.calledOnce).to.equal(aup);
@@ -1887,7 +1886,7 @@ describe('Merch Block', () => {
           window.history.replaceState(null, '', previousUrl);
           window.milo.deferredPromise = previousDeferred;
           window.aupsdk = previousSdk;
-          delete window.miloTargetReady;
+          resetTargetReady();
         }
       });
     });

@@ -406,23 +406,19 @@ export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
 }
 
-export const TARGET_READY_EVENT = 'milo:target-ready';
+let targetReady;
+export function resetTargetReady() {
+  targetReady = {};
+  targetReady.promise = new Promise((resolve) => { targetReady.resolve = resolve; });
+}
+resetTargetReady();
 
-export function isTargetReady() {
-  return window.miloTargetReady === true;
+export function notifyTargetReady() {
+  targetReady.resolve();
 }
 
-function notifyTargetReady() {
-  if (isTargetReady()) return;
-  window.miloTargetReady = true;
-  window.dispatchEvent(new CustomEvent(TARGET_READY_EVENT));
-}
-
-export function whenTargetReady({ signal } = {}) {
-  if (isTargetReady()) return Promise.resolve();
-  return new Promise((resolve) => {
-    window.addEventListener(TARGET_READY_EVENT, () => resolve(), { once: true, signal });
-  });
+export function whenTargetReady() {
+  return targetReady.promise;
 }
 
 export function isAupEnabled(useUniversalNav = false) {

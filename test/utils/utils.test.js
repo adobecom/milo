@@ -148,25 +148,21 @@ describe('Utils', () => {
       });
     });
 
-    it('marks target ready once, when martech is disabled', async () => {
-      const onReady = sinon.spy();
-      window.addEventListener(utils.TARGET_READY_EVENT, onReady);
+    it('marks target ready when martech is disabled', async () => {
       const martechMeta = utils.createTag('meta', { name: 'martech', content: 'off' });
       document.head.append(martechMeta);
       try {
-        delete window.miloTargetReady;
-        expect(utils.isTargetReady()).to.be.false;
-        const ready = utils.whenTargetReady();
+        utils.resetTargetReady();
+        const onReady = sinon.spy();
+        const ready = utils.whenTargetReady().then(onReady);
+        await Promise.resolve();
+        expect(onReady.called).to.be.false;
         expect(await utils.loadMartech()).to.be.false;
-        expect(utils.isTargetReady()).to.be.true;
         await ready;
-        await utils.loadMartech();
         expect(onReady.calledOnce).to.be.true;
-        await utils.whenTargetReady();
       } finally {
-        window.removeEventListener(utils.TARGET_READY_EVENT, onReady);
         martechMeta.remove();
-        delete window.miloTargetReady;
+        utils.resetTargetReady();
       }
     });
 
@@ -176,14 +172,15 @@ describe('Utils', () => {
       // eslint-disable-next-line no-underscore-dangle
       window._satellite = {};
       try {
-        delete window.miloTargetReady;
+        utils.resetTargetReady();
+        const ready = utils.whenTargetReady();
         expect(await utils.loadMartech()).to.be.true;
-        expect(utils.isTargetReady()).to.be.true;
+        await ready;
       } finally {
         window.marketingtech = marketingtech;
         // eslint-disable-next-line no-underscore-dangle
         window._satellite = satellite;
-        delete window.miloTargetReady;
+        utils.resetTargetReady();
       }
     });
 
