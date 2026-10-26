@@ -177,7 +177,8 @@
     background: transparent;
     color: var(--s2a-color-transparent-white-64);
     font: inherit;
-    font-size: var(--s2a-typography-font-size-body-sm);
+    font-size: var(--s2a-typography-font-size-caption);
+    line-height: var(--s2a-typography-line-height-caption);
     font-weight: var(--s2a-font-weight-adobe-clean-bold);
     cursor: pointer;
   }
@@ -385,12 +386,12 @@
     & .market-selector-wrapper {
       flex-wrap: nowrap;
       gap: var(--s2a-spacing-md);
+      margin-bottom: 0;
+      padding: 0;
     }
 
     & .market-selector-button {
       gap: var(--s2a-spacing-2xs);
-      font-size: var(--s2a-typography-font-size-caption);
-      line-height: var(--s2a-typography-line-height-caption);
     }
 
     & .market-selector-popover {
@@ -429,8 +430,6 @@
 
   &.mobile .market-selector-button {
     gap: var(--s2a-spacing-2xs);
-    font-size: var(--s2a-typography-font-size-caption);
-    line-height: var(--s2a-typography-line-height-caption);
   }
 
   &.mobile .market-selector-popover {

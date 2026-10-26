@@ -326,6 +326,10 @@ describe('Market selector block', () => {
     footer.style.setProperty('--s2a-spacing-xs', '8px');
     footer.style.setProperty('--s2a-spacing-md', '16px');
     footer.style.setProperty('--s2a-spacing-lg', '24px');
+    footer.style.setProperty('--s2a-typography-font-size-caption', '12px');
+    footer.style.setProperty('--s2a-typography-line-height-caption', '16px');
+    footer.style.setProperty('--s2a-typography-font-size-body-md', '16px');
+    footer.style.setProperty('--s2a-typography-line-height-body-md', '20px');
     const options = document.createElement('div');
     options.className = 'feds-footer-options';
     const social = document.createElement('ul');
@@ -354,6 +358,11 @@ describe('Market selector block', () => {
         const [language, market] = block.querySelectorAll('.market-selector-button');
         expect(getComputedStyle(language.querySelector('.market-selector-globe')).display).to.equal('none');
         expect(getComputedStyle(language).gap).to.equal('4px');
+        expect(getComputedStyle(language).fontSize).to.equal('12px');
+        expect(getComputedStyle(language).lineHeight).to.equal('16px');
+        expect(getComputedStyle(market).fontSize).to.equal('12px');
+        expect(getComputedStyle(block.querySelector('.market-selector-popover .market-selector-link')).fontSize)
+          .to.equal('16px');
         const regionBounds = block.getBoundingClientRect();
         expect(language.getBoundingClientRect().left).to.be.at.least(regionBounds.left - 1);
         expect(language.getBoundingClientRect().right).to.be.at.most(regionBounds.right + 1);
@@ -366,7 +375,11 @@ describe('Market selector block', () => {
       await setViewport({ width: 412, height: 968 });
       footer.style.width = '364px';
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
-      expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
+      const wrapper = block.querySelector('.market-selector-wrapper');
+      expect(getComputedStyle(wrapper).flexWrap).to.equal('nowrap');
+      expect(getComputedStyle(wrapper).paddingTop).to.equal('0px');
+      expect(getComputedStyle(wrapper).paddingBottom).to.equal('0px');
+      expect(getComputedStyle(wrapper).marginBottom).to.equal('0px');
       expect(getComputedStyle(block.querySelector('.market-selector-globe')).display).to.equal('none');
       expect(block.querySelectorAll('.market-selector-button')[1].getBoundingClientRect().right)
         .to.be.at.most(block.getBoundingClientRect().right + 1);
@@ -375,10 +388,17 @@ describe('Market selector block', () => {
       await setViewport({ width: 600, height: 900 });
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
       expect(getComputedStyle(block.querySelector('.market-selector-popover')).position).to.equal('fixed');
+      expect(getComputedStyle(wrapper).paddingBottom).to.equal('0px');
+      expect(getComputedStyle(wrapper).marginBottom).to.equal('0px');
+      block.classList.remove('market-selector-c2');
+      expect(getComputedStyle(wrapper).paddingTop).to.equal('7px');
+      expect(getComputedStyle(wrapper).marginBottom).to.equal('4px');
+      block.classList.add('market-selector-c2');
       await setViewport({ width: 601, height: 900 });
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region" "social" "legal"');
       expect(getComputedStyle(block.querySelector('.market-selector-wrapper')).flexWrap).to.equal('nowrap');
       expect(getComputedStyle(block.querySelector('.market-selector-popover')).position).to.equal('absolute');
+      expect(getComputedStyle(block.querySelector('.market-selector-button')).fontSize).to.equal('12px');
       await setViewport({ width: 768, height: 1024 });
       footer.style.width = '720px';
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region social" "legal legal"');
@@ -386,6 +406,9 @@ describe('Market selector block', () => {
       expect(getComputedStyle(options).display).to.equal('flex');
       await setViewport({ width: 1440, height: 900 });
       expect(getComputedStyle(options).gridTemplateAreas).to.equal('"region legal social"');
+      expect(getComputedStyle(block.querySelector('.market-selector-button')).fontSize).to.equal('12px');
+      expect(getComputedStyle(block.querySelector('.market-selector-popover')).fontSize).to.equal('16px');
+      expect(getComputedStyle(block.querySelector('.market-selector-popover')).lineHeight).to.equal('20px');
       await setViewport(initialViewport);
       footer.classList.add('mobile');
       const plainOptions = document.createElement('div');
