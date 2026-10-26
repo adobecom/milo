@@ -195,16 +195,7 @@
   }
 
   & .market-selector-globe {
-    width: 20px;
-    height: 20px;
-    flex: none;
-    filter: brightness(0) invert(1);
-    opacity: 0.64;
-  }
-
-  & .market-selector-button:hover .market-selector-globe,
-  & .market-selector-button[aria-expanded='true'] .market-selector-globe {
-    opacity: 1;
+    display: none;
   }
 
   & .market-selector-button::after {
@@ -402,10 +393,6 @@
       line-height: var(--s2a-typography-line-height-caption);
     }
 
-    & .market-selector-globe {
-      display: none;
-    }
-
     & .market-selector-popover {
       position: fixed;
       inset: auto 0 0;
@@ -444,10 +431,6 @@
     gap: var(--s2a-spacing-2xs);
     font-size: var(--s2a-typography-font-size-caption);
     line-height: var(--s2a-typography-line-height-caption);
-  }
-
-  &.mobile .market-selector-button .market-selector-globe {
-    display: none;
   }
 
   &.mobile .market-selector-popover {
