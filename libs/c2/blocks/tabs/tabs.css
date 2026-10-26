@@ -226,6 +226,7 @@
         flex: 0 0 auto;
         color: var(--s2a-color-content-subtle);
         font-family: var(--heading-font-family);
+        letter-spacing: var(--s2a-font-letter-spacing-4xl);
 
         &[aria-selected="true"] {
           background: transparent;
