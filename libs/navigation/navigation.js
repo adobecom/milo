@@ -320,9 +320,9 @@ export default async function loadBlock(configs, customLib) {
           setMetaTags(metaTags, footerConfigs, createTag);
           if (isBundled) {
             if (isC2Footer) {
-              import('./footer-c2.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer-c2.css`));
+              await import('./footer-c2.css');
             } else {
-              import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
+              await import('./footer.css');
             }
           } else {
             loadStyle(`${miloLibs}/libs/navigation/${isC2Footer ? 'footer-c2.css' : 'footer.css'}`);
