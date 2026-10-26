@@ -66,12 +66,16 @@ function buildMerchCard(col, { pillCtas = false } = {}) {
     .forEach((p) => p.classList.add('body-md'));
   normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
-  const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md, a)')]
-    .filter((el) => {
-      console.log(el);
-      return el.textContent.trim() || el.matches('mas-field')
-        || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]');
-    });
+  let allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md, a)')]
+    .filter((el) => el.textContent.trim() || el.matches('mas-field')
+      || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
+  // Franklin leaves single-line cell content unwrapped (bare text + inline links, no <p>).
+  // When nothing block-level matched, wrap the loose content so it reads as one paragraph.
+  if (!allParas.length && col.textContent.trim()) {
+    const para = createTag('p');
+    para.append(...col.childNodes);
+    allParas = [para];
+  }
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
