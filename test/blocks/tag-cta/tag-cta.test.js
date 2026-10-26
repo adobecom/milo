@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from '../../../libs/blocks/tag-cta/tag-cta.js';
@@ -68,6 +68,29 @@ describe('Tag CTA', () => {
     expect(block.querySelector('ul').getAttribute('role')).to.equal('list');
     expect(links[0].getAttribute('href')).to.equal('/resources/marketing');
     expect(fetchStub.called).to.be.false;
+  });
+
+  [375, 768, 1440].forEach((width) => {
+    it(`aligns with the article column without adding an inset at ${width}px`, async () => {
+      const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      try {
+        await setViewport({ width, height: 900 });
+        const block = document.querySelector('.tag-cta');
+        const article = block.parentElement;
+        article.classList.add('blog-article-content');
+        article.style.cssText = 'width: 70%; margin-inline: auto';
+        await init(block);
+        const column = article.getBoundingClientRect();
+        const tags = block.getBoundingClientRect();
+        expect(tags.left).to.be.closeTo(column.left, 0.01);
+        expect(tags.right).to.be.closeTo(column.right, 0.01);
+        expect(block.querySelector('h2').getBoundingClientRect().left).to.equal(tags.left);
+        expect(getComputedStyle(document.querySelector('.tag-cta.multiple-rows')).maxWidth)
+          .to.equal('800px');
+      } finally {
+        await setViewport(originalViewport);
+      }
+    });
   });
 
   it('handles missing headings, links, and metadata', async () => {

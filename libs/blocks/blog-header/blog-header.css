@@ -245,40 +245,42 @@ a.blog-header-author-name:hover {
   pointer-events: none;
 }
 
-@media (max-width: 1199px) {
+@media (max-width: 599px) {
   .blog-divider-frame:has(+ .blog-article-layout)::after {
     content: none;
   }
 
   .blog-divider-frame + .blog-article-layout {
     --blog-divider-space: 56px;
-
-    row-gap: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
   }
 
-  .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
+  .blog-divider-frame + .blog-article-layout > .blog-article-content {
     position: relative;
+    margin-block-start: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
   }
 
-  .blog-divider-frame + .blog-article-layout > .blog-side-navigation::after {
+  .blog-divider-frame + .blog-article-layout > .blog-article-content::before {
     content: "";
     position: absolute;
     inset-inline: 0;
-    inset-block-start: calc(100% + var(--blog-divider-space));
+    inset-block-start: calc(-1 * (var(--blog-divider-space) + var(--blog-divider-rule-size)));
     block-size: var(--blog-divider-rule-size);
     border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
     pointer-events: none;
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 600px) {
   /* Reserved on the header so the article doesn't shift when the deferred sidenav layout loads. */
   .blog-divider-frame {
     margin-block-end: var(--blog-divider-gap);
   }
 
   .blog-divider-frame + .blog-article-layout {
+    --blog-divider-inline-space: 32px;
+
     position: relative;
+    column-gap: calc(2 * var(--blog-divider-inline-space));
   }
 
   .blog-divider-frame + .blog-article-layout > .blog-side-navigation {
@@ -290,11 +292,17 @@ a.blog-header-author-name:hover {
     position: absolute;
     grid-column: 1 / 2;
     inset-block: calc(-1 * var(--blog-divider-gap)) 0;
-    inset-inline-start: 100%;
+    inset-inline-start: calc(100% + var(--blog-divider-inline-space));
     inline-size: 2px;
     background-image: repeating-linear-gradient(to bottom, var(--blog-divider-dots));
     pointer-events: none;
     z-index: 1;
+  }
+}
+
+@media (min-width: 1200px) {
+  .blog-divider-frame + .blog-article-layout {
+    --blog-divider-inline-space: 56px;
   }
 }
 
