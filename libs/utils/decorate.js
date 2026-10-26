@@ -39,7 +39,6 @@ const C2_PLAY_PAUSE_ICONS = `
 </div>
 `;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-// Reduced motion keeps autoplay videos paused, so their control starts in the play state.
 const startsPlaying = (videoAttrs) => videoAttrs.includes('autoplay') && !prefersReducedMotion();
 let videoCounter = 0;
 
