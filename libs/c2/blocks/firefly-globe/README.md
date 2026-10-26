@@ -41,9 +41,36 @@ Positional rows.
 | 3 | `instructions \|\| rotateLeft \|\| rotateRight \|\| pauseSpin \|\| resumeSpin \|\| prevCard \|\| {index} of {count} \|\| nextCard \|\| close` — empty parts fall back to defaults. |
 | 4 | Optional pull quote: `<blockquote>` (or heading), then name and role paragraphs. No row → no pin. |
 
-API prompt locale: `getConfig().locale.ietf` exact match → language-only key → any same-language key →
-`en-US` → first available. The API has no alt text; the prompt (first 120 chars) is the card's `alt`,
-so it is the a11y card label and the modal's sr-only image label.
+### Prompt text and locale matching
+
+`apiAssetToCard` picks the card's `prompt` (also its `alt`, first 120 chars) in this order:
+
+1. `custom.input['firefly#prompts']` localized to `getConfig().locale.ietf` (see below).
+2. `custom.input['firefly#originalPrompt']` — untranslated.
+3. `title` — untranslated, used as-is (no prefix stripping; fix data issues upstream). Many assets have
+   only a `title`, so this keeps every card labelled.
+4. Empty → the a11y card falls back to `Image N` and the modal image is `aria-hidden`.
+
+Blank / whitespace-only values are skipped at every step.
+
+`getLocalizedPrompt` is rule-based, with no locale table to maintain: it reads `getConfig().locale.ietf`
+at runtime, so each consumer repo (milo, da-cc, …) uses its own locale config. Both the page locale and
+each API key go through `Intl.Locale#maximize`, which fills in the likely script and region, so tags
+compare by meaning rather than spelling. Each key is scored:
+
+- 2 — same language, script and region (`es-ES` for `es-ES`)
+- 1 — same language and script (`es-ES` for `es-MX`, `zh-Hant-TW` for `zh-HK`)
+- 0 — anything else. `zh-TW`/`zh-HK`/`zh-MO` maximize to `Hant` and `zh-CN`/`zh-SG` to `Hans`, so
+  Traditional and Simplified Chinese never cross-match.
+
+Best score wins; otherwise `en-US`, otherwise the first available key.
+
+- `LANGUAGE_ALIASES` maps Milo's `no` (Norwegian macrolanguage) to the API's `nb`. Add entries only for
+  similar macrolanguage mismatches.
+- `_` is normalized to `-` because Milo's language-based routing can produce `xx_YY` tags, which
+  `Intl.Locale` rejects. Invalid tags parse to `null` and never match.
+- Parsed tags are cached in `parsedLocales`: every asset shares the same ~30 keys, and re-parsing them per
+  asset cost ~8 ms for 50 assets.
 
 ## Image sourcing
 

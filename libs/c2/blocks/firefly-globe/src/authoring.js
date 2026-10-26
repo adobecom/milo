@@ -164,14 +164,33 @@ function buildRenditionUrl(href, size, dimension = 'width') {
     .replace(/{size}/g, size);
 }
 
+const LANGUAGE_ALIASES = { no: 'nb' };
+const parsedLocales = new Map();
+
+const text = (v) => (typeof v === 'string' ? v.trim() : '');
+
+function parseLocale(tag) {
+  if (parsedLocales.has(tag)) return parsedLocales.get(tag);
+  try {
+    const { language, script, region } = new Intl.Locale(tag.replace(/_/g, '-')).maximize();
+    parsedLocales.set(tag, { language: LANGUAGE_ALIASES[language] || language, script, region });
+  } catch {
+    parsedLocales.set(tag, null);
+  }
+  return parsedLocales.get(tag);
+}
+
 function getLocalizedPrompt(prompts, locale) {
-  if (!prompts) return '';
-  return prompts[locale]
-    || prompts[locale.split('-')[0]]
-    || prompts[Object.keys(prompts).find((k) => k.split('-')[0] === locale.split('-')[0])]
-    || prompts['en-US']
-    || Object.values(prompts)[0]
-    || '';
+  const want = parseLocale(locale);
+  const score = (key) => {
+    const have = parseLocale(key);
+    if (!want || !have || have.language !== want.language || have.script !== want.script) return 0;
+    return have.region === want.region ? 2 : 1;
+  };
+  const entries = Object.entries(prompts || {}).filter(([, v]) => text(v));
+  const match = (minScore) => entries.find(([key]) => score(key) >= minScore);
+  const [, value] = match(2) || match(1) || entries.find(([key]) => key === 'en-US') || entries[0] || [];
+  return text(value);
 }
 
 function parseModelTags(machineTags) {
@@ -186,8 +205,10 @@ function apiAssetToCard(asset, locale) {
   const rendition = asset?._links?.rendition;
   if (!rendition?.href || !asset.id) return null;
 
-  const prompts = asset.custom?.input?.['firefly#prompts'];
-  const prompt = getLocalizedPrompt(prompts, locale);
+  const input = asset.custom?.input;
+  const prompt = getLocalizedPrompt(input?.['firefly#prompts'], locale)
+    || text(input?.['firefly#originalPrompt'])
+    || text(asset.title);
   const fireflyUrl = asset.urn
     ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
     : null;
@@ -196,7 +217,7 @@ function apiAssetToCard(asset, locale) {
     renditionHref: componentRenditionHref(rendition.href, asset.id),
     maxWidth: rendition.max_width || null,
     maxHeight: rendition.max_height || null,
-    alt: prompt ? prompt.slice(0, ALT_MAX_CHARS) : '',
+    alt: prompt.slice(0, ALT_MAX_CHARS),
     modelId,
     modelVersionName,
     prompt,

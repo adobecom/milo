@@ -247,14 +247,9 @@ const ar = parseFloat(inputModel.aspectRatio);
 
 ### Prompt text (localized)
 
-```js
-const locale = getConfig().locale?.ietf || 'en-US';
-const prompts = asset.custom?.input?.['firefly#prompts'];
-const prompt = prompts?.[locale]
-  ?? prompts?.[locale.split('-')[0]]   // language-only fallback
-  ?? prompts?.['en-US']
-  ?? asset.title;
-```
+Localized `firefly#prompts` → `firefly#originalPrompt` → `title`, matched to `getConfig().locale.ietf`
+by language + script (so `zh-TW` → `zh-Hant-TW`, never `zh-Hans-CN`). See README.md, "Prompt text and
+locale matching", for the full rules.
 
 ### Creator name + avatar
 

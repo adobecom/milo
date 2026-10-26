@@ -421,6 +421,48 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect((await fetchFireflyAssets('cat'))[0].prompt).to.equal('English');
   });
 
+  const promptFor = async (prompts, loc) => {
+    fetchStub?.restore();
+    stubAssets([asset({ custom: { input: { 'firefly#prompts': prompts } } })]);
+    return (await fetchFireflyAssets('cat', loc))[0].prompt;
+  };
+
+  it('matches Chinese prompts by script, not just language', async () => {
+    const zh = { 'en-US': 'English', 'zh-Hans-CN': '简体', 'zh-Hant-TW': '繁體' };
+    expect(await promptFor(zh, 'zh-CN')).to.equal('简体');
+    expect(await promptFor(zh, 'zh-TW')).to.equal('繁體');
+    expect(await promptFor(zh, 'zh-HK')).to.equal('繁體');
+    expect(await promptFor(zh, 'zh_TW')).to.equal('繁體');
+    expect(await promptFor({ 'en-US': 'English', 'zh-Hant-TW': '繁體' }, 'zh-CN')).to.equal('English');
+  });
+
+  it('prefers a same-region key among same language and script', async () => {
+    const zh = { 'zh-Hant-TW': 'TW', 'zh-Hant-HK': 'HK' };
+    expect(await promptFor(zh, 'zh-HK')).to.equal('HK');
+    expect(await promptFor({ 'es-ES': 'España', 'en-US': 'English' }, 'es-MX')).to.equal('España');
+  });
+
+  it('maps Milo no-NO to the API nb-NO key', async () => {
+    expect(await promptFor({ 'en-US': 'English', 'nb-NO': 'Norsk' }, 'no-NO')).to.equal('Norsk');
+  });
+
+  it('skips blank localized prompts and ignores invalid page locales', async () => {
+    expect(await promptFor({ 'fr-FR': '  ', 'en-US': 'English' }, 'fr-FR')).to.equal('English');
+    expect(await promptFor({ 'fr-FR': 'Français', 'en-US': 'English' }, 'not a locale')).to.equal('English');
+  });
+
+  it('falls back to originalPrompt, then title, when localized prompts are missing', async () => {
+    stubAssets([
+      asset({ title: 'Title', custom: { input: { 'firefly#originalPrompt': 'Original' } } }),
+      asset({ title: 'Prompt: Title only', custom: { input: {} } }),
+      asset({ title: 'Title', custom: { input: { 'firefly#prompts': { 'en-US': ' ' }, 'firefly#originalPrompt': '' } } }),
+      asset({ title: undefined, custom: undefined }),
+    ]);
+    const cards = await fetchFireflyAssets('cat', 'es-MX');
+    expect(cards.map((c) => c.prompt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
+    expect(cards.map((c) => c.alt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
+  });
+
   it('uses the prompt as the alt fallback', async () => {
     stubAssets([asset()]);
     expect((await fetchFireflyAssets('cat', 'en-US'))[0].alt).to.equal('English');
