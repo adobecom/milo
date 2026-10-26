@@ -399,17 +399,11 @@ const toCountryCode = (value) => {
   return /^[a-z]{2}$/.test(code ?? '') ? code.toUpperCase() : null;
 };
 
-export async function getUserCountry() {
-  const cookieCountry = toCountryCode(getCookie('country'));
-  if (cookieCountry) return cookieCountry;
-
-  const ims = await getIMS();
-  if (ims?.isSignedInUser()) {
-    const imsCountry = toCountryCode((await getIMSProfile())?.country);
-    if (imsCountry) return imsCountry;
-  }
-
-  return toCountryCode(await (getFormData('geoCountry') ?? getGeoCountry()));
+// profileCountry is only set for signed-in users (getIMSProfile returns {} for guests)
+export async function getUserCountry(profileCountry) {
+  return toCountryCode(getCookie('country'))
+    ?? toCountryCode(profileCountry)
+    ?? toCountryCode(await (getFormData('geoCountry') ?? getGeoCountry()));
 }
 
 export async function getFormCountry({ consentId, fieldCountry, profileCountry }) {
@@ -417,7 +411,7 @@ export async function getFormCountry({ consentId, fieldCountry, profileCountry }
   if (countryField) return { countryCode: profileCountry ?? fieldCountry };
   if (!isMarketingConsent(consentId)) return {};
 
-  const countryCode = await getUserCountry();
+  const countryCode = await getUserCountry(profileCountry);
   return countryCode ? { countryCode } : {};
 }
 

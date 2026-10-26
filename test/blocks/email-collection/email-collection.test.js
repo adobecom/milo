@@ -1299,11 +1299,10 @@ describe('General Marketing (cs1D) consent', () => {
     });
 
     it('Should prefer the country cookie and normalize it', async () => {
-      setIms(true);
       setCountryCookie('uk');
       const { block } = createBlock([['consent-id', 'cs1D']]);
       setFormData(block);
-      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID }))
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, profileCountry: 'US' }))
         .to.deep.equal({ countryCode: 'GB' });
     });
 
@@ -1315,17 +1314,15 @@ describe('General Marketing (cs1D) consent', () => {
       expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID }))
         .to.deep.equal({ countryCode: 'FR' });
 
-      setIms(true);
-      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID }))
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, profileCountry: 'US' }))
         .to.deep.equal({ countryCode: 'US' });
     });
 
     it('Should use IMS profile country for signed-in users without cookie', async () => {
-      setIms(true);
       sessionStorage.setItem('akamai', 'fr');
       const { block } = createBlock([['consent-id', 'cs1D']]);
       setFormData(block);
-      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID }))
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, profileCountry: 'US' }))
         .to.deep.equal({ countryCode: 'US' });
     });
 
