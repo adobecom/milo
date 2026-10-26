@@ -170,7 +170,7 @@
   & .market-selector-button {
     display: inline-flex;
     align-items: center;
-    gap: var(--s2a-spacing-xs);
+    gap: 5px;
     max-width: 100%;
     padding: 0;
     border: 0;
@@ -202,15 +202,17 @@
   & .market-selector-button::after {
     content: '';
     width: 6px;
-    height: 6px;
+    height: 16px;
     flex: none;
-    border: solid currentcolor;
-    border-width: 0 1px 1px 0;
-    transform: translateY(-2px) rotate(45deg);
+    border: 0;
+    background: currentcolor;
+    clip-path: polygon(0 6px, 100% 6px, 50% 10px);
+    transform: none;
+    transform-origin: center;
   }
 
   & .market-selector-button[aria-expanded='true']::after {
-    transform: translateY(2px) rotate(225deg);
+    transform: rotate(180deg);
   }
 
   & .market-selector-popover {
@@ -390,10 +392,6 @@
       padding: 0;
     }
 
-    & .market-selector-button {
-      gap: var(--s2a-spacing-2xs);
-    }
-
     & .market-selector-popover {
       position: fixed;
       inset: auto 0 0;
@@ -426,10 +424,6 @@
   &.mobile .market-selector-wrapper {
     flex-wrap: nowrap;
     gap: var(--s2a-spacing-md);
-  }
-
-  &.mobile .market-selector-button {
-    gap: var(--s2a-spacing-2xs);
   }
 
   &.mobile .market-selector-popover {
