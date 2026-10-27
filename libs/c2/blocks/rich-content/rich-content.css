@@ -4,6 +4,16 @@
   position: relative;
   box-sizing: border-box;
 
+  mas-field > [data-role="mas-field-content"] p {
+    display: inline;
+    font: inherit;
+    letter-spacing: inherit;
+
+    & + p::before {
+      content: ' ';
+    }
+  }
+
   &.center {
     text-align: center;
   }
@@ -252,24 +262,23 @@
     }
   }
 
-  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
-    .foreground {
-      animation-range: cover -10% cover 90%;
-
-      p.body-lg a {
-        scroll-margin-bottom: calc(100vh - 200px);
-      }
-    }
-  }
-
   &:has(.rich-content.merch-moment) {
     display: grid;
     grid-template-rows: auto auto;
     box-sizing: border-box;
     height: auto;
 
-    .rich-content.merch-moment {
+    & > :not(.section-background):not(.section-metadata) {
       grid-row: 1;
+      height: auto;
+    }
+
+    .foreground :is(a, button) {
+      scroll-margin-top: calc(var(--rc-nav-height, 0px) + var(--s2a-spacing-lg));
+    }
+
+    .foreground p.body-lg a {
+      scroll-margin-bottom: calc(100vh - 200px);
     }
 
     p:has(span[is="inline-price"]) {
@@ -277,11 +286,18 @@
     }
 
     &.has-background .section-background {
+      --merch-bg-img-h: calc(100vw * 434 / 375);
+      --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.08);
+
+      @media (width >= 1280px) {
+        --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
+      }
 
       &,
       & > * {
         position: relative;
         inset: unset;
+        width: 100%;
       }
 
       img {
@@ -290,7 +306,6 @@
         aspect-ratio: 375 / 434;
         object-fit: cover;
         object-position: center top;
-        animation: unset;
       }
     }
   }
@@ -336,10 +351,14 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background {
+    --merch-bg-img-h: calc(min(100vw, 1612px) * 1361 / 1612);
+  }
+
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     margin-inline: auto;
-    aspect-ratio: unset;
+    aspect-ratio: 1612 / 1361;
     display: block;
   }
 
@@ -554,13 +573,8 @@
     margin-top: 0;
   }
 
-  picture {
-    border: 9px solid var(--s2a-color-transparent-white-04);
-
-    img {
-      border-radius: var(--s2a-border-radius-24);
-      margin: 0 auto;
-    }
+  picture img {
+    margin: 0 auto;
   }
 
   .media-cell {
@@ -575,17 +589,12 @@
     .video-container,
     picture {
       display: block;
-      border-radius: var(--s2a-border-radius-24);
       overflow: hidden;
       transform-origin: center bottom;
     }
 
     .video-container {
-      border: 9px solid var(--s2a-color-transparent-white-04);
-      background: var(--s2a-color-transparent-white-04);
-      backdrop-filter: blur(var(--s2a-blur-md));
       position: relative;
-      box-sizing: border-box;
       margin-inline: auto;
       aspect-ratio: 9 / 16;
       width: 100%;
@@ -638,8 +647,8 @@
     background-color: unset;
   }
 
-  /* Glass frame matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
-  &.glass-border .media-cell :is(picture, .video-container) {
+  /* Glass frame is the media default; matches split-aside-grid media (stroke, fill, blur, gap, shadow, radii). */
+  .media-cell :is(picture, .video-container) {
     box-sizing: border-box;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--s2a-spacing-xs);
@@ -648,10 +657,6 @@
     box-shadow: 0 86.137px 68.909px 0 rgb(0 0 0 / 7%), 0 35.986px 28.789px 0 rgb(0 0 0 / 5%), 0 19.24px 15.392px 0 rgb(0 0 0 / 4%), 0 10.786px 8.629px 0 rgb(0 0 0 / 4%), 0 5.728px 4.583px 0 rgb(0 0 0 / 3%), 0 2.384px 1.907px 0 rgb(0 0 0 / 2%);
     border-radius: var(--s2a-border-radius-xs);
     overflow: hidden;
-
-    @media (width >= 768px) {
-      box-sizing: unset;
-    }
 
     @media (width >= 1280px) {
       border-radius: var(--s2a-border-radius-md);
@@ -847,29 +852,44 @@
         picture img {
           max-width: 214px;
         }
+
+        /* Matches split-aside-grid mobile stack radii. */
+        :is(picture, .video-container) {
+          border-radius: var(--s2a-border-radius-24);
+
+          :is(img, video) {
+            border-radius: var(--s2a-border-radius-md);
+          }
+        }
       }
     }
 
     &.full-width {
       --grid-margin-width: 0px;
 
-      img {
-        max-width: 100%;
-        box-sizing: border-box;
-        aspect-ratio: 1/1;
-        border-radius: var(--s2a-border-radius-4);
-        border: none;
-      }
+      gap: var(--s2a-section-spacing-lg);
 
       .media-cell {
         :is(picture, div.video-container) {
-          border: none;
-          border-radius: var(--s2a-border-radius-4);
-          padding: unset;
+          width: 100%;
+          max-width: none;
+          margin: 0;
+          aspect-ratio: auto;
+          border-inline-end: none;
+          padding-block: var(--s2a-spacing-2xs);
+          padding-inline: var(--s2a-spacing-2xs) 0;
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
         }
 
-        .video-container {
-          aspect-ratio: 1/1;
+        :is(picture, div.video-container) :is(img, video) {
+          display: block;
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          border: none;
+          border-start-end-radius: 0;
+          border-end-end-radius: 0;
         }
       }
     }

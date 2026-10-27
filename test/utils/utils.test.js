@@ -119,25 +119,122 @@ describe('Utils', () => {
       }
     });
 
-    ['on', 'off', '', 'ON', 'true'].forEach((value) => {
-      it(`requires exact on for metadata "${value}"`, () => {
+    const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
+    const flagged = ['on', 'ON'];
+
+    ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
+      const enabled = !disabled.includes(value);
+      const flag = flagged.includes(value);
+
+      it(`reads metadata "${value}"`, () => {
         meta.content = value;
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
       });
 
-      it(`reads query "${value}" with and without metadata`, () => {
+      it(`reads query "${value}" over metadata`, () => {
         const url = new URL(window.location.href);
         url.searchParams.set('aup-select', value);
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
-        meta.content = value === 'on' ? 'off' : 'on';
+        meta.content = value === 'enabled' ? 'on' : 'enabled';
         document.head.append(meta);
-        expect(utils.isAupEnabled()).to.equal(value === 'on');
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
         url.searchParams.delete('aup-select');
         window.history.replaceState(null, '', url);
-        expect(utils.isAupEnabled()).to.equal(meta.content === 'on');
+        expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.isAupSelectOn()).to.equal(meta.content === 'on');
       });
+    });
+
+    it('marks target ready after the Target campaign is applied', async () => {
+      const { marketingtech, _satellite: satellite } = window;
+      const savedHead = document.head.innerHTML;
+      const savedBody = document.body.innerHTML;
+      const { mep } = utils.getConfig();
+      // Launch is already loaded, so only the Target response is pending (personalization V1).
+      window.marketingtech = { adobe: { launch: {} } };
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = { track: sinon.stub() };
+      const targetResponse = {
+        propositions: [{
+          id: 'aup',
+          items: [{
+            data: {
+              content: {
+                manifestPath: '/target/aup-select.json',
+                manifestContent: {
+                  info: { data: [] },
+                  experiences: { data: [{ action: 'updatemetadata', selector: 'aup-select', all: 'on' }] },
+                },
+              },
+            },
+          }],
+        }],
+      };
+      try {
+        document.head.innerHTML = '<meta name="target" content="on">';
+        document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+        utils.resetTargetReady();
+        const ready = utils.whenTargetReady().then(() => utils.getMetadata('aup-select'));
+        // Fire the Target response only after martech has attached its listener.
+        let fireTimer;
+        const addListener = window.addEventListener.bind(window);
+        const addStub = sinon.stub(window, 'addEventListener').callsFake((type, ...args) => {
+          addListener(type, ...args);
+          if (type !== 'alloy_sendEvent') return;
+          clearTimeout(fireTimer);
+          fireTimer = setTimeout(() => {
+            addStub.restore();
+            window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: targetResponse } }));
+          }, 0);
+        });
+        const area = utils.loadArea();
+        expect(await ready).to.equal('on');
+        await area;
+      } finally {
+        window.addEventListener.restore?.();
+        utils.resetTargetReady();
+        utils.getConfig().mep = mep;
+        document.body.innerHTML = savedBody;
+        window.marketingtech = marketingtech;
+        // eslint-disable-next-line no-underscore-dangle
+        window._satellite = satellite;
+        document.head.innerHTML = savedHead;
+      }
+    });
+
+    it('whenTargetReady stops waiting after the target timeout', async () => {
+      const savedUrl = window.location.href;
+      window.history.replaceState(null, '', `${window.location.pathname}?target-timeout=2000`);
+      const clock = sinon.useFakeTimers();
+      try {
+        utils.resetTargetReady();
+        const onReady = sinon.spy();
+        const ready = utils.whenTargetReady().then(onReady);
+        await clock.tickAsync(1999);
+        expect(onReady.called).to.be.false;
+        await clock.tickAsync(1);
+        await ready;
+        expect(onReady.calledOnce).to.be.true;
+      } finally {
+        clock.restore();
+        window.history.replaceState(null, '', savedUrl);
+        utils.resetTargetReady();
+      }
+    });
+
+    it('does not report a value for signed-in Universal Nav users without aup-select', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled(true)).to.be.true;
+        expect(utils.getAupSelectValue()).to.be.null;
+        expect(utils.isAupSelectOn()).to.be.false;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
     });
   });
 
@@ -189,6 +286,34 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
       expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
+    });
+
+    it('preloads router-marquee imports alongside the block without evaluating it', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      utils.preloadLcpCodeFiles();
+
+      [
+        '/libs/c2/blocks/router-marquee/router-marquee.js',
+        '/libs/martech/attributes.js',
+        '/libs/utils/action.js',
+      ].forEach((href) => {
+        const links = document.head.querySelectorAll(`link[href="${window.location.origin}${href}"]`);
+        expect(links.length).to.equal(1);
+        expect(links[0].rel).to.equal('preload');
+        expect(links[0].as).to.equal('script');
+        expect(links[0].crossOrigin).to.equal('anonymous');
+      });
+      expect(document.querySelector('.router-marquee').dataset.blockStatus).to.be.undefined;
+    });
+
+    it('does not preload router-marquee imports without a visible first-section router-marquee', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee hide-block"></div></div><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href$="/libs/martech/attributes.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href$="/libs/utils/action.js"]')).to.not.exist;
     });
 
     it('preloads non-commerce autoblocks but excludes merch/mas', () => {
@@ -350,6 +475,14 @@ describe('Utils', () => {
         expect(merch.initService.promise).to.be.undefined;
       });
 
+      it('checks for the OST tool per rushed section', async () => {
+        document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div><div><div class="ost"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
       it('does not start it when the kill switch is on', async () => {
         document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
         document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
@@ -390,6 +523,133 @@ describe('Utils', () => {
       document.body.innerHTML = '<header></header>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('also warms blocks in the rushed sections when parallel-sections is set', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="tabs"></div></div><div><div class="aside"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.not.exist;
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/aside/aside.js"]')).to.not.exist;
+    });
+
+    it('caps parallel-sections and ignores invalid values', () => {
+      const names = ['marquee', 'aside', 'tabs', 'accordion', 'quote', 'table'];
+      document.body.innerHTML = `<main>${names.map((name) => `<div><div class="${name}"></div></div>`).join('')}</main>`;
+      const preloaded = (name) => !!document.head.querySelector(`link[href*="/libs/blocks/${name}/${name}.js"]`);
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="99">';
+      utils.preloadLcpCodeFiles();
+      expect(preloaded('quote')).to.be.true;
+      expect(preloaded('table')).to.be.false;
+
+      ['-1', '2abc'].forEach((value) => {
+        document.head.innerHTML = `<meta name="parallel-sections" content="${value}">`;
+        utils.preloadLcpCodeFiles();
+        expect(preloaded('marquee'), value).to.be.true;
+        expect(preloaded('aside'), value).to.be.false;
+      });
+    });
+  });
+
+  describe('parallel-sections in loadArea', () => {
+    let releases;
+    const holdBlock = (id) => {
+      window.parallelSectionsTest.gates[id] = new Promise((resolve) => { releases[id] = resolve; });
+    };
+    const isHidden = (selector) => !!document.querySelector(selector).closest('.section').dataset.status;
+    const psBlock = (id) => `<div><div class="ps-block" data-id="${id}"></div></div>`;
+    const setup = (count, sections, prefix = '') => {
+      document.head.innerHTML = `${head}<meta name="parallel-sections" content="${count}">`;
+      document.body.innerHTML = `${prefix}<main>${sections.join('')}</main>`;
+    };
+    const started = () => window.parallelSectionsTest.started;
+    const settle = () => new Promise((r) => { setTimeout(r, 50); });
+
+    beforeEach(() => {
+      releases = {};
+      window.parallelSectionsTest = { started: [], gates: {} };
+      utils.setConfig({ ...config, externalLibs: [{ base: '/test/utils/mocks/parallel-sections', blocks: ['ps-block'] }] });
+    });
+
+    afterEach(() => {
+      delete window.parallelSectionsTest;
+      utils.setConfig(config);
+    });
+
+    it('loads rushed sections in parallel and reveals them in order', async () => {
+      setup(2, [psBlock('a'), psBlock('b')]);
+      holdBlock('a');
+      holdBlock('b');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      releases.b();
+      await waitFor(() => document.querySelector('[data-id="b"]').dataset.blockStatus === 'loaded', 2000, 20);
+      await new Promise((r) => { setTimeout(r); });
+      expect(isHidden('[data-id="b"]')).to.be.true;
+      releases.a();
+      await loaded;
+      expect(isHidden('[data-id="a"]')).to.be.false;
+      expect(isHidden('[data-id="b"]')).to.be.false;
+    });
+
+    ['0', '-1', '2abc'].forEach((value) => {
+      it(`loads sections one at a time for parallel-sections "${value}"`, async () => {
+        setup(value, [psBlock('a'), psBlock('b')]);
+        holdBlock('a');
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 1, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a']);
+        releases.a();
+        await loaded;
+        expect(started()).to.deep.equal(['a', 'b']);
+      });
+    });
+
+    it('keeps loading later sections when a rushed section fails', async () => {
+      setup(3, [psBlock('a'), '<div><div class="ps-fail"></div></div>', psBlock('c')]);
+      utils.getConfig().mep = {
+        blocks: new Proxy({}, {
+          get: (target, name) => {
+            if (name === 'ps-fail') throw new Error('boom');
+            return undefined;
+          },
+        }),
+      };
+      const ogLana = window.lana;
+      const lanaLog = sinon.stub();
+      window.lana = { log: lanaLog };
+      const unhandled = sinon.spy();
+      window.addEventListener('unhandledrejection', unhandled);
+      try {
+        await utils.loadArea();
+        await settle();
+        expect(isHidden('[data-id="c"]')).to.be.false;
+        expect(isHidden('.ps-fail')).to.be.true;
+        expect(lanaLog.calledWithMatch(/Failed to load parallel section 1/)).to.be.true;
+        expect(unhandled.called).to.be.false;
+      } finally {
+        window.lana = ogLana;
+        window.removeEventListener('unhandledrejection', unhandled);
+      }
+    });
+
+    it('runs loadPostLCP once, after the last rushed section', async () => {
+      setup(2, [psBlock('a'), psBlock('b')], '<header></header>');
+      holdBlock('b');
+      performance.clearMarks('Gnav-Start');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      await settle();
+      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(0);
+      releases.b();
+      await loaded;
+      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(1);
     });
   });
 
@@ -1190,6 +1450,21 @@ describe('Utils', () => {
       expect(document.getElementById('not-block')).to.exist;
     });
 
+    it('supports an additional sticky surface offset without changing the default', async () => {
+      const originalScrollTo = window.scrollTo;
+      const scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      try {
+        await utils.scrollToHashedElement('#not-block');
+        await utils.scrollToHashedElement('#not-block', document, 'instant', 100);
+        expect(scrollSpy.secondCall.args[0].top).to.equal(scrollSpy.firstCall.args[0].top - 100);
+        expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
+        expect(scrollSpy.secondCall.args[0].behavior).to.equal('instant');
+      } finally {
+        window.scrollTo = originalScrollTo;
+      }
+    });
+
     it('should not scroll if no hash is present', () => {
       window.location.hash = '';
       let scrollToCalled = false;
@@ -1209,6 +1484,45 @@ describe('Utils', () => {
       utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
       expect(scrollToCalled).to.be.true;
       expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
+  });
+
+  describe('loadArea hash scrolling', () => {
+    let originalUrl;
+    let originalScrollTo;
+    let area;
+    let articleHeading;
+    let scrollSpy;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      originalScrollTo = window.scrollTo;
+      scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      area = createTag('div');
+      area.innerHTML = '<div><h2 id="fragment-section">Fragment section</h2></div>';
+      articleHeading = createTag('h2', { id: 'article-section' }, 'Article section');
+      document.body.append(articleHeading, area);
+    });
+
+    afterEach(() => {
+      area.remove();
+      articleHeading.remove();
+      window.scrollTo = originalScrollTo;
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('does not revisit an article hash when an unrelated fragment finishes loading', async () => {
+      window.history.replaceState(null, '', '#article-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.called).to.be.false;
+    });
+
+    it('preserves deep links to headings inside the fragment being loaded', async () => {
+      window.history.replaceState(null, '', '#fragment-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
     });
   });
 
@@ -1281,6 +1595,7 @@ describe('Utils', () => {
       await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+      expect(a.closest('[data-footer-promo]')).to.exist;
     });
 
     it('loads from taxonomy in order on sheet', async () => {

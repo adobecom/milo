@@ -1,0 +1,620 @@
+import { readFile, setViewport } from '@web/test-runner-commands';
+import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
+
+import init from '../../../libs/c2/blocks/hub-hero/hub-hero.js';
+
+const loadBlock = async (path) => {
+  document.body.innerHTML = await readFile({ path });
+  const block = document.querySelector('.hub-hero');
+  await init(block);
+  return block;
+};
+
+describe('hub-hero footer and assembly', () => {
+  describe('carousel desktop geometry', () => {
+    let styles;
+    let originalViewport;
+    let originalDirection;
+
+    const settleLayout = async () => {
+      for (let frame = 0; frame < 3; frame += 1) {
+        await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      }
+    };
+
+    const runningTransitions = (scope) => scope.getAnimations({ subtree: true })
+      .filter((animation) => animation instanceof window.CSSTransition);
+
+    // Jumps every running transition to its end state instead of waiting in real time.
+    const finishTransitions = (scope) => runningTransitions(scope)
+      .forEach((animation) => animation.finish());
+
+    // Pauses running transitions and seeks them to `ms` on a shared timeline.
+    const seekTransitions = (scope, ms) => {
+      runningTransitions(scope).forEach((animation) => {
+        animation.pause();
+        const { endTime } = animation.effect.getComputedTiming();
+        animation.currentTime = Math.min(ms, endTime);
+      });
+    };
+
+    // Steps running transitions through their full timeline deterministically.
+    const stepTransitions = (scope, steps, sample) => {
+      const transitions = runningTransitions(scope);
+      const total = Math.max(...transitions.map((animation) => animation.effect
+        .getComputedTiming().endTime), 0);
+      transitions.forEach((animation) => animation.pause());
+      for (let step = 1; step <= steps; step += 1) {
+        const elapsed = (total * step) / steps;
+        transitions.forEach((animation) => {
+          animation.currentTime = Math.min(elapsed, animation.effect.getComputedTiming().endTime);
+        });
+        sample(elapsed);
+      }
+      transitions.forEach((animation) => animation.finish());
+    };
+
+    before(async () => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      originalDirection = document.documentElement.getAttribute('dir');
+      styles = document.createElement('style');
+      styles.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' })
+        + await readFile({ path: '../../../libs/c2/blocks/hub-hero/hub-hero.css' });
+      document.head.append(styles);
+    });
+
+    afterEach(async () => {
+      sinon.restore();
+      document.body.replaceChildren();
+      window.scrollTo(0, 0);
+      if (originalDirection === null) document.documentElement.removeAttribute('dir');
+      else document.documentElement.setAttribute('dir', originalDirection);
+      await settleLayout();
+    });
+
+    after(async () => {
+      styles.remove();
+      await setViewport(originalViewport);
+    });
+
+    const loadCarousel = async (slideCount = 3, footerTag = 'p') => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.hub-hero');
+      if (slideCount === 3) {
+        block.classList.add('slides-3');
+        block.insertBefore(block.children[2].cloneNode(true), block.children[3]);
+        block.lastElementChild.remove();
+      }
+      const image = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><rect width="300" height="300" fill="gray"/></svg>';
+      const svg = `data:image/svg+xml,${encodeURIComponent(image)}`;
+      block.querySelectorAll('img').forEach((img) => { img.src = svg; });
+      if (footerTag === 'p') {
+        block.querySelectorAll('h3').forEach((heading) => {
+          const paragraph = document.createElement('p');
+          paragraph.textContent = heading.textContent;
+          heading.replaceWith(paragraph);
+        });
+      }
+      await init(block);
+      await settleLayout();
+      return block;
+    };
+
+    const enableTouchScroll = () => {
+      const nativeMatchMedia = window.matchMedia.bind(window);
+      const touchQuery = '(hover: none) and (min-width: 768px) and (max-width: 1230px)';
+      return sinon.stub(window, 'matchMedia').callsFake((query) => (
+        nativeMatchMedia(query === touchQuery ? '(min-width: 0px)' : query)
+      ));
+    };
+
+    describe('reduced-motion layout', () => {
+      let originalStyles;
+
+      before(() => {
+        originalStyles = styles.textContent;
+        // Activate the reduced-motion CSS branch in the unit-test browser.
+        styles.textContent = originalStyles
+          .replaceAll('(prefers-reduced-motion: reduce)', '(min-width: 0px)')
+          .replaceAll('(prefers-reduced-motion: no-preference)', '(max-width: 0px)');
+      });
+
+      beforeEach(() => {
+        const nativeMatchMedia = window.matchMedia.bind(window);
+        sinon.stub(window, 'matchMedia').callsFake((query) => nativeMatchMedia(
+          query === '(prefers-reduced-motion: reduce)' ? '(min-width: 0px)' : query,
+        ));
+      });
+
+      after(() => {
+        styles.textContent = originalStyles;
+      });
+
+      [1470, 1200, 1024, 800].forEach((width) => {
+        [3, 4].forEach((slideCount) => {
+          it(`keeps ${slideCount}-slide cards inside clipping ancestors at ${width}x800`, async () => {
+            await setViewport({ width, height: 800 });
+            const block = await loadCarousel(slideCount, 'h3');
+            const section = document.createElement('section');
+            section.style.overflow = 'clip';
+            block.before(section);
+            section.append(block);
+            const following = document.createElement('div');
+            following.style.height = '800px';
+            section.after(following);
+            await settleLayout();
+
+            const carousel = block.querySelector('.hub-hero-carousel');
+            expect(getComputedStyle(carousel).animationName).to.equal('none');
+            expect(getComputedStyle(carousel).position).to.equal('relative');
+            for (const scrollY of [0, Math.max(block.offsetHeight - 600, 0)]) {
+              window.scrollTo(0, scrollY);
+              await settleLayout();
+              const blockBottom = block.getBoundingClientRect().bottom;
+              const sectionBottom = section.getBoundingClientRect().bottom;
+              const followingTop = following.getBoundingClientRect().top;
+              block.querySelectorAll('.hub-hero-carousel-item[data-index]').forEach((card) => {
+                const cardBottom = card.getBoundingClientRect().bottom;
+                expect(cardBottom, 'card inside hub').to.be.at.most(blockBottom + 1);
+                expect(cardBottom, 'card inside section').to.be.at.most(sectionBottom + 1);
+                expect(cardBottom, 'card before following content').to.be.at.most(followingTop + 1);
+                const footer = card.querySelector('.hub-hero-carousel-item-footer');
+                expect(footer.getBoundingClientRect().bottom, 'footer inside card')
+                  .to.be.at.most(cardBottom + 1);
+              });
+            }
+          });
+        });
+      });
+    });
+
+    [
+      { width: 1280, height: 800, expectedGridWidth: 256, finalWidth: 240 },
+      { width: 1440, height: 760, expectedGridWidth: 288, finalWidth: 222 },
+      { width: 1470, height: 800, expectedGridWidth: 294, finalWidth: 240 },
+      { width: 1470, height: 1100, expectedGridWidth: 294, finalWidth: 375 },
+      { width: 1536, height: 730, expectedGridWidth: 302, finalWidth: 208.5 },
+      { width: 1920, height: 1200, expectedGridWidth: 302, finalWidth: 392 },
+    ].forEach(({ width: viewportWidth, height, expectedGridWidth, finalWidth }) => {
+      ['ltr', 'rtl'].forEach((direction) => {
+        it(`matches the grid then assembles smoothly at ${viewportWidth}x${height} in ${direction}`, async () => {
+          await setViewport({ width: viewportWidth, height });
+          document.documentElement.setAttribute('dir', direction);
+          const block = await loadCarousel();
+          const row = block.querySelector('.hub-hero-carousel-container');
+          expect(getComputedStyle(row).animationName).to.equal('carousel-slides-three-assemble');
+          const cards = [...row.querySelectorAll('[data-index]')];
+          const gridWidth = block.querySelector('.hub-hero-image-grid-container-col > div')
+            .getBoundingClientRect().width;
+          expect(gridWidth).to.be.closeTo(expectedGridWidth, 0.1);
+          cards.forEach((card) => {
+            expect(card.getBoundingClientRect().width).to.be.closeTo(gridWidth, 0.1);
+          });
+          const startGap = parseFloat(getComputedStyle(row).gap);
+          const initialWidth = 3 * gridWidth + 2 * startGap;
+          expect(row.getBoundingClientRect().width).to.be.closeTo(initialWidth, 0.1);
+          let previousWidths = cards.map((card) => card.getBoundingClientRect().width);
+          for (const scrollY of [400, 800, 1200, 1800]) {
+            window.scrollTo(0, scrollY);
+            await settleLayout();
+            const widths = cards.map((card) => card.getBoundingClientRect().width);
+            for (let index = 0; index < widths.length; index += 1) {
+              const width = widths[index];
+              expect(width).to.be.at.least(Math.min(gridWidth, finalWidth) - 0.1);
+              expect(width).to.be.at.most(Math.max(gridWidth, finalWidth) + 0.1);
+              if (finalWidth < gridWidth) {
+                expect(width).to.be.at.most(previousWidths[index] + 0.1);
+              } else {
+                expect(width).to.be.at.least(previousWidths[index] - 0.1);
+              }
+            }
+            previousWidths = widths;
+          }
+          cards.forEach((card) => {
+            expect(card.getBoundingClientRect().width).to.be.closeTo(finalWidth, 0.1);
+          });
+          const endGap = parseFloat(getComputedStyle(row).gap);
+          const rowWidth = row.getBoundingClientRect().width;
+          expect(rowWidth).to.be.closeTo(3 * finalWidth + 2 * endGap, 0.1);
+          cards[0].classList.add('hovered');
+          finishTransitions(block);
+          expect(row.getBoundingClientRect().width).to.be.closeTo(rowWidth, 0.1);
+        });
+      });
+    });
+
+    it('does not change four-slide row animation', async () => {
+      await setViewport({ width: 1470, height: 800 });
+      const block = await loadBlock('./mocks/default.html');
+      expect(getComputedStyle(block.querySelector('.hub-hero-carousel-container')).animationName)
+        .to.equal('carouselGapShrinkWidthGrowth');
+    });
+
+    it('does not apply the desktop row-sizing animation on mobile', async () => {
+      await setViewport({ width: 375, height: 800 });
+      const block = await loadCarousel();
+      expect(getComputedStyle(block.querySelector('.hub-hero-carousel-container')).animationName)
+        .to.not.include('carousel-slides-three-assemble');
+    });
+
+    [3, 4].forEach((slideCount) => {
+      it(`settles ${slideCount}-slide touch tablet page height without interaction`, async () => {
+        await setViewport({ width: 1024, height: 800 });
+        const matchMedia = enableTouchScroll();
+        try {
+          const block = await loadCarousel(slideCount, 'h3');
+          expect(block.classList.contains('touch-scroll')).to.be.true;
+          expect(block.querySelector('.hub-hero-carousel-scroll')).to.exist;
+          expect(parseFloat(block.style.getPropertyValue('--hub-hero-content-height')))
+            .to.be.above(0);
+          const following = document.createElement('div');
+          following.style.height = '200px';
+          document.body.append(following);
+          await document.fonts.ready;
+          await settleLayout();
+          const samples = [];
+          const start = performance.now();
+          await new Promise((resolve) => {
+            const sample = () => {
+              samples.push({
+                page: document.documentElement.scrollHeight,
+                hero: block.offsetHeight,
+                following: following.getBoundingClientRect().top + window.scrollY,
+              });
+              if (performance.now() - start < 500) requestAnimationFrame(sample);
+              else resolve();
+            };
+            requestAnimationFrame(sample);
+          });
+          for (const key of ['page', 'hero', 'following']) {
+            const heights = samples.map((sample) => sample[key]);
+            expect(Math.max(...heights) - Math.min(...heights), key).to.be.at.most(1);
+          }
+          expect(window.scrollY).to.equal(0);
+        } finally {
+          matchMedia.restore();
+        }
+      }).timeout(5000);
+    });
+
+    ['ltr', 'rtl'].forEach((direction) => {
+      it(`preserves native ${direction} tablet scrolling after the carousel locks`, async () => {
+        await setViewport({ width: 1024, height: 800 });
+        document.documentElement.setAttribute('dir', direction);
+        const matchMedia = enableTouchScroll();
+        try {
+          const block = await loadCarousel(4, 'h3');
+          window.scrollTo(0, Math.ceil((block.offsetHeight - window.innerHeight) * 0.8));
+          await settleLayout();
+          expect(block.classList.contains('touch-scroll')).to.be.true;
+          expect(block.classList.contains('carousel-locked')).to.be.true;
+          const scroller = block.querySelector('.hub-hero-carousel-scroll');
+          const distance = scroller.scrollWidth - scroller.clientWidth;
+          expect(distance).to.be.above(0);
+          scroller.scrollLeft = direction === 'rtl' ? -distance : distance;
+          await settleLayout();
+          expect(Math.abs(scroller.scrollLeft)).to.be.closeTo(distance, 1);
+          scroller.scrollLeft = 0;
+          await settleLayout();
+          expect(scroller.scrollLeft).to.equal(0);
+        } finally {
+          matchMedia.restore();
+        }
+      });
+    });
+
+    ['p', 'h3'].forEach((footerTag) => {
+      [3, 4].forEach((slideCount) => {
+        // Both tags, slide counts and directions stay covered without the full cross product.
+        (({ 'p-3': ['ltr'], 'h3-4': ['rtl'] })[`${footerTag}-${slideCount}`] || []).forEach((direction) => {
+          it(`expands proportional XL ${slideCount}-slide ${direction} ${footerTag} cards in short viewports without narrowing footer text`, async () => {
+            document.documentElement.setAttribute('dir', direction);
+            for (const viewport of [
+              { width: 1536, height: 730 },
+              { width: 1440, height: 760 },
+              { width: 1470, height: 800 },
+            ]) {
+              await setViewport(viewport);
+              const block = await loadCarousel(slideCount, footerTag);
+              window.scrollTo(0, 1800);
+              await settleLayout();
+              const row = block.querySelector('.hub-hero-carousel-container');
+              const card = row.querySelector('[data-index]');
+              const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
+              expect(paragraph.tagName.toLowerCase()).to.equal(footerTag);
+              const icon = card.querySelector('.hub-hero-carousel-item-footer span');
+              paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
+              await settleLayout();
+              const restingWidth = (viewport.height * 0.6 - 64 - 96) * 0.75;
+              row.querySelectorAll('[data-index]').forEach((slide) => {
+                const media = slide.querySelector('.hub-hero-carousel-item-media');
+                expect(slide.getBoundingClientRect().width).to.be.closeTo(restingWidth, 0.1);
+                expect(media.getBoundingClientRect().width / media.getBoundingClientRect().height)
+                  .to.be.closeTo(3 / 4, 0.001);
+              });
+              const rowWidth = row.getBoundingClientRect().width;
+              const textWidth = paragraph.getBoundingClientRect().width;
+              const gap = parseFloat(getComputedStyle(block).getPropertyValue('--s2a-spacing-xs'));
+              for (const state of ['hovered', 'focused']) {
+                card.classList.add(state);
+                const samples = [];
+                stepTransitions(block, 40, () => {
+                  samples.push({
+                    cardWidth: card.getBoundingClientRect().width,
+                    textWidth: paragraph.getBoundingClientRect().width,
+                    rowWidth: row.getBoundingClientRect().width,
+                  });
+                });
+                samples.forEach((sample) => {
+                  expect(sample.cardWidth).to.be.at.least(restingWidth - 0.1);
+                  expect(sample.textWidth).to.be.at.least(textWidth - 0.1);
+                  expect(sample.rowWidth).to.be.closeTo(rowWidth, 0.1);
+                });
+                expect(card.getBoundingClientRect().width)
+                  .to.be.at.least(restingWidth + icon.getBoundingClientRect().width + gap - 0.1);
+                card.classList.remove(state);
+                finishTransitions(block);
+                expect(card.getBoundingClientRect().width).to.be.closeTo(restingWidth, 0.1);
+              }
+              block.remove();
+              window.scrollTo(0, 0);
+              await settleLayout();
+            }
+          }).timeout(10000);
+
+          it(`reveals ${slideCount}-slide ${direction} ${footerTag} footer icons without narrowing text`, async () => {
+            await setViewport({ width: 1470, height: 800 });
+            document.documentElement.setAttribute('dir', direction);
+            const block = await loadCarousel(slideCount, footerTag);
+            window.scrollTo(0, 1800);
+            await settleLayout();
+            const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+            const footer = card.querySelector('.hub-hero-carousel-item-footer');
+            const paragraph = footer.querySelector('.hub-hero-carousel-item-footer-text');
+            const icon = footer.querySelector('span');
+            paragraph.textContent = 'Create, edit, and organize images and digital art. '.repeat(3);
+            await settleLayout();
+            const measure = () => {
+              const bounds = footer.getBoundingClientRect();
+              const text = paragraph.getBoundingClientRect();
+              const symbol = icon.getBoundingClientRect();
+              const style = getComputedStyle(footer);
+              const innerWidth = bounds.width
+              - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+              return {
+                height: bounds.height,
+                textWidth: text.width,
+                reserved: innerWidth - text.width,
+                opacity: parseFloat(getComputedStyle(icon).opacity),
+                inset: direction === 'ltr' ? bounds.right - symbol.right : symbol.left - bounds.left,
+                padding: parseFloat(direction === 'ltr' ? style.paddingRight : style.paddingLeft),
+              };
+            };
+            const initial = measure();
+            expect(getComputedStyle(icon).position).to.equal('absolute');
+            expect(initial.reserved).to.be.closeTo(0, 0.1);
+            expect(initial.opacity).to.equal(0);
+            expect(initial.inset).to.be.closeTo(initial.padding, 0.1);
+            const samples = [];
+            card.classList.add('hovered');
+            stepTransitions(block, 45, (elapsed) => {
+              samples.push({ elapsed, ...measure() });
+            });
+            const hovered = measure();
+            const iconDelay = parseFloat(getComputedStyle(icon).transitionDelay) * 1000;
+            const gap = parseFloat(getComputedStyle(footer).getPropertyValue('--s2a-spacing-xs'));
+            expect(hovered.reserved).to.be.closeTo(icon.getBoundingClientRect().width + gap, 0.1);
+            expect(hovered.opacity).to.equal(1);
+            expect(samples.filter((sample) => sample.reserved > 1
+            && sample.reserved < hovered.reserved - 1).length).to.be.at.least(2);
+            samples.filter((sample) => sample.elapsed < iconDelay).forEach((sample) => {
+              expect(sample.opacity).to.equal(0);
+            });
+            samples.forEach((sample) => {
+              expect(sample.height).to.be.at.least(initial.height - 0.1);
+              expect(sample.inset).to.be.closeTo(sample.padding, 0.1);
+              expect(sample.textWidth)
+                .to.be.at.least(Math.min(initial.textWidth, hovered.textWidth) - 0.1);
+              expect(sample.textWidth)
+                .to.be.at.most(Math.max(initial.textWidth, hovered.textWidth) + 0.1);
+            });
+            card.classList.remove('hovered');
+            expect(parseFloat(getComputedStyle(icon).transitionDelay)).to.equal(0);
+            seekTransitions(block, 130);
+            expect(measure().opacity).to.equal(0);
+            finishTransitions(block);
+            expect(measure().reserved).to.be.closeTo(0, 0.1);
+            block.style.setProperty('--s2a-spacing-lg', '32px');
+            await settleLayout();
+            expect(measure().inset).to.be.closeTo(32, 0.1);
+          });
+
+          it(`exposes complete ${slideCount}-slide ${direction} ${footerTag} footer text on mobile and keeps it clamped on desktop hover/focus at doubled text sizes`, async () => {
+            document.documentElement.setAttribute('dir', direction);
+            for (const width of [375, 1470]) {
+              await setViewport({ width, height: 800 });
+              const block = await loadCarousel(slideCount, footerTag);
+              window.scrollTo(0, 1800);
+              await settleLayout();
+              const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+              // The first card's footer is clipped until its scroll-driven reveal completes.
+              card.style.setProperty('--chrome-reveal', '1');
+              const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
+              const fullText = 'Create, edit, and organize images and digital art. '.repeat(12);
+              const expectFullText = () => {
+                expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('none');
+                expect(paragraph.scrollHeight).to.be.at.most(paragraph.clientHeight + 1);
+                const text = paragraph.getBoundingClientRect();
+                const footer = paragraph.parentElement.getBoundingClientRect();
+                const bounds = card.getBoundingClientRect();
+                const carousel = block.querySelector('.hub-hero-carousel').getBoundingClientRect();
+                expect(text.top).to.be.at.least(footer.top - 1);
+                expect(text.bottom).to.be.at.most(footer.bottom + 1);
+                expect(footer.bottom).to.be.at.most(bounds.bottom + 1);
+                expect(text.bottom).to.be.at.most(carousel.bottom + 1);
+                if (width < 768) {
+                  expect(parseFloat(card.style.getPropertyValue('--slide-content-height')))
+                    .to.be.closeTo(card.offsetHeight, 1);
+                }
+                expect(card.getAttribute('aria-labelledby').split(' ')).to.include(paragraph.id);
+                expect(document.getElementById(paragraph.id).textContent).to.equal(fullText);
+              };
+              for (const scale of [1, 2]) {
+                card.blur();
+                card.classList.remove('hovered', 'focused');
+                finishTransitions(block);
+                paragraph.style.fontSize = `calc(var(--s2a-typography-font-size-eyebrow) * ${scale})`;
+                paragraph.textContent = 'Short';
+                await settleLayout();
+                const lineHeight = paragraph.getBoundingClientRect().height;
+                paragraph.textContent = fullText;
+                await settleLayout();
+                if (width < 768) {
+                  expectFullText();
+                  const row = card.parentElement.getBoundingClientRect();
+                  window.scrollTo(0, window.scrollY + row.top
+                    + card.offsetHeight - window.innerHeight + 24);
+                  await settleLayout();
+                  const range = document.createRange();
+                  const node = paragraph.firstChild;
+                  range.setStart(node, node.length - 5);
+                  range.setEnd(node, node.length);
+                  const lastLine = range.getBoundingClientRect();
+                  expect(lastLine.top).to.be.at.least(0);
+                  expect(lastLine.bottom).to.be.at.most(window.innerHeight);
+                  const target = document.elementFromPoint(
+                    lastLine.left + lastLine.width / 2,
+                    lastLine.top + lastLine.height / 2,
+                  );
+                  expect(target.closest('.hub-hero-carousel-item-footer-text')).to.equal(paragraph);
+                } else {
+                  // Expanded cards stay clamped; the full text remains in the accessible name.
+                  const expectClampedText = () => {
+                    expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('2');
+                    expect(paragraph.getBoundingClientRect().height)
+                      .to.be.closeTo(lineHeight * 2, 0.1);
+                    expect(paragraph.getBoundingClientRect().bottom)
+                      .to.be.at.most(card.getBoundingClientRect().bottom + 1);
+                    expect(card.getAttribute('aria-labelledby').split(' ')).to.include(paragraph.id);
+                    expect(paragraph.textContent).to.equal(fullText);
+                  };
+                  expectClampedText();
+                  expect(paragraph.scrollHeight).to.be.above(paragraph.clientHeight);
+                  card.classList.add('hovered');
+                  finishTransitions(block);
+                  expectClampedText();
+                  card.classList.remove('hovered');
+                  card.focus();
+                  // Keyboard focus scrolls the hero after two animation frames.
+                  await settleLayout();
+                  finishTransitions(block);
+                  expect(card.matches(':focus-visible')).to.be.true;
+                  expectClampedText();
+                }
+              }
+              block.remove();
+              window.scrollTo(0, 0);
+              await settleLayout();
+            }
+          }).timeout(10000);
+        });
+      });
+    });
+
+    [3, 4].forEach((slideCount) => {
+      [slideCount === 3 ? 'ltr' : 'rtl'].forEach((direction) => {
+        it(`preserves the ${slideCount}-slide ${direction} XL portrait ratio and 392px cap on resize`, async () => {
+          await setViewport({ width: 1920, height: 1200 });
+          document.documentElement.setAttribute('dir', direction);
+          const block = await loadCarousel(slideCount, 'h3');
+          const row = block.querySelector('.hub-hero-carousel-container');
+          for (const { width, height, expected } of [
+            { width: 1470, height: 800, expected: 240 },
+            { width: 1470, height: 1100, expected: slideCount === 3 ? 375 : 351.5 },
+            { width: 1920, height: 1200, expected: 392 },
+            { width: 1920, height: 800, expected: 240 },
+            { width: 1920, height: 1200, expected: 392 },
+          ]) {
+            await setViewport({ width, height });
+            await settleLayout();
+            window.scrollTo(0, (block.offsetHeight - window.innerHeight) * 0.95);
+            await settleLayout();
+            finishTransitions(block);
+            await settleLayout();
+            row.querySelectorAll('[data-index]').forEach((card) => {
+              const bounds = card.getBoundingClientRect();
+              const media = card.querySelector('.hub-hero-carousel-item-media').getBoundingClientRect();
+              expect(bounds.width).to.be.closeTo(expected, 0.1);
+              expect(bounds.width).to.be.at.most(392.1);
+              expect(media.width).to.be.closeTo(expected, 0.1);
+              expect(media.width / media.height).to.be.closeTo(3 / 4, 0.001);
+            });
+            const gap = parseFloat(getComputedStyle(row).gap);
+            expect(row.getBoundingClientRect().width)
+              .to.be.closeTo(slideCount * expected + (slideCount - 1) * gap, 0.1);
+            expect(row.getBoundingClientRect().width).to.be.at.most(width);
+          }
+        }).timeout(5000);
+      });
+    });
+
+    it('reveals the footer icon for keyboard focus and keeps the text clamped', async () => {
+      await setViewport({ width: 1470, height: 800 });
+      const block = await loadCarousel();
+      window.scrollTo(0, 1800);
+      await settleLayout();
+      const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+      const text = card.querySelector('.hub-hero-carousel-item-footer-text');
+      text.textContent = 'Read the complete description on keyboard focus. '.repeat(12);
+      card.focus();
+      expect(card.matches(':focus-visible')).to.be.true;
+      expect(card.classList.contains('focused')).to.be.true;
+      finishTransitions(block);
+      expect(getComputedStyle(card.querySelector('.hub-hero-carousel-item-footer span')).opacity)
+        .to.equal('1');
+      expect(getComputedStyle(text).webkitLineClamp).to.equal('2');
+      expect(text.getBoundingClientRect().bottom)
+        .to.be.at.most(card.getBoundingClientRect().bottom + 1);
+    });
+
+    it('disconnects footer sizing observation when the block is removed', async () => {
+      const observe = sinon.spy(ResizeObserver.prototype, 'observe');
+      try {
+        const block = await loadCarousel();
+        const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+        const observer = observe.getCalls().find((call) => call.args[0] === card).thisValue;
+        const disconnect = sinon.spy(observer, 'disconnect');
+        block.remove();
+        await settleLayout();
+        expect(disconnect.calledOnce).to.be.true;
+      } finally {
+        sinon.restore();
+      }
+    });
+
+    it('never temporarily narrows footer text before a card expands', async () => {
+      for (const width of [1280, 1100, 850]) {
+        await setViewport({ width, height: 800 });
+        const block = await loadCarousel();
+        window.scrollTo(0, 1800);
+        await settleLayout();
+        const card = block.querySelector('.hub-hero-carousel-item[data-index]');
+        const paragraph = card.querySelector('.hub-hero-carousel-item-footer-text');
+        const initialWidth = paragraph.getBoundingClientRect().width;
+        const samples = [initialWidth];
+        card.classList.add('hovered');
+        stepTransitions(block, 40, () => {
+          samples.push(paragraph.getBoundingClientRect().width);
+        });
+        expect(samples.at(-1)).to.be.above(initialWidth);
+        for (let index = 1; index < samples.length; index += 1) {
+          expect(samples[index]).to.be.at.least(samples[index - 1] - 0.1);
+        }
+        block.remove();
+        window.scrollTo(0, 0);
+        await settleLayout();
+      }
+    }).timeout(5000);
+  });
+});
