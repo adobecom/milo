@@ -3214,7 +3214,9 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  const parallelCount = isDoc ? parseInt(getMetadata('parallel-sections'), 10) || 0 : 0;
+  const parallelCount = isDoc
+    ? parseInt(PAGE_URL.searchParams.get('parallel-sections') ?? getMetadata('parallel-sections'), 10) || 0
+    : 0;
   let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
   const parallelSections = [];
   htmlSections.slice(0, parallelCount).forEach((el, idx) => {
