@@ -24,6 +24,12 @@ a[href*='.mp4'].hide-video {
   z-index: 2;
 }
 
+/* C2 doesn't define --color-black, which the shared play button focus outline uses. */
+.mpc-poster.modal-img-link .consonant-play-btn:focus,
+.mpc-poster.modal-img-link .consonant-play-btn:focus-visible {
+  outline: var(--play-border-width-l) solid var(--color-black, #000);
+}
+
 .mpc-poster.is-playing {
   position: relative;
 }

@@ -376,6 +376,9 @@ describe('adobetv autoblock', () => {
       const atButton = document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2);
       expect(copy.contains(atCopy), 'heading visible').to.be.true;
       expect(button.contains(atButton), 'play button clickable').to.be.true;
+
+      button.focus();
+      expect(getComputedStyle(button).outlineStyle, 'focus outline').to.equal('solid');
     });
 
     it('tracks MPC play state on a cloned player iframe', async () => {
