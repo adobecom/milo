@@ -50,22 +50,23 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load lit first as it's needed by MAS components */
-
-  /** Load service */
-  const servicePromise = initService();
-  const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
-  if (!success) {
-    throw new Error('Failed to initialize mas commerce service');
-  }
-
+  // Component definitions don't need the service, so fetch them while it initializes.
   const dependencyPromises = [
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
     loadMasComponent(MAS_MERCH_CARD_COLLECTION),
   ];
   if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
-  await Promise.all(dependencyPromises);
+  const componentsPromise = Promise.all(dependencyPromises);
+  componentsPromise.catch(() => {});
+
+  const servicePromise = initService();
+  const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
+  if (!success) {
+    throw new Error('Failed to initialize mas commerce service');
+  }
+
+  await componentsPromise;
 }
 
 // The sidenav, and the header it brings (search, filters, sort), are the only
