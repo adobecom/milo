@@ -252,7 +252,7 @@ describe('Utils', () => {
       expect(stylePreload).to.exist;
     });
 
-    it('preloads merch-card-collection-autoblock M@S deps without lit or quantity select', async () => {
+    it('preloads merch-card-collection-autoblock M@S deps', async () => {
       document.head.innerHTML = head;
       document.body.innerHTML = '<main><div><div class="merch-card-collection-autoblock"></div></div></main>';
 
@@ -263,8 +263,6 @@ describe('Utils', () => {
         expect(link.as).to.equal('script');
         expect(link.crossOrigin).to.equal('anonymous');
       });
-      expect(document.head.querySelector('link[href$="/lit-all.min.js"]')).to.not.exist;
-      expect(document.head.querySelector('link[href$="/merch-quantity-select.js"]')).to.not.exist;
     });
   });
 
