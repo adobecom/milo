@@ -173,11 +173,12 @@ export default async function loadBlock(configs, customLib) {
   let setConfig;
   let getConfig;
   let createTag;
+  let notifyTargetReady;
   try {
     ([
       { default: bootstrapBlock },
       locales,
-      { setConfig, getConfig, createTag },
+      { setConfig, getConfig, createTag, notifyTargetReady },
     ] = await Promise.all([
       import('./bootstrapper.js'),
       resolveLocales(origin, configs?.locales),
@@ -225,6 +226,8 @@ export default async function loadBlock(configs, customLib) {
     });
     return;
   }
+  // Standalone pages have no personalization, so don't make modals wait for it.
+  notifyTargetReady();
   // Standalone consumers don't run Milo's loadArea bootstrap, which is what
   // normally loads the Typekit stylesheet that defines Adobe Clean / Adobe
   // Clean Display Black. Without it, gnav/footer headings fall back to a

@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../../utils/utils.js';
+import {
+  createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig, whenTargetReady,
+} from '../../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../../martech/attributes.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 
@@ -406,6 +408,8 @@ export function delayedModal(el) {
 // Deep link-based
 export default async function init(el) {
   const { modalHash, modalPath } = el.dataset;
+  // Personalization may change the modal content or aup-select, so wait before opening.
+  if (window.location.hash === modalHash) await whenTargetReady();
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading

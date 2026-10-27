@@ -13,6 +13,15 @@ CTAs through the AUP SDK for any value except an empty value, `off`, or `false` 
 
 `on` is temporary until the full switch to the true Select experience.
 
+## AUP SDK loading
+
+Both the C1 and C2 global navigation load the AUP SDK (stable channel) through the shared host in
+`blocks/global-navigation/utilities/aup-sdk.js` once IMS is ready, when `aup-select` is enabled or a
+signed-in user has the universal nav. The host sets `window.aupsdk`, renders AUP dialogs in the Milo
+modal (C2 modal when `foundation=c2`) and dispatches `milo:aupsdk:ready`. A failed eager load is
+logged to Lana and retried on the next `fetchAUPSDKInstance` call. The C2 gnav passes
+`fetchAUPSDKInstance` to the federal gnav so the universal nav can reuse the same instance.
+
 ## AUP Select environments
 
 `aup-select` uses the environment matching the current Milo environment by default (Stage on

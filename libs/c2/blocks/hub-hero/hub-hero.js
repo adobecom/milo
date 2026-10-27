@@ -284,8 +284,7 @@ const removeHovered = (carousel) => {
 const clearCarouselAnchoring = (container) => container.classList.remove('stick-left', 'stick-right');
 
 const updateCarouselAnchoring = ({ container, maxIndex }) => {
-  const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
-    || container.querySelector('.hub-hero-carousel-item:focus-visible');
+  const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused');
   if (!slideEl) {
     clearCarouselAnchoring(container);
     return;
@@ -315,10 +314,16 @@ const isInCarouselEdgeGap = (container, event) => {
   return inLeftGap || inRightGap;
 };
 
-const clearCarouselState = ({ container, carousel }) => {
+const isModalOpen = () => !!document.querySelector('.modal-curtain');
+
+const clearCarouselState = (context) => {
+  const { container, carousel } = context;
+  if (isModalOpen()) return;
   clearTimeout(leaveTimeouts.get(container));
-  clearCarouselAnchoring(container);
-  removeHovered(carousel);
+  carousel.querySelectorAll('.hovered, .focused:not(:focus-visible)')
+    .forEach((sld) => sld.classList.remove('hovered', 'focused'));
+  carousel.querySelector('.hub-hero-carousel-item:focus-visible')?.classList.add('focused');
+  updateCarouselAnchoring(context);
 };
 
 const onCarouselLeave = (event, context) => {
@@ -357,7 +362,8 @@ const onHover = (event, context) => {
   if (!isFocus && slideEl.classList.contains('hovered')
     && !slideLeaveTimeouts.has(video) && !rewindIntervals.has(video)) return;
 
-  if (isFocus && slideEl.matches(':focus-visible')) {
+  if (isFocus) {
+    if (!slideEl.matches(':focus-visible')) return;
     const progress = window.matchMedia('(width >= 768px)').matches ? 0.55 : 0.6;
     scrollHubHeroTo(slideEl, progress);
   }
@@ -438,6 +444,7 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
+    ...(isModal && { 'aria-haspopup': 'dialog' }),
     'aria-setsize': slidesTotal,
     'aria-posinset': index + 1,
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
@@ -521,7 +528,7 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   let anchoringFrame = 0;
   const scheduleAnchoring = () => {
     if (anchoringFrame || scrollController.signal.aborted) return;
-    if (!carouselContainer.querySelector('.hovered, .focused, :focus-visible')) return;
+    if (!carouselContainer.querySelector('.hovered, .focused')) return;
     anchoringFrame = requestAnimationFrame(() => {
       anchoringFrame = 0;
       updateCarouselAnchoring(context);
@@ -532,9 +539,15 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   // The viewport can cross the overflow threshold without changing the row's width.
   window.addEventListener('resize', scheduleAnchoring, { signal: scrollController.signal });
   window.addEventListener('wheel', () => clearCarouselState(context), { signal: scrollController.signal });
+  let modalClosed = false;
+  window.addEventListener('milo:modal:closed', () => { modalClosed = true; }, { signal: scrollController.signal });
   initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
+    if (modalClosed && !isModalOpen()) {
+      modalClosed = false;
+      if (!carouselContainer.querySelector('.hub-hero-carousel-item:hover')) clearCarouselState(context);
+    }
     if (!document.contains(decoratedCarousel)) {
       scrollController.abort();
       if (anchoringFrame) cancelAnimationFrame(anchoringFrame);
