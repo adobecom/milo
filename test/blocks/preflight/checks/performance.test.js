@@ -102,4 +102,16 @@ describe('Sanity Checks', () => {
     const staleLcp = () => Promise.resolve({ url: 'previous-draft.jpg' });
     expect(await getLcpEntry('no-media-draft', document, staleLcp)).to.equal(null);
   });
+
+  it('labels the LCP result as estimated in draft mode', async () => {
+    const area = document.createElement('div');
+    area.innerHTML = '<main><div class="section"><video src="hero.mp4"></video></div></main>';
+    Object.defineProperty(area.querySelector('video'), 'currentSrc', { value: 'hero.mp4' });
+    setLikelyLcp(area);
+    const found = await checkLcpEl('draft', area);
+    setLikelyLcp(document.createElement('div'));
+    const missing = await checkLcpEl('draft', area);
+    expect(found.description).to.equal('Valid LCP in the first section detected. (Estimated in draft mode.)');
+    expect(missing.description).to.equal('No LCP element found. (Estimated in draft mode.)');
+  });
 });
