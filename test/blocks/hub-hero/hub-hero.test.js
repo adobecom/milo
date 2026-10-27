@@ -541,6 +541,14 @@ describe('hub-hero block', () => {
       curtain.remove();
     });
 
+    it('keeps the focused card when the window loses focus', () => {
+      slides[0].focus();
+      const hasFocus = sinon.stub(document, 'hasFocus').returns(false);
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      hasFocus.restore();
+      expect(slides[0].classList.contains('focused')).to.be.true;
+    });
+
     it('does not anchor a carousel that is exactly as wide as the viewport', () => {
       containerWidth = 1470;
       enterCard(slides[0]);

@@ -58,8 +58,11 @@ function addCurtainCloseAnimation(modal) {
   curtain.remove = () => {
     curtain.classList.remove('modal-curtain', 'is-open');
     curtain.classList.add('is-closing');
-    curtain.addEventListener('animationend', originalRemove, { once: true });
-    setTimeout(originalRemove, 600);
+    const fallback = setTimeout(originalRemove, 600);
+    curtain.addEventListener('animationend', () => {
+      clearTimeout(fallback);
+      originalRemove();
+    }, { once: true });
   };
 }
 

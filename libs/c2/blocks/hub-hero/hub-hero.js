@@ -381,6 +381,7 @@ const clearCarouselState = (context) => {
 const onCarouselFocusOut = ({ relatedTarget }, context) => {
   const { carousel } = context;
   if (carousel.contains(relatedTarget) || isModalOpen()) return;
+  if (!relatedTarget && !document.hasFocus()) return;
   const slideEl = carousel.querySelector('.hub-hero-carousel-item.focused');
   if (!slideEl || (slideEl.hash && slideEl.hash === window.location.hash)) return;
   slideEl.classList.remove('focused');
