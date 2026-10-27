@@ -1,4 +1,4 @@
-import { decorateAnchorVideo } from '../../utils/decorate.js';
+import { decorateAnchorVideo, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../utils/decorate.js';
 import {
   createTag, getConfig, getFederatedContentRoot, getMetadata, isMpcPlayerUrl, loadStyle,
 } from '../../utils/utils.js';
@@ -58,16 +58,13 @@ const onPlayerMessage = (event) => {
 };
 let playerListenerAdded = false;
 
-// Resumes only playback this pauses, so user pauses and reduced motion are kept.
+// MWPW-208836: stays paused until the user resumes it.
 const pauseOffscreen = (video) => {
   new IntersectionObserver(([{ isIntersecting }]) => {
-    if (!isIntersecting && !video.paused) {
-      video.pause();
-      video.dataset.offscreenPaused = 'true';
-    } else if (isIntersecting && video.dataset.offscreenPaused) {
-      delete video.dataset.offscreenPaused;
-      video.play();
-    }
+    if (isIntersecting || video.paused) return;
+    video.pause();
+    video.setAttribute(USER_PAUSED_ATTR, '');
+    if (video.closest('.video-holder')?.querySelector('.offset-filler.is-playing')) syncPausePlayIcon(video);
   }).observe(video);
 };
 

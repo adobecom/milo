@@ -316,12 +316,12 @@ describe('adobetv autoblock', () => {
       wrapper.style.cssText = '';
     });
 
-    it('pauses an autoplay MPC MP4 offscreen and resumes it when back in view', async () => {
+    it('pauses an autoplay MPC MP4 offscreen and keeps it paused until the user resumes', async () => {
       const nextFrames = () => new Promise((r) => {
         requestAnimationFrame(() => requestAnimationFrame(r));
       });
       const wrapper = document.querySelector('#mpcMp4Autoplay');
-      wrapper.style.cssText = 'position: absolute; top: 5000px; width: 300px; height: 200px;';
+      wrapper.style.cssText = 'position: absolute; top: 0; width: 300px; height: 200px;';
       const parent = wrapper.querySelector('a').parentElement;
       await init(wrapper.querySelector('a'));
       const video = parent.querySelector('video');
@@ -330,19 +330,20 @@ describe('adobetv autoblock', () => {
       Object.defineProperty(video, 'paused', { get: () => paused });
       video.pause = () => { paused = true; calls.push('pause'); };
       video.play = () => { paused = false; calls.push('play'); };
+      video.dispatchEvent(new Event('playing'));
       await nextFrames();
-      expect(calls.join(), 'paused offscreen').to.equal('pause');
+      expect(calls.length, 'playing in view').to.equal(0);
 
-      wrapper.style.top = '0px';
-      await nextFrames();
-      expect(calls.join(), 'resumed in view').to.equal('pause,play');
-
-      video.pause();
       wrapper.style.top = '5000px';
       await nextFrames();
+      expect(calls.join(), 'paused offscreen').to.equal('pause');
+      expect(video.hasAttribute('data-user-paused')).to.be.true;
+      const control = parent.querySelector('.pause-play-wrapper, .play-pause-button');
+      expect(control.getAttribute('aria-pressed')).to.equal('false');
+
       wrapper.style.top = '0px';
       await nextFrames();
-      expect(calls.at(-1), 'user pause kept').to.equal('pause');
+      expect(calls.join(), 'stays paused in view').to.equal('pause');
       wrapper.style.cssText = '';
     });
 
