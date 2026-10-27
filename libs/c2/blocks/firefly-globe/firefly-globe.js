@@ -134,6 +134,7 @@ const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-ou
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const ENTRY_LIFT_MIN_H = 0.45;
+const ENTRY_DEBUG = new URLSearchParams(window.location.search).get('fgentry');
 const ENTRY_RELEASE_PEAK = 2; // peak |slope| of entryRelease; caps the lift at H / this
 
 const TEXT_APPEAR_START = 0.10;
@@ -1020,7 +1021,7 @@ function createGlobeGalleryRuntime(
 
   function entryLiftPx(frame) {
     const release = entryRelease(frame);
-    if (!release) return 0;
+    if (!release || ENTRY_DEBUG) return 0;
     const groupScale = sphereGroup.scale.x || 1;
     const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
     const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - topZ, H);
@@ -1041,7 +1042,7 @@ function createGlobeGalleryRuntime(
     const { entryT, scrollT, sphereFormed } = frame;
     camera.position.z = sphereFormed
       ? camZAtTravelT(scrollT, bp.CAM_Z_SPHERE, bp.CAM_Z_END)
-      : lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, entryT * entryT * entryT);
+      : lerpN(ENTRY_DEBUG === 'static' ? bp.CAM_Z_SPHERE : bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, entryT * entryT * entryT);
     applyCentringOffset(frame);
     // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
     cameraInsideSphere = sphereFormed && Math.abs(camera.position.z) < dragFlipZ;
