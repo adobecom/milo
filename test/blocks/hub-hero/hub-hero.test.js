@@ -366,6 +366,7 @@ describe('hub-hero block', () => {
     it('marks a modal link slide with role="button" and modal data attributes', () => {
       const modal = slides[1];
       expect(modal.getAttribute('role')).to.equal('button');
+      expect(modal.getAttribute('aria-haspopup')).to.equal('dialog');
       expect(modal.dataset.modalHash).to.equal('#slide2-modal');
       expect(modal.dataset.modalPath).to.equal('/modals/slide2');
     });
@@ -505,7 +506,7 @@ describe('hub-hero block', () => {
     });
 
     it('uses the same rendered-width check for keyboard focus', () => {
-      slides[0].dispatchEvent(new FocusEvent('focus'));
+      slides[0].focus();
       expect(slides[0].classList.contains('focused')).to.be.true;
       expect(container.classList.contains('stick-left')).to.be.false;
       expect(container.classList.contains('stick-right')).to.be.false;
@@ -608,6 +609,53 @@ describe('hub-hero block', () => {
         enterCard(slides[index]);
         expect(slides[index].classList.contains('hovered')).to.be.false;
       }
+    });
+
+    it('keeps hover state while a modal curtain is open and clears it once closed', () => {
+      const curtain = document.body.appendChild(document.createElement('div'));
+      curtain.className = 'modal-curtain';
+      enterCard(slides[0]);
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      curtain.remove();
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      expect(slides[0].classList.contains('hovered')).to.be.false;
+    });
+
+    it('clears hover when the modal closes with the pointer off the cards', async () => {
+      const curtain = document.body.appendChild(document.createElement('div'));
+      curtain.className = 'modal-curtain';
+      enterCard(slides[0]);
+      window.dispatchEvent(new CustomEvent('milo:modal:closed'));
+      curtain.remove();
+      await new Promise((resolve) => { setTimeout(resolve); });
+      expect(slides[0].classList.contains('hovered')).to.be.false;
+    });
+
+    it('does not expand a card for mouse-initiated focus', () => {
+      sinon.stub(slides[0], 'matches').withArgs(':focus-visible').returns(false);
+      slides[0].dispatchEvent(new FocusEvent('focus'));
+      expect(slides[0].classList.contains('focused')).to.be.false;
+    });
+
+    it('keeps one active card and keeps keyboard focus through pointer clears', () => {
+      slides[0].focus();
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      enterCard(slides[3]);
+      expect(slides[0].classList.contains('focused')).to.be.false;
+      expect(slides[3].classList.contains('hovered')).to.be.true;
+    });
+
+    it('restores the keyboard-focused card once the pointer leaves the carousel', async () => {
+      slides[0].focus();
+      enterCard(slides[3]);
+      expect(slides[0].classList.contains('focused')).to.be.false;
+      container.dispatchEvent(new MouseEvent('mouseleave', { clientX: 1460, clientY: 900 }));
+      await new Promise((resolve) => { setTimeout(resolve, 30); });
+      expect(slides[3].classList.contains('hovered')).to.be.false;
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      expect(container.querySelectorAll('.hovered, .focused').length).to.equal(1);
     });
 
     it('reuses carousel context instead of querying slide ancestors during hover and focus', () => {
