@@ -356,6 +356,81 @@ describe('Market selector block', () => {
     }
   });
 
+  it('spaces C2 selector footer links and keeps the last mobile legal link left aligned', async () => {
+    const footer = document.createElement('footer');
+    footer.className = 'global-footer';
+    footer.style.width = '1380px';
+    footer.style.setProperty('--s2a-spacing-xs', '8px');
+    footer.style.setProperty('--s2a-spacing-md', '16px');
+    footer.style.setProperty('--s2a-spacing-lg', '24px');
+    footer.style.setProperty('--s2a-spacing-xl', '32px');
+    footer.innerHTML = `<div class="feds-footer-options">
+      <div class="feds-regionPicker-wrapper"><div class="market-selector market-selector-c2">Language Market</div></div>
+      <div class="feds-footer-miscLinks-legal">
+        <div class="feds-footer-legalWrapper">
+          <ul class="feds-footer-privacySection">
+            <li class="feds-footer-privacy-listitem">Copyright</li>
+            <li class="feds-footer-privacy-listitem">Do not sell or share my personal information</li>
+            <li class="feds-footer-privacy-listitem"><a class="feds-footer-privacyLink" href="#interest-based-ads">AdChoices</a></li>
+            <li class="feds-footer-privacy-listitem"><a class="feds-footer-privacyLink" href="/site-map">Site Map</a></li>
+          </ul>
+        </div>
+      </div>
+      <ul class="feds-social"></ul>
+    </div>`;
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/c2/blocks/global-footer/global-footer.css' });
+    const initialViewport = { width: window.innerWidth, height: window.innerHeight };
+    const selector = footer.querySelector('.market-selector');
+    const region = footer.querySelector('.feds-regionPicker-wrapper');
+    const legal = footer.querySelector('.feds-footer-miscLinks-legal');
+    const [, optOut, adChoices, siteMap] = footer.querySelectorAll('.feds-footer-privacy-listitem');
+    const adChoicesLink = adChoices.querySelector('a');
+    const siteMapLink = siteMap.querySelector('a');
+    const gap = (first, second) => (
+      second.getBoundingClientRect().left - first.getBoundingClientRect().right
+    );
+    try {
+      document.head.append(style);
+      document.body.append(footer);
+      await setViewport({ width: 1600, height: 900 });
+      expect(gap(region, legal)).to.be.closeTo(40, 1);
+      expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
+      expect(gap(adChoices, siteMapLink)).to.be.closeTo(40, 1);
+      selector.classList.remove('market-selector-c2');
+      expect(gap(region, legal)).to.be.closeTo(24, 1);
+      expect(gap(optOut, adChoicesLink)).to.be.closeTo(8, 1);
+      selector.classList.add('market-selector-c2');
+      for (const width of [1024, 1200, 1439]) {
+        await setViewport({ width, height: 900 });
+        footer.style.width = `${Math.min(1100, width - 32)}px`;
+        expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
+      }
+      await setViewport({ width: 1600, height: 900 });
+      footer.style.width = '1380px';
+      siteMap.remove();
+      expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
+      selector.classList.remove('market-selector-c2');
+      expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
+      adChoices.after(siteMap);
+
+      for (const width of [412, 767, 884, 1023]) {
+        await setViewport({ width, height: 900 });
+        footer.style.width = `${Math.min(720, width - 32)}px`;
+        expect(getComputedStyle(siteMap).position).to.equal('absolute');
+        selector.classList.add('market-selector-c2');
+        expect(getComputedStyle(siteMap).position).to.equal('static');
+        expect(siteMap.getBoundingClientRect().left)
+          .to.be.closeTo(adChoices.getBoundingClientRect().left, 1);
+        selector.classList.remove('market-selector-c2');
+      }
+    } finally {
+      style.remove();
+      footer.remove();
+      await setViewport(initialViewport);
+    }
+  });
+
   it('stacks C2 mobile selectors, social links, and legal links without affecting other footers', async () => {
     const block = document.querySelector('.market-selector');
     const footer = document.createElement('footer');

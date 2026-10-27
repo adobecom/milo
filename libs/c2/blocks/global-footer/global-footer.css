@@ -608,6 +608,12 @@ span.feds-footer-privacyLink-divider {
   justify-self: start;
 }
 
+@media (max-width: 1023px) {
+  .global-footer:has(.market-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+    position: static;
+  }
+}
+
 .global-footer .feds-footer-miscLinks-legal > .footer-logo {
   order: 1;
   padding-bottom: var(--s2a-spacing-sm);
@@ -812,6 +818,10 @@ span.feds-footer-privacyLink-divider {
     flex-direction: row;
   }
 
+  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]) {
+    padding-left: var(--s2a-spacing-xl);
+  }
+
   .global-footer .feds-footer-options > .feds-social {
     justify-self: normal;
   }
@@ -840,6 +850,10 @@ span.feds-footer-privacyLink-divider {
     column-gap: var(--s2a-spacing-lg);
     grid-template-columns: auto auto 1fr;
     row-gap: var(--s2a-spacing-xl);
+  }
+
+  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-options > .feds-regionPicker-wrapper {
+    margin-inline-end: var(--s2a-spacing-md);
   }
 
   .global-footer.event:not(.mobile) .feds-footer-options {
