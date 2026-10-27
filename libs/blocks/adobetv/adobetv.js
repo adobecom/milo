@@ -94,7 +94,8 @@ const createIframe = (a, href, opts = {}) => {
   getPlayerObserver().observe(iframe);
 
   a.remove();
-  if (focus) iframe.focus();
+  const focusMoved = document.activeElement && document.activeElement !== document.body;
+  if (focus && !focusMoved && !embed.closest('[aria-hidden="true"]')) iframe.focus();
 };
 
 const createIframeWithCaptions = (a, url, geo, opts) => {

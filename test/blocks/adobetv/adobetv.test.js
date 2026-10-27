@@ -194,6 +194,23 @@ describe('adobetv autoblock', () => {
       expect(sent.some((msg) => msg.action === 'pause'), 'pause sent').to.be.true;
     });
 
+    it('does not pull focus into a player whose container was hidden during the caption lookup', async () => {
+      updateConfig({ ...getConfig(), atvCaptionsKey: 'test', locale: { prefix: 'fr', ietf: 'fr-FR', contentRoot: '' } });
+      const wrapper = document.querySelector('#mpcPlayerPosterCaptions');
+      await init(wrapper.querySelector('a'));
+      wrapper.querySelector('.mpc-poster button').click();
+      wrapper.setAttribute('aria-hidden', 'true');
+      const next = document.createElement('button');
+      document.body.append(next);
+      next.focus();
+
+      const iframe = await waitForElement('#mpcPlayerPosterCaptions iframe');
+
+      expect(document.activeElement === iframe, 'iframe focused').to.be.false;
+      expect(document.activeElement === next, 'focus stays on Next').to.be.true;
+      next.remove();
+    });
+
     it('plays a poster that was cloned after decoration', async () => {
       const wrapper = document.querySelector('#mpcPlayerPoster');
       await init(wrapper.querySelector('a'));
