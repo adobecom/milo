@@ -43,6 +43,12 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.5,
+    // The hand-off, in sphere radii in front of the centre (see PQ_START_R): earlier on the narrow
+    // view, while more cards are on screen.
+    PQ_START_R: 0.5,
+    // Near-camera burst: how far tiles fly, in multiples of their offset from the card centre. Low
+    // on the narrow view, where the big near cards would otherwise pile over each other.
+    SCATTER_EXPAND: 0.5,
     GRID_WINDOW_COLS: 3,
     GRID_ROWS: 8,
     CARD_FACE_CAMERA: 0,
@@ -63,6 +69,8 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     NEAR_FADE_START: 2.0,
     NEAR_FADE_END: 1.6,
+    PQ_START_R: 0,
+    SCATTER_EXPAND: 1.5,
     GRID_WINDOW_COLS: 9,
     GRID_ROWS: 5,
     CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
@@ -109,13 +117,16 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 // Pull-quote particles: scroll it takes the card pixels to fly into the text, as a share of the
 // viewport height, and how many there are.
-const PQ_FLY_VH = 0.88;
+const PQ_FLY_VH = 1.0;
 // Scroll, as a share of the viewport height, the finished quote holds still before the world lets
 // go of it; the hold is derived from it (syncPqHold).
-const PQ_READ_VH = 0.1;
-// zoomT over which spin, inertia, hover and drag warp ease to rest before the hand-off.
+const PQ_READ_VH = 0.05;
+// zoomT over which hover and drag warp ease to rest before the hand-off.
 const PQ_SPIN_EASE_T = 0.04;
-const PQ_PARTICLES_SM = 40000;
+// The hand-off is where the camera is bp.PQ_START_R sphere radii in front of the centre: the globe
+// stops being interactive, the spin comes to rest and the far-side cards dissolve. At 0 the near
+// side is behind the camera; above, near cards between it and the centre are past their near fade.
+const PQ_PARTICLES_SM = 15000;
 const PQ_PARTICLES_MD = 56000;
 // Once the canvas shows the finished quote, the real DOM text and CSS crosshair fade in over it
 // (they match it, so this only hides subpixel differences) and the canvas is hidden.
@@ -363,6 +374,8 @@ function createGlobeGalleryRuntime(
       // also anchors dragFlipZ and the pull-quote cue — see cardVanishDepth.
       NEAR_FADE_START: cfg.NEAR_FADE_START,
       NEAR_FADE_END: cfg.NEAR_FADE_END,
+      PQ_START_R: cfg.PQ_START_R,
+      SCATTER_EXPAND: cfg.SCATTER_EXPAND,
       // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * TAN_HALF_FOV)),
       GRID_WINDOW_COLS: cfg.GRID_WINDOW_COLS,
@@ -973,12 +986,19 @@ function createGlobeGalleryRuntime(
   }
 
   // The world lets go PQ_READ_VH after the quote is crisp, so the scroll past it is never dead.
+  // Negative when that is before the zoom's end, which the quote does not need; never before the
+  // plain quote's reveal, which the no-particles path (forced colours) does.
   function syncPqHold() {
     if (!pq.fx || runwayVh === null) return;
     const tailVh = runwayVh - formationVh;
-    const crispVh = formationVh + pqStartZoomT * tailVh
-      + (QUOTE_LIVE_P * PQ_FLY_VH + PQ_READ_VH) * 100;
-    const next = Math.max(0, Math.round((crispVh + 100 - runwayVh) * 10) / 10);
+    // The hold that lets go PQ_READ_VH past `vh` of scroll after zoomT.
+    const after = (zoomT, vh) => formationVh + zoomT * tailVh + vh
+      + PQ_READ_VH * 100 + 100 - runwayVh;
+    const hold = Math.max(
+      after(pqStartZoomT, QUOTE_LIVE_P * PQ_FLY_VH * 100),
+      after(pqAppearZoomT, 0),
+    );
+    const next = Math.round(hold * 10) / 10;
     if (next === holdVh) return;
     holdVh = next;
     root.style.setProperty('--gg-pq-hold', `${next}vh`);
@@ -995,9 +1015,8 @@ function createGlobeGalleryRuntime(
   function publishPqAppearZoomT() {
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
-    // The camera crossing the centre: the near side is behind it and no far-side card has begun a
-    // near fade, so the particles take over intact cards.
-    pqStartZoomT = Math.min(pqAppearZoomT, TL.zoomTAtCamZ(0, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
+    const startZ = bp.PQ_START_R * bp.SPHERE_R;
+    pqStartZoomT = Math.min(pqAppearZoomT, TL.zoomTAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
     syncPqHold();
   }
 
@@ -1006,7 +1025,8 @@ function createGlobeGalleryRuntime(
   // Past pqStartZoomT the particles stand in for the cards: camera and orientation hold still.
   const quoteOwnsCards = () => pq.p > 0 && particlesOn();
 
-  // 1 → 0 across PQ_SPIN_EASE_T before the hand-off, smoothstepped; 1 without particles.
+  // 1 → 0 across PQ_SPIN_EASE_T before the hand-off, smoothstepped (hover, drag warp); 1 without
+  // particles.
   function quoteSpinScale(zoomT) {
     if (!particlesOn()) return 1;
     const t = clamp01((pqStartZoomT - zoomT) / PQ_SPIN_EASE_T);
@@ -1081,7 +1101,7 @@ function createGlobeGalleryRuntime(
   // actually ends the pointer-interactive stretch.
   // With particles the cards hand over at pqStartZoomT, and the globe stops being live with them.
   const globeLive = () => globeFormed()
-    && frameState.zoomT < (pq.fx ? pqStartZoomT - PQ_SPIN_EASE_T : pqAppearZoomT);
+    && frameState.zoomT < (pq.fx ? pqStartZoomT : pqAppearZoomT);
 
   controls = createGlobeControls({
     q,
@@ -1264,10 +1284,8 @@ function createGlobeGalleryRuntime(
         // Ambient spin stays OUT of velX (a bias in it decays asymmetrically by direction).
         const spin = interactive && !reducedMotion && !browsing && !controls.isSpinPaused()
           ? AUTO_ROT_SPEED : 0;
-        // Spin and inertia ease out before the hand-off, and the motion smear with them.
-        if (restK < 1) { drag.velX *= restK; drag.velY *= restK; }
-        sphereOrient.y += (drag.velX + spin) * restK * dtScale * dragDir;
-        sphereOrient.x += drag.velY * restK * dtScale * dragDir;
+        sphereOrient.y += (drag.velX + spin) * dtScale * dragDir;
+        sphereOrient.x += drag.velY * dtScale * dragDir;
       }
       const RESTING_PITCH = Math.PI / 3;
       if (browsing) {
@@ -2152,7 +2170,7 @@ function createGlobeGalleryRuntime(
     }
     // Before the first layout: the class adds the quote's hold to the runway being measured.
     if (!reducedMotion) {
-      scatter = createCardScatter();
+      scatter = createCardScatter({ expand: bp.SCATTER_EXPAND });
       scene.add(scatter.object);
       scatter.warm(renderer, camera);
     }

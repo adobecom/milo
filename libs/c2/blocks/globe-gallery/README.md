@@ -744,7 +744,7 @@ a CSS-only edit. The CSS is **mobile-first**: the base `.globe-gallery` rule is 
 
 | prop | effect | ↑ does |
 |---|---|---|
-| `--gg-runway-height` | total height = formation + tail | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
+| `--gg-runway-height` | total height = formation + tail; per breakpoint (800vh sm, 600vh md) | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
 | `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
 | `--gg-pq-hold` | quote hold, added to the runway only under `.globe-gallery-pq-particles`; the CSS value is only a fallback, JS overwrites it inline (`syncPqHold`) | sets when the world lets go of the finished quote; `deriveFrame` subtracts it from the zoom tail, so the zoom pace is unchanged |
 
@@ -781,7 +781,7 @@ from where the cards are, so it cannot drift when a camera or radius constant mo
 
 ```
 clearZ = −SPHERE_R + NEAR_FADE_END × fadeRefH        // where the LAST CARD VANISHES
-pqAppearZoomT = zoomTAtCamZ(clearZ, CAM_Z_SPHERE, CAM_Z_END)  // timeline.js, inverse of easeOutCubic
+pqAppearZoomT = zoomTAtCamZ(clearZ, CAM_Z_SPHERE, CAM_Z_END)  // timeline.js, inverse of the dolly ease
 ```
 
 **The cue is where the last card leaves the *screen*, not where the camera passes the shell** — those
@@ -854,10 +854,13 @@ stay longer than half the quote box, or the section arrives on top of it.
 
 `.globe-gallery-pq-particles` adds `--gg-pq-hold` to the block height, and `deriveFrame` takes
 `input.holdPx` back off the zoom tail so the zoom keeps its pace. The flight (`PQ_FLY_VH`) starts at
-`pqStartZoomT`, and the world un-sticks `PQ_READ_VH` (10vh) after the quote is crisp
-(`QUOTE_LIVE_P`): `syncPqHold` solves for the hold that puts it there and writes it inline (~15vh md,
-~36vh sm at a 570vh runway; it floors at 0, which brings dead scroll back, so lengthen the runway
-together with `PQ_FLY_VH`), so the scroll after the quote is up is never dead. A fixed 100vh left 65–85vh of it with
+`pqStartZoomT`, and the world un-sticks `PQ_READ_VH` (5vh) after the quote is crisp
+(`QUOTE_LIVE_P`): `syncPqHold` solves for the hold that puts it there and writes it inline, so the scroll after the quote is up is never dead. It goes negative when that
+comes before the zoom's end (~+17vh md at its 600vh runway, ~−144vh sm at its 800vh one): the block is then shorter than
+the runway and the camera never finishes its dolly, which nothing on screen needs once the quote is
+crisp, so the runway buys time inside the globe without adding dead scroll. Its one floor: the world
+never lets go before `pqAppearZoomT` + `PQ_READ_VH`, where the no-particles path (forced colours)
+reveals the plain quote. A fixed 100vh left 65–85vh of it with
 nothing moving. It re-solves on layout and whenever `pqStartZoomT` is republished, so changing the
 flight's timing, the runway or the formation keeps it right. See **CSS → Pull quote**.
 
@@ -1973,10 +1976,18 @@ crosshair take over invisibly and the canvas is hidden for the rest of the hold.
 `src/quote-particles.js`. Shaders: `QUOTE_*` in `src/shaders.js`. Reduced motion has none of this:
 a static DOM figure after the globe.
 
-**Scroll.** `pqStartZoomT` is where the camera crosses the globe's centre (`zoomTAtCamZ(0)`, see
-`publishPqAppearZoomT`). By then every near-side card is behind the camera and no far-side card in
-view has begun a near fade. From that scroll position (`TL.scrollYAtZoomT`), the flight progress `p`
-runs 0 → 1 over `PQ_FLY_VH` (0.88) viewport heights. Everything below is a pure function of `p`, so
+**Scroll.** `pqStartZoomT` is the hand-off: one moment at which the globe stops being interactive
+(drag, tap, cursor, controls), the spin comes to rest and the far-side cards start to dissolve. It
+is where the camera sits `bp.PQ_START_R` sphere radii in front of the centre (`zoomTAtCamZ`, see
+`publishPqAppearZoomT`); md's 0 is the centre, so every near-side card is behind the camera; sm's
+0.5 comes earlier, while more of the narrow view is cards (the near cards still in front of the
+camera are past their near fade and off to the sides by then). `PQ_START_R` is the knob for how deep
+into the scroll the moment comes; the near band (`NEAR_FADE_START`/`_END`) is the knob for how wide
+the pierce-through before it is. Below 0, far-side cards between the centre and the camera are
+passed as plain cards (the far side never runs the near scatter while particles are on); above 0,
+near-side cards still in front of the camera at the hand-off become quote particles. Check both
+breakpoints after moving it. From that scroll position (`TL.scrollYAtZoomT`), the flight progress `p`
+runs 0 → 1 over `PQ_FLY_VH` (1.0) viewport heights. Everything below is a pure function of `p`, so
 it all reverses when you scroll back. `.globe-gallery-pq-particles` adds `--gg-pq-hold` (derived,
 see The hold) to the runway; `deriveFrame` takes that `holdPx` back off the zoom tail, so the zoom pace is unchanged
 and the extra scroll goes to the flight and the reading hold.
@@ -1993,7 +2004,14 @@ and the extra scroll goes to the flight and the reading hold.
 colours, raster ready), `placeSphereCard` gives cards behind the centre plane `proxFade = 1`, so the
 far side never runs the near-camera scatter; the quote particles are its only break-up. Near-side
 cards scatter as they pass the camera (Near-camera dissolve). Over `PQ_SPIN_EASE_T` (0.04 zoomT) before `pqStartZoomT`, `quoteSpinScale` eases
-auto-spin, drag inertia, hover and drag warp to 0, and the pointer retires. While the particles own
+hover and drag warp to 0; spin and drag run at full strength and stop at `pqStartZoomT` itself, where
+the pointer retires and the dissolve starts. The approach is gentle because the camera's dolly is:
+`camZAtZoomT` eases out with `ZOOM_EASE_POW` (timeline.js; mirrored by `camZAt`/`pAtCamZ` and the
+shaders' `camZAt`). Lower spreads the travel more evenly, giving the inside of the globe more of the
+tail; higher front-loads it. At 2 (was a cubic) the stretch inside the globe before the hand-off is
+~44vh md at its 600vh runway and ~21vh sm at its own 800vh runway (345vh formation) and 0.5-radii hand-off (~28 / ~13
+with the cubic at 570vh); the hold re-solves, so no
+dead scroll. While the particles own
 the cards (`quoteOwnsCards()`), the orientation is held exactly, so the cards come back where the
 particles left them. The camera keeps dollying at the stage's pace throughout.
 
@@ -2049,7 +2067,7 @@ turns to the text colour. Crosshair particles are flagged in `aRand.z` and have 
 
 **Landing = crisp, locally.** A particle's arrival depends only on its target's reading order
 (x·0.7 + y·0.3 over the figure box, mirrored for RTL, stretched so the text's last pixel lands at
-`QUOTE_TEXT_END` (0.88) of the order, `uTextEnd`; the crosshair takes the full order, so its lines
+`QUOTE_TEXT_END` (0.9) of the order, `uTextEnd`; the crosshair takes the full order, so its lines
 finish a little after the text), plus a fixed ±`QUOTE_ARRIVE_JITTER` (0.02)
 that feathers the wave's edge. `QUOTE_PLANE_FRAG` recomputes the same order per pixel and reveals the
 crisp raster from a region's mean arrival to past its latest one; landed particles grow into solid
@@ -2107,7 +2125,7 @@ if the raster found no ink, the figure gets `is-dom`: no particles, the system-c
 fades in at `is-live`, and the canvas hides past the reveal as it would with no quote. A forced-colours
 rule keeps the figure at `opacity: 0` until then, since forced colours repaints transparent text.
 
-**Perf.** `PQ_PARTICLES_SM` is 40k and `PQ_PARTICLES_MD` 56k: one `Points` draw per far-side card in
+**Perf.** `PQ_PARTICLES_SM` is 15k (fewer, so sm's dots stay big enough not to dim as they shrink) and `PQ_PARTICLES_MD` 56k: one `Points` draw per far-side card in
 view (about 3–12) plus the text plane. The scene renders only while something changes
 (`isIdle`/`markDrawn`), and not at all once the canvas is hidden for the hold. At 4× CPU throttle
 (headless) the hand-off frame is the costliest (`setSources`), with the pairing frame after it; the
@@ -2489,7 +2507,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   turns to dots together (a wider span let patches go to dots well before the rest) and disperses
   as one. Each tile flies out from the card's centre and the view's (past the camera), at its own
   speed and ±23° angle. Three easings over its flight `t`: the distance eases in and out
-  (smoothstep, to `SCATTER_EXPAND`; ease-out read as an abrupt burst, ease-in as a still dot grid),
+  (smoothstep, to `bp.SCATTER_EXPAND`: 1.5 md, 0.5 sm, where the big near cards piled over each other; ease-out read as an abrupt burst, ease-in as a still dot grid),
   the tile shrinks to a third of its cell, easing in and out over the whole flight (no drop at
   detach; any quicker shrink read as abrupt), and the opacity
   fades in and out over the first 70% (`1 − smoothstep(0, 0.7, t)`): the dots spread faster than

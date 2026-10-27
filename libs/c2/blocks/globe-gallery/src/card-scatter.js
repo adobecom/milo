@@ -8,9 +8,10 @@ import { QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG } from './shaders.js';
 // and dissolve progress as uniforms, so it is a pure function of the card's state on that frame:
 // spin, drag and scroll in either direction just re-evaluate it. See README (Near-camera dissolve).
 
-export default function createCardScatter() {
+export default function createCardScatter({ expand }) {
   const group = new THREE.Group();
   const shared = {
+    uScatterExpand: { value: expand },
     uP: { value: 0 },
     uView: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },

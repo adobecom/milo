@@ -22,7 +22,7 @@ describe('globe-gallery: near-camera card scatter', () => {
   afterEach(() => { fx?.dispose(); fx = null; });
 
   it('tiles every card with one shared grid', () => {
-    fx = createCardScatter();
+    fx = createCardScatter({ expand: 1.5 });
     fx.setGrid(40, 60);
     expect(fx.tileCount()).to.equal(2400);
     fx.update([card(0.2), card(0.6)], { W: 800, H: 600, dpr: 1 });
@@ -34,7 +34,7 @@ describe('globe-gallery: near-camera card scatter', () => {
   });
 
   it('pools its draws and keeps the grid until it changes', () => {
-    fx = createCardScatter();
+    fx = createCardScatter({ expand: 1.5 });
     fx.setGrid(10, 10);
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update([card(0.1), card(0.2), card(0.3)], view);

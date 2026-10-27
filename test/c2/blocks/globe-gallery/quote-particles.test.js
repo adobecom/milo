@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import * as THREE from '../../../../libs/deps/three.js';
 import { swirlEnvelope, QUOTE_SWIRL_AMP } from '../../../../libs/c2/blocks/globe-gallery/src/shaders.js';
 import createQuoteParticles, { QUOTE_LIVE_P, coherentOrder, seededRandom, camZAt } from '../../../../libs/c2/blocks/globe-gallery/src/quote-particles.js';
+import { ZOOM_EASE_POW } from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
 
 // A static camera at z 0 (zoom span 0), fov 60 over an 800 × 600 view.
 const cam = new THREE.PerspectiveCamera(60, 800 / 600, 0.1, 100);
@@ -191,7 +192,7 @@ describe('globe-gallery: quote particles', () => {
       const k = aRand.array[i * 4 + 2];
       last[k] = Math.max(last[k], aRand.array[i * 4 + 3]);
     }
-    expect(last[1] - last[0]).to.be.within(0.35 * 0.12 - 0.04, 0.35 * 0.12 + 0.04);
+    expect(last[1] - last[0]).to.be.within(0.35 * 0.1 - 0.04, 0.35 * 0.1 + 0.04);
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update(QUOTE_LIVE_P, view);
     expect(points.visible).to.be.false;
@@ -286,7 +287,8 @@ describe('globe-gallery: quote particles', () => {
     const xs = Array.from({ length: 50 }, () => a());
     expect(xs).to.deep.equal(Array.from({ length: 50 }, () => b()));
     xs.forEach((x) => expect(x).to.be.within(0, 1));
-    expect(camZAt([0.2, 0.5, 57, 117], 0)).to.be.closeTo(57 - 117 * (1 - 0.8 ** 3), 1e-9);
+    const camZ0 = 57 - 117 * (1 - 0.8 ** ZOOM_EASE_POW);
+    expect(camZAt([0.2, 0.5, 57, 117], 0)).to.be.closeTo(camZ0, 1e-9);
   });
 
   it('swirls at most AMP of the short side, and not at all at hand-off or landing', () => {

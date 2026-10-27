@@ -13,8 +13,8 @@
 
 .globe-gallery {
   --gg-hang-max: 0.8em;
-  --gg-runway-height: 570vh;
-  --gg-formation-vh: 380vh;
+  --gg-runway-height: 800vh;
+  --gg-formation-vh: 345vh;
   --gg-pq-hold: 100vh; /* fallback; JS derives it (syncPqHold) */
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
@@ -166,6 +166,7 @@
 
 @media (width >= 768px) {
   .globe-gallery {
+    --gg-runway-height: 600vh;
     --gg-formation-vh: 360vh;
     --gg-copy-pad: var(--s2a-spacing-3xl);
     --gg-controls-inset: var(--s2a-spacing-lg);

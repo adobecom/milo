@@ -1,4 +1,5 @@
 import * as THREE from '../../../../deps/three.js';
+import { ZOOM_EASE_POW } from './timeline.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
   QUOTE_FLIGHT as F, QUOTE_CRISP_P, QUOTE_ARRIVE_JITTER,
@@ -192,11 +193,12 @@ export function seededRandom(seed) {
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
 export function camZAt(zoom, p) {
   const z = clamp01(zoom[0] + p * zoom[1]);
-  return zoom[2] - zoom[3] * (1 - (1 - z) ** 3);
+  return zoom[2] - zoom[3] * (1 - (1 - z) ** ZOOM_EASE_POW);
 }
 function pAtCamZ(zoom, cz) {
   if (!(zoom[1] > 0) || !(zoom[3] > 0)) return Infinity;
-  return (1 - (1 - clamp01((zoom[2] - cz) / zoom[3])) ** (1 / 3) - zoom[0]) / zoom[1];
+  const eased = clamp01((zoom[2] - cz) / zoom[3]);
+  return (1 - (1 - eased) ** (1 / ZOOM_EASE_POW) - zoom[0]) / zoom[1];
 }
 const PAIR_BANDS = 8; // x bands of the 2D quantile order (8 measured best of 4–32)
 

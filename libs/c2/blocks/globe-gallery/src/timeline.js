@@ -1,7 +1,7 @@
 // Every phase constant, threshold, and the per-frame clock derivation.
 // Pure — no THREE, no DOM, no closure state.
 
-import { clamp01, easeOutCubic, lerpN } from './math.js';
+import { clamp01, lerpN } from './math.js';
 
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
@@ -70,15 +70,20 @@ export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 // from the other at runtime, so they must be edited together — hence they live side by side.
 // Break the pairing and pqAppearZoomT drifts silently, taking the controls, the canvas cursor,
 // the canvas hide and the pull-quote reveal with it.
+// The dolly eases out with this power. Lower spreads the travel more evenly, so the camera spends
+// more of the zoom inside the globe before the hand-off; higher front-loads it. Mirrored by
+// quote-particles.js camZAt/pAtCamZ and the shaders' camZAt.
+export const ZOOM_EASE_POW = 2;
+
 export function camZAtZoomT(t, camZSphere, camZEnd) {
-  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+  return lerpN(camZSphere, camZEnd, 1 - (1 - clamp01(t)) ** ZOOM_EASE_POW);
 }
 
 export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   const span = camZSphere - camZEnd;
   if (!(span > 0)) return 0;
   const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
-  return 1 - ((1 - eased) ** (1 / 3));
+  return 1 - ((1 - eased) ** (1 / ZOOM_EASE_POW));
 }
 
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays

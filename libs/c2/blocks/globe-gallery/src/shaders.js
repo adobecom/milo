@@ -1,3 +1,5 @@
+import { ZOOM_EASE_POW } from './timeline.js';
+
 // Signed-distance rounded rect (the corner mask). `b` is the FULL half-extent, radius included.
 const RR_SDF = [
   'float rrSDF(vec2 p, vec2 b, float r) {',
@@ -220,12 +222,12 @@ export const TEXT_FRAG = [
 export const QUOTE_RULE_DROP = 0.15;
 // Share of the order the text's last pixel lands at; the crosshair takes the full order, so its
 // lines finish a little after the text.
-export const QUOTE_TEXT_END = 0.88;
+export const QUOTE_TEXT_END = 0.9;
 export const QUOTE_SETTLE = 0.04; // a region's particles hand over to the crisp text in this window
 // Share of a particle's own travel after which it turns to ink; later for the crosshair, whose
 // grey ink reads as colourless.
-export const QUOTE_INK_FROM = 0.98;
-const QUOTE_RULE_INK_FROM = 0.98;
+export const QUOTE_INK_FROM = 0.95;
+const QUOTE_RULE_INK_FROM = 0.95;
 // ± p on each particle's reading-order arrival, so the landing wave's edge is feathered and a dense
 // region never lands at one instant. The crisp reveal and the particle fade allow for it.
 export const QUOTE_ARRIVE_JITTER = 0.02;
@@ -260,10 +262,8 @@ const QUOTE_DETACH_P = 0.01;
 // both layers. Low: a card dissolves all over at once, not in a ring travelling inward.
 export const QUOTE_EDGE_LEAD = 0.2;
 // A near card's scatter: the share of its dissolve over which tiles detach (short, so the whole
-// card turns to dots together and disperses as one), and how far out they fly, in multiples of
-// their offset from the card centre.
+// card turns to dots together and disperses as one). How far they fly is uScatterExpand.
 const SCATTER_SPAN = 0.08;
-const SCATTER_EXPAND = 1.5;
 
 // Value noise and its curl: a divergence-free 2D flow, deterministic in its inputs.
 const CURL_NOISE = [
@@ -306,6 +306,7 @@ export const QUOTE_POINTS_VERT = [
   // ≥ 0: a near card's scatter (CardScatter), at this progress of its near-camera dissolve; the
   // particles ride the card's live pose, break up edge first (aRand.x) and drift out to nothing.
   'uniform float uScatterP;',
+  'uniform float uScatterExpand;', // how far scatter tiles fly, in multiples of their offset from the card centre
   'uniform float uAspect;', // the card's width / height
   'attribute vec2 aUv;', // u right, v down the card as seen
   'attribute vec2 aCell;', // the particle's cell, in card uv
@@ -325,7 +326,7 @@ export const QUOTE_POINTS_VERT = [
   // Mirrors TL.camZAtZoomT, for the camera at a given flight progress.
   'float camZAt(float p) {',
   '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
-  '  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, 3.0));',
+  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(ZOOM_EASE_POW)}));`,
   '}',
   // The camera only dollies along z and looks down −z, so its view matrix is a translation.
   'vec2 toPx(vec3 w, float camZ) {',
@@ -381,11 +382,11 @@ export const QUOTE_POINTS_VERT = [
   '    vec2 dir = s - toPx(uOrigin + 0.5 * (uAxisU + uAxisV), zEff);',
   '    float a = (h2 - 0.5) * 0.8;',
   '    dir = mat2(cos(a), sin(a), -sin(a), cos(a)) * dir;',
-  `    pos = s + (dir * (0.5 + h2) * ${glf(SCATTER_EXPAND)} + (s - 0.5 * uView) * 0.5) * t * t * (3.0 - 2.0 * t);`,
+  '    pos = s + (dir * (0.5 + h2) * uScatterExpand + (s - 0.5 * uView) * 0.5) * t * t * (3.0 - 2.0 * t);',
   '  }',
   // Each tile is a square, contiguous with its neighbours, until it detaches (its release, or a
-  // scatter tile's lift-off), then within a moment a round dot smaller than its cell, so a tile
-  // never reads as a brick. g then takes it to its landing size.
+  // scatter tile's lift-off), then a round dot, so a tile never reads as a brick. g then takes it
+  // to its end size.
   '  if (scatter) { float x = min(t / 0.25, 1.0); detach = x * x * x * (x * (x * 6.0 - 15.0) + 10.0); }',
   '  float g = smoothstep(0.0, scatter ? 1.0 : 0.4, t);',
   // Landing, the dot grows to a square that closes the gaps to its neighbours, so the glyph reads
