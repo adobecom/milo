@@ -451,7 +451,7 @@
   --feds-language-banner-height: 44px;
 
   /* Animation properties */
-  --parallax-easing: cubic-bezier(0.76, 0, 0.24, 1);
+  --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
 
   /* Grid sizes */
   --grid-gutter: var(--s2a-spacing-xs);
@@ -1308,7 +1308,7 @@ span.hang-opening-quote {
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
     view-timeline: --parallax-stagger-timeline block;
-    view-timeline-inset: 40% 10%;
+    view-timeline-inset: 10% 10%;
 
     > :not([class*="section-"]) {
       --parallax-stagger-row-index: 0;
