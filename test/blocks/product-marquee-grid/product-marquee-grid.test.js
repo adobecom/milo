@@ -198,6 +198,77 @@ describe('Product Marquee Grid', () => {
     });
   });
 
+  describe('cta grouping', () => {
+    const buildBlock = (promoInner, blockClass = '') => {
+      document.body.innerHTML = `<div class="product-marquee-grid ${blockClass}"><div>`
+        + '<div><h1>Photoshop</h1></div>'
+        + `<div>${promoInner}</div>`
+        + '</div></div>';
+      return document.querySelector('.product-marquee-grid');
+    };
+
+    it('keeps a description that contains a button in the content, not the cta wrapper', async () => {
+      const block = buildBlock(
+        '<p><mas-field field="description">Learn more <a class="con-button" href="/learn">here</a></mas-field></p>'
+        + '<p><strong><a href="/plans">See plans</a></strong></p>',
+      );
+      await init(block);
+
+      const content = block.querySelector('.pm-merch-content');
+      const wrapper = block.querySelector('.pm-merch-ctas');
+      // The description (with its inline button) stays in the content, outside the cta row.
+      expect(content.querySelector('mas-field[field="description"]')).to.exist;
+      expect(wrapper.querySelector('mas-field[field="description"]')).to.be.null;
+      // Only the real cta moves into the wrapper.
+      expect(wrapper.querySelector('.con-button').getAttribute('href')).to.equal('/plans');
+    });
+
+    it('keeps body text that follows a cta in place, after the cta wrapper', async () => {
+      const block = buildBlock(
+        '<p><strong><a href="/plans">See plans</a></strong></p>'
+        + '<p>Terms and conditions apply.</p>',
+      );
+      await init(block);
+
+      const content = block.querySelector('.pm-merch-content');
+      const wrapper = content.querySelector('.pm-merch-ctas');
+      expect(wrapper).to.exist;
+      expect(wrapper.querySelector('.con-button')).to.exist;
+      // The wrapper replaces the cta in place; the trailing copy stays after it (not pulled in).
+      const trailing = wrapper.nextElementSibling;
+      expect(trailing.textContent).to.equal('Terms and conditions apply.');
+      expect(wrapper.textContent).to.not.contain('Terms and conditions');
+    });
+
+    it('wraps a bare single-line promo column so its cta still groups', async () => {
+      const block = buildBlock('<strong><a href="/buy">Buy now</a></strong>');
+      await init(block);
+
+      // The loose markup is wrapped into a paragraph and the cta is still grouped.
+      const wrapper = block.querySelector('.pm-merch-ctas');
+      expect(wrapper).to.exist;
+      expect(wrapper.querySelector('.con-button').getAttribute('href')).to.equal('/buy');
+    });
+
+    it('appends the cta row at the end of the card for the cta-pill variant', async () => {
+      const block = buildBlock(
+        '<p>Save 20% this week.</p>'
+        + '<p><strong><a href="/plans">See plans</a></strong></p>',
+        'cta-pill',
+      );
+      await init(block);
+
+      const card = block.querySelector('.pm-merch-card');
+      const wrapper = card.querySelector('.pm-merch-ctas');
+      expect(wrapper).to.exist;
+      expect(wrapper.querySelector('.con-button')).to.exist;
+      // cta-pill appends the wrapper to the card itself (last child), not in place in the content.
+      expect(wrapper.parentElement).to.equal(card);
+      expect(card.lastElementChild).to.equal(wrapper);
+      expect(block.querySelector('.pm-merch-content .pm-merch-ctas')).to.be.null;
+    });
+  });
+
   describe('cta-stack variant', () => {
     let block;
     before(async () => {

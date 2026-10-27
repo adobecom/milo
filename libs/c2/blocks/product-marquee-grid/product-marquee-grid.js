@@ -70,7 +70,11 @@ function buildMerchCard(col, { pillCtas = false } = {}) {
 
   const merchCard = createTag('div', { class: 'pm-merch-card' });
   merchCard.append(cardContent);
-  const isCtaPara = (el) => !!el.querySelector('.con-button, mas-field[field^="ctas"]');
+  const ctaSelector = '.con-button, a[data-wcs-osi], mas-field[field^="ctas"]';
+  const isCtaPara = (el) => {
+    const cta = el.matches(ctaSelector) ? el : el.querySelector(ctaSelector);
+    return !!cta && !cta.closest(MAS_BODY_FIELDS);
+  };
   const ctaParas = [...cardContent.children].filter(isCtaPara);
   if (ctaParas.length) {
     const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
