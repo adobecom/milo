@@ -148,36 +148,25 @@ describe('Utils', () => {
       });
     });
 
-    it('marks target ready when martech is disabled', async () => {
-      const martechMeta = utils.createTag('meta', { name: 'martech', content: 'off' });
-      document.head.append(martechMeta);
-      try {
-        utils.resetTargetReady();
-        const onReady = sinon.spy();
-        console.log('DBG', window.location.href, document.querySelector('meta[name="target-timeout"]')?.content);
-        const ready = utils.whenTargetReady().then(onReady);
-        await Promise.resolve();
-        expect(onReady.called).to.be.false;
-        expect(await utils.loadMartech()).to.be.false;
-        await ready;
-        expect(onReady.calledOnce).to.be.true;
-      } finally {
-        martechMeta.remove();
-        utils.resetTargetReady();
-      }
-    });
-
-    it('marks target ready when Launch is already on the page', async () => {
+    it('does not mark target ready from loadMartech, only after personalization applied', async () => {
       const { marketingtech, _satellite: satellite } = window;
       window.marketingtech = { adobe: { launch: {} } };
       // eslint-disable-next-line no-underscore-dangle
       window._satellite = {};
+      const clock = sinon.useFakeTimers();
       try {
         utils.resetTargetReady();
-        const ready = utils.whenTargetReady();
+        const onReady = sinon.spy();
+        const ready = utils.whenTargetReady().then(onReady);
         expect(await utils.loadMartech()).to.be.true;
+        await clock.tickAsync(1);
+        expect(onReady.called).to.be.false;
+        utils.notifyTargetReady();
+        await clock.tickAsync(1);
         await ready;
+        expect(onReady.calledOnce).to.be.true;
       } finally {
+        clock.restore();
         window.marketingtech = marketingtech;
         // eslint-disable-next-line no-underscore-dangle
         window._satellite = satellite;

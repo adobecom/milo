@@ -2250,14 +2250,12 @@ export async function loadMartech({
 } = {}) {
   // eslint-disable-next-line no-underscore-dangle
   if (window.marketingtech?.adobe?.launch && window._satellite) {
-    notifyTargetReady();
     return true;
   }
 
   if (PAGE_URL.searchParams.get('martech') === 'off'
     || PAGE_URL.searchParams.get('marketingtech') === 'off'
     || getMetadata('martech') === 'off') {
-    notifyTargetReady();
     return false;
   }
 
@@ -2267,8 +2265,6 @@ export async function loadMartech({
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({ persEnabled, persManifests, postLCP });
   isMartechLoaded = true;
-  // Post-LCP target changes are applied by loadPostLCP, which notifies once they land.
-  if (getConfig().mep?.targetEnabled !== 'postlcp') notifyTargetReady();
 
   return true;
 }
@@ -3223,7 +3219,12 @@ export async function loadArea(area = document) {
     }
     setCountry();
     preloadMarketsConfig();
-    await checkForPageMods();
+    try {
+      await checkForPageMods();
+    } finally {
+      // Post-LCP target changes are applied by loadPostLCP, which notifies once they land.
+      if (getConfig().mep?.targetEnabled !== 'postlcp') notifyTargetReady();
+    }
     initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
