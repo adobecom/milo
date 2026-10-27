@@ -1122,6 +1122,8 @@ export function createPullQuote({
     plainQuote(quoteEl);
     if (!fx) return;
     fitQuote();
+    const railH = figureEl.getBoundingClientRect().bottom - railEl.getBoundingClientRect().top;
+    root.style.setProperty('--gg-pq-rail-h', `${railH.toFixed(1)}px`);
     clearTimeout(rasterTimer);
     rasterTimer = setTimeout(() => {
       fx?.layout({ dpr: capDpr() }).then(() => { s.viewKey = ''; });
@@ -1133,6 +1135,11 @@ export function createPullQuote({
     if (sel && !sel.isCollapsed && figureEl.contains(sel.anchorNode)) sel.removeAllRanges();
   }
 
+  const worldReleased = (lenisY) => {
+    const { blockDocTop, blockHeight } = getSpan();
+    return lenisY >= blockDocTop + blockHeight - getView().H;
+  };
+
   function update({ lenisY, dtScale }) {
     if (!fx) return;
     s.on = fx.isReady() && !forcedColors?.matches;
@@ -1140,7 +1147,7 @@ export function createPullQuote({
     s.p = clamp01((lenisY - startY) / Math.max(1, FLY_VH * getView().H));
     const want = isOn() && s.p >= QUOTE_LIVE_P;
     const step = (dtScale * FRAME_MS) / SWAP_MS;
-    s.swapT = clamp01(s.swapT + (want ? step : -step));
+    s.swapT = want && worldReleased(lenisY) ? 1 : clamp01(s.swapT + (want ? step : -step));
     const str = s.swapT.toFixed(3);
     if (str !== s.swapStr) {
       s.swapStr = str;
@@ -1156,8 +1163,7 @@ export function createPullQuote({
   }
 
   function isDone(lenisY) {
-    const { blockDocTop, blockHeight } = getSpan();
-    return (s.p >= QUOTE_LIVE_P && s.swapT >= 1) || lenisY >= blockDocTop + blockHeight;
+    return (s.p >= QUOTE_LIVE_P && s.swapT >= 1) || worldReleased(lenisY);
   }
 
   function placeCanvas() {
@@ -1291,6 +1297,7 @@ export function createPullQuote({
     near.length = 0;
     root.classList.remove('globe-gallery-pq-particles');
     root.style.removeProperty('--gg-pq-height');
+    root.style.removeProperty('--gg-pq-rail-h');
     if (figureEl) {
       figureEl.style.cssText = '';
       figureEl.classList.remove('is-live', 'is-dom');

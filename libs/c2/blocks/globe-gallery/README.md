@@ -65,7 +65,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `materials.js` | GPU-asset factories (named exports, no per-instance state). **Materials:** `createCardMaterial`, `createModalMaterial`, `createTextMaterial`. **Textures:** `loadCardTextures({ maxTexH })` (one texture per card, capped on height — see Texture memory budget — reporting each image's native aspect and nothing else), `loadModalTexture(src, maxTex, onReady)` (lazy, longest-side cap, returns the pending `Image` to cancel), `createClickDragTexture(aspect, hintText)`. Card and modal photos load through `imageToTexture`: `createImageBitmap` resizes off the main thread, and because ImageBitmap uploads ignore the GL flipY unpack, the flip is baked into the bitmap (`imageOrientation:'flipY'`) with `texture.flipY = false`. A cross-origin-tainted or undecodable image rejects there and falls back to a solid-color texture. |
 | `a11y.js` | `createGalleryA11y(deps)` → `{ setup, updateTabStops, teardown, isBrowsing }`. The two-level gallery (see Accessibility). All runtime state + actions (`centerCard`, `openCard`, `onFocus`) injected; holds no globe state but its DOM. |
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
-| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeOutQuart`, `easeInOutCubic`, `easeInOutQuint`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two. |
+| `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeInOutQuint`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
 | `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock**, and fires the injected `onDrag()` once per gesture the first time travel clears `CLICK_MAX_MOVE` (see Behavior notes). Sole owner of the canvas cursor — `none` while the custom cursor is up, then native `grab`/`grabbing`/`pointer`, all written through `applyCursor()` (see Behavior notes). |
 | `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the retirement fade, `isActive()` gating interaction's cursor. No-op on touch and on the barrel. |
@@ -466,18 +466,17 @@ not just the first, and runs from `populateModal` after `renderParagraphs`. `han
 `renderParagraphs` moves rather than clones. It needs **no resize or breakpoint hook** — the outdent
 is the first glyph's advance and does not depend on where lines wrap.
 
-**Both hang sites clip, so both reserve a gutter.** `--gg-hang-max` is `0.8em` — the ceiling
+**The description clips, so it reserves a gutter.** `--gg-hang-max` is `0.8em` — the ceiling
 `hangOpeningMark` enforces, since it declines any advance at or past `0.8 × font-size`, so the two
 move together. It is `em` and **unregistered on purpose**: a custom property substitutes as tokens,
 so the `em` resolves against each *use site's* font-size, matching whatever text is being measured.
 Give it an `@property` `<length>` syntax and it would resolve once against `.globe-gallery` instead.
 
-Each site applies it as padding and takes the same amount straight back off as a negative margin, so
-the text column does not move: the pull-quote **line** in both axes (`--gg-pq-line-bleed` is the
-vertical half), the modal **description** as `padding-inline-start` plus `margin-inline-start`. The
-description needs it because its `overflow-y: auto` makes `overflow-x` compute to `auto`; only its
-start margin is negative, so the end edge and the scrollbar on it stay put. Its md+ rule resets with
-`margin-block` — a `margin` shorthand there zeroes the gutter.
+The modal description applies it as `padding-inline-start` and takes the same amount straight back
+off as `margin-inline-start`, so the text column does not move. It needs it because its
+`overflow-y: auto` makes `overflow-x` compute to `auto`; only its start margin is negative, so the
+end edge and the scrollbar on it stay put. Its md+ rule resets with `margin-block` — a `margin`
+shorthand there zeroes the gutter. The pull quote does not clip, so its hung mark needs no gutter.
 
 **`hanging-punctuation: first` is deliberately not used.** It's the native spelling of this and it
 was in the CSS, gated by `CSS.supports` so the measurement only ran where the property is missing
@@ -1068,7 +1067,8 @@ through the globe while the hint text fades. In order:
 1. **Hand-off** (`startT`): the pointer and controls retire, the spin rests, the flight starts.
 2. **Cue** (`pqAppearZoomT`): the last card has left the screen; the hint text reaches 0.
 3. **Quote crisp** (`p = QUOTE_LIVE_P`): the DOM copy takes over and the canvas stops drawing.
-4. **Block end**: world and rail un-stick; the quote scrolls away with the page.
+4. **Block end**: the world un-sticks, then the quote holds until the block's end reaches its bottom
+   edge and scrolls away with it.
 
 `startT` never comes after `pqAppearZoomT`, and every cue on this tail is derived from the camera
 and the card geometry (`zoomTAtCamZ`): nothing here is a free scroll constant. Without the particles
@@ -1099,7 +1099,7 @@ In scroll order. Positions are not listed: run the snippet below for the current
 | `zoomT ≥ startT` | **hand-off**: drag, tap, cursor and globe controls retire (controls leave the tab order), the spin comes to rest, the flight starts (`p` > 0) and the cards turn into particles | `pullQuote.update`, `controls.update`, `updateSphereRotation` |
 | `zoomT ≥ pqAppearZoomT` | the last card has left the screen; **hint text reaches 0** (it fades linearly across the zoom up to here). With no quote particles, this is also where the controls retire | `updateClickDragText`, `controls.update` |
 | `p ≥ QUOTE_LIVE_P` | quote crisp; the DOM copy takes over over `SWAP_MS`, then the canvas is `display:none` **and `renderer.render` is skipped**. Without particles the canvas instead goes at `pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | `pullQuote.update`, `updateCanvasVisibility`, `renderScene` |
-| block end (`--gg-pq-height`) | the world and the rail un-stick together; the DOM quote scrolls away and the next section arrives | CSS |
+| block end (`--gg-pq-height`) | the world un-sticks (canvas hidden); the DOM quote holds until the block's end meets its bottom edge, then scrolls away with it | CSS |
 
 Also on the timeline but **not** scroll-driven: texture loading (contours → un-dissolve, plus the
 one-time sm masonry re-solve on `onDone`), the modal (`sphereFormT ≥ SPHERE_INTERACTIVE_T` is its
@@ -1831,7 +1831,7 @@ computed-value time, and an initial of `0` would silently drop the centring inst
 ways). It cannot be a `calc()` or a `var()` — an initial value must be computationally independent,
 and Chrome drops the whole `@property` rule if it isn't. Keep it equal to `72 + 52`.
 
-**DOM chrome** just moves down: the pull-quote rail's `top` and the a11y entry widget's centre both
+**DOM chrome** just moves down: the pull-quote figure's `top` and the a11y entry widget's centre both
 ride `--gg-optical-center`. Their *sizes* are untouched.
 
 **The WebGL scene** moves down via `applyCentringOffset` → `camera.setViewOffset(W, H, 0, -navH/2,
@@ -1914,7 +1914,7 @@ taper the first line lands under the nav no matter where the box is centred. The
 whitespace in the box, so it is what yields. Raising the ceiling above 160px runs the top edge into
 the localnav at lg/xl, so re-check that clearance first.
 
-The figure is centred on `--gg-optical-center` inside the viewport-tall rail by
+The figure is centred on `--gg-optical-center` inside the rail by
 `transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: centred while it fits the band,
 top-anchored (overflowing downward only) once it doesn't. See **Pull quote** for pinning.
 
@@ -2081,10 +2081,14 @@ details make the two match: the figure drops the page's `-webkit-font-smoothing:
 can't use it), the raster uses the DOM-measured ascent, and it snaps positions to device pixels as
 layout does. The frames either side of the swap differ by a fraction of one 8-bit level on average.
 
-**Pinning.** `-pin` covers the whole block and `-rail` is a sticky, viewport-sized layer inside it,
-mirroring the sticky `.globe-gallery-world`. Once `p > 0` the canvas switches from `position: fixed`
-to `absolute` inside the already-stuck world (a seamless swap) and drops `pointer-events`. At the
-block's end the world and the rail un-stick together and the DOM quote scrolls away with the page.
+**Pinning.** `-pin` covers the whole block, and `-rail` sticks at the top like the world but is only
+as tall as the quote's bottom edge (`--gg-pq-rail-h`, measured on layout, capped at a viewport). Once
+`p > 0` the canvas switches from `position: fixed` to `absolute` inside the already-stuck world (a
+seamless swap) and drops `pointer-events`. The world un-sticks first, as the block's end reaches the
+viewport bottom; the quote stays put until that end reaches its bottom edge, so the crosshair meets
+the end of the block and the two scroll away together. Because the world, and the canvas with it,
+moves first, the canvas hides and the DOM quote is fully inked as soon as the world un-sticks, even
+on a fast scroll.
 
 **Accessibility.** The canvas carries no content. The real `figure > blockquote + figcaption` stays
 in the DOM, in reading order after the arc copy, always in the accessibility tree: while the canvas

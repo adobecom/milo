@@ -349,7 +349,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
 .globe-gallery-pullquote-rail {
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: min(var(--gg-pq-rail-h, 100vh), 100vh);
 }
 
 .globe-gallery-pullquote {

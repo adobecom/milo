@@ -23,7 +23,6 @@ import {
   easeInOutCubic,
   easeInOutQuint,
   easeOutCubic,
-  easeOutQuart,
   getFanData,
   pxPerWorldAt,
   rotateArcPoint,
@@ -503,9 +502,6 @@ describe('globe-gallery: math', () => {
   it('keeps easing endpoints and midpoint symmetry stable', () => {
     expect(easeOutCubic(0)).to.equal(0);
     expect(easeOutCubic(1)).to.equal(1);
-    expect(easeOutQuart(0)).to.equal(0);
-    expect(easeOutQuart(0.5)).to.equal(0.9375);
-    expect(easeOutQuart(1)).to.equal(1);
     expect(easeInOutCubic(0.5)).to.equal(0.5);
     expect(easeInOutQuint(0.5)).to.equal(0.5);
   });
