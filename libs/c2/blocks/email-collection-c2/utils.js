@@ -320,20 +320,16 @@ function isMarketingConsent(consentId) {
 const getGeoCountry = () => getCountry().catch(() => null);
 
 export function getFormTrigger(el) {
-  const getSection = (node) => node?.closest('body > *') ?? null;
   const dialog = el?.closest('.dialog-modal');
-  const focused = document.activeElement;
-
-  if (focused && focused !== document.body && !dialog?.contains(focused)) {
-    const section = getSection(focused);
-    if (section) return section;
-  }
-
-  // Safari/iOS don't focus clicked links: use the first link that opens this modal
   if (!dialog?.id) return null;
-  const link = [...document.querySelectorAll(`[data-modal-hash="#${CSS.escape(dialog.id)}"]`)]
-    .find((node) => !dialog.contains(node));
-  return getSection(link);
+  const links = [...document.querySelectorAll(`[data-modal-hash="#${CSS.escape(dialog.id)}"]`)]
+    .filter((node) => !dialog.contains(node));
+  const getSection = (node) => node.closest('body > *');
+  // Modal marks the link that opened it; otherwise only trust links that are all in one section
+  const opener = links.find((node) => node.dataset.isModalTrigger === 'true');
+  if (opener) return getSection(opener);
+  const sections = [...new Set(links.map(getSection))];
+  return sections.length === 1 ? sections[0] : null;
 }
 
 export const [getFormData, setFormData] = (() => {

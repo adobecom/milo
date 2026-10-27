@@ -148,6 +148,38 @@ describe('Modal (c2)', () => {
       expect(closeCallback.calledOnce).to.be.true;
       expect(document.querySelector('.modal-curtain')).to.be.null;
     });
+
+    it('marks the clicked link as trigger when focus is elsewhere (Safari)', async () => {
+      const link = createTag('a', { href: '#c2-trigger', 'data-modal-hash': '#c2-trigger' }, 'Open');
+      const input = createTag('input');
+      document.body.append(link, input);
+      input.focus();
+      link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+      link.click();
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, { id: 'c2-trigger', content, title: 'Modal: Trigger' });
+
+      expect(link.dataset.isModalTrigger).to.equal('true');
+      expect(input.dataset.isModalTrigger).to.be.undefined;
+
+      modal.querySelector('button.dialog-close').click();
+      await waitForRemoval('#c2-trigger');
+      expect(document.activeElement).to.equal(link);
+      link.remove();
+      input.remove();
+    });
+
+    it('ignores a clicked link that was removed before the modal opened', async () => {
+      const link = createTag('a', { href: '#c2-detached', 'data-modal-hash': '#c2-detached' }, 'Open');
+      document.body.append(link);
+      link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+      link.click();
+      link.remove();
+      const content = createTag('div', {}, 'Body');
+      await getModal(null, { id: 'c2-detached', content, title: 'Modal: Detached' });
+
+      expect(link.dataset.isModalTrigger).to.be.undefined;
+    });
   });
 
   describe('init', () => {

@@ -1084,6 +1084,7 @@ describe('General Marketing (cs1D) consent', () => {
     block.className = 'email-collection-c2';
     const trigger = document.createElement('a');
     trigger.href = '#signup';
+    trigger.dataset.modalHash = '#signup';
     trigger.textContent = 'Sign up';
     const main = document.createElement('main');
     main.appendChild(trigger);
@@ -1101,7 +1102,11 @@ describe('General Marketing (cs1D) consent', () => {
       sectionMeta.appendChild(row);
     });
     section.append(block, sectionMeta);
-    document.body.append(main, section);
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog-modal';
+    dialog.id = 'signup';
+    dialog.appendChild(section);
+    document.body.append(main, dialog);
     return { block, trigger };
   }
 
@@ -1144,9 +1149,9 @@ describe('General Marketing (cs1D) consent', () => {
       expect(setFormData(block)).to.include('mps-sname');
     });
 
-    it('Should store the focused top-level element as the form trigger', () => {
+    it('Should store the section of the modal trigger link as the form trigger', () => {
       const { block, trigger } = createBlock([['consent-id', 'cs1D']]);
-      trigger.focus();
+      trigger.dataset.isModalTrigger = 'true';
       setFormData(block);
       expect(getFormData('trigger')?.tagName).to.equal('MAIN');
     });
@@ -1192,42 +1197,47 @@ describe('General Marketing (cs1D) consent', () => {
       document.body.innerHTML = '';
     });
 
-    it('Should use the focused element section when the link is focused', () => {
-      const { block, triggers } = createModalBlock(['header', 'main']);
-      triggers[0].focus();
-      expect(getFormTrigger(block)?.tagName).to.equal('HEADER');
-    });
-
-    it('Should fall back to the modal trigger link section when nothing is focused (Safari)', () => {
-      const { block } = createModalBlock(['main', 'main']);
-      document.activeElement?.blur();
-      expect(getFormTrigger(block)?.tagName).to.equal('MAIN');
-    });
-
-    it('Should ignore focus inside the dialog', () => {
-      const { block } = createModalBlock(['footer']);
-      const button = document.createElement('button');
-      block.closest('.dialog-modal').appendChild(button);
-      button.focus();
+    it('Should use the section of the link marked as modal trigger', () => {
+      const { block, triggers } = createModalBlock(['header', 'main', 'footer']);
+      triggers[2].dataset.isModalTrigger = 'true';
       expect(getFormTrigger(block)?.tagName).to.equal('FOOTER');
     });
 
-    it('Should use the first trigger link section when links are in different sections', () => {
+    it('Should ignore focus outside the trigger links (Safari)', () => {
+      const { block, triggers } = createModalBlock(['main', 'footer']);
+      triggers[1].dataset.isModalTrigger = 'true';
+      const input = document.createElement('input');
+      document.querySelector('main').appendChild(input);
+      input.focus();
+      expect(getFormTrigger(block)?.tagName).to.equal('FOOTER');
+    });
+
+    it('Should use the section when all trigger links are in it', () => {
+      const { block } = createModalBlock(['main', 'main']);
+      expect(getFormTrigger(block)?.tagName).to.equal('MAIN');
+    });
+
+    it('Should ignore trigger links inside the dialog', () => {
+      const { block } = createModalBlock(['footer']);
+      const link = document.createElement('a');
+      link.dataset.modalHash = '#signup';
+      block.closest('.dialog-modal').appendChild(link);
+      expect(getFormTrigger(block)?.tagName).to.equal('FOOTER');
+    });
+
+    it('Should return null when unmarked trigger links are in different sections', () => {
       const { block } = createModalBlock(['header', 'main']);
-      document.activeElement?.blur();
-      expect(getFormTrigger(block)?.tagName).to.equal('HEADER');
+      expect(getFormTrigger(block)).to.be.null;
     });
 
     it('Should return null without trigger links', () => {
       const { block } = createModalBlock([]);
-      document.activeElement?.blur();
       expect(getFormTrigger(block)).to.be.null;
     });
 
-    it('Should return null when the block is not in a modal and nothing is focused', () => {
+    it('Should return null when the block is not in a modal', () => {
       const block = document.createElement('div');
       document.body.appendChild(block);
-      document.activeElement?.blur();
       expect(getFormTrigger(block)).to.be.null;
     });
   });
@@ -1262,7 +1272,7 @@ describe('General Marketing (cs1D) consent', () => {
       window.history.replaceState({}, '', url.toString());
 
       const { block, trigger } = createBlock([['consent-id', 'cs1D']]);
-      trigger.focus();
+      trigger.dataset.isModalTrigger = 'true';
       setFormData(block);
       const { marketing } = await getMarketingPayload(MARKETING_CONSENT_ID);
       expect(marketing.entryPoint).to.equal('main_products|photoshop|features');
@@ -1274,8 +1284,8 @@ describe('General Marketing (cs1D) consent', () => {
       url.pathname = '/products/photoshop';
       window.history.replaceState({}, '', url.toString());
 
-      const { block } = createBlock([['consent-id', 'cs1D']]);
-      document.activeElement?.blur();
+      const { block, trigger } = createBlock([['consent-id', 'cs1D']]);
+      trigger.remove();
       setFormData(block);
       const { marketing } = await getMarketingPayload(MARKETING_CONSENT_ID);
       expect(marketing.entryPoint).to.equal('_products|photoshop');

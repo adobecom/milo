@@ -220,6 +220,39 @@ describe('Modals', () => {
     await waitForRemoval('#milo');
   });
 
+  it('marks the clicked link as trigger when focus is elsewhere (Safari)', async () => {
+    const link = document.getElementById('milo-modal-link');
+    const input = createTag('input');
+    document.body.append(input);
+    input.focus();
+    link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+    link.click();
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    expect(link.dataset.isModalTrigger).to.equal('true');
+    expect(input.dataset.isModalTrigger).to.be.undefined;
+
+    window.location.hash = '';
+    await waitForRemoval('#milo');
+    expect(document.activeElement).to.equal(link);
+    expect(link.dataset.isModalTrigger).to.be.undefined;
+    input.remove();
+  });
+
+  it('ignores a clicked link that was removed before the modal opened', async () => {
+    const link = createTag('a', { href: '#detached', 'data-modal-hash': '#detached' }, 'Open');
+    document.body.append(link);
+    link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+    link.click();
+    link.remove();
+    const content = createTag('div', {}, 'Body');
+    const modal = await getModal(null, { id: 'detached', content, title: 'Modal: Detached' });
+
+    expect(link.dataset.isModalTrigger).to.be.undefined;
+    modal.querySelector('.dialog-close').click();
+    await waitForRemoval('#detached');
+  });
+
   it('Focuses on close when there are no other focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-paragraph';
