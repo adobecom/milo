@@ -294,8 +294,37 @@ runTests(() => {
       expect(sendText.lastCall.args).to.deep.equal(['caas:products/analytics/reports']);
     });
 
-    it('shows the existing load error and Reload control rather than new retry UI', async () => {
+    it('renders sheet tags when the Chimera source returns an HTTP error', async () => {
       fetchStub.onFirstCall().resolves(new Response('', { status: 503 }));
+      await setup();
+      expect(titles()).to.deep.equal(['primaryProductName']);
+      expect(block.querySelector('p, button')).to.be.null;
+      await clickTitle('primaryProductName');
+      add('Adobe Analytics').click();
+      expect(sendText.lastCall.args).to.deep.equal(['Analytics']);
+      expect(fetchStub.callCount).to.equal(2);
+    });
+
+    it('renders Chimera tags when the sheet request rejects', async () => {
+      fetchStub.onSecondCall().rejects(new Error('Network error'));
+      await setup();
+      expect(titles()).to.deep.equal(['CaaS Tags']);
+      expect(block.querySelector('p, button')).to.be.null;
+      await clickTitle('CaaS Tags');
+      add('Analytics').click();
+      expect(sendText.lastCall.args).to.deep.equal(['caas:products/analytics']);
+      expect(fetchStub.callCount).to.equal(2);
+    });
+
+    it('ignores missing and unsafe URLs while rendering valid sources', async () => {
+      await setup([['Missing', ''], ['Unsafe', 'data:application/json,{}'], ['Tags', '/Taxonomy.json']]);
+      expect(titles()).to.deep.equal(['primaryProductName']);
+      expect(fetchStub.callCount).to.equal(1);
+      expect(fetchStub.firstCall.args[0]).to.equal(`${window.location.origin}/Taxonomy.json`);
+    });
+
+    it('shows the existing load error and Reload control when every source fails', async () => {
+      fetchStub.resolves(new Response('', { status: 503 }));
       await setup();
       expect(browser).to.be.null;
       expect(block.querySelector('p').textContent).to.equal('Could not load tags.');

@@ -68,6 +68,7 @@ class TagBrowser extends LitElement {
     this.activeTag = tag;
     const value = this.secondaryTags ? `, ${tag.value}` : tag.value;
     this.actions.sendText(value);
+    console.log('Inserted tag:', tag);
     this.secondaryTags = true;
   }
 
@@ -209,8 +210,13 @@ export default async function init(block) {
   }).filter(({ label, url }) => label || url);
 
   try {
-    if (!sources.length || sources.some(({ url }) => !url)) throw new Error('Missing source');
-    const trees = await Promise.all(sources.map(({ url }) => fetchTags(url)));
+    if (!sources.length) throw new Error('Missing source');
+    const trees = await Promise.all(sources.map(({ url }) => (
+      url ? fetchTags(url).catch(() => {
+        console.warn(`Failed to fetch tags from ${url}`);
+        return [];
+      }) : []
+    )));
     const rootTags = browserTags(trees.reduce((tags, tree) => mergeTags(tags, tree), []));
     if (!rootTags.length) throw new Error('No tags found');
     const browser = document.createElement('milo-tag-browser');
