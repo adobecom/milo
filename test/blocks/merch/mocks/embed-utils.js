@@ -105,3 +105,5 @@ export function getValidatedMasLibsUrl(masLibs) {
   if (!url.hostname.endsWith('.aem.live')) return null;
   return url.origin;
 }
+
+export const isTrustedUrl = () => true;
