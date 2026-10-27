@@ -10,6 +10,7 @@ import {
 } from '../../../libs/blocks/merch/merch.js';
 import { getModal as getMiloModal, closeModal } from '../../../libs/blocks/modal/modal.js';
 import { getModal as getC2Modal, closeModal as closeC2Modal } from '../../../libs/c2/blocks/modal/modal.js';
+import { preloadAupSdk, sendAupDialogCloseAnalytics } from '../../../libs/blocks/global-navigation/utilities/aup-sdk.js';
 
 describe('AUP', () => {
   let gnav;
@@ -20,7 +21,6 @@ describe('AUP', () => {
   let previousLenis;
   let previousConfigs;
   let instance;
-  let preload;
   let meta;
   let foundation;
   let workflows;
@@ -46,8 +46,7 @@ describe('AUP', () => {
     return element;
   };
   const initializeHost = async () => {
-    preload.restore();
-    await gnav.constructor.preloadAupSdk();
+    await preloadAupSdk();
     return window.AUPSDK.preloadSDK.firstCall.args[1];
   };
   const createAction = async (hash = 'buy-test') => {
@@ -104,7 +103,6 @@ describe('AUP', () => {
     instance = { updateConfig: sinon.stub().resolves() };
     window.aupsdk = undefined;
     window.AUPSDK = { preloadSDK: sinon.stub().resolves(instance) };
-    preload = sinon.stub(gnav.constructor, 'preloadAupSdk').resolves(instance);
     sinon.stub(gnav, 'decorateUniversalNav').resolves();
     sinon.stub(gnav, 'decorateProfile').resolves();
     sinon.stub(gnav, 'setUpProductCTA').resolves();
@@ -164,7 +162,10 @@ describe('AUP', () => {
       { name: 'signed-out legacy nav', signedIn: false, unav: false, expected: false },
       { name: 'signed-out Universal Nav', signedIn: false, unav: true, expected: false },
       { name: 'metadata on', unav: false, content: 'on', expected: true },
+      { name: 'metadata enabled', unav: false, content: 'enabled', expected: true },
+      { name: 'metadata false', unav: true, content: 'false', expected: false },
       { name: 'query on overrides metadata off', unav: true, content: 'off', query: 'on', expected: true },
+      { name: 'query enabled overrides metadata off', unav: true, content: 'off', query: 'enabled', expected: true },
       { name: 'query off overrides metadata on', unav: false, content: 'on', query: 'off', expected: false },
       { name: 'empty query overrides metadata on', unav: true, content: 'on', query: '', expected: false },
       { name: 'metadata off', unav: true, content: 'off', expected: false },
@@ -183,26 +184,48 @@ describe('AUP', () => {
         await gnav.imsReady();
         await gnav.aupsdkInstancePromise;
 
-        expect(preload.callCount).to.equal(expected ? 1 : 0);
+        expect(window.AUPSDK.preloadSDK.callCount).to.equal(expected ? 1 : 0);
       });
     });
 
-    it('publishes readiness only after SDK configuration completes', async () => {
-      setSelect('on');
-      let resolveConfig;
-      instance.updateConfig.returns(new Promise((resolve) => { resolveConfig = resolve; }));
-      const ready = sinon.spy();
-      listen(AUP_SDK_READY_EVENT, ready);
-      const initialized = initializeHost();
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
-      expect(ready.called).to.be.false;
+    [
+      { select: 'on', features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] },
+      { select: 'enabled', features: ['useToasts'] },
+    ].forEach(({ select, features }) => {
+      it(`configures miniAppContext features for aup-select=${select} and publishes readiness`, async () => {
+        setSelect(select);
+        let resolveConfig;
+        instance.updateConfig.returns(new Promise((resolve) => { resolveConfig = resolve; }));
+        const ready = sinon.spy();
+        listen(AUP_SDK_READY_EVENT, ready);
+        const initialized = initializeHost();
+        await new Promise((resolve) => { setTimeout(resolve, 0); });
+        expect(ready.called).to.be.false;
 
-      resolveConfig();
-      await initialized;
+        resolveConfig();
+        await initialized;
 
-      expect(ready.calledOnce).to.be.true;
+        expect(ready.calledOnce).to.be.true;
+        expect(window.aupsdk === instance).to.be.true;
+        expect(instance.updateConfig.firstCall.args[0])
+          .to.deep.equal({ miniAppContext: { features } });
+      });
+    });
+
+    it('creates the SDK once for concurrent preloads', async () => {
+      await Promise.all([preloadAupSdk(), preloadAupSdk()]);
+      expect(window.AUPSDK.preloadSDK.calledOnce).to.be.true;
       expect(window.aupsdk === instance).to.be.true;
-      expect(instance.updateConfig.firstCall.args[0]).to.deep.equal({ miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } });
+    });
+
+    it('refreshes features when target turns aup-select on late', async () => {
+      setSelect('enabled');
+      await preloadAupSdk();
+      meta.content = 'on';
+      await preloadAupSdk();
+      expect(window.AUPSDK.preloadSDK.calledOnce).to.be.true;
+      expect(instance.updateConfig.lastCall.args[0])
+        .to.deep.equal({ miniAppContext: { features: ['useToasts', 'tmp_aupsdk_ucv3_in_iframe'] } });
     });
 
     it('requests an IMS profile only while signed in and preserves profile errors', async () => {
@@ -452,7 +475,7 @@ describe('AUP', () => {
     it('retains the original error when iframe dependencies cannot load', async () => {
       setConfig({ codeRoot: '/missing-aup-dialog-dependencies', imsClientId: 'milo', locales: { '': { ietf: 'en-US' } } });
       window.aupsdk = undefined;
-      await gnav.constructor.preloadAupSdk();
+      await preloadAupSdk();
       const failingHost = window.AUPSDK.preloadSDK.lastCall.args[1];
       const callback = sinon.spy();
       const error = await failingHost.showDialog(createElement('iframe'), {}, callback).catch((caught) => caught);
@@ -566,7 +589,6 @@ describe('AUP', () => {
     });
 
     it('defers the close event until Launch is ready', async () => {
-      const { sendAupDialogCloseAnalytics } = await import('../../../libs/blocks/global-navigation/global-navigation.js');
       window._satellite = undefined;
       await sendAupDialogCloseAnalytics('#buy-now', 'buttonClose');
       window._satellite = { track: sinon.spy() };
@@ -883,6 +905,36 @@ describe('AUP', () => {
     expect(active.querySelector('sp-progress-circle') === null).to.be.true;
     expect(getComputedStyle(iframe).visibility).to.equal('visible');
     expect(getComputedStyle(close).display).to.equal('none');
+  });
+
+  [
+    { name: 'C1', content: 'milo', css: '/libs/blocks/modal/modal.css' },
+    { name: 'C2', content: 'c2', css: '/libs/c2/blocks/modal/modal.css' },
+  ].forEach(({ name, content, css }) => {
+    [
+      { viewport: { width: 390, height: 844 }, size: { width: 390, height: 844 } },
+      { viewport: { width: 1440, height: 1024 }, size: { width: 1280, height: 820 } },
+    ].forEach(({ viewport, size }) => {
+      it(`sizes the ${name} AUP dialog like the 3-in-1 modal at ${viewport.width}px`, async () => {
+        await setViewport(viewport);
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = content;
+        document.head.append(foundation);
+        await loadStyles(css);
+        const { showDialog } = await initializeHost();
+        await showDialog(createElement('iframe'), { title: 'Workflow' }, sinon.spy());
+        const box = dialog().getBoundingClientRect();
+        const workflow = dialog().querySelector('.aup-workflow-content');
+        const contentBox = workflow.getBoundingClientRect();
+
+        expect(dialog().classList.contains('three-in-one')).to.be.false;
+        const rounded = { width: Math.round(box.width), height: Math.round(box.height) };
+        expect(rounded).to.deep.equal(size);
+        expect(Math.round(contentBox.height)).to.equal(size.height);
+        expect(Math.round(contentBox.width)).to.equal(size.width);
+      });
+    });
   });
 
   [

@@ -61,9 +61,9 @@ header.global-navigation {
 .global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
   display: flex;
   align-items: center;
-  width: auto;
+  width: var(--feds-bc-wrapper-width, auto);
   margin-inline-start: auto;
-  padding: 0 8px;
+  padding: 0 var(--feds-bc-wrapper-padding-inline, 8px);
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
@@ -71,7 +71,23 @@ header.global-navigation {
   display: flex;
   height: 40px;
   justify-content: flex-end;
-  max-width: 340px;
+  max-width: var(--feds-bc-mount-max-width, 340px);
+}
+
+/* data-fab-state is the single source of truth for the GNav entry point state.
+   collapsed: client renders a 40x40 icon. hidden: keep the wrapper as a zero-width
+   spacer so its auto margin still right-aligns the trailing group. The mounted
+   wrapper rule above has ID specificity, so it is overridden via custom properties. */
+.global-navigation .feds-bc-wrapper[data-fab-state="collapsed"] {
+  --feds-bc-mount-max-width: 40px;
+}
+
+.global-navigation .feds-bc-wrapper[data-fab-state="hidden"] {
+  --feds-bc-wrapper-width: 0;
+  --feds-bc-wrapper-padding-inline: 0;
+
+  overflow: hidden;
+  visibility: hidden;
 }
 
 .feds-nav-wrapper {
@@ -1796,30 +1812,4 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
     padding: 15px 11px 15px 20px;
     min-height: max-content;
   }
-}
-
-/* AUP Workflow Dialog */
-#aup-workflow-dialog {
-  width: 100%;
-  max-width: min(1200px, calc((100% - 6px) - 2em));
-  max-height: none;
-  height: min(900px, calc((100svh - 6px) - 2em));
-  overflow: auto;
-}
-
-#aup-workflow-dialog .aup-workflow-content {
-  height: 100%;
-  position: relative;
-}
-
-#aup-workflow-dialog .aup-workflow-content.loading > iframe {
-  visibility: hidden;
-}
-
-#aup-workflow-dialog .aup-loading-indicator {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }

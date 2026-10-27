@@ -69,9 +69,7 @@ async function fetchFederalIcon(iconName) {
   const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
 
   try {
-    const svgElement = await fetchAndParseSVG(url, iconName);
-    iconCache.set(iconName, svgElement);
-    return svgElement;
+    return await fetchAndParseSVG(url, iconName);
   } catch (error) {
     window?.lana.log(`Error fetching federal SVG for ${iconName}, falling back to Milo icon: ${error}`, { tags: 'icons', errorType: 'i' });
     return null;
@@ -86,21 +84,28 @@ async function fetchMiloIcon(iconName) {
   }
 
   const miloIcons = await miloIconsPromise;
-  if (miloIcons?.[iconName]) {
-    const icon = miloIcons[iconName].cloneNode(true);
-    iconCache.set(iconName, icon);
-    return icon;
-  }
+  if (miloIcons?.[iconName]) return miloIcons[iconName].cloneNode(true);
 
   window?.lana.log(`No fallback Milo icon found for ${iconName}`, { tags: 'icons', errorType: 'i' });
   return null;
 }
 
-async function getIcon(iconName) {
-  if (iconCache.has(iconName)) return iconCache.get(iconName);
-  const federalIcon = await fetchFederalIcon(iconName);
-  if (federalIcon) return federalIcon;
-  return fetchMiloIcon(iconName);
+function getIcon(iconName) {
+  if (!iconCache.has(iconName)) {
+    iconCache.set(
+      iconName,
+      fetchFederalIcon(iconName)
+        .then((icon) => icon || fetchMiloIcon(iconName))
+        .then((icon) => {
+          if (!icon) iconCache.delete(iconName);
+          return icon;
+        }, (error) => {
+          iconCache.delete(iconName);
+          throw error;
+        }),
+    );
+  }
+  return iconCache.get(iconName);
 }
 
 export default async function loadIcons(icons) {
