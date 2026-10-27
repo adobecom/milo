@@ -512,6 +512,43 @@ describe('hub-hero block', () => {
       expect(container.classList.contains('stick-right')).to.be.false;
     });
 
+    it('collapses the focused card and releases its anchor when focus leaves the carousel', () => {
+      containerWidth = 1500;
+      slides[3].focus();
+      expect(container.classList.contains('stick-right')).to.be.true;
+      slides[3].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }));
+      expect(slides[3].classList.contains('focused')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('keeps the focused card while focus stays in the carousel or its modal opens', () => {
+      slides[0].focus();
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: slides[1] }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+
+      const originalUrl = window.location.href;
+      slides[0].href = '#hub-hero-tour';
+      window.history.pushState(null, '', '#hub-hero-tour');
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      window.history.replaceState(null, '', originalUrl);
+
+      const curtain = document.createElement('div');
+      curtain.className = 'modal-curtain';
+      document.body.append(curtain);
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      curtain.remove();
+    });
+
+    it('keeps the focused card when the window loses focus', () => {
+      slides[0].focus();
+      const hasFocus = sinon.stub(document, 'hasFocus').returns(false);
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      hasFocus.restore();
+      expect(slides[0].classList.contains('focused')).to.be.true;
+    });
+
     it('does not anchor a carousel that is exactly as wide as the viewport', () => {
       containerWidth = 1470;
       enterCard(slides[0]);

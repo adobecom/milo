@@ -402,12 +402,13 @@ describe('hub-hero footer and assembly', () => {
               samples.push({ elapsed, ...measure() });
             });
             const hovered = measure();
+            const iconDelay = parseFloat(getComputedStyle(icon).transitionDelay) * 1000;
             const gap = parseFloat(getComputedStyle(footer).getPropertyValue('--s2a-spacing-xs'));
             expect(hovered.reserved).to.be.closeTo(icon.getBoundingClientRect().width + gap, 0.1);
             expect(hovered.opacity).to.equal(1);
             expect(samples.filter((sample) => sample.reserved > 1
             && sample.reserved < hovered.reserved - 1).length).to.be.at.least(2);
-            samples.filter((sample) => sample.elapsed < 280).forEach((sample) => {
+            samples.filter((sample) => sample.elapsed < iconDelay).forEach((sample) => {
               expect(sample.opacity).to.equal(0);
             });
             samples.forEach((sample) => {
@@ -429,7 +430,7 @@ describe('hub-hero footer and assembly', () => {
             expect(measure().inset).to.be.closeTo(32, 0.1);
           });
 
-          it(`exposes complete ${slideCount}-slide ${direction} ${footerTag} footer text on mobile and desktop hover/focus at doubled text sizes`, async () => {
+          it(`exposes complete ${slideCount}-slide ${direction} ${footerTag} footer text on mobile and keeps it clamped on desktop hover/focus at doubled text sizes`, async () => {
             document.documentElement.setAttribute('dir', direction);
             for (const width of [375, 1470]) {
               await setViewport({ width, height: 800 });
@@ -471,40 +472,46 @@ describe('hub-hero footer and assembly', () => {
                 await settleLayout();
                 if (width < 768) {
                   expectFullText();
+                  const row = card.parentElement.getBoundingClientRect();
+                  window.scrollTo(0, window.scrollY + row.top
+                    + card.offsetHeight - window.innerHeight + 24);
+                  await settleLayout();
+                  const range = document.createRange();
+                  const node = paragraph.firstChild;
+                  range.setStart(node, node.length - 5);
+                  range.setEnd(node, node.length);
+                  const lastLine = range.getBoundingClientRect();
+                  expect(lastLine.top).to.be.at.least(0);
+                  expect(lastLine.bottom).to.be.at.most(window.innerHeight);
+                  const target = document.elementFromPoint(
+                    lastLine.left + lastLine.width / 2,
+                    lastLine.top + lastLine.height / 2,
+                  );
+                  expect(target.closest('.hub-hero-carousel-item-footer-text')).to.equal(paragraph);
                 } else {
-                  expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('2');
-                  expect(paragraph.getBoundingClientRect().height)
-                    .to.be.closeTo(lineHeight * 2, 0.1);
+                  // Expanded cards stay clamped; the full text remains in the accessible name.
+                  const expectClampedText = () => {
+                    expect(getComputedStyle(paragraph).webkitLineClamp).to.equal('2');
+                    expect(paragraph.getBoundingClientRect().height)
+                      .to.be.closeTo(lineHeight * 2, 0.1);
+                    expect(paragraph.getBoundingClientRect().bottom)
+                      .to.be.at.most(card.getBoundingClientRect().bottom + 1);
+                    expect(card.getAttribute('aria-labelledby').split(' ')).to.include(paragraph.id);
+                    expect(paragraph.textContent).to.equal(fullText);
+                  };
+                  expectClampedText();
                   expect(paragraph.scrollHeight).to.be.above(paragraph.clientHeight);
                   card.classList.add('hovered');
                   finishTransitions(block);
-                  expectFullText();
+                  expectClampedText();
                   card.classList.remove('hovered');
                   card.focus();
                   // Keyboard focus scrolls the hero after two animation frames.
                   await settleLayout();
                   finishTransitions(block);
                   expect(card.matches(':focus-visible')).to.be.true;
-                  expectFullText();
+                  expectClampedText();
                 }
-                if (width < 768) {
-                  const row = card.parentElement.getBoundingClientRect();
-                  window.scrollTo(0, window.scrollY + row.top
-                    + card.offsetHeight - window.innerHeight + 24);
-                } else window.scrollTo(0, document.documentElement.scrollHeight);
-                await settleLayout();
-                const range = document.createRange();
-                const node = paragraph.firstChild;
-                range.setStart(node, node.length - 5);
-                range.setEnd(node, node.length);
-                const lastLine = range.getBoundingClientRect();
-                expect(lastLine.top).to.be.at.least(0);
-                expect(lastLine.bottom).to.be.at.most(window.innerHeight);
-                const target = document.elementFromPoint(
-                  lastLine.left + lastLine.width / 2,
-                  lastLine.top + lastLine.height / 2,
-                );
-                expect(target.closest('.hub-hero-carousel-item-footer-text')).to.equal(paragraph);
               }
               block.remove();
               window.scrollTo(0, 0);
@@ -552,7 +559,7 @@ describe('hub-hero footer and assembly', () => {
       });
     });
 
-    it('reveals the footer icon for keyboard focus', async () => {
+    it('reveals the footer icon for keyboard focus and keeps the text clamped', async () => {
       await setViewport({ width: 1470, height: 800 });
       const block = await loadCarousel();
       window.scrollTo(0, 1800);
@@ -566,8 +573,7 @@ describe('hub-hero footer and assembly', () => {
       finishTransitions(block);
       expect(getComputedStyle(card.querySelector('.hub-hero-carousel-item-footer span')).opacity)
         .to.equal('1');
-      expect(getComputedStyle(text).webkitLineClamp).to.equal('none');
-      expect(text.scrollHeight).to.be.at.most(text.clientHeight + 1);
+      expect(getComputedStyle(text).webkitLineClamp).to.equal('2');
       expect(text.getBoundingClientRect().bottom)
         .to.be.at.most(card.getBoundingClientRect().bottom + 1);
     });
