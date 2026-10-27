@@ -148,40 +148,60 @@ describe('Utils', () => {
       });
     });
 
-    it('marks target ready when martech is disabled', async () => {
-      const martechMeta = utils.createTag('meta', { name: 'martech', content: 'off' });
-      document.head.append(martechMeta);
-      try {
-        utils.resetTargetReady();
-        const onReady = sinon.spy();
-        console.log('DBG', window.location.href, document.querySelector('meta[name="target-timeout"]')?.content);
-        const ready = utils.whenTargetReady().then(onReady);
-        await Promise.resolve();
-        expect(onReady.called).to.be.false;
-        expect(await utils.loadMartech()).to.be.false;
-        await ready;
-        expect(onReady.calledOnce).to.be.true;
-      } finally {
-        martechMeta.remove();
-        utils.resetTargetReady();
-      }
-    });
-
-    it('marks target ready when Launch is already on the page', async () => {
+    it('marks target ready after the Target campaign is applied', async () => {
       const { marketingtech, _satellite: satellite } = window;
+      const savedHead = document.head.innerHTML;
+      const savedBody = document.body.innerHTML;
+      const { mep } = utils.getConfig();
+      // Launch is already loaded, so only the Target response is pending (personalization V1).
       window.marketingtech = { adobe: { launch: {} } };
       // eslint-disable-next-line no-underscore-dangle
-      window._satellite = {};
+      window._satellite = { track: sinon.stub() };
+      const targetResponse = {
+        propositions: [{
+          id: 'aup',
+          items: [{
+            data: {
+              content: {
+                manifestPath: '/target/aup-select.json',
+                manifestContent: {
+                  info: { data: [] },
+                  experiences: { data: [{ action: 'updatemetadata', selector: 'aup-select', all: 'on' }] },
+                },
+              },
+            },
+          }],
+        }],
+      };
       try {
+        document.head.innerHTML = '<meta name="target" content="on">';
+        document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
         utils.resetTargetReady();
-        const ready = utils.whenTargetReady();
-        expect(await utils.loadMartech()).to.be.true;
-        await ready;
+        const ready = utils.whenTargetReady().then(() => utils.getMetadata('aup-select'));
+        // Fire the Target response only after martech has attached its listener.
+        let fireTimer;
+        const addListener = window.addEventListener.bind(window);
+        const addStub = sinon.stub(window, 'addEventListener').callsFake((type, ...args) => {
+          addListener(type, ...args);
+          if (type !== 'alloy_sendEvent') return;
+          clearTimeout(fireTimer);
+          fireTimer = setTimeout(() => {
+            addStub.restore();
+            window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: targetResponse } }));
+          }, 0);
+        });
+        const area = utils.loadArea();
+        expect(await ready).to.equal('on');
+        await area;
       } finally {
+        window.addEventListener.restore?.();
+        utils.resetTargetReady();
+        utils.getConfig().mep = mep;
+        document.body.innerHTML = savedBody;
         window.marketingtech = marketingtech;
         // eslint-disable-next-line no-underscore-dangle
         window._satellite = satellite;
-        utils.resetTargetReady();
+        document.head.innerHTML = savedHead;
       }
     });
 
