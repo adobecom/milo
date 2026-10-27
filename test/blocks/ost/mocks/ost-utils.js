@@ -166,6 +166,8 @@ const getAupSelectValue = () => null;
 const whenTargetReady = () => Promise.resolve();
 const decorateLinksAsync = () => Promise.resolve();
 const loadBlock = () => Promise.resolve();
+const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+const getViewportContent = () => ({ delimiterIdx: -1, viewportRows: [] });
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -225,4 +227,6 @@ export {
   whenTargetReady,
   decorateLinksAsync,
   loadBlock,
+  VIEWPORT_KEYWORDS,
+  getViewportContent,
 };
