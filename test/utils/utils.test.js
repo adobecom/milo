@@ -457,6 +457,14 @@ describe('Utils', () => {
         expect(merch.initService.promise).to.be.undefined;
       });
 
+      it('checks for the OST tool per rushed section', async () => {
+        document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div><div><div class="ost"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
       it('does not start it when the kill switch is on', async () => {
         document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
         document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
@@ -497,6 +505,133 @@ describe('Utils', () => {
       document.body.innerHTML = '<header></header>';
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('also warms blocks in the rushed sections when parallel-sections is set', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="tabs"></div></div><div><div class="aside"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.not.exist;
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/aside/aside.js"]')).to.not.exist;
+    });
+
+    it('caps parallel-sections and ignores invalid values', () => {
+      const names = ['marquee', 'aside', 'tabs', 'accordion', 'quote', 'table'];
+      document.body.innerHTML = `<main>${names.map((name) => `<div><div class="${name}"></div></div>`).join('')}</main>`;
+      const preloaded = (name) => !!document.head.querySelector(`link[href*="/libs/blocks/${name}/${name}.js"]`);
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="99">';
+      utils.preloadLcpCodeFiles();
+      expect(preloaded('quote')).to.be.true;
+      expect(preloaded('table')).to.be.false;
+
+      ['-1', '2abc'].forEach((value) => {
+        document.head.innerHTML = `<meta name="parallel-sections" content="${value}">`;
+        utils.preloadLcpCodeFiles();
+        expect(preloaded('marquee'), value).to.be.true;
+        expect(preloaded('aside'), value).to.be.false;
+      });
+    });
+  });
+
+  describe('parallel-sections in loadArea', () => {
+    let releases;
+    const holdBlock = (id) => {
+      window.parallelSectionsTest.gates[id] = new Promise((resolve) => { releases[id] = resolve; });
+    };
+    const isHidden = (selector) => !!document.querySelector(selector).closest('.section').dataset.status;
+    const psBlock = (id) => `<div><div class="ps-block" data-id="${id}"></div></div>`;
+    const setup = (count, sections, prefix = '') => {
+      document.head.innerHTML = `${head}<meta name="parallel-sections" content="${count}">`;
+      document.body.innerHTML = `${prefix}<main>${sections.join('')}</main>`;
+    };
+    const started = () => window.parallelSectionsTest.started;
+    const settle = () => new Promise((r) => { setTimeout(r, 50); });
+
+    beforeEach(() => {
+      releases = {};
+      window.parallelSectionsTest = { started: [], gates: {} };
+      utils.setConfig({ ...config, externalLibs: [{ base: '/test/utils/mocks/parallel-sections', blocks: ['ps-block'] }] });
+    });
+
+    afterEach(() => {
+      delete window.parallelSectionsTest;
+      utils.setConfig(config);
+    });
+
+    it('loads rushed sections in parallel and reveals them in order', async () => {
+      setup(2, [psBlock('a'), psBlock('b')]);
+      holdBlock('a');
+      holdBlock('b');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      releases.b();
+      await waitFor(() => document.querySelector('[data-id="b"]').dataset.blockStatus === 'loaded', 2000, 20);
+      await new Promise((r) => { setTimeout(r); });
+      expect(isHidden('[data-id="b"]')).to.be.true;
+      releases.a();
+      await loaded;
+      expect(isHidden('[data-id="a"]')).to.be.false;
+      expect(isHidden('[data-id="b"]')).to.be.false;
+    });
+
+    ['0', '-1', '2abc'].forEach((value) => {
+      it(`loads sections one at a time for parallel-sections "${value}"`, async () => {
+        setup(value, [psBlock('a'), psBlock('b')]);
+        holdBlock('a');
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 1, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a']);
+        releases.a();
+        await loaded;
+        expect(started()).to.deep.equal(['a', 'b']);
+      });
+    });
+
+    it('keeps loading later sections when a rushed section fails', async () => {
+      setup(3, [psBlock('a'), '<div><div class="ps-fail"></div></div>', psBlock('c')]);
+      utils.getConfig().mep = {
+        blocks: new Proxy({}, {
+          get: (target, name) => {
+            if (name === 'ps-fail') throw new Error('boom');
+            return undefined;
+          },
+        }),
+      };
+      const ogLana = window.lana;
+      const lanaLog = sinon.stub();
+      window.lana = { log: lanaLog };
+      const unhandled = sinon.spy();
+      window.addEventListener('unhandledrejection', unhandled);
+      try {
+        await utils.loadArea();
+        await settle();
+        expect(isHidden('[data-id="c"]')).to.be.false;
+        expect(isHidden('.ps-fail')).to.be.true;
+        expect(lanaLog.calledWithMatch(/Failed to load parallel section 1/)).to.be.true;
+        expect(unhandled.called).to.be.false;
+      } finally {
+        window.lana = ogLana;
+        window.removeEventListener('unhandledrejection', unhandled);
+      }
+    });
+
+    it('runs loadPostLCP once, after the last rushed section', async () => {
+      setup(2, [psBlock('a'), psBlock('b')], '<header></header>');
+      holdBlock('b');
+      performance.clearMarks('Gnav-Start');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      await settle();
+      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(0);
+      releases.b();
+      await loaded;
+      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(1);
     });
   });
 
