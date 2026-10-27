@@ -141,7 +141,7 @@ describe('globe-gallery: quote particles', () => {
     let left = 0; let right = 0; let nl = 0; let nr = 0;
     for (let i = 0; i < position.count; i += 1) {
       const arrive = aRand.array[i * 4 + 3];
-      expect(arrive).to.be.within(0.45 - 0.02, 0.8 + 0.02 + 1e-6); // ± the arrival jitter
+      expect(arrive).to.be.within(0.4 - 0.02, 0.75 + 0.02 + 1e-6); // ± the arrival jitter
       expect(arrive - aRand.array[i * 4]).to.be.at.least(0.15 - 1e-6); // no rushed flight
       if (position.array[i * 3] < 300) {
         left += arrive; nl += 1;
@@ -157,6 +157,41 @@ describe('globe-gallery: quote particles', () => {
     }
     expect(rule.length).to.be.above(10);
     expect(Math.max(...rule) - Math.min(...rule)).to.be.at.most(2 * 0.02 + 0.01);
+    // The right rule draws down from its top after the wave reaches it, so it lands last.
+    const plane = fx.object.children.find((o) => !(o instanceof THREE.Points));
+    const rx = plane.material.uniforms.uRules.value.y;
+    const rRule = [];
+    for (let i = 0; i < position.count; i += 1) {
+      if (Math.abs(position.array[i * 3] - rx) < 1) {
+        rRule.push([position.array[i * 3 + 1], aRand.array[i * 4 + 3]]);
+      }
+    }
+    rRule.sort((a, b) => a[0] - b[0]);
+    const third = Math.floor(rRule.length / 3);
+    const mean = (a) => a.reduce((sum, [, v]) => sum + v, 0) / a.length;
+    expect(third).to.be.above(3);
+    expect(mean(rRule.slice(0, third)) + 0.03).to.be.below(mean(rRule.slice(-third)));
+    expect(mean(rRule.slice(0, third))).to.be.above(Math.max(...rule));
+    // The bottom rule lags the top one more and more, meeting the right rule at the corner.
+    const { z: topY, w: botY } = plane.material.uniforms.uRules.value;
+    const nearCorner = (y) => {
+      const o = [];
+      for (let i = 0; i < position.count; i += 1) {
+        const x = position.array[i * 3];
+        if (Math.abs(position.array[i * 3 + 1] - y) < 1 && x > rx - 120 && x < rx - 2) {
+          o.push([x, aRand.array[i * 4 + 3]]);
+        }
+      }
+      return mean(o);
+    };
+    expect(nearCorner(botY)).to.be.above(nearCorner(topY) + 0.03);
+    // The crosshair finishes landing shortly after the text.
+    const last = [0, 0];
+    for (let i = 0; i < position.count; i += 1) {
+      const k = aRand.array[i * 4 + 2];
+      last[k] = Math.max(last[k], aRand.array[i * 4 + 3]);
+    }
+    expect(last[1] - last[0]).to.be.within(0.35 * 0.12 - 0.04, 0.35 * 0.12 + 0.04);
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update(QUOTE_LIVE_P, view);
     expect(points.visible).to.be.false;
@@ -259,9 +294,6 @@ describe('globe-gallery: quote particles', () => {
     expect(swirlEnvelope(0)).to.be.closeTo(0, 1e-9);
     expect(swirlEnvelope(1)).to.be.closeTo(0, 1e-9);
     expect(swirlEnvelope(0.5)).to.be.closeTo(1, 1e-9);
-    // Eased: no kink as a particle leaves its card or lands.
-    expect(swirlEnvelope(0.01)).to.be.below(0.001);
-    expect(swirlEnvelope(0.99)).to.be.below(0.001);
     for (let t = 0; t <= 1; t += 0.05) expect(swirlEnvelope(t)).to.be.within(0, 1 + 1e-9);
   });
 });

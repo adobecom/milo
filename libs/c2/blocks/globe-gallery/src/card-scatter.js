@@ -2,11 +2,11 @@ import * as THREE from '../../../../deps/three.js';
 import { QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG } from './shaders.js';
 
 // The near-camera dissolve: a card the camera is about to pass breaks up into the same tiles as
-// the quote's particles (QUOTE_POINTS_* in scatter mode), which burst out in mosaic chunks, rim
-// first, and crumble to nothing (all timing is in the shader). Every card shares one grid
-// geometry; each dissolving card is one draw of it, with its live pose, texture and dissolve
-// progress as uniforms, so it is a pure function of the card's state on that frame: spin, drag
-// and scroll in either direction just re-evaluate it. See README (Near-camera dissolve).
+// the quote's particles (QUOTE_POINTS_* in scatter mode); the whole card turns to dots at once,
+// which burst outward together and crumble to nothing (all timing is in the shader). Every card
+// shares one grid geometry; each dissolving card is one draw of it, with its live pose, texture
+// and dissolve progress as uniforms, so it is a pure function of the card's state on that frame:
+// spin, drag and scroll in either direction just re-evaluate it. See README (Near-camera dissolve).
 
 export default function createCardScatter() {
   const group = new THREE.Group();

@@ -2,7 +2,8 @@ import * as THREE from '../../../../deps/three.js';
 import {
   QUOTE_POINTS_VERT, QUOTE_POINTS_FRAG, QUOTE_PLANE_VERT, QUOTE_PLANE_FRAG,
   QUOTE_FLIGHT as F, QUOTE_CRISP_P, QUOTE_ARRIVE_JITTER,
-  QUOTE_MIN_DEPTH, QUOTE_RELEASE_REACH, QUOTE_EDGE_LEAD,
+  QUOTE_MIN_DEPTH, QUOTE_RELEASE_REACH, QUOTE_EDGE_LEAD, QUOTE_RULE_DROP,
+  QUOTE_TEXT_END,
 } from './shaders.js';
 
 // The pull-quote transition: card pixels swirl into the quote's glyphs, then hand over to a
@@ -261,6 +262,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   const tDst = new Float32Array(n * 2);
   const tCol = new Float32Array(n * 3);
   const tOrder = new Float32Array(n); // reading order 0 → 1
+  const tRule = new Uint8Array(n); // 1: a crosshair pixel
   let tSorted = new Uint32Array(0); // target indices in coherentOrder
   let stats = {};
   let pairing = null; // the pending pairing frame's token
@@ -291,6 +293,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       uRtl: { value: 0 },
       uRules: { value: { x: 0, y: 0, z: 0, w: 0 } },
       uRuleW: { value: 1 },
+      uTextEnd: { value: 1 },
       uView: shared.uView,
     },
     vertexShader: QUOTE_PLANE_VERT,
@@ -322,20 +325,46 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     [ru.x, ru.y, ru.z, ru.w] = [left[0], right[0], top[1], bottom[1]].map((v) => v + rw / 2);
     planeMat.uniforms.uRuleW.value = rw;
     const tol = rw / 2 + 1;
-    const onRule = (px, py) => Math.min(Math.abs(py - ru.z), Math.abs(py - ru.w)) <= tol
-      || Math.min(Math.abs(px - ru.x), Math.abs(px - ru.y)) <= tol;
+    const { box } = m;
+    const onRight = (px) => Math.abs(px - ru.y) <= tol;
+    const onRule = (px, py) => onRight(px) || Math.abs(px - ru.x) <= tol
+      || Math.min(Math.abs(py - ru.z), Math.abs(py - ru.w)) <= tol;
+    // A crosshair pixel's order: a left-to-right wave along the rules; the right rule then draws
+    // down from its top over QUOTE_RULE_DROP, starting when the wave reaches it, and the bottom
+    // rule lags the wave more and more to meet it at the bottom-right corner.
+    const wave = (px) => (1 - QUOTE_RULE_DROP) * clamp01((px - box.x) / Math.max(1, box.w));
+    const ruleOrder = (px, py) => {
+      const down = clamp01((py - ru.z) / Math.max(1, ru.w - ru.z));
+      if (onRight(px)) return wave(ru.y) + QUOTE_RULE_DROP * down;
+      if (Math.abs(px - ru.x) > tol && Math.abs(py - ru.w) <= tol) {
+        return wave(px) + QUOTE_RULE_DROP * clamp01((px - box.x) / Math.max(1, ru.y - box.x));
+      }
+      return wave(px);
+    };
+    const textOrder = (px, py) => {
+      const xn = (px - box.x) / Math.max(1, box.w);
+      return clamp01((m.rtl ? 1 - xn : xn) * 0.7 + ((py - box.y) / Math.max(1, box.h)) * 0.3);
+    };
     const cand = [];
+    let textEnd = 0;
     for (let y = 0; y < r.h; y += step) {
       for (let x = 0; x < r.w; x += step) {
         const k = (y * r.w + x) * 4;
         if (data[k + 3] >= INK_ALPHA) {
+          const px = (r.x0 + x + 0.5) / dpr;
+          const py = (r.y0 + y + 0.5) / dpr;
           // Rule pixels count RULE_WEIGHT times, so the lines are built from a visible stream.
-          const reps = onRule((r.x0 + x + 0.5) / dpr, (r.y0 + y + 0.5) / dpr) ? RULE_WEIGHT : 1;
-          for (let c = 0; c < reps; c += 1) cand.push(k);
+          const rule = onRule(px, py);
+          if (!rule) textEnd = Math.max(textEnd, textOrder(px, py));
+          for (let c = 0; c < (rule ? RULE_WEIGHT : 1); c += 1) cand.push(k);
         }
       }
     }
     if (!cand.length) return false;
+    // The text's order is stretched so its last pixel lands at QUOTE_TEXT_END, shortly before the
+    // crosshair's at 1.
+    const textSpan = (textEnd || 1) / QUOTE_TEXT_END;
+    planeMat.uniforms.uTextEnd.value = textSpan;
     // Partial Fisher-Yates: a uniform pick when there is ink to spare, a cycle when there is not.
     const pick = Uint32Array.from(cand);
     const take = Math.min(n, pick.length);
@@ -344,7 +373,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const j = i + Math.floor(rnd() * (pick.length - i));
       [pick[i], pick[j]] = [pick[j], pick[i]];
     }
-    const { box } = m;
     planeMat.uniforms.uBox.value = { x: box.x, y: box.y, z: box.w, w: box.h };
     planeMat.uniforms.uRtl.value = m.rtl ? 1 : 0;
     // Landed dots a little wider than their spacing, so a glyph's particles read as a fill.
@@ -359,12 +387,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       tDst[i * 2] = px;
       tDst[i * 2 + 1] = py;
       tCol.set([data[k] / 255, data[k + 1] / 255, data[k + 2] / 255], i * 3);
-      const xn = (px - box.x) / Math.max(1, box.w);
-      const yn = (py - box.y) / Math.max(1, box.h);
       // Must match QUOTE_PLANE_FRAG's order, which reveals the crisp text pixel by pixel: reading
-      // order for the text, a plain left-to-right wave for the crosshair.
-      const nx = m.rtl ? 1 - xn : xn;
-      tOrder[i] = Math.min(1, Math.max(0, onRule(px, py) ? xn : nx * 0.7 + yn * 0.3));
+      // order for the text, ruleOrder for the crosshair.
+      tRule[i] = onRule(px, py) ? 1 : 0;
+      tOrder[i] = tRule[i] ? ruleOrder(px, py) : clamp01(textOrder(px, py) / textSpan);
     }
     const xs = new Float32Array(n);
     const ys = new Float32Array(n);
@@ -404,10 +430,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   // [departure, arrival] p once the particle is paired with a target of reading order `order`.
   function flight(order, edge, release, jitter = 0) {
     const arrive = F.arriveStart + F.arriveSpan * order + jitter;
-    // A fixed flight ending at the particle's own arrival, so only a band is airborne at once;
-    // rim particles fly longer so they still leave first. Never before the release.
-    const leave = arrive - F.fly * (1 + F.edgeFly * (1 - edge));
-    return [Math.min(arrive - 0.5 * F.fly, Math.max(release, leave)), arrive];
+    const leave = F.depart[0] + F.depart[1] * (0.6 * order + 0.4 * edge);
+    return [Math.min(arrive - F.minFly, Math.max(release + 0.01, leave)), arrive];
   }
 
   // One card's (or the fallback's) particles. Targets and departures come with the pairing
@@ -463,6 +487,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const jitter = (rnd() * 2 - 1) * QUOTE_ARRIVE_JITTER;
       const [leave, arrive] = flight(tOrder[i], edge[j], release[j], jitter);
       aRand.array[j * 4] = leave;
+      aRand.array[j * 4 + 2] = tRule[i];
       aRand.array[j * 4 + 3] = arrive;
     }
     [position, aDstCol, aRand].forEach((a) => { a.needsUpdate = true; });
@@ -528,7 +553,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const t0 = performance.now();
     const rnd = seededRandom(SEED);
     const z0 = camZAt(zoom, 0);
-    const zPair = camZAt(zoom, F.arriveStart - F.fly); // about when the first ones depart
+    const zPair = camZAt(zoom, F.depart[0] + 0.5 * F.depart[1]); // about when they depart
     const toPx = (x, y, z, cz) => {
       const D = cz - z;
       if (D < 0.05) return null;

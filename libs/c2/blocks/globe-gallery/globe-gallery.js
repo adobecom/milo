@@ -109,7 +109,10 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 // Pull-quote particles: scroll it takes the card pixels to fly into the text, as a share of the
 // viewport height, and how many there are.
-const PQ_FLY_VH = 0.8;
+const PQ_FLY_VH = 0.88;
+// Scroll, as a share of the viewport height, the finished quote holds still before the world lets
+// go of it; the hold is derived from it (syncPqHold).
+const PQ_READ_VH = 0.1;
 // zoomT over which spin, inertia, hover and drag warp ease to rest before the hand-off.
 const PQ_SPIN_EASE_T = 0.04;
 const PQ_PARTICLES_SM = 40000;
@@ -409,7 +412,8 @@ function createGlobeGalleryRuntime(
   let scatter = null; // createCardScatter instance; motion path only
   const nearCards = []; // [{ card, d }] in the near band this frame (placeSphereCard)
   let formationVh = 0; // from --gg-formation-vh (see readCssVars)
-  let holdVh = 0; // from --gg-pq-hold: runway past the zoom end, held by the quote
+  let holdVh = 0; // --gg-pq-hold: runway past the zoom end, held by the quote (syncPqHold)
+  let runwayVh = null; // from --gg-runway-height
   let W = 0;
   let H = 0;
   let navH = 0; // --gg-nav-h; see README (The nav band)
@@ -965,7 +969,20 @@ function createGlobeGalleryRuntime(
     if (vh !== null) formationVh = vh;
     const nav = cssNum('--gg-nav-h');
     if (nav !== null) navH = nav;
-    holdVh = cssNum('--gg-pq-hold') ?? 0;
+    runwayVh = cssNum('--gg-runway-height');
+  }
+
+  // The world lets go PQ_READ_VH after the quote is crisp, so the scroll past it is never dead.
+  function syncPqHold() {
+    if (!pq.fx || runwayVh === null) return;
+    const tailVh = runwayVh - formationVh;
+    const crispVh = formationVh + pqStartZoomT * tailVh
+      + (QUOTE_LIVE_P * PQ_FLY_VH + PQ_READ_VH) * 100;
+    const next = Math.max(0, Math.round((crispVh + 100 - runwayVh) * 10) / 10);
+    if (next === holdVh) return;
+    holdVh = next;
+    root.style.setProperty('--gg-pq-hold', `${next}vh`);
+    measureBlock();
   }
 
   const holdPx = () => (pq.fx ? (holdVh / 100) * H : 0);
@@ -981,6 +998,7 @@ function createGlobeGalleryRuntime(
     // The camera crossing the centre: the near side is behind it and no far-side card has begun a
     // near fade, so the particles take over intact cards.
     pqStartZoomT = Math.min(pqAppearZoomT, TL.zoomTAtCamZ(0, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
+    syncPqHold();
   }
 
   // The particles can draw the quote (not forced colours, raster ready).
@@ -2081,6 +2099,7 @@ function createGlobeGalleryRuntime(
     function doLayout({ fromResize = false } = {}) {
       measureBlock();
       readCssVars();
+      syncPqHold();
       const nextW = window.innerWidth;
       const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) {
@@ -2301,6 +2320,8 @@ function createGlobeGalleryRuntime(
     pq.swapT = 0;
     pq.swapStr = '';
     root.classList.remove('globe-gallery-pq-particles');
+    root.style.removeProperty('--gg-pq-hold');
+    holdVh = 0;
     if (pqEl) {
       pqEl.style.cssText = '';
       pqEl.classList.remove('is-live', 'is-dom');

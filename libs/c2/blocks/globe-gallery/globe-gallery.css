@@ -13,9 +13,9 @@
 
 .globe-gallery {
   --gg-hang-max: 0.8em;
-  --gg-runway-height: 550vh;
+  --gg-runway-height: 570vh;
   --gg-formation-vh: 380vh;
-  --gg-pq-hold: 100vh; /* the particle quote's extra runway; see .globe-gallery-pq-particles */
+  --gg-pq-hold: 100vh; /* fallback; JS derives it (syncPqHold) */
 
   /* The pull-quote's own left text edge, reused by the arc copy. */
   --gg-copy-max: 1920px;

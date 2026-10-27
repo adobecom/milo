@@ -746,7 +746,7 @@ a CSS-only edit. The CSS is **mobile-first**: the base `.globe-gallery` rule is 
 |---|---|---|
 | `--gg-runway-height` | total height = formation + tail | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
 | `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
-| `--gg-pq-hold` | quote hold, added to the runway only under `.globe-gallery-pq-particles` | lengthens the WebGL quote's flight + reading time; `deriveFrame` subtracts it from the zoom tail, so the zoom pace is unchanged |
+| `--gg-pq-hold` | quote hold, added to the runway only under `.globe-gallery-pq-particles`; the CSS value is only a fallback, JS overwrites it inline (`syncPqHold`) | sets when the world lets go of the finished quote; `deriveFrame` subtracts it from the zoom tail, so the zoom pace is unchanged |
 
 > The `vh` figures in this section were taken at a 540 / 304 budget (tail 236). The budget is now split
 > per breakpoint, so read them as worked examples of the formulas, not as current values.
@@ -771,7 +771,7 @@ values land, with no extra listener and no "already resolved" flag: `processSect
 section only after both the stylesheet and script resolve, and that un-hide changes the body height, so
 the `ResizeObserver` fires at least once with the stylesheet applied. `measureBlock()` sets
 `blockDocTop` + `blockHeight`; `blockHeight` is plain `offsetHeight`, which is `0` (never `NaN`) while
-hidden. `--gg-runway-height` is never read from JS at all. **No JS file holds a copy of these lengths**
+hidden. `--gg-runway-height` is read from JS only by `syncPqHold`, for the quote's hold. **No JS file holds a copy of these lengths**
 — not even for docs, since Milo ships `timeline.js` unbundled, so a doc-only export rides along in every
 page's payload. The derivation snippet reads them out of `globe-gallery.css` instead (see
 **Re-deriving these numbers**).
@@ -852,10 +852,14 @@ stay longer than half the quote box, or the section arrives on top of it.
 
 #### The hold
 
-The quote's reading time is runway, not a residual: `.globe-gallery-pq-particles` adds `--gg-pq-hold`
-(100vh) to the block height, and `deriveFrame` takes `input.holdPx` back off the zoom tail so the
-zoom keeps its pace. The flight (`PQ_FLY_VH`) starts at `pqStartZoomT`; whatever scroll remains
-before the world un-sticks is the hold. See **CSS → Pull quote**.
+`.globe-gallery-pq-particles` adds `--gg-pq-hold` to the block height, and `deriveFrame` takes
+`input.holdPx` back off the zoom tail so the zoom keeps its pace. The flight (`PQ_FLY_VH`) starts at
+`pqStartZoomT`, and the world un-sticks `PQ_READ_VH` (10vh) after the quote is crisp
+(`QUOTE_LIVE_P`): `syncPqHold` solves for the hold that puts it there and writes it inline (~15vh md,
+~36vh sm at a 570vh runway; it floors at 0, which brings dead scroll back, so lengthen the runway
+together with `PQ_FLY_VH`), so the scroll after the quote is up is never dead. A fixed 100vh left 65–85vh of it with
+nothing moving. It re-solves on layout and whenever `pqStartZoomT` is republished, so changing the
+flight's timing, the runway or the formation keeps it right. See **CSS → Pull quote**.
 
 ### Zero-box gate
 
@@ -1972,17 +1976,18 @@ a static DOM figure after the globe.
 **Scroll.** `pqStartZoomT` is where the camera crosses the globe's centre (`zoomTAtCamZ(0)`, see
 `publishPqAppearZoomT`). By then every near-side card is behind the camera and no far-side card in
 view has begun a near fade. From that scroll position (`TL.scrollYAtZoomT`), the flight progress `p`
-runs 0 → 1 over `PQ_FLY_VH` (0.8) viewport heights. Everything below is a pure function of `p`, so
-it all reverses when you scroll back. `.globe-gallery-pq-particles` adds `--gg-pq-hold` (100vh) to
-the runway; `deriveFrame` takes that `holdPx` back off the zoom tail, so the zoom pace is unchanged
+runs 0 → 1 over `PQ_FLY_VH` (0.88) viewport heights. Everything below is a pure function of `p`, so
+it all reverses when you scroll back. `.globe-gallery-pq-particles` adds `--gg-pq-hold` (derived,
+see The hold) to the runway; `deriveFrame` takes that `holdPx` back off the zoom tail, so the zoom pace is unchanged
 and the extra scroll goes to the flight and the reading hold.
 
 | `p` | What |
 | --- | --- |
 | 0 | Cards as before. Once p > 0 and the pairing is ready, they hide and their particles take over, identical on screen. |
-| 0.02 → 0.08 | Particles release from the camera dolly, card rims first (a tile the dolly has grown too big goes earlier). |
-| 0.45 → 0.8 | Landings in reading order (± jitter), each region turning crisp as it lands. |
-| 0.88 (`QUOTE_LIVE_P`) | The whole quote is the crisp raster; the DOM takes over and the canvas hides. |
+| 0.02 → 0.035 | Particles release from the camera dolly and turn to dots, the whole card at once (a tile the dolly has grown too big goes earlier). |
+| 0.03 → 0.05 | Every particle departs right after its release, so the dotted cards never sit still in their grid. |
+| 0.4 → 0.75 | Landings in reading order (± jitter), each region turning crisp as it lands. |
+| 0.83 (`QUOTE_LIVE_P`) | The whole quote is the crisp raster; the DOM takes over and the canvas hides. |
 
 **One resolve, frozen globe, moving camera.** While particles are on (`particlesOn()`: not forced
 colours, raster ready), `placeSphereCard` gives cards behind the centre plane `proxFade = 1`, so the
@@ -2013,15 +2018,13 @@ particles stay hidden and the cards stay drawn (`isPaired()`).
 
 **Release.** Each particle's release p is mostly random, with a light rim lead
 (`QUOTE_EDGE_LEAD` 0.2, shared with the near layer), so a card breaks up all over at once rather
-than in a ring travelling inward, and comes no later than the dolly growing its tile past
+than in a ring travelling inward. A particle releases no later than the dolly growing its tile past
 `TILE_MAX_K` shares (but not before the first release, so the hand-off is the card), so a big card
 never breaks into big chunks. At release the particle gets its own
 camera, which carries on at the live camera's speed and decays to a stop `QUOTE_RELEASE_REACH` of
 the way to `QUOTE_MIN_DEPTH` in front of it: simple inertia, velocity-continuous, no clamping (brief
 off-screen excursions are fine). A released tile turns into a round dot right away
-(`QUOTE_DETACH_P`) and, while it waits to depart, drifts a little: the swirl flow up to
-`QUOTE_WAIT_DRIFT` of the view's short side plus up to half a tile of its own jitter, so the waiting
-dots lose the card's grid. The flight takes the drift back over as it departs.
+(`QUOTE_DETACH_P`) and holds its place until it departs (a waiting drift read as distracting).
 
 **Pairing (soft).** Card pixels are matched to glyph targets by position on the frames after the
 hand-off (the sort runs one animation frame later, `fillDraw` the frame after), so the hand-off frame
@@ -2031,23 +2034,33 @@ and paths don't cross. Plain bands would map each card onto one rectangle of tex
 get per-particle noise (±1 band in x, ±12% of the height in y) and 20% of ranks swap with one up to
 1/32 of the order away: colours dither across the seams. Mean path is about half a random pairing's.
 
-**Flight: the swirl.** Each particle departs `fly` (0.3 p) before its own arrival, rim particles up
-to ×1.5 earlier, so only a band is airborne at once. Its path is a smootherstep blend from source to
-target, carried by one shared curl-noise flow: a displacement of up to `QUOTE_SWIRL_AMP` (10%) of the
-viewport's short side × `sin(π·te)`, so it is zero at hand-off and at landing (`swirlEnvelope`). The
+**Flight: the swirl.** The dissolving cards are the low-fidelity part of the effect, so they are kept
+short: every particle departs within `depart` (0.03 → 0.05 p), right after its release, by its
+target's reading order (60%) and its depth in its card (40%, rim first), and flies at least `minFly`
+(0.15 p) to its own arrival. Its path is a linear blend from source to target: any easing read as
+dots lingering on the card (ease-in) or crawling into the glyph for a long time once they were
+nearly there (ease-out; most visible on the crosshair), carried by one shared curl-noise flow: a displacement of up to `QUOTE_SWIRL_AMP` (10%) of the
+viewport's short side × `sin(π·t)`, so it is zero at hand-off and at landing (`swirlEnvelope`). The
 flow's features are 35% of the short side and it drifts with `p` only, so neighbours move as ribbons
 and the path is the same in both directions. The sprite shrinks from cell to dot over the first 40%
-of the leg and keeps the photo's colour until the last 30% of its travel (`QUOTE_INK_FROM`), when it
-turns to the text colour.
+of the leg and keeps the photo's colour until the last 5% of its travel (`QUOTE_INK_FROM`), when it
+turns to the text colour. Crosshair particles are flagged in `aRand.z` and have their own
+`QUOTE_RULE_INK_FROM` (0.98), since the rules' grey ink reads as colourless pixels.
 
 **Landing = crisp, locally.** A particle's arrival depends only on its target's reading order
-(x·0.7 + y·0.3 over the figure box, mirrored for RTL), plus a fixed ±`QUOTE_ARRIVE_JITTER` (0.02)
+(x·0.7 + y·0.3 over the figure box, mirrored for RTL, stretched so the text's last pixel lands at
+`QUOTE_TEXT_END` (0.88) of the order, `uTextEnd`; the crosshair takes the full order, so its lines
+finish a little after the text), plus a fixed ±`QUOTE_ARRIVE_JITTER` (0.02)
 that feathers the wave's edge. `QUOTE_PLANE_FRAG` recomputes the same order per pixel and reveals the
 crisp raster from a region's mean arrival to past its latest one; landed particles grow into solid
 squares and fade out after that. The quote goes crisp in one reading-order wave behind the landing,
-with no global fill-in. The crosshair is a plain left-to-right wave (order = x across the box), so
-the horizontal rules draw in left to right and each vertical rule forms whole when the wave reaches
-it; its pixels weigh `RULE_WEIGHT` (3×) in the target pick, so the lines are visibly built from a
+with no global fill-in. The crosshair is a left-to-right wave (order = x across the box, over the
+first 1 − `QUOTE_RULE_DROP` of its range), so the horizontal rules draw in left to right and the
+left rule forms whole when the wave reaches it; the right rule then draws down from its top over the
+last `QUOTE_RULE_DROP` (0.15), and the bottom rule lags the wave by up to that much, more and more
+towards the right, so both meet at the bottom-right corner and the frame finishes with a flow into
+that corner rather than a diagonal.
+Its pixels weigh `RULE_WEIGHT` (3×) in the target pick, so the lines are visibly built from a
 stream of dots (from the same budget). The per-pixel reveal finds the rules from `uRules` and
 follows the same order.
 
@@ -2104,7 +2117,7 @@ median frame stays at 60 fps.
 - A card running off screen still converts whole, so some particles fly in from just off screen.
 - Ligatures and kerning come from canvas shaping, so an individual glyph in the raster can differ by
   a pixel from the DOM's (the swap's 0.06 mean is mostly that).
-- `--gg-pq-hold` is a fixed 100vh; a very long quote on a short viewport gets less reading time.
+- The reading beat after the quote is crisp is a fixed `PQ_READ_VH`, whatever the quote's length.
 
 ## Analytics
 
@@ -2472,12 +2485,18 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   `Points` draw of the quote particles' shaders in scatter mode (`uScatterP = d`). So both layers
   break up into the same tiles, sampling the real card texture through a per-pixel ray (pixel for
   pixel the card at `d = 0`). Each tile detaches at a mostly random time, with the far side's light
-  rim lead (`QUOTE_EDGE_LEAD`; all within `SCATTER_SPAN` 0.55 of the band), so there is no ring and flies out from the card's centre and the view's (past the
-  camera), at its own speed and ±23° angle, accelerating (t²), fading by `d = 1`, where the stage
-  used to hide the card. A tile stays a square, contiguous with its neighbours, until its own
-  detach; within 3% of its own flight it becomes a round dot about two thirds of its cell, then
-  shrinks to a third, so a big near card never reads as a field of bricks. Far-side tiles do the
-  same the moment they are released.
+  rim lead (`QUOTE_EDGE_LEAD`), all within `SCATTER_SPAN` (0.08) of the band, so the whole card
+  turns to dots together (a wider span let patches go to dots well before the rest) and disperses
+  as one. Each tile flies out from the card's centre and the view's (past the camera), at its own
+  speed and ±23° angle. Three easings over its flight `t`: the distance eases in and out
+  (smoothstep, to `SCATTER_EXPAND`; ease-out read as an abrupt burst, ease-in as a still dot grid),
+  the tile shrinks to a third of its cell, easing in and out over the whole flight (no drop at
+  detach; any quicker shrink read as abrupt), and the opacity
+  fades in and out over the first 70% (`1 − smoothstep(0, 0.7, t)`): the dots spread faster than
+  they can cover, so a later fade left a bright, sparse dot field that no longer read as the card.
+  Nothing is left by `d = 1`, where the stage used to hide the card. A tile stays a
+  square, contiguous with its neighbours, until its own detach, then rounds into a dot over the
+  first 25% of its flight, easing in and out (smootherstep; a quicker change read as a snap). Far-side tiles turn into dots within `QUOTE_DETACH_P` of their release.
   - **A pure function of the card's state.** Tile positions are card-local (`aUv` on the plane of
     the card's live `matrixWorld`) and their progress is the card's own `d`, so spin, drag and scroll
     in either direction re-evaluate them; nothing is snapshotted, nothing can strand.
