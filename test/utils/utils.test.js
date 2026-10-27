@@ -148,6 +148,63 @@ describe('Utils', () => {
       });
     });
 
+    it('marks target ready when martech is disabled', async () => {
+      const martechMeta = utils.createTag('meta', { name: 'martech', content: 'off' });
+      document.head.append(martechMeta);
+      try {
+        utils.resetTargetReady();
+        const onReady = sinon.spy();
+        console.log('DBG', window.location.href, document.querySelector('meta[name="target-timeout"]')?.content);
+        const ready = utils.whenTargetReady().then(onReady);
+        await Promise.resolve();
+        expect(onReady.called).to.be.false;
+        expect(await utils.loadMartech()).to.be.false;
+        await ready;
+        expect(onReady.calledOnce).to.be.true;
+      } finally {
+        martechMeta.remove();
+        utils.resetTargetReady();
+      }
+    });
+
+    it('marks target ready when Launch is already on the page', async () => {
+      const { marketingtech, _satellite: satellite } = window;
+      window.marketingtech = { adobe: { launch: {} } };
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = {};
+      try {
+        utils.resetTargetReady();
+        const ready = utils.whenTargetReady();
+        expect(await utils.loadMartech()).to.be.true;
+        await ready;
+      } finally {
+        window.marketingtech = marketingtech;
+        // eslint-disable-next-line no-underscore-dangle
+        window._satellite = satellite;
+        utils.resetTargetReady();
+      }
+    });
+
+    it('whenTargetReady stops waiting after the target timeout', async () => {
+      const savedUrl = window.location.href;
+      window.history.replaceState(null, '', `${window.location.pathname}?target-timeout=2000`);
+      const clock = sinon.useFakeTimers();
+      try {
+        utils.resetTargetReady();
+        const onReady = sinon.spy();
+        const ready = utils.whenTargetReady().then(onReady);
+        await clock.tickAsync(1999);
+        expect(onReady.called).to.be.false;
+        await clock.tickAsync(1);
+        await ready;
+        expect(onReady.calledOnce).to.be.true;
+      } finally {
+        clock.restore();
+        window.history.replaceState(null, '', savedUrl);
+        utils.resetTargetReady();
+      }
+    });
+
     it('does not report a value for signed-in Universal Nav users without aup-select', () => {
       const { adobeIMS } = window;
       try {
@@ -1220,6 +1277,21 @@ describe('Utils', () => {
       expect(document.getElementById('not-block')).to.exist;
     });
 
+    it('supports an additional sticky surface offset without changing the default', async () => {
+      const originalScrollTo = window.scrollTo;
+      const scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      try {
+        await utils.scrollToHashedElement('#not-block');
+        await utils.scrollToHashedElement('#not-block', document, 'instant', 100);
+        expect(scrollSpy.secondCall.args[0].top).to.equal(scrollSpy.firstCall.args[0].top - 100);
+        expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
+        expect(scrollSpy.secondCall.args[0].behavior).to.equal('instant');
+      } finally {
+        window.scrollTo = originalScrollTo;
+      }
+    });
+
     it('should not scroll if no hash is present', () => {
       window.location.hash = '';
       let scrollToCalled = false;
@@ -1350,6 +1422,7 @@ describe('Utils', () => {
       await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+      expect(a.closest('[data-footer-promo]')).to.exist;
     });
 
     it('loads from taxonomy in order on sheet', async () => {

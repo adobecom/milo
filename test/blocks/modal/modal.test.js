@@ -3,7 +3,7 @@ import { readFile, setViewport, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForRemoval } from '../../helpers/waitfor.js';
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { setConfig, createTag, notifyTargetReady, resetTargetReady } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -152,9 +152,35 @@ describe('Modal (c2)', () => {
 
   describe('init', () => {
     it('returns null when the page hash does not match the modal hash', async () => {
+      notifyTargetReady();
       const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
       const result = await init(anchor);
       expect(result).to.be.null;
+    });
+
+    it('waits for target before opening a deep-linked modal', async () => {
+      resetTargetReady();
+      const prevHash = window.location.hash;
+      window.location.hash = '#wait-open';
+      const existing = createTag('div', { id: 'wait-open', class: 'dialog-modal' });
+      document.body.append(existing);
+      const anchor = createTag('a', { 'data-modal-hash': '#wait-open', 'data-modal-path': '/path/x' });
+      let settled = false;
+      const pending = init(anchor).then(() => { settled = true; });
+      await new Promise((resolve) => { setTimeout(resolve, 20); });
+      expect(settled).to.be.false;
+      notifyTargetReady();
+      await pending;
+      expect(settled).to.be.true;
+      existing.remove();
+      window.location.hash = prevHash;
+    });
+
+    it('does not wait for target when the page hash does not match', async () => {
+      resetTargetReady();
+      const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
+      expect(await init(anchor)).to.be.null;
+      notifyTargetReady();
     });
   });
 });

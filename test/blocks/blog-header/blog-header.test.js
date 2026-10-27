@@ -801,9 +801,7 @@ describe('blog-header author layout', () => {
 describe('blog-header section dividers', () => {
   let fetchStub;
 
-  /* Builds `main > .section` siblings the way loadArea() does, with an
-     optional `.card-metadata` marker standing in for the related-content
-     cards section, so divider boundary logic can be tested without a page. */
+  /* Builds top-level authored sections and an optional metadata-only section. */
   function buildSections({ noDividers = false, articleSections = 2, relatedContent = true } = {}) {
     const main = document.createElement('main');
     const headerSection = document.createElement('div');
@@ -825,7 +823,7 @@ describe('blog-header section dividers', () => {
     if (relatedContent) {
       const section = document.createElement('div');
       section.className = 'section';
-      section.innerHTML = '<div><div class="card-metadata"></div></div>';
+      section.innerHTML = '<div class="card-metadata" hidden></div>';
       main.append(section);
     }
 
@@ -861,7 +859,7 @@ describe('blog-header section dividers', () => {
     fetchStub?.restore();
   });
 
-  it('marks only the header section and ends the frame before related content', async () => {
+  it('marks only the header section and ignores the metadata-only section', async () => {
     fetchStub = mockFetch();
     const { main, headerSection, block } = buildSections();
     await init(block);
@@ -907,26 +905,26 @@ describe('blog-header section dividers', () => {
     expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastArticle), 0.01);
   });
 
-  it('includes leading article text in a mixed related-content section without framing its cards', async () => {
+  it('includes the full final section and refreshes when authored cards grow', async () => {
     fetchStub = mockFetch();
     const { main, headerSection, block } = buildSections();
     const relatedSection = main.lastElementChild;
     relatedSection.insertAdjacentHTML('afterbegin', '<div class="content"><p>Final article paragraph.</p></div>'
-      + '<div class="text"><h2>Recommended for you</h2></div>');
+      + '<div class="text"><h2>Recommended for you</h2></div>'
+      + '<div class="related-content-card" style="height: 100px"></div>');
     const articleEnd = relatedSection.firstElementChild;
     await init(block);
-    const expectedHeight = distance(headerSection, articleEnd);
+    const expectedHeight = distance(headerSection, relatedSection);
     expect(frameHeight(headerSection)).to.be.closeTo(expectedHeight, 0.01);
 
-    relatedSection.lastElementChild.insertAdjacentHTML('beforeend', '<div style="height: 200px"></div>');
-    await new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    });
-    expect(frameHeight(headerSection)).to.be.closeTo(expectedHeight, 0.01);
-
-    articleEnd.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    relatedSection.querySelector('.related-content-card').style.height = '300px';
     await waitFor(() => frameHeight(headerSection) > expectedHeight);
-    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, articleEnd), 0.01);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+
+    const afterCards = frameHeight(headerSection);
+    articleEnd.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    await waitFor(() => frameHeight(headerSection) > afterCards);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, relatedSection), 0.01);
   });
 
   it('detects the final article wrapper created after header initialization', async () => {
@@ -939,7 +937,29 @@ describe('blog-header section dividers', () => {
       + '<div class="text"><h2>Recommended for you</h2></div>');
     await waitFor(() => frameHeight(headerSection) > height);
     expect(frameHeight(headerSection))
-      .to.be.closeTo(distance(headerSection, relatedSection.firstElementChild), 0.01);
+      .to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+  });
+
+  it('frames trailing blocks without a sidenav and excludes the footer promo', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="tag-cta" style="height: 100px">'
+      + 'Explore related resources</div></div>'
+      + '<div class="section" data-footer-promo><div style="height: 200px">Footer promo</div></div>');
+    const lastSection = main.querySelector('.tag-cta').parentElement;
+    await init(block);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastSection), 0.01);
+  });
+
+  it('recognizes an undecorated authorable layout boundary without a sidenav', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections({ relatedContent: false });
+    const lastSection = main.lastElementChild;
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="section-metadata" hidden>'
+      + '<div><div>Style</div><div>blog-layout-end</div></div></div></div>'
+      + '<div class="section"><div style="height: 200px">Outside the layout</div></div>');
+    await init(block);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastSection), 0.01);
   });
 
   it('ends the frame with the side navigation layout once it wraps the article', async () => {
@@ -1009,7 +1029,7 @@ describe('blog-header section dividers', () => {
       expect(navigation.getBoundingClientRect().top - headerBottom()).to.equal(76);
     });
 
-    it('draws the sidenav rule on the column gap edge from the header rule to the article end', async () => {
+    it('draws the sidenav rule midway through the gap from the header rule to the article end', async () => {
       await setViewport({ width: 1440, height: 900 });
       const fixture = buildStyledSections();
       await init(fixture.block);
@@ -1020,7 +1040,11 @@ describe('blog-header section dividers', () => {
       expect(frame.content).to.equal('""');
       expect(frame.pointerEvents).to.equal('none');
       expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
-      expect(layoutRect.left + parseFloat(frame.left) + gap)
+      expect(gap).to.equal(112);
+      expect(navigation.getBoundingClientRect().width).to.equal(280);
+      expect(layoutRect.left + parseFloat(frame.left) - navigation.getBoundingClientRect().right)
+        .to.be.closeTo(56, 0.5);
+      expect(layoutRect.left + parseFloat(frame.left) + gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
       expect(layoutRect.top + parseFloat(frame.top))
         .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
@@ -1041,7 +1065,8 @@ describe('blog-header section dividers', () => {
       const { layout, article } = await addSideNavigation(fixture);
       const gap = parseFloat(getComputedStyle(layout).columnGap);
       const frame = getComputedStyle(layout, '::before');
-      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap)
+      expect(gap).to.equal(112);
+      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().right, 0.5);
     });
 
@@ -1054,11 +1079,12 @@ describe('blog-header section dividers', () => {
       expect(top).to.equal(fixture.headerSection.getBoundingClientRect().bottom);
       expect(article.getBoundingClientRect().top).to.equal(top);
       expect(navigation.getBoundingClientRect().top).to.equal(top);
+      expect(getComputedStyle(layout).columnGap).to.equal('56px');
       expect(getComputedStyle(layout, '::before').content).to.equal('none');
       expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
     });
 
-    [1199, 600, 599, 375].forEach((width) => {
+    [599, 375].forEach((width) => {
       it(`moves the header rule below the sidenav in the stacked layout at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
         const fixture = buildStyledSections();
@@ -1070,9 +1096,9 @@ describe('blog-header section dividers', () => {
         expect(getComputedStyle(navigation).marginBlockStart).to.equal('0px');
         expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
 
-        const rule = getComputedStyle(navigation, '::after');
-        const navRect = navigation.getBoundingClientRect();
-        const ruleTop = navRect.top + parseFloat(rule.top);
+        const rule = getComputedStyle(article, '::before');
+        const navRect = navigation.querySelector('nav').getBoundingClientRect();
+        const ruleTop = article.getBoundingClientRect().top + parseFloat(rule.top);
         expect(rule.content).to.equal('""');
         expect(rule.pointerEvents).to.equal('none');
         expect(rule.blockSize).to.equal(width < 600 ? '1.5px' : '2px');
@@ -1083,6 +1109,28 @@ describe('blog-header section dividers', () => {
         expect(ruleTop - navRect.bottom).to.equal(56);
         expect(article.getBoundingClientRect().top - (ruleTop + parseFloat(rule.height)))
           .to.equal(56);
+      });
+    });
+
+    [600, 768, 1199].forEach((width) => {
+      it(`keeps header and vertical sidenav rules in the tablet rail layout at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const fixture = buildStyledSections();
+        await init(fixture.block);
+        const { layout, article, navigation } = await addSideNavigation(fixture);
+        const gap = parseFloat(getComputedStyle(layout).columnGap);
+        const rule = getComputedStyle(layout, '::before');
+        expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('""');
+        expect(rule.content).to.equal('""');
+        expect(getComputedStyle(article, '::before').content).to.equal('none');
+        expect(getComputedStyle(navigation).position).to.equal('sticky');
+        expect(gap).to.equal(64);
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left)
+          - navigation.getBoundingClientRect().right).to.be.closeTo(32, 0.5);
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap / 2)
+          .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
+        expect(layout.getBoundingClientRect().top + parseFloat(rule.top))
+          .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
       });
     });
 
