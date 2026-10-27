@@ -26,7 +26,7 @@
   }
 
   &.parallax-move-up {
-    --parallax-translate-y: 100%;
+    --parallax-translate-y: 40px;
   }
 
   > .faq-panel {
@@ -133,12 +133,16 @@
 @supports (animation-timeline: view()) {
   .faq-trigger {
     view-timeline: --faq-trigger-timeline block;
-    view-timeline-inset: 40% 10%;
+    view-timeline-inset: 0;
   }
 
   .faq-item {
     timeline-scope: --faq-trigger-timeline;
     animation-timeline: --faq-trigger-timeline;
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+    animation-range: 7.5vh 22.5vh;
+    animation-range: calc(7.5vh + min((sibling-index() - 1) * 1.25vh, 7.5vh))
+      calc(22.5vh + min((sibling-index() - 1) * 1.25vh, 7.5vh));
   }
 }
 

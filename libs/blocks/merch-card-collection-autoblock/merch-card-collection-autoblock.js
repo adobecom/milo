@@ -1,4 +1,5 @@
-import { createTag, getConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import { createTag, getConfig, getFedsPlaceholderConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
@@ -152,6 +153,8 @@ const COLLECTION_LITERALS_CHANGED = 'merch-card-collection:literals-changed';
 const PAGE_SIZE = 12;
 
 const mountedCollections = new WeakSet();
+// Each drawer's title needs a page-unique id for aria-labelledby.
+let drawerCount = 0;
 
 const hashParams = () => new URLSearchParams(window.location.hash.slice(1));
 
@@ -257,7 +260,7 @@ export function filterBarLabels(params, groups, placeholders, resultCount, categ
     applied: `${applied} ${placeholders.filtersApplied}`,
     trigger: `${placeholders.allFilters} (${applied})`,
     results,
-    // Zero results is announced by the empty state.
+    // Zero is left to the caller, which announces the empty state's text.
     announce: resultCount ? results : '',
     empty: resultCount === 0 ? emptyResultsMarkup(placeholders, {
       resultCount,
@@ -483,13 +486,16 @@ function buildGroupCard(group) {
 function buildProductPricingDrawer(collection, groups) {
   const { placeholders = {} } = collection.data;
 
-  const title = createTag('h2', { class: 'product-pricing-drawer-title' }, placeholders.allFilters);
+  drawerCount += 1;
+  const titleId = `product-pricing-drawer-title-${drawerCount}`;
+  const title = createTag('h2', { class: 'product-pricing-drawer-title', id: titleId }, placeholders.allFilters);
   const closeBtn = createTag('button', { class: 'product-pricing-drawer-close', type: 'button', 'aria-label': placeholders.catalogSidenavClose }, svgIcon(CLOSE_ICON));
   const header = createTag('div', { class: 'product-pricing-drawer-header' }, [title, closeBtn]);
 
   const applied = createTag('span', { class: 'product-pricing-drawer-applied' });
   const results = createTag('span', { class: 'product-pricing-drawer-results' });
-  const counts = createTag('div', { class: 'product-pricing-drawer-counts' }, [applied, results]);
+  // The open drawer makes the rest of the page inert, so it announces its own counts.
+  const counts = createTag('div', { class: 'product-pricing-drawer-counts', role: 'status', 'aria-atomic': 'true' }, [applied, results]);
   const reset = createTag('button', { class: 'product-pricing-drawer-reset', type: 'button' }, placeholders.filtersReset);
   const subRow = createTag('div', { class: 'product-pricing-drawer-subrow' }, [counts, reset]);
 
@@ -499,7 +505,7 @@ function buildProductPricingDrawer(collection, groups) {
   const inner = createTag('div', { class: 'product-pricing-drawer-inner' }, [header, subRow, groupsEl]);
   // <dialog> gives focus trap, Esc-to-close, inert background, and focus restore.
   // data-lenis-prevent: Lenis would turn wheel and touch here into page scrolls.
-  const root = createTag('dialog', { class: 'product-pricing-drawer', 'aria-label': placeholders.allFilters, 'data-lenis-prevent': '' }, inner);
+  const root = createTag('dialog', { class: 'product-pricing-drawer', 'aria-labelledby': titleId, 'data-lenis-prevent': '' }, inner);
   return { root, closeBtn, reset, applied, results };
 }
 
@@ -543,7 +549,8 @@ function buildProductPricingBar(collection, groups) {
   const { placeholders = {} } = collection.data;
 
   const triggerLabel = createTag('span', { class: 'product-pricing-trigger-label' }, placeholders.allFilters);
-  const triggerAttrs = { class: 'product-pricing-filter-trigger', type: 'button', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' };
+  // A dialog trigger, not a disclosure, so no aria-expanded.
+  const triggerAttrs = { class: 'product-pricing-filter-trigger', type: 'button', 'aria-haspopup': 'dialog' };
   const trigger = createTag('button', triggerAttrs, [svgIcon(SLIDERS_ICON), triggerLabel]);
 
   const pillGroups = barGroups(groups).map((group) => createTag(
@@ -581,7 +588,12 @@ function buildProductPricingBar(collection, groups) {
   const row = createTag('div', { class: 'product-pricing-filter-row' }, [prev, pills, next]);
 
   const searchInput = createTag('input', { class: 'product-pricing-filter-search-input', type: 'search', placeholder: placeholders.searchText, 'aria-label': placeholders.searchText });
-  const search = createTag('div', { class: 'product-pricing-filter-search', role: 'search' }, [searchInput, svgIcon(SEARCH_ICON)]);
+  // A real button: the native clear of type=search has no name and no keyboard access.
+  // no-track keeps the existing daa-ll positions of every later button and link.
+  const clearBtn = createTag('button', { class: 'product-pricing-filter-search-clear no-track', type: 'button' }, svgIcon(CLOSE_ICON));
+  // Gnav search's translated label for its own clear button. Hidden by CSS until set.
+  replaceKey('clear-results', getFedsPlaceholderConfig()).then((label) => clearBtn.setAttribute('aria-label', label));
+  const search = createTag('div', { class: 'product-pricing-filter-search', role: 'search' }, [searchInput, svgIcon(SEARCH_ICON), clearBtn]);
 
   const root = createTag('div', { class: 'product-pricing-filter-bar' }, [row, search]);
   const update = () => {
@@ -599,7 +611,7 @@ function buildProductPricingBar(collection, groups) {
   // Stacking resizes the bar, so update on the next frame.
   const resize = new ResizeObserver(() => requestAnimationFrame(update));
   [root, pills, ...pills.children].forEach((el) => resize.observe(el));
-  return { root, trigger, triggerLabel, searchInput };
+  return { root, trigger, triggerLabel, searchInput, clearBtn };
 }
 
 export function mountProductPricingFilter(collection, container) {
@@ -622,31 +634,35 @@ export function mountProductPricingFilter(collection, container) {
   const drawer = buildProductPricingDrawer(collection, groups);
   const bar = buildProductPricingBar(collection, groups);
   const { trigger } = bar;
-  const open = () => { drawer.root.showModal(); trigger.setAttribute('aria-expanded', 'true'); };
+  // Left alone, showModal() focuses the scrollable inner wrapper, so screen
+  // readers read the whole drawer. Start on the close button instead.
+  const open = () => { drawer.root.showModal(); drawer.closeBtn.focus(); };
   const close = () => drawer.root.close();
   trigger.addEventListener('click', open);
   drawer.closeBtn.addEventListener('click', close);
-  drawer.root.addEventListener('close', () => trigger.setAttribute('aria-expanded', 'false'));
   drawer.root.addEventListener('click', (e) => { if (e.target === drawer.root) close(); });
 
   const surfaces = [bar.root, drawer.root];
 
   const { placeholders = {} } = collection.data;
   const { searchInput } = bar;
-  // Replaces the grid when a filter set matches nothing.
-  const emptyEl = createTag('div', { class: 'product-pricing-results', role: 'status', 'aria-live': 'polite' });
-  // Screen readers get the count, which the empty state does not cover.
+  // Replaces the grid when a filter set matches nothing. Not live: it is
+  // display:none until filled, and a region that appears filled is not announced.
+  const emptyEl = createTag('div', { class: 'product-pricing-results' });
+  // Always rendered, so screen readers hear the count or the empty state's text.
   const countEl = createTag('div', { class: 'sr-only', role: 'status', 'aria-live': 'polite' });
   let resultCount;
   const renderLabels = (params) => {
     const off = isCategoryOff(params, offTags);
     const labels = filterBarLabels(params, activeGroups(params), placeholders, resultCount, off);
-    drawer.applied.textContent = labels.applied;
+    // Renders repeat for one change, and the drawer counts would re-announce the same text.
+    if (drawer.applied.textContent !== labels.applied) drawer.applied.textContent = labels.applied;
     bar.triggerLabel.textContent = labels.trigger;
-    drawer.results.textContent = labels.results;
+    if (drawer.results.textContent !== labels.results) drawer.results.textContent = labels.results;
     emptyEl.innerHTML = labels.empty;
     // Same text again would be re-announced.
-    if (countEl.textContent !== labels.announce) countEl.textContent = labels.announce;
+    const announce = labels.announce || emptyEl.textContent.trim() || labels.results;
+    if (countEl.textContent !== announce) countEl.textContent = announce;
   };
   // The selected pill stays live. Search is ignored.
   const renderAvailability = (params) => {
@@ -692,6 +708,13 @@ export function mountProductPricingFilter(collection, container) {
     beforeSearch = next.saved;
     if (next.params) writeHash(next.params);
   }));
+
+  // Same path as deleting the term, so the prior filters come back.
+  bar.clearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.focus();
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 
   surfaces.forEach((root) => root.addEventListener('change', (e) => {
     const input = e.target.closest('.product-pricing-pill input');

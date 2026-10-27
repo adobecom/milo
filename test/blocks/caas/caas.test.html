@@ -35,9 +35,9 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
-    import init from '../../../libs/blocks/caas/caas.js';
-    import { loadScript, loadStyle } from '../../../libs/utils/utils.js';
-    import { delay, waitForElement } from '../../helpers/waitfor.js';
+    import init, { loadCaas } from '../../../libs/blocks/caas/caas.js';
+    import { loadScript, loadStyle, parseEncodedConfig } from '../../../libs/utils/utils.js';
+    import { delay, waitFor, waitForElement } from '../../helpers/waitfor.js';
 
     let config;
     let caasEl;
@@ -107,6 +107,105 @@
           await delay(50);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
+          expect(caasEl).to.equal(document.getElementById('caas'));
+        });
+
+        it('initializes CaaS links without special handling for their containing block', async () => {
+          const block = document.createElement('div');
+          block.className = 'blog-related-content';
+          block.innerHTML = '<a href="https://milo.adobe.com/tools/caas#encoded">Collection (no-lazy)</a>';
+          document.body.append(block);
+          try {
+            await init(block.querySelector('a'));
+            await waitFor(() => caasEl !== null);
+            expect(loadScript.callCount).to.equal(3);
+            expect(caasEl).to.equal(block.querySelector('#caas'));
+          } finally {
+            block.remove();
+          }
+        });
+
+        it('preserves all authored collection settings including card counts', async () => {
+          const link = document.createElement('a');
+          link.href = 'https://milo.adobe.com/tools/caas#encoded';
+          document.body.append(link);
+          const originalState = parseEncodedConfig();
+          parseEncodedConfig.returns({
+            ...originalState,
+            cardStyle: 'text-card',
+            layoutType: '3up',
+            theme: 'dark',
+            collectionTitle: 'Authored collection',
+            cardTitleAccessibilityLevel: 3,
+            partialLoadEnabled: true,
+            showSearch: true,
+            showFilters: true,
+            sortEnablePopup: true,
+            paginationEnabled: true,
+            paginationQuantityShown: true,
+            showTotalResults: true,
+            showBookmarksOnCards: true,
+            onlyShowBookmarkedCards: true,
+            hideDateInterval: false,
+            disableBanners: false,
+            useOverlayLinks: false,
+            totalCardsToShow: 10,
+            collectionSize: 150,
+            resultsPerPage: 10,
+          });
+          try {
+            await loadCaas(link);
+            await waitFor(() => caasEl !== null);
+            expect(config.collection.totalCardsToShow).to.equal(10);
+            expect(config.collection.resultsPerPage).to.equal(10);
+            expect(config.collection.endpoint).to.contain('&size=150');
+            expect(config.collection.cardStyle).to.equal('text-card');
+            expect(config.collection.layout.type).to.equal('3up');
+            expect(config.collection.mode).to.equal('dark');
+            expect(config.collection.i18n.title).to.equal('Authored collection');
+            expect(config.collection.i18n.cardTitleAccessibilityLevel).to.equal(3);
+            expect(config.collection.partialLoadWithBackgroundFetch.enabled).to.equal(true);
+            expect(config.search.enabled).to.equal(true);
+            expect(config.filterPanel.enabled).to.equal(true);
+            expect(config.sort.enabled).to.equal(true);
+            expect(config.pagination.enabled).to.equal(true);
+            expect(config.pagination.resultsQuantityShown).to.equal(true);
+            expect(config.collection.showTotalResults).to.equal(true);
+            expect(config.bookmarks.showOnCards).to.equal(true);
+            expect(config.bookmarks.leftFilterPanel.bookmarkOnlyCollection).to.equal(true);
+            expect(config.collection.hideDateInterval).to.equal(false);
+            expect(config.collection.disableBanners).to.equal(false);
+            expect(config.collection.useOverlayLinks).to.equal(false);
+          } finally {
+            parseEncodedConfig.returns(originalState);
+            link.remove();
+          }
+        });
+
+        it('does not wait for collection initialization before resolving the loader', async () => {
+          const link = document.createElement('a');
+          link.href = 'https://milo.adobe.com/tools/caas#encoded';
+          document.body.append(link);
+          const state = parseEncodedConfig();
+          const mappingUrl = '/deferred-caas-mapping.json';
+          parseEncodedConfig.returns({ ...state, categoriesMappingFile: mappingUrl });
+          let resolveMapping;
+          const mapping = new Promise((resolve) => { resolveMapping = resolve; });
+          window.fetch.withArgs(mappingUrl).returns(mapping);
+          let finished = false;
+          const loading = loadCaas(link)
+            .then(() => { finished = true; });
+          try {
+            await waitFor(() => window.fetch.calledWith(mappingUrl));
+            await waitFor(() => finished);
+            expect(caasEl).to.equal(null);
+          } finally {
+            resolveMapping({ ok: true, json: async () => ({ data: [] }) });
+            await loading;
+            await waitFor(() => caasEl !== null);
+            parseEncodedConfig.returns(state);
+            link.remove();
+          }
           expect(caasEl).to.equal(document.getElementById('caas'));
         });
 
