@@ -2409,14 +2409,17 @@ const warmGeoIpSheet = (config, section, isDoc = true) => {
     .catch(() => null);
 };
 
-const getParallelSectionCount = () => parseInt(
-  PAGE_URL.searchParams.get('parallel-sections') ?? getMetadata('parallel-sections'),
-  10,
-) || 0;
+const MAX_PARALLEL_SECTIONS = 5;
+
+const getParallelSectionCount = () => {
+  const value = (PAGE_URL.searchParams.get('parallel-sections')
+    ?? getMetadata('parallel-sections'))?.trim() ?? '';
+  if (!/^\d+$/.test(value)) return 0;
+  return Math.min(Number(value), MAX_PARALLEL_SECTIONS);
+};
 
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
-  // Rushed (parallel) sections get the same pre-MEP warm-up as the LCP section.
   const sections = [...area.querySelectorAll('body > main > div')]
     .slice(0, Math.max(1, getParallelSectionCount()));
   if (!sections.length) return;
@@ -2425,34 +2428,43 @@ export function preloadLcpCodeFiles(area = document) {
   const config = getConfig();
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
-  const autoNames = new Set();
-  queryAll('a[href]').forEach((a) => {
-    let url;
-    try { url = new URL(a.href); } catch { return; }
-    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
-    if (!match) return;
-    const name = Object.keys(match)[0];
-    if (name === 'video' && !isMediaVideo(a.textContent)) return;
-    autoNames.add(name);
-  });
-  if (queryAll('img[alt]').some((img) => isMediaVideo(img.alt))) {
-    autoNames.add('video');
-  }
+  const getAutoNames = (section) => {
+    const names = new Set();
+    section.querySelectorAll('a[href]').forEach((a) => {
+      let url;
+      try { url = new URL(a.href); } catch { return; }
+      const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+      if (!match) return;
+      const name = Object.keys(match)[0];
+      if (name === 'video' && !isMediaVideo(a.textContent)) return;
+      names.add(name);
+    });
+    if ([...section.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+      names.add('video');
+    }
+    return names;
+  };
+  const sectionData = sections.map((section) => ({
+    blockEls: [...section.querySelectorAll(':scope > div[class]:not(.content)')],
+    autoNames: getAutoNames(section),
+    hasOst: !!section.querySelector(':scope > .ost'),
+  }));
+  const autoNames = new Set(sectionData.flatMap((data) => [...data.autoNames]));
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const sectionBlockEls = queryAll(':scope > div[class]:not(.content)');
+  const sectionBlockEls = sectionData.flatMap((data) => data.blockEls);
   const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = !queryAll(':scope > .ost').length
-    && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
-      || [...autoNames].some(isCommerceBlock));
+  const hasCommerceContent = sectionData.some((data) => !data.hasOst
+    && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
+      || [...data.autoNames].some(isCommerceBlock)));
   if (hasCommerceContent) {
     // Target previews must apply their AUP config before the service initializes.
     const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
@@ -3274,13 +3286,18 @@ export async function loadArea(area = document) {
   let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
   const parallelSections = [];
   htmlSections.slice(0, parallelCount).forEach((el, idx) => {
-    parallelSections[idx] = decorateSection(el, idx).then((section) => processSection(
-      section,
-      config,
-      idx === lcpSectionId,
-      idx,
-      parallelSections[idx - 1],
-    ));
+    const revealAfter = parallelSections[idx - 1];
+    parallelSections[idx] = decorateSection(el, idx)
+      .then((section) => processSection(section, config, false, idx, revealAfter))
+      .catch(async (e) => {
+        window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
+        await revealAfter;
+        return [];
+      })
+      .then(async (sectionBlocks) => {
+        if (idx === lcpSectionId) await loadPostLCP(config);
+        return sectionBlocks;
+      });
   });
 
   for (const htmlSection of htmlSections) {
