@@ -1035,7 +1035,6 @@ function createGlobeGalleryRuntime(
     getGlobeLive: globeFormed,
     getCursorRetired: () => hintRetired || frameState.zoomT >= pullQuote.liveUntil(),
     labelText: hintText,
-    drag,
   });
 
   const dragSensitivity = () => {
@@ -1054,7 +1053,6 @@ function createGlobeGalleryRuntime(
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
-    isCursorActive: () => cursor.isActive(),
     onDrag: () => { hintRetired = true; },
   });
 

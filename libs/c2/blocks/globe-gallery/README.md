@@ -67,8 +67,8 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `modal.js` | `createGlobeModal(deps)` → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: own WebGL canvas/scene, its renderer created on the first `open()` (`ensureModalRenderer`) rather than at `setup()`, so a page view that opens no card holds one WebGL context, the `MODAL_PHASE` state machine, SDF material swap, cross-warp nav, touch swipe/pull gestures, chrome layout in a native `<dialog>`. Owns all modal tuning constants. `getCount()` is the FULL authored count (see Card count). Sphere coupling is narrow + injected. |
 | `math.js` | Pure stateless helpers. **Easings:** `easeOutCubic`, `easeInOutCubic`, `easeInOutQuint`, `lerpN`. **Arc-phase geometry:** `arcRotationEase` (takes its ramp `k` from `bp.ARC_RAMP_T`), `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ` — the fanned-arc layout + CSS↔WebGL bridge. **`clamp01`** — the block's one clamp; NaN maps to 0, deliberately, so a divide-by-zero progress blanks nothing downstream. The last three take an optional `out` and **write into it** (the core passes reused scratch objects), so per-frame placement produces no garbage. **Camera geometry:** `CAM_FOV` + `TAN_HALF_FOV` + `pxPerWorldAt(dist, H)` — the single home for the perspective camera's vertical FOV. The camera is *constructed* with `CAM_FOV` and every frustum measure in the block reads the other two. |
 | `timeline.js` | **The scroll timeline** — the single place to change **when** something happens. Every phase constant and threshold, plus `createFrame` / `createFrameInput` / `deriveFrame(frame, input)`, the pure derivation of all six clocks, and `cardFoldStartProgress(gpDelay)` (the per-card fold gate; `FOLD_FIRST_PROGRESS` is its `gpDelay = 0` case). No THREE, no DOM, no closure state, so it's unit-testable in isolation. `deriveFrame` writes into a caller-owned frame, allocates nothing, and clamps NaN-safely — one NaN would poison every mesh position. Imported as a namespace (`import * as TL`). See Lifecycle timeline. |
-| `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Hover clears on pointer-down and is not raycast while dragging. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock**, and fires the injected `onDrag()` once per gesture the first time travel clears `CLICK_MAX_MOVE` (see Behavior notes). Sole owner of the canvas cursor — `none` while the custom cursor is up, then native `grab`/`grabbing`/`pointer`, all written through `applyCursor()` (see Behavior notes). |
-| `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown, isActive }`. The desktop custom cursor (see Behavior notes): two body-level layers (`mix-blend-mode` disc + fixed chevron/label container), per-frame state from injected getters, the retirement fade, `isActive()` gating interaction's cursor. No-op on touch and on the barrel. |
+| `interaction.js` | `createInteraction(deps)` → `{ setup, teardown, applyCursor }`. Canvas pointer plumbing: drag-to-spin, click-vs-drag, raycast hover + click→modal. Hover clears on pointer-down and is not raycast while dragging. Shares travel + velocity by reference via the `drag` object (see **Drag physics**). Owns the **touch axis lock**, and fires the injected `onDrag()` once per gesture the first time travel clears `CLICK_MAX_MOVE` (see Behavior notes). Sole owner of the canvas cursor — native `grab`/`grabbing`/`pointer`, all written through `applyCursor()` (see Behavior notes). |
+| `cursor.js` | `createCursor(deps)` → `{ setup(canvas), update, teardown }`. The desktop cursor label (see Behavior notes): one body-level pill beside the native cursor, per-frame state from injected getters, the retirement fade. No-op on touch and on the barrel. |
 | `quote-particles.js` | `createQuoteParticles({ figureEl, railEl, count })` → `{ object, warm, layout, setSources, update, isReady, isPaired, clearSources, dispose }`. The pull-quote transition: measures the DOM figure, rasterizes it at DPR, samples particle targets from it, and owns the `Points` + crisp text plane. Also exports `createCardScatter({ expand })` → `{ object, warm, setGrid, update, dispose }`, the near-camera card burst on the same shaders, and `createPullQuote(deps)`, the runtime's only handle on both: hold, hand-off, swap to the DOM, card sourcing and the near-band hand-over. `globe-gallery.js` calls it from fixed hook points (`build`, `layout`, `update`, `afterCards`, `takeNear`, `teardown`, …). See **Pull quote**. |
 | `controls.js` | `createGlobeControls(deps)` → `{ setup, update, teardown, isSpinPaused }`. The on-canvas globe chrome (see Globe controls): the auto-spin play/pause toggle and the barrel's rotate/hint/rotate bottom row. Owns `paused` (the core reads `isSpinPaused()` each frame); its DOM is minted by `buildGlobeDom`, so it only binds, labels, and toggles classes. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
@@ -957,11 +957,9 @@ canvas's inline style in `authoring.js`:
   buttons. `.globe-gallery-world` carries `z-index: 0` purely to scope it — `0` ties with `auto`,
   so DOM order still decides everything at page level. Not `isolation: isolate`, which would make
   the world a **backdrop root** and stop the modal backdrop sampling the canvas beneath it.
-- **Cursor — `16` disc, `17` container.** Both body-level and above the modal band. `cursor.js`
-  appends them outside the block, so they inherit none of its custom properties — `--gg-chrome-blur`
-  is redeclared on `.globe-gallery-cursor`, and so is any local var the cursor grows later. The disc
-  is a direct `<body>` child, not a child of the container: `mix-blend-mode: difference` needs real
-  page content beneath it, and the fixed container is an isolated layer.
+- **Cursor label — `17`.** Body-level and above the modal band. `cursor.js` appends it outside the
+  block, so it inherits none of its custom properties — `--gg-chrome-blur` is redeclared on
+  `.globe-gallery-cursor`, and so is any local var the cursor grows later.
 - **Modal — `13` backdrop, `14` modal canvas.** The chrome needs none: `showModal()` puts the
   `<dialog>` in the top layer, above every stacking context. The backdrop and the modal canvas are
   ordinary fixed siblings and do need numbers, because they must cover the gnav.
@@ -1090,7 +1088,7 @@ In scroll order. Positions are not listed: run the snippet below for the current
 | `sphereFormT > CARD_ORDER_HANDOVER_T` | card draw order switches from index order to destination depth (see **Card draw order**) | `applyCardOrder` |
 | first card's `fdE` hits 1 | earliest card actually **on the shell** | `updateCardTransform` |
 | `ARC_COPY_OUT_FORM_END` of the fold window | **arc-copy fully gone** | `updateArcCopy` |
-| `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; the desktop custom cursor appears (native `grab` underneath it); globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `interaction.applyCursor`, `controls.update`, `updateClickDragText` |
+| `sphereFormT ≥ SPHERE_INTERACTIVE_T` | hover / drag / click / auto-rotate go **live**; a11y browse enabled; the desktop cursor label appears beside the native `grab`; globe controls fade in; hint-plane entrance **resolves** (warp → 0) | `updateSphereRotation`, `updateCardTransform`, `cursor.update`, `interaction.applyCursor`, `controls.update`, `updateClickDragText` |
 | `BROWSE_VIEW_T` | where a keyboard focus snap lands (`snapToBrowseView`) | `snapToBrowseView` |
 | `SPHERE_FORMED_PROGRESS` | sphere/barrel formed; `sphereFormT` = 1, `zoomT` leaves 0 | `computeFrame` |
 | `zoomT ≥ startT` | **hand-off**: drag, tap, cursor and globe controls retire (controls leave the tab order), the spin comes to rest, the flight starts (`p` > 0) and the cards turn into particles | `pullQuote.update`, `controls.update`, `updateSphereRotation` |
@@ -2305,32 +2303,23 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   both. Rebuilt on resize, static and faint under reduced motion. Copy is authored (see
   Localization).
 
-- **Desktop custom cursor (`src/cursor.js`).** Sphere geometry on `(hover: hover) and
-  (pointer: fine)` only, over the live globe: a 48px `mix-blend-mode: difference` disc with left/right
-  chevrons inside it and the authored "Click & Drag" label riding 32px to its right. Dragging
-  squeezes the disc and chevrons to `scale(0.82)` and pulls the chevrons 4px inward.
+- **Desktop cursor label (`src/cursor.js`).** Sphere geometry on `(hover: hover) and
+  (pointer: fine)` only, over the live globe: the authored "Click & Drag" label in a pill riding
+  32px beside the native cursor (to its left in RTL).
 
   **The exit is one step, on the same `hintRetired` latch the barrel's hint row reads.** On the
-  first drag label, chevrons and disc retire together, and scrolling past `liveUntil()` (the
-  hand-off with the particles on) is the same exit reached by scrolling instead of dragging. The
-  cursor's own live gate is `globeFormed` without the scroll cut, so the fade plays out instead of
-  snapping. `RETIRE_FADE_MS` must match the
-  CSS duration, because `active` drops only once the fade has run.
+  first drag the label retires, and scrolling past `liveUntil()` (the hand-off with the particles
+  on) is the same exit reached by scrolling instead of dragging. The cursor's own live gate is
+  `globeFormed` without the scroll cut, so the fade plays out instead of snapping. `RETIRE_FADE_MS`
+  must match the CSS duration, because `active` drops only once the fade has run.
 
-  **The three layers have exactly two exits, and both are shared.** *Retiring* is one grouped rule
-  — opacity to 0 and `scale(0.6)` over `0.42s ease` for label, chevrons and disc alike. *Deactivating*
-  (modal open, pointer off the canvas, globe no longer live) snaps all three out on untransitioned
-  `visibility`, which is what keeps a disc from lingering at the click point when a card opens.
-  Splitting these is what reads as broken: a disc that only shrank on a slow `cubic-bezier(0.4, 0,
-  0.2, 1)` while the label opacity-faded looked like two different speeds at the same duration, and
-  a label with its own `0.5s ease 0.15s` outlived shapes that snapped. The label's `0.15s` entrance
-  stagger now lives on the `-active` rule as `transition-delay`, so it applies on the way in only.
+  **Two exits.** *Retiring* fades the label's opacity over `0.42s ease`. *Deactivating* (modal open,
+  pointer off the canvas, globe no longer formed) snaps it out on untransitioned `visibility`, so it
+  never lingers at the click point when a card opens. The `0.15s` entrance stagger lives on the
+  `-active` rule as `transition-delay`, so it applies on the way in only.
 
-  **Retirement hands the canvas back to the native cursor, not to the page default.** `cursor.js`
-  never writes `canvas.style.cursor`; `interaction.applyCursor()` stays the sole writer and returns
-  `none` while `isActive()`, so the moment the custom cursor retires the same call falls through to
-  `grab` / `grabbing` / `pointer` on a globe that is still live. `cursor.update()` therefore runs
-  **before** `applyCursor()` in `tick()` — the other order costs a frame of the wrong cursor.
+  **`cursor.js` never writes `canvas.style.cursor`.** `interaction.applyCursor()` is the sole writer,
+  so the native `grab` / `grabbing` / `pointer` stays under the label throughout.
 
   **Every gate is at `setup()`, none per frame.** `initRuntime` calls `cursor.setup(canvas)` only
   when `!bp.CYLINDER && !reducedMotion`: the barrel gate is the one `buildTextMesh` uses — a narrow
@@ -2338,12 +2327,9 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   affordances would otherwise both claim "click and drag". Both gates can sit at setup because a
   band crossing *and* an RM toggle each run `destroy(); initRuntime()` (`doLayout`), so there is no
   live state to re-check. Inside `setup()`, `(hover: hover) and (pointer: fine)` is read **once**;
-  the CSS `@media` mirrors it. Any gate leaves `els` null, so `update()` and `isActive()` no-op for
-  the session.
+  the CSS `@media` mirrors it. Any gate leaves `els` null, so `update()` no-ops for the session.
 
-  It does not test for an open modal either: `globeLive()` already excludes one. Both layers are
-  body-level — see the z-index list for why the disc is a `<body>` child of its own rather than a
-  child of the container.
+  It does not test for an open modal either: `globeFormed()` already excludes one.
 
   **Every pointer listener is on the canvas, not the window** — `mouseenter` / `mouseleave` /
   `mousemove`. Coords stay live through a drag that wanders off the canvas because pointer capture
@@ -2359,7 +2345,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
   instead. Keyboard users still retire the hint layer — `openCard` and the rotate chevrons set
   `hintRetired` directly, without going through `onDrag`.
 
-- **Canvas cursor — browser-native (`interaction.js`).** What the custom cursor is not covering.
+- **Canvas cursor — browser-native (`interaction.js`).** Always shown, with the label beside it.
   Over the live sphere with no modal open the canvas gets `grab`, `grabbing` while
   `drag.isDragging`, and `pointer` when the raycast hits a card — a card opens a modal, which is a
   click, not a drag. Anything else clears the style back to the page default.
@@ -2931,7 +2917,7 @@ keyboard gallery.
 
 `test/c2/blocks/globe-gallery/globe-gallery-interactive.test.js` covers `interaction.js`
 (click-vs-drag, the touch axis lock, `onDrag` once per gesture, cursor ownership through
-`applyCursor`), `cursor.js` (state transitions, retirement fade, `isActive` gating), `materials.js`
+`applyCursor`), `cursor.js` (state transitions, retirement fade, label placement), `materials.js`
 (card texture load and fallback, `loadModalTexture` adoption/error/stale disposal, hint texture
 orientation and canvas release), `modal.js` DOM behavior, and the quote-layout and fragment edge
 cases.

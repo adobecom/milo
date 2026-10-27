@@ -39,7 +39,6 @@ describe('globe-gallery: interaction', () => {
   let drag;
   let live;
   let yawOnly;
-  let cursorActive;
   let openModal;
   let onDrag;
   let interaction;
@@ -77,7 +76,6 @@ describe('globe-gallery: interaction', () => {
     };
     live = true;
     yawOnly = false;
-    cursorActive = false;
     openModal = sinon.spy();
     onDrag = sinon.spy();
     interaction = createInteraction({
@@ -90,7 +88,6 @@ describe('globe-gallery: interaction', () => {
       maxVel: 0.08,
       drag,
       getYawOnly: () => yawOnly,
-      isCursorActive: () => cursorActive,
       onDrag,
     });
     interaction.setup(canvas);
@@ -283,13 +280,9 @@ describe('globe-gallery: interaction', () => {
     expect(openModal.called).to.be.false;
   });
 
-  it('applies native or custom cursor states and clears them on teardown', () => {
+  it('applies native cursor states and clears them on teardown', () => {
     interaction.applyCursor();
     expect(canvas.style.cursor).to.equal('grab');
-    cursorActive = true;
-    interaction.applyCursor();
-    expect(canvas.style.cursor).to.equal('none');
-    cursorActive = false;
     drag.isDragging = true;
     interaction.applyCursor();
     expect(canvas.style.cursor).to.equal('grabbing');
@@ -304,8 +297,9 @@ describe('globe-gallery: custom cursor', () => {
   let canvas;
   let live;
   let retired;
-  let drag;
   let cursor;
+  const active = () => document.querySelector('.globe-gallery-cursor').classList
+    .contains('globe-gallery-cursor-active');
 
   beforeEach(() => {
     originalMatchMedia = window.matchMedia;
@@ -313,14 +307,12 @@ describe('globe-gallery: custom cursor', () => {
     document.body.appendChild(canvas);
     live = true;
     retired = false;
-    drag = { isDragging: false };
   });
 
   afterEach(() => {
     cursor?.teardown();
     canvas.remove();
-    document.querySelectorAll('.globe-gallery-cursor, .globe-gallery-cursor-disc')
-      .forEach((el) => el.remove());
+    document.querySelectorAll('.globe-gallery-cursor').forEach((el) => el.remove());
     window.matchMedia = originalMatchMedia;
     document.documentElement.removeAttribute('dir');
   });
@@ -331,7 +323,6 @@ describe('globe-gallery: custom cursor', () => {
       getGlobeLive: () => live,
       getCursorRetired: () => retired,
       labelText: 'Explore',
-      drag,
     });
     cursor.setup(canvas);
   }
@@ -341,39 +332,34 @@ describe('globe-gallery: custom cursor', () => {
     expect(document.querySelector('.globe-gallery-cursor')).to.be.null;
   });
 
-  it('activates only over a live canvas and positions all cursor pieces', () => {
+  it('activates only over a live canvas and places the label beside the pointer', () => {
     create();
     dispatch(canvas, 'mouseenter', { clientX: 100, clientY: 80 });
     cursor.update();
 
-    expect(cursor.isActive()).to.be.true;
-    expect(document.querySelector('.globe-gallery-cursor').classList
-      .contains('globe-gallery-cursor-active')).to.be.true;
+    expect(active()).to.be.true;
     expect(document.querySelector('.globe-gallery-cursor-text').textContent).to.equal('Explore');
-    expect(document.querySelector('.globe-gallery-cursor-disc').style.left).to.equal('100px');
-    expect(document.querySelector('.globe-gallery-cursor-ring-wrap').style.transform)
-      .to.equal('translate(100px, 80px)');
+    expect(document.querySelector('.globe-gallery-cursor-text-wrap').style.transform)
+      .to.equal('translate(132px, 69px)');
 
     live = false;
     cursor.update();
-    expect(cursor.isActive()).to.be.false;
+    expect(active()).to.be.false;
   });
 
-  it('tracks dragging, keyboard suppression, and pointer reactivation', () => {
+  it('tracks keyboard suppression and pointer reactivation', () => {
     create();
     dispatch(canvas, 'mouseenter', { clientX: 20, clientY: 30 });
-    drag.isDragging = true;
     cursor.update();
-    expect(document.querySelector('.globe-gallery-cursor').classList
-      .contains('globe-gallery-cursor-dragging')).to.be.true;
+    expect(active()).to.be.true;
 
     document.dispatchEvent(new Event('focusin'));
     cursor.update();
-    expect(cursor.isActive()).to.be.false;
+    expect(active()).to.be.false;
 
     dispatch(canvas, 'mousemove', { clientX: 22, clientY: 32 });
     cursor.update();
-    expect(cursor.isActive()).to.be.true;
+    expect(active()).to.be.true;
   });
 
   it('retires after the fade delay and can become active again', () => {
@@ -384,13 +370,13 @@ describe('globe-gallery: custom cursor', () => {
       cursor.update();
       retired = true;
       cursor.update();
-      expect(cursor.isActive()).to.be.true;
+      expect(active()).to.be.true;
       clock.tick(421);
       cursor.update();
-      expect(cursor.isActive()).to.be.false;
+      expect(active()).to.be.false;
       retired = false;
       cursor.update();
-      expect(cursor.isActive()).to.be.true;
+      expect(active()).to.be.true;
     } finally {
       clock.restore();
     }
@@ -411,7 +397,6 @@ describe('globe-gallery: custom cursor', () => {
       .to.include('translate(');
     cursor.teardown();
     expect(document.querySelector('.globe-gallery-cursor')).to.be.null;
-    expect(document.querySelector('.globe-gallery-cursor-disc')).to.be.null;
   });
 });
 
