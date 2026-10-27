@@ -2859,6 +2859,8 @@ export function getMarketsUrl() {
   return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
 }
 
+const DEFAULT_MARKET = 'us';
+
 export const norm = normCountryCode;
 
 export async function getMarketConfig() {
@@ -2903,14 +2905,14 @@ export async function getValidatedMarket() {
   if (isBot()) return null;
   const config = await getMarketConfig();
   const detectedMarket = await resolveDetectedMarketCountry();
-  if (!config) return detectedMarket || 'us';
+  if (!config) return detectedMarket || DEFAULT_MARKET;
   const { locale } = getConfig();
   const currLang = marketsLangForLocale(config, locale);
-  if (!currLang) return detectedMarket || 'us';
-  const market = detectedMarket || currLang.defaultMarket || 'us';
+  if (!currLang) return detectedMarket || DEFAULT_MARKET;
+  const market = detectedMarket || currLang.defaultMarket || DEFAULT_MARKET;
   const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
   const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
-  return validated || 'us';
+  return validated || DEFAULT_MARKET;
 }
 
 const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
