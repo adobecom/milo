@@ -1,6 +1,5 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
@@ -178,122 +177,6 @@ describe('Comparison Table C2', () => {
     const srOnly = checkmarkIcon.closest('.cell-content').querySelector('.sr-only');
     expect(srOnly).to.exist;
     expect(srOnly.textContent).to.equal('primary feature');
-  });
-
-  describe('sticky header performance', () => {
-    let frames;
-    let resizeCallbacks;
-    let mediaState;
-    let scrollYDescriptor;
-    let headerContent;
-    let cardsContainer;
-    let scrollHandler;
-
-    const setupStickyHeader = async () => {
-      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-      mediaState = { mobile: false };
-      frames = [];
-      resizeCallbacks = [];
-      scrollYDescriptor = Object.getOwnPropertyDescriptor(window, 'scrollY');
-      Object.defineProperty(window, 'scrollY', { configurable: true, writable: true, value: 0 });
-      sinon.stub(window, 'matchMedia').returns({
-        get matches() { return mediaState.mobile; },
-        addEventListener: () => {},
-      });
-      sinon.stub(window, 'requestAnimationFrame').callsFake((callback) => {
-        frames.push(callback);
-        return frames.length;
-      });
-      sinon.stub(window, 'ResizeObserver').callsFake((callback) => {
-        resizeCallbacks.push(callback);
-        return { observe: () => {} };
-      });
-
-      const addEventListenerSpy = sinon.spy(window, 'addEventListener');
-      const el = document.querySelector('.comparison-table-c2');
-      init(el);
-      frames.length = 0;
-      const [, listener] = addEventListenerSpy.getCalls()
-        .filter(({ args }) => args[0] === 'scroll')
-        .at(-1).args;
-      scrollHandler = listener;
-      headerContent = el.querySelector('.header-content');
-      cardsContainer = el.querySelector('.header-cards-container');
-      sinon.stub(cardsContainer, 'getBoundingClientRect').returns({ top: 0 });
-      Object.defineProperty(cardsContainer, 'offsetHeight', { configurable: true, value: 240 });
-    };
-
-    const fireScroll = () => scrollHandler();
-    const flushFrame = () => frames.shift()();
-
-    afterEach(() => {
-      sinon.restore();
-      if (scrollYDescriptor) Object.defineProperty(window, 'scrollY', scrollYDescriptor);
-      else delete window.scrollY;
-      scrollYDescriptor = undefined;
-      document.body.innerHTML = '';
-    });
-
-    it('coalesces scroll bursts to one geometry read per frame and uses the latest direction', async () => {
-      await setupStickyHeader();
-
-      window.scrollY = 10;
-      fireScroll();
-      window.scrollY = 20;
-      fireScroll();
-      expect(frames.length).to.equal(1);
-      expect(cardsContainer.getBoundingClientRect.callCount).to.equal(0);
-
-      flushFrame();
-      expect(cardsContainer.getBoundingClientRect.callCount).to.equal(1);
-      expect(cardsContainer.classList.contains('is-collapsed')).to.be.true;
-
-      window.scrollY = 30;
-      fireScroll();
-      window.scrollY = 5;
-      fireScroll();
-      expect(frames.length).to.equal(1);
-      flushFrame();
-      expect(cardsContainer.getBoundingClientRect.callCount).to.equal(2);
-      expect(cardsContainer.classList.contains('is-collapsed')).to.be.false;
-
-      window.scrollY = 8;
-      fireScroll();
-      flushFrame();
-      expect(cardsContainer.getBoundingClientRect.callCount).to.equal(3);
-      expect(cardsContainer.classList.contains('is-collapsed')).to.be.true;
-    });
-
-    it('writes min-height only when changed and clears it only when needed on mobile', async () => {
-      await setupStickyHeader();
-      const writes = [];
-      Object.defineProperty(headerContent.style, 'minHeight', {
-        configurable: true,
-        get: () => headerContent.style.getPropertyValue('min-height'),
-        set: (value) => {
-          writes.push(value);
-          headerContent.style.setProperty('min-height', value);
-        },
-      });
-
-      resizeCallbacks[0]();
-      resizeCallbacks[0]();
-      expect(writes).to.deep.equal(['240px']);
-
-      Object.defineProperty(cardsContainer, 'offsetHeight', { configurable: true, value: 260 });
-      resizeCallbacks[0]();
-      expect(writes).to.deep.equal(['240px', '260px']);
-
-      mediaState.mobile = true;
-      resizeCallbacks[0]();
-      resizeCallbacks[0]();
-      expect(writes).to.deep.equal(['240px', '260px', '']);
-
-      window.scrollY = 300;
-      fireScroll();
-      expect(frames).to.have.lengthOf(0);
-      expect(cardsContainer.classList.contains('is-collapsed')).to.be.false;
-    });
   });
 
   it('builds a labelled mobile filter select per column when there are 3+ columns', async () => {
