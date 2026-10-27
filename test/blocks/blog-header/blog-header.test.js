@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
 import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { closeModal } from '../../../libs/blocks/modal/modal.js';
+import initAuthor from '../../../libs/blocks/blog-author/blog-author.js';
 import initSideNavigation from '../../../libs/blocks/blog-side-navigation/blog-side-navigation.js';
 import { waitFor } from '../../helpers/waitfor.js';
 import init, {
@@ -62,6 +63,10 @@ function buildProfile({
 
 const profileHtml = buildProfile();
 
+function isProfileRequest(url) {
+  return /\/(?:authors\/[^/]+|author)\.plain\.html$/.test(new URL(url, window.location.href).pathname);
+}
+
 function mockFetch({
   profileStatus = 200,
   profileReject = false,
@@ -72,7 +77,7 @@ function mockFetch({
     if (url.includes('blog-header.svg')) {
       return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
     }
-    if (url.includes('.plain.html')) {
+    if (isProfileRequest(url)) {
       if (profileReject) return Promise.reject(new Error('network down'));
       return Promise.resolve({
         ok: profileStatus === 200,
@@ -136,8 +141,175 @@ async function cleanup() {
   );
   document.querySelectorAll('main, .blog-header-test-trigger, .blog-header-test-metadata')
     .forEach((el) => el.remove());
+  document.head.querySelectorAll('script[data-blog-schema]').forEach((el) => el.remove());
   window.lana.log.resetHistory();
 }
+
+describe('blog-header schema', () => {
+  const production = 'https://business.adobe.com';
+  let fetchStub;
+  let canonical;
+
+  function posting() {
+    const script = document.head.querySelector('script[data-blog-schema="posting"]');
+    return script ? JSON.parse(script.textContent) : null;
+  }
+
+  beforeEach(() => {
+    canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    canonical.href = `${production}/blog/article?milolibs=preview#section`;
+    canonical.className = 'blog-header-test-metadata';
+    document.head.append(canonical);
+    fetchStub = mockFetch();
+  });
+
+  afterEach(async () => {
+    await cleanup();
+    fetchStub.restore();
+  });
+
+  [1, 2, 3].forEach((count) => {
+    it(`outputs profile-sourced authors for ${count} byline rows, limited to two`, async () => {
+      const { block, profilePath } = buildBlock({ authors: count, picture: true });
+      [...block.querySelectorAll('a')].forEach((link, index) => {
+        link.href = `${profilePath}-${index}`;
+        fetchStub.withArgs(`${link.href}.plain.html`).resolves({
+          ok: true,
+          text: async () => buildProfile({ name: `Author ${index}` }),
+        });
+      });
+      await init(block);
+      await waitFor(() => posting()?.author.length === Math.min(count, 2));
+      expect(posting()['@context']).to.equal('https://schema.org');
+      expect(posting()['@type']).to.equal('BlogPosting');
+      expect(posting().headline).to.equal('Title of the article');
+      expect(posting().url).to.equal(`${production}/blog/article`);
+      expect(posting().author[0]).to.deep.equal({
+        '@type': 'Person',
+        name: 'Author 0',
+        url: `${production}${profilePath}-0`,
+        '@id': `${production}${profilePath}-0#person`,
+        worksFor: { '@type': 'Organization', name: 'Adobe' },
+        jobTitle: 'Profile Title',
+        image: `${production}/blog/authors/media_rachel.png`,
+        sameAs: ['https://linkedin.com/in/profile'],
+        description: 'Profile biography, not job metadata.',
+      });
+      if (count > 1) {
+        expect(posting().author[1].name).to.equal('Author 1');
+        expect(posting().author[1]['@id']).to.equal(`${production}${profilePath}-1#person`);
+        expect(posting().author[1]).not.to.have.property('description');
+      }
+      expect(fetchStub.getCalls().filter((call) => isProfileRequest(call.args[0])).length)
+        .to.equal(Math.min(count, 2));
+      expect(block.querySelectorAll('.blog-header-author').length).to.equal(count);
+    });
+  });
+
+  it('uses plain profile HTML and matches the author page production Person identity', async () => {
+    const { main, block, profilePath } = buildBlock({ picture: true });
+    const authorUrl = `${production}${profilePath}`;
+    const requestUrl = `${window.location.origin}${profilePath}.plain.html`;
+    fetchStub.withArgs(requestUrl).resolves({
+      ok: true,
+      text: async () => profileHtml,
+    });
+    await init(block);
+    await waitFor(() => posting()?.author.length === 1);
+    expect(fetchStub.calledWith(requestUrl)).to.equal(true);
+    expect(posting().author[0].url).to.equal(authorUrl);
+    canonical.href = `${authorUrl}?preview=true#bio`;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = profileHtml;
+    main.append(wrapper);
+    await initAuthor(wrapper.firstElementChild);
+    const person = JSON.parse(document.head.querySelector('script[data-blog-schema="person"]')
+      .textContent);
+    expect(person['@id']).to.equal(posting().author[0]['@id']);
+  });
+
+  ['page', 'live'].forEach((suffix) => {
+    it(`uses production identities for two authors linked on another aem.${suffix} branch`, async () => {
+      const { block, profilePath } = buildBlock({ authors: 2, picture: true });
+      const origin = `https://main--da-bacom-blog--adobecom.aem.${suffix}`;
+      const paths = [profilePath, `${profilePath}-second`];
+      paths.forEach((path, index) => {
+        block.children[index + 2].querySelector('a').href = `${origin}${path}?preview=true#bio`;
+        fetchStub.withArgs(`${origin}${path}.plain.html`).resolves({
+          ok: true,
+          text: async () => buildProfile({ name: `Author ${index}` }),
+        });
+      });
+      await init(block);
+      await waitFor(() => posting()?.author.length === 2);
+      expect(posting().author.map((author) => author.url))
+        .to.deep.equal(paths.map((path) => `${production}${path}`));
+      expect(posting().author.map((author) => author['@id']))
+        .to.deep.equal(paths.map((path) => `${production}${path}#person`));
+      const requests = fetchStub.getCalls().filter((call) => call.args[0].includes(profilePath));
+      expect(requests.map((call) => call.args[0]))
+        .to.deep.equal(paths.map((path) => `${origin}${path}.plain.html`));
+    });
+  });
+
+  [
+    { label: 'HTTP error', response: { ok: false, status: 404 } },
+    { label: 'missing profile block', response: { ok: true, text: async () => '<p>No profile</p>' } },
+    { label: 'combined profile', response: { ok: true, text: async () => buildProfile({ name: 'Kay Sin and Danial Kafeel' }) } },
+    { label: 'multiple profile blocks', response: { ok: true, text: async () => profileHtml + profileHtml } },
+    { label: 'network failure', error: new Error('Network unavailable') },
+    { label: 'missing author page' },
+  ].forEach(({ label, response, error }) => {
+    it(`preserves the remaining author and the byline after ${label}`, async () => {
+      const { block, profilePath } = buildBlock({ authors: 2, picture: true });
+      const first = block.children[2].querySelector('a');
+      if (error) fetchStub.withArgs(`${first.href}.plain.html`).rejects(error);
+      else if (response) fetchStub.withArgs(`${first.href}.plain.html`).resolves(response);
+      else first.replaceWith(first.textContent);
+      block.children[3].querySelector('a').href = `${profilePath}-second`;
+      await init(block);
+      await waitFor(() => posting()?.author.length === 1);
+      expect(posting().author[0].url).to.equal(`${production}${profilePath}-second`);
+      expect(block.querySelectorAll('.blog-header-author').length).to.equal(2);
+      if (response || error) expect(window.lana.log.called).to.equal(true);
+    });
+  });
+
+  it('omits unauthored optional fields instead of using byline values', async () => {
+    const { block, profilePath } = buildBlock({ picture: true });
+    fetchStub.withArgs(`${window.location.origin}${profilePath}.plain.html`).resolves({
+      ok: true,
+      text: async () => '<div class="blog-author"><div><div>Author</div></div></div>',
+    });
+    await init(block);
+    await waitFor(() => posting()?.author.length === 1);
+    expect(posting().author[0]).to.deep.equal({
+      '@type': 'Person',
+      name: 'Author',
+      url: `${production}${profilePath}`,
+      '@id': `${production}${profilePath}#person`,
+      worksFor: { '@type': 'Organization', name: 'Adobe' },
+    });
+  });
+
+  it('outputs no duplicate Person when both rows reference the same author page', async () => {
+    const { block } = buildBlock({ authors: 2, picture: true });
+    await init(block);
+    await waitFor(() => posting()?.author.length === 1);
+    expect(fetchStub.getCalls().filter((call) => isProfileRequest(call.args[0])).length)
+      .to.equal(1);
+  });
+
+  it('renders the article and its schema when no author has an individual page', async () => {
+    const { block } = buildBlock({ link: false });
+    await init(block);
+    await waitFor(() => posting() !== null);
+    expect(posting().author).to.deep.equal([]);
+    expect(block.querySelector('h1')).to.exist;
+    expect(block.querySelector('.blog-header-share')).to.exist;
+  });
+});
 
 describe('blog-header reading time', () => {
   let main;
@@ -292,12 +464,12 @@ describe('blog-header decoration', () => {
     expect(block.querySelector('.blog-header-author-meta').textContent).to.equal('Author Title | Company');
   });
 
-  it('keeps an authored picture and does not fetch a profile', async () => {
+  it('keeps an authored picture while fetching the profile for schema', async () => {
     fetchStub = mockFetch();
     const { block } = buildBlock({ picture: true });
     await init(block);
     expect(block.querySelector('.blog-header-author-avatar img').getAttribute('src')).to.equal('/authored.png');
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(true);
   });
 
   [
@@ -349,7 +521,7 @@ describe('blog-header decoration', () => {
       expect(authorName.tagName).to.equal('SPAN');
       expect(authorName.textContent).to.equal('Rachel Thornton');
       expect(authorName.hasAttribute('href')).to.equal(false);
-      expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+      expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(false);
       expect(window.lana.log.calledOnce).to.equal(true);
       expect(window.lana.log.firstCall.args[0]).to.contain('author profile URL');
     });
@@ -397,7 +569,7 @@ describe('blog-header decoration', () => {
     expect(authors[1].querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(authors[0].querySelector('.blog-header-author-meta').textContent)
       .to.equal('Author Title | Company');
-    expect(fetchStub.getCalls().filter((c) => c.args[0].includes('.plain.html')).length).to.equal(1);
+    expect(fetchStub.getCalls().filter((c) => isProfileRequest(c.args[0])).length).to.equal(1);
   });
 
   it('resolves a direct URL link and preserves following authored metadata', async () => {
@@ -433,7 +605,7 @@ describe('blog-header decoration', () => {
       if (url.includes('blog-header.svg')) {
         return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
       }
-      if (url.includes('.plain.html')) {
+      if (isProfileRequest(url)) {
         return pending.then(() => ({
           ok: true,
           status: 200,
@@ -503,7 +675,7 @@ describe('blog-header decoration', () => {
       .to.equal('/authored.png');
     expect(block.querySelector('.blog-header-author-meta').textContent)
       .to.equal('Profile Title | Profile Company');
-    expect(fetchStub.getCalls().filter((c) => c.args[0].includes('.plain.html')).length).to.equal(1);
+    expect(fetchStub.getCalls().filter((c) => isProfileRequest(c.args[0])).length).to.equal(1);
   });
 
   it('fills metadata even when the profile has no picture', async () => {
@@ -548,14 +720,14 @@ describe('blog-header decoration', () => {
     expect(window.lana.log.called).to.equal(false);
   });
 
-  it('does not fetch missing profile fields when author links are disabled', async () => {
+  it('fetches schema without enriching the byline when author links are disabled', async () => {
     setMetadata('article-author-link', 'off');
     fetchStub = mockFetch();
     const { block } = buildBlock({ picture: true, metadata: false });
     await init(block);
     expect(block.querySelector('.blog-header-author-name').tagName).to.equal('SPAN');
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(true);
   });
 
   it('does not fetch missing metadata without a profile link', async () => {
@@ -566,7 +738,7 @@ describe('blog-header decoration', () => {
     const avatar = block.querySelector('.blog-header-avatar');
     expect(avatar.getAttribute('src')).to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(avatar.alt).to.equal('');
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(false);
   });
 
   it('uses the default avatar on a failed profile request and logs it', async () => {
@@ -612,7 +784,7 @@ describe('blog-header decoration', () => {
   });
 
   it('keeps the default avatar without logging when the profile has no picture', async () => {
-    fetchStub = mockFetch({ profileMarkup: '<div class="blog-author"><p>Author</p></div>' });
+    fetchStub = mockFetch({ profileMarkup: '<div class="blog-author"><div><div>Author</div></div></div>' });
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
@@ -639,8 +811,9 @@ describe('blog-header decoration', () => {
       expect(block.querySelector('.blog-header-author-name').getAttribute('href')).to.equal(profilePath);
       expect(block.querySelector('.blog-header-author-meta').textContent)
         .to.equal('Profile Title | Profile Company');
-      expect(window.lana.log.calledOnce).to.equal(true);
-      expect(window.lana.log.firstCall.args[0]).to.contain('author profile image is invalid');
+      expect(window.lana.log.getCalls().some((call) => (
+        call.args[0].includes('author profile image is invalid')
+      ))).to.equal(true);
     });
   });
 
@@ -649,7 +822,8 @@ describe('blog-header decoration', () => {
     const { block, profilePath } = buildBlock({ authors: 2, metadata: false });
     await init(block);
     await waitFor(() => block.querySelectorAll('.blog-header-author-avatar picture').length === 2);
-    const calls = fetchStub.getCalls().filter((c) => c.args[0].includes(`${profilePath}.plain.html`));
+    const calls = fetchStub.getCalls()
+      .filter((c) => c.args[0] === `${window.location.origin}${profilePath}.plain.html`);
     expect(calls.length).to.equal(1);
     const pictures = block.querySelectorAll('.blog-header-author-avatar picture');
     expect(pictures[0]).not.to.equal(pictures[1]);
@@ -658,14 +832,14 @@ describe('blog-header decoration', () => {
       .to.deep.equal(['Profile Title | Profile Company', 'Profile Title | Profile Company']);
   });
 
-  it('disables the author link and profile fetch when article-author-link is off', async () => {
+  it('disables the author link but still fetches schema when article-author-link is off', async () => {
     setMetadata('article-author-link', 'off');
     fetchStub = mockFetch();
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
     expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('Rachel Thornton');
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(true);
   });
 });
 
