@@ -105,6 +105,7 @@ const C1_BLOCKS = [
   'table',
   'table-metadata',
   'tags',
+  'tag-browser',
   'tag-cta',
   'tag-selector',
   'tiktok',
