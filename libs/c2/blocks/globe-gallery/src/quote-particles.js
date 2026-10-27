@@ -597,9 +597,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
 
   let ready = false;
   let generation = 0;
-  let version = 0;
-  let stateKey = '';
-  let drawnKey = '';
   let lastP = 0;
 
   function writeTargets(r, m, dpr) {
@@ -864,7 +861,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       [, o] = slice;
       return slice;
     });
-    version += 1;
     const token = {};
     pairing = token;
     const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
@@ -880,7 +876,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         pending = [];
         draws.forEach(({ points }) => { points.visible = lastP < QUOTE_LIVE_P; });
         sourcesPaired = true;
-        version += 1;
         return true;
       });
     });
@@ -901,7 +896,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const orderBytes = writeTargets(r, m, dpr);
     ready = !!orderBytes;
     if (ready) writePlane(r, dpr, orderBytes);
-    version += 1;
     return ready;
   }
 
@@ -916,8 +910,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     shared.uCamZ.value.set(zoom[2], zoom[3]);
     draws.forEach(({ points }) => { points.visible = p < QUOTE_LIVE_P; });
     plane.visible = p > FLIGHT.arriveStart;
-    const drawnP = p >= QUOTE_LIVE_P ? 'crisp' : p;
-    stateKey = `${drawnP}|${show}|${version}|${W}x${H}@${dpr}`;
   }
 
   const warm = (renderer, camera) => compileShown(renderer, camera, group, [group, plane]);
@@ -931,9 +923,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     isReady: () => ready,
     isPaired: () => sourcesPaired,
     clearSources,
-    isIdle: () => lastP >= QUOTE_LIVE_P && stateKey === drawnKey,
-    markDrawn: () => { drawnKey = stateKey; },
-    invalidate: () => { drawnKey = ''; },
     dispose() {
       generation += 1;
       ready = false;
@@ -1172,7 +1161,6 @@ export function createPullQuote({
     if (pos === s.canvasPos) return;
     s.canvasPos = pos;
     canvas.style.position = pos;
-    canvas.style.pointerEvents = s.p > 0 ? 'none' : 'auto';
   }
 
   function takeNear(card, proxFade) {
@@ -1289,7 +1277,6 @@ export function createPullQuote({
     clearTimeout(rasterTimer);
     fx?.dispose();
     scatter?.dispose();
-    if (canvas) canvas.style.pointerEvents = 'auto';
     fx = null;
     scatter = null;
     canvas = null;
@@ -1321,8 +1308,5 @@ export function createPullQuote({
     handoffEase,
     zoomPx,
     liveUntil: () => (fx ? s.startT : s.appearT),
-    isIdle: () => !!fx && fx.isIdle(),
-    markDrawn: () => fx?.markDrawn(),
-    invalidate: () => fx?.invalidate(),
   };
 }

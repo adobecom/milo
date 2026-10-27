@@ -118,8 +118,7 @@ The differences:
 - Vocabulary and imports: `scrollT`/`travel` in place of `zoomT`/`zoom` (`--fg-travel-vh`,
   `input.travelPx`, `travelSpanPx`, `scrollYAtTravelT`), from `utils.js`. There is no formation
   offset, so the travel, the hand-off and the block height all count from the block top (the pin).
-- The canvas is always `position: absolute` in the sticky world, so `placeCanvas` only takes its
-  pointer events away once `p > 0`.
+- The canvas is always `position: absolute` in the sticky world, so there is no `placeCanvas`.
 - Every card is on the sphere, so `cardPlanes` sources every card the modal does not hold.
 
 The section around the block: a rounded section above overlaps the block's first radius (see Entry
@@ -180,8 +179,8 @@ converted to world units at the card's depth, so the card leaves and returns exa
 drawn. The offset is re-read when the close starts, so a scroll that slips through the lock while
 the modal is open still lands the card on its slot.
 
-The modal's `WebGLRenderer` is created lazily on the first `open()` (`ensureModalRenderer()`), not in
-`setup()`; it is disposed on every `destroy()` and recreated on the next `open()`.
+The modal's renderer is created on the first `open()`, as in globe-gallery, and disposed on every
+`destroy()`.
 
 The scroll lock is `html.firefly-globe-modal-open { overflow: hidden }` + `lenis.stop()`, on `html`
 only. With `html` already non-visible, an `overflow: hidden` on `body` applies to `body` itself

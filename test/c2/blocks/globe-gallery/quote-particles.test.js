@@ -129,7 +129,7 @@ describe('globe-gallery: quote particles', () => {
     expect(fx.object.visible).to.be.true;
   });
 
-  it('crosses from points to the text plane and idles once drawn at rest', async () => {
+  it('crosses from points to the text plane', async () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 500 });
     await fx.layout({ dpr: 1 });
@@ -148,14 +148,6 @@ describe('globe-gallery: quote particles', () => {
     expect(plane.visible).to.be.true;
     expect(plane.material.uniforms.uP.value).to.equal(1);
     expect(QUOTE_LIVE_P).to.be.below(1);
-    expect(fx.isIdle()).to.be.false;
-    fx.markDrawn();
-    expect(fx.isIdle()).to.be.true;
-    fx.update(1, { ...view, W: 900 });
-    expect(fx.isIdle()).to.be.false;
-    fx.markDrawn();
-    fx.invalidate();
-    expect(fx.isIdle()).to.be.false;
     fx.update(0.5, { ...view, zoom: [0.2, 0.4, 57, 117] });
     expect(points.material.uniforms.uZoomT.value.toArray()).to.deep.equal([0.2, 0.4]);
     expect(points.material.uniforms.uCamZ.value.toArray()).to.deep.equal([57, 117]);
@@ -163,7 +155,7 @@ describe('globe-gallery: quote particles', () => {
     expect(fx.object.visible).to.be.false;
   });
 
-  it('lands each glyph by reading order and is still once the last one is crisp', async () => {
+  it('lands each glyph by reading order', async () => {
     const { figureEl, railEl } = mount();
     fx = createQuoteParticles({ figureEl, railEl, count: 800 });
     await fx.layout({ dpr: 1 });
@@ -232,9 +224,6 @@ describe('globe-gallery: quote particles', () => {
     const view = { W: 800, H: 600, dpr: 1 };
     fx.update(QUOTE_LIVE_P, view);
     expect(points.visible).to.be.false;
-    fx.markDrawn();
-    fx.update(0.97, view);
-    expect(fx.isIdle()).to.be.true; // nothing left to fill in after the last landing
   });
 
   it('stays unready for an empty figure', async () => {

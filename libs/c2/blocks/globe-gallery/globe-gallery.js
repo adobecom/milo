@@ -1118,7 +1118,7 @@ function createGlobeGalleryRuntime(
       camera.position.z = camZArc;
     } else {
       activeCamera = camera;
-      // easeInCubic matches the zoom's easeOutCubic; apparent size is held by sphereGroup.z.
+      // easeInCubic into the zoom's ease-out; apparent size is held by sphereGroup.z.
       const camZ = zoomT === 0
         ? lerpN(camZArc, CAM_Z_SPHERE, sphereFormT * sphereFormT * sphereFormT)
         : TL.camZAtZoomT(zoomT, CAM_Z_SPHERE, CAM_Z_END);
@@ -1283,7 +1283,6 @@ function createGlobeGalleryRuntime(
       ? pullQuote.isDone(lenisY)
       : zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T;
     const hidden = modal.getModalIdx() < 0 && (lenisY < showTrigger || pastEnd);
-    if (canvasHidden && !hidden) pullQuote.invalidate();
     canvasHidden = hidden;
     canvas.style.display = canvasHidden ? 'none' : 'block';
     pullQuote.placeCanvas();
@@ -1323,18 +1322,14 @@ function createGlobeGalleryRuntime(
   }
 
   function renderScene(activeCamera) {
-    const idle = pullQuote.isIdle() && modal.getModalIdx() < 0;
-    if (!canvasHidden && !idle) {
-      renderer.render(scene, activeCamera);
-      pullQuote.markDrawn();
-    }
+    if (!canvasHidden) renderer.render(scene, activeCamera);
     modal.render();
   }
 
   function placeSphereCard(card, mesh, frame) {
     const { sphereRotActive, sphGroupZ } = frame;
     mesh.visible = true;
-    const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
+    const hs = 1 + card.hoverT * HOVER_SCALE;
     if (sphereRotActive) {
       mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
     } else {

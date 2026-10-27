@@ -597,9 +597,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
 
   let ready = false;
   let generation = 0;
-  let version = 0;
-  let stateKey = '';
-  let drawnKey = '';
   let lastP = 0;
 
   function writeTargets(r, m, dpr) {
@@ -864,7 +861,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       [, o] = slice;
       return slice;
     });
-    version += 1;
     const token = {};
     pairing = token;
     const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
@@ -880,7 +876,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         pending = [];
         draws.forEach(({ points }) => { points.visible = lastP < QUOTE_LIVE_P; });
         sourcesPaired = true;
-        version += 1;
         return true;
       });
     });
@@ -901,7 +896,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const orderBytes = writeTargets(r, m, dpr);
     ready = !!orderBytes;
     if (ready) writePlane(r, dpr, orderBytes);
-    version += 1;
     return ready;
   }
 
@@ -916,8 +910,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     shared.uCamZ.value.set(zoom[2], zoom[3]);
     draws.forEach(({ points }) => { points.visible = p < QUOTE_LIVE_P; });
     plane.visible = p > FLIGHT.arriveStart;
-    const drawnP = p >= QUOTE_LIVE_P ? 'crisp' : p;
-    stateKey = `${drawnP}|${show}|${version}|${W}x${H}@${dpr}`;
   }
 
   const warm = (renderer, camera) => compileShown(renderer, camera, group, [group, plane]);
@@ -931,9 +923,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     isReady: () => ready,
     isPaired: () => sourcesPaired,
     clearSources,
-    isIdle: () => lastP >= QUOTE_LIVE_P && stateKey === drawnKey,
-    markDrawn: () => { drawnKey = stateKey; },
-    invalidate: () => { drawnKey = ''; },
     dispose() {
       generation += 1;
       ready = false;
@@ -1037,7 +1026,6 @@ export function createPullQuote({
   let fx = null;
   let scatter = null;
   let camera = null;
-  let canvas = null;
   let rasterTimer = 0;
   const s = { appearT: 0.5, startT: 0.5 };
   const reset = () => Object.assign(s, {
@@ -1051,7 +1039,6 @@ export function createPullQuote({
     nextKey: '',
     nextAt: 0,
     layoutKey: '',
-    canvasEvents: '',
     on: false,
     swapT: 0,
     swapStr: '',
@@ -1165,14 +1152,6 @@ export function createPullQuote({
     return (s.p >= QUOTE_LIVE_P && s.swapT >= 1) || worldReleased(scrollY);
   }
 
-  function placeCanvas() {
-    if (!canvas) return;
-    const events = s.p > 0 ? 'none' : 'auto';
-    if (events === s.canvasEvents) return;
-    s.canvasEvents = events;
-    canvas.style.pointerEvents = events;
-  }
-
   function takeNear(card, proxFade) {
     if (!scatter || proxFade >= 1) return false;
     if (proxFade > 0) near.push({ card, d: 1 - proxFade });
@@ -1270,7 +1249,6 @@ export function createPullQuote({
 
   function build(ctx) {
     ({ camera } = ctx);
-    canvas = ctx.renderer.domElement;
     const cfg = PULL_BP[getBp().name];
     scatter = createCardScatter({ expand: cfg.expand });
     ctx.scene.add(scatter.object);
@@ -1287,10 +1265,8 @@ export function createPullQuote({
     clearTimeout(rasterTimer);
     fx?.dispose();
     scatter?.dispose();
-    if (canvas) canvas.style.pointerEvents = 'auto';
     fx = null;
     scatter = null;
-    canvas = null;
     camera = null;
     near.length = 0;
     root.classList.remove('firefly-globe-pq-particles');
@@ -1312,15 +1288,11 @@ export function createPullQuote({
     update,
     afterCards,
     takeNear,
-    placeCanvas,
     isDone,
     isOn,
     ownsCards,
     handoffEase,
     travelPx,
     liveUntil: () => (fx ? s.startT : s.appearT),
-    isIdle: () => !!fx && fx.isIdle(),
-    markDrawn: () => fx?.markDrawn(),
-    invalidate: () => fx?.invalidate(),
   };
 }

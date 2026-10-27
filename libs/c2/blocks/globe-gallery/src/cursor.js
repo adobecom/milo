@@ -85,13 +85,12 @@ export default function createCursor(deps) {
       els.disc.classList.toggle('globe-gallery-cursor-disc-retiring', wantRetired);
     }
     const faded = state.retireT0 >= 0 && now() - state.retireT0 >= RETIRE_FADE_MS;
-    const fading = state.active && state.retireT0 >= 0 && !faded;
 
-    const wantActive = fading || (state.hasCoords
+    const wantActive = state.hasCoords
       && state.onCanvas
       && !state.suppressed
       && getGlobeLive()
-      && !faded);
+      && !faded;
     if (wantActive !== state.active) {
       state.active = wantActive;
       state.wx = NaN;

@@ -1199,25 +1199,19 @@ function createGlobeGalleryRuntime(
       ? pullQuote.isDone(frame.scrollY)
       : frame.scrollT >= pqAppearT + CANVAS_HIDE_MARGIN_T;
     const hidden = modal.getModalIdx() < 0 && pastEnd;
-    if (canvasHidden && !hidden) pullQuote.invalidate();
     canvasHidden = hidden;
     canvas.style.display = canvasHidden ? 'none' : 'block';
-    pullQuote.placeCanvas();
   }
 
   function renderScene(activeCamera) {
-    const idle = pullQuote.isIdle() && modal.getModalIdx() < 0;
-    if (!canvasHidden && !idle) {
-      renderer.render(scene, activeCamera);
-      pullQuote.markDrawn();
-    }
+    if (!canvasHidden) renderer.render(scene, activeCamera);
     modal.render();
   }
 
   function placeSphereCard(card, mesh, frame) {
     const { sphereRotActive, sphGroupZ } = frame;
     mesh.visible = true;
-    const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
+    const hs = 1 + card.hoverT * HOVER_SCALE;
     if (sphereRotActive) {
       mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
     } else {

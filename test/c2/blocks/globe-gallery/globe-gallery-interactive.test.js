@@ -396,26 +396,6 @@ describe('globe-gallery: custom cursor', () => {
     }
   });
 
-  it('finishes a started fade when the pointer leaves or the globe stops being live', () => {
-    const clock = sinon.useFakeTimers();
-    try {
-      create();
-      dispatch(canvas, 'mouseenter', { clientX: 20, clientY: 30 });
-      cursor.update();
-      retired = true;
-      cursor.update();
-      dispatch(canvas, 'mouseleave');
-      live = false;
-      cursor.update();
-      expect(cursor.isActive()).to.be.true;
-      clock.tick(421);
-      cursor.update();
-      expect(cursor.isActive()).to.be.false;
-    } finally {
-      clock.restore();
-    }
-  });
-
   it('places the label on the left in RTL and removes generated DOM on teardown', () => {
     document.documentElement.dir = 'rtl';
     create();

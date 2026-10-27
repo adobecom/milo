@@ -473,9 +473,22 @@ export default function createGlobeModal({
     dnNavActive = true;
   }
 
+  function ensureModalRenderer() {
+    if (modalRenderer || !modalCanvasEl) return;
+    const { W, H } = getViewport();
+    const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
+    modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
+    appliedModalDpr = capDpr();
+    modalRenderer.setPixelRatio(appliedModalDpr);
+    modalRenderer.setSize(W, H);
+    modalRenderer.setClearColor(0x000000, 0);
+    modalScene = new THREE.Scene();
+  }
+
   function open(i, originX, originY) {
     const cards = getCards();
     if (!modalEl || !cards[i]) return;
+    ensureModalRenderer();
     // So it can't strip the fresh modal's state.
     if (closeTimeoutId) {
       clearTimeout(closeTimeoutId);
@@ -775,18 +788,7 @@ export default function createGlobeModal({
 
   // Once per init.
   function setup() {
-    const { W, H } = getViewport();
-
     modalCanvasEl = q('.globe-gallery-modal-canvas');
-    if (modalCanvasEl) {
-      const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
-      modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
-      appliedModalDpr = capDpr();
-      modalRenderer.setPixelRatio(appliedModalDpr);
-      modalRenderer.setSize(W, H);
-      modalRenderer.setClearColor(0x000000, 0);
-      modalScene = new THREE.Scene();
-    }
 
     modalEl = q('.globe-gallery-modal');
     if (!modalEl) return;
