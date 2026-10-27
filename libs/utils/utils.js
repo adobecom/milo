@@ -2355,6 +2355,11 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
   ],
+  'merch-card-collection-autoblock': [
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('merch-card-collection.js'),
+  ],
   merch: [
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
