@@ -82,6 +82,8 @@ export const getAupSelectValue = () => null;
 export const whenTargetReady = () => Promise.resolve();
 export const decorateLinksAsync = stub().resolves();
 export const loadBlock = stub().resolves();
+export const getMepEnablement = () => false;
+export const isSignedOut = () => true;
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
