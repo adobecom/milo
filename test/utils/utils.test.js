@@ -257,7 +257,7 @@ describe('Utils', () => {
       document.body.innerHTML = '<main><div><div class="merch-card-collection-autoblock"></div></div></main>';
 
       await utils.loadArea();
-      ['merch-card.js', 'merch-card-collection.js'].forEach((dep) => {
+      ['merch-card.js', 'merch-quantity-select.js', 'merch-card-collection.js'].forEach((dep) => {
         const link = document.head.querySelector(`link[rel="preload"][href$="/${dep}"]`);
         expect(link, dep).to.exist;
         expect(link.as).to.equal('script');
