@@ -134,8 +134,7 @@ const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-ou
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const ENTRY_LIFT_MIN_H = 0.45;
-const ENTRY_RELEASE_PEAK = 2; // peak |slope| of entryRelease; caps the lift at H / this
-const CSS_ENTRY_LIFT = !!window.CSS?.supports?.('animation-timeline: view()');
+const ENTRY_RELEASE_PEAK = 2; // peak |slope| of the 1 − t² release; caps the lift at H / this
 
 const TEXT_APPEAR_START = 0.10;
 const CANVAS_HIDE_MARGIN_T = 0.05;
@@ -1005,41 +1004,21 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
-  const entryRelease = (frame) => (frame.sphereFormed ? 0 : 1 - frame.entryT ** 2);
-
-  let entryReleaseStr = '';
-  function publishEntryRelease(frame) {
-    const str = entryRelease(frame).toFixed(3);
-    if (str === entryReleaseStr) return;
-    entryReleaseStr = str;
-    root.style.setProperty('--fg-entry-release', str);
-  }
-
-  function entryLiftCapPx(camZ) {
-    const groupScale = sphereGroup.scale.x || 1;
-    const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
-    const topPx = wallTopY * groupScale * pxPerWorldAt(camZ - topZ, H);
-    const lift = Math.max(H * ENTRY_LIFT_MIN_H, H / 2 + navH / 2 - topPx);
-    return Math.min(H / ENTRY_RELEASE_PEAK, lift);
-  }
-
   let entryLiftStr = '';
   function publishEntryLift() {
-    const str = `${Math.round(entryLiftCapPx(bp.CAM_Z_ENTRY))}px`;
+    const groupScale = sphereGroup.scale.x || 1;
+    const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
+    const topPx = wallTopY * groupScale * pxPerWorldAt(bp.CAM_Z_ENTRY - topZ, H);
+    const lift = Math.max(H * ENTRY_LIFT_MIN_H, H / 2 + navH / 2 - topPx);
+    const str = `${Math.round(Math.min(H / ENTRY_RELEASE_PEAK, lift))}px`;
     if (str === entryLiftStr) return;
     entryLiftStr = str;
     root.style.setProperty('--fg-entry-lift', str);
   }
 
-  function entryLiftPx(frame) {
-    const release = entryRelease(frame);
-    if (!release || CSS_ENTRY_LIFT) return 0;
-    return entryLiftCapPx(camera.position.z) * release;
-  }
-
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
-  function applyCentringOffset(frame) {
-    const offY = navH / 2 - entryLiftPx(frame);
+  function applyCentringOffset() {
+    const offY = navH / 2;
     if (offY === appliedViewOffsetY) return;
     appliedViewOffsetY = offY;
     if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
@@ -1051,7 +1030,7 @@ function createGlobeGalleryRuntime(
     camera.position.z = sphereFormed
       ? camZAtTravelT(scrollT, bp.CAM_Z_SPHERE, bp.CAM_Z_END)
       : lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, entryT * entryT * entryT);
-    applyCentringOffset(frame);
+    applyCentringOffset();
     // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
     cameraInsideSphere = sphereFormed && Math.abs(camera.position.z) < dragFlipZ;
     return camera;
@@ -1384,8 +1363,7 @@ function createGlobeGalleryRuntime(
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
-    if (CSS_ENTRY_LIFT) publishEntryLift();
-    else publishEntryRelease(frame);
+    publishEntryLift();
 
     renderer.sortObjects = true;
 
@@ -1741,7 +1719,7 @@ function createGlobeGalleryRuntime(
     modal.destroy(finalize);
     a11y.teardown();
     frameInput.prevScrollY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
-    entryReleaseStr = '';
+    entryLiftStr = '';
     frameState.entryT = 0; frameState.scrollT = 0; frameState.sphereFormed = false;
     pullQuote.teardown();
     pqAppearT = 1;

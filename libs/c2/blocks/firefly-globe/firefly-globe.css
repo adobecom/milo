@@ -177,10 +177,7 @@
 
 .firefly-globe-spin-toggle {
   position: absolute;
-  top: calc(
-    var(--fg-controls-top)
-    - (var(--fg-controls-top) - var(--fg-controls-entry-top)) * var(--fg-entry-release, 0)
-  );
+  top: var(--fg-controls-top);
   inset-inline-end: var(--fg-controls-inset);
 }
 
@@ -200,8 +197,6 @@
 
     .firefly-globe-spin-toggle {
       --fg-entry-lift: calc(var(--fg-controls-top) - var(--fg-controls-entry-top));
-
-      top: var(--fg-controls-top);
     }
   }
 }
