@@ -257,6 +257,23 @@ describe('Modals', () => {
     await waitForRemoval('#milo');
   });
 
+  it('returns focus to the trigger on close without scrolling the page', async () => {
+    const trigger = document.getElementById('milo-modal-link');
+    trigger.focus();
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    await delay(100);
+
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+    document.querySelector('#milo .dialog-close').click();
+    await waitForRemoval('#milo');
+
+    const triggerFocusCall = focusSpy.getCalls().find((call) => call.thisValue === trigger);
+    expect(triggerFocusCall).to.exist;
+    expect(triggerFocusCall.args[0]).to.include({ preventScroll: true });
+    expect(document.activeElement).to.equal(trigger);
+  });
+
   it('Focuses on close when there are no other focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-paragraph';

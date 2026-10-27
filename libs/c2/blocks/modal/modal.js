@@ -59,7 +59,7 @@ function focusTriggerElement(modalId, shouldFocus) {
   );
 
   if (triggerElement) {
-    if (shouldFocus) triggerElement.focus();
+    if (shouldFocus) triggerElement.focus({ preventScroll: true });
     triggerElement.removeAttribute('data-is-modal-trigger');
     return;
   }

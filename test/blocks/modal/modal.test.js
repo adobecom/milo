@@ -168,6 +168,25 @@ describe('Modal (c2)', () => {
       expect(closeCallback.calledOnce).to.be.true;
       expect(document.querySelector('.modal-curtain')).to.be.null;
     });
+
+    it('returns focus to the trigger on close without scrolling the page', async () => {
+      const trigger = createTag('a', { href: '#', 'data-modal-id': 'c2-trigger' }, 'Open');
+      document.body.append(trigger);
+      trigger.focus();
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, { id: 'c2-trigger', content, title: 'Modal: Trigger' });
+
+      const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+      modal.querySelector('button.dialog-close').click();
+      await waitForRemoval('#c2-trigger');
+
+      const triggerFocusCall = focusSpy.getCalls().find((call) => call.thisValue === trigger);
+      expect(triggerFocusCall).to.exist;
+      expect(triggerFocusCall.args[0]).to.include({ preventScroll: true });
+      expect(document.activeElement).to.equal(trigger);
+      expect(trigger.hasAttribute('data-is-modal-trigger')).to.be.false;
+      trigger.remove();
+    });
   });
 
   describe('init', () => {
