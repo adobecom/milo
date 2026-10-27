@@ -2084,7 +2084,8 @@ follows the same order.
 
 **Layout and targets.** The DOM figure is the layout engine. `relayoutQuote` restores the plain
 authored text (`plainQuote`, which also hangs the opening mark), shrinks the font if the box is
-taller than the band, then calls `layout()`, which waits for the fonts and then, in one task:
+taller than the band (scaling the heading's px line-height and tracking with it, so it reads as a
+smaller heading; only short viewports such as the iPhone SE get there), then calls `layout()`, which waits for the fonts and then, in one task:
 1. **Measures** one Range per character, grouped into lines, plus the DOM's own ascent (from a
    zero-size inline-block probe on the first baseline).
 2. **Rasterizes** each line at `devicePixelRatio` with the computed font, letter-spacing, direction

@@ -1397,13 +1397,18 @@ function createGlobeGalleryRuntime(
   function fitQuote() {
     const bandH = H - navH;
     if (!(bandH > 0) || pqEl.scrollHeight <= bandH) return;
-    const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
-    pq.quoteEl.style.letterSpacing = 'normal';
+    const cs = getComputedStyle(pq.quoteEl);
+    const origFs = parseFloat(cs.fontSize);
+    const origLh = parseFloat(cs.lineHeight);
+    const origLs = parseFloat(cs.letterSpacing) || 0;
     for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
       const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
       const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
       if (Math.abs(next - fs) < 0.5) break;
+      const k = next / origFs;
       pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
+      if (origLh) pq.quoteEl.style.lineHeight = `${(origLh * k).toFixed(1)}px`;
+      pq.quoteEl.style.letterSpacing = `${(origLs * k).toFixed(2)}px`;
       plainQuote(pq.quoteEl); // the hang is measured in the new size
     }
   }
@@ -1415,6 +1420,7 @@ function createGlobeGalleryRuntime(
     if (!force && key === pq.layoutKey) return;
     pq.layoutKey = key;
     pq.quoteEl.style.removeProperty('font-size');
+    pq.quoteEl.style.removeProperty('line-height');
     pq.quoteEl.style.removeProperty('letter-spacing');
     plainQuote(pq.quoteEl);
     if (reducedMotion || !pq.fx) return;
