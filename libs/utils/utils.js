@@ -2360,15 +2360,24 @@ const warmGeoIpSheet = (config, section, isDoc = true) => {
     .catch(() => null);
 };
 
+const getParallelSectionCount = () => parseInt(
+  PAGE_URL.searchParams.get('parallel-sections') ?? getMetadata('parallel-sections'),
+  10,
+) || 0;
+
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
-  const [firstSection] = area.querySelectorAll('body > main > div');
-  if (!firstSection) return;
+  // Rushed (parallel) sections get the same pre-MEP warm-up as the LCP section.
+  const sections = [...area.querySelectorAll('body > main > div')]
+    .slice(0, Math.max(1, getParallelSectionCount()));
+  if (!sections.length) return;
+  const queryAll = (selector) => sections
+    .flatMap((section) => [...section.querySelectorAll(selector)]);
   const config = getConfig();
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
   const autoNames = new Set();
-  firstSection.querySelectorAll('a[href]').forEach((a) => {
+  queryAll('a[href]').forEach((a) => {
     let url;
     try { url = new URL(a.href); } catch { return; }
     const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
@@ -2377,7 +2386,7 @@ export function preloadLcpCodeFiles(area = document) {
     if (name === 'video' && !isMediaVideo(a.textContent)) return;
     autoNames.add(name);
   });
-  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+  if (queryAll('img[alt]').some((img) => isMediaVideo(img.alt))) {
     autoNames.add('video');
   }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
@@ -2385,14 +2394,14 @@ export function preloadLcpCodeFiles(area = document) {
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const sectionBlockEls = queryAll(':scope > div[class]:not(.content)');
   const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
+  const hasCommerceContent = !queryAll(':scope > .ost').length
     && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...autoNames].some(isCommerceBlock));
   if (hasCommerceContent) {
@@ -2412,14 +2421,14 @@ export function preloadLcpCodeFiles(area = document) {
       .catch(() => {});
   }
 
-  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+  if (sections.some((section) => /{{|%7B%7B/.test(section.innerHTML)) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
   }
 
-  warmGeoIpSheet(config, firstSection);
+  sections.forEach((section) => warmGeoIpSheet(config, section));
 
-  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const icons = queryAll('span.icon');
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
@@ -3214,9 +3223,7 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  const parallelCount = isDoc
-    ? parseInt(PAGE_URL.searchParams.get('parallel-sections') ?? getMetadata('parallel-sections'), 10) || 0
-    : 0;
+  const parallelCount = isDoc ? getParallelSectionCount() : 0;
   let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
   const parallelSections = [];
   htmlSections.slice(0, parallelCount).forEach((el, idx) => {

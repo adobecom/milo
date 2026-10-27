@@ -373,6 +373,18 @@ describe('Utils', () => {
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
     });
+
+    it('also warms blocks in the rushed sections when parallel-sections is set', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="tabs"></div></div><div><div class="aside"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.not.exist;
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/aside/aside.js"]')).to.not.exist;
+    });
   });
 
   it('renders global navigation when header tag is present', async () => {
