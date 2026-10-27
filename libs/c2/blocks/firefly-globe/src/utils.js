@@ -65,7 +65,6 @@ export function createFrame() {
     interactive: false,
     activeCamera: null,
     sphereRotActive: false,
-    sphGroupZ: 0,
   };
 }
 

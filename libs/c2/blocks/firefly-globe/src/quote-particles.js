@@ -509,16 +509,21 @@ function pAtCamZ(zoom, cz) {
   return (travelTAtCamZ(cz, zoom[2], zoom[2] - zoom[3]) - zoom[0]) / zoom[1];
 }
 
-function sortBy(key, idx) {
-  const SLOT = 2 ** 20;
-  const m = idx.length;
+function bounds(n, at) {
   let lo = Infinity; let hi = -Infinity;
-  for (let j = 0; j < m; j += 1) {
-    const v = key[idx[j]];
+  for (let j = 0; j < n; j += 1) {
+    const v = at(j);
     if (v < lo) lo = v;
     if (v > hi) hi = v;
   }
-  const scale = (SLOT - 1) / Math.max(1e-6, hi - lo);
+  return [lo, Math.max(1e-6, hi - lo)];
+}
+
+function sortBy(key, idx) {
+  const SLOT = 2 ** 20;
+  const m = idx.length;
+  const [lo, span] = bounds(m, (j) => key[idx[j]]);
+  const scale = (SLOT - 1) / span;
   const packed = new Float64Array(m);
   for (let j = 0; j < m; j += 1) packed[j] = Math.round((key[idx[j]] - lo) * scale) * SLOT + idx[j];
   packed.sort();
@@ -538,15 +543,6 @@ export function coherentOrder(xs, ys, count = xs.length) {
     if (to > from) out.set(sortBy(ys, byX.subarray(from, to)), from);
   }
   return out;
-}
-
-function extent(arr, count) {
-  let lo = Infinity; let hi = -Infinity;
-  for (let i = 0; i < count; i += 1) {
-    if (arr[i] < lo) lo = arr[i];
-    if (arr[i] > hi) hi = arr[i];
-  }
-  return Math.max(1e-6, hi - lo);
 }
 
 export default function createQuoteParticles({ figureEl, railEl, count }) {
@@ -594,6 +590,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   plane.frustumCulled = false;
   plane.renderOrder = 1e6 + 1;
   group.add(plane);
+
+  const disposePlaneTextures = () => {
+    [planeMat.uniforms.uMap.value, planeMat.uniforms.uOrder.value].forEach((t) => t?.dispose());
+  };
 
   let ready = false;
   let generation = 0;
@@ -664,7 +664,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     }
     orderCanvas.getContext('2d').putImageData(img, 0, 0);
     const u = planeMat.uniforms;
-    [u.uMap.value, u.uOrder.value].forEach((t) => t?.dispose());
+    disposePlaneTextures();
     u.uMap.value = canvasTexture(r.canvas);
     u.uOrder.value = canvasTexture(orderCanvas);
   }
@@ -728,8 +728,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   }
 
   function softRanks(xs, ys, k, rnd) {
-    const bw = extent(xs, k) / PAIR_BANDS;
-    const bh = SOFT_Y * extent(ys, k);
+    const bw = bounds(k, (i) => xs[i])[1] / PAIR_BANDS;
+    const bh = SOFT_Y * bounds(k, (i) => ys[i])[1];
     const nx = new Float32Array(k);
     const ny = new Float32Array(k);
     for (let i = 0; i < k; i += 1) {
@@ -761,11 +761,9 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const rnd = seededRandom(SEED);
     const z0 = camZAt(zoom, 0);
     const zPair = camZAt(zoom, FLIGHT.depart[0] + 0.5 * FLIGHT.depart[1]);
-    const toPx = (x, y, z, cz) => {
-      const D = cz - z;
-      if (D < 0.05) return null;
-      return [((P00 * x) / D - P02 + 1) * 0.5 * W, (1 - ((P11 * y) / D - P12)) * 0.5 * H];
-    };
+    const pxX = (x, D) => ((P00 * x) / D - P02 + 1) * 0.5 * W;
+    const pxY = (y, D) => (1 - ((P11 * y) / D - P12)) * 0.5 * H;
+    const toPx = (x, y, z, cz) => (cz - z < 0.05 ? null : [pxX(x, cz - z), pxY(y, cz - z)]);
     const at = (card, u, v) => [
       card.origin.x + card.axisU.x * u + card.axisV.x * v,
       card.origin.y + card.axisU.y * u + card.axisV.y * v,
@@ -795,9 +793,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const mirror = (q1[0] - q0[0]) * (q2[1] - q0[1]) - (q1[1] - q0[1]) * (q2[0] - q0[0]) < 0;
       const aspect = Math.hypot(q1[0] - q0[0], q1[1] - q0[1])
         / Math.max(1, Math.hypot(q2[0] - q0[0], q2[1] - q0[1]));
-      plans.push({ card: { ...card, mirror }, aspect, area, full });
+      plans.push({ card: { ...card, mirror }, aspect, weight: area + OFF_VIEW_K * (full - area) });
     });
-    plans.forEach((pl) => { pl.weight = pl.area + OFF_VIEW_K * (pl.full - pl.area); });
     const total = plans.reduce((sum, pl) => sum + pl.weight, 0);
     const grids = [];
     if (!plans.length) {
@@ -842,8 +839,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         const zDep = camZAt(zoom, release[j]);
         const d = RELEASE_REACH * Math.max(0.001, zDep - z - MIN_DEPTH);
         const D = zDep - d * (1 - Math.exp(-Math.max(0, zDep - zPair) / d)) - z;
-        sx[j] = D < 0.05 ? W / 2 : ((P00 * x) / D - P02 + 1) * 0.5 * W;
-        sy[j] = D < 0.05 ? H / 2 : (1 - ((P11 * y) / D - P12)) * 0.5 * H;
+        sx[j] = D < 0.05 ? W / 2 : pxX(x, D);
+        sy[j] = D < 0.05 ? H / 2 : pxY(y, D);
       }
       grids.push({
         card, uvs, cells, edge, release, sx, sy,
@@ -929,7 +926,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       clearSources();
       if (group.parent) group.parent.remove(group);
       planeGeo.dispose();
-      [planeMat.uniforms.uMap.value, planeMat.uniforms.uOrder.value].forEach((t) => t?.dispose());
+      disposePlaneTextures();
       planeMat.dispose();
     },
   };
@@ -945,7 +942,6 @@ export function createCardScatter({ expand }) {
   let geo = null;
   let gridKey = '';
   const slots = [];
-  let used = 0;
 
   function setGrid(cols, rows) {
     const key = `${cols}x${rows}`;
@@ -983,7 +979,7 @@ export function createCardScatter({ expand }) {
   function update(cards, { W, H, dpr }) {
     shared.uView.value.set(W, H);
     shared.uDpr.value = dpr;
-    used = geo ? cards.length : 0;
+    const used = geo ? cards.length : 0;
     for (let i = 0; i < used; i += 1) {
       const c = cards[i];
       const { points, mat } = slot(i);
@@ -1102,9 +1098,7 @@ export function createPullQuote({
     const key = `${figureEl.clientWidth}x${H}|${navH}|${capDpr()}`;
     if (!force && key === s.layoutKey) return;
     s.layoutKey = key;
-    quoteEl.style.removeProperty('font-size');
-    quoteEl.style.removeProperty('line-height');
-    quoteEl.style.removeProperty('letter-spacing');
+    quoteEl.removeAttribute('style');
     plainQuote(quoteEl);
     if (!fx) return;
     fitQuote();
@@ -1131,7 +1125,8 @@ export function createPullQuote({
     s.on = fx.isReady() && !forcedColors?.matches;
     const startY = scrollYAtTravelT(s.startT, getSpan());
     s.p = clamp01((scrollY - startY) / Math.max(1, FLY_VH * getView().H));
-    const want = isOn() && s.p >= QUOTE_LIVE_P;
+    const live = s.p >= QUOTE_LIVE_P;
+    const want = isOn() && live;
     const step = (dtScale * FRAME_MS) / SWAP_MS;
     s.swapT = want && worldReleased(scrollY) ? 1 : clamp01(s.swapT + (want ? step : -step));
     const str = s.swapT.toFixed(3);
@@ -1140,16 +1135,14 @@ export function createPullQuote({
       figureEl.style.setProperty('--fg-pq-dom', str);
     }
     figureEl.classList.toggle('is-dom', !s.on);
-    const live = s.p >= QUOTE_LIVE_P;
     if (live === s.live) return;
     s.live = live;
     if (!live) dropSelection();
     figureEl.classList.toggle('is-live', live);
-    figureEl.style.pointerEvents = live ? 'auto' : 'none';
   }
 
   function isDone(scrollY) {
-    return (s.p >= QUOTE_LIVE_P && s.swapT >= 1) || worldReleased(scrollY);
+    return s.swapT >= 1 || worldReleased(scrollY);
   }
 
   function takeNear(card, proxFade) {
@@ -1240,10 +1233,10 @@ export function createPullQuote({
   }
 
   function afterCards() {
-    if (!scatter && !fx) return;
+    if (!scatter) return;
     const { W, H } = getView();
     if (near.length || (ownsCards() && !s.sourced)) getSphereGroup().updateMatrixWorld(true);
-    if (scatter) updateScatter(W, H);
+    updateScatter(W, H);
     if (fx) updateParticles(W, H);
   }
 
@@ -1293,6 +1286,6 @@ export function createPullQuote({
     ownsCards,
     handoffEase,
     travelPx,
-    liveUntil: () => (fx ? s.startT : s.appearT),
+    liveUntil: () => (isOn() ? s.startT : s.appearT),
   };
 }

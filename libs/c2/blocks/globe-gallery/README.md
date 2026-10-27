@@ -749,9 +749,6 @@ shared.
 | `--gg-zoom-vh` | the camera dolly's scroll length while the quote particles are on; per breakpoint | slows the zoom: more scroll inside the globe before the hand-off |
 | `--gg-pq-height` | block height while the quote particles are on, written inline by `syncHeight`; unset falls back to the runway; `-reduced`/`-empty` still collapse the block | not a knob: derived from formation, zoom, hand-off and flight (see Block height) |
 
-> The `vh` figures in this section were taken at a 540 / 304 budget (tail 236). The budget is now split
-> per breakpoint, so read them as worked examples of the formulas, not as current values.
-
 **No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale literal.
 The zero-box gate means `readCssVars()` always finds the block's properties, so the two rules below
 are not load-bearing for first paint. They still cover an authored `0`, and a read that degrades
@@ -790,7 +787,7 @@ are different frames. `updateCardTransforms` hides a card a whole proximity-fade
 reaches it (`mesh.visible = proxFade > 0`, at `NEAR_FADE_END` = 1.6 card-heights of depth). The deepest
 card *centre* sits at `−SPHERE_R` under any rotation and the fade keys off the centre, so the last thing
 on screen goes at `−SPHERE_R + NEAR_FADE_END × fadeRefH`. The card's own extent drops out, so there is
-no sm/md branch. Today: **0.2204 sm / 0.3433 md**.
+no sm/md branch.
 
 Two consequences of depending on `fadeRefH`:
 
@@ -1072,8 +1069,8 @@ through the globe while the hint text fades. In order:
 
 `startT` never comes after `pqAppearZoomT`, and every cue on this tail is derived from the camera
 and the card geometry (`zoomTAtCamZ`): nothing here is a free scroll constant. Without the particles
-(forced colours, failed raster) the DOM quote reveals at `is-live`; with no quote at all, the
-controls retire and the canvas hides off `pqAppearZoomT` instead.
+(no quote, forced colours, failed raster) the controls retire and the canvas hides off
+`pqAppearZoomT` instead, and a quote reveals as plain DOM text at `is-live`.
 
 ### Event table
 
@@ -1380,7 +1377,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
 | Rotate row | barrel only (`.globe-gallery-barrel`, from `bp.CYLINDER`) | The barrel has neither the WebGL hint plane (`buildTextMesh`) nor the custom cursor (`cursor.setup`) — both skip on `bp.CYLINDER` — so touch users otherwise get **no** affordance at all. The chevrons also make the copy's "click and drag" claim actionable without a drag. The **hint copy** beside them fades out once the user has actually spun the globe (see Behavior notes) — the barrel's bottom edge is too busy to keep it forever; the chevrons stay. |
 
 - **One visibility window** for the whole layer: `sphereFormT >= SPHERE_INTERACTIVE_T`, no modal
-  open, `zoomT < pqAppearZoomT` — i.e. exactly while the globe is draggable. `controls.js`
+  open, `zoomT < liveUntil()` — i.e. exactly while the globe is draggable. `controls.js`
   writes the `is-visible` class only when that boolean flips. CSS transitions `opacity` **and
   `visibility`**; the latter is what pulls the buttons out of the tab order while hidden, so the
   block's tab stops never point at invisible chrome.
@@ -1420,8 +1417,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   surface travels screen-left, matching a leftward drag — **including inside the barrel**, where the
   visible wall moves opposite and `rotateStep` negates `dir` exactly as drag negates via `dragDir`.
   That window is real, not theoretical: `dragFlipZ` is clamped to `[SPHERE_R, 0.95 · CAM_Z_SPHERE]`,
-  so the camera is inside from `zoomT` ≈ 0.09–0.16 at the latest while the controls stay up until
-  `pqAppearZoomT` (sm 0.306 / md 0.417).
+  so the camera can be inside the globe while the controls are still up (until `liveUntil()`).
 - **A press eases to the next column BOUNDARY, it does not add a column pitch.** Ambient spin
   leaves the barrel at an arbitrary angle, so `y += 2π/cols` carries that offset forward forever
   — face 1.5 columns, press, face 2.5. Snapping instead means a column lands front-centre from any
@@ -1904,15 +1900,15 @@ everything else (padding + copy) sizes itself.
 
 `.globe-gallery-pullquote` is a **`<figure>`** and the attribution its **`<figcaption>`**, which is
 what associates the name/role with the `<blockquote>` for AT. Its `margin: 0 auto` zeroes the UA
-`margin-block`, which the pin math takes as zero.
+`margin-block`.
 
-`--gg-pq-gap` is `min(--s2a-layout-xl, --gg-band-h × 0.2)` — one declaration, no media query. It is
-the full 160px on any viewport taller than ~924px and tapers below that, because the box is
+`--gg-pq-gap` is `min(--gg-pq-ideal-gap, --gg-band-h × 0.2)`. The ideal steps `--s2a-layout-lg` →
+`-xl` (≥768) → `-2xl` (≥1280); the band term tapers it on short viewports, because the box is
 content-sized while the band it centres in is not: on a short, wide laptop (1280×720 is the worst
 case) a five-line quote at `heading-1`'s 80/76 makes a 684px box for a 596px band, and without the
 taper the first line lands under the nav no matter where the box is centred. The gap is the only pure
-whitespace in the box, so it is what yields. Raising the ceiling above 160px runs the top edge into
-the localnav at lg/xl, so re-check that clearance first.
+whitespace in the box, so it is what yields. Raising the ideal runs the top edge into the localnav at
+lg/xl, so re-check that clearance first.
 
 The figure is centred on `--gg-optical-center` inside the rail by
 `transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: centred while it fits the band,
@@ -2885,7 +2881,7 @@ self-evident from the name:
 | `NEAR_TILE_PX` | CSS px | near-camera scatter tile size at the band's start |
 | `FLIGHT` | p | `arriveStart` / `arriveSpan`: landing order 0 → 1 lands across this window; `release` and `depart`: [start, spread]; `minFly`: shortest flight |
 | `SETTLE` | p | window in which a region's particles hand over to the crisp text |
-| `SWIRL_SCALE` / `_DRIFT` | share of the short side / noise units | swirl flow feature size; how far the flow evolves over the flight |
+| `SWIRL_AMP` / `_SCALE` / `_DRIFT` | share of the short side / share of the short side / noise units | largest swirl displacement; swirl flow feature size; how far the flow evolves over the flight |
 | `TILE_CAP` | CSS px | largest tile sprite |
 | `INK_ALPHA` | raster alpha | lowest alpha that counts as a target pixel |
 | `RASTER_PAD` | CSS px | margin rasterized around the figure |
@@ -2940,6 +2936,10 @@ keyboard gallery.
 orientation and canvas release), `modal.js` DOM behavior, and the quote-layout and fragment edge
 cases.
 
+`test/c2/blocks/globe-gallery/quote-particles.suite.js` is the particle suite (raster, sources,
+pairing, landing order, the DOM swap, the near burst), shared with firefly-globe: each block's
+`quote-particles.test.js` runs it against its own module, class names and stylesheet.
+
 `mocks/authored.html` and `mocks/fragment.html` are the authoring contract as fixtures, loaded with
 `readFile` from `@web/test-runner-commands`. The fragment mock mirrors the DA card shape: metadata
 before the image, badges as `<li>` with an SVG link plus a product link, image in `<p><picture>`.
@@ -2957,8 +2957,7 @@ Constraints when adding cases:
   it with `Object.defineProperties` alongside faked `scrollHeight`/`clientHeight`.
 
 Not covered: per-frame transform and easing values, which are left unasserted so tuning passes don't
-break the suite; `entryLiftPx` and `entryRelease`, which are closures inside
-`createGlobeGalleryRuntime` and unreachable from a test; and the WebGL path, which has no Nala/E2E.
+break the suite; and the WebGL path, which has no Nala/E2E.
 
 ## Open items / backlog
 

@@ -541,8 +541,6 @@ function createGlobeGalleryRuntime(
   // sphereGroup.scale differently — see the call sites.
   const cardVanishDepth = () => bp.NEAR_FADE_END * fadeRefH;
 
-  // Camera z below which drag inverts, anchored to where cards VANISH. Sole writer of fadeRefH.
-  // Rerun once textures land (sphereWorldH starts as a placeholder).
   // The cue is where the last card leaves the SCREEN, not where the camera clears the shell:
   // placeSphereCard hides a card bp.NEAR_FADE_END card-heights out, and the deepest card centre
   // sits at -SPHERE_R under any rotation. fadeRefH 0 falls back to -SPHERE_R, which errs late.
@@ -601,6 +599,8 @@ function createGlobeGalleryRuntime(
     Promise.all([fontsReady, loadHintFont(hintText)]).then(create, () => {});
   }
 
+  // Camera z below which drag inverts, anchored to where cards VANISH. Sole writer of fadeRefH.
+  // Rerun once textures land (sphereWorldH starts as a placeholder).
   function recomputeDragFlip() {
     if (!sphereGroup || cards.length === 0) return;
     const groupScale = sphereGroup.scale.x || 1;
@@ -961,7 +961,6 @@ function createGlobeGalleryRuntime(
     getHintDismissed: () => hintRetired,
     rotate: (dir) => {
       retireHint();
-
       rotateStep(dir);
     },
   });
@@ -1198,8 +1197,7 @@ function createGlobeGalleryRuntime(
     const pastEnd = pullQuote.isOn()
       ? pullQuote.isDone(frame.scrollY)
       : frame.scrollT >= pqAppearT + CANVAS_HIDE_MARGIN_T;
-    const hidden = modal.getModalIdx() < 0 && pastEnd;
-    canvasHidden = hidden;
+    canvasHidden = modal.getModalIdx() < 0 && pastEnd;
     canvas.style.display = canvasHidden ? 'none' : 'block';
   }
 
@@ -1209,15 +1207,14 @@ function createGlobeGalleryRuntime(
   }
 
   function placeSphereCard(card, mesh, frame) {
-    const { sphereRotActive, sphGroupZ } = frame;
-    mesh.visible = true;
+    const { sphereRotActive } = frame;
     const hs = 1 + card.hoverT * HOVER_SCALE;
     if (sphereRotActive) {
       mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
     } else {
       mesh.position.copy(card.spherePos);
     }
-    const depth = camera.position.z - (sphGroupZ + mesh.position.z);
+    const depth = camera.position.z - mesh.position.z;
     // One band for the whole wall, so the order is purely by depth.
     const fadeEnd = cardVanishDepth();
     const fadeStart = bp.NEAR_FADE_START * fadeRefH;
@@ -1629,7 +1626,6 @@ function createGlobeGalleryRuntime(
     a11y.setup();
     controls.setup();
 
-    pullQuote.layout(true);
     // A webfont landing after first layout retypesets the quote.
     if (document.fonts && document.fonts.ready) {
       const afterFonts = () => pullQuote.layout(true);

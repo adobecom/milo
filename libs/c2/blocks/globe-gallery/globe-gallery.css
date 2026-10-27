@@ -954,6 +954,10 @@ html .globe-gallery-reduced .globe-gallery-spin-toggle {
   opacity: 1;
 }
 
+.globe-gallery-pq-particles .globe-gallery-pullquote.is-live {
+  pointer-events: auto;
+}
+
 @media (height <= 460px) {
   .globe-gallery-modal-chrome {
     --gg-modal-edge: 8px;

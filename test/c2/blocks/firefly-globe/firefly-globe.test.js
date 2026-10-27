@@ -461,7 +461,6 @@ describe('firefly-globe: frame state', () => {
       interactive: false,
       activeCamera: null,
       sphereRotActive: false,
-      sphGroupZ: 0,
     };
     expect(frame).to.deep.equal(expected);
   });

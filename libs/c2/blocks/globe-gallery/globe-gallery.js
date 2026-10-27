@@ -1027,7 +1027,6 @@ function createGlobeGalleryRuntime(
     getHintDismissed: () => hintRetired,
     rotate: (dir) => {
       hintRetired = true;
-
       rotateStep(dir);
     },
   });
@@ -1279,13 +1278,14 @@ function createGlobeGalleryRuntime(
       return;
     }
     const showTrigger = blockDocTop - H * bp.ENTRY_LEAD_VH;
+    // Past the reveal every card is prox-faded out and the hint text has finished; the scene
+    // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
+    // blurs this canvas, so hiding it would leave the blur with nothing to sample.
     const pastEnd = pullQuote.isOn()
       ? pullQuote.isDone(lenisY)
       : zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T;
-    const hidden = modal.getModalIdx() < 0 && (lenisY < showTrigger || pastEnd);
-    canvasHidden = hidden;
+    canvasHidden = modal.getModalIdx() < 0 && (lenisY < showTrigger || pastEnd);
     canvas.style.display = canvasHidden ? 'none' : 'block';
-    pullQuote.placeCanvas();
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
@@ -1328,7 +1328,6 @@ function createGlobeGalleryRuntime(
 
   function placeSphereCard(card, mesh, frame) {
     const { sphereRotActive, sphGroupZ } = frame;
-    mesh.visible = true;
     const hs = 1 + card.hoverT * HOVER_SCALE;
     if (sphereRotActive) {
       mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);

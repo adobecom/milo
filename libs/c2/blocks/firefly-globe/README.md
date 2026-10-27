@@ -15,8 +15,8 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Area | globe-gallery | firefly-globe |
 |---|---|---|
 | Entry | Arc → grid → fold cascade on scroll (`timeline.js`, `math.js`, ortho camera) | Sphere already formed; camera eases in (`entryT³`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
-| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same curve, `camZAtTravelT(scrollT)` from `src/utils.js`, from the pin. |
-| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/utils.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / blockHeight` is gg's `zoomT`, 0 at the pin and 1 when the block has scrolled away. |
+| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/utils.js`, from the pin; its own ease power (see Camera ease). |
+| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/utils.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, 0 at the pin and 1 at the end of the travel (`--fg-travel-vh`; the block height with the quote particles off). |
 | Arc copy pill | Authoring row 1 | None |
 | "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `scrollT` (see below). |
 | Custom cursor | Disc + chevron ring + label; native cursor hidden | Label pill only, beside the native cursor (`grab`/`grabbing`/`pointer`). |
@@ -118,7 +118,7 @@ The differences:
 - Vocabulary and imports: `scrollT`/`travel` in place of `zoomT`/`zoom` (`--fg-travel-vh`,
   `input.travelPx`, `travelSpanPx`, `scrollYAtTravelT`), from `utils.js`. There is no formation
   offset, so the travel, the hand-off and the block height all count from the block top (the pin).
-- The canvas is always `position: absolute` in the sticky world, so there is no `placeCanvas`.
+- The canvas is always `position: absolute` in the sticky world, so the hand-off doesn't move it.
 - Every card is on the sphere, so `cardPlanes` sources every card the modal does not hold.
 
 The section around the block: a rounded section above overlaps the block's first radius (see Entry
@@ -179,8 +179,8 @@ converted to world units at the card's depth, so the card leaves and returns exa
 drawn. The offset is re-read when the close starts, so a scroll that slips through the lock while
 the modal is open still lands the card on its slot.
 
-The modal's renderer is created on the first `open()`, as in globe-gallery, and disposed on every
-`destroy()`.
+The modal's `WebGLRenderer` is created lazily on the first `open()` (`ensureModalRenderer()`), not in
+`setup()`; it is disposed on every `destroy()` and recreated on the next `open()`.
 
 The scroll lock is `html.firefly-globe-modal-open { overflow: hidden }` + `lenis.stop()`, on `html`
 only. With `html` already non-visible, an `overflow: hidden` on `body` applies to `body` itself
@@ -225,8 +225,8 @@ fallback, alt fallback), `fireflyRenditionUrl` sizing, the frame shape, the cloc
 (`deriveFrame`, including the travel span), the travel camera inverse pair and `plainQuote` (authored
 text restored on every call, the opening mark hung once).
 
-`test/c2/blocks/firefly-globe/quote-particles.test.js` is globe-gallery's particle suite run against
-this block's copy, class names and stylesheet.
+`test/c2/blocks/firefly-globe/quote-particles.test.js` runs globe-gallery's shared particle suite
+(`quote-particles.suite.js`) against this block's copy, class names and stylesheet.
 
 `test/c2/blocks/firefly-globe/modules.test.js` covers `controls.js`, the `a11y.js` keyboard gallery,
 `interaction.js`, `cursor.js`, `materials.js` and `modal.js` DOM behavior.

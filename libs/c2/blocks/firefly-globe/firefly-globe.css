@@ -338,7 +338,6 @@
   position: relative;
   top: auto;
   transform: none;
-  pointer-events: auto;
 }
 
 .firefly-globe-pq-particles .firefly-globe-pullquote:not(.is-dom) {
@@ -368,6 +367,10 @@
 
 .firefly-globe-pq-particles .firefly-globe-pullquote.is-dom.is-live {
   opacity: 1;
+}
+
+.firefly-globe-pq-particles .firefly-globe-pullquote.is-live {
+  pointer-events: auto;
 }
 
 .firefly-globe-modal {
