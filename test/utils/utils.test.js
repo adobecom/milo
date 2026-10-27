@@ -148,29 +148,43 @@ describe('Utils', () => {
       });
     });
 
-    it('does not mark target ready from loadMartech, only after personalization applied', async () => {
+    it('marks target ready after the Target campaign is applied', async () => {
       const { marketingtech, _satellite: satellite } = window;
+      const savedHead = document.head.innerHTML;
+      // Launch is already loaded, so only the Target response is pending (personalization V1).
       window.marketingtech = { adobe: { launch: {} } };
       // eslint-disable-next-line no-underscore-dangle
-      window._satellite = {};
-      const clock = sinon.useFakeTimers();
+      window._satellite = { track: sinon.stub() };
+      const targetResponse = {
+        propositions: [{
+          id: 'aup',
+          items: [{
+            data: {
+              content: {
+                manifestPath: '/target/aup-select.json',
+                manifestContent: {
+                  info: { data: [] },
+                  experiences: { data: [{ action: 'updatemetadata', selector: 'aup-select', all: 'on' }] },
+                },
+              },
+            },
+          }],
+        }],
+      };
       try {
+        document.head.innerHTML = '<meta name="target" content="on">';
+        document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
         utils.resetTargetReady();
-        const onReady = sinon.spy();
-        const ready = utils.whenTargetReady().then(onReady);
-        expect(await utils.loadMartech()).to.be.true;
-        await clock.tickAsync(1);
-        expect(onReady.called).to.be.false;
-        utils.notifyTargetReady();
-        await clock.tickAsync(1);
-        await ready;
-        expect(onReady.calledOnce).to.be.true;
+        const ready = utils.whenTargetReady().then(() => utils.getMetadata('aup-select'));
+        const area = utils.loadArea();
+        setTimeout(() => window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: targetResponse } })), 100);
+        expect(await ready).to.equal('on');
+        await area;
       } finally {
-        clock.restore();
         window.marketingtech = marketingtech;
         // eslint-disable-next-line no-underscore-dangle
         window._satellite = satellite;
-        utils.resetTargetReady();
+        document.head.innerHTML = savedHead;
       }
     });
 
