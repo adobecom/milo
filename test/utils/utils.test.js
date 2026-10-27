@@ -151,6 +151,8 @@ describe('Utils', () => {
     it('marks target ready after the Target campaign is applied', async () => {
       const { marketingtech, _satellite: satellite } = window;
       const savedHead = document.head.innerHTML;
+      const savedBody = document.body.innerHTML;
+      const { mep } = utils.getConfig();
       // Launch is already loaded, so only the Target response is pending (personalization V1).
       window.marketingtech = { adobe: { launch: {} } };
       // eslint-disable-next-line no-underscore-dangle
@@ -176,11 +178,26 @@ describe('Utils', () => {
         document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
         utils.resetTargetReady();
         const ready = utils.whenTargetReady().then(() => utils.getMetadata('aup-select'));
+        // Fire the Target response only after martech has attached its listener.
+        let fireTimer;
+        const addListener = window.addEventListener.bind(window);
+        const addStub = sinon.stub(window, 'addEventListener').callsFake((type, ...args) => {
+          addListener(type, ...args);
+          if (type !== 'alloy_sendEvent') return;
+          clearTimeout(fireTimer);
+          fireTimer = setTimeout(() => {
+            addStub.restore();
+            window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: targetResponse } }));
+          }, 0);
+        });
         const area = utils.loadArea();
-        setTimeout(() => window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: targetResponse } })), 100);
         expect(await ready).to.equal('on');
         await area;
       } finally {
+        window.addEventListener.restore?.();
+        utils.resetTargetReady();
+        utils.getConfig().mep = mep;
+        document.body.innerHTML = savedBody;
         window.marketingtech = marketingtech;
         // eslint-disable-next-line no-underscore-dangle
         window._satellite = satellite;
