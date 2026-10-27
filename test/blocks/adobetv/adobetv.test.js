@@ -316,6 +316,68 @@ describe('adobetv autoblock', () => {
       wrapper.style.cssText = '';
     });
 
+    it('pauses an autoplay MPC MP4 offscreen and resumes it when back in view', async () => {
+      const nextFrames = () => new Promise((r) => {
+        requestAnimationFrame(() => requestAnimationFrame(r));
+      });
+      const wrapper = document.querySelector('#mpcMp4Autoplay');
+      wrapper.style.cssText = 'position: absolute; top: 5000px; width: 300px; height: 200px;';
+      const parent = wrapper.querySelector('a').parentElement;
+      await init(wrapper.querySelector('a'));
+      const video = parent.querySelector('video');
+      const calls = [];
+      let paused = false;
+      Object.defineProperty(video, 'paused', { get: () => paused });
+      video.pause = () => { paused = true; calls.push('pause'); };
+      video.play = () => { paused = false; calls.push('play'); };
+      await nextFrames();
+      expect(calls.join(), 'paused offscreen').to.equal('pause');
+
+      wrapper.style.top = '0px';
+      await nextFrames();
+      expect(calls.join(), 'resumed in view').to.equal('pause,play');
+
+      video.pause();
+      wrapper.style.top = '5000px';
+      await nextFrames();
+      wrapper.style.top = '0px';
+      await nextFrames();
+      expect(calls.at(-1), 'user pause kept').to.equal('pause');
+      wrapper.style.cssText = '';
+    });
+
+    it('keeps an overlay poster below the block copy but its play button clickable', async () => {
+      await Promise.all(['/libs/styles/consonant-play-button.css', '/libs/blocks/adobetv/adobetv.css']
+        .map((href) => new Promise((resolve) => {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = href;
+          link.onload = resolve;
+          document.head.append(link);
+        })));
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      wrapper.className = 'side-by-side';
+      wrapper.style.cssText = 'position: relative; width: 400px;';
+      const media = wrapper.querySelector('div');
+      media.style.cssText = 'position: absolute; inset: 0;';
+      const copy = document.createElement('h3');
+      copy.textContent = 'Overlay heading';
+      copy.style.cssText = 'position: relative; z-index: 1; margin: 0; height: 40px;';
+      wrapper.append(copy);
+      await init(wrapper.querySelector('a'));
+      const poster = wrapper.querySelector('.mpc-poster');
+      poster.querySelector('img').style.aspectRatio = '1 / 1';
+      const button = poster.querySelector('button');
+      button.style.cssText = 'position: absolute; left: 150px; top: 150px; width: 96px; height: 96px;';
+
+      const h = copy.getBoundingClientRect();
+      const b = button.getBoundingClientRect();
+      const atCopy = document.elementFromPoint(h.x + 10, h.y + h.height / 2);
+      const atButton = document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2);
+      expect(copy.contains(atCopy), 'heading visible').to.be.true;
+      expect(button.contains(atButton), 'play button clickable').to.be.true;
+    });
+
     it('tracks MPC play state on a cloned player iframe', async () => {
       const wrapper = document.querySelector('#mpcPlayerPlain');
       await init(wrapper.querySelector('a'));

@@ -8,6 +8,7 @@ a[href*='.mp4'].hide-video {
 .mpc-poster.modal-img-link {
   display: block;
   width: 100%;
+  z-index: auto;
 }
 
 .mpc-poster picture,
@@ -20,6 +21,7 @@ a[href*='.mp4'].hide-video {
   border: 0;
   padding: 0;
   pointer-events: auto;
+  z-index: 2;
 }
 
 .mpc-poster.is-playing {

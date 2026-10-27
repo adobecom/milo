@@ -58,6 +58,19 @@ const onPlayerMessage = (event) => {
 };
 let playerListenerAdded = false;
 
+// Resumes only playback this pauses, so user pauses and reduced motion are kept.
+const pauseOffscreen = (video) => {
+  new IntersectionObserver(([{ isIntersecting }]) => {
+    if (!isIntersecting && !video.paused) {
+      video.pause();
+      video.dataset.offscreenPaused = 'true';
+    } else if (isIntersecting && video.dataset.offscreenPaused) {
+      delete video.dataset.offscreenPaused;
+      video.play();
+    }
+  }).observe(video);
+};
+
 const createIframe = (a, href, opts = {}) => {
   const { autoplay = false, focus = false, isC2Page = false } = opts;
   const videoHref = href || a.href;
@@ -184,11 +197,14 @@ export default function init(a) {
   const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
   if (a.href.includes('.mp4') && (isC2Page || bgBlocks.some((b) => a.closest(`.${b}`)))) {
     a.classList.add('hide');
-    if (!a.parentNode) return;
+    const { parentElement } = a;
+    if (!parentElement) return;
     decorateAnchorVideo({
       src: a.href,
       anchorTag: a,
     });
+    const video = parentElement.querySelector('video');
+    if (isC2Page && video?.autoplay && !video.controls) pauseOffscreen(video);
   } else if (isC2Page && a.dataset.videoPoster && isMpcPlayerUrl(a.href)
     && new URL(a.href).searchParams.get('autoplay') !== 'true') {
     createPosterPlayer(a);
