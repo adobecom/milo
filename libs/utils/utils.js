@@ -2357,6 +2357,7 @@ const STATIC_BLOCK_DEPS = {
   ],
   'merch-card-collection-autoblock': [
     getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
     getMasDepUrl('merch-card-collection.js'),
   ],
   merch: [
