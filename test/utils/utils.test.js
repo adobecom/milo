@@ -550,7 +550,8 @@ describe('Utils', () => {
       const loaded = utils.loadArea();
       await waitFor(() => started().length === 2, 2000, 20);
       releases.b();
-      await settle();
+      await waitFor(() => document.querySelector('[data-id="b"]').dataset.blockStatus === 'loaded', 2000, 20);
+      await new Promise((r) => { setTimeout(r); });
       expect(isHidden('[data-id="b"]')).to.be.true;
       releases.a();
       await loaded;

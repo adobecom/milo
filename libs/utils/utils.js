@@ -3173,9 +3173,12 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-async function processSection(section, config, isDoc, lcpSectionId, revealAfter) {
+async function processSection(section, config, {
+  isLcpSection = false,
+  loadsPostLCP = false,
+  revealAfter,
+} = {}) {
   await resolveHighPriorityFragments(section);
-  const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
@@ -3198,7 +3201,7 @@ async function processSection(section, config, isDoc, lcpSectionId, revealAfter)
 
   await revealAfter;
   delete section.el.dataset.status;
-  if (isDoc && isLcpSection) await loadPostLCP(config);
+  if (loadsPostLCP) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -3288,7 +3291,7 @@ export async function loadArea(area = document) {
   htmlSections.slice(0, parallelCount).forEach((el, idx) => {
     const revealAfter = parallelSections[idx - 1];
     parallelSections[idx] = decorateSection(el, idx)
-      .then((section) => processSection(section, config, false, idx, revealAfter))
+      .then((section) => processSection(section, config, { isLcpSection: true, revealAfter }))
       .catch(async (e) => {
         window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
         await revealAfter;
@@ -3300,8 +3303,7 @@ export async function loadArea(area = document) {
       });
   });
 
-  for (const htmlSection of htmlSections) {
-    const idx = htmlSections.indexOf(htmlSection);
+  for (const [idx, htmlSection] of htmlSections.entries()) {
     let sectionBlocks = await parallelSections[idx];
     if (!sectionBlocks) {
       const section = await decorateSection(htmlSection, idx);
@@ -3309,7 +3311,11 @@ export async function loadArea(area = document) {
       if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
         lcpSectionId = section.idx;
       }
-      sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
+      const isLcpSection = section.idx === lcpSectionId;
+      sectionBlocks = await processSection(section, config, {
+        isLcpSection,
+        loadsPostLCP: isDoc && isLcpSection,
+      });
     }
     areaBlocks.push(...sectionBlocks);
     if (isDoc && idx === lcpSectionId) scheduleJsonLdInit();
