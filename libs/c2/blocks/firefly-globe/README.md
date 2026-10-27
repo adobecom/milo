@@ -71,20 +71,26 @@ entry clock: before it there is no drag, banked drag travel is dropped, no auto-
 no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-open
 and keyboard entry are all off. It opens while the block is still scrolling in, so the globe spins,
 drags and opens cards before the world pins. `sphereFormed` (`entryT >= 1`, the world pinned) is a
-separate gate for what must wait for the pin: the travel camera, the entry lift's release, the
-inside-sphere drag flip, and retiring the hint (`retireHint`: a drag, rotate or card opened before
-the pin leaves the cursor pill and the text plane in place, so both go out together, after the pin).
+separate gate for what must wait for the pin: the travel camera, the inside-sphere drag flip, and
+retiring the hint (`retireHint`: a drag, rotate or card opened before the pin leaves the cursor pill
+and the text plane in place, so both go out together, after the pin).
 Reduced motion is always formed and interactive.
 
-The view offset also carries an entry lift (`entryLiftPx`): the top edge of the cards — the barrel's
-front face (z = `SPHERE_R`) or the sphere's silhouette (z ≈ 0) — projected at the live camera
-distance, is held at the canvas top and released by `1 − entryT²`, so the block scrolls in with no
-empty band above the cards and they settle nav-centred as the world pins. `wallTopY` is written with
-`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph.
+The entry lift is a CSS scroll-driven animation. `fg-entry-lift` translates the canvas and
+`.firefly-globe-a11y-cards` (so the focus ring follows) up by `--fg-entry-lift` (45vh) and releases it
+by `1 − entryT²` on the block's `--fg-entry` view timeline over its `entry` range
+(`cubic-bezier(0.333, 0, 0.667, 0.333)` is `t²`). At `entryT` 0 the cards sit that far above the
+world's top, clipped by its `overflow: clip`; they descend into frame and settle nav-centred as the
+world pins. The view offset only nav-centres. **The lift has to move with the page's scroll, not with
+rAF:** iOS scrolls on its own thread, so anything JS positions from the scroll steps against the
+page, and near the pin the lift unwinds at close to scroll speed. Modal flights read the canvas's
+own rect (`getCanvasTop`), which includes the translate. Without `animation-timeline` (Firefox), and
+under reduced motion, there is no lift: the cards ride in already nav-centred.
 
-The spin toggle has two safe positions and `--fg-entry-release` (1 while scrolling in, 0 at the pin)
-crossfades between them: `--fg-controls-entry-top` while the world's top edge is still below the nav,
-`--fg-controls-top` once pinned and the nav is over it.
+The spin toggle has two safe positions: `--fg-controls-entry-top` while the world's top edge is still
+below the nav, `--fg-controls-top` once pinned and the nav is over it. It rides the same
+`fg-entry-lift` animation, its `--fg-entry-lift` set to the gap between the two. Without
+`animation-timeline` it stays at `--fg-controls-top`.
 
 The entry value is one `--s2a-border-radius-xl` plus the inset. A section that rounds its corners
 overlaps its neighbour by exactly one radius (`margin-block: calc(-1 * var(--s2a-border-radius-xl))`
@@ -128,25 +134,18 @@ block scrolls away and never covers the quote.
 
 ### Entry reveal
 
-`entryLiftPx` floors the lift at `ENTRY_LIFT_MIN_H` of the viewport, so at `entryT` 0 the cards sit
-that far above the canvas top and are clipped by the render target itself. `1 − entryT²` releases it,
-so they descend into frame and are fully in view at the pin. The reveal is entirely inside the canvas;
-the block's box, margins and runway are untouched.
+The reveal stays inside the world; the block's box, margins and runway are untouched.
 
 The descent is masked by the page: pre-pin the world tracks the scroll at −1 while the lift unwinds
 at `2 · lift · entryT / viewportH`, so the globe still rises, just slower than the page. That
 difference is the reveal.
 
-A lift that unwinds faster than the page scrolls stalls the globe and then sinks it, so
-`entryLiftPx` clamps to `viewportH / ENTRY_RELEASE_PEAK` — the release curve's steepest slope, 2 for
-`1 − t²`. **`ENTRY_RELEASE_PEAK` has to move with the curve.** The clamp bounds the geometric term
-as well as `ENTRY_LIFT_MIN_H`: `H / 2 + navH / 2 − topPx` passes the ceiling on its own once the
-entry globe is small enough that `topPx < navH / 2`. Under the cap, the leftover speed at the pin is
-`1 − 2 · lift / viewportH`, so a larger lift clips deeper and arrives softer.
+**The lift has to stay at or under 50vh.** `1 − t²` unwinds at up to twice the lift per viewport
+scrolled, so a larger lift outruns the page, stalls the globe and then sinks it. The leftover speed
+at the pin is `1 − 2 · lift / viewportH`, so a larger lift clips deeper and arrives softer.
 
-The lift also has to stay under what the globe can cover: displacing it by `ENTRY_LIFT_MIN_H` needs
-the entry globe to render at least `1 + ENTRY_LIFT_MIN_H` viewports tall, or empty canvas shows below
-it. That is `CAM_Z_ENTRY`'s job.
+The lift also has to stay under what the globe can cover: a 45vh lift needs the entry globe to render
+at least 1.45 viewports tall, or empty space shows below it. That is `CAM_Z_ENTRY`'s job.
 
 ## Tuning the scroll budget
 
@@ -232,6 +231,4 @@ text restored on every call, the opening mark hung once).
 
 `mocks/authored.html` is the authoring contract as a fixture.
 
-The reveal maths (`entryLiftPx`, `entryRelease`) are closures inside
-`createGlobeGalleryRuntime` and are not reachable from a test. There is no Nala/E2E coverage of the
-WebGL path.
+There is no Nala/E2E coverage of the WebGL path.

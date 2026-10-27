@@ -177,11 +177,34 @@
 
 .firefly-globe-spin-toggle {
   position: absolute;
-  top: calc(
-    var(--fg-controls-top)
-    - (var(--fg-controls-top) - var(--fg-controls-entry-top)) * var(--fg-entry-release, 0)
-  );
+  top: var(--fg-controls-top);
   inset-inline-end: var(--fg-controls-inset);
+}
+
+@supports (animation-timeline: view()) {
+  .firefly-globe:not(.firefly-globe-reduced) {
+    --fg-entry-lift: 45vh;
+
+    view-timeline: --fg-entry;
+
+    .firefly-globe-world { overflow: clip; }
+
+    .firefly-globe-canvas,
+    .firefly-globe-a11y-cards,
+    .firefly-globe-spin-toggle {
+      animation: fg-entry-lift cubic-bezier(0.333, 0, 0.667, 0.333) both;
+      animation-timeline: --fg-entry;
+      animation-range: entry;
+    }
+
+    .firefly-globe-spin-toggle {
+      --fg-entry-lift: calc(var(--fg-controls-top) - var(--fg-controls-entry-top));
+    }
+  }
+}
+
+@keyframes fg-entry-lift {
+  from { translate: 0 calc(-1 * var(--fg-entry-lift)); }
 }
 
 .firefly-globe-spin-toggle .firefly-globe-icon-play { display: none; }

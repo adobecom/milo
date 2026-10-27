@@ -17,7 +17,7 @@ import createCursor from './src/cursor.js';
 import { createPullQuote } from './src/quote-particles.js';
 import {
   easeInOutCubic, easeOutCubic, lerpN, clamp01, coverFit,
-  capDpr, CAM_FOV, TAN_HALF_FOV, pxPerWorldAt, camZAtTravelT, travelTAtCamZ,
+  capDpr, CAM_FOV, TAN_HALF_FOV, camZAtTravelT, travelTAtCamZ,
   createFrame, createFrameInput, deriveFrame,
 } from './src/utils.js';
 
@@ -132,9 +132,6 @@ const MASONRY_MORPH_RATE = 0.05; // per-frame
 const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-out band
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
-
-const ENTRY_LIFT_MIN_H = 0.45;
-const ENTRY_RELEASE_PEAK = 2; // peak |slope| of entryRelease; caps the lift at H / this
 
 const TEXT_APPEAR_START = 0.10;
 const CANVAS_HIDE_MARGIN_T = 0.05;
@@ -377,7 +374,6 @@ function createGlobeGalleryRuntime(
   let onScreen = true; // assume visible until the observer's first callback corrects it
   let sphereDragWarp = 0;
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
-  let wallTopY = 0;
   let cameraInsideSphere = false;
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
   let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
@@ -609,7 +605,6 @@ function createGlobeGalleryRuntime(
       0,
     ) * groupScale;
     fadeRefH = cards.reduce((s, c) => s + c.sphereWorldH, 0) / cards.length;
-    wallTopY = cards.reduce((m, c) => Math.max(m, c.spherePos.y + c.sphereWorldH / 2), 0);
     dragFlipZ = Math.min(
       maxRadial + cardVanishDepth() * groupScale,
       bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
@@ -844,7 +839,7 @@ function createGlobeGalleryRuntime(
       return loadModalTextureRaw(src, modalCap, onReady, onError, meta.crossOrigin);
     },
     getViewport: () => ({ W, H }),
-    getCanvasTop: () => worldEl.getBoundingClientRect().top,
+    getCanvasTop: () => renderer.domElement.getBoundingClientRect().top,
     getBP: () => bp.name,
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
@@ -1004,29 +999,9 @@ function createGlobeGalleryRuntime(
     return frameState;
   }
 
-  const entryRelease = (frame) => (frame.sphereFormed ? 0 : 1 - frame.entryT ** 2);
-
-  let entryReleaseStr = '';
-  function publishEntryRelease(frame) {
-    const str = entryRelease(frame).toFixed(3);
-    if (str === entryReleaseStr) return;
-    entryReleaseStr = str;
-    root.style.setProperty('--fg-entry-release', str);
-  }
-
-  function entryLiftPx(frame) {
-    const release = entryRelease(frame);
-    if (!release) return 0;
-    const groupScale = sphereGroup.scale.x || 1;
-    const topZ = bp.CYLINDER ? bp.SPHERE_R : 0;
-    const topPx = wallTopY * groupScale * pxPerWorldAt(camera.position.z - topZ, H);
-    const lift = Math.max(H * ENTRY_LIFT_MIN_H, H / 2 + navH / 2 - topPx);
-    return Math.min(H / ENTRY_RELEASE_PEAK, lift) * release;
-  }
-
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
-  function applyCentringOffset(frame) {
-    const offY = navH / 2 - entryLiftPx(frame);
+  function applyCentringOffset() {
+    const offY = navH / 2;
     if (offY === appliedViewOffsetY) return;
     appliedViewOffsetY = offY;
     if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
@@ -1038,7 +1013,7 @@ function createGlobeGalleryRuntime(
     camera.position.z = sphereFormed
       ? camZAtTravelT(scrollT, bp.CAM_Z_SPHERE, bp.CAM_Z_END)
       : lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, entryT * entryT * entryT);
-    applyCentringOffset(frame);
+    applyCentringOffset();
     // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
     cameraInsideSphere = sphereFormed && Math.abs(camera.position.z) < dragFlipZ;
     return camera;
@@ -1371,7 +1346,6 @@ function createGlobeGalleryRuntime(
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
-    publishEntryRelease(frame);
 
     renderer.sortObjects = true;
 
@@ -1727,7 +1701,6 @@ function createGlobeGalleryRuntime(
     modal.destroy(finalize);
     a11y.teardown();
     frameInput.prevScrollY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
-    entryReleaseStr = '';
     frameState.entryT = 0; frameState.scrollT = 0; frameState.sphereFormed = false;
     pullQuote.teardown();
     pqAppearT = 1;
