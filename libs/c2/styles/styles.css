@@ -1718,6 +1718,11 @@ span.hang-opening-quote {
   }
 }
 
+[class^='body-'] a:not(.con-button):not(.standalone-link),
+[class*=' body-'] a:not(.con-button):not(.standalone-link) {
+  color: inherit;
+}
+
 .language-banner {
   height: var(--feds-language-banner-height);
   visibility: hidden;
