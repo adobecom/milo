@@ -961,6 +961,10 @@ function createGlobeGalleryRuntime(
       const m = getCardMetadata(i);
       return (m && m.alt) || `Image ${authoredNo(i)}`;
     },
+    getCardLang: (i) => {
+      const m = getCardMetadata(i);
+      return (m && m.alt && m.lang) || '';
+    },
     // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
     centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
     openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),

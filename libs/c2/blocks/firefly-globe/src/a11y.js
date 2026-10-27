@@ -12,6 +12,7 @@ export default function createGalleryA11y({
   getModalIdx,
   isGlobeFormed,
   getCardLabel,
+  getCardLang = () => '',
   centerCard,
   openCard,
   onFocus,
@@ -126,6 +127,7 @@ export default function createGalleryA11y({
       btn.dataset.idx = String(i);
       btn.setAttribute('daa-ll', CARD_OPEN_DAA_LL);
       btn.setAttribute('aria-label', getCardLabel(i));
+      if (getCardLang(i)) btn.lang = getCardLang(i);
       btn.addEventListener('focus', onCardFocus);
       btn.addEventListener('blur', onCardBlur);
       btn.addEventListener('click', onCardClick);

@@ -54,6 +54,12 @@ Positional rows.
 
 Blank / whitespace-only values are skipped at every step.
 
+The card also gets `lang`, the prompt's source locale: the matched `firefly#prompts` key, else
+`firefly#locale` for `originalPrompt`, else none (`title` has no known language). Tags that `Intl.Locale` rejects are dropped, and `_` becomes `-`. The a11y card button,
+the modal's sr-only image label, the visible prompt and the prompt part of the live announcement carry it,
+so a screen reader switches voice for an untranslated fallback (WCAG 3.1.2). No `lang` → the attribute is
+removed, never `lang=""`, which would mean "unknown" instead of inheriting the page language.
+
 `getLocalizedPrompt` is rule-based, with no locale table to maintain: it reads `getConfig().locale.ietf`
 at runtime, so each consumer repo (milo, da-cc, …) uses its own locale config. Both the page locale and
 each API key go through `Intl.Locale#maximize`, which fills in the likely script and region, so tags

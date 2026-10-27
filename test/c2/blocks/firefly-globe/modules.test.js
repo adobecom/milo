@@ -115,6 +115,7 @@ describe('firefly-globe accessibility gallery', () => {
       getModalIdx: () => modalIdx,
       isGlobeFormed: () => formed,
       getCardLabel: (i) => `Image ${i}`,
+      getCardLang: (i) => (i === 2 ? 'ja-JP' : ''),
       centerCard: center,
       openCard: open,
       onFocus: focus,
@@ -135,6 +136,7 @@ describe('firefly-globe accessibility gallery', () => {
     expect(cards.inert).to.equal(true);
     expect([...cards.children].map((el) => el.dataset.idx)).to.deep.equal(['2', '0', '1']);
     expect(cards.firstElementChild.getAttribute('aria-label')).to.equal('Image 2');
+    expect([...cards.children].map((el) => el.lang)).to.deep.equal(['ja-JP', '', '']);
   });
 
   it('enters only when formed, centers focused cards, and Escape collapses', () => {
@@ -660,6 +662,7 @@ describe('firefly-globe modal without a WebGL canvas', () => {
         modelId: 'firefly',
         modelVersionName: 'Firefly 3',
         prompt: 'A prompt',
+        lang: 'en-US',
         fireflyUrl: '/try',
       }),
       authoredNo: (i) => i + 1,
@@ -701,6 +704,8 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     modal.open(0);
     expect(modal.getModalIdx()).to.equal(0);
     expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-label')).to.equal('Photo');
+    expect(el.querySelector('.firefly-globe-modal-image').lang).to.equal('en-US');
+    expect(el.querySelector('.firefly-globe-modal-prompt').lang).to.equal('en-US');
     expect(el.querySelector('.firefly-globe-modal-model-icon').getAttribute('src'))
       .to.equal('/libs/c2/blocks/firefly-globe/icons/firefly.svg');
     expect(el.querySelector('.firefly-globe-modal-model-label').textContent).to.equal('Firefly 3');
@@ -744,6 +749,8 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     expect(pending.onerror).to.equal(null);
     expect(pending.src).to.equal('');
     expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-hidden')).to.equal('true');
+    expect(el.querySelector('.firefly-globe-modal-image').hasAttribute('lang')).to.equal(false);
+    expect(el.querySelector('.firefly-globe-modal-prompt').hasAttribute('lang')).to.equal(false);
     expect(el.querySelector('.firefly-globe-modal-model-icon').hasAttribute('hidden')).to.equal(true);
     expect(el.querySelector('.firefly-globe-modal-cta').hasAttribute('href')).to.equal(false);
     expect(el.querySelector('.firefly-globe-modal-counter').textContent).to.equal('02 / 02');

@@ -180,6 +180,8 @@ function parseLocale(tag) {
   return parsedLocales.get(tag);
 }
 
+const langTag = (tag) => (tag && parseLocale(tag) ? tag.replace(/_/g, '-') : '');
+
 function getLocalizedPrompt(prompts, locale) {
   const want = parseLocale(locale);
   const score = (key) => {
@@ -189,8 +191,8 @@ function getLocalizedPrompt(prompts, locale) {
   };
   const entries = Object.entries(prompts || {}).filter(([, v]) => text(v));
   const match = (minScore) => entries.find(([key]) => score(key) >= minScore);
-  const [, value] = match(2) || match(1) || entries.find(([key]) => key === 'en-US') || entries[0] || [];
-  return text(value);
+  const [key = '', value] = match(2) || match(1) || entries.find(([k]) => k === 'en-US') || entries[0] || [];
+  return [langTag(key), text(value)];
 }
 
 function parseModelTags(machineTags) {
@@ -206,9 +208,11 @@ function apiAssetToCard(asset, locale) {
   if (!rendition?.href || !asset.id) return null;
 
   const input = asset.custom?.input;
-  const prompt = getLocalizedPrompt(input?.['firefly#prompts'], locale)
-    || text(input?.['firefly#originalPrompt'])
-    || text(asset.title);
+  const [lang, prompt] = [
+    getLocalizedPrompt(input?.['firefly#prompts'], locale),
+    [langTag(text(input?.['firefly#locale'])), text(input?.['firefly#originalPrompt'])],
+    ['', text(asset.title)],
+  ].find(([, v]) => v) || ['', ''];
   const fireflyUrl = asset.urn
     ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
     : null;
@@ -221,6 +225,7 @@ function apiAssetToCard(asset, locale) {
     modelId,
     modelVersionName,
     prompt,
+    lang,
     fireflyUrl,
     crossOrigin: 'anonymous',
   };

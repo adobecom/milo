@@ -463,6 +463,22 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect(cards.map((c) => c.alt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
   });
 
+  it('tags the prompt with its source locale, or none when unknown', async () => {
+    stubAssets([
+      asset(),
+      asset({ custom: { input: { 'firefly#prompts': { zh_TW: '繁體' } } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'pt-BR' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'fr_CA' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'not a locale' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#prompts': { bogus_key_x: 'B' } } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O' } } }),
+      asset({ title: 'T', custom: { input: {} } }),
+    ]);
+    const cards = await fetchFireflyAssets('cat', 'ja-JP');
+    expect(cards.map((c) => c.lang)).to.deep.equal(['en-US', 'zh-TW', 'pt-BR', 'fr-CA', '', '', '', '']);
+    expect(cards[5].prompt).to.equal('B');
+  });
+
   it('uses the prompt as the alt fallback', async () => {
     stubAssets([asset()]);
     expect((await fetchFireflyAssets('cat', 'en-US'))[0].alt).to.equal('English');
