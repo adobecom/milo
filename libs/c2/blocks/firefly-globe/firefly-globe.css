@@ -184,6 +184,33 @@
   inset-inline-end: var(--fg-controls-inset);
 }
 
+@supports (animation-timeline: view()) {
+  .firefly-globe:not(.firefly-globe-reduced) {
+    view-timeline: --fg-entry block;
+
+    .firefly-globe-world { overflow: clip; }
+
+    .firefly-globe-canvas,
+    .firefly-globe-a11y-cards,
+    .firefly-globe-spin-toggle {
+      animation: fg-entry-lift cubic-bezier(0.333, 0, 0.667, 0.333) both;
+      animation-timeline: --fg-entry;
+      animation-range: entry;
+    }
+
+    .firefly-globe-spin-toggle {
+      --fg-entry-lift: calc(var(--fg-controls-top) - var(--fg-controls-entry-top));
+
+      top: var(--fg-controls-top);
+    }
+  }
+}
+
+@keyframes fg-entry-lift {
+  from { translate: 0 calc(-1 * var(--fg-entry-lift, 0px)); }
+  to { translate: 0 0; }
+}
+
 .firefly-globe-spin-toggle .firefly-globe-icon-play { display: none; }
 .firefly-globe-spin-toggle.is-paused .firefly-globe-icon-pause { display: none; }
 .firefly-globe-spin-toggle.is-paused .firefly-globe-icon-play { display: block; }
