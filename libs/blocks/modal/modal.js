@@ -234,8 +234,7 @@ function addIframeKeydownListener(iframe, dialog) {
 
 export async function getModal(details, custom) {
   if (custom?.signal?.aborted) return null;
-  if (!((details?.path && details?.id) || custom)) return null;
-  if (details && !custom && !isTrustedUrl(details.path)) return null;
+  if (!(custom || (details?.path && details?.id && isTrustedUrl(details.path)))) return null;
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
   const activeElementData = document.activeElement.dataset;
