@@ -890,6 +890,10 @@ function createGlobeGalleryRuntime(
 
   function readScrollY() {
     const domY = window.scrollY;
+    if (domY < blockDocTop) {
+      smoothY = domY;
+      return domY;
+    }
     if (!window.lenis?.isSmooth) return deQuantize(domY);
     const lenisY = window.lenis.animatedScroll;
     const trusted = Number.isFinite(lenisY) && Math.abs(lenisY - domY) <= LENIS_TRUST_PX;

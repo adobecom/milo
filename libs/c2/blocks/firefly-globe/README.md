@@ -98,7 +98,10 @@ unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter`
 at `blockDocTop`, the first formed scroll position. Orientation and inertia reset only while not
 yet interactive.
 
-Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
+Scroll input is `readScrollY()`. Above `blockDocTop` it is raw `window.scrollY`: the world isn't
+stuck yet, so the canvas rides the page's own scroll, and the barrel's in-canvas entry lift has to
+follow that same value or it drifts against the page. From `blockDocTop` on it is Lenis'
+`animatedScroll` when it agrees with `window.scrollY` within
 `LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)`, which damps steps smaller than
 `SCROLL_JUMP_PX` (an iOS URL-bar show/hide moves `scrollY` by the bar height without a user scroll)
 and passes larger ones through. `scrollVel` is the per-frame delta of that smoothed value and feeds
