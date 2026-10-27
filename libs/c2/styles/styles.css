@@ -1310,6 +1310,13 @@ span.hang-opening-quote {
     view-timeline: --parallax-stagger-timeline block;
     view-timeline-inset: 10% 10%;
 
+    /* The default "entry 0% entry 100%" range spans only one element height of
+       scroll, so short single-row grids (e.g. quick-actions) snap in. Extend
+       the end into the cover phase so the entrance glides over ~a viewport of
+       scroll. Multi-row grids override this again below. */
+    --parallax-range-end-name: cover;
+    --parallax-range-end-length: 50%;
+
     > :not([class*="section-"]) {
       --parallax-stagger-row-index: 0;
 
