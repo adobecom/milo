@@ -270,11 +270,11 @@
   }
 
   .blog-side-navigation nav > ul > li > a[aria-current="location"] {
-    font-weight: 700;
+    font-weight: 800;
   }
 
   .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) > a {
-    font-weight: 700;
+    font-weight: 800;
   }
 }
 
