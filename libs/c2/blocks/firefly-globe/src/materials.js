@@ -1,7 +1,5 @@
 import * as THREE from '../../../../deps/three.js';
-import {
-  CARD_VERT, CARD_DISPERSE_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG,
-} from './shaders.js';
+import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG } from './shaders.js';
 
 // GPU-asset factories: the ShaderMaterials + the texture loaders.
 
@@ -19,12 +17,11 @@ export function createCardMaterial({ texture, aspect }) {
       uHoverPos: { value: new THREE.Vector2(0.5, 0.5) },
       uAspect: { value: aspect },
       uRadius: { value: 22.0 / 631.0 },
-      uDissolve: { value: 0 }, // near-camera proximity dissolve (0 = solid, 1 = fully dispersed)
-      uDisperse: { value: 0 }, // near-camera explosion (near-camera only; 0 in other phases)
+      uDissolve: { value: 0 },
       uReveal: { value: 0 }, // texture-ready reveal (0 = contour only, 1 = full photo)
       uContourFade: { value: 1 }, // near-camera gate for the contour (mirrors proxFade)
     },
-    vertexShader: CARD_DISPERSE_VERT,
+    vertexShader: CARD_VERT,
     fragmentShader: CARD_FRAG,
     side: THREE.DoubleSide,
     transparent: true,
