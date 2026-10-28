@@ -578,7 +578,6 @@ function setupCollapsingHeader(el) {
   const applyCollapsed = () => {
     if (wasCollapsed) return;
     wasCollapsed = true;
-    if (!isMobile()) { cardsContainer.classList.add('is-collapsed'); return; }
     cardsContainer.classList.add('is-collapsed');
   };
 
