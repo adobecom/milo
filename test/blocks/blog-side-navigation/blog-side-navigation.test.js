@@ -487,7 +487,7 @@ describe('blog-side-navigation section list', () => {
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(mobile ? '800' : '400');
+          .to.equal('800');
         expect(list.querySelector('[aria-current="location"]').getBoundingClientRect().height)
           .to.equal(48);
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
@@ -1599,7 +1599,7 @@ describe('blog-side-navigation section list', () => {
           expect(visible[0].querySelector('a').getAttribute('href'))
             .to.equal(`#${titles[activeIndex].toLowerCase()}`);
           expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
-          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal(tablet ? '400' : '800');
+          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal('800');
           expect(button.parentElement === visible[0]).to.equal(true);
           expect(button.getAttribute('aria-expanded')).to.equal('false');
           expect(getComputedStyle(visible[0]).display).to.equal('flex');
