@@ -147,7 +147,6 @@ const C2_BLOCKS = [
   'pill-group',
   'plans-hero',
   'product-marquee-grid',
-  'product-marquee-media',
   'quick-actions',
   'quote',
   'region-nav',

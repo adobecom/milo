@@ -40,6 +40,7 @@
   }
 
   .sh-product-lockup {
+    order: -1;
     align-items: center;
     color: var(--s2a-color-content-default);
     display: flex;

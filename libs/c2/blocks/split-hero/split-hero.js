@@ -1,5 +1,5 @@
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateBlockText, decorateButtons, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
-import { createTag } from '../../../utils/utils.js';
 
 const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
 
@@ -63,20 +63,29 @@ function buildMerchCard(col) {
   return merchCard;
 }
 
-function decorate(block, root) {
-  const row = block.firstElementChild;
-  const [copy, merch, media] = row?.children || [];
-  if (!copy) return;
-
+function decorateCopy(copy) {
   decorateBlockText(copy, { heading: '2', body: 'md', button: 'md' });
   const [heading, ...otherHeadings] = copy.querySelectorAll('h1, h2, h3, h4, h5, h6');
   otherHeadings.forEach((other) => other.classList.remove('heading-2'));
-  const eyebrow = heading?.previousElementSibling;
-  if (eyebrow?.matches('p')) eyebrow.classList.add('sh-product-lockup', 'eyebrow');
+  const lockup = heading?.nextElementSibling;
+  if (lockup?.matches('p') && lockup.querySelector('picture')) {
+    lockup.querySelectorAll('img[src*=".svg"]').forEach((img) => {
+      img.src = getFederatedUrl(img.getAttribute('src'));
+    });
+    lockup.classList.add('sh-product-lockup', 'eyebrow');
+  }
   normalizeMasFieldText(copy, 'md');
   copy.classList.add('sh-text');
+}
 
-  const supporting = row.nextElementSibling?.firstElementChild;
+function decorate(block, root) {
+  const [mainRow, merchRow, supportingRow] = block.children;
+  const [copy, media] = mainRow?.children || [];
+  if (!copy) return;
+
+  decorateCopy(copy);
+  const merch = merchRow?.firstElementChild;
+  const supporting = supportingRow?.firstElementChild;
   const copyGroup = createTag('div', { class: 'sh-copy' }, copy);
   const foreground = createTag('div', { class: 'sh-foreground' }, copyGroup);
   if (merch?.children.length) {
