@@ -19,13 +19,14 @@ Header: `x-api-key: milo-ff-gallery-unity`
 The `categoryId` is authored into the block. Known values:
 - `text2Image` — standard Firefly image generation
 - `VideoGeneration` — video assets
-- Custom curated categories (e.g. `NQCJQWSV`) — returns empty if the category
-  has no published assets or the ID is wrong
+- Custom curated categories — returns empty if the category has no published
+  assets or the ID is wrong
 
 The optional `machine_tag` further restricts results to assets carrying that
-tag (e.g. `acom_ff_globe_assets`), letting editorial curate a subset within a
+tag, letting editorial curate a subset within a
 category. Multiple tags default to `machine_tag_op=and`. Any `'` or `\` in a
-tag must be backslash-escaped. Omit the param for no restriction.
+tag must be backslash-escaped. `firefly-globe` falls back to
+`DEFAULT_MACHINE_TAG` (`src/authoring.js`) when none is authored.
 
 ### Pagination
 

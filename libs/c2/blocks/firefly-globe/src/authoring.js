@@ -10,6 +10,7 @@ export function escapeHtml(s) {
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
 const DEFAULT_HINT = 'Click & Drag';
+export const DEFAULT_MACHINE_TAG = 'acom_ff_globe_assets';
 const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
 const LABEL_DIVIDER = '||';
@@ -281,7 +282,7 @@ export function parseAuthoredContent(el) {
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     categoryId: categoryId || null,
-    machineTag: machineTag || null,
+    machineTag: machineTag || DEFAULT_MACHINE_TAG,
     cgenId,
     ctaLabel,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },

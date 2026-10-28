@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/utils.js';
 import {
+  DEFAULT_MACHINE_TAG,
   escapeHtml,
   fireflyRenditionUrl,
   scatterCards,
@@ -144,31 +145,31 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
 
   it('parses "categoryId || machineTag || cgenId || ctaLabel" from the cards cell', () => {
     const el = makeEl(`
-      ${makeRow('<div><p>cat-123 || acom_ff_globe_assets || promo-9 || Open in Firefly</p></div>')}
+      ${makeRow('<div><p>cat-123 || custom_tag || promo-9 || Open in Firefly</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
     const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
     expect(categoryId).to.equal('cat-123');
-    expect(machineTag).to.equal('acom_ff_globe_assets');
+    expect(machineTag).to.equal('custom_tag');
     expect(cgenId).to.equal('promo-9');
     expect(ctaLabel).to.equal('Open in Firefly');
   });
 
-  it('machineTag is null when omitted', () => {
+  it('machineTag defaults to DEFAULT_MACHINE_TAG when omitted', () => {
     const el = makeEl(`
       ${makeRow('<div><p>cat-123</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    expect(parseAuthoredContent(el).machineTag).to.be.null;
+    expect(parseAuthoredContent(el).machineTag).to.equal(DEFAULT_MACHINE_TAG);
   });
 
   // Authors can skip the machineTag slot with an empty field and keep the
   // later slots in place: "cat || || cgen || cta" or "cat |||| cgen || cta".
   ['cat-123 || || promo-9 || Open in Firefly', 'cat-123 |||| promo-9 || Open in Firefly']
     .forEach((cards) => {
-      it(`treats an empty machineTag slot as none: "${cards}"`, () => {
+      it(`treats an empty machineTag slot as the default: "${cards}"`, () => {
         const el = makeEl(`
           ${makeRow(`<div><p>${cards}</p></div>`)}
           ${makeRow('<div></div><div><p>Drag</p></div>')}
@@ -176,7 +177,7 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
         `);
         const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
         expect(categoryId).to.equal('cat-123');
-        expect(machineTag).to.be.null;
+        expect(machineTag).to.equal(DEFAULT_MACHINE_TAG);
         expect(cgenId).to.equal('promo-9');
         expect(ctaLabel).to.equal('Open in Firefly');
       });
@@ -357,12 +358,12 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false, status: 503 });
     const log = sinon.spy();
     window.lana = { log };
-    expect(await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets')).to.be.null;
+    expect(await fetchFireflyAssets('cat', 'en-US', 'custom_tag')).to.be.null;
     expect(log.calledOnce).to.be.true;
     const [msg, opts] = log.firstCall.args;
     expect(msg).to.include('503');
     expect(msg).to.include('category_id=cat');
-    expect(msg).to.include('machine_tag=acom_ff_globe_assets');
+    expect(msg).to.include('machine_tag=custom_tag');
     expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'error' });
   });
 
@@ -491,10 +492,10 @@ describe('firefly-globe: fetchFireflyAssets', () => {
 
   it('adds machine_tag to the query when authored', async () => {
     stubAssets([asset()]);
-    await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets');
+    await fetchFireflyAssets('cat', 'en-US', 'custom_tag');
     const url = new URL(fetchStub.firstCall.args[0]);
     expect(url.searchParams.get('category_id')).to.equal('cat');
-    expect(url.searchParams.get('machine_tag')).to.equal('acom_ff_globe_assets');
+    expect(url.searchParams.get('machine_tag')).to.equal('custom_tag');
   });
 
   it('omits machine_tag when not authored', async () => {
