@@ -60,12 +60,24 @@ let playerListenerAdded = false;
 
 // MWPW-208836: stays paused until the user resumes it.
 const pauseOffscreen = (video) => {
-  new IntersectionObserver(([{ isIntersecting }]) => {
-    if (isIntersecting || video.paused) return;
+  let inView = true;
+  const pause = () => {
+    if (inView || video.paused) return;
     video.pause();
     video.setAttribute(USER_PAUSED_ATTR, '');
     if (video.closest('.video-holder')?.querySelector('.offset-filler.is-playing')) syncPausePlayIcon(video);
+  };
+  new IntersectionObserver(([{ isIntersecting }]) => {
+    inView = isIntersecting;
+    pause();
   }).observe(video);
+  // Delayed media can start after the video has already left the viewport.
+  video.addEventListener('playing', pause);
+};
+
+const isInViewport = (el) => {
+  const { top, bottom, left, right } = el.getBoundingClientRect();
+  return bottom > 0 && top < window.innerHeight && right > 0 && left < window.innerWidth;
 };
 
 const createIframe = (a, href, opts = {}) => {
@@ -105,7 +117,7 @@ const createIframe = (a, href, opts = {}) => {
 
   a.remove();
   const focusMoved = document.activeElement && document.activeElement !== document.body;
-  if (focus && !focusMoved && !embed.closest('[aria-hidden="true"]')) iframe.focus();
+  if (focus && !focusMoved && !embed.closest('[aria-hidden="true"]') && isInViewport(embed)) iframe.focus();
 };
 
 const createIframeWithCaptions = (a, url, geo, opts) => {

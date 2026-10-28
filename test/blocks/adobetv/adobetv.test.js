@@ -211,6 +211,19 @@ describe('adobetv autoblock', () => {
       next.remove();
     });
 
+    it('does not pull focus into a player scrolled away during the caption lookup', async () => {
+      updateConfig({ ...getConfig(), atvCaptionsKey: 'test', locale: { prefix: 'fr', ietf: 'fr-FR', contentRoot: '' } });
+      const wrapper = document.querySelector('#mpcPlayerPosterCaptions');
+      await init(wrapper.querySelector('a'));
+      wrapper.querySelector('.mpc-poster button').click();
+      wrapper.style.cssText = 'position: absolute; top: 5000px;';
+
+      const iframe = await waitForElement('#mpcPlayerPosterCaptions iframe');
+
+      expect(document.activeElement === iframe, 'iframe focused').to.be.false;
+      wrapper.style.cssText = '';
+    });
+
     it('plays a poster that was cloned after decoration', async () => {
       const wrapper = document.querySelector('#mpcPlayerPoster');
       await init(wrapper.querySelector('a'));
@@ -344,6 +357,41 @@ describe('adobetv autoblock', () => {
       wrapper.style.top = '0px';
       await nextFrames();
       expect(calls.join(), 'stays paused in view').to.equal('pause');
+      wrapper.style.cssText = '';
+    });
+
+    it('pauses an autoplay MPC MP4 whose media starts after it was scrolled offscreen', async () => {
+      const nextFrames = () => new Promise((r) => {
+        requestAnimationFrame(() => requestAnimationFrame(r));
+      });
+      const wrapper = document.querySelector('#mpcMp4Autoplay');
+      wrapper.style.cssText = 'position: absolute; top: 0; width: 300px; height: 200px;';
+      const parent = wrapper.querySelector('a').parentElement;
+      await init(wrapper.querySelector('a'));
+      const video = parent.querySelector('video');
+      const calls = [];
+      let paused = true;
+      Object.defineProperty(video, 'paused', { get: () => paused });
+      Object.defineProperty(video, 'readyState', { get: () => 4 });
+      video.pause = () => { paused = true; calls.push('pause'); };
+      video.play = () => { paused = false; calls.push('play'); };
+      await nextFrames();
+
+      wrapper.style.top = '5000px';
+      await nextFrames();
+      paused = false;
+      video.dispatchEvent(new Event('playing'));
+      expect(calls.join(), 'paused once media starts offscreen').to.equal('pause');
+      expect(video.hasAttribute('data-user-paused')).to.be.true;
+      const control = parent.querySelector('.pause-play-wrapper, .play-pause-button');
+      expect(control.getAttribute('aria-pressed')).to.equal('false');
+
+      wrapper.style.top = '0px';
+      await nextFrames();
+      control.click();
+      video.dispatchEvent(new Event('playing'));
+      expect(calls.join(), 'explicit resume plays').to.equal('pause,play');
+      expect(control.getAttribute('aria-pressed')).to.equal('true');
       wrapper.style.cssText = '';
     });
 
