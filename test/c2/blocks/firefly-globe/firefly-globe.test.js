@@ -376,6 +376,27 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect(log.firstCall.args[0]).to.include('boom');
   });
 
+  it('warns with the request URL and returns null when no assets come back', async () => {
+    stubAssets([]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat', 'en-US', 'custom_tag')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    const [msg, opts] = log.firstCall.args;
+    expect(msg).to.include('0 returned');
+    expect(msg).to.include('category_id=cat');
+    expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'warn' });
+  });
+
+  it('warns and returns null when every asset is unusable', async () => {
+    stubAssets([asset({ _links: {} })]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    expect(log.firstCall.args[0]).to.include('1 returned');
+  });
+
   it('maps an asset to a card with the high-res component-rendition template and model tags', async () => {
     stubAssets([asset()]);
     const [card] = await fetchFireflyAssets('cat', 'en-US');

@@ -257,7 +257,14 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
     const cards = assets.map((a) => apiAssetToCard(a, loc)).filter(Boolean);
-    return cards.length ? cards : null;
+    if (!cards.length) {
+      window.lana?.log?.(
+        `firefly-globe: no usable assets (${assets.length} returned): ${url}`,
+        { tags: 'firefly-globe', severity: 'warn' },
+      );
+      return null;
+    }
+    return cards;
   } catch (e) {
     window.lana?.log?.(
       `firefly-globe: assets fetch error (${e.message}): ${url}`,

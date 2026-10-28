@@ -1628,6 +1628,7 @@ function createGlobeGalleryRuntime(
       renderer = new THREE.WebGLRenderer({ canvas, antialias: aa, alpha: true });
     } catch (e) {
       renderer = null;
+      window.lana?.log?.(`firefly-globe: WebGL renderer creation failed: ${e?.message || e}`, { tags: 'firefly-globe', severity: 'warn' });
       return false;
     }
     appliedDpr = capDpr();
@@ -1883,6 +1884,8 @@ export default async function init(el) {
   let authored = null;
   if (categoryId) {
     authored = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf, machineTag);
+  } else {
+    window.lana?.log?.('firefly-globe: no categoryId authored', { tags: 'firefly-globe', severity: 'warn' });
   }
   if (cgenId && authored) {
     authored.forEach((card) => {
