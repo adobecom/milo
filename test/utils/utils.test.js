@@ -271,6 +271,19 @@ describe('Utils', () => {
       expect(scriptPreload).to.exist;
       expect(stylePreload).to.exist;
     });
+
+    it('preloads merch-card-collection-autoblock M@S deps', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = '<main><div><div class="merch-card-collection-autoblock"></div></div></main>';
+
+      await utils.loadArea();
+      ['merch-card.js', 'merch-quantity-select.js', 'merch-card-collection.js'].forEach((dep) => {
+        const link = document.head.querySelector(`link[rel="preload"][href$="/${dep}"]`);
+        expect(link, dep).to.exist;
+        expect(link.as).to.equal('script');
+        expect(link.crossOrigin).to.equal('anonymous');
+      });
+    });
   });
 
   describe('preloadLcpCodeFiles', () => {
