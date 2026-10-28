@@ -176,7 +176,7 @@ export default function init({ path: authoredPath } = {}) {
           }
         },
       });
-      dialog.querySelector('.dialog-close').setAttribute('daa-ll', 'Close|Login Modal');
+      dialog?.querySelector('.dialog-close')?.setAttribute('daa-ll', 'Close|Login Modal');
       stop();
     } catch (error) {
       stop();
