@@ -467,6 +467,7 @@ function createCardPointsMaterial(shared, scatterP = -1) {
     transparent: true,
     depthTest: false,
     depthWrite: false,
+    extensions: { derivatives: true },
   });
 }
 
