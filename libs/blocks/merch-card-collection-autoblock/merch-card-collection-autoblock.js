@@ -50,14 +50,12 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  // Component definitions don't need the service, so fetch them while it initializes.
   const dependencyPromises = [
     loadMasComponent(MAS_MERCH_CARD),
     loadMasComponent(MAS_MERCH_CARD_COLLECTION),
   ];
   if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
   const componentsPromise = Promise.all(dependencyPromises);
-  // Quantity select is optional for a collection; don't let it gate render.
   loadMasComponent(MAS_MERCH_QUANTITY_SELECT).catch(() => {});
   componentsPromise.catch(() => {});
 
