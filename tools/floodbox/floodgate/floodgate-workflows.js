@@ -179,7 +179,7 @@ export function getPromoteIgnorePaths(cmp) {
   }
 
   return ignorePaths.map((path) => {
-    if (path.endsWith('/') || path.includes('.')) return path;
+    if (path.endsWith('/') || path.endsWith('*') || path.includes('.')) return path;
     return `${path}.html`;
   });
 }
@@ -191,6 +191,8 @@ export function readPromoteIgnorePaths(cmp) {
 export function isPromoteIgnored(file, ignorePaths) {
   const fullPath = getFileExtension(file) ? file : `${file}.html`;
   return ignorePaths.some((path) => {
+    // Trailing * matches every file under that prefix, like the file list wildcard.
+    if (path.endsWith('*')) return file.includes(path.slice(0, -1));
     if (path.endsWith('/')) return file.includes(path);
     return fullPath.endsWith(path);
   });
