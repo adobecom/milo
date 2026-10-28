@@ -1,11 +1,6 @@
 @import url('./merch-card.css');
 
 .split-hero {
-  --sh-media-padding: var(--s2a-spacing-2xs);
-  --sh-media-radius: var(--s2a-border-radius-2xs);
-  --sh-frame-radius: var(--s2a-border-radius-xs);
-
-  background: var(--s2a-color-background-default);
   overflow-x: clip;
   position: relative;
 
