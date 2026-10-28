@@ -93,6 +93,24 @@ describe('scheduled-content', () => {
     expect(el.querySelector('#before-content')).to.be.null;
   });
 
+  it('steps through every slot in order without a reload', async () => {
+    const now = Date.now();
+    const live = iso(now + 300);
+    const after = iso(now + 700);
+    const el = makeBlock([['default', link('before')], [live, link('live')], [after, link('after')]]);
+    const slots = [];
+    new MutationObserver(() => slots.push(el.dataset.activeSlot))
+      .observe(el, { attributes: true, attributeFilter: ['data-active-slot'] });
+
+    await init(el);
+    expect(el.querySelector('#before-content')).to.exist;
+    await new Promise((r) => { setTimeout(r, 1200); });
+
+    expect(slots).to.deep.equal(['default', live, after]);
+    expect(el.querySelector('#after-content')).to.exist;
+    expect(el.querySelector('#before-content, #live-content')).to.be.null;
+  });
+
   it('renders nothing before the first slot and removes empty blocks', async () => {
     const el = makeBlock([[iso(Date.now() + HOUR), link('live')]]);
     await init(el);
