@@ -54,6 +54,7 @@
     --pm-content-subtle: var(--s2a-color-content-subtle);
     --pm-badge-color: var(--s2a-color-content-inverse);
 
+    border: var(--s2a-border-width-sm) solid rgba(255, 255, 255, 0.05);
     color: var(--pm-content);
     display: flex;
     flex-direction: column;
