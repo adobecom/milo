@@ -133,6 +133,9 @@ const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-ou
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
+const CSS_ENTRY_LIFT = !!window.CSS?.supports?.('animation-timeline: view()');
+const ENTRY_LIFT_H = 0.45;
+
 const TEXT_APPEAR_START = 0.10;
 const CANVAS_HIDE_MARGIN_T = 0.05;
 
@@ -1000,8 +1003,9 @@ function createGlobeGalleryRuntime(
   }
 
   let appliedViewOffsetY = null; // W and H are baked into the call; null on any change to either
-  function applyCentringOffset() {
-    const offY = navH / 2;
+  function applyCentringOffset(frame) {
+    const release = CSS_ENTRY_LIFT || frame.sphereFormed ? 0 : 1 - frame.entryT ** 2;
+    const offY = navH / 2 - ENTRY_LIFT_H * H * release;
     if (offY === appliedViewOffsetY) return;
     appliedViewOffsetY = offY;
     if (offY) camera.setViewOffset(W, H, 0, -offY, W, H);
@@ -1013,7 +1017,7 @@ function createGlobeGalleryRuntime(
     camera.position.z = sphereFormed
       ? camZAtTravelT(scrollT, bp.CAM_Z_SPHERE, bp.CAM_Z_END)
       : lerpN(bp.CAM_Z_ENTRY, bp.CAM_Z_SPHERE, entryT * entryT * entryT);
-    applyCentringOffset();
+    applyCentringOffset(frame);
     // Flip the drag once the camera is INSIDE; the threshold is dragFlipZ, not SPHERE_R.
     cameraInsideSphere = sphereFormed && Math.abs(camera.position.z) < dragFlipZ;
     return camera;

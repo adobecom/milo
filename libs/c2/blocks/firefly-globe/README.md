@@ -81,11 +81,12 @@ The entry lift is a CSS scroll-driven animation. `fg-entry-lift` translates the 
 by `1 − entryT²` on the block's `--fg-entry` view timeline over its `entry` range
 (`cubic-bezier(0.333, 0, 0.667, 0.333)` is `t²`). At `entryT` 0 the cards sit that far above the
 world's top, clipped by its `overflow: clip`; they descend into frame and settle nav-centred as the
-world pins. The view offset only nav-centres. **The lift has to move with the page's scroll, not with
+world pins. With it, the view offset only nav-centres. **The lift has to move with the page's scroll, not with
 rAF:** iOS scrolls on its own thread, so anything JS positions from the scroll steps against the
 page, and near the pin the lift unwinds at close to scroll speed. Modal flights read the canvas's
-own rect (`getCanvasTop`), which includes the translate. Without `animation-timeline` (Firefox), and
-under reduced motion, there is no lift: the cards ride in already nav-centred.
+own rect (`getCanvasTop`), which includes the translate. Without `animation-timeline` (Firefox),
+`applyCentringOffset` applies the same lift through the view offset each frame from `entryT`;
+**`ENTRY_LIFT_H` has to match `--fg-entry-lift`.** Reduced motion has no lift.
 
 The spin toggle has two safe positions: `--fg-controls-entry-top` while the world's top edge is still
 below the nav, `--fg-controls-top` once pinned and the nav is over it. It rides the same
