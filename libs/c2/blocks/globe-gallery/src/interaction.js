@@ -17,7 +17,7 @@ const now = () => (typeof performance !== 'undefined' ? performance.now() : Date
 export default function createInteraction({
   getRenderer, getCamera, getCards, openModal,
   getDragSensitivity, isGlobeLive, maxVel, drag,
-  getYawOnly, isCursorActive, onDrag,
+  getYawOnly, onDrag,
 }) {
   const raycaster = new THREE.Raycaster();
   const mouseNDC = new THREE.Vector2();
@@ -44,10 +44,9 @@ export default function createInteraction({
   function applyCursor() {
     if (!canvasEl) return;
     let want = '';
-    if (isCursorActive()) want = 'none';
     // A gesture already in flight keeps 'grabbing' until release: pointer capture outlives the
     // live gate, and the rotation it is still driving is real.
-    else if (drag.isDragging) want = 'grabbing';
+    if (drag.isDragging) want = 'grabbing';
     else if (isGlobeLive()) want = hoveringCard ? 'pointer' : 'grab';
     if (want === appliedCursor) return;
     appliedCursor = want;
@@ -125,6 +124,12 @@ export default function createInteraction({
     return raycaster.intersectObjects(pickable, false);
   }
 
+  function clearHover() {
+    hoveringCard = false;
+    const cards = getCards();
+    for (let i = 0; i < cards.length; i += 1) cards[i].hoverTarget = 0;
+  }
+
   function onPointerDown(e) {
     if (e.button !== 0 || !e.isPrimary) return;
     if (!isGlobeLive()) return;
@@ -142,6 +147,7 @@ export default function createInteraction({
     isTouchDrag = e.pointerType === 'touch' || e.pointerType === 'pen';
     axisLock = AXIS_UNDECIDED;
     dragMoved = false;
+    clearHover();
     applyCursor();
   }
 
@@ -193,14 +199,8 @@ export default function createInteraction({
     }
   }
 
-  function clearHover() {
-    hoveringCard = false;
-    const cards = getCards();
-    for (let i = 0; i < cards.length; i += 1) cards[i].hoverTarget = 0;
-  }
-
   function onHover(e) {
-    if (e.pointerType !== 'mouse') return;
+    if (e.pointerType !== 'mouse' || drag.isDragging) return;
     const camera = getCamera();
     if (!getRenderer() || !camera) return;
     const cards = getCards();

@@ -7,8 +7,8 @@ import {
   getCountry,
   setMarket,
   createTag,
+  norm,
 } from '../../utils/utils.js';
-import { norm } from '../../utils/market.js';
 
 let config;
 

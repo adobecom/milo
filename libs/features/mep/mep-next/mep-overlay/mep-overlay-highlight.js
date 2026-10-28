@@ -1,5 +1,4 @@
-import { getConfig } from '../../../../utils/utils.js';
-import { getMarketConfig } from '../../../../utils/market.js';
+import { getConfig, getMarketConfig } from '../../../../utils/utils.js';
 import { getFileName } from '../../../personalization/personalization.js';
 import { mepMasStudioUrls } from '../../../../blocks/merch/mas-mep-utils.js';
 import {

@@ -2,6 +2,7 @@ import {
   getEnv,
   getConfig,
   getMetadata,
+  getGnavSource,
   localizeLink,
   localizeLinkAsync,
   appendHtmlToLink,
@@ -12,6 +13,7 @@ import {
   loadIms,
   isAcomAssistantEnabled,
   isAupEnabled,
+  getValidatedMarket,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -213,14 +215,12 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
+  const gnavUrl = new URL(await getGnavSource(), window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
-    const base = config.miloLibs || config.codeRoot;
-    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
     return (await getValidatedMarket())?.toUpperCase();
   })().catch(() => undefined);
 
