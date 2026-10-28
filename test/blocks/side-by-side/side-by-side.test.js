@@ -132,6 +132,28 @@ describe('side-by-side (c2)', () => {
       expect(player.height > box.height * 0.6, 'player fills the media area').to.be.true;
       expect(Math.round(box.height), 'poster box keeps its size').to.equal(Math.round(card.getBoundingClientRect().height));
     });
+
+    it('stacks the playing player above the featured overlay copy', async () => {
+      await setViewport({ width: 1440, height: 900 });
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.side-by-side');
+      block.classList.add('featured');
+      init(block);
+      const card = block.querySelector('.card-overlay');
+      const before = card.getBoundingClientRect();
+      card.querySelector('.media').innerHTML = `
+        <div class="mpc-poster modal-img-link is-playing">
+          <picture><img src="/media/overlay.png" width="1600" height="900"></picture>
+          <div class="milo-video"><iframe class="adobetv"></iframe></div>
+        </div>`;
+      const player = card.querySelector('.milo-video').getBoundingClientRect();
+      const copy = card.querySelector('.foreground').getBoundingClientRect();
+      const after = card.getBoundingClientRect();
+
+      expect(Math.round(player.bottom) <= Math.round(copy.top), 'player ends above the copy').to.be.true;
+      expect(player.height > after.height * 0.5, 'player fills the space above the copy').to.be.true;
+      expect(Math.round(after.height), 'card keeps its size').to.equal(Math.round(before.height));
+    });
   });
 
   describe('no-op branches', () => {

@@ -14,6 +14,25 @@ describe('Carousel C2', () => {
     expect(block.getAttribute('aria-roledescription')).to.be.null;
   });
 
+  it('crops an MPC poster in a rich-content slide to the 16:9 player box', async () => {
+    await new Promise((resolve) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/libs/c2/blocks/carousel-c2/carousel-c2.css';
+      link.onload = resolve;
+      document.head.append(link);
+    });
+    document.body.innerHTML = `
+      <div class="carousel-c2"><div class="carousel-wrapper">
+        <div class="carousel-slide"><div class="rich-content" style="width: 640px">
+          <div class="mpc-poster"><picture><img width="1024" height="1024" style="display: block; width: 100%"></picture></div>
+        </div></div>
+      </div></div>`;
+    const { width, height } = document.querySelector('.mpc-poster img').getBoundingClientRect();
+
+    expect(Math.round(height)).to.equal(Math.round((width * 9) / 16));
+  });
+
   it('sets carousel roles and aria-label on the block', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.carousel-c2');

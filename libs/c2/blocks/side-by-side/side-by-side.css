@@ -247,6 +247,24 @@
       .card-overlay:not(.dark) {
         --card-overlay-gradient: transparent;
       }
+
+      /* Stacks the player above the bottom-aligned copy so its controls stay clear. */
+      .card-overlay:has(.mpc-poster.is-playing) {
+        flex-direction: column;
+        align-items: stretch;
+
+        .media {
+          position: relative;
+          inset: auto;
+          flex: 1 1 0;
+          min-height: 0;
+        }
+
+        .mpc-poster.is-playing {
+          position: absolute;
+          inset: 0;
+        }
+      }
     }
   }
 }
