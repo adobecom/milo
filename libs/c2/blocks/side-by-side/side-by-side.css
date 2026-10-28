@@ -278,4 +278,11 @@
   .side-by-side .card-overlay button.play-pause-button {
     inset-block-start: var(--s2a-spacing-md);
   }
+
+  /* Ends a gap above .content-aux (1:1.1) so the player's controls clear the overlay copy. */
+  .side-by-side .card-overlay .mpc-poster.is-playing .milo-video {
+    inset-block-end: auto;
+    height: 0;
+    padding-bottom: calc(110% - var(--s2a-spacing-lg));
+  }
 }

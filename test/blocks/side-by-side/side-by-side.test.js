@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import init from '../../../libs/c2/blocks/side-by-side/side-by-side.js';
 
@@ -90,6 +90,47 @@ describe('side-by-side (c2)', () => {
       const media = block.querySelector('.card-overlay .media');
       expect(media.querySelector('video')).to.exist;
       expect(block.querySelectorAll(':scope > .card').length).to.equal(2);
+    });
+  });
+
+  describe('MPC player in the overlay card', () => {
+    const loadCss = (href) => new Promise((resolve) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.onload = resolve;
+      document.head.append(link);
+    });
+
+    before(async () => {
+      await loadCss('/libs/c2/blocks/side-by-side/side-by-side.css');
+      await loadCss('/libs/blocks/adobetv/adobetv.css');
+    });
+
+    afterEach(() => {
+      document.body.style.removeProperty('--s2a-spacing-lg');
+      return setViewport({ width: 800, height: 600 });
+    });
+
+    it('keeps the playing player controls clear of the mobile overlay copy', async () => {
+      await setViewport({ width: 390, height: 844 });
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      document.body.style.setProperty('--s2a-spacing-lg', '24px');
+      const block = document.querySelector('.side-by-side');
+      init(block);
+      const card = block.querySelector('.card-overlay');
+      card.querySelector('.media').innerHTML = `
+        <div class="mpc-poster modal-img-link is-playing">
+          <picture><img src="/media/overlay.png" width="1024" height="1024"></picture>
+          <div class="milo-video"><iframe class="adobetv"></iframe></div>
+        </div>`;
+      const player = card.querySelector('.milo-video').getBoundingClientRect();
+      const copy = card.querySelector('.foreground').getBoundingClientRect();
+      const box = card.querySelector('.mpc-poster').getBoundingClientRect();
+
+      expect(Math.round(copy.top - player.bottom) > 0, 'gap between player and copy').to.be.true;
+      expect(player.height > box.height * 0.6, 'player fills the media area').to.be.true;
+      expect(Math.round(box.height), 'poster box keeps its size').to.equal(Math.round(card.getBoundingClientRect().height));
     });
   });
 
