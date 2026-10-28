@@ -46,7 +46,7 @@ function buildChicletRow(iconEl, heading) {
   return chicletRow;
 }
 
-export function buildMerchCard(col) {
+export function buildMerchCard(col, { pillCtas = false } = {}) {
   [...col.children]
     .filter((el) => !el.matches(MAS_BODY_FIELDS) && !el.querySelector(MAS_BODY_FIELDS))
     .forEach((el) => decorateButtons(el));

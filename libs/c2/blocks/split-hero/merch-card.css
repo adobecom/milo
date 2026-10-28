@@ -37,6 +37,24 @@
     }
   }
 
+  .pm-merch-ctas {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+    align-self: stretch;
+
+    > p,
+    > .action-area,
+    mas-field {
+      display: contents;
+    }
+
+    .con-button {
+      flex: 1 1 0;
+      justify-content: center;
+      max-inline-size: 158px;
+    }
+  }
+
   .pm-merch-content {
     align-items: flex-start;
     align-self: stretch;
@@ -114,17 +132,6 @@
     }
   }
 
-  .pm-merch-ctas {
-    display: flex;
-    gap: var(--s2a-spacing-xs);
-
-    > .con-button {
-      flex: 1 1 0;
-      justify-content: center;
-      max-inline-size: 158px;
-    }
-  }
-
   &.dark .pm-merch-card {
     border-block-start-color: var(--s2a-color-transparent-white-16);
   }
@@ -158,7 +165,7 @@
   &.cta-stack .pm-merch-ctas {
     flex-direction: column;
 
-    > .con-button {
+    .con-button {
       flex: none;
       inline-size: 100%;
       max-inline-size: none;
