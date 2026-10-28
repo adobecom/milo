@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-relative-packages
-import { createTag, getFederatedUrl } from '../../../../utils/utils.js';
+import { getFederatedUrl } from '../../../../utils/utils.js';
 
 export function escapeHtml(s) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -100,68 +100,15 @@ export function hangParagraphs(container) {
   [...container.children].forEach((p) => hangOpeningMark(p, room));
 }
 
-const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
+const QUOTE_TEXT = new WeakMap();
 
-// Group the words by the line box they landed on; under a pixel is baseline noise, not a wrap.
-function measureLines(quoteEl, words) {
-  const probes = words.map((w) => {
-    const s = document.createElement('span');
-    s.textContent = w;
-    return s;
-  });
-  const nodes = [];
-  probes.forEach((s, i) => {
-    if (i) nodes.push(document.createTextNode(' '));
-    nodes.push(s);
-  });
-  quoteEl.replaceChildren(...nodes);
-  const lines = [];
-  let top = null;
-  probes.forEach((s, i) => {
-    const y = s.offsetTop;
-    if (top === null || y - top > 1) {
-      lines.push([]);
-      top = y;
-    }
-    lines[lines.length - 1].push(words[i]);
-  });
-  return lines;
-}
-
-// Re-typeset the quote as one masked block per rendered line, and return those lines for the
-// caller to write progress vars to. Idempotent; plain text if there is nothing to split.
-export function layoutQuote(quoteEl) {
-  if (!quoteEl) return [];
+export function plainQuote(quoteEl) {
+  if (!quoteEl) return '';
   if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
   const text = QUOTE_TEXT.get(quoteEl).trim();
-  quoteEl.style.textIndent = '';
-  quoteEl.classList.remove('globe-gallery-pullquote-lines');
   quoteEl.textContent = text;
-  if (!text) return [];
   hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.globe-gallery-pullquote')));
-  const indent = quoteEl.style.textIndent;
-  const lines = measureLines(quoteEl, text.split(/\s+/));
-  const lineEls = lines.map((wordsOnLine, i) => {
-    const inner = createTag('span', { class: 'globe-gallery-pullquote-line-inner' });
-    inner.textContent = wordsOnLine.join(' ');
-    // A margin, not the text-indent it came from: that inherits into the inner and applies twice.
-    if (i === 0 && indent) inner.style.marginInlineStart = indent;
-    return createTag('span', { class: 'globe-gallery-pullquote-line', 'aria-hidden': 'true' }, inner);
-  });
-  const srEl = createTag('span', { class: 'sr-only globe-gallery-pullquote-sr' });
-  srEl.textContent = text;
-  quoteEl.style.textIndent = '';
-  quoteEl.classList.add('globe-gallery-pullquote-lines');
-  // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
-  // flex items generates no box, so the layout is untouched.
-  const nodes = [];
-  lineEls.forEach((line, i) => {
-    if (i) nodes.push(document.createTextNode(' '));
-    nodes.push(line);
-  });
-  nodes.push(srEl);
-  quoteEl.replaceChildren(...nodes);
-  return lineEls;
+  return text;
 }
 
 function parseArcCopy(row) {
