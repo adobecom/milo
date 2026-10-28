@@ -526,9 +526,8 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(icon).borderRadius).to.equal('50%');
         expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
         expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
-        const expandedWeight = width >= 1200 ? '800' : '600';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(mobile ? '700' : expandedWeight);
+          .to.equal(mobile ? '700' : '800');
         if (!mobile) {
           expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
             .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
