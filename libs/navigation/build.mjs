@@ -76,7 +76,6 @@ const deadWeightFilenames = [
   'georoutingv2.js',
   'mep-overlay.js',
   'mep-overlay-highlight.js',
-  'preview.js',
   'jsonld-graph-manager.js',
   'scroll-animations.js',
   'jarvis-chat.js',
