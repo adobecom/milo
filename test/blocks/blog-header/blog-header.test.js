@@ -1,7 +1,7 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
-import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { closeModal } from '../../../libs/blocks/modal/modal.js';
 import initSideNavigation from '../../../libs/blocks/blog-side-navigation/blog-side-navigation.js';
 import { waitFor } from '../../helpers/waitfor.js';
@@ -215,6 +215,71 @@ describe('blog-header decoration', () => {
     expect(window.sessionStorage.getItem('blog-reading-time')).to.equal('2');
   });
 
+  [
+    { metadata: 'eyebrow-start', selector: '.blog-header-eyebrow-start' },
+    { metadata: 'eyebrow-end', selector: '.blog-header-eyebrow-end' },
+    { metadata: 'publication-date', selector: '.blog-header-eyebrow-start' },
+  ].forEach(({ metadata, selector }) => {
+    it(`renders ${metadata} as text rather than HTML`, async () => {
+      fetchStub = mockFetch();
+      const value = '<img src=x onerror="void 0"> & Article';
+      setMetadata(metadata, value);
+      const { block } = buildBlock();
+      await init(block);
+      const text = block.querySelector(selector);
+      expect(text.textContent).to.equal(selector === '.blog-header-eyebrow-start' ? `Updated: ${value}` : value);
+      expect(text.children.length).to.equal(0);
+    });
+  });
+
+  it('prefixes the authored eyebrow start with Updated', async () => {
+    fetchStub = mockFetch();
+    setMetadata('eyebrow-start', 'October 28, 2026');
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+      .to.equal('Updated: October 28, 2026');
+  });
+
+  it('prefixes generated dates without changing the existing date format', async () => {
+    fetchStub = mockFetch();
+    setMetadata('publication-date', '2026-10-01');
+    setMetadata('updated-date', '2026-10-28');
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+      .to.equal('Updated: October 1, 2026 [October 28, 2026]');
+  });
+
+  it('does not render the Updated prefix without eyebrow start text or dates', async () => {
+    fetchStub = mockFetch();
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start')).not.to.exist;
+  });
+
+  it('renders share labels as text rather than HTML', async () => {
+    fetchStub = mockFetch();
+    const value = '<img src=x onerror="void 0"> & Share';
+    const buttonLabel = stub(getConfig().placeholders, 'blog-share').value(value);
+    const headingLabel = stub(getConfig().placeholders, 'blog-share-post').value(value);
+    try {
+      const { block } = buildBlock();
+      await init(block);
+      const button = block.querySelector('.blog-header-share');
+      expect(button.firstChild.textContent).to.equal(value);
+      expect(button.querySelector('img')).not.to.exist;
+      expect(button.querySelector('svg')).to.exist;
+      const dialog = await openShareModal(button);
+      const heading = dialog.querySelector('.blog-share-heading');
+      expect(heading.textContent).to.equal(value);
+      expect(heading.children.length).to.equal(0);
+    } finally {
+      buttonLabel.restore();
+      headingLabel.restore();
+    }
+  });
+
   it('automatically loads section navigation after article decoration without duplicating it', async () => {
     fetchStub = mockFetch();
     const { main, block } = buildBlock();
@@ -226,7 +291,7 @@ describe('blog-header decoration', () => {
     await waitFor(() => main.querySelector('.blog-side-navigation a'));
     const navigation = main.querySelector('.blog-side-navigation');
     expect([...navigation.querySelectorAll('a')].map((link) => link.getAttribute('href')))
-      .to.deep.equal(['#section-1', '#section-2']);
+      .to.deep.equal(['#first-section', '#second-section']);
     expect(navigation.querySelector('nav').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     expect(main.querySelectorAll('.blog-side-navigation').length).to.equal(1);
@@ -1498,6 +1563,7 @@ describe('blog-header reading progress', () => {
 });
 
 describe('blog-header share modal', () => {
+  const originalUrl = window.location.href;
   let fetchStub;
   let clipboardStub;
   let writeText;
@@ -1511,6 +1577,7 @@ describe('blog-header share modal', () => {
 
   afterEach(async () => {
     await cleanup();
+    window.history.replaceState(null, '', originalUrl);
     clock?.restore();
     clock = null;
     clipboardStub.restore();
@@ -1525,6 +1592,72 @@ describe('blog-header share modal', () => {
     document.head.append(link);
     expect(getShareUrl()).to.equal('https://business.adobe.com/blog/post');
     expect(getShareData().url).to.equal('https://business.adobe.com/blog/post');
+  });
+
+  [
+    'https://business.adobe.com/blog/post?ref=article&lang=en#details',
+    'http://example.test/blog/post?ref=article#details',
+    '/blog/post?ref=article#details',
+    './post?ref=article#details',
+  ].forEach((canonical) => {
+    it(`preserves the valid canonical share URL ${canonical}`, () => {
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.setAttribute('href', canonical);
+      link.className = 'blog-header-test-metadata';
+      document.head.append(link);
+      expect(getShareUrl()).to.equal(new URL(canonical, document.baseURI).href);
+      expect(window.lana.log.called).to.equal(false);
+    });
+  });
+
+  // eslint-disable-next-line no-script-url -- Verify rejection of executable URL schemes.
+  ['javascript:void(0)', 'data:text/html,example', 'https://[invalid'].forEach((canonical) => {
+    it(`logs and rejects the invalid canonical share URL ${canonical}`, () => {
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.setAttribute('href', canonical);
+      link.className = 'blog-header-test-metadata';
+      document.head.append(link);
+      expect(getShareUrl()).to.equal(originalUrl);
+      expect(window.lana.log.calledOnce).to.equal(true);
+      expect(window.lana.log.firstCall.args[0]).to.contain('canonical share URL');
+    });
+  });
+
+  it('keeps location-derived share URLs out of HTML parsing', async () => {
+    const marker = 'blog-share-location-probe';
+    const payload = `"><img src=x data-probe="${marker}" onerror="void 0">`;
+    const url = new URL(originalUrl);
+    url.searchParams.set('article', payload);
+    const previewParams = ['milolibs', 'martech', 'mep', 'georouting'];
+    previewParams.forEach((param) => url.searchParams.set(param, 'preview'));
+    url.hash = payload;
+    window.history.replaceState(null, '', url.href);
+    previewParams.forEach((param) => url.searchParams.delete(param));
+    url.hash = '';
+    const shareUrl = url.href;
+    const { insertAdjacentHTML } = Element.prototype;
+    const htmlStub = stub(Element.prototype, 'insertAdjacentHTML').callsFake(function insert(position, html) {
+      return insertAdjacentHTML.call(this, position, html);
+    });
+    try {
+      const dialog = await openShareModal();
+      expect(getShareUrl()).to.equal(shareUrl);
+      expect(htmlStub.getCalls().some((call) => call.args[1].includes(marker))).to.equal(false);
+      expect(dialog.querySelector('[data-probe]')).not.to.exist;
+      const x = dialog.querySelector('a[aria-label="Share on X"]');
+      expect(new URL(x.href).searchParams.get('url')).to.equal(shareUrl);
+      const linkedin = dialog.querySelector('a[aria-label="Share on LinkedIn"]');
+      expect(new URL(linkedin.href).searchParams.get('url')).to.equal(shareUrl);
+      const email = dialog.querySelector('a[aria-label="Share via email"]');
+      expect(new URL(email.href).searchParams.get('body')).to.equal(shareUrl);
+      dialog.querySelector('.blog-share-copy').click();
+      await waitFor(() => writeText.calledOnce);
+      expect(writeText.firstCall.args[0]).to.equal(shareUrl);
+    } finally {
+      htmlStub.restore();
+    }
   });
 
   [

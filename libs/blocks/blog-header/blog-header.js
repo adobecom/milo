@@ -272,17 +272,39 @@ async function buildEyebrow(config, readingTime) {
     endText = (await replaceKey(key, config)).replace(/[15]/g, readingTime);
   }
 
-  if (startText) eyebrow.append(createTag('span', { class: 'blog-header-eyebrow-start' }, startText));
-  if (endText) eyebrow.append(createTag('span', { class: 'blog-header-eyebrow-end' }, endText));
+  if (startText) {
+    const start = createTag('span', { class: 'blog-header-eyebrow-start' });
+    start.textContent = `Updated: ${startText}`;
+    eyebrow.append(start);
+  }
+  if (endText) {
+    const end = createTag('span', { class: 'blog-header-eyebrow-end' });
+    end.textContent = endText;
+    eyebrow.append(end);
+  }
   return eyebrow;
 }
 
 /* Social share modal */
 
+function parseShareUrl(value, base) {
+  try {
+    const url = new URL(value, base);
+    return ['https:', 'http:'].includes(url.protocol) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getShareUrl() {
-  const canonical = document.querySelector('link[rel="canonical"]')?.href;
-  if (canonical) return canonical;
-  const url = new URL(window.location.href);
+  const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href');
+  if (canonical?.trim()) {
+    const url = parseShareUrl(canonical, document.baseURI);
+    if (url) return url.href;
+    logError('Rejected invalid or non-HTTP(S) canonical share URL');
+  }
+  const url = parseShareUrl(window.location.href);
+  if (!url) throw new Error('Cannot share a non-HTTP(S) page URL');
   PREVIEW_PARAMS.forEach((param) => url.searchParams.delete(param));
   url.hash = '';
   return url.href;
@@ -343,10 +365,11 @@ function buildActionLink(platform, svg, label, data) {
   const { href, popup } = SHARE_PLATFORMS[platform];
   const link = createTag('a', {
     class: 'blog-share-action',
-    'aria-label': label,
-    href: href(encodeURIComponent(data.url), encodeURIComponent(data.title)),
     ...(popup ? { rel: 'noopener noreferrer' } : {}),
-  }, svg);
+  });
+  link.setAttribute('aria-label', label);
+  link.setAttribute('href', href(encodeURIComponent(data.url), encodeURIComponent(data.title)));
+  link.append(svg);
   if (popup) {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -430,7 +453,9 @@ async function createShareModal(trigger) {
   const data = getShareData();
 
   const content = createTag('div', { class: 'blog-share' });
-  content.append(createTag('h2', { class: 'blog-share-heading' }, labels.heading));
+  const heading = createTag('h2', { class: 'blog-share-heading' });
+  heading.textContent = labels.heading;
+  content.append(heading);
   content.append(buildShareCard(data));
   content.append(await buildShareActions(getPlatforms(), data, base, labels));
 
@@ -469,7 +494,8 @@ async function buildShareButton(config, base) {
     class: 'blog-header-share',
     'aria-haspopup': 'dialog',
     'data-modal-hash': `#${SHARE_MODAL_ID}`,
-  }, label);
+  });
+  button.textContent = label;
   const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, ['share']);
   const svg = svgs?.[0]?.svg;
   if (svg) button.append(hideIcon(svg));
