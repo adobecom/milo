@@ -1936,6 +1936,15 @@ export function isLocalNav() {
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
 }
 
+export function isC2GnavOnC1Host() {
+  return getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+}
+
+function syncC2GnavHost(header) {
+  const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
+  header.classList.toggle('c2-gnav-c1-host', isHost);
+}
+
 async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
@@ -1948,6 +1957,8 @@ async function decorateHeader() {
     return;
   }
   header.className = headerMeta || 'global-navigation';
+  // Tag before the nav renders so styles.css reserves its final height up front (CLS).
+  syncC2GnavHost(header);
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
     || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -2668,6 +2679,8 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
+    // Post-LCP personalization may have changed the gnav metadata since decorateHeader.
+    syncC2GnavHost(header);
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
 
