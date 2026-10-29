@@ -256,11 +256,16 @@
       }
     }
   }
+}
 
-  & + .modal-curtain.is-open {
-    background: var(--s2a-color-transparent-black-64);
-    backdrop-filter: blur(var(--s2a-blur-32));
-  }
+.tour-curtain {
+  --tour-curtain-bg: var(--s2a-color-transparent-black-64);
+  --tour-curtain-blur: blur(var(--s2a-blur-32));
+}
+
+.modal-curtain.tour-curtain.is-open {
+  background: var(--tour-curtain-bg);
+  backdrop-filter: var(--tour-curtain-blur);
 }
 
 [dir='rtl'] {
@@ -316,7 +321,9 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .dialog-modal:has(.tour) {
-    animation: tour-slide-in 0.35s ease;
+    --tour-travel: 20vh;
+
+    animation: tour-slide-in 0.3s ease-out;
 
     &.is-snapping,
     &.is-dismissing {
@@ -324,25 +331,57 @@
     }
 
     &.is-closing {
-      animation: tour-slide-out 0.3s ease forwards;
+      animation: tour-slide-out 0.2s ease-in forwards;
+    }
+  }
+
+  .modal-curtain.tour-curtain.is-open {
+    animation: tour-curtain-in 0.3s ease-out;
+  }
+
+  .tour-curtain.is-closing {
+    position: fixed;
+    inset: 0;
+    z-index: var(--modal-z-index-curtain);
+    pointer-events: none;
+    background: var(--tour-curtain-bg);
+    backdrop-filter: var(--tour-curtain-blur);
+    animation: tour-curtain-out 0.2s ease-in forwards;
+  }
+
+  @keyframes tour-curtain-in {
+    from {
+      background: transparent;
+      backdrop-filter: blur(0);
+    }
+  }
+
+  @keyframes tour-curtain-out {
+    to {
+      background: transparent;
+      backdrop-filter: blur(0);
     }
   }
 
   @keyframes tour-slide-in {
     from {
-      transform: translateY(100%);
+      opacity: 0;
+      transform: translateY(var(--tour-travel));
     }
     to {
+      opacity: 1;
       transform: translateY(0);
     }
   }
 
   @keyframes tour-slide-out {
     from {
+      opacity: 1;
       transform: translateY(0);
     }
     to {
-      transform: translateY(100%);
+      opacity: 0;
+      transform: translateY(var(--tour-travel));
     }
   }
 }

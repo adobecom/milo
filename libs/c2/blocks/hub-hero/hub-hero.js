@@ -1,7 +1,6 @@
 import { decorateBlockText, normalizeMasFieldText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { sendAnalytics } from '../../../martech/helpers.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
+import { sendAnalytics, processTrackingLabels } from '../../../martech/helpers.js';
 import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 import icons from '../../assets/icons.js';
 
@@ -148,8 +147,49 @@ const initTouchCarouselLock = (hubHero, carousel, signal) => {
 const initCarouselPosition = (hubHero) => {
   const header = document.querySelector('header');
   const carouselHeader = hubHero.querySelector('.hub-hero-carousel-header > div');
+  const carouselHeading = carouselHeader?.parentElement;
+  const card = hubHero.querySelector('.hub-hero-carousel-item[data-index="1"]');
   if (!header && !carouselHeader) return;
   const headings = [...(carouselHeader?.children ?? [])];
+  const followProp = '--hub-hero-carousel-header-follow';
+  const exitProp = '--hub-hero-carousel-header-exit-start';
+  const mobileQuery = window.matchMedia('(width < 768px)');
+  const controller = new AbortController();
+  let frame = 0;
+
+  const setProp = (prop, px) => {
+    const value = `${Math.max(px, 0)}px`;
+    if (Number.isFinite(px) && hubHero.style.getPropertyValue(prop) !== value) {
+      hubHero.style.setProperty(prop, value);
+    }
+  };
+
+  // Mobile: sticks the heading in sync with the first card and exits it with the card.
+  const syncFollow = () => {
+    frame = 0;
+    const headingStyle = getComputedStyle(carouselHeading);
+    const cardStyle = getComputedStyle(card);
+    if (!mobileQuery.matches || headingStyle.position !== 'sticky' || cardStyle.position !== 'sticky') {
+      hubHero.style.removeProperty(followProp);
+      hubHero.style.removeProperty(exitProp);
+      return;
+    }
+    const container = card.parentElement;
+    const cardTop = parseFloat(cardStyle.top);
+    const headingTop = parseFloat(headingStyle.top)
+      - (parseFloat(hubHero.style.getPropertyValue(followProp)) || 0);
+    const cardOffset = parseFloat(getComputedStyle(container).marginTop)
+      + parseFloat(cardStyle.marginTop);
+    setProp(followProp, cardTop - cardOffset - headingTop);
+    setProp(exitProp, container.getBoundingClientRect().bottom
+      - carouselHeading.parentElement.getBoundingClientRect().bottom
+      + document.documentElement.clientHeight - cardTop - card.offsetHeight);
+  };
+  const scheduleFollow = () => {
+    if (!carouselHeader || !card || frame || controller.signal.aborted) return;
+    if (!mobileQuery.matches && !hubHero.style.getPropertyValue(followProp)) return;
+    frame = requestAnimationFrame(syncFollow);
+  };
 
   const syncHeights = () => {
     if (header) hubHero.style.setProperty('--hub-hero-nav-h', `${getGnavHeight()}px`);
@@ -161,13 +201,20 @@ const initCarouselPosition = (hubHero) => {
     hubHero.style.setProperty('--hub-hero-carousel-header-height', `${height}px`);
   };
   syncHeights();
+  scheduleFollow();
 
-  const resizeObserver = new ResizeObserver(syncHeights);
-  if (header) resizeObserver.observe(header);
-  headings.forEach((heading) => resizeObserver.observe(heading));
+  const resizeObserver = new ResizeObserver((entries) => {
+    if (entries.some(({ target }) => target !== card)) syncHeights();
+    scheduleFollow();
+  });
+  [header, ...headings, card].filter(Boolean).forEach((el) => resizeObserver.observe(el));
+  window.addEventListener('resize', scheduleFollow, { signal: controller.signal });
+  mobileQuery.addEventListener('change', scheduleFollow, { signal: controller.signal });
 
   new MutationObserver((_, observer) => {
     if (!document.contains(hubHero)) {
+      controller.abort();
+      if (frame) cancelAnimationFrame(frame);
       resizeObserver.disconnect();
       observer.disconnect();
     }
@@ -244,10 +291,14 @@ const initCarouselContainerExpand = (hubHero) => {
   const mobileQuery = window.matchMedia('(width < 768px)');
   const controller = new AbortController();
   let ticking = false;
+  let progress;
   const update = () => {
     ticking = false;
     if (!mobileQuery.matches) return;
-    container.style.setProperty('--expand-progress', getHubHeroProgress(hubHero));
+    const next = getHubHeroProgress(hubHero);
+    if (next === progress) return;
+    progress = next;
+    container.style.setProperty('--expand-progress', progress);
   };
   window.addEventListener('scroll', () => {
     if (ticking) return;
@@ -284,8 +335,7 @@ const removeHovered = (carousel) => {
 const clearCarouselAnchoring = (container) => container.classList.remove('stick-left', 'stick-right');
 
 const updateCarouselAnchoring = ({ container, maxIndex }) => {
-  const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused')
-    || container.querySelector('.hub-hero-carousel-item:focus-visible');
+  const slideEl = container.querySelector('.hub-hero-carousel-item.hovered, .hub-hero-carousel-item.focused');
   if (!slideEl) {
     clearCarouselAnchoring(container);
     return;
@@ -315,10 +365,27 @@ const isInCarouselEdgeGap = (container, event) => {
   return inLeftGap || inRightGap;
 };
 
-const clearCarouselState = ({ container, carousel }) => {
+const isModalOpen = () => !!document.querySelector('.modal-curtain');
+
+const clearCarouselState = (context) => {
+  const { container, carousel } = context;
+  if (isModalOpen()) return;
   clearTimeout(leaveTimeouts.get(container));
-  clearCarouselAnchoring(container);
-  removeHovered(carousel);
+  carousel.querySelectorAll('.hovered, .focused:not(:focus-visible)')
+    .forEach((sld) => sld.classList.remove('hovered', 'focused'));
+  carousel.querySelector('.hub-hero-carousel-item:focus-visible')?.classList.add('focused');
+  updateCarouselAnchoring(context);
+};
+
+const onCarouselFocusOut = ({ relatedTarget }, context) => {
+  const { carousel } = context;
+  if (carousel.contains(relatedTarget) || isModalOpen()) return;
+  if (!relatedTarget && !document.hasFocus()) return;
+  const slideEl = carousel.querySelector('.hub-hero-carousel-item.focused');
+  if (!slideEl || (slideEl.hash && slideEl.hash === window.location.hash)) return;
+  slideEl.classList.remove('focused');
+  onSlideLeave({ target: slideEl });
+  updateCarouselAnchoring(context);
 };
 
 const onCarouselLeave = (event, context) => {
@@ -357,7 +424,8 @@ const onHover = (event, context) => {
   if (!isFocus && slideEl.classList.contains('hovered')
     && !slideLeaveTimeouts.has(video) && !rewindIntervals.has(video)) return;
 
-  if (isFocus && slideEl.matches(':focus-visible')) {
+  if (isFocus) {
+    if (!slideEl.matches(':focus-visible')) return;
     const progress = window.matchMedia('(width >= 768px)').matches ? 0.55 : 0.6;
     scrollHubHeroTo(slideEl, progress);
   }
@@ -438,6 +506,7 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
+    ...(isModal && { 'aria-haspopup': 'dialog' }),
     'aria-setsize': slidesTotal,
     'aria-posinset': index + 1,
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
@@ -515,13 +584,14 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   carouselContainer.addEventListener('mouseleave', leave);
   decoratedCarousel.addEventListener('mouseleave', leave);
   decoratedCarousel.addEventListener('mousemove', hover);
+  decoratedCarousel.addEventListener('focusout', (event) => onCarouselFocusOut(event, context));
   carouselContainer.querySelectorAll('[data-index]').forEach((slide) => slide.addEventListener('focus', hover));
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const scrollController = new AbortController();
   let anchoringFrame = 0;
   const scheduleAnchoring = () => {
     if (anchoringFrame || scrollController.signal.aborted) return;
-    if (!carouselContainer.querySelector('.hovered, .focused, :focus-visible')) return;
+    if (!carouselContainer.querySelector('.hovered, .focused')) return;
     anchoringFrame = requestAnimationFrame(() => {
       anchoringFrame = 0;
       updateCarouselAnchoring(context);
@@ -532,9 +602,15 @@ const handleCarousel = (hubHero, slds, isThreeSlides) => {
   // The viewport can cross the overflow threshold without changing the row's width.
   window.addEventListener('resize', scheduleAnchoring, { signal: scrollController.signal });
   window.addEventListener('wheel', () => clearCarouselState(context), { signal: scrollController.signal });
+  let modalClosed = false;
+  window.addEventListener('milo:modal:closed', () => { modalClosed = true; }, { signal: scrollController.signal });
   initTouchCarouselLock(hubHero, decoratedCarousel, scrollController.signal);
 
   new MutationObserver((_, observer) => {
+    if (modalClosed && !isModalOpen()) {
+      modalClosed = false;
+      if (!carouselContainer.querySelector('.hub-hero-carousel-item:hover')) clearCarouselState(context);
+    }
     if (!document.contains(decoratedCarousel)) {
       scrollController.abort();
       if (anchoringFrame) cancelAnimationFrame(anchoringFrame);
@@ -550,7 +626,8 @@ const setCarouselSlideOffsets = (grid, carousel) => {
   const hubHero = carousel.closest('.hub-hero');
   if (!hubHero) return;
   const cols = [...grid.querySelectorAll('.hub-hero-image-grid-container-col')];
-  const gridHeight = grid.offsetHeight;
+  // The pinned header adds padding-top to the grid; exclude it so pin state doesn't skew results.
+  const gridHeight = grid.offsetHeight - (parseFloat(getComputedStyle(grid).paddingTop) || 0);
   // slide nth-child (1-based) → 0-based column index
   const colMap = { 1: 0, 2: 1, 4: 3, 5: 4 };
   Object.entries(colMap).forEach(([nthChild, colIdx]) => {

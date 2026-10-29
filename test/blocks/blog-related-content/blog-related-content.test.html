@@ -1,0 +1,150 @@
+<html>
+  <head>
+    <script type="importmap">
+      {
+        "imports": {
+          "../../../libs/blocks/caas/caas.js": "./mocks/caas.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <script type="module">
+      import { runTests } from '@web/test-runner-mocha';
+      import { expect } from '@esm-bundle/chai';
+      import { stub } from 'sinon';
+      import { decorateLinksAsync, setConfig } from '../../../libs/utils/utils.js';
+      import { loadCaas } from './mocks/caas.js';
+      import init from '../../../libs/blocks/blog-related-content/blog-related-content.js';
+      import initNavigation from '../../../libs/blocks/blog-side-navigation/blog-side-navigation.js';
+      import { waitFor } from '../../helpers/waitfor.js';
+
+      setConfig({
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        miloLibs: '/libs',
+        codeRoot: '/libs',
+        placeholders: {
+          'jump-to-section': 'JUMP TO SECTION',
+          'related-content': 'Related Content',
+        },
+      });
+
+      function buildArticle({ headings = true, title = '' } = {}) {
+        const main = document.createElement('main');
+        main.innerHTML = '<div class="section"><div class="blog-header"><h1>Article</h1></div>'
+          + '<div class="blog-side-navigation"></div></div>'
+          + `<div class="section"><div class="content">${headings ? '<h2>First section</h2>' : '<p>Article</p>'}</div></div>`
+          + '<div class="section"><div class="blog-related-content">'
+          + `${title ? `<div><div>Heading</div><div>${title}</div></div>` : ''}`
+          + '<div><div>collection</div><div><a href="https://milo.adobe.com/tools/caas#encoded">'
+          + 'Collection (no-lazy)</a></div></div></div></div>';
+        document.body.append(main);
+        return {
+          main,
+          block: main.querySelector('.blog-related-content'),
+          navigation: main.querySelector('.blog-side-navigation'),
+        };
+      }
+
+      runTests(() => {
+        describe('blog-related-content', () => {
+          let log;
+          let previousLana;
+
+          beforeEach(() => {
+            loadCaas.reset();
+            loadCaas.resolves();
+            previousLana = window.lana;
+            log = stub();
+            window.lana = { log };
+          });
+
+          afterEach(() => {
+            document.querySelector('main')?.remove();
+            window.lana = previousLana;
+          });
+
+          it('does not load a collection without an initialized side navigation', async () => {
+            const { block } = buildArticle();
+            await init(block);
+            expect(block.hidden).to.equal(true);
+            expect(loadCaas.called).to.equal(false);
+          });
+
+          it('uses the authored #_dnb marker to defer automatic loading until the sidebar mounts', async () => {
+            const { main, block, navigation } = buildArticle();
+            const link = block.querySelector('a');
+            const collectionUrl = link.href;
+            link.href = `${collectionUrl}#_dnb`;
+            const autoBlocks = await decorateLinksAsync(main);
+            expect(autoBlocks).to.deep.equal([]);
+            expect(link.classList.contains('link-block')).to.equal(false);
+            expect(link.href).to.equal(collectionUrl);
+            expect(loadCaas.called).to.equal(false);
+            await init(block);
+            expect(block.hidden).to.equal(true);
+            expect(loadCaas.called).to.equal(false);
+            await initNavigation(navigation);
+            await waitFor(() => !block.hidden);
+            expect(loadCaas.calledOnce).to.equal(true);
+            expect(loadCaas.firstCall.args[0]).to.equal(link);
+            expect(loadCaas.firstCall.args[0].href).to.equal(collectionUrl);
+            expect(loadCaas.firstCall.args.length).to.equal(1);
+          });
+
+          it('mounts below jump links and loads the authored collection without overrides', async () => {
+            const { block, navigation } = buildArticle();
+            await init(block);
+            await initNavigation(navigation);
+            await waitFor(() => !block.hidden);
+            expect(block.parentElement).to.equal(navigation);
+            expect(block.previousElementSibling.tagName).to.equal('NAV');
+            expect(block.querySelector('h3').textContent).to.equal('Related Content');
+            expect(loadCaas.calledOnce).to.equal(true);
+            expect(loadCaas.firstCall.args[0].href).to.equal('https://milo.adobe.com/tools/caas#encoded');
+            expect(loadCaas.firstCall.args.length).to.equal(1);
+            await initNavigation(navigation);
+            expect(block.parentElement).to.equal(navigation);
+            expect(block.hidden).to.equal(false);
+            expect(loadCaas.calledOnce).to.equal(true);
+          });
+
+          it('preserves an authored heading', async () => {
+            const { block, navigation } = buildArticle({ title: 'Recommended reading' });
+            navigation.append(block);
+            await init(block);
+            expect(block.querySelector('h3').textContent).to.equal('Recommended reading');
+          });
+
+          it('does not load related content when there are no eligible article headings', async () => {
+            const { block, navigation } = buildArticle({ headings: false });
+            await init(block);
+            await initNavigation(navigation);
+            expect(navigation.hidden).to.equal(true);
+            expect(block.hidden).to.equal(true);
+            expect(loadCaas.called).to.equal(false);
+          });
+
+          it('reports missing configuration without displaying an empty section', async () => {
+            const { block, navigation } = buildArticle();
+            block.querySelector('a').remove();
+            navigation.append(block);
+            await init(block);
+            expect(block.hidden).to.equal(true);
+            expect(log.calledOnce).to.equal(true);
+            expect(loadCaas.called).to.equal(false);
+          });
+
+          it('reports loading failures instead of showing a successful empty collection', async () => {
+            const { block, navigation } = buildArticle();
+            navigation.append(block);
+            loadCaas.rejects(new Error('Collection unavailable'));
+            await init(block);
+            expect(block.hidden).to.equal(true);
+            expect(log.firstCall.args[0]).to.contain('Collection unavailable');
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

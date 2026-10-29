@@ -3,7 +3,7 @@ import { readFile, setViewport, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForRemoval } from '../../helpers/waitfor.js';
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { setConfig, createTag, notifyTargetReady, resetTargetReady } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -55,6 +55,26 @@ describe('Modal (c2)', () => {
       const details = await findDetails('#foo', null);
       expect(details.path).to.equal('/path/foo');
       expect(details.title).to.equal('Modal: Foo label');
+    });
+
+    it('ignores a hash containing markup', async () => {
+      const payload = '<img src=x onerror=window.__modalXss=true>';
+      const meta = document.createElement('meta');
+      meta.name = `-${payload}`;
+      meta.content = '/path/evil';
+      document.head.append(meta);
+      const details = await findDetails(`#${payload}`, null);
+      expect(details.id).to.equal('');
+      expect(details.path).to.be.undefined;
+      meta.remove();
+    });
+  });
+
+  describe('untrusted modal paths', () => {
+    it('does not open a modal for script-scheme or foreign-origin paths', async () => {
+      expect(await getModal({ id: 'a', path: ['java', 'script:alert(1)'].join('') })).to.be.null;
+      expect(await getModal({ id: 'b', path: 'https://example.com/modal' })).to.be.null;
+      expect(document.querySelector('.dialog-modal')).to.be.null;
     });
   });
 
@@ -148,13 +168,58 @@ describe('Modal (c2)', () => {
       expect(closeCallback.calledOnce).to.be.true;
       expect(document.querySelector('.modal-curtain')).to.be.null;
     });
+
+    it('returns focus to the trigger on close without scrolling the page', async () => {
+      const trigger = createTag('a', { href: '#', 'data-modal-id': 'c2-trigger' }, 'Open');
+      document.body.append(trigger);
+      trigger.focus();
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, { id: 'c2-trigger', content, title: 'Modal: Trigger' });
+
+      const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+      modal.querySelector('button.dialog-close').click();
+      await waitForRemoval('#c2-trigger');
+
+      const triggerFocusCall = focusSpy.getCalls().find((call) => call.thisValue === trigger);
+      expect(triggerFocusCall).to.exist;
+      expect(triggerFocusCall.args[0]).to.include({ preventScroll: true });
+      expect(document.activeElement).to.equal(trigger);
+      expect(trigger.hasAttribute('data-is-modal-trigger')).to.be.false;
+      trigger.remove();
+    });
   });
 
   describe('init', () => {
     it('returns null when the page hash does not match the modal hash', async () => {
+      notifyTargetReady();
       const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
       const result = await init(anchor);
       expect(result).to.be.null;
+    });
+
+    it('waits for target before opening a deep-linked modal', async () => {
+      resetTargetReady();
+      const prevHash = window.location.hash;
+      window.location.hash = '#wait-open';
+      const existing = createTag('div', { id: 'wait-open', class: 'dialog-modal' });
+      document.body.append(existing);
+      const anchor = createTag('a', { 'data-modal-hash': '#wait-open', 'data-modal-path': '/path/x' });
+      let settled = false;
+      const pending = init(anchor).then(() => { settled = true; });
+      await new Promise((resolve) => { setTimeout(resolve, 20); });
+      expect(settled).to.be.false;
+      notifyTargetReady();
+      await pending;
+      expect(settled).to.be.true;
+      existing.remove();
+      window.location.hash = prevHash;
+    });
+
+    it('does not wait for target when the page hash does not match', async () => {
+      resetTargetReady();
+      const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
+      expect(await init(anchor)).to.be.null;
+      notifyTargetReady();
     });
   });
 });

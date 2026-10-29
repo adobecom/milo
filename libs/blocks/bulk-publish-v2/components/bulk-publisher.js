@@ -321,7 +321,7 @@ class BulkPublish2 extends LitElement {
       this.processing = false;
       sticky().set('resume', []);
       const progressCount = this.renderRoot.querySelector('#progress');
-      if (progressCount) progressCount.innerHTML = 0;
+      if (progressCount) progressCount.textContent = '0';
     }
   }
 
@@ -330,7 +330,7 @@ class BulkPublish2 extends LitElement {
     const jobProcess = this.jobs.find(({ result }) => result.job.name === name);
     if (jobProcess) jobProcess.progress = progress;
     const progressCount = this.renderRoot.querySelector('#progress');
-    if (progressCount) progressCount.innerHTML = getProcessedCount(this.jobs);
+    if (progressCount) progressCount.textContent = String(getProcessedCount(this.jobs));
   }
 
   clearJobs = () => {
