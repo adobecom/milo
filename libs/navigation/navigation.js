@@ -1,5 +1,8 @@
 import { loadStyle, loadLink } from '../utils/utils.js';
 
+// Replaced with true by build.mjs; native ES modules load stylesheet links instead.
+const isBundled = import.meta.standaloneNavBundle === true;
+
 const blockConfig = [
   {
     key: 'header',
@@ -142,11 +145,8 @@ export default async function loadBlock(configs, customLib) {
     miloLibs = 'http://localhost:6456';
   }
   const isC2Gnav = header?.foundation === 'c2';
-  // The below css imports will fail when using the non-bundled standalone gnav
-  // and fallback to using loadStyle. On the other hand, the bundler will rewrite
-  // the css imports to attach the styles to the head (and point to the dist folder
-  // using the custom StyleLoader plugin found in build.mjs
-  try {
+  // StyleLoader rewrites these imports to inline styles only in the bundle.
+  if (isBundled) {
     await import('./base.css');
     if (theme === 'dark') {
       await import('./dark-nav.css');
@@ -156,7 +156,7 @@ export default async function loadBlock(configs, customLib) {
     } else {
       await import('./navigation.css');
     }
-  } catch (e) {
+  } else {
     if (theme === 'dark') {
       loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dark-nav.css`));
     } else {
@@ -321,10 +321,14 @@ export default async function loadBlock(configs, customLib) {
           };
 
           setMetaTags(metaTags, footerConfigs, createTag);
-          if (isC2Footer) {
-            import('./footer-c2.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer-c2.css`));
+          if (isBundled) {
+            if (isC2Footer) {
+              await import('./footer-c2.css');
+            } else {
+              await import('./footer.css');
+            }
           } else {
-            import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
+            loadStyle(`${miloLibs}/libs/navigation/${isC2Footer ? 'footer-c2.css' : 'footer.css'}`);
           }
           let init;
           if (isC2Footer) {

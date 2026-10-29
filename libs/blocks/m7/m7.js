@@ -1,4 +1,4 @@
-import { getConfig, getMetadata } from '../../utils/utils.js';
+import { getConfig, getMetadata, getValidatedMarket } from '../../utils/utils.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../merch/merch.js';
 
 async function getImsCountry() {
@@ -16,7 +16,6 @@ export async function generateM7Link(href) {
 
   let marketCountry;
   if (isMasGeoDetectionEnabled()) {
-    const { getValidatedMarket } = await import('../../utils/market.js');
     const validatedMarket = await getValidatedMarket();
     if (validatedMarket) marketCountry = validatedMarket.toUpperCase();
   }

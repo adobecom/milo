@@ -15,19 +15,19 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Area | globe-gallery | firefly-globe |
 |---|---|---|
 | Entry | Arc → grid → fold cascade on scroll (`timeline.js`, `math.js`, ortho camera) | Sphere already formed; camera eases in (`entryT³`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
-| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same curve, `camZAtTravelT(scrollT)` from `src/utils.js`, from the pin. |
-| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/utils.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / blockHeight` is gg's `zoomT`, 0 at the pin and 1 when the block has scrolled away. |
+| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/utils.js`, from the pin; its own ease power (see Camera ease). |
+| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/utils.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, 0 at the pin and 1 at the end of the travel (`--fg-travel-vh`; the block height with the quote particles off). |
 | Arc copy pill | Authoring row 1 | None |
 | "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `scrollT` (see below). |
-| Custom cursor | Disc + chevron ring + label; native cursor hidden | Label pill only, beside the native cursor (`grab`/`grabbing`/`pointer`). |
 | Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.firefly-globe-world`, so it travels with the block: at `entryT` 0 the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
 | Cards | Authored fragment: name, role, description, badges | Firefly Community API by `categoryId` (see `FIREFLY-API.md`). Card = image, `modelId`, `modelVersionName`, `prompt`, `fireflyUrl`. |
 | Modal info | `<h2>` name, role, description paragraphs, badge list | Model icon + version label, prompt, CTA to `fireflyUrl`. |
-| Scroll budget | `--gg-runway-height` + `--gg-formation-vh`, per breakpoint | `--fg-runway-height` only, per breakpoint. The entry happens in the viewport before the block top, so the whole runway is travel. |
+| Scroll budget | `--gg-formation-vh` + `--gg-zoom-vh`, per breakpoint | `--fg-travel-vh` only, per breakpoint (no formation: the entry happens in the viewport before the block top). With the quote particles off, `--fg-runway-height` is the block height and the travel span. |
 | CSS custom properties | `--gg-*` | `--fg-*` (block-scoped; nothing outside the block reads them). |
 | Tuning | — | `SPHERE_R`, `CAM_Z_SPHERE` and `CAM_Z_END` are tuned per breakpoint for the scroll budget below; `CAM_Z_ENTRY` is the only extra breakpoint field. |
-| Opening quote | Measured in canvas, hung with a negative `text-indent` | Wrapped in C2's `span.hang-opening-quote` (`styles.css`: absolute, `translateX(-100%)`), so the mark takes no inline space and is not kerned against the first letter; the letter's advance box sits on the column. Marks: `Ps`, `Pi`, `Pf`, ASCII `"` `'`. A mark ≥ 0.8em or wider than the gutter (`--fg-copy-pad`) stays inline: each quote line is an `overflow: hidden` mask with `--fg-hang-max` (0.8em) of side bleed, so a wider mark would be clipped; a CJK `「` needs both raised. |
+| Opening quote | Measured in canvas, hung with a negative `text-indent` | Wrapped in C2's `span.hang-opening-quote` (`styles.css`: absolute, `translateX(-100%)`), so the mark takes no inline space and is not kerned against the first letter; the letter's advance box sits on the column. Marks: `Ps`, `Pi`, `Pf`, ASCII `"` `'`. A mark ≥ 0.8em or wider than the gutter (`--fg-copy-pad`) stays inline. The particle raster draws the hung mark as its own run, at its rendered position. |
 | Modules | `math.js` + `timeline.js` | `src/utils.js` (easings, `coverFit`, camera constants, the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`). |
+| Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`utils.js`); the quote shaders bake the same value. |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
 
 ## Authoring
@@ -71,20 +71,27 @@ entry clock: before it there is no drag, banked drag travel is dropped, no auto-
 no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-open
 and keyboard entry are all off. It opens while the block is still scrolling in, so the globe spins,
 drags and opens cards before the world pins. `sphereFormed` (`entryT >= 1`, the world pinned) is a
-separate gate for what must wait for the pin: the travel camera, the entry lift's release, the
-inside-sphere drag flip, and retiring the hint (`retireHint`: a drag, rotate or card opened before
-the pin leaves the cursor pill and the text plane in place, so both go out together, after the pin).
+separate gate for what must wait for the pin: the travel camera, the inside-sphere drag flip, and
+retiring the hint (`retireHint`: a drag, rotate or card opened before the pin leaves the cursor pill
+and the text plane in place, so both go out together, after the pin).
 Reduced motion is always formed and interactive.
 
-The view offset also carries an entry lift (`entryLiftPx`): the top edge of the cards — the barrel's
-front face (z = `SPHERE_R`) or the sphere's silhouette (z ≈ 0) — projected at the live camera
-distance, is held at the canvas top and released by `1 − entryT²`, so the block scrolls in with no
-empty band above the cards and they settle nav-centred as the world pins. `wallTopY` is written with
-`fadeRefH` in `recomputeDragFlip`, so it follows the masonry morph.
+The entry lift is a CSS scroll-driven animation. `fg-entry-lift` translates the canvas and
+`.firefly-globe-a11y-cards` (so the focus ring follows) up by `--fg-entry-lift` (45vh) and releases it
+by `1 − entryT²` on the block's `--fg-entry` view timeline over its `entry` range
+(`cubic-bezier(0.333, 0, 0.667, 0.333)` is `t²`). At `entryT` 0 the cards sit that far above the
+world's top, clipped by its `overflow: clip`; they descend into frame and settle nav-centred as the
+world pins. With it, the view offset only nav-centres. **The lift has to move with the page's scroll, not with
+rAF:** iOS scrolls on its own thread, so anything JS positions from the scroll steps against the
+page, and near the pin the lift unwinds at close to scroll speed. Modal flights read the canvas's
+own rect (`getCanvasTop`), which includes the translate. Without `animation-timeline` (Firefox),
+`applyCentringOffset` applies the same lift through the view offset each frame from `entryT`;
+**`ENTRY_LIFT_H` has to match `--fg-entry-lift`.** Reduced motion has no lift.
 
-The spin toggle has two safe positions and `--fg-entry-release` (1 while scrolling in, 0 at the pin)
-crossfades between them: `--fg-controls-entry-top` while the world's top edge is still below the nav,
-`--fg-controls-top` once pinned and the nav is over it.
+The spin toggle has two safe positions: `--fg-controls-entry-top` while the world's top edge is still
+below the nav, `--fg-controls-top` once pinned and the nav is over it. It rides the same
+`fg-entry-lift` animation, its `--fg-entry-lift` set to the gap between the two. Without
+`animation-timeline` it stays at `--fg-controls-top`.
 
 The entry value is one `--s2a-border-radius-xl` plus the inset. A section that rounds its corners
 overlaps its neighbour by exactly one radius (`margin-block: calc(-1 * var(--s2a-border-radius-xl))`
@@ -105,90 +112,49 @@ and passes larger ones through. `scrollVel` is the per-frame delta of that smoot
 the motion CA trail.
 
 `pqAppearT` is the `scrollT` at which the deepest card has faded out (`−SPHERE_R + cardVanishDepth()`
-through `travelTAtCamZ`, gg's `pqAppearZoomT`). At it: the pointer path retires (`globeLive`: drag, hover, on-canvas controls;
-the cursor pill fades `CURSOR_RETIRE_LEAD_T` earlier), the pull-quote reveal starts, and the canvas
-hides `CANVAS_HIDE_MARGIN_T` later. The keyboard path (`globeFormed`: pinned and modal closed) is
-not gated on it.
+through `travelTAtCamZ`, gg's `pqAppearZoomT`). It feeds the pull quote's cue (`setCue`) and the hint
+text's fade. The keyboard path (`globeFormed`: interactive and modal closed) is not gated on it.
 
-`--fg-pq-appear-t` is published by JS (`publishPqAppearT`, gg's `publishPqAppearZoomT`); the CSS
-fallback covers only the frames before the script runs. gg's `--gg-formation-vh` is 0 here: the
-travel starts at the block top, so the pin starts there too. After the reveal the block
-has `(1 − pqAppearT) · runway` left to scroll; the quote scrolls out over the last `--fg-optical-center`
-plus half its box of that, and the rest is hold. The pin's `bottom` also adds one
-`--s2a-border-radius-xl`: a rounded next section (the C2 convention) is pulled up over this block by
-that radius and paints above it (`z-index: 3`, over the un-z-indexed pin), so release lands its painted
-top — not its flow top — on the quote's bottom edge. This mirrors the overlap the entry already assumes;
-a non-rounded next section leaves that radius as a small gap instead. The world un-sticks one viewport
-before the block ends, so a hold shorter than the gap between the quote's bottom and the viewport bottom
-has the canvas sliding up during the last cards.
+### Pull quote
 
-### Pull-quote copy reveal
+`src/quote-particles.js` is globe-gallery's module, copied: read **"Pull quote: particle transition,
+DOM text at rest"**, **"Block height"** and the near-camera dissolve in that README; they are the spec.
+The differences:
 
-Identical to globe-gallery's, code and constants: read **"The quote rolls in line by line"** and
-**"Frame mechanics"** in that README. The only differences here are the `--fg-` var prefix in place of
-`--gg-`, and that `--fg-formation-vh` is 0 (see the section on `--fg-pq-appear-t` above), so the quote
-is positioned from the pin rather than from a formation offset.
+- Vocabulary and imports: `scrollT`/`travel` in place of `zoomT`/`zoom` (`--fg-travel-vh`,
+  `input.travelPx`, `travelSpanPx`, `scrollYAtTravelT`), from `utils.js`. There is no formation
+  offset, so the travel, the hand-off and the block height all count from the block top (the pin).
+- The canvas is always `position: absolute` in the sticky world, so the hand-off doesn't move it.
+- Every card is on the sphere, so `cardPlanes` sources every card the modal does not hold.
+
+The section around the block: a rounded section above overlaps the block's first radius (see Entry
+reveal), and a rounded next section overlaps its last radius, which at the block's end is the bottom of
+the crosshair's vertical lines, as on stage. A `parallax-video-garage-door` next section (≥1024px) enters
+from under this block's section, which carries the higher `z-index`, so the video is revealed as the
+block scrolls away and never covers the quote.
 
 ### Entry reveal
 
-`entryLiftPx` floors the lift at `ENTRY_LIFT_MIN_H` of the viewport, so at `entryT` 0 the cards sit
-that far above the canvas top and are clipped by the render target itself. `1 − entryT²` releases it,
-so they descend into frame and are fully in view at the pin. The reveal is entirely inside the canvas;
-the block's box, margins and runway are untouched.
+The reveal stays inside the world; the block's box, margins and runway are untouched.
 
 The descent is masked by the page: pre-pin the world tracks the scroll at −1 while the lift unwinds
 at `2 · lift · entryT / viewportH`, so the globe still rises, just slower than the page. That
 difference is the reveal.
 
-A lift that unwinds faster than the page scrolls stalls the globe and then sinks it, so
-`entryLiftPx` clamps to `viewportH / ENTRY_RELEASE_PEAK` — the release curve's steepest slope, 2 for
-`1 − t²`. **`ENTRY_RELEASE_PEAK` has to move with the curve.** The clamp bounds the geometric term
-as well as `ENTRY_LIFT_MIN_H`: `H / 2 + navH / 2 − topPx` passes the ceiling on its own once the
-entry globe is small enough that `topPx < navH / 2`. Under the cap, the leftover speed at the pin is
-`1 − 2 · lift / viewportH`, so a larger lift clips deeper and arrives softer.
+**The lift has to stay at or under 50vh.** `1 − t²` unwinds at up to twice the lift per viewport
+scrolled, so a larger lift outruns the page, stalls the globe and then sinks it. The leftover speed
+at the pin is `1 − 2 · lift / viewportH`, so a larger lift clips deeper and arrives softer.
 
-The lift also has to stay under what the globe can cover: displacing it by `ENTRY_LIFT_MIN_H` needs
-the entry globe to render at least `1 + ENTRY_LIFT_MIN_H` viewports tall, or empty canvas shows below
-it. That is `CAM_Z_ENTRY`'s job.
+The lift also has to stay under what the globe can cover: a 45vh lift needs the entry globe to render
+at least 1.45 viewports tall, or empty space shows below it. That is `CAM_Z_ENTRY`'s job.
 
 ## Tuning the scroll budget
 
-Per breakpoint, the scroll after the pin splits into three parts that cannot be set independently:
-
-- **travel** — the pin until the last card has faded (`pqAppearT · runway`),
-- **scroll-out** — the quote's box moving off with the next section, fixed at
-  `--fg-optical-center + half the quote box` (the "floor"),
-- **hold** — whatever remains: `(1 − pqAppearT) · runway − floor`.
-
-`--fg-runway-height` scales travel and hold together at the current share; `CAM_Z_END` moves scroll
-between them. `pqAppearT` is not a free number — it is `travelTAtCamZ(clearZ)`, and `clearZ` depends
-on the rendered card height, so read it from the page rather than deriving it.
-
-Read the inputs at the breakpoint being tuned, on the page as authored (the quote box height is in
-them):
-
-```js
-(e => [
-  getComputedStyle(e).getPropertyValue('--fg-pq-appear-t'),
-  e.style.getPropertyValue('--fg-pq-half-box'),
-  getComputedStyle(e).getPropertyValue('--fg-optical-center'),
-  innerHeight,
-].join(' | '))(document.querySelector('.firefly-globe'))
-```
-
-Then, with `S = CAM_Z_SPHERE`, `E = CAM_Z_END`, `p` the first value, `H` the last, and everything in
-vh (`px / H · 100`):
-
-1. `clearZ = S − (S − E) · (1 − (1 − p)³)` — recovers where the last card fades.
-2. `travel = p · runway`; `floor = optical-center + half-box`; `hold = runway − travel − floor`.
-   This is the current state; check it matches what is felt before changing anything.
-3. Choose the new `travel` and `hold`: `runway = travel + floor + hold`.
-4. `p* = travel / runway`; `E* = S − (S − clearZ) / (1 − (1 − p*)³)`.
-5. Set `--fg-runway-height` and `CAM_Z_END`, reload, re-read `p` and confirm it landed on `p*`.
-
-Changing `SPHERE_R`, `CAM_Z_SPHERE`, `CARD_H_SPHERE` or the near-fade bands moves `clearZ`, so start
-again from the reading. A hold shorter than the gap between the quote's bottom edge and the viewport
-bottom (`100vh − floor`) has the sticky world sliding up during the last fading cards.
+As in globe-gallery: every length is its own knob and the block height follows. Per breakpoint,
+`--fg-travel-vh` sets the camera's pace through the globe, `PULL_BP[band].startR` where along it the
+hand-off lands, and `FLY_VH` / `READ_VH` the flight and the still quote; `CAM_Z_END` and the near-fade
+bands move the cue (`pqAppearT`). The cue depends on the rendered card height, so read positions off
+the page rather than deriving them.
 
 ## "Click & Drag" hint text
 
@@ -245,9 +211,7 @@ leaves the layout width unchanged.
 Same contract as globe-gallery: `.firefly-globe-reduced` un-sticks `.firefly-globe-world` and leaves
 it at `height: 100vh`. `worldEl.offsetHeight` is the one viewport height every clock reads.
 
-The pull-quote copy needs no override to show in full: `updatePullQuote` returns early, so its
-progress vars stay unset at their `1` fallbacks. The line rules are the exception — RM can be
-toggled after a value has already been written, so they reset `opacity` and `transform` explicitly.
+Reduced motion builds no quote particles, so the figure is a static DOM quote after the globe.
 
 ## Tests
 
@@ -257,21 +221,15 @@ README's **Tests**.
 `test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
 quote), `buildGlobeDom`, API card mapping (component rendition template, model tags, locale
 fallback, alt fallback), `fireflyRenditionUrl` sizing, the frame shape, the clock endpoints
-(`deriveFrame`) and the travel camera inverse pair.
+(`deriveFrame`, including the travel span), the travel camera inverse pair and `plainQuote` (authored
+text restored on every call, the opening mark hung once).
+
+`test/c2/blocks/firefly-globe/quote-particles.test.js` runs globe-gallery's shared particle suite
+(`quote-particles.suite.js`) against this block's copy, class names and stylesheet.
 
 `test/c2/blocks/firefly-globe/modules.test.js` covers `controls.js`, the `a11y.js` keyboard gallery,
 `interaction.js`, `cursor.js`, `materials.js` and `modal.js` DOM behavior.
 
 `mocks/authored.html` is the authoring contract as a fixture.
 
-`layoutQuote` is covered against real layout — the split reads `offsetTop` per word, so those cases
-attach the quote to the document at a width that forces a wrap. They pin the parts a relayout can
-break: every word survives in order, lines stay separated by a text node so `textContent` does not
-run them together, the `sr-only` node carries the whole quote while the visual lines are
-`aria-hidden`, the opening mark hangs off the first line only, and a re-split re-typesets from the
-authored text in the `QUOTE_TEXT` map rather than from the already-split DOM — including widening
-the box to fewer lines.
-
-The reveal maths (`entryLiftPx`, `entryRelease`, `updatePullQuoteCopy`) are closures inside
-`createGlobeGalleryRuntime` and are not reachable from a test. There is no Nala/E2E coverage of the
-WebGL path.
+There is no Nala/E2E coverage of the WebGL path.

@@ -2355,6 +2355,11 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
   ],
+  'merch-card-collection-autoblock': [
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('merch-card-collection.js'),
+  ],
   merch: [
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
@@ -2859,6 +2864,62 @@ export function getMarketsUrl() {
   return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
 }
 
+const DEFAULT_MARKET = 'us';
+
+export const norm = normCountryCode;
+
+export async function getMarketConfig() {
+  try {
+    const config = getConfig();
+    if (!config.marketsConfig) {
+      const resp = await fetch(getMarketsUrl());
+      if (!resp.ok) throw new Error('Failed to load market config');
+      config.marketsConfig = await resp.json();
+    }
+    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    return { languages };
+  } catch (e) {
+    window.lana?.log(`Market Utils Error: ${e.message}`);
+    return null;
+  }
+}
+
+export function marketsLangForLocale(marketsConfig, locale) {
+  if (!marketsConfig?.languages?.length) return undefined;
+  const { languages } = marketsConfig;
+  const pagePrefix = locale?.prefix?.replace(/^\//, '') || '';
+  let languageEntry = languages.find((lang) => (lang.prefix || '') === pagePrefix);
+  if (!languageEntry && locale?.base) {
+    languageEntry = languages.find((lang) => (lang.prefix || '') === locale.base);
+  }
+  return languageEntry || languages[0];
+}
+
+export async function isSupportedMarket(country) {
+  if (!country) return false;
+  const config = await getMarketConfig();
+  if (!config) return false;
+  const { locale } = getConfig();
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return false;
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  return supported.includes(country.toLowerCase());
+}
+
+export async function getValidatedMarket() {
+  if (isBot()) return null;
+  const config = await getMarketConfig();
+  const detectedMarket = await resolveDetectedMarketCountry();
+  if (!config) return detectedMarket || DEFAULT_MARKET;
+  const { locale } = getConfig();
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return detectedMarket || DEFAULT_MARKET;
+  const market = detectedMarket || currLang.defaultMarket || DEFAULT_MARKET;
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
+  return validated || DEFAULT_MARKET;
+}
+
 const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
 function excludeUsUnlessExplicit(markets, geoIp) {
   if (markets.length <= 1) return markets;
@@ -2938,7 +2999,7 @@ export async function decorateLanguageBanner() {
   const pagePrefix = locale.prefix?.replace('/', '') || '';
   const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
     ?? languageEntries.find((m) => m.prefix === locale.base);
-  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
+  const isGeoSupported = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
   const addAndShow = (...ms) => {
@@ -2948,7 +3009,7 @@ export async function decorateLanguageBanner() {
 
   const useBannerFlow = usesBannerFlow();
   // Supported Market Path
-  if (isSupportedMarket) {
+  if (isGeoSupported) {
     if (!prefLang || pageLang === prefLang) return;
     const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
     const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
@@ -2992,7 +3053,7 @@ export async function decorateLanguageBanner() {
 
   if (!showBanner) return;
 
-  if (!useBannerFlow && !isSupportedMarket) {
+  if (!useBannerFlow && !isGeoSupported) {
     setLangRoutingConfig({
       showBanner: false,
       showModal: true,
