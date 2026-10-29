@@ -614,7 +614,8 @@ function decorateProgressBar(el, main) {
 
     // The mobile nav is sticky and display: contents; the divider follows the article's gap.
     const dividerY = stacked.matches && article
-      ? article.getBoundingClientRect().top - parseFloat(getComputedStyle(article).marginBlockStart) / 2
+      ? article.getBoundingClientRect().top
+        - parseFloat(getComputedStyle(article).marginBlockStart) / 2
       : headerSection.getBoundingClientRect().bottom - 1;
     const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
     const dividerTop = dividerY - BAR_HEIGHT / 2;

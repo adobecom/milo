@@ -1289,9 +1289,7 @@ describe('blog-header reading progress', () => {
 
   ['same section', 'separate section', 'mixed related-cards section'].forEach((layout) => {
     it(`starts at a leading AI summary in the ${layout}, including after reparenting`, async () => {
-      const {
-        block, headerSection, first, last, related,
-      } = buildArticle();
+      const { block, headerSection, first, last, related } = buildArticle();
       if (layout === 'mixed related-cards section') {
         const lastSection = last.parentElement;
         first.parentElement.append(last, ...related.children);
