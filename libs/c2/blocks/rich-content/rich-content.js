@@ -83,12 +83,15 @@ function getJumpTarget(hash) {
   return target && !target.classList.contains('dialog-modal') ? target : null;
 }
 
+// Focus the section heading rather than the section, so screen readers announce
+// only the heading and continue reading the section from there.
 function focusJumpTarget(target) {
-  if (!target.hasAttribute('tabindex')) {
-    target.setAttribute('tabindex', '-1');
-    target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+  const el = target.querySelector('h1, h2, h3, h4, h5, h6') || target;
+  if (!el.hasAttribute('tabindex')) {
+    el.setAttribute('tabindex', '-1');
+    el.addEventListener('blur', () => el.removeAttribute('tabindex'), { once: true });
   }
-  target.focus({ preventScroll: true });
+  el.focus({ preventScroll: true });
 }
 
 function decorateJumpLinks(content, foreground) {

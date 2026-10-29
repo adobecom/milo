@@ -265,7 +265,7 @@ describe('Rich Content', () => {
         <h2>Heading</h2>
         <p><a href="#get-insights">Get Insights</a> | <a href="#share">Share</a> | <a href="#missing">Missing</a></p>
         </div></div></div></div>
-        <div class="section" id="get-insights"><a href="/x">First link</a></div>
+        <div class="section" id="get-insights"><h2>Get insights quickly.</h2><p>Body</p><a href="/x">First link</a></div>
         <div class="section" id="share" tabindex="0"></div>`;
       init(document.querySelector('.rich-content'));
     });
@@ -276,16 +276,17 @@ describe('Rich Content', () => {
 
     const click = (index) => document.querySelectorAll('.jump-link-anchor')[index].click();
 
-    it('moves focus to the target section and cleans up the temporary tabindex on blur', () => {
-      const target = document.getElementById('get-insights');
+    it('moves focus to the target section heading and cleans up the temporary tabindex on blur', () => {
+      const heading = document.querySelector('#get-insights h2');
       click(0);
-      expect(document.activeElement === target).to.be.true;
-      expect(target.getAttribute('tabindex')).to.equal('-1');
-      target.blur();
-      expect(target.hasAttribute('tabindex')).to.be.false;
+      expect(document.activeElement === heading).to.be.true;
+      expect(heading.getAttribute('tabindex')).to.equal('-1');
+      expect(document.getElementById('get-insights').hasAttribute('tabindex')).to.be.false;
+      heading.blur();
+      expect(heading.hasAttribute('tabindex')).to.be.false;
     });
 
-    it('keeps an authored tabindex on the target', () => {
+    it('falls back to the section and keeps its authored tabindex when it has no heading', () => {
       const target = document.getElementById('share');
       click(1);
       expect(document.activeElement === target).to.be.true;
@@ -298,7 +299,7 @@ describe('Rich Content', () => {
       const target = document.getElementById('get-insights');
       click(0);
       expect(window.lenis.scrollTo.calledOnceWith(target)).to.be.true;
-      expect(document.activeElement === target).to.be.true;
+      expect(document.activeElement === target.querySelector('h2')).to.be.true;
     });
 
     it('leaves focus on the link when the target does not exist', () => {
