@@ -41,19 +41,19 @@ describe('Split Hero', () => {
     let content;
     beforeEach(async () => {
       block = await initBlock('./mocks/default.html');
-      content = block.querySelector('.sh-content');
+      content = block.querySelector('.split-hero-content');
     });
 
-    it('replaces the block content with a single sh-content container', () => {
+    it('replaces the block content with a single split-hero-content container', () => {
       expect(block.children.length).to.equal(1);
       expect(content.classList.contains('container')).to.be.true;
       expect(content.children.length).to.equal(2);
-      expect(content.children[0].classList.contains('sh-foreground')).to.be.true;
-      expect(content.children[1].classList.contains('sh-media')).to.be.true;
+      expect(content.children[0].classList.contains('split-hero-foreground')).to.be.true;
+      expect(content.children[1].classList.contains('split-hero-media')).to.be.true;
     });
 
     it('puts the heading before the eyebrow in the DOM and shows the eyebrow on top', () => {
-      const text = content.querySelector('.sh-text');
+      const text = content.querySelector('.split-hero-text');
       const heading = text.querySelector('h1');
       const eyebrow = text.querySelector('.eyebrow');
       expect(text.firstElementChild).to.equal(heading);
@@ -70,14 +70,14 @@ describe('Split Hero', () => {
       expect(content.querySelector('.eyebrow img').getAttribute('src')).to.equal(FEDERAL_SVG);
     });
 
-    it('builds a merch card in the promo area below the copy', () => {
-      const promo = content.querySelector('.sh-copy > .sh-promo-area');
-      expect(promo.previousElementSibling.classList.contains('sh-text')).to.be.true;
-      expect(promo.querySelector('.sh-merch-card .sh-merch-content')).to.exist;
+    it('builds a merch card below the copy', () => {
+      const card = content.querySelector('.split-hero-copy > .split-hero-merch-card');
+      expect(card.previousElementSibling.classList.contains('split-hero-text')).to.be.true;
+      expect(card.querySelector('.split-hero-merch-content')).to.exist;
     });
 
     it('classes the mas-fields and folds the commitment into the price', () => {
-      const cardContent = content.querySelector('.sh-merch-content');
+      const cardContent = content.querySelector('.split-hero-merch-content');
       expect(cardContent.querySelector('.mas-short-description')).to.exist;
       const price = cardContent.querySelector('.mas-price.heading-5');
       const commitment = price.parentElement.querySelector('.mas-price-commitment');
@@ -85,7 +85,7 @@ describe('Split Hero', () => {
     });
 
     it('groups the ctas into the cta wrapper in place', () => {
-      const ctas = content.querySelectorAll('.sh-merch-content > .sh-merch-ctas .con-button');
+      const ctas = content.querySelectorAll('.split-hero-merch-content > .split-hero-merch-ctas .con-button');
       expect([...ctas].map((a) => a.href)).to.deep.equal([
         'https://www.adobe.com/free-trial',
         'https://www.adobe.com/plans',
@@ -93,19 +93,19 @@ describe('Split Hero', () => {
     });
 
     it('places supporting text last in the foreground as a caption, links untouched', () => {
-      const supporting = content.querySelector('.sh-foreground').lastElementChild;
-      expect(supporting.classList.contains('sh-supporting')).to.be.true;
+      const supporting = content.querySelector('.split-hero-foreground').lastElementChild;
+      expect(supporting.classList.contains('split-hero-supporting')).to.be.true;
       expect(supporting.classList.contains('caption')).to.be.true;
       expect(supporting.querySelectorAll('a').length).to.equal(2);
       expect(supporting.querySelector('.con-button')).to.be.null;
     });
 
     it('frames the media', () => {
-      expect(content.querySelector('.sh-media > .sh-media-frame picture')).to.exist;
+      expect(content.querySelector('.split-hero-media > .split-hero-media-frame picture')).to.exist;
     });
 
     it('renders no background for a two-cell row', () => {
-      expect(block.querySelector('.sh-background')).to.be.null;
+      expect(block.querySelector('.split-hero-background')).to.be.null;
     });
   });
 
@@ -128,16 +128,16 @@ describe('Split Hero', () => {
           const body = field.parentElement;
           expect(body.tagName).to.equal('DIV');
           expect(body.classList.contains('body-md')).to.be.true;
-          expect(body.closest('.sh-merch-content')).to.exist;
+          expect(body.closest('.split-hero-merch-content')).to.exist;
           expect(field.querySelectorAll('p').length).to.equal(paragraphs);
           field.querySelectorAll('p').forEach((p) => {
             expect(getComputedStyle(p).display).to.equal('inline');
           });
           if (paragraphs === 2) {
             expect(getComputedStyle(field.querySelector('p + p'), '::before').content).to.equal('" "');
-            expect(block.querySelector('.sh-merch-ctas a[href="/terms"]')).to.be.null;
+            expect(block.querySelector('.split-hero-merch-ctas a[href="/terms"]')).to.be.null;
           }
-          expect(block.querySelectorAll('.sh-merch-ctas .con-button').length).to.equal(2);
+          expect(block.querySelectorAll('.split-hero-merch-ctas .con-button').length).to.equal(2);
         });
       });
     });
@@ -150,7 +150,7 @@ describe('Split Hero', () => {
       const block = buildBlock([copy], ['<p><strong><mas-field field="ctas[abc]"><a href="/buy">Buy now</a></mas-field></strong></p>']);
       await init(block);
 
-      expect(block.querySelector('.sh-merch-ctas a[href="/buy"]').classList.contains('con-button')).to.be.true;
+      expect(block.querySelector('.split-hero-merch-ctas a[href="/buy"]').classList.contains('con-button')).to.be.true;
     });
 
     it('keeps a description that contains a button in the content, not the cta wrapper', async () => {
@@ -160,8 +160,8 @@ describe('Split Hero', () => {
       ]);
       await init(block);
 
-      const wrapper = block.querySelector('.sh-merch-ctas');
-      expect(block.querySelector('.sh-merch-content mas-field[field="description"]')).to.exist;
+      const wrapper = block.querySelector('.split-hero-merch-ctas');
+      expect(block.querySelector('.split-hero-merch-content mas-field[field="description"]')).to.exist;
       expect(wrapper.querySelector('mas-field[field="description"]')).to.be.null;
       expect(wrapper.querySelector('.con-button').getAttribute('href')).to.equal('/plans');
     });
@@ -172,7 +172,7 @@ describe('Split Hero', () => {
       ]);
       await init(block);
 
-      const wrapper = block.querySelector('.sh-merch-ctas');
+      const wrapper = block.querySelector('.split-hero-merch-ctas');
       expect(wrapper.nextElementSibling.textContent).to.equal('Terms and conditions apply.');
       expect(wrapper.textContent).to.not.contain('Terms and conditions');
     });
@@ -181,7 +181,7 @@ describe('Split Hero', () => {
       const block = buildBlock([copy], ['<strong><a href="/buy">Buy now</a></strong>']);
       await init(block);
 
-      expect(block.querySelector('.sh-merch-ctas .con-button').getAttribute('href')).to.equal('/buy');
+      expect(block.querySelector('.split-hero-merch-ctas .con-button').getAttribute('href')).to.equal('/buy');
     });
   });
 
@@ -192,7 +192,7 @@ describe('Split Hero', () => {
       const block = buildBlock([copy, MEDIA, '']);
       await init(block);
 
-      expect(block.querySelector('.sh-background')).to.be.null;
+      expect(block.querySelector('.split-hero-background')).to.be.null;
     });
 
     it('turns a text color into a background layer behind the content', async () => {
@@ -200,17 +200,17 @@ describe('Split Hero', () => {
       await init(block);
 
       const background = block.firstElementChild;
-      expect(background.classList.contains('sh-background')).to.be.true;
+      expect(background.classList.contains('split-hero-background')).to.be.true;
       expect(background.style.background).to.include('rgb(255, 0, 0)');
       expect(block.style.background).to.equal('');
-      expect(background.nextElementSibling.classList.contains('sh-content')).to.be.true;
+      expect(background.nextElementSibling.classList.contains('split-hero-content')).to.be.true;
     });
 
     it('covers the block with a background image', async () => {
       const block = buildBlock([copy, MEDIA, MEDIA]);
       await init(block);
 
-      const background = block.querySelector('.sh-background');
+      const background = block.querySelector('.split-hero-background');
       expect(background.querySelector('img')).to.exist;
       const blockRect = block.getBoundingClientRect();
       const bgRect = background.getBoundingClientRect();
@@ -231,15 +231,15 @@ describe('Split Hero', () => {
       await init(block);
 
       expect(block.querySelector('h1').textContent).to.equal('Mobile headline');
-      expect(block.querySelector('.sh-text .eyebrow').textContent).to.equal('Photoshop');
-      expect(block.querySelector('.sh-media video')).to.exist;
-      expect(block.querySelector('.sh-background').style.background).to.include('rgb(0, 0, 255)');
-      expect(block.querySelector('.sh-merch-card')).to.exist;
-      expect(block.querySelector('.sh-supporting').textContent).to.equal('Support text');
+      expect(block.querySelector('.split-hero-text .eyebrow').textContent).to.equal('Photoshop');
+      expect(block.querySelector('.split-hero-media video')).to.exist;
+      expect(block.querySelector('.split-hero-background').style.background).to.include('rgb(0, 0, 255)');
+      expect(block.querySelector('.split-hero-merch-card')).to.exist;
+      expect(block.querySelector('.split-hero-supporting').textContent).to.equal('Support text');
 
       await setViewport({ width: 390, height: 844 });
       await nextFrame();
-      expect(block.querySelector('.sh-media picture')).to.exist;
+      expect(block.querySelector('.split-hero-media picture')).to.exist;
     });
 
     it('drops the background when a later viewport omits the third cell', async () => {
@@ -247,15 +247,15 @@ describe('Split Hero', () => {
       tabletMain.lastElementChild.remove();
       await init(block);
 
-      expect(block.querySelector('.sh-background')).to.be.null;
+      expect(block.querySelector('.split-hero-background')).to.be.null;
     });
 
     it('drops merch and supporting text when a later viewport omits the second row', async () => {
       block.lastElementChild.remove();
       await init(block);
 
-      expect(block.querySelector('.sh-merch-card')).to.be.null;
-      expect(block.querySelector('.sh-supporting')).to.be.null;
+      expect(block.querySelector('.split-hero-merch-card')).to.be.null;
+      expect(block.querySelector('.split-hero-supporting')).to.be.null;
     });
   });
 
@@ -268,8 +268,8 @@ describe('Split Hero', () => {
     it('stacks below 768px with a padded, rounded media frame', async () => {
       await setViewport({ width: 390, height: 844 });
 
-      const foreground = block.querySelector('.sh-foreground');
-      const frame = block.querySelector('.sh-media-frame');
+      const foreground = block.querySelector('.split-hero-foreground');
+      const frame = block.querySelector('.split-hero-media-frame');
       expect(frame.getBoundingClientRect().top)
         .to.be.at.least(foreground.getBoundingClientRect().bottom);
       const style = getComputedStyle(frame);
@@ -278,12 +278,22 @@ describe('Split Hero', () => {
       expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
     });
 
-    [768, 1440].forEach((width) => {
+    it('keeps media stacked below the copy between 768px and 900px', async () => {
+      await setViewport({ width: 800, height: 900 });
+
+      const foreground = block.querySelector('.split-hero-foreground');
+      const media = block.querySelector('.split-hero-media');
+      expect(media.getBoundingClientRect().top)
+        .to.be.at.least(foreground.getBoundingClientRect().bottom);
+      expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
+    });
+
+    [900, 1440].forEach((width) => {
       it(`splits copy and media side by side at ${width}px without page overflow`, async () => {
         await setViewport({ width, height: 900 });
 
-        const left = block.querySelector('.sh-foreground').getBoundingClientRect();
-        const right = block.querySelector('.sh-media').getBoundingClientRect();
+        const left = block.querySelector('.split-hero-foreground').getBoundingClientRect();
+        const right = block.querySelector('.split-hero-media').getBoundingClientRect();
         expect(right.left).to.be.at.least(left.right);
         expect(right.width).to.be.greaterThan(left.width);
         expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
@@ -296,7 +306,7 @@ describe('Split Hero', () => {
       const block = buildBlock(['<h1>Headline</h1><p>Body copy.</p>', MEDIA]);
       await init(block);
 
-      const text = block.querySelector('.sh-text');
+      const text = block.querySelector('.split-hero-text');
       expect(text.querySelector('.eyebrow')).to.be.null;
       expect(text.firstElementChild.matches('h1.heading-2')).to.be.true;
     });
@@ -312,23 +322,23 @@ describe('Split Hero', () => {
       const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['', 'Support text']);
       await init(block);
 
-      expect(block.querySelector('.sh-merch-card')).to.be.null;
-      expect(block.querySelector('.sh-supporting')).to.exist;
+      expect(block.querySelector('.split-hero-merch-card')).to.be.null;
+      expect(block.querySelector('.split-hero-supporting')).to.exist;
     });
 
     it('renders no supporting text for an empty supporting cell', async () => {
       const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['<p><mas-field field="prices">US$9.99/mo</mas-field></p>', '']);
       await init(block);
 
-      expect(block.querySelector('.sh-merch-card')).to.exist;
-      expect(block.querySelector('.sh-supporting')).to.be.null;
+      expect(block.querySelector('.split-hero-merch-card')).to.exist;
+      expect(block.querySelector('.split-hero-supporting')).to.be.null;
     });
 
     it('renders no media for an empty media cell', async () => {
       const block = buildBlock(['<h1>Headline</h1>', '']);
       await init(block);
 
-      expect(block.querySelector('.sh-media')).to.be.null;
+      expect(block.querySelector('.split-hero-media')).to.be.null;
     });
 
     it('preserves decorated video, controls, and listeners in the media cell', async () => {
@@ -338,8 +348,8 @@ describe('Split Hero', () => {
       block.querySelector('button').addEventListener('click', () => { clicked = true; });
       await init(block);
 
-      expect(block.querySelector('.sh-media video')).to.equal(video);
-      block.querySelector('.sh-media button').click();
+      expect(block.querySelector('.split-hero-media video')).to.equal(video);
+      block.querySelector('.split-hero-media button').click();
       expect(clicked).to.be.true;
     });
 

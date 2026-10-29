@@ -43,12 +43,12 @@ function buildMerchCard(col) {
     allParas = [para];
   }
 
-  const cardContent = createTag('div', { class: 'sh-merch-content' });
+  const cardContent = createTag('div', { class: 'split-hero-merch-content' });
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
   allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
   decorateMasField(cardContent);
 
-  const merchCard = createTag('div', { class: 'sh-merch-card' });
+  const merchCard = createTag('div', { class: 'split-hero-merch-card' });
   merchCard.append(cardContent);
   const ctaSelector = '.con-button, mas-field[field^="ctas"]';
   const isCtaPara = (el) => {
@@ -57,7 +57,7 @@ function buildMerchCard(col) {
   };
   const ctaParas = [...cardContent.children].filter(isCtaPara);
   if (ctaParas.length) {
-    const ctaWrapper = createTag('div', { class: 'sh-merch-ctas' });
+    const ctaWrapper = createTag('div', { class: 'split-hero-merch-ctas' });
     ctaParas[0].replaceWith(ctaWrapper);
     ctaParas.forEach((para) => ctaWrapper.append(para));
   }
@@ -79,14 +79,14 @@ function decorateCopy(copy) {
   const [, ...otherHeadings] = copy.querySelectorAll('h1, h2, h3, h4, h5, h6');
   otherHeadings.forEach((other) => other.classList.remove('heading-2'));
   normalizeMasFieldText(copy, 'md');
-  copy.classList.add('sh-text');
+  copy.classList.add('split-hero-text');
 }
 
 function decorateBackground(block, bg) {
   if (!hasContent(bg)) return null;
-  decorateBlockBg(block, bg, { className: 'sh-background' });
+  decorateBlockBg(block, bg, { className: 'split-hero-background' });
   if (!block.style.background) return bg;
-  const colorBg = createTag('div', { class: 'sh-background', style: `background: ${block.style.background}` });
+  const colorBg = createTag('div', { class: 'split-hero-background', style: `background: ${block.style.background}` });
   block.style.removeProperty('background');
   return colorBg;
 }
@@ -98,22 +98,20 @@ function decorate(block) {
   if (!copy) return;
 
   decorateCopy(copy);
-  const copyGroup = createTag('div', { class: 'sh-copy' }, copy);
-  const foreground = createTag('div', { class: 'sh-foreground' }, copyGroup);
-  if (hasContent(merch)) {
-    copyGroup.append(createTag('div', { class: 'sh-promo-area' }, buildMerchCard(merch)));
-  }
+  const copyGroup = createTag('div', { class: 'split-hero-copy' }, copy);
+  const foreground = createTag('div', { class: 'split-hero-foreground' }, copyGroup);
+  if (hasContent(merch)) copyGroup.append(buildMerchCard(merch));
   if (hasContent(supporting)) {
-    supporting.classList.add('sh-supporting', 'caption');
+    supporting.classList.add('split-hero-supporting', 'caption');
     foreground.append(supporting);
   }
 
-  const content = createTag('div', { class: 'sh-content container' }, foreground);
+  const content = createTag('div', { class: 'split-hero-content container' }, foreground);
   if (hasContent(media)) {
-    const frame = createTag('div', { class: 'sh-media-frame' });
+    const frame = createTag('div', { class: 'split-hero-media-frame' });
     frame.append(...media.childNodes);
     media.append(frame);
-    media.classList.add('sh-media');
+    media.classList.add('split-hero-media');
     content.append(media);
   }
   const background = decorateBackground(block, bg);
