@@ -14,6 +14,7 @@ import {
   isAcomAssistantEnabled,
   isAupEnabled,
   getValidatedMarket,
+  isC2GnavOnC1Host,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -140,8 +141,7 @@ export default async function init(el) {
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
-  const isGnavOverrideOnC1 = getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
-  if (isGnavOverrideOnC1) el.classList.add('c2-gnav-c1-host');
+  if (isC2GnavOnC1Host()) el.classList.add('c2-gnav-c1-host');
 
   // Unlike the c1 gnav block, nothing else on a standalone c2 page bootstraps
   // IMS. Without this, window.adobeIMS never initializes and UNAV's internal
