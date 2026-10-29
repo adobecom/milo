@@ -280,6 +280,10 @@ html[dir="rtl"] {
             position: absolute;
           }
         }
+
+        &.hovered .elastic-carousel-item-footer {
+          max-width: 81%;
+        }
       }
     }
   }
