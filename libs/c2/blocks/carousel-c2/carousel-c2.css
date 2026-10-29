@@ -15,7 +15,7 @@
   overflow: clip;
   view-timeline: --carousel-wrapper block;
 
-  button { display: none }
+  button:where(.prev, .next) { display: none }
 
   ul.indicators-container {
     display: none;
@@ -168,7 +168,7 @@
       }
     }
 
-    button {
+    button:where(.prev, .next) {
       --btn-dimension: var(--s2a-spacing-40);
       display: block;
       width: var(--btn-dimension);
@@ -249,23 +249,46 @@
 
     ul.indicators-container {
       display: flex;
-      gap: var(--carousel-slides-gap);
       position: absolute;
       left: 50%;
-      bottom: var(--s2a-spacing-24);
+      bottom: calc(var(--s2a-spacing-24) - (24px - var(--s2a-spacing-8)) / 2);
       transform: translateX(-50%);
       list-style: none;
       margin: 0;
       padding: 0;
 
-      li.slide-indicator {
-        width: var(--s2a-spacing-8);
-        height: var(--s2a-spacing-8);
+      button.slide-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: none;
         border-radius: var(--s2a-border-radius-round);
-        background: var(--s2a-color-transparent-white-64);
+        background: transparent;
+        cursor: pointer;
 
-        &.active {
+        &::before {
+          content: '';
+          width: var(--s2a-spacing-8);
+          height: var(--s2a-spacing-8);
+          border-radius: var(--s2a-border-radius-round);
+          background: var(--s2a-color-transparent-white-64);
+        }
+
+        &:hover::before {
           background: var(--s2a-color-gray-25);
+        }
+
+        &.active::before {
+          background: var(--s2a-color-gray-25);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--s2a-color-gray-25);
+          outline-offset: 2px;
+          box-shadow: 0 0 0 2px var(--s2a-color-gray-1000);
         }
       }
     }
@@ -314,7 +337,7 @@
     translate: calc(var(--carousel-wrapper-offset) + var(--carousel-slides-gap));
   }
 
-  button {
+  button:where(.prev, .next) {
     &.prev {
       --btn-animation-start: calc(var(--btn-position) + 70vw);
       left: unset;

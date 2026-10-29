@@ -111,14 +111,19 @@ function getDirection(direction) {
   return direction === 'next' ? 'prev' : 'next';
 }
 
-function goToActive(carouselEls) {
-  const { wrapper, marginWidth, el, allSlides, activeSlide } = carouselEls;
+function getActiveTranslate(carouselEls) {
+  const { wrapper, marginWidth, el, activeSlide } = carouselEls;
   const actualSlideWidth = parseFloat(el.style.getPropertyValue('--actual-slide-width'));
   const indexOfActive = [...wrapper.children].indexOf(activeSlide);
   const gaps = indexOfActive * carouselGap;
-  const translateValue = isRTL
+  return isRTL
     ? indexOfActive * actualSlideWidth - marginWidth + gaps
     : indexOfActive * actualSlideWidth * -1 + marginWidth - gaps;
+}
+
+function goToActive(carouselEls) {
+  const { wrapper, allSlides, activeSlide } = carouselEls;
+  const translateValue = getActiveTranslate(carouselEls);
   wrapper.style.transition = 'none';
   wrapper.style.translate = `${translateValue}px`;
   setSlideSpreadSign(activeSlide, allSlides);
@@ -192,6 +197,12 @@ const eventTimeStamp = {
 }
 /* eslint-enable */
 
+function isThrottled(wrapper, timeStamp) {
+  eventTimeStamp.set(wrapper, timeStamp);
+  const eventTimeStampDiff = eventTimeStamp.diff(wrapper);
+  return eventTimeStampDiff !== 0 && eventTimeStampDiff < MIN_SLIDE_TRANISTION_DURATION;
+}
+
 function slideAnimation(carouselEls, direction) {
   const { wrapper, slideWidth, allSlides, activeClone } = carouselEls;
   const alreadyTranslated = parseFloat(wrapper.style.translate);
@@ -203,7 +214,9 @@ function slideAnimation(carouselEls, direction) {
     duration = eventInterval;
   }
   const negate = (direction === 'next') !== isRTL ? -1 : 1;
-  const translateValue = alreadyTranslated + (negate * slideWidth) + (negate * carouselGap);
+  const translateValue = direction
+    ? alreadyTranslated + (negate * slideWidth) + (negate * carouselGap)
+    : getActiveTranslate(carouselEls);
   wrapper.style.transition = 'translate var(--transition-duration) var(--animation-curve)';
   setSlideSpreadSign(activeClone, allSlides);
 
@@ -220,6 +233,22 @@ function slideAnimation(carouselEls, direction) {
   /* eslint-enable */
 }
 
+function setActive(carouselEls, activeSlide, activeClone, activeSlideIndicator) {
+  carouselEls.activeClone?.classList.remove('active-clone');
+  carouselEls.activeSlide.classList.remove('active');
+  carouselEls.slideIndicators.forEach((indicator) => {
+    indicator.classList.remove('active');
+    indicator.removeAttribute('aria-current');
+  });
+
+  activeSlide.classList.add('active');
+  activeClone?.classList.add('active-clone');
+  activeSlideIndicator.classList.add('active');
+  activeSlideIndicator.setAttribute('aria-current', 'true');
+  carouselEls.activeClone = activeClone;
+  carouselEls.activeSlide = activeSlide;
+}
+
 function moveSlides(carouselEls, direction, e) {
   const {
     wrapper,
@@ -228,58 +257,58 @@ function moveSlides(carouselEls, direction, e) {
     slideIndicators,
     prevBtn,
     nextBtn,
-    activeSlide: active,
-    activeClone: clone,
+    activeSlide,
   } = carouselEls;
-  const { timeStamp, type: eventType } = e;
+  const { timeStamp, type: eventType, target } = e;
 
-  eventTimeStamp.set(wrapper, timeStamp);
-  const eventTimeStampDiff = eventTimeStamp.diff(wrapper);
-  if (eventTimeStampDiff !== 0 && eventTimeStampDiff < MIN_SLIDE_TRANISTION_DURATION) return;
+  if (isThrottled(wrapper, timeStamp)) return;
 
-  let activeSlide = active;
-  let activeClone = clone;
-  let activeSlideIndicator = indicatorsContainer.querySelector('.active');
   if (wrapper.getAttribute('data-slides-cloned') !== 'true') {
     cloneSlides(carouselEls);
   }
 
   const { allSlides } = carouselEls;
+  const activeSlideIndicator = indicatorsContainer.querySelector('.active');
+  const step = direction === 'next' ? handleNext : handlePrevious;
+  const newSlide = step(activeSlide, slides);
+  const newIndicator = step(activeSlideIndicator, slideIndicators);
 
-  activeClone?.classList.remove('active-clone');
-  activeSlide.classList.remove('active');
-  activeSlideIndicator.classList.remove('active');
-  activeSlideIndicator.removeAttribute('aria-current');
-
-  if (direction === 'next') {
-    activeClone = handleNext(activeSlide, allSlides);
-    activeSlide = handleNext(activeSlide, slides);
-    activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
-    if (eventType !== 'pointerup') nextBtn.focus();
+  setActive(carouselEls, newSlide, step(activeSlide, allSlides), newIndicator);
+  if (eventType !== 'pointerup') {
+    const navBtn = direction === 'next' ? nextBtn : prevBtn;
+    (indicatorsContainer.contains(target) ? newIndicator : navBtn).focus();
   }
-
-  if (direction === 'prev') {
-    activeClone = handlePrevious(activeSlide, allSlides);
-    activeSlide = handlePrevious(activeSlide, slides);
-    activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
-    if (eventType !== 'pointerup') prevBtn.focus();
-  }
-  activeSlide.classList.add('active');
-  activeClone?.classList.add('active-clone');
-  activeSlideIndicator.classList.add('active');
-  activeSlideIndicator.setAttribute('aria-current', 'location');
-  carouselEls.activeClone = activeClone;
-  carouselEls.activeSlide = activeSlide;
 
   slideAnimation(carouselEls, direction);
 
-  setAriaHiddenAndTabIndex(allSlides, activeSlide);
+  setAriaHiddenAndTabIndex(allSlides, newSlide);
+  updateAriaLive(carouselEls);
+}
+
+function jumpToSlide(carouselEls, indicator, e) {
+  const { wrapper, slides, slideIndicators } = carouselEls;
+  if (indicator.classList.contains('active') || isThrottled(wrapper, e.timeStamp)) return;
+
+  if (wrapper.getAttribute('data-slides-cloned') !== 'true') {
+    cloneSlides(carouselEls);
+  }
+
+  const targetIndex = String(slideIndicators.indexOf(indicator));
+  const targetSlide = slides.find((slide) => slide.getAttribute('data-index') === targetIndex);
+  setActive(carouselEls, targetSlide, targetSlide, indicator);
+
+  slideAnimation(carouselEls);
+
+  setAriaHiddenAndTabIndex(carouselEls.allSlides, targetSlide);
   updateAriaLive(carouselEls);
 }
 
 function attachListeners(carouselEls) {
-  const { el, prevBtn, nextBtn, wrapper } = carouselEls;
+  const { el, prevBtn, nextBtn, wrapper, slideIndicators } = carouselEls;
 
+  slideIndicators.forEach((indicator) => {
+    indicator.addEventListener('click', (e) => jumpToSlide(carouselEls, indicator, e));
+  });
   prevBtn.addEventListener('click', (e) => moveSlides(carouselEls, 'prev', e));
   nextBtn.addEventListener('click', (e) => moveSlides(carouselEls, 'next', e));
 
@@ -375,12 +404,17 @@ export default function init(el) {
     slide.setAttribute('data-index', index);
   });
 
-  const indicatorsContainer = createTag('ul', { class: 'indicators-container' });
-  slides.forEach((slide, index) => {
+  const indicatorsContainer = createTag('ul', { class: 'indicators-container', 'aria-label': 'Choose a slide' });
+  const slideIndicators = slides.map((slide, index) => {
     slide.setAttribute('role', 'group');
     slide.setAttribute('aria-roledescription', 'slide');
-    const indicator = createTag('li', { class: 'slide-indicator', 'aria-label': `Slide ${index + 1} of ${slides.length}` });
-    indicatorsContainer.appendChild(indicator);
+    const indicator = createTag('button', {
+      type: 'button',
+      class: 'slide-indicator',
+      'aria-label': `Slide ${index + 1} of ${slides.length}`,
+    });
+    indicatorsContainer.append(createTag('li', {}, indicator));
+    return indicator;
   });
 
   const ariaLive = createTag('div', {
@@ -394,8 +428,8 @@ export default function init(el) {
   const lastSlide = slides.pop();
   slides.unshift(lastSlide);
   slides[1].classList.add('active');
-  indicatorsContainer.children[0]?.classList.add('active');
-  indicatorsContainer.children[0]?.setAttribute('aria-current', 'location');
+  slideIndicators[0].classList.add('active');
+  slideIndicators[0].setAttribute('aria-current', 'true');
 
   el.textContent = '';
   wrapper.append(...slides);
@@ -409,7 +443,7 @@ export default function init(el) {
     wrapper,
     slides,
     indicatorsContainer,
-    slideIndicators: [...indicatorsContainer.children],
+    slideIndicators,
     prevBtn,
     nextBtn,
     ariaLive,

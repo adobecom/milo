@@ -78,8 +78,155 @@ describe('Carousel C2', () => {
     expect(indicators.length).to.equal(3);
     expect(indicators[0].getAttribute('aria-label')).to.equal('Slide 1 of 3');
     expect(indicators[0].classList.contains('active')).to.be.true;
-    expect(indicators[0].getAttribute('aria-current')).to.equal('location');
+    expect(indicators[0].getAttribute('aria-current')).to.equal('true');
     expect(indicators[1].classList.contains('active')).to.be.false;
+  });
+
+  describe('slide indicators (MWPW-209064)', () => {
+    const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+    const setup = async (mock = 'default') => {
+      document.body.innerHTML = await readFile({ path: `./mocks/${mock}.html` });
+      const block = document.querySelector('.carousel-c2');
+      init(block);
+      return block;
+    };
+    const getIndicators = (block) => [...block.querySelectorAll('.indicators-container .slide-indicator')];
+    const getActiveSlide = (block) => block.querySelector('.carousel-wrapper .active:not([data-cloned])');
+
+    it('renders a labelled list of type=button indicators', async () => {
+      const block = await setup();
+      const list = block.querySelector('ul.indicators-container');
+      expect(list.getAttribute('aria-label')).to.equal('Choose a slide');
+      const indicators = getIndicators(block);
+      expect(indicators.length).to.equal(3);
+      indicators.forEach((indicator, i) => {
+        expect(indicator.tagName).to.equal('BUTTON');
+        expect(indicator.getAttribute('type')).to.equal('button');
+        expect(indicator.parentElement.tagName).to.equal('LI');
+        expect(indicator.getAttribute('aria-label')).to.equal(`Slide ${i + 1} of 3`);
+      });
+    });
+
+    it('sets aria-current="true" only on the current indicator', async () => {
+      const block = await setup();
+      const indicators = getIndicators(block);
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql(['true', null, null]);
+      block.querySelector('button.next').click();
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql([null, 'true', null]);
+    });
+
+    it('jumps straight to the slide of the clicked indicator', async () => {
+      const block = await setup();
+      const indicators = getIndicators(block);
+      indicators[2].click();
+
+      const active = getActiveSlide(block);
+      expect(active.getAttribute('data-index')).to.equal('2');
+      expect(active.getAttribute('aria-hidden')).to.equal('false');
+      expect(block.querySelectorAll('.carousel-wrapper .carousel-slide.active').length).to.equal(1);
+      expect(active.classList.contains('active-clone')).to.be.true;
+      expect(block.querySelectorAll('.carousel-wrapper .active-clone').length).to.equal(1);
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql([null, null, 'true']);
+      expect(indicators.map((i) => i.classList.contains('active'))).to.eql([false, false, true]);
+      expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 3 of 3');
+      block.querySelectorAll('.carousel-wrapper > .carousel-slide').forEach((slide) => {
+        expect(slide.getAttribute('aria-hidden')).to.equal(String(slide !== active));
+      });
+    });
+
+    it('does nothing when the current indicator is clicked', async () => {
+      const block = await setup();
+      const wrapper = block.querySelector('.carousel-wrapper');
+      const live = block.querySelector('.aria-live-container');
+      const liveText = live.textContent;
+      getIndicators(block)[0].click();
+
+      expect(wrapper.getAttribute('data-slides-cloned')).to.be.null;
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('0');
+      expect(getIndicators(block)[0].getAttribute('aria-current')).to.equal('true');
+      expect(live.textContent).to.equal(liveText);
+    });
+
+    it('keeps next, previous and indicators in sync after a jump', async () => {
+      const block = await setup();
+      const indicators = getIndicators(block);
+      indicators[2].click();
+      await wait(150);
+
+      block.querySelector('button.next').click();
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('0');
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql(['true', null, null]);
+      await wait(150);
+
+      indicators[1].click();
+      await wait(150);
+      block.querySelector('button.prev').click();
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('0');
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql(['true', null, null]);
+      expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 1 of 3');
+    });
+
+    it('animates the wrapper to the target slide and clears the pending snap', async () => {
+      const block = await setup();
+      const wrapper = block.querySelector('.carousel-wrapper');
+      getIndicators(block)[1].click();
+      expect(wrapper.style.transition).to.contain('translate');
+      expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
+      await wait(550);
+      // eslint-disable-next-line no-underscore-dangle
+      expect(wrapper._timeout).to.be.null;
+    });
+
+    it('keeps focus on the indicator after activating it', async () => {
+      const block = await setup();
+      const indicators = getIndicators(block);
+      indicators[1].focus();
+      indicators[1].click();
+      expect(document.activeElement).to.equal(indicators[1]);
+    });
+
+    it('moves focus to the current indicator when using the arrow keys on an indicator', async () => {
+      const block = await setup();
+      const indicators = getIndicators(block);
+      indicators[0].focus();
+      indicators[0].dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowRight', bubbles: true }));
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('1');
+      expect(document.activeElement).to.equal(indicators[1]);
+      expect(indicators[1].getAttribute('aria-current')).to.equal('true');
+    });
+
+    it('still focuses the next button when using the arrow keys elsewhere', async () => {
+      const block = await setup();
+      block.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowRight', bubbles: true }));
+      expect(document.activeElement).to.equal(block.querySelector('button.next'));
+    });
+
+    it('does not touch the tabindex of the indicator buttons', async () => {
+      const block = await setup();
+      getIndicators(block)[2].click();
+      getIndicators(block).forEach((indicator) => {
+        expect(indicator.hasAttribute('tabindex')).to.be.false;
+      });
+    });
+
+    it('jumps between the two slides when there are only two', async () => {
+      const block = await setup('two-slides');
+      const indicators = getIndicators(block);
+      indicators[1].click();
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('1');
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql([null, 'true']);
+      expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 2');
+      await wait(150);
+
+      indicators[0].click();
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('0');
+      expect(indicators.map((i) => i.getAttribute('aria-current'))).to.eql(['true', null]);
+      await wait(150);
+
+      block.querySelector('button.next').click();
+      expect(getActiveSlide(block).getAttribute('data-index')).to.equal('1');
+      expect(indicators[1].getAttribute('aria-current')).to.equal('true');
+    });
   });
 
   it('rotates the last slide to the front and activates the first authored slide', async () => {
