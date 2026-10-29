@@ -1287,6 +1287,49 @@ describe('blog-header reading progress', () => {
     expect(progress(bar)).to.equal(1);
   });
 
+  ['same section', 'separate section', 'mixed related-cards section'].forEach((layout) => {
+    it(`starts at a leading AI summary in the ${layout}, including after reparenting`, async () => {
+      const {
+        block, headerSection, first, last, related,
+      } = buildArticle();
+      if (layout === 'mixed related-cards section') {
+        const lastSection = last.parentElement;
+        first.parentElement.append(last, ...related.children);
+        lastSection.remove();
+        related.remove();
+      }
+      await init(block);
+      const bar = block.querySelector('.blog-progress-bar');
+      expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+      const summary = document.createElement('div');
+      summary.className = 'ai-summary';
+      summary.innerHTML = '<div><div><h2>Key takeaways</h2><p>Summary copy.</p></div></div>';
+      mockRect(summary, 400, 600);
+      if (layout === 'separate section') {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.append(summary);
+        first.parentElement.before(section);
+      } else {
+        first.before(summary);
+      }
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo((1000 - 336) / (1800 - 336), 0.000001);
+      await scrollTo(336);
+      expect(progress(bar)).to.equal(0);
+      await scrollTo(400);
+      expect(progress(bar)).to.be.closeTo((400 - 336) / (1800 - 336), 0.000001);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo((400 - 336) / (1800 - 336), 0.000001);
+      await scrollTo(1800);
+      expect(progress(bar)).to.equal(1);
+    });
+  });
+
   it('omits the bar for short articles and restores it when the viewport gets smaller', async () => {
     const { block } = buildArticle();
     viewportHeight = 2200;

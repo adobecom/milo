@@ -568,11 +568,14 @@ function findArticleCopy(headerSection) {
   const contents = [];
   for (const section of sections) {
     if (section.querySelector('.card-metadata')) {
-      const finalCopy = section.querySelector(':scope > .content:first-child');
-      if (finalCopy) contents.push(finalCopy);
+      let copy = section.firstElementChild;
+      while (copy?.matches('.content, .ai-summary')) {
+        contents.push(copy);
+        copy = copy.nextElementSibling;
+      }
       break;
     }
-    contents.push(...section.querySelectorAll(':scope > .content'));
+    contents.push(...section.querySelectorAll(':scope > .content, :scope > .ai-summary'));
   }
   return { first: contents[0], last: contents.at(-1) };
 }
