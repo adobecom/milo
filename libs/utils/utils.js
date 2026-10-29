@@ -1919,11 +1919,11 @@ function decorateDefaults(el) {
 }
 
 export async function getGnavSource() {
-  const { locale, dynamicNavKey } = getConfig();
+  const { locale } = getConfig();
   let url = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
-  if (dynamicNavKey) {
+  if (getMetadata('dynamic-nav')) {
     const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
+    url = dynamicNav(url);
   }
   return url;
 }
@@ -1954,9 +1954,13 @@ async function decorateHeader() {
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
-    && window.sessionStorage.getItem('gnavSource') !== null;
-  if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
+  const wantsBreadcrumbs = baseBreadcrumbs || breadcrumbs || autoBreadcrumbs;
+  let dynamicNavActive = false;
+  if (wantsBreadcrumbs && getMetadata('dynamic-nav') === 'on') {
+    const { getDynamicNavState } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    dynamicNavActive = getDynamicNavState().active;
+  }
+  if (!dynamicNavActive && wantsBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (isLocalNav()) {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
@@ -2820,7 +2824,7 @@ export async function loadDeferred(area, blocks, config) {
         .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
     }
   }
-  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
+  if (config?.env?.name !== 'prod' && (getMetadata('dynamic-nav') || config?.dynamicNavKey)) {
     const { miloLibs } = config;
     loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
