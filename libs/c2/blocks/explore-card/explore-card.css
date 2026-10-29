@@ -1,5 +1,6 @@
 :root:has(meta[name="foundation"][content="c2"]) {
-  .explore-card .explore-card-background .video-container button.play-pause-button {
+  .explore-card .explore-card-background .video-container button.play-pause-button,
+  .explore-card .explore-card-foreground .video-container button.play-pause-button {
     top: var(--s2a-spacing-lg);
     right: var(--s2a-spacing-lg);
     bottom: initial;
@@ -186,7 +187,8 @@
 
 @media (width >= 1440px) {
   :root:has(meta[name="foundation"][content="c2"]) {
-    .explore-card .explore-card-background .video-container button.play-pause-button {
+    .explore-card .explore-card-background .video-container button.play-pause-button,
+    .explore-card .explore-card-foreground .video-container button.play-pause-button {
       top: var(--s2a-spacing-xl);
       right: var(--s2a-spacing-xl);
     }
