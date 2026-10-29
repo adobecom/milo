@@ -32,6 +32,7 @@ function findLikelyLcp() {
   return element ? { element, url: element.currentSrc || element.src } : null;
 }
 
+const statusWhenLcpIsUnknown = () => (likelyLcpArea ? STATUS.EMPTY : STATUS.FAIL);
 const labelEstimate = (description) => (likelyLcpArea ? `${description} (Estimated in draft mode.)` : description);
 
 export async function getLcpEntry(url, area, observeLcp = defaultObserveLcp) {
@@ -165,8 +166,8 @@ export async function checkFragments(url, area, observeLcp) {
       checkId: PERFORMANCE_IDS.fragments,
       severity: PERFORMANCE_SEVERITIES.fragments,
       title: PERFORMANCE_TITLES.Performance,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      status: statusWhenLcpIsUnknown(),
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const hasFragments = lcp.element.closest('.fragment') || lcp.element.closest('.section')?.querySelector('[data-path*="fragment"]');
@@ -188,8 +189,8 @@ export async function checkPlaceholders(url, area, observeLcp) {
       checkId: PERFORMANCE_IDS.placeholders,
       severity: PERFORMANCE_SEVERITIES.placeholders,
       title: PERFORMANCE_TITLES.Placeholders,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      status: statusWhenLcpIsUnknown(),
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const section = lcp.element.closest('.section');
@@ -212,8 +213,8 @@ export async function checkIcons(url, area, observeLcp) {
       checkId: PERFORMANCE_IDS.icons,
       severity: PERFORMANCE_SEVERITIES.icons,
       title: PERFORMANCE_TITLES.Icons,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      status: statusWhenLcpIsUnknown(),
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const hasIcons = lcp.element.closest('.section')?.querySelector('.icon-milo');

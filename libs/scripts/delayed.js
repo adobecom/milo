@@ -120,17 +120,17 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 
 const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
 
+const hasDaPreviewParam = (params) => ['dapreview', 'quick-edit'].some((name) => params.get(name));
+
 export const isDaPreview = ({ hostname, search }) => {
   const isDaHost = isLocalHost(hostname) || hostname.endsWith('.aem.page')
     || /\.(stage-)?preview\.da\.live$/.test(hostname);
-  const params = new URLSearchParams(search);
-  return isDaHost && ['dapreview', 'quick-edit'].some((name) => params.get(name));
+  return isDaHost && hasDaPreviewParam(new URLSearchParams(search));
 };
 
 export const shouldAutoHighlight = ({ isLocal, isPreview, params }) => {
-  const hasDaPreviewParam = params.has('dapreview') || params.has('quick-edit');
   const mode = params.get('autoHighlight');
-  return !hasDaPreviewParam && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
+  return !hasDaPreviewParam(params) && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
 };
 
 export const loadPreflightResults = async () => {

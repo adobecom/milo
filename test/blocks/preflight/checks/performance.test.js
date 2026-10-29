@@ -56,6 +56,13 @@ describe('Sanity Checks', () => {
     expect(runChecks).to.exist;
   });
 
+  it('fails the LCP-section checks when the page has no LCP element', async () => {
+    const noLcp = () => Promise.resolve(null);
+    const results = await Promise.all([checkFragments, checkPlaceholders, checkIcons]
+      .map((check) => check('no-lcp-page', document, noLcp)));
+    expect(results.map(({ status }) => status)).to.deep.equal(['fail', 'fail', 'fail']);
+  });
+
   it('setLikelyLcp uses the largest loaded image in the first section', async () => {
     const main = document.createElement('main');
     main.innerHTML = '<div class="section"></div><div class="section"></div>';
@@ -113,5 +120,12 @@ describe('Sanity Checks', () => {
     const missing = await checkLcpEl('draft', area);
     expect(found.description).to.equal('Valid LCP in the first section detected. (Estimated in draft mode.)');
     expect(missing.description).to.equal('No LCP element found. (Estimated in draft mode.)');
+  });
+
+  it('does not fail the LCP-section checks when the draft estimate finds nothing', async () => {
+    setLikelyLcp(document.createElement('div'));
+    const results = await Promise.all([checkFragments, checkPlaceholders, checkIcons]
+      .map((check) => check('draft', document)));
+    expect(results.map(({ status }) => status)).to.deep.equal(['empty', 'empty', 'empty']);
   });
 });

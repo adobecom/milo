@@ -75,7 +75,7 @@
 }
 
 .draft-status[data-status='warn'] {
-  --draft-status-color: rgb(232 106 0);
+  --draft-status-color: rgb(171 79 0);
 }
 
 .draft-status[data-status='pass'] {

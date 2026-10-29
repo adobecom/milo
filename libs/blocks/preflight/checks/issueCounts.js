@@ -4,6 +4,12 @@ import { SEVERITY, STATUS } from './constants.js';
 
 const issues = (errors = 0, warnings = 0) => ({ errors, warnings });
 const failedToRun = { status: STATUS.FAIL };
+const unfinished = { status: STATUS.LIMBO };
+const SLOW_CHECK_TIMEOUT_MS = 10000;
+const withTimeout = (promise, ms, onTimeout) => Promise.race([
+  promise,
+  new Promise((resolve) => { setTimeout(() => resolve(onTimeout), ms); }),
+]);
 const isFail = (check) => check?.status === STATUS.FAIL;
 const isWarning = (check) => check?.status === STATUS.LIMBO
   || (isFail(check) && check.severity === SEVERITY.WARNING);
@@ -29,13 +35,18 @@ export function countIssues(checks, linkErrors = 0) {
   };
 }
 
-export async function getIssueCounts(options) {
+export async function getIssueCounts(
+  { slowCheckTimeoutMs = SLOW_CHECK_TIMEOUT_MS, ...options } = {},
+) {
   const [results, [linkCheck]] = await Promise.all([
     getPreflightResults(options),
-    runLocalizationChecks({ area: document }).catch(() => []),
+    withTimeout(runLocalizationChecks({ area: document }).catch(() => []), slowCheckTimeoutMs, []),
   ]);
   if (!results?.runChecks) return null;
-  const seo = await Promise.all((results.runChecks.seo ?? [])
-    .map((check) => Promise.resolve(check).catch(() => failedToRun)));
+  const seo = await Promise.all((results.runChecks.seo ?? []).map((check) => withTimeout(
+    Promise.resolve(check).catch(() => failedToRun),
+    slowCheckTimeoutMs,
+    unfinished,
+  )));
   return countIssues({ ...results.runChecks, seo }, linkCheck?.details?.violations?.length);
 }

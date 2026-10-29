@@ -55,8 +55,23 @@ function draftWithoutCursor() {
   return main.innerHTML;
 }
 
+const logFailure = (e) => window.lana?.log?.(`Preflight draft status failed: ${e}`, { tags: 'preflight' });
+
 const keepAcrossEdits = (...elements) => document.documentElement.append(...elements);
-const loadReport = () => loadBlock(createTag('div', { class: 'preflight' }));
+
+async function clearDataKeptFromPreviousReport() {
+  const [{ resetContent }, { resetAltAudit }] = await Promise.all([
+    import('../../blocks/preflight/panels/general.js'),
+    import('../../blocks/preflight/accessibility/audit-image-alt-text.js'),
+  ]);
+  resetContent();
+  resetAltAudit();
+}
+
+async function loadReport() {
+  await clearDataKeptFromPreviousReport();
+  return loadBlock(createTag('div', { class: 'preflight' }));
+}
 
 async function openReport() {
   const [content, { getModal }] = await Promise.all([loadReport(), import('../../blocks/modal/modal.js')]);
@@ -67,13 +82,17 @@ async function openReport() {
 
 function openReportOnce() {
   if (reportOpening || document.getElementById('preflight')) return;
-  reportOpening = openReport().finally(() => { reportOpening = undefined; });
+  reportOpening = openReport().catch(logFailure).finally(() => { reportOpening = undefined; });
 }
 
 async function refreshOpenReport() {
   const report = document.querySelector('#preflight .preflight');
   if (!report) return;
   const freshReport = await loadReport();
+  if (!report.isConnected) {
+    render(null, freshReport);
+    return;
+  }
   render(null, report);
   report.replaceWith(freshReport);
 }
@@ -82,8 +101,6 @@ function show({ status, text }) {
   bar.dataset.status = status;
   bar.querySelector('.notification-message').textContent = text;
 }
-
-const logFailure = (e) => window.lana?.log?.(`Preflight draft status failed: ${e}`, { tags: 'preflight' });
 
 async function check() {
   if (!bar.isConnected) return;
@@ -94,18 +111,23 @@ async function check() {
   clearPreflightCache();
   clearLocalizationCache();
   const counts = await getIssueCounts({ merchDelayMs: MERCH_HYDRATION_MS })
-    .catch((e) => { logFailure(e); return null; });
+    .catch((e) => { logFailure(e); checkedDraft = undefined; });
   show(counts ? summarize(counts) : FAILED);
   await refreshOpenReport();
 }
 
 let checking = Promise.resolve();
 const runCheck = () => { checking = checking.then(check).catch(logFailure); };
-const checkAfterEdits = debounce(runCheck, RECHECK_DEBOUNCE_MS);
+const recheck = debounce(runCheck, RECHECK_DEBOUNCE_MS);
+const LISTEN_TO_NON_BUBBLING = true;
+const isFragment = (area) => area.matches?.('main *');
+const checkAfterEdits = ({ target }) => {
+  if (!isFragment(target)) recheck();
+};
 
 function close() {
   bar.remove();
-  document.removeEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits);
+  document.removeEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits, LISTEN_TO_NON_BUBBLING);
 }
 
 export default function showDraftStatus() {
@@ -114,7 +136,7 @@ export default function showDraftStatus() {
   bar = createTag('div', { class: 'milo-preflight-overlay draft-status' }, BAR);
   bar.querySelector('.preflight-review-link').addEventListener('click', openReportOnce);
   bar.querySelector('.notification-close').addEventListener('click', close);
-  document.addEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits);
+  document.addEventListener(MILO_EVENTS.DEFERRED, checkAfterEdits, LISTEN_TO_NON_BUBBLING);
   keepAcrossEdits(bar);
   setLikelyLcp();
   show(CHECKING);

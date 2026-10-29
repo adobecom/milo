@@ -89,8 +89,14 @@ function showReturnPopover() {
   document.body.append(popover);
 }
 
+const findLiveAsset = ({ asset, src }) => (asset?.isConnected
+  ? asset
+  : [...document.querySelectorAll('main :is(img, video, iframe)')]
+    .find((el) => (el.getAttribute('data-video-source') || el.getAttribute('src')) === src));
+
 // Close the preflight modal and jump to the asset on the page.
-function goToAsset(el) {
+function goToAsset(asset) {
+  const el = findLiveAsset(asset);
   if (!el) return;
   document.getElementById('preflight')?.dispatchEvent(new CustomEvent('closeModal'));
   requestAnimationFrame(() => {
@@ -131,8 +137,8 @@ function AssetGroup({ group }) {
         role="button"
         tabindex="0"
         title='Go to this asset on the page'
-        onClick=${() => goToAsset(asset.asset)}
-        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToAsset(asset.asset); } }}>
+        onClick=${() => goToAsset(asset)}
+        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToAsset(asset); } }}>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}

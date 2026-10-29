@@ -73,4 +73,20 @@ describe('getIssueCounts', () => {
     const linksThrew = await seoErrors(draft);
     expect(linksThrew - linksChecked).to.equal(1);
   });
+
+  it('stops waiting for a hung link service and counts its check as a warning', async () => {
+    window.fetch.callsFake(async (url) => {
+      if (String(url).includes('spidy')) return new Promise(() => {});
+      return String(url).includes('/.milo/config.json')
+        ? linkServiceDown
+        : { ok: true, status: 200, json: async () => ({ data: [] }), text: async () => '' };
+    });
+    main.innerHTML = draft;
+    const counts = await getIssueCounts({
+      useCache: false,
+      merchDelayMs: 0,
+      slowCheckTimeoutMs: 200,
+    });
+    expect(counts.SEO.warnings).to.equal(1);
+  });
 });

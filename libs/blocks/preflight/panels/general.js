@@ -15,7 +15,13 @@ const DA_DOMAIN = 'da.live';
 const nonEDSContent = 'Non AEM EDS Content';
 const EXCLUDED_PATHS = ['/tools/caas', '/libs/'];
 
+const SIDEKICK_V6_AND_V7_STATUS_EVENTS = ['statusfetched', 'status-fetched'];
+
 const content = signal({});
+
+export function resetContent() {
+  content.value = {};
+}
 
 const navResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.navigation, description: 'Checking...' });
 const footerResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.footer, description: 'Checking...' });
@@ -155,12 +161,7 @@ async function setContent() {
 
   getStatuses();
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
-  sk?.addEventListener('statusfetched', async () => { // sidekick v6
-    getStatuses();
-  });
-  sk?.addEventListener('status-fetched', async () => { // sidekick v7
-    getStatuses();
-  });
+  SIDEKICK_V6_AND_V7_STATUS_EVENTS.forEach((event) => sk?.addEventListener(event, getStatuses));
 }
 
 async function handleAction(action) {

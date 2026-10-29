@@ -135,4 +135,28 @@ describe('Preflight Assets Panel (render paths)', () => {
     await waitFor(() => container.textContent.includes('No assets found in the main content.'), 600);
     expect(listedImages().length).to.equal(0);
   });
+
+  it('highlights the live image when DA replaced the body after the check', async function test() {
+    this.timeout(15000);
+    setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' } });
+    sinon.stub(window, 'matchMedia').returns({ matches: true });
+    sinon.stub(window, 'fetch').resolves({ ok: true, json: () => Promise.resolve({ data: [] }) });
+    const canvas = Object.assign(document.createElement('canvas'), { width: 800, height: 400 });
+    const main = document.createElement('main');
+    main.innerHTML = `<picture><img src="${canvas.toDataURL()}" width="800" height="400"></picture>`;
+    document.body.prepend(main);
+    await main.querySelector('img').decode();
+    setLikelyLcp();
+    mount();
+    render(html`<${Assets} />`, container);
+    await new Promise((r) => { setTimeout(r, 50); });
+    window.dispatchEvent(new Event('resize'));
+    const listed = () => container.querySelector('.assets-image-grid-item:not(.full-width)');
+    await waitFor(listed, 600);
+
+    const markup = main.innerHTML;
+    main.innerHTML = markup;
+    listed().click();
+    await waitFor(() => main.querySelector('img.preflight-asset-highlight'), 600);
+  });
 });

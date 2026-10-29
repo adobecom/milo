@@ -187,10 +187,10 @@ describe('loadPreflightResults', () => {
     window.history.replaceState(null, '', url);
     const bar = document.documentElement.querySelector(':scope > .draft-status');
     const diffFetched = fetchStub.getCalls().some(({ args }) => String(args[0]).includes('.plain.html'));
+    expect(bar).to.exist;
+    expect(diffFetched).to.equal(false);
     await waitFor(() => bar.dataset.status !== 'checking', 5000, 50);
     bar.querySelector('.notification-close').click();
-    expect(bar !== null).to.equal(true);
-    expect(diffFetched).to.equal(false);
   });
 });
 
@@ -213,6 +213,7 @@ describe('shouldAutoHighlight', () => {
     ['preview', 'dapreview=on', false],
     ['localhost', 'dapreview=local&autoHighlight=on', false],
     ['preview', 'quick-edit=on&autoHighlight=on', false],
+    ['preview', 'quick-edit=', true],
   ].forEach(([host, query, expected]) => {
     it(`${expected ? 'highlights' : 'skips'} ${host} ${query ? `with ${query}` : 'without parameters'}`, () => {
       const params = new URLSearchParams(query);
