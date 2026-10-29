@@ -499,25 +499,37 @@ async function buildByline(authorRows, config, base) {
 
 const dividerObservers = new WeakMap();
 
+export function getBlogSections(headerSection) {
+  const sections = [];
+  let section = headerSection?.nextElementSibling;
+  while (section) {
+    // Header initialization can precede section-metadata decoration.
+    const styleRow = [...(section.querySelector(':scope > .section-metadata')?.children || [])]
+      .find((row) => row.firstElementChild?.textContent.trim().toLowerCase() === 'style');
+    const styles = styleRow?.lastElementChild?.textContent.toLowerCase()
+      .split(',').map((style) => style.trim().replace(/\s+/g, '-'));
+    if (section.matches('footer, [data-footer-promo], .footer-promo, .blog-layout-end')
+      || styles?.includes('blog-layout-end')) break;
+    if (section.matches('.section:not([hidden])') && [...section.children].some((child) => (
+      !child.matches('.metadata, .section-metadata, .card-metadata')
+    ))) sections.push(section);
+    section = section.nextElementSibling;
+  }
+  return sections;
+}
+
 function decorateDividers(el) {
   if (el.classList.contains('no-dividers')) return;
   const headerSection = el.closest('.section');
   if (!headerSection) return;
 
   headerSection.classList.add('blog-divider-frame');
-  const sections = [headerSection];
-  let section = headerSection.nextElementSibling;
-  while (section?.classList.contains('section') && !section.querySelector('.card-metadata')) {
-    sections.push(section);
-    section = section.nextElementSibling;
-  }
-  const relatedSection = section?.classList.contains('section') ? section : null;
+  const sections = [headerSection, ...getBlogSections(headerSection)];
 
   const findEndpoint = () => {
     const layout = headerSection.nextElementSibling;
     if (layout?.classList.contains('blog-article-layout')) return layout;
-    // The related section can start with article text, wrapped during later decoration.
-    return relatedSection?.querySelector(':scope > .content:first-child') || sections.at(-1);
+    return getBlogSections(headerSection).at(-1) || headerSection;
   };
 
   let endpoint;
@@ -541,8 +553,7 @@ function decorateDividers(el) {
   dividerObservers.get(headerSection)?.disconnect();
   const observer = new ResizeObserver(updateFrame);
   dividerObservers.set(headerSection, observer);
-  [...sections, relatedSection, headerSection.parentElement]
-    .filter(Boolean)
+  [...sections, headerSection.parentElement]
     .forEach((target) => observer.observe(target));
   updateFrame([], observer);
 }

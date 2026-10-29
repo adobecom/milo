@@ -78,7 +78,7 @@
     }
 
     &:hover,
-    &:focus {
+    &:focus-visible {
       .icon-button {
         background-color: var(--s2a-color-transparent-white-24);
         border-color: var(--s2a-color-transparent-white-12);
@@ -207,12 +207,12 @@
             scale 0.6s var(--spring-in-settle) 0.2s,
             translate 0.55s var(--spring-in-settle) 0.4s;
         }
+      }
 
-        &:focus-visible {
-          outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
-          outline-offset: var(--s2a-border-width-2);
-          box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
-        }
+      &:focus-visible {
+        outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
+        outline-offset: var(--s2a-border-width-2);
+        box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
       }
 
       &.disable-animation:focus-within {

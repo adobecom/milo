@@ -6,6 +6,12 @@
   color: var(--text-color);
 }
 
+.blog-article-content .tag-cta {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+}
+
 .tag-cta .tag-cta-heading {
   margin: 0 0 var(--spacing-s);
   font-size: var(--type-heading-xl-size);

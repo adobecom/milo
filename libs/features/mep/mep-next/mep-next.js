@@ -3,8 +3,9 @@ import {
   getConfig,
   getMetadata,
   lingoActive,
+  getMarketConfig,
+  marketsLangForLocale,
 } from '../../../utils/utils.js';
-import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
 import { mepMasSubCollections } from './mep-mas-subcollection.js';
 import { applyGeoSpoof } from './spoof-country-ip.js';

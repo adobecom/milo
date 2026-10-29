@@ -17,6 +17,7 @@ const C1_BLOCKS = [
   'aside',
   'author-header',
   'blog-author',
+  'blog-related-content',
   'blog-side-navigation',
   'blog-header',
   'brand-concierge',
@@ -395,6 +396,7 @@ export function getMetadata(name, doc = document) {
 
 const AUP_SELECT_DISABLED_VALUES = ['off', 'false'];
 
+// Single source of truth for aup-select: URL param, then page metadata (which Target can change).
 export function getAupSelectValue() {
   const value = new URLSearchParams(window.location.search).get('aup-select')
     ?? getMetadata('aup-select');
@@ -404,6 +406,32 @@ export function getAupSelectValue() {
 
 export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
+}
+
+const getTargetTimeout = () => parseInt(new URLSearchParams(window.location.search).get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
+
+let targetReady;
+export function resetTargetReady() {
+  targetReady = {};
+  targetReady.promise = new Promise((resolve) => { targetReady.resolve = resolve; });
+}
+resetTargetReady();
+
+export function notifyTargetReady() {
+  targetReady.resolve();
+}
+
+// Never rejects and never waits forever, so awaiting it can't break the calling flow.
+export function whenTargetReady() {
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(resolve, getTargetTimeout());
+  });
+  return Promise.race([targetReady.promise, timeout])
+    .catch(() => {})
+    .finally(() => clearTimeout(timer));
 }
 
 export function isAupEnabled(useUniversalNav = false) {
@@ -2327,6 +2355,11 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
   ],
+  'merch-card-collection-autoblock': [
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('merch-card-collection.js'),
+  ],
   merch: [
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
@@ -2335,6 +2368,7 @@ const STATIC_BLOCK_DEPS = {
     () => `${getConfig().base}/martech/attributes.js`,
     () => `${getConfig().base}/utils/action.js`,
   ],
+  tabs: [() => `${getConfig().base}/martech/attributes.js`],
 };
 
 const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
@@ -2376,41 +2410,62 @@ const warmGeoIpSheet = (config, section, isDoc = true) => {
     .catch(() => null);
 };
 
+const MAX_PARALLEL_SECTIONS = 5;
+
+const getParallelSectionCount = () => {
+  const value = (PAGE_URL.searchParams.get('parallel-sections')
+    ?? getMetadata('parallel-sections'))?.trim() ?? '';
+  if (!/^\d+$/.test(value)) return 0;
+  return Math.min(Number(value), MAX_PARALLEL_SECTIONS);
+};
+
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
-  const [firstSection] = area.querySelectorAll('body > main > div');
-  if (!firstSection) return;
+  const sections = [...area.querySelectorAll('body > main > div')]
+    .slice(0, Math.max(1, getParallelSectionCount()));
+  if (!sections.length) return;
+  const queryAll = (selector) => sections
+    .flatMap((section) => [...section.querySelectorAll(selector)]);
   const config = getConfig();
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
-  const autoNames = new Set();
-  firstSection.querySelectorAll('a[href]').forEach((a) => {
-    let url;
-    try { url = new URL(a.href); } catch { return; }
-    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
-    if (!match) return;
-    const name = Object.keys(match)[0];
-    if (name === 'video' && !isMediaVideo(a.textContent)) return;
-    autoNames.add(name);
-  });
-  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
-    autoNames.add('video');
-  }
+  const getAutoNames = (section) => {
+    const names = new Set();
+    section.querySelectorAll('a[href]').forEach((a) => {
+      let url;
+      try { url = new URL(a.href); } catch { return; }
+      const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+      if (!match) return;
+      const name = Object.keys(match)[0];
+      if (name === 'video' && !isMediaVideo(a.textContent)) return;
+      names.add(name);
+    });
+    if ([...section.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+      names.add('video');
+    }
+    return names;
+  };
+  const sectionData = sections.map((section) => ({
+    blockEls: [...section.querySelectorAll(':scope > div[class]:not(.content)')],
+    autoNames: getAutoNames(section),
+    hasOst: !!section.querySelector(':scope > .ost'),
+  }));
+  const autoNames = new Set(sectionData.flatMap((data) => [...data.autoNames]));
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const sectionBlockEls = sectionData.flatMap((data) => data.blockEls);
   const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
-    && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
-      || [...autoNames].some(isCommerceBlock));
+  const hasCommerceContent = sectionData.some((data) => !data.hasOst
+    && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
+      || [...data.autoNames].some(isCommerceBlock)));
   if (hasCommerceContent) {
     // Target previews must apply their AUP config before the service initializes.
     const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
@@ -2428,14 +2483,14 @@ export function preloadLcpCodeFiles(area = document) {
       .catch(() => {});
   }
 
-  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+  if (sections.some((section) => /{{|%7B%7B/.test(section.innerHTML)) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
   }
 
-  warmGeoIpSheet(config, firstSection);
+  sections.forEach((section) => warmGeoIpSheet(config, section));
 
-  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const icons = queryAll('span.icon');
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
@@ -2477,10 +2532,7 @@ async function checkForPageMods() {
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
-    const params = new URL(window.location.href).searchParams;
-    calculatedTimeout = parseInt(params.get('target-timeout'), 10)
-      || parseInt(getMetadata('target-timeout'), 10)
-      || TARGET_TIMEOUT_MS;
+    calculatedTimeout = getTargetTimeout();
 
     const { locale } = getConfig();
     targetInteractionPromise = (async () => {
@@ -2585,6 +2637,7 @@ async function loadPostLCP(config) {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
+    notifyTargetReady();
     if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
   } else if (!isMartechLoaded) loadMartech();
 
@@ -2701,7 +2754,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export async function scrollToHashedElement(hash, area = document, behavior = 'smooth') {
+export async function scrollToHashedElement(hash, area = document, behavior = 'smooth', extraOffset = 0) {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2724,7 +2777,7 @@ export async function scrollToHashedElement(hash, area = document, behavior = 's
 
   const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
-    top: topOffset - bufferHeight,
+    top: topOffset - bufferHeight - extraOffset,
     behavior,
   });
 }
@@ -2811,6 +2864,62 @@ export function getMarketsUrl() {
   return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
 }
 
+const DEFAULT_MARKET = 'us';
+
+export const norm = normCountryCode;
+
+export async function getMarketConfig() {
+  try {
+    const config = getConfig();
+    if (!config.marketsConfig) {
+      const resp = await fetch(getMarketsUrl());
+      if (!resp.ok) throw new Error('Failed to load market config');
+      config.marketsConfig = await resp.json();
+    }
+    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    return { languages };
+  } catch (e) {
+    window.lana?.log(`Market Utils Error: ${e.message}`);
+    return null;
+  }
+}
+
+export function marketsLangForLocale(marketsConfig, locale) {
+  if (!marketsConfig?.languages?.length) return undefined;
+  const { languages } = marketsConfig;
+  const pagePrefix = locale?.prefix?.replace(/^\//, '') || '';
+  let languageEntry = languages.find((lang) => (lang.prefix || '') === pagePrefix);
+  if (!languageEntry && locale?.base) {
+    languageEntry = languages.find((lang) => (lang.prefix || '') === locale.base);
+  }
+  return languageEntry || languages[0];
+}
+
+export async function isSupportedMarket(country) {
+  if (!country) return false;
+  const config = await getMarketConfig();
+  if (!config) return false;
+  const { locale } = getConfig();
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return false;
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  return supported.includes(country.toLowerCase());
+}
+
+export async function getValidatedMarket() {
+  if (isBot()) return null;
+  const config = await getMarketConfig();
+  const detectedMarket = await resolveDetectedMarketCountry();
+  if (!config) return detectedMarket || DEFAULT_MARKET;
+  const { locale } = getConfig();
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return detectedMarket || DEFAULT_MARKET;
+  const market = detectedMarket || currLang.defaultMarket || DEFAULT_MARKET;
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
+  return validated || DEFAULT_MARKET;
+}
+
 const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
 function excludeUsUnlessExplicit(markets, geoIp) {
   if (markets.length <= 1) return markets;
@@ -2890,7 +2999,7 @@ export async function decorateLanguageBanner() {
   const pagePrefix = locale.prefix?.replace('/', '') || '';
   const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
     ?? languageEntries.find((m) => m.prefix === locale.base);
-  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
+  const isGeoSupported = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
   const addAndShow = (...ms) => {
@@ -2900,7 +3009,7 @@ export async function decorateLanguageBanner() {
 
   const useBannerFlow = usesBannerFlow();
   // Supported Market Path
-  if (isSupportedMarket) {
+  if (isGeoSupported) {
     if (!prefLang || pageLang === prefLang) return;
     const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
     const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
@@ -2944,7 +3053,7 @@ export async function decorateLanguageBanner() {
 
   if (!showBanner) return;
 
-  if (!useBannerFlow && !isSupportedMarket) {
+  if (!useBannerFlow && !isGeoSupported) {
     setLangRoutingConfig({
       showBanner: false,
       showModal: true,
@@ -3121,9 +3230,12 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-async function processSection(section, config, isDoc, lcpSectionId) {
+async function processSection(section, config, {
+  isLcpSection = false,
+  loadsPostLCP = false,
+  revealAfter,
+} = {}) {
   await resolveHighPriorityFragments(section);
-  const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
@@ -3144,8 +3256,9 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
+  await revealAfter;
   delete section.el.dataset.status;
-  if (isDoc && isLcpSection) await loadPostLCP(config);
+  if (loadsPostLCP) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -3193,7 +3306,12 @@ export async function loadArea(area = document) {
     }
     setCountry();
     preloadMarketsConfig();
-    await checkForPageMods();
+    try {
+      await checkForPageMods();
+    } finally {
+      // Post-LCP target changes are applied by loadPostLCP, which notifies once they land.
+      if (getConfig().mep?.targetEnabled !== 'postlcp') notifyTargetReady();
+    }
     initMepOverlay();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
@@ -3229,17 +3347,40 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  let lcpSectionId = null;
+  const parallelCount = isDoc ? getParallelSectionCount() : 0;
+  let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
+  const parallelSections = [];
+  htmlSections.slice(0, parallelCount).forEach((el, idx) => {
+    const revealAfter = parallelSections[idx - 1];
+    parallelSections[idx] = decorateSection(el, idx)
+      .then((section) => processSection(section, config, { isLcpSection: true, revealAfter }))
+      .catch(async (e) => {
+        window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
+        await revealAfter;
+        return [];
+      })
+      .then(async (sectionBlocks) => {
+        if (idx === lcpSectionId) await loadPostLCP(config);
+        return sectionBlocks;
+      });
+  });
 
-  for (const htmlSection of htmlSections) {
-    const section = await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
-    const isLastSection = section.idx === htmlSections.length - 1;
-    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx;
+  for (const [idx, htmlSection] of htmlSections.entries()) {
+    let sectionBlocks = await parallelSections[idx];
+    if (!sectionBlocks) {
+      const section = await decorateSection(htmlSection, idx);
+      const isLastSection = section.idx === htmlSections.length - 1;
+      if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
+        lcpSectionId = section.idx;
+      }
+      const isLcpSection = section.idx === lcpSectionId;
+      sectionBlocks = await processSection(section, config, {
+        isLcpSection,
+        loadsPostLCP: isDoc && isLcpSection,
+      });
     }
-    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
-    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
+    if (isDoc && idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
