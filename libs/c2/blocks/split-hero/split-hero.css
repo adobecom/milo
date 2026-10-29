@@ -125,7 +125,7 @@
     inline-size: 120%;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--split-hero-media-padding);
-    box-shadow: 0 86.137px 68.909px rgb(0 0 0 / 7%), 0 35.986px 28.789px rgb(0 0 0 / 5%), 0 19.24px 15.392px rgb(0 0 0 / 4%), 0 10.786px 8.629px rgb(0 0 0 / 4%), 0 5.728px 4.583px rgb(0 0 0 / 3%), 0 2.384px 1.907px rgb(0 0 0 / 2%);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 12px 24px 0 rgba(0, 0, 0, 0.14), 0 32px 64px 0 rgba(0, 0, 0, 0.16);
   }
 
   .split-hero-merch-card {
