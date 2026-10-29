@@ -3,6 +3,8 @@ import { decorateBlockBg, decorateBlockText, decorateButtons, decorateViewportCo
 
 const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
 
+const hasContent = (cell) => !!cell && (cell.children.length > 0 || !!cell.textContent.trim());
+
 const MAS_FIELD_CLASSES = {
   description: ['mas-description'],
   prices: ['mas-price', 'heading-5'],
@@ -34,7 +36,7 @@ function buildMerchCard(col) {
 
   let allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div)')]
     .filter((el) => el.textContent.trim() || el.matches('mas-field')
-      || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
+      || el.querySelector('mas-field, .con-button'));
   if (!allParas.length && col.textContent.trim()) {
     const para = createTag('p');
     para.append(...col.childNodes);
@@ -48,7 +50,7 @@ function buildMerchCard(col) {
 
   const merchCard = createTag('div', { class: 'sh-merch-card' });
   merchCard.append(cardContent);
-  const ctaSelector = '.con-button, a[data-wcs-osi], mas-field[field^="ctas"]';
+  const ctaSelector = '.con-button, mas-field[field^="ctas"]';
   const isCtaPara = (el) => {
     const cta = el.matches(ctaSelector) ? el : el.querySelector(ctaSelector);
     return !!cta && !cta.closest(MAS_BODY_FIELDS);
@@ -63,21 +65,19 @@ function buildMerchCard(col) {
   return merchCard;
 }
 
-const hasContent = (cell) => !!cell && (cell.children.length > 0 || !!cell.textContent.trim());
-
 function decorateCopy(copy) {
-  decorateBlockText(copy, { heading: '2', body: 'md', button: 'md' });
-  const [heading, ...otherHeadings] = copy.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  otherHeadings.forEach((other) => other.classList.remove('heading-2'));
+  const heading = copy.querySelector('h1, h2, h3, h4, h5, h6');
   const eyebrow = heading?.previousElementSibling;
   if (eyebrow?.matches('p')) {
     eyebrow.querySelectorAll('img[src*=".svg"]').forEach((img) => {
       img.src = getFederatedUrl(img.getAttribute('src'));
     });
-    eyebrow.classList.remove('body-md');
-    eyebrow.classList.add('sh-eyebrow', 'eyebrow');
+    eyebrow.classList.add('eyebrow');
     eyebrow.before(heading);
   }
+  decorateBlockText(copy, { heading: '2', body: 'md', button: 'md' });
+  const [, ...otherHeadings] = copy.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  otherHeadings.forEach((other) => other.classList.remove('heading-2'));
   normalizeMasFieldText(copy, 'md');
   copy.classList.add('sh-text');
 }
@@ -91,7 +91,7 @@ function decorateBackground(block, bg) {
   return colorBg;
 }
 
-function decorate(block, root) {
+function decorate(block) {
   const [mainRow, offerRow] = block.children;
   const [copy, media, bg] = mainRow?.children || [];
   const [merch, supporting] = offerRow?.children || [];
@@ -101,11 +101,7 @@ function decorate(block, root) {
   const copyGroup = createTag('div', { class: 'sh-copy' }, copy);
   const foreground = createTag('div', { class: 'sh-foreground' }, copyGroup);
   if (hasContent(merch)) {
-    const card = buildMerchCard(merch);
-    if (root.classList.contains('special-promo')) {
-      card.classList.add(root.classList.contains('dark') ? 'light' : 'dark');
-    }
-    copyGroup.append(createTag('div', { class: 'sh-promo-area' }, card));
+    copyGroup.append(createTag('div', { class: 'sh-promo-area' }, buildMerchCard(merch)));
   }
   if (hasContent(supporting)) {
     supporting.classList.add('sh-supporting', 'caption');

@@ -1,4 +1,8 @@
 .split-hero {
+  --sh-media-padding: var(--s2a-spacing-2xs);
+  --sh-media-radius: var(--s2a-border-radius-2xs);
+  --sh-frame-radius: var(--s2a-border-radius-xs);
+
   overflow-x: clip;
   position: relative;
 
@@ -60,25 +64,6 @@
     }
   }
 
-  .sh-eyebrow {
-    order: -1;
-    align-items: center;
-    color: var(--s2a-color-content-default);
-    display: flex;
-    gap: var(--s2a-spacing-2xs);
-    padding-block-end: var(--s2a-spacing-xs);
-
-    picture {
-      display: flex;
-    }
-
-    img {
-      block-size: 18px;
-      inline-size: 18px;
-      object-fit: contain;
-    }
-  }
-
   .sh-supporting {
     color: var(--s2a-color-content-default);
     margin-block-start: auto;
@@ -115,6 +100,25 @@
     }
   }
 
+  .sh-text .eyebrow {
+    order: -1;
+    align-items: center;
+    color: var(--s2a-color-content-default);
+    display: flex;
+    gap: var(--s2a-spacing-2xs);
+    padding-block-end: var(--s2a-spacing-xs);
+
+    picture {
+      display: flex;
+    }
+
+    img {
+      block-size: 18px;
+      inline-size: 18px;
+      object-fit: contain;
+    }
+  }
+
   .sh-media-frame {
     background: linear-gradient(var(--s2a-color-transparent-white-04), var(--s2a-color-transparent-white-04)), var(--s2a-color-transparent-black-16);
     backdrop-filter: blur(var(--s2a-blur-md));
@@ -124,10 +128,6 @@
     outline: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--sh-media-padding);
     box-shadow: 0 86.137px 68.909px rgb(0 0 0 / 7%), 0 35.986px 28.789px rgb(0 0 0 / 5%), 0 19.24px 15.392px rgb(0 0 0 / 4%), 0 10.786px 8.629px rgb(0 0 0 / 4%), 0 5.728px 4.583px rgb(0 0 0 / 3%), 0 2.384px 1.907px rgb(0 0 0 / 2%);
-  }
-
-  &.dark {
-    background: var(--s2a-color-gray-1000);
   }
 
   .sh-merch-card {
@@ -147,9 +147,8 @@
       background: transparent;
       border-color: transparent;
       vertical-align: -0.2em;
-      height: 18px;
+      height: 1rem;
       margin-inline-start: 3px;
-      block-size: auto;
       inline-size: auto;
 
       svg {
@@ -263,46 +262,6 @@
     }
   }
 
-  &.dark .sh-merch-card {
-    border-block-start-color: var(--s2a-color-transparent-white-16);
-  }
-
-  .sh-merch-card.dark {
-    --sh-content: var(--s2a-color-gray-25);
-    --sh-content-subtle: var(--s2a-color-transparent-white-64);
-    --sh-badge-color: var(--s2a-color-gray-1000);
-
-    background: var(--s2a-color-gray-900);
-    padding: var(--s2a-spacing-md);
-  }
-
-  .sh-merch-card.light {
-    --sh-content: var(--s2a-color-gray-1000);
-    --sh-content-subtle: var(--s2a-color-transparent-black-64);
-    --sh-badge-color: var(--s2a-color-gray-25);
-
-    background: var(--s2a-color-gray-50);
-    padding: var(--s2a-spacing-md);
-  }
-
-  &:is(.merch-sm, .legal) .sh-merch-content :is(.mas-description, .mas-short-description) {
-    font-size: var(--s2a-typography-font-size-body-sm);
-  }
-
-  &.merch-md .sh-merch-content :is(.mas-description, .mas-short-description) {
-    font-size: var(--s2a-typography-font-size-body-md);
-  }
-
-  &.cta-stack .sh-merch-ctas {
-    flex-direction: column;
-
-    .con-button {
-      flex: none;
-      inline-size: 100%;
-      max-inline-size: none;
-    }
-  }
-
   mas-field span.placeholder-resolved[data-template='priceStrikethrough'],
   mas-field span.placeholder-resolved[data-template='strikethrough'],
   mas-field span.price.price-strikethrough,
@@ -328,14 +287,6 @@
       inline-size: calc(1052px + 2 * var(--sh-media-padding));
     }
 
-    &.legal .sh-merch-content :is(.mas-description, .mas-short-description) {
-      font-size: var(--s2a-typography-font-size-body-md);
-    }
-  }
-}
-
-@media (width >= 900px) {
-  .split-hero {
     .sh-content {
       align-items: stretch;
       column-gap: var(--s2a-spacing-xs);
