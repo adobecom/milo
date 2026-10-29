@@ -1,4 +1,4 @@
-import { createTag, isAcomAssistantEnabled } from '../../utils/utils.js';
+import { createTag, isAcomAssistantEnabled, isAcomAssistantPanelEnabled } from '../../utils/utils.js';
 import { initAnalytics } from './bc-analytics.js';
 import {
   decorateBackground,
@@ -24,9 +24,15 @@ import {
   mountId,
   isMobile,
 } from './bc-bootstrap.js';
+import initChatPanel, {
+  openChatPanel,
+  closeChatPanel,
+  isChatPanelOpen,
+} from '../../features/chat-panel/chat-panel.js';
 
 const variants = {};
 let useAcomAssistant = false;
+let useAcomAssistantPanel = false;
 let acomAssistantModulePromise;
 
 async function routeAcomAssistantInput(options) {
@@ -48,6 +54,10 @@ function routeInput({ text, cards, source = 'input' }) {
     routeAcomAssistantInput({ text, cards, source }).catch((error) => {
       window.lana?.log?.(`AcomAssistant: failed to open chat (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
     });
+    return;
+  }
+  if (useAcomAssistantPanel) {
+    openChatPanel(text);
     return;
   }
   if (checkGlobal()) {
@@ -87,6 +97,7 @@ export default async function init(el) {
   // Reset variant flags so each block decorates independently of any prior init.
   Object.keys(variants).forEach((key) => delete variants[key]);
   useAcomAssistant = isAcomAssistantEnabled();
+  useAcomAssistantPanel = isAcomAssistantPanelEnabled();
 
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
@@ -103,6 +114,10 @@ export default async function init(el) {
 
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
+      if (useAcomAssistantPanel) {
+        closeChatPanel();
+        return;
+      }
       if (!window.adobe?.concierge?.clearHistory) {
         loadWebclient();
       }
@@ -243,6 +258,15 @@ export default async function init(el) {
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
   if (useAcomAssistant) return;
+
+  if (useAcomAssistantPanel) {
+    await initChatPanel();
+    if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
+    if (localStorage.getItem('bc-side-overlay') === 'open' && !isChatPanelOpen()) {
+      openChatPanel();
+    }
+    return;
+  }
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {

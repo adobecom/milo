@@ -505,10 +505,20 @@ export const [setConfig, updateConfig, getConfig] = (() => {
   ];
 })();
 
+export function isAcomAssistantPanelEnabled() {
+  const isStage = getConfig().env?.name === 'stage';
+  const param = new URLSearchParams(window.location.search).get('acom-assistant-panel')
+    || PAGE_URL.searchParams.get('acom-assistant-panel');
+  if (isStage && param === 'off') return false;
+  if (isStage && ['on', 'local'].includes(param)) return true;
+  return getMetadata('acom-assistant-panel') === 'on';
+}
+
 // TODO: ?acom-assistant=off on stage is a temporary QE override; remove after rollout.
 export function isAcomAssistantEnabled() {
   const isStage = getConfig().env?.name === 'stage';
   if (isStage && PAGE_URL.searchParams.get('acom-assistant') === 'off') return false;
+  if (isAcomAssistantPanelEnabled()) return false;
   return getMetadata('acom-assistant') === 'on';
 }
 
