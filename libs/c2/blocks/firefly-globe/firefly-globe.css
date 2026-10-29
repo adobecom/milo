@@ -12,7 +12,6 @@
 }
 
 .firefly-globe {
-  --fg-hang-max: 0.8em;
   --fg-copy-max: 1920px;
   --fg-copy-pad: var(--s2a-spacing-lg);
   --fg-crosshair-width: 1px;
@@ -26,8 +25,9 @@
   --fg-controls-top: calc(var(--fg-nav-h) + var(--fg-controls-inset));
   --fg-controls-entry-top: calc(var(--s2a-border-radius-xl) + var(--fg-controls-inset));
   --fg-runway-height: 240vh;
+  --fg-travel-vh: 240vh;
 
-  height: var(--fg-runway-height);
+  height: var(--fg-pq-height, var(--fg-runway-height));
   position: relative;
   background: var(--s2a-color-gray-900);
   margin-top: 0;
@@ -93,6 +93,7 @@
 @media (width >= 768px) {
   .firefly-globe {
     --fg-runway-height: 340vh;
+    --fg-travel-vh: 340vh;
     --fg-copy-pad: var(--s2a-spacing-3xl);
     --fg-controls-inset: var(--s2a-spacing-lg);
   }
@@ -176,11 +177,34 @@
 
 .firefly-globe-spin-toggle {
   position: absolute;
-  top: calc(
-    var(--fg-controls-top)
-    - (var(--fg-controls-top) - var(--fg-controls-entry-top)) * var(--fg-entry-release, 0)
-  );
+  top: var(--fg-controls-top);
   inset-inline-end: var(--fg-controls-inset);
+}
+
+@supports (animation-timeline: view()) {
+  .firefly-globe:not(.firefly-globe-reduced) {
+    --fg-entry-lift: 45vh;
+
+    view-timeline: --fg-entry;
+
+    .firefly-globe-world { overflow: clip; }
+
+    .firefly-globe-canvas,
+    .firefly-globe-a11y-cards,
+    .firefly-globe-spin-toggle {
+      animation: fg-entry-lift cubic-bezier(0.333, 0, 0.667, 0.333) both;
+      animation-timeline: --fg-entry;
+      animation-range: entry;
+    }
+
+    .firefly-globe-spin-toggle {
+      --fg-entry-lift: calc(var(--fg-controls-top) - var(--fg-controls-entry-top));
+    }
+  }
+}
+
+@keyframes fg-entry-lift {
+  from { translate: 0 calc(-1 * var(--fg-entry-lift)); }
 }
 
 .firefly-globe-spin-toggle .firefly-globe-icon-play { display: none; }
@@ -232,21 +256,14 @@
 
 .firefly-globe-pullquote-pin {
   position: absolute;
-  top: 0;
-  bottom: clamp(
-    0px,
-    var(--fg-pq-half-box, var(--fg-runway-height)),
-    calc((1 - var(--fg-pq-appear-t, 0.7)) * var(--fg-runway-height) - var(--fg-optical-center))
-  );
-  left: 0;
-  right: 0;
+  inset: 0;
   pointer-events: none;
 }
 
 .firefly-globe-pullquote-rail {
   position: sticky;
-  top: var(--fg-optical-center);
-  height: 0;
+  top: 0;
+  height: min(var(--fg-pq-rail-h, 100vh), 100vh);
 }
 
 .firefly-globe-pullquote {
@@ -255,15 +272,11 @@
   /* Yields on short viewports so a long quote can't outgrow the band. */
   --fg-pq-gap: min(var(--fg-pq-ideal-gap), calc(var(--fg-band-h) * 0.2));
   --fg-pq-pad-block: var(--fg-copy-pad);
-  --fg-pq-copy-rise: 14px;
-  --fg-pq-line-start: 120%; /* how far below its mask a line waits, as a share of its own height */
-  --fg-pq-line-wave: 20%;
-  --fg-pq-line-fade-from: 0.6;
-  --fg-pq-line-bleed: 0.14em; /* mask headroom for ascenders/descenders, taken back off the flow */
   --fg-pq-rule-color: var(--s2a-color-gray-800);
+  --fg-pq-ink: var(--s2a-color-gray-25);
 
   position: absolute;
-  top: 0;
+  top: var(--fg-optical-center);
   inset-inline: 0;
   box-sizing: border-box;
   max-width: var(--fg-copy-max);
@@ -280,7 +293,6 @@
   transform: translateY(max(-50%, calc(var(--fg-band-h) * -0.5)));
 }
 
-/* Four rules at the same insets, drawn by masking. */
 .firefly-globe-pullquote::before,
 .firefly-globe-pullquote::after {
   content: '';
@@ -292,103 +304,38 @@
   border-style: solid;
   border-width: 0;
   border-color: var(--fg-pq-rule-color, currentcolor);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
 }
 
-/* Each rule is masked to the fraction of itself that is drawn, measured along its OWN clockwise
-   direction — top runs left→right, right top→bottom, bottom right→left, left bottom→top. The
-   gradient's direction encodes that clockwise sense, so a var never needs to know which edge it is
-   on — and since the horizontals always share a fraction, as do the verticals, two vars cover four
-   rules. JS writes them per frame; the 100% fallbacks mean no-JS renders the complete crosshair. */
 .firefly-globe-pullquote::before {
   inset-block: var(--fg-pq-pad-block);
   inset-inline: 0;
   border-block-width: var(--fg-crosshair-width);
-  -webkit-mask-image:
-    linear-gradient(to right, #000 var(--fg-pq-h, 100%), transparent var(--fg-pq-h, 100%)),
-    linear-gradient(to left, #000 var(--fg-pq-h, 100%), transparent var(--fg-pq-h, 100%));
-  mask-image:
-    linear-gradient(to right, #000 var(--fg-pq-h, 100%), transparent var(--fg-pq-h, 100%)),
-    linear-gradient(to left, #000 var(--fg-pq-h, 100%), transparent var(--fg-pq-h, 100%));
-  -webkit-mask-position: left top, left bottom;
-  mask-position: left top, left bottom;
-  -webkit-mask-size: 100% 51%;
-  mask-size: 100% 51%;
 }
 
-/* 51% per half so a subpixel box height can't leave a rule half-masked; the halves overlap across
-   the middle, where there is nothing to draw. */
 .firefly-globe-pullquote::after {
   inset-block: 0;
   inset-inline: var(--fg-copy-pad);
   border-inline-width: var(--fg-crosshair-width);
-  -webkit-mask-image:
-    linear-gradient(to bottom, #000 var(--fg-pq-v, 100%), transparent var(--fg-pq-v, 100%)),
-    linear-gradient(to top, #000 var(--fg-pq-v, 100%), transparent var(--fg-pq-v, 100%));
-  mask-image:
-    linear-gradient(to bottom, #000 var(--fg-pq-v, 100%), transparent var(--fg-pq-v, 100%)),
-    linear-gradient(to top, #000 var(--fg-pq-v, 100%), transparent var(--fg-pq-v, 100%));
-  -webkit-mask-position: right top, left top;
-  mask-position: right top, left top;
-  -webkit-mask-size: 51% 100%;
-  mask-size: 51% 100%;
 }
 
 /* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See
    README. */
 .firefly-globe-pullquote-quote {
-  color: var(--s2a-color-gray-25);
+  color: var(--fg-pq-ink);
   margin: 0;
 }
 
-/* Written by the split. Flex so the lines' negative bleed margins meet without collapsing. */
-.firefly-globe-pullquote-lines {
-  display: flex;
-  flex-direction: column;
-}
-
-/* One mask per rendered line, so each rolls up into place from under it. JS writes
-   --fg-pq-line-v per line, already eased and staggered; the 1 fallbacks are the rest state. */
-.firefly-globe-pullquote-line {
-  display: block;
-  overflow: hidden;
-  transform: translate3d(0, calc(
-    (1 - var(--fg-pq-line-v, 1)) * var(--fg-pq-line-rank, 0) * var(--fg-pq-line-wave)
-  ), 0);
-
-  /* Bleed for the glyphs and the hung mark, taken straight back off the flow. */
-  padding: var(--fg-pq-line-bleed) var(--fg-hang-max);
-  margin: calc(var(--fg-pq-line-bleed) * -1) calc(var(--fg-hang-max) * -1);
-}
-
-.firefly-globe-pullquote-line-inner {
-  display: inline-block;
-  opacity: calc(
-    var(--fg-pq-line-fade-from)
-    + (1 - var(--fg-pq-line-fade-from)) * var(--fg-pq-line-o, 1)
-  );
-  transform: translate3d(0, calc((1 - var(--fg-pq-line-v, 1)) * var(--fg-pq-line-start)), 0);
-}
-
-.firefly-globe-pullquote-sr {
-  -webkit-user-select: none;
-  user-select: none;
-}
-
 .firefly-globe-pullquote-name {
-  opacity: var(--fg-pq-copy-n, 1);
-  transform: translateY(calc(var(--fg-pq-copy-rise) * (1 - var(--fg-pq-copy-n, 1))));
   font-family: var(--body-font-family);
-  color: var(--s2a-color-gray-25);
+  color: var(--fg-pq-ink);
   margin: 0;
 }
 
 .firefly-globe-pullquote-role {
-  opacity: var(--fg-pq-copy-r, 1);
-  transform: translateY(calc(var(--fg-pq-copy-rise) * (1 - var(--fg-pq-copy-r, 1))));
+  --fg-pq-ink: var(--s2a-color-gray-400);
+
   font-family: var(--body-font-family);
-  color: var(--s2a-color-gray-400);
+  color: var(--fg-pq-ink);
   margin: 0;
 }
 
@@ -413,22 +360,40 @@
 
   position: relative;
   top: auto;
-  opacity: 1;
   transform: none;
+}
+
+.firefly-globe-pq-particles .firefly-globe-pullquote:not(.is-dom) {
+  --fg-pq-dom-pct: calc(var(--fg-pq-dom, 0) * 100%);
+
+  -webkit-font-smoothing: auto;
+
+  :is(.firefly-globe-pullquote-quote, .firefly-globe-pullquote-name, .firefly-globe-pullquote-role) {
+    color: color-mix(in srgb, var(--fg-pq-ink) var(--fg-pq-dom-pct), transparent);
+  }
+
+  &::before,
+  &::after {
+    border-color: color-mix(in srgb, var(--fg-pq-rule-color) var(--fg-pq-dom-pct), transparent);
+  }
+
+  ::selection {
+    color: color-mix(in srgb, currentcolor var(--fg-pq-dom-pct), transparent);
+    background: rgb(255 255 255 / 25%);
+  }
+}
+
+.firefly-globe-pq-particles .firefly-globe-pullquote.is-dom {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.firefly-globe-pq-particles .firefly-globe-pullquote.is-dom.is-live {
+  opacity: 1;
+}
+
+.firefly-globe-pq-particles .firefly-globe-pullquote.is-live {
   pointer-events: auto;
-}
-
-.firefly-globe-reduced .firefly-globe-pullquote::before,
-.firefly-globe-reduced .firefly-globe-pullquote::after {
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-
-/* RM can be toggled after the lines already carry a written progress var. */
-.firefly-globe-reduced .firefly-globe-pullquote-line,
-.firefly-globe-reduced .firefly-globe-pullquote-line-inner {
-  opacity: 1;
-  transform: none;
 }
 
 .firefly-globe-modal {

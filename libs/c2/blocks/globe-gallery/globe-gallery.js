@@ -1,7 +1,7 @@
 import * as THREE from '../../../deps/three.js';
 import {
   parseAuthoredContent, fetchFragmentCards, buildGlobeDom,
-  optimizeImgUrl, layoutQuote, scatterCards,
+  optimizeImgUrl, scatterCards,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
@@ -13,8 +13,9 @@ import createGlobeModal from './src/modal.js';
 import createInteraction from './src/interaction.js';
 import createGlobeControls from './src/controls.js';
 import createCursor from './src/cursor.js';
+import { createPullQuote } from './src/quote-particles.js';
 import {
-  easeOutCubic, easeOutQuart, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
+  easeOutCubic, easeInOutCubic, easeInOutQuint, lerpN, clamp01, coverFit,
   buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ, capDpr, CAM_FOV, TAN_HALF_FOV,
 } from './src/math.js';
 import * as TL from './src/timeline.js';
@@ -105,17 +106,6 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
-const PQ_REVEAL_IN_MS = 800;
-const PQ_REVEAL_OUT_MS = 250;
-
-// Shares of the reveal window; horizontals lead verticals.
-const PQ_DRAW_H_SPAN = 0.82;
-const PQ_DRAW_V_START = 0.26;
-const PQ_COPY_PARTS = [['n', 0.18], ['r', 0.28]];
-const PQ_COPY_LINE_STAGGER = 0.05;
-const PQ_COPY_LINE_LAG_MAX = 0.2;
-const PQ_COPY_LINE_RANK_CAP = 4;
-
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
 
@@ -159,11 +149,6 @@ const MASONRY_MORPH_RATE = 0.05; // per-frame
 // Near-camera proximity fade, in card-heights of depth.
 const FACING_EDGE_ON_BAND = 0.25; // |normal.z| half-width of the facing fade-out band
 const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE
-// Near-camera fade. The BAND is per breakpoint (bp.NEAR_FADE_START/END, in mean card-heights of
-// camera depth) — sm cards are far larger against the viewport, so the two can want a different
-// feel. The RAMP SHAPE below is shared: it is how the band is spent, not how wide it is.
-const NEAR_FADE_OPACITY_BIAS = 0.4; // exponent on the prox opacity ramp (<1 = fade out later)
-const NEAR_FADE_DISPERSE_RAMP = 0.9; // exponent on uDisperse, applied here not in the shader
 
 const CARD_ORDER_STEPS = 1000;
 const CARD_ORDER_HANDOVER_T = 0.5;
@@ -408,16 +393,6 @@ function createGlobeGalleryRuntime(
   let navH = 0; // --gg-nav-h; see README (The nav band)
 
   const worldEl = q('.globe-gallery-world');
-  const pqEl = q('.globe-gallery-pullquote');
-  // The cached strings elide unchanged style writes.
-  const pq = {
-    quoteEl: q('.globe-gallery-pullquote-quote'),
-    lineEls: [], // one per rendered line
-    splitW: 0, // box width they were split at
-    revealT: 0,
-    frameStr: '',
-    copyStr: '',
-  };
 
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
@@ -643,8 +618,6 @@ function createGlobeGalleryRuntime(
     );
     // eslint-disable-next-line no-use-before-define -- hoisted; both are plain function decls
     publishPqAppearZoomT();
-    // eslint-disable-next-line no-use-before-define -- same
-    publishPqMetrics();
   }
 
   // Read live each frame, so writing these morphs the card into its native shape.
@@ -944,6 +917,18 @@ function createGlobeGalleryRuntime(
     blockHeight = root.offsetHeight;
   }
 
+  const pullQuote = createPullQuote({
+    root,
+    getBp: () => bp,
+    getView: () => ({ W, H, navH }),
+    getSpan: () => frameInput,
+    getFormationVh: () => formationVh,
+    getCards: () => cards,
+    getSphereGroup: () => sphereGroup,
+    isCardManaged: modal.isCardManaged,
+    onHeightChange: measureBlock,
+  });
+
   function readCssVars() {
     const rootStyle = getComputedStyle(root);
     const cssNum = (prop) => {
@@ -964,25 +949,7 @@ function createGlobeGalleryRuntime(
   function publishPqAppearZoomT() {
     const clearZ = -bp.SPHERE_R + cardVanishDepth();
     pqAppearZoomT = TL.zoomTAtCamZ(clearZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END);
-    // CSS pins against the tail, not the zoom span.
-    const tailT = pqAppearZoomT * TL.ZOOM_TO_TAIL_T;
-    root.style.setProperty('--gg-pq-appear-t', tailT.toFixed(4));
-  }
-
-  // Every other term cancels to half the quote box; CSS clamps it to the reveal point. See README.
-  function publishPqMetrics() {
-    if (!pqEl || !pqEl.isConnected) return;
-    const halfBox = pqEl.getBoundingClientRect().height / 2;
-    root.style.setProperty('--gg-pq-half-box', `${halfBox.toFixed(1)}px`);
-  }
-
-  // Both horizontals take h, both verticals v; the gradients carry the clockwise direction.
-  function writeFrameVars(h, v) {
-    const str = `${h.toFixed(4)};${v.toFixed(4)}`;
-    if (str === pq.frameStr) return;
-    pq.frameStr = str;
-    pqEl.style.setProperty('--gg-pq-h', `${(h * 100).toFixed(2)}%`);
-    pqEl.style.setProperty('--gg-pq-v', `${(v * 100).toFixed(2)}%`);
+    pullQuote.setCue(pqAppearZoomT);
   }
 
   function formedScrollPx() {
@@ -1051,7 +1018,7 @@ function createGlobeGalleryRuntime(
   // Live to the pointer: drag, tap-to-open, canvas cursor and the on-canvas controls all retire
   // together. sphereFormT saturates at 1 for the whole zoom tail, so the pull-quote cue is what
   // actually ends the pointer-interactive stretch.
-  const globeLive = () => globeFormed() && frameState.zoomT < pqAppearZoomT;
+  const globeLive = () => globeFormed() && frameState.zoomT < pullQuote.liveUntil();
 
   controls = createGlobeControls({
     q,
@@ -1060,16 +1027,14 @@ function createGlobeGalleryRuntime(
     getHintDismissed: () => hintRetired,
     rotate: (dir) => {
       hintRetired = true;
-
       rotateStep(dir);
     },
   });
 
   cursor = createCursor({
-    getGlobeLive: globeLive,
-    getCursorRetired: () => hintRetired || frameState.zoomT > TL.CURSOR_ZOOM_RETIRE_T,
+    getGlobeLive: globeFormed,
+    getCursorRetired: () => hintRetired || frameState.zoomT >= pullQuote.liveUntil(),
     labelText: hintText,
-    drag,
   });
 
   const dragSensitivity = () => {
@@ -1088,7 +1053,6 @@ function createGlobeGalleryRuntime(
     drag,
     // Pitch follows geometry, not pointer type: the barrel is yaw-only for mouse too.
     getYawOnly: () => bp.YAW_ONLY,
-    isCursorActive: () => cursor.isActive(),
     onDrag: () => { hintRetired = true; },
   });
 
@@ -1120,6 +1084,7 @@ function createGlobeGalleryRuntime(
     frameInput.blockDocTop = blockDocTop;
     frameInput.blockHeight = blockHeight;
     frameInput.formPx = formedScrollPx();
+    frameInput.zoomPx = pullQuote.zoomPx();
     frameInput.viewportH = H;
     frameInput.arcScale = bp.CARD_W_ARC / bp.CARD_W_SPHERE;
     frameInput.entryLeadVh = bp.ENTRY_LEAD_VH;
@@ -1150,7 +1115,7 @@ function createGlobeGalleryRuntime(
       camera.position.z = camZArc;
     } else {
       activeCamera = camera;
-      // easeInCubic matches the zoom's easeOutCubic; apparent size is held by sphereGroup.z.
+      // easeInCubic into the zoom's ease-out; apparent size is held by sphereGroup.z.
       const camZ = zoomT === 0
         ? lerpN(camZArc, CAM_Z_SPHERE, sphereFormT * sphereFormT * sphereFormT)
         : TL.camZAtZoomT(zoomT, CAM_Z_SPHERE, CAM_Z_END);
@@ -1173,6 +1138,15 @@ function createGlobeGalleryRuntime(
       navNudge.active = false;
     }
     wasBrowsing = browsing;
+
+    if (pullQuote.ownsCards()) {
+      drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
+      navNudge.active = false;
+      sphereDragWarp = 0;
+      refreshSphereRotQuat();
+      return sphereOrient.y !== 0 || sphereOrient.x !== 0 || sphereOrient.z !== 0;
+    }
+    const restK = pullQuote.handoffEase(frame.zoomT);
 
     if (navNudge.active) {
       navNudge.frame += dtScale;
@@ -1250,7 +1224,9 @@ function createGlobeGalleryRuntime(
       const baseline = drag.isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
       warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + dragSpeed * SPHERE_DRAG_WARP_VEL);
     }
-    sphereDragWarp += (warpTarget - sphereDragWarp) * (1 - (1 - SPHERE_DRAG_WARP_EASE) ** dtScale);
+    sphereDragWarp += (warpTarget * restK - sphereDragWarp)
+      * (1 - (1 - SPHERE_DRAG_WARP_EASE) ** dtScale);
+    sphereDragWarp = Math.min(sphereDragWarp, SPHERE_DRAG_WARP_MAX * restK);
     if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
 
     // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
@@ -1303,95 +1279,11 @@ function createGlobeGalleryRuntime(
     // Past the reveal every card is prox-faded out and the hint text has finished; the scene
     // holds nothing else, so the draw is skipped too. The modal is the exception: its backdrop
     // blurs this canvas, so hiding it would leave the blur with nothing to sample.
-    canvasHidden = modal.getModalIdx() < 0
-      && (lenisY < showTrigger
-        || zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T);
+    const pastEnd = pullQuote.isOn()
+      ? pullQuote.isDone(lenisY)
+      : zoomT >= pqAppearZoomT + TL.CANVAS_HIDE_MARGIN_T;
+    canvasHidden = modal.getModalIdx() < 0 && (lenisY < showTrigger || pastEnd);
     canvas.style.display = canvasHidden ? 'none' : 'block';
-  }
-
-  function updatePullQuoteCopy(reveal) {
-    const prog = (lag) => clamp01((reveal - lag) / (1 - lag));
-    const arrive = (lag) => easeOutCubic(prog(lag));
-    const lines = pq.lineEls;
-    const last = lines.length - 1;
-    let str = '';
-    const vals = PQ_COPY_PARTS.map(([, lag]) => arrive(lag));
-    vals.forEach((v) => { str += `${v.toFixed(3)};`; });
-    const lagStep = last > 0 ? Math.min(PQ_COPY_LINE_STAGGER, PQ_COPY_LINE_LAG_MAX / last) : 0;
-    const span = 1 - lagStep * last;
-    const lineVals = lines.map((_, i) => easeOutQuart(clamp01((reveal - lagStep * i) / span)));
-    const lineFades = lines.map((_, i) => prog(lagStep * i));
-    lineVals.forEach((v, i) => { str += `${v.toFixed(3)},${lineFades[i].toFixed(3)};`; });
-    if (str === pq.copyStr) return;
-    pq.copyStr = str;
-    PQ_COPY_PARTS.forEach(([key], i) => {
-      pqEl.style.setProperty(`--gg-pq-copy-${key}`, vals[i].toFixed(3));
-    });
-    lines.forEach((el, i) => {
-      el.style.setProperty('--gg-pq-line-v', lineVals[i].toFixed(3));
-      el.style.setProperty('--gg-pq-line-o', lineFades[i].toFixed(3));
-    });
-  }
-
-  function advanceReveal(zoomT) {
-    const fwd = zoomT >= pqAppearZoomT;
-    const step = (frameState.dtScale * TL.FRAME_MS) / (fwd ? PQ_REVEAL_IN_MS : PQ_REVEAL_OUT_MS);
-    pq.revealT = clamp01(pq.revealT + (fwd ? step : -step));
-    return pq.revealT;
-  }
-
-  function writePullQuoteFrame(reveal) {
-    const hDrawn = easeOutCubic(clamp01(reveal / PQ_DRAW_H_SPAN));
-    const vDrawn = easeOutCubic(clamp01((reveal - PQ_DRAW_V_START) / (1 - PQ_DRAW_V_START)));
-    writeFrameVars(hDrawn, vDrawn);
-    updatePullQuoteCopy(reveal);
-  }
-
-  function splitQuote() {
-    pq.lineEls = layoutQuote(pq.quoteEl);
-    pq.lineEls.forEach((el, i) => {
-      el.style.setProperty('--gg-pq-line-rank', Math.min(i, PQ_COPY_LINE_RANK_CAP));
-    });
-  }
-
-  // Fresh line elements carry no progress var, so the cache is dropped and the frame rewritten.
-  function relayoutQuote(force) {
-    if (!pqEl || !pqEl.isConnected || !pq.quoteEl) return;
-    const w = pqEl.clientWidth;
-    if (!force && w === pq.splitW) return;
-    pq.splitW = w;
-    pq.quoteEl.style.removeProperty('font-size');
-    pq.quoteEl.style.removeProperty('letter-spacing');
-    splitQuote();
-    pq.copyStr = '';
-    if (!reducedMotion) {
-      const bandH = H - navH;
-      if (bandH > 0 && pqEl.scrollHeight > bandH) {
-        const origFs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
-        pq.quoteEl.style.letterSpacing = 'normal';
-        for (let i = 0; i < 2 && pqEl.scrollHeight > bandH; i += 1) {
-          const fs = parseFloat(getComputedStyle(pq.quoteEl).fontSize);
-          const next = Math.max(origFs * 0.5, fs * (bandH / pqEl.scrollHeight));
-          if (Math.abs(next - fs) < 0.5) break;
-          pq.quoteEl.style.fontSize = `${next.toFixed(1)}px`;
-          splitQuote();
-        }
-      }
-      writePullQuoteFrame(pq.revealT);
-    }
-  }
-
-  function dropQuoteSelection() {
-    const sel = window.getSelection();
-    if (sel && !sel.isCollapsed && pqEl.contains(sel.anchorNode)) sel.removeAllRanges();
-  }
-
-  function updatePullQuote(frame) {
-    if (reducedMotion || !pqEl) return;
-    const live = frame.zoomT >= pqAppearZoomT;
-    if (!live && pqEl.style.pointerEvents === 'auto') dropQuoteSelection();
-    pqEl.style.pointerEvents = live ? 'auto' : 'none';
-    writePullQuoteFrame(advanceReveal(frame.zoomT));
   }
 
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
@@ -1434,21 +1326,19 @@ function createGlobeGalleryRuntime(
 
   function placeSphereCard(card, mesh, frame) {
     const { sphereRotActive, sphGroupZ } = frame;
-    mesh.visible = true;
-    const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
+    const hs = 1 + card.hoverT * HOVER_SCALE;
     if (sphereRotActive) {
       mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
     } else {
       mesh.position.copy(card.spherePos);
     }
-    // Return early ONLY at depth ≤ 0 — a return leaves the transform stale, which scroll jitter
-    // shows as a flash.
     const depth = camera.position.z - (sphGroupZ + mesh.position.z);
-    if (depth <= 0) { mesh.visible = false; return; }
     // One band for the whole wall, so the order is purely by depth.
     const fadeEnd = cardVanishDepth();
     const fadeStart = bp.NEAR_FADE_START * fadeRefH;
-    const proxFade = clamp01((depth - fadeEnd) / (fadeStart - fadeEnd));
+    const proxFade = pullQuote.isOn() && mesh.position.z < 0
+      ? 1
+      : clamp01((depth - fadeEnd) / (fadeStart - fadeEnd));
     // Skip the DRAW, not the state updates, once fully faded.
     mesh.visible = proxFade > 0;
     mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
@@ -1459,12 +1349,10 @@ function createGlobeGalleryRuntime(
       mesh.quaternion.copy(card.sphereQuat);
     }
     applyCardFacing(mesh);
-    // Max dissolve, min opacity, so neither un-hides what the other hides.
-    const proxDis = 1 - proxFade;
-    const revealDis = 1 - card.revealT;
-    mesh.material.opacity = Math.min(proxFade ** NEAR_FADE_OPACITY_BIAS, card.revealT);
-    mesh.material.uniforms.uDissolve.value = Math.max(proxDis, revealDis);
-    mesh.material.uniforms.uDisperse.value = proxDis ** NEAR_FADE_DISPERSE_RAMP;
+    if (depth <= 0) { mesh.visible = false; return; }
+    if (pullQuote.takeNear(card, proxFade)) mesh.visible = false;
+    mesh.material.opacity = Math.min(proxFade, card.revealT);
+    mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = proxFade;
     if (CA_ENABLED) {
@@ -1659,6 +1547,7 @@ function createGlobeGalleryRuntime(
     // the cue would otherwise hold its hover.
     if (!globeLive() || reducedMotion) card.hoverTarget = 0;
     card.hoverT += (card.hoverTarget - card.hoverT) * (1 - (1 - HOVER_RATE) ** dtScale);
+    card.hoverT = Math.min(card.hoverT, pullQuote.handoffEase(frame.zoomT));
 
     // Applied here, not in placeSphereCard: the gate above is global but fdE is per-card, so a
     // card still folding at fdE 0.999 would raise hoverT and render nothing.
@@ -1673,17 +1562,15 @@ function createGlobeGalleryRuntime(
       }
     }
 
-    // uDissolve is shared with the sphere phase's near-camera dissolve, so it must be reset
-    // every frame.
     mesh.material.uniforms.uReveal.value = card.revealT;
     mesh.material.uniforms.uContourFade.value = 1;
     mesh.material.uniforms.uDissolve.value = 1 - card.revealT;
-    mesh.material.uniforms.uDisperse.value = 0;
 
     const prevMeshX = mesh.position.x;
     const prevMeshY = mesh.position.y;
 
     // Latest phase first. Sphere + settled-grid skip the stage compute.
+    card.onSphere = fdE >= 1;
     if (fdE >= 1) {
       placeSphereCard(card, mesh, frame);
     } else if (gpE >= 1 && fdE === 0) {
@@ -1766,17 +1653,18 @@ function createGlobeGalleryRuntime(
     arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN, bp.ARC_RAMP_T);
 
     a11y.updateTabStops();
+    pullQuote.update(frame);
     frame.activeCamera = updateActiveCamera(frame);
     frame.sphereRotActive = updateSphereRotation(frame);
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
-    updatePullQuote(frame);
 
     renderer.sortObjects = true;
 
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateCardTransforms(frame);
+    pullQuote.afterCards();
     updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
     updateHintExit(frame);
 
@@ -1947,11 +1835,11 @@ function createGlobeGalleryRuntime(
     function doLayout({ fromResize = false } = {}) {
       measureBlock();
       readCssVars();
+      pullQuote.syncHeight();
       const nextW = window.innerWidth;
       const nextH = measureViewportH();
       if (fromResize && nextW === W && nextH === H) {
-        relayoutQuote(); // the quote box can change width without the viewport doing so
-        publishPqMetrics();
+        pullQuote.layout(); // the quote box can change width without the viewport doing so
         return;
       }
       W = nextW;
@@ -1996,13 +1884,13 @@ function createGlobeGalleryRuntime(
           }, TEXT_REBUILD_DEBOUNCE_MS);
         }
       }
-      relayoutQuote(); // before the metrics: the split settles the box they measure
-      publishPqMetrics();
+      pullQuote.layout();
     }
+    if (!reducedMotion) pullQuote.build({ scene, renderer, camera });
     doLayout();
     // A webfont landing after first layout retypesets the quote.
     if (document.fonts && document.fonts.ready) {
-      const afterFonts = () => { relayoutQuote(true); publishPqMetrics(); };
+      const afterFonts = () => pullQuote.layout(true);
       document.fonts.ready.then(afterFonts, afterFonts);
     }
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
@@ -2149,12 +2037,7 @@ function createGlobeGalleryRuntime(
     modal.destroy();
     a11y.teardown();
     if (arcCopy.el) arcCopy.el.style.cssText = '';
-    if (pqEl) {
-      pqEl.style.cssText = '';
-      pq.frameStr = '';
-      pq.copyStr = '';
-      pq.revealT = 0;
-    }
+    pullQuote.teardown();
     frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
     canvasHidden = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.

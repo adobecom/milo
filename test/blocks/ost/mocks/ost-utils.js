@@ -154,14 +154,18 @@ const normCountryCode = (country) => {
 const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
 
 // Unused by ost.js itself; only needed because merch.js statically imports
-// decorate.js, autoblock.js and market.js, which import these from utils.js.
+// decorate.js and autoblock.js, which import these from utils.js.
 const isBot = () => false;
 const getMarketsUrl = () => '';
+const getValidatedMarket = () => Promise.resolve(null);
+const isSupportedMarket = () => Promise.resolve(false);
 const createIntersectionObserver = () => {};
 const getFederatedContentRoot = () => '';
 const getFedsPlaceholderConfig = () => ({});
 const shouldBlockFreeTrialLinks = () => false;
 const isAupEnabled = () => false;
+const getAupSelectValue = () => null;
+const whenTargetReady = () => Promise.resolve();
 const decorateLinksAsync = () => Promise.resolve();
 const loadBlock = () => Promise.resolve();
 
@@ -214,11 +218,15 @@ export {
   getValidatedMasLibsUrl,
   isBot,
   getMarketsUrl,
+  getValidatedMarket,
+  isSupportedMarket,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
   isAupEnabled,
+  getAupSelectValue,
+  whenTargetReady,
   decorateLinksAsync,
   loadBlock,
 };

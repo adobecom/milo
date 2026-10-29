@@ -1,0 +1,287 @@
+@import url('../../../c2/blocks/modal/modal.css');
+
+.max26-login-prompt,
+.dialog-modal:has(.max26-login-prompt) {
+  /* Figma's desktop shell is 807px, independent of the page grid. */
+  --max26-login-prompt-width: 807px;
+}
+
+.max26-login-prompt {
+  /* Figma uses 30px mobile and 50px desktop insets; neither has an S2A token. */
+  --max26-login-prompt-content-inset: 30px;
+
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--max26-login-prompt-width);
+  margin-inline: auto;
+  padding: var(--s2a-spacing-24);
+  border-radius: var(--s2a-border-radius-24);
+  overflow: hidden;
+}
+
+.max26-login-prompt-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.max26-login-prompt-background :is(div, p, picture, img) {
+  width: 100%;
+  height: 100%;
+}
+
+.max26-login-prompt-background :is(div, p, picture) {
+  display: block;
+  margin: 0;
+}
+
+.max26-login-prompt-background img {
+  object-fit: cover;
+}
+
+.max26-login-prompt-background > .desktop-only {
+  display: none;
+}
+
+.max26-login-prompt-foreground {
+  background-color: var(--s2a-color-gray-25);
+  color: var(--s2a-color-gray-1000);
+  border-radius: var(--s2a-border-radius-16);
+}
+
+.max26-login-prompt-logo {
+  margin: 0;
+
+  /* The 36px logo-to-copy spacing comes from Figma and has no S2A token. */
+  padding-block: var(--s2a-spacing-40) 36px;
+  padding-inline: var(--max26-login-prompt-content-inset);
+}
+
+.max26-login-prompt-logo picture {
+  display: block;
+}
+
+.max26-login-prompt-logo img {
+  display: block;
+  width: auto;
+  height: var(--s2a-font-line-height-18);
+}
+
+.max26-login-prompt-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-24);
+  padding-block: var(--s2a-spacing-20) var(--s2a-spacing-40);
+  padding-inline: var(--max26-login-prompt-content-inset);
+}
+
+.max26-login-prompt-copy {
+  display: flex;
+  flex-direction: column;
+
+  /* Figma's mobile copy gap is 22px; there is no matching S2A spacing token. */
+  gap: 22px;
+  color: var(--s2a-color-gray-800);
+  overflow-wrap: anywhere;
+}
+
+.max26-login-prompt-copy :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0;
+  color: var(--s2a-color-gray-1000);
+}
+
+.max26-login-prompt-copy .heading-2 {
+  font-size: var(--s2a-font-size-36);
+  line-height: var(--s2a-font-line-height-32);
+  letter-spacing: var(--s2a-font-letter-spacing-neg-1);
+  text-wrap: balance;
+}
+
+.max26-login-prompt-copy :is(p, ul, ol) {
+  margin: 0;
+}
+
+.max26-login-prompt-copy .body-lg {
+  font-size: var(--s2a-font-size-16);
+  line-height: var(--s2a-font-line-height-20);
+}
+
+.max26-login-prompt:has(.max26-login-prompt-actions > :only-child) .max26-login-prompt-copy .body-lg {
+  /* Figma's post-event mobile body is 214px wide, with no matching S2A token. */
+  max-width: 214px;
+  text-wrap: pretty;
+}
+
+.max26-login-prompt-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s2a-spacing-24);
+}
+
+.max26-login-prompt-actions > p {
+  display: flex;
+  margin: 0;
+  max-width: 100%;
+}
+
+.max26-login-prompt .con-button.fill.max26-login-prompt-sign-in {
+  /* Figma specifies a 170px primary CTA; longer labels can wrap. */
+  width: 170px;
+  max-width: 100%;
+  height: auto;
+  min-height: var(--s2a-spacing-40);
+  padding-block: var(--s2a-spacing-8);
+  text-align: center;
+  background-color: var(--s2a-color-gray-1000);
+  border-color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-gray-25);
+}
+
+.max26-login-prompt .con-button.fill.max26-login-prompt-sign-in:hover {
+  background-color: var(--s2a-color-gray-800);
+  border-color: var(--s2a-color-gray-800);
+}
+
+.max26-login-prompt .con-button.fill.max26-login-prompt-sign-in:active {
+  background-color: var(--s2a-color-gray-900);
+  border-color: var(--s2a-color-gray-900);
+}
+
+.max26-login-prompt-guest {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--s2a-color-gray-800);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-16);
+  line-height: var(--s2a-font-line-height-20);
+  text-align: start;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.max26-login-prompt-guest:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-blue-900);
+  outline-offset: var(--s2a-spacing-4);
+}
+
+.dialog-modal:has(.max26-login-prompt) {
+  /* Leave the authored 24px mobile page gutter outside the shell. */
+  width: calc(100% - 2 * var(--s2a-spacing-24));
+  max-width: var(--max26-login-prompt-width);
+  max-height: calc(100dvh - 2 * var(--s2a-spacing-24));
+  background: transparent;
+  border-radius: var(--s2a-border-radius-24);
+}
+
+.dialog-modal:has(.max26-login-prompt) > .fragment {
+  max-height: calc(100dvh - 2 * var(--s2a-spacing-24));
+}
+
+.dialog-modal:has(.max26-login-prompt) .section {
+  margin: 0;
+  padding: 0;
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close {
+  inset-inline-end: var(--s2a-spacing-12);
+  inset-inline-start: auto;
+  inset-block-start: var(--s2a-spacing-12);
+  width: var(--s2a-spacing-40);
+  height: var(--s2a-spacing-40);
+  border: 0;
+  background-color: var(--s2a-color-gray-200);
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-blue-900);
+  outline-offset: var(--s2a-spacing-2);
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close:is(:hover, :focus) {
+  background-color: var(--s2a-color-gray-300);
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close svg {
+  display: block;
+  width: var(--s2a-spacing-32);
+  height: var(--s2a-spacing-32);
+  margin: auto;
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close circle {
+  fill: none;
+}
+
+.dialog-modal:has(.max26-login-prompt) .dialog-close line {
+  stroke: var(--s2a-color-gray-1000);
+}
+
+.dialog-modal:has(.max26-login-prompt) + .modal-curtain.is-open {
+  background-color: var(--s2a-color-transparent-black-64);
+}
+
+@media (width >= 768px) {
+  .max26-login-prompt {
+    --max26-login-prompt-content-inset: 50px;
+
+    padding: var(--s2a-spacing-48);
+  }
+
+  .max26-login-prompt-background > .mobile-only {
+    display: none;
+  }
+
+  .max26-login-prompt-background > .desktop-only {
+    display: block;
+  }
+
+  .max26-login-prompt-logo {
+    /* Figma's desktop logo-to-copy gap is 38px; there is no S2A spacing token. */
+    padding-block: var(--s2a-spacing-64) 38px;
+  }
+
+  .max26-login-prompt-body {
+    /* Figma's desktop action gaps are 29px, with no matching S2A token. */
+    gap: 29px;
+    padding-block-end: var(--s2a-spacing-64);
+  }
+
+  .max26-login-prompt-copy {
+    gap: var(--s2a-spacing-24);
+  }
+
+  .max26-login-prompt-copy .heading-2 {
+    font-size: var(--s2a-font-size-56);
+    line-height: var(--s2a-font-line-height-56);
+    letter-spacing: var(--s2a-font-letter-spacing-lg);
+  }
+
+  .max26-login-prompt-copy .body-lg {
+    font-size: var(--s2a-font-size-20);
+    line-height: var(--s2a-font-line-height-24);
+  }
+
+  .max26-login-prompt-actions {
+    gap: 29px;
+  }
+
+  .max26-login-prompt:has(.max26-login-prompt-actions > :only-child) .max26-login-prompt-body {
+    /* Figma's post-event CTA gap is 52px; there is no matching S2A token. */
+    gap: 52px;
+  }
+
+  .max26-login-prompt:has(.max26-login-prompt-actions > :only-child) .max26-login-prompt-copy {
+    /* Figma's post-event copy is 604px wide with a 22px gap; neither has an S2A token. */
+    max-width: 604px;
+    gap: 22px;
+  }
+
+  .max26-login-prompt:has(.max26-login-prompt-actions > :only-child) .max26-login-prompt-copy .body-lg {
+    max-width: none;
+  }
+}
