@@ -10,6 +10,7 @@ const slideLeaveTimeouts = new WeakMap();
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
+const TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px)';
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -89,6 +90,7 @@ const disableHoverOnScroll = (carousel) => {
   let timer;
   const controller = new AbortController();
   window.addEventListener('wheel', () => {
+    if (window.matchMedia(TOUCH_SCROLL_QUERY).matches) return;
     clearTimeout(timer);
     carousel.classList.add('disable-hover');
     timer = setTimeout(() => {
@@ -124,6 +126,12 @@ const onCarouselLeave = (event) => {
 
 const onHover = (event) => {
   const slideEl = event.target;
+  if (window.matchMedia(TOUCH_SCROLL_QUERY).matches) {
+    if (event.type === 'focus') {
+      slideEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    }
+    return;
+  }
   const carouselContainer = slideEl.closest('.elastic-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -263,11 +271,18 @@ export default async function init(el) {
   const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
+  const sizeObserver = new ResizeObserver((entries) => {
+    entries.forEach(({ target, borderBoxSize }) => {
+      target.style.setProperty('--elastic-carousel-item-height', `${borderBoxSize[0].blockSize}px`);
+    });
+  });
+  decoratedCarousel.querySelectorAll('.elastic-carousel-item').forEach((slide) => sizeObserver.observe(slide));
 
   new MutationObserver((_, observer) => {
     if (!document.contains(el)) {
       scrollController.abort();
       mobileObservers.forEach((o) => o.disconnect());
+      sizeObserver.disconnect();
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
