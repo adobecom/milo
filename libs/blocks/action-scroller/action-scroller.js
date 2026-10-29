@@ -10,7 +10,7 @@ const defaultPadding = 50;
 
 const NAV_ICON_ALT = { previous: 'Previous icon', next: 'Next icon' };
 
-function createNavGrad(position, label) {
+function createNavButton(position, label) {
   const img = createTag('img', {
     class: `${position}-icon`,
     alt: label ? '' : NAV_ICON_ALT[position],
@@ -101,8 +101,8 @@ function handleBtnState(
 
 function handleNavigation(el, attrs) {
   const isRtl = document.documentElement.dir === 'rtl';
-  const prev = createNavGrad('previous', attrs['previous button label']);
-  const next = createNavGrad('next', attrs['next button label']);
+  const prev = createNavButton('previous', attrs['previous button label']);
+  const next = createNavButton('next', attrs['next button label']);
   const buttons = isRtl ? [next, prev] : [prev, next];
   buttons.forEach((btn) => {
     const button = btn.childNodes[0];
