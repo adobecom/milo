@@ -45,6 +45,7 @@ import merch, {
   addAriaLabelToCta,
   AUP_SDK_READY_EVENT,
   waitForAupSdk,
+  overrideOptions,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -3068,6 +3069,41 @@ describe('Merch Block', () => {
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
+  });
+});
+
+describe('overrideOptions method', () => {
+  const withRows = (rows) => setConfig({
+    ...getConfig(),
+    mep: { inBlock: { mas: { fragments: { f1: rows } } } },
+  });
+
+  it('sets pzn for card links', () => {
+    withRows({ '': { action: 'replace', content: 't1', pzn: 'pzn-cc-lapsed' } });
+    expect(overrideOptions('f1', { fragment: 'f1' })).to.deep.equal({ fragment: 't1', pzn: 'pzn-cc-lapsed' });
+  });
+
+  it('sets pzn for field links via the card-level row', () => {
+    withRows({ '': { action: 'replace', content: 't1', pzn: 'pzn-cc-lapsed' } });
+    expect(overrideOptions('f1', { fragment: 'f1', field: 'prices' }))
+      .to.deep.equal({ fragment: 't1', field: 'prices', pzn: 'pzn-cc-lapsed' });
+  });
+
+  it('does not add pzn for commands without it', () => {
+    withRows({ '': { action: 'replace', content: 't2' } });
+    expect(overrideOptions('f1', { fragment: 'f1' })).to.deep.equal({ fragment: 't2' });
+  });
+
+  it('does not apply a card-level row without pzn to field links', () => {
+    withRows({ '': { action: 'replace', content: 't2' } });
+    const options = { fragment: 'f1', field: 'prices' };
+    expect(overrideOptions('f1', options)).to.equal(options);
+  });
+
+  it('returns options unchanged when no command matches', () => {
+    withRows({});
+    const options = { fragment: 'f1' };
+    expect(overrideOptions('f1', options)).to.equal(options);
   });
 });
 

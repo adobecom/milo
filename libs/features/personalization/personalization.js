@@ -538,6 +538,7 @@ function registerInBlockActions(command) {
         return {
           fragment: searchParams.get('fragment') || searchParams.get('query'),
           field: searchParams.get('field') || '',
+          ...(searchParams.get('pzn') && { pzn: searchParams.get('pzn') }),
         };
       };
       const { fragment: sourceFragment, field } = getFragmentParams(blockSelector);
@@ -545,7 +546,9 @@ function registerInBlockActions(command) {
       if (blockSelector) {
         config.mep.inBlock[blockName].fragments ??= {};
         const { fragments } = config.mep.inBlock[blockName];
-        command.content = getFragmentParams(command.content).fragment;
+        const { fragment: targetFragment, pzn } = getFragmentParams(command.content);
+        command.content = targetFragment;
+        if (pzn) command.pzn = pzn;
         fragments[blockSelector] ??= {};
         fragments[blockSelector][field] = command;
         let overridesParent = document.querySelector('div.mas-overrides');
@@ -553,8 +556,14 @@ function registerInBlockActions(command) {
           overridesParent = createTag('div', { style: 'display: none;', class: 'mas-overrides' });
           document.body.appendChild(overridesParent);
         }
-        if (!overridesParent.querySelector(`aem-fragment[fragment="${command.content}"]`)) {
-          overridesParent.appendChild(createTag('aem-fragment', { fragment: command.content }));
+        const preloadSelector = command.pzn
+          ? `aem-fragment[fragment="${command.content}"][pzn="${command.pzn}"]`
+          : `aem-fragment[fragment="${command.content}"]:not([pzn])`;
+        if (!overridesParent.querySelector(preloadSelector)) {
+          overridesParent.appendChild(createTag('aem-fragment', {
+            fragment: command.content,
+            ...(command.pzn && { pzn: command.pzn }),
+          }));
         }
       }
       return;

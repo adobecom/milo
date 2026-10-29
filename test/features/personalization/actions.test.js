@@ -492,6 +492,53 @@ describe('in-block:mas field-scoped replace', () => {
   });
 });
 
+describe('in-block:mas pzn registration', () => {
+  const selector = 'in-block:mas https://mas.adobe.com/studio.html#page=content&query=src-1';
+  const content = (extra = '') => `https://mas.adobe.com/studio.html#page=content&query=tgt-1${extra}`;
+  const register = (...contents) => handleCommands(
+    contents.map((c) => ({ action: 'replace', selector, content: c })),
+    document.createElement('div'),
+    false,
+    true,
+  );
+
+  beforeEach(() => {
+    delete getConfig().mep.inBlock;
+    document.querySelector('div.mas-overrides')?.remove();
+  });
+
+  afterEach(() => {
+    delete getConfig().mep.inBlock;
+    document.querySelector('div.mas-overrides')?.remove();
+  });
+
+  it('stores pzn from the content link on the command', async () => {
+    await register(content('&pzn=pzn-cc-lapsed'));
+    const entry = getConfig().mep.inBlock.mas.fragments['src-1'][''];
+    expect(entry.content).to.equal('tgt-1');
+    expect(entry.pzn).to.equal('pzn-cc-lapsed');
+  });
+
+  it('does not add a pzn key when the content link has none', async () => {
+    await register(content());
+    const entry = getConfig().mep.inBlock.mas.fragments['src-1'][''];
+    expect(entry.content).to.equal('tgt-1');
+    expect(entry).to.not.have.property('pzn');
+  });
+
+  it('preloads one aem-fragment per fragment and pzn', async () => {
+    await register(content('&pzn=pzn-cc-lapsed'), content('&pzn=pzn-cc-lapsed'));
+    expect(document.querySelectorAll('div.mas-overrides aem-fragment[fragment="tgt-1"][pzn="pzn-cc-lapsed"]').length).to.equal(1);
+  });
+
+  it('keeps a separate preload without pzn attribute', async () => {
+    await register(content('&pzn=pzn-cc-lapsed'), content());
+    const preloads = document.querySelectorAll('div.mas-overrides aem-fragment[fragment="tgt-1"]');
+    expect(preloads.length).to.equal(2);
+    expect(document.querySelectorAll('div.mas-overrides aem-fragment[fragment="tgt-1"]:not([pzn])').length).to.equal(1);
+  });
+});
+
 describe('handleCommands with invalid selector', () => {
   it('should not throw when getSelectedElements returns empty object', async () => {
     const commands = [{
