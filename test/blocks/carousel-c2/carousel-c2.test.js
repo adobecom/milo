@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-import { MILO_EVENTS } from '../../../libs/utils/utils.js';
+import { MILO_EVENTS, getConfig, updateConfig } from '../../../libs/utils/utils.js';
 import init from '../../../libs/c2/blocks/carousel-c2/carousel-c2.js';
 
 describe('Carousel C2', () => {
@@ -12,6 +12,25 @@ describe('Carousel C2', () => {
 
     expect(block.getAttribute('role')).to.be.null;
     expect(block.getAttribute('aria-roledescription')).to.be.null;
+  });
+
+  it('crops an MPC poster in a rich-content slide to the 16:9 player box', async () => {
+    await new Promise((resolve) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/libs/c2/blocks/carousel-c2/carousel-c2.css';
+      link.onload = resolve;
+      document.head.append(link);
+    });
+    document.body.innerHTML = `
+      <div class="carousel-c2"><div class="carousel-wrapper">
+        <div class="carousel-slide"><div class="rich-content" style="width: 640px">
+          <div class="mpc-poster"><picture><img width="1024" height="1024" style="display: block; width: 100%"></picture></div>
+        </div></div>
+      </div></div>`;
+    const { width, height } = document.querySelector('.mpc-poster img').getBoundingClientRect();
+
+    expect(Math.round(height)).to.equal(Math.round((width * 9) / 16));
   });
 
   it('sets carousel roles and aria-label on the block', async () => {
@@ -120,6 +139,175 @@ describe('Carousel C2', () => {
     expect(indicators[0].classList.contains('active')).to.be.false;
     expect(indicators[1].classList.contains('active')).to.be.true;
     expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 3');
+  });
+
+  it('pauses a playing MPC player when its slide stops being active', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const next = block.querySelector('button.next');
+    next.click();
+    await new Promise((resolve) => { setTimeout(resolve, 150); });
+
+    const slide = block.querySelector('.carousel-wrapper .active-clone');
+    const iframe = document.createElement('iframe');
+    iframe.className = 'adobetv';
+    iframe.dataset.playing = 'true';
+    slide.append(iframe);
+    const messages = [];
+    iframe.contentWindow.postMessage = (msg) => messages.push(msg);
+
+    next.click();
+    await import('../../../libs/blocks/adobetv/adobetv.js');
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    expect(messages).to.deep.equal([{ type: 'mpcAction', action: 'pause' }]);
+  });
+
+  it('does not start a drag when a button inside a slide is pressed', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const button = document.createElement('button');
+    wrapper.querySelector('.carousel-slide').append(button);
+
+    button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+
+    expect(wrapper.classList.contains('grabbing')).to.be.false;
+  });
+
+  it('does not start a drag on a video player', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const slide = wrapper.querySelector('.carousel-slide');
+    const video = document.createElement('video');
+    video.controls = true;
+    const iframe = document.createElement('iframe');
+    slide.append(video, iframe);
+
+    [video, iframe].forEach((el) => {
+      el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+      expect(wrapper.classList.contains('grabbing'), el.tagName).to.be.false;
+    });
+  });
+
+  it('does not autoplay cloned copies of MPC players', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const addPlayer = (slide, src, allow) => {
+      const iframe = document.createElement('iframe');
+      iframe.className = 'adobetv';
+      iframe.src = src;
+      iframe.allow = allow;
+      iframe.dataset.playing = 'true';
+      slide.append(iframe);
+      iframe.contentWindow.postMessage = () => {};
+      return iframe;
+    };
+    const active = wrapper.querySelector('.carousel-slide.active');
+    const started = addPlayer(active, 'about:blank?autoplay=true', 'autoplay; encrypted-media; fullscreen');
+    const authored = addPlayer(active.nextElementSibling, 'about:blank?autoplay=true&end=replay', 'encrypted-media; fullscreen');
+
+    block.querySelector('button.next').click();
+
+    const clones = [...wrapper.querySelectorAll(':scope > [data-cloned] iframe.adobetv')];
+    expect(clones.some((clone) => clone.src.includes('end=replay')), 'authored clone').to.be.true;
+    clones.forEach((clone) => {
+      expect(clone.src.includes('autoplay'), clone.src).to.be.false;
+      expect(clone.allow).to.equal('encrypted-media; fullscreen');
+      expect(clone.hasAttribute('data-playing')).to.be.false;
+    });
+    expect(started.src).to.include('autoplay=true');
+    expect(authored.src).to.include('autoplay=true');
+  });
+
+  it('pauses a native video with controls when its slide stops being active', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const video = document.createElement('video');
+    video.controls = true;
+    let paused = false;
+    video.pause = () => { paused = true; };
+    block.querySelector('.carousel-slide.active').append(video);
+
+    block.querySelector('button.next').click();
+
+    expect(paused, 'video paused').to.be.true;
+  });
+
+  it('leaves arrow keys to a focused native video player', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const active = block.querySelector('.carousel-slide.active');
+    const video = document.createElement('video');
+    video.controls = true;
+    active.append(video);
+    video.focus();
+
+    ['ArrowRight', 'ArrowLeft'].forEach((code) => {
+      video.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true }));
+    });
+
+    expect(active.classList.contains('active')).to.be.true;
+    expect(document.activeElement === video, 'focus stays on the video').to.be.true;
+  });
+
+  it('keeps a poster decorated in an inactive slide out of the tab order until its slide is active', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    document.head.append(foundation);
+    updateConfig({ ...getConfig(), locale: { prefix: '', ietf: 'en-US', contentRoot: '' } });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const slide = wrapper.querySelector('.carousel-slide.active + .carousel-slide');
+    const a = document.createElement('a');
+    a.href = 'https://video.tv.adobe.com/v/111111';
+    a.dataset.videoPoster = '<picture><img src="poster.jpg" alt="Demo"></picture>';
+    slide.append(a);
+
+    const { default: initAdobetv } = await import('../../../libs/blocks/adobetv/adobetv.js');
+    initAdobetv(a);
+    const button = slide.querySelector('.mpc-poster button');
+    expect(slide.getAttribute('aria-hidden')).to.equal('true');
+    expect(button.getAttribute('tabindex')).to.equal('-1');
+
+    block.querySelector('button.next').click();
+    expect(slide.getAttribute('aria-hidden')).to.equal('false');
+    expect(button.getAttribute('tabindex')).to.equal('0');
+    foundation.remove();
+  });
+
+  it('keeps the real slides attached when cloning on the first move', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.carousel-c2');
+    init(block);
+    const wrapper = block.querySelector('.carousel-wrapper');
+    const realSlides = [...wrapper.querySelectorAll('.carousel-slide:not([data-cloned])')];
+    const removed = [];
+    const observer = new MutationObserver((records) => {
+      records.forEach((r) => removed.push(...r.removedNodes));
+    });
+    observer.observe(wrapper, { childList: true });
+
+    block.querySelector('button.next').click();
+    await Promise.resolve();
+    observer.disconnect();
+
+    expect(wrapper.getAttribute('data-slides-cloned')).to.equal('true');
+    const realChildren = [...wrapper.children].filter((node) => !node.hasAttribute('data-cloned'));
+    expect(removed.filter((node) => realSlides.includes(node)).length).to.equal(0);
+    expect(realChildren.length).to.equal(realSlides.length);
+    expect(realChildren.every((node, i) => node === realSlides[i])).to.be.true;
   });
 
   it('does not pad the wrapper when there are three or more slides', async () => {

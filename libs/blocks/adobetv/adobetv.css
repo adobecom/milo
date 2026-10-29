@@ -4,3 +4,43 @@
 a[href*='.mp4'].hide-video {
   visibility: hidden !important;
 }
+
+.mpc-poster.modal-img-link {
+  display: block;
+  width: 100%;
+  z-index: auto;
+}
+
+.mpc-poster picture,
+.mpc-poster img {
+  display: block;
+  width: 100%;
+}
+
+.mpc-poster .consonant-play-btn {
+  border: 0;
+  padding: 0;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+/* C2 doesn't define --color-black, which the shared play button focus outline uses. */
+.mpc-poster.modal-img-link .consonant-play-btn:focus,
+.mpc-poster.modal-img-link .consonant-play-btn:focus-visible {
+  outline: var(--play-border-width-l) solid var(--color-black, #000);
+}
+
+.mpc-poster.is-playing {
+  position: relative;
+}
+
+.mpc-poster.is-playing picture {
+  visibility: hidden;
+}
+
+.mpc-poster.is-playing .milo-video {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  padding-bottom: 0;
+}
