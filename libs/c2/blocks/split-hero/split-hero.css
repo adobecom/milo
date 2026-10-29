@@ -1,3 +1,18 @@
+@property --split-hero-nav-extra-h {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0;
+}
+
+body:has(header.has-breadcrumbs) .split-hero {
+  --split-hero-nav-extra-h: var(--feds-height-breadcrumbs, 33px);
+}
+
+body:has(header.local-nav) .split-hero {
+  --split-hero-nav-extra-h: var(--feds-localnav-height, 40px);
+}
+
+/* stylelint-disable-next-line no-descending-specificity */
 .split-hero {
   --split-hero-media-padding: var(--s2a-spacing-2xs);
   --split-hero-media-radius: var(--s2a-border-radius-2xs);
@@ -13,7 +28,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xl);
-    padding-block: calc(var(--global-height-nav) + var(--feds-height-breadcrumbs, 33px)) var(--s2a-spacing-lg);
+    padding-block: calc(var(--split-hero-nav-extra-h, 0) + var(--global-height-nav, 64px)) var(--s2a-spacing-3xl);
     position: relative;
   }
 
@@ -21,7 +36,6 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-lg);
-    max-inline-size: 500px;
   }
 
   .split-hero-copy {
@@ -66,7 +80,6 @@
 
   .split-hero-supporting {
     color: var(--s2a-color-content-default);
-    margin-block-start: auto;
 
     a {
       color: inherit;
@@ -125,6 +138,7 @@
     inline-size: 120%;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--split-hero-media-padding);
+    /* stylelint-disable-next-line alpha-value-notation, color-function-notation */
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 12px 24px 0 rgba(0, 0, 0, 0.14), 0 32px 64px 0 rgba(0, 0, 0, 0.16);
   }
 
@@ -140,7 +154,6 @@
     border-block-start: var(--s2a-border-width-1) solid var(--s2a-color-transparent-black-16);
     gap: var(--s2a-spacing-sm);
     padding-block-start: var(--s2a-spacing-sm);
-    max-inline-size: 410px;
 
     .icon-button {
       background: transparent;
@@ -279,6 +292,14 @@
   .split-hero {
     min-height: 768px;
 
+    .split-hero-foreground {
+      max-inline-size: 500px;
+    }
+
+    .split-hero-merch-card {
+      max-inline-size: 410px;
+    }
+
     .split-hero-merch-ctas {
       padding-block-start: var(--s2a-spacing-sm);
     }
@@ -287,6 +308,8 @@
 
 @media (width >= 900px) {
   .split-hero {
+    min-height: 628px;
+
     .split-hero-copy {
       min-height: 516px;
     }
@@ -294,7 +317,7 @@
     .split-hero-content {
       column-gap: var(--s2a-spacing-xs);
       flex-direction: row;
-      padding-block-end: var(--s2a-spacing-xl);
+      padding-block-end: 0;
     }
 
     .split-hero-foreground {
@@ -304,11 +327,12 @@
     }
 
     .split-hero-media {
+      min-height: 628px;
+      padding-block-start: var(--s2a-spacing-xl);
       padding-inline-start: var(--s2a-spacing-2xl);
     }
 
     .split-hero-media-frame {
-      min-height: 628px;
       inline-size: calc(1052px + 2 * var(--split-hero-media-padding));
     }
   }
@@ -316,14 +340,12 @@
 
 @media (width >= 1280px) {
   .split-hero {
-    min-height: 788px;
-
     .split-hero-content {
       --grid-margin-width: var(--s2a-spacing-4xl);
     }
 
     .split-hero-foreground {
-      inline-size: 500px;
+      max-inline-size: 500px;
     }
 
     .split-hero-media {
@@ -332,6 +354,7 @@
 
     .split-hero-media-frame {
       inline-size: calc(1148px + 2 * var(--split-hero-media-padding));
+      position: absolute;
     }
   }
 }
