@@ -29,6 +29,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Modules | `math.js` + `timeline.js` | `src/utils.js` (easings, `coverFit`, camera constants, the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`). |
 | Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`utils.js`); the quote shaders bake the same value. |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
+| Keyboard browse | Native Tab between card buttons; `.globe-gallery-a11y-cards` is `position: fixed` | `a11y.js` moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
 
 ## Authoring
 
@@ -36,14 +37,47 @@ Positional rows.
 
 | Row | Content |
 |---|---|
-| 1 | `categoryId \|\| machineTag \|\| cgenId \|\| ctaLabel`. No `categoryId` renders nothing (`firefly-globe-empty`). `machineTag` (optional) restricts the API query to assets carrying that machine tag (e.g. `acom_ff_globe_assets`); empty means no restriction. `cgenId` appends `&promoid=<id>&mv=other` to every `fireflyUrl`. `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`. |
+| 1 | `categoryId \|\| machineTag \|\| cgenId \|\| ctaLabel`. No `categoryId`, a failed request, or no usable assets hides the whole block (`firefly-globe-empty`), and logs to lana (`error` for failures, `warn` otherwise). `machineTag` (optional) restricts the API query to assets carrying that machine tag; empty falls back to `DEFAULT_MACHINE_TAG` in `src/authoring.js`. `cgenId` (e.g. `NQCJQWSV`) appends `&promoid=<id>&mv=other` to every `fireflyUrl`. `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`. |
 | 2 | Two cells: the barrel's bottom-row copy (touch hint), then the cursor label. |
 | 3 | `instructions \|\| rotateLeft \|\| rotateRight \|\| pauseSpin \|\| resumeSpin \|\| prevCard \|\| {index} of {count} \|\| nextCard \|\| close` — empty parts fall back to defaults. |
 | 4 | Optional pull quote: `<blockquote>` (or heading), then name and role paragraphs. No row → no pin. |
 
-API prompt locale: `getConfig().locale.ietf` exact match → language-only key → any same-language key →
-`en-US` → first available. The API has no alt text; the prompt (first 120 chars) is the card's `alt`,
-so it is the a11y card label and the modal's sr-only image label.
+### Prompt text and locale matching
+
+`apiAssetToCard` picks the card's `prompt` (also its `alt`, first 120 chars) in this order:
+
+1. `custom.input['firefly#prompts']` localized to `getConfig().locale.ietf` (see below).
+2. `custom.input['firefly#originalPrompt']` — untranslated.
+3. `title` — untranslated, used as-is (no prefix stripping; fix data issues upstream). Many assets have
+   only a `title`, so this keeps every card labelled.
+4. Empty → the a11y card falls back to `Image N` and the modal image is `aria-hidden`.
+
+Blank / whitespace-only values are skipped at every step.
+
+The card also gets `lang`, the prompt's source locale: the matched `firefly#prompts` key, else
+`firefly#locale` for `originalPrompt`, else none (`title` has no known language). Tags that `Intl.Locale` rejects are dropped, and `_` becomes `-`. The a11y card button,
+the modal's sr-only image label, the visible prompt and the prompt part of the live announcement carry it,
+so a screen reader switches voice for an untranslated fallback (WCAG 3.1.2). No `lang` → the attribute is
+removed, never `lang=""`, which would mean "unknown" instead of inheriting the page language.
+
+`getLocalizedPrompt` is rule-based, with no locale table to maintain: it reads `getConfig().locale.ietf`
+at runtime, so each consumer repo (milo, da-cc, …) uses its own locale config. Both the page locale and
+each API key go through `Intl.Locale#maximize`, which fills in the likely script and region, so tags
+compare by meaning rather than spelling. Each key is scored:
+
+- 2 — same language, script and region (`es-ES` for `es-ES`)
+- 1 — same language and script (`es-ES` for `es-MX`, `zh-Hant-TW` for `zh-HK`)
+- 0 — anything else. `zh-TW`/`zh-HK`/`zh-MO` maximize to `Hant` and `zh-CN`/`zh-SG` to `Hans`, so
+  Traditional and Simplified Chinese never cross-match.
+
+Best score wins; otherwise `en-US`, otherwise the first available key.
+
+- `LANGUAGE_ALIASES` maps Milo's `no` (Norwegian macrolanguage) to the API's `nb`. Add entries only for
+  similar macrolanguage mismatches.
+- `_` is normalized to `-` because Milo's language-based routing can produce `xx_YY` tags, which
+  `Intl.Locale` rejects. Invalid tags parse to `null` and never match.
+- Parsed tags are cached in `parsedLocales`: every asset shares the same ~30 keys, and re-parsing them per
+  asset cost ~8 ms for 50 assets.
 
 ## Image sourcing
 
@@ -102,8 +136,25 @@ From the pin the camera travels through the sphere, so globe-gallery's inside-sp
 unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
 `cardCenterYawPitch` default to it. The keyboard focus snap
 (`centerCardOnScreen(i, !suppressFocusSnap)`) solves for the outside side; `snapToBrowseView` lands
-at `blockDocTop`, the first formed scroll position. Orientation and inertia reset only while not
-yet interactive.
+at `Math.ceil(blockDocTop)`, the first formed scroll position. `blockDocTop` is measured layout and
+usually fractional (1/64px layout units) while scroll offsets land on whole pixels, so an unrounded
+target ends ~0.2px above the block: not yet formed, world not quite stuck. Orientation and inertia
+reset only while not yet interactive.
+
+Browse mode moves focus itself: `onCardKeydown` handles Tab/Shift+Tab between cards (letting it
+through natively only past the first/last card), and every programmatic focus uses
+`focus({ preventScroll: true })`. Chrome scrolls a newly focused descendant of a sticky element into
+view even when it already is, so native Tab scrolled the page by ±300–400px and moved the
+scroll-driven globe (dropped to the bottom of the screen, or zoomed inside). Making the layer
+`position: fixed` (as globe-gallery does) is not enough: Milo section effects such as
+`parallax-video-garage-door` put `transform`/`filter`/`will-change` on the section, which makes the
+section the containing block and brings the bug back. The layer stays `absolute` in the world, so the
+ring's canvas coordinates need no mapping.
+
+When the focused card can't be projected (behind the camera, faded, or canvas hidden),
+`updateA11yFocusRing` passes a 0×0 rect, which `setFocusRect` turns into `opacity: 0`: hidden, but
+still focused so browse mode survives. Blurred buttons drop their inline rect, so stale boxes can't
+sit over the canvas and catch clicks.
 
 Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
 `LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)`, which damps steps smaller than

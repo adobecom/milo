@@ -367,9 +367,20 @@ export default function createGlobeModal({
     if (promptEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(promptEl); });
   }
 
-  function announce(text) {
+  function setLang(el, lang) {
+    if (lang) el.lang = lang;
+    else el.removeAttribute('lang');
+  }
+
+  function announce(parts = []) {
     const el = chromeEl && chromeEl.querySelector('.firefly-globe-modal-announce');
-    if (el) el.textContent = text;
+    if (!el) return;
+    el.replaceChildren(...parts.filter(([t]) => t).flatMap(([t, lang], n) => {
+      const span = document.createElement('span');
+      span.textContent = t;
+      setLang(span, lang);
+      return n ? ['. ', span] : [span];
+    }));
   }
 
   function populateModal(i, speak) {
@@ -381,9 +392,11 @@ export default function createGlobeModal({
     if (imgEl) {
       if (meta.alt) {
         imgEl.setAttribute('aria-label', meta.alt);
+        setLang(imgEl, meta.lang);
         imgEl.removeAttribute('aria-hidden');
       } else {
         imgEl.removeAttribute('aria-label');
+        imgEl.removeAttribute('lang');
         imgEl.setAttribute('aria-hidden', 'true');
       }
     }
@@ -398,7 +411,10 @@ export default function createGlobeModal({
       if (labelEl) labelEl.textContent = meta.modelVersionName || meta.modelId || '';
     }
     const descEl = targetEl.querySelector('.firefly-globe-modal-prompt');
-    if (descEl) descEl.textContent = meta.prompt || '';
+    if (descEl) {
+      descEl.textContent = meta.prompt || '';
+      setLang(descEl, meta.lang);
+    }
     const counterEl = targetEl.querySelector('.firefly-globe-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
@@ -409,7 +425,7 @@ export default function createGlobeModal({
       el.textContent = position;
     });
     const modelLabel = meta.modelVersionName || meta.modelId || '';
-    announce(speak ? [modelLabel, meta.prompt, position].filter(Boolean).join('. ') : '');
+    announce(speak ? [[modelLabel], [meta.prompt, meta.lang], [position]] : []);
     const ctaEl = targetEl.querySelector('.firefly-globe-modal-cta');
     if (ctaEl) {
       if (meta.fireflyUrl) {

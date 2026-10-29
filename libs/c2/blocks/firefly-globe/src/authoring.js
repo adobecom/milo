@@ -10,6 +10,7 @@ export function escapeHtml(s) {
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
 const DEFAULT_HINT = 'Click & Drag';
+export const DEFAULT_MACHINE_TAG = 'acom_ff_globe_assets';
 const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
 const LABEL_DIVIDER = '||';
@@ -114,14 +115,35 @@ function buildRenditionUrl(href, size, dimension = 'width') {
     .replace(/{size}/g, size);
 }
 
+const LANGUAGE_ALIASES = { no: 'nb' };
+const parsedLocales = new Map();
+
+const text = (v) => (typeof v === 'string' ? v.trim() : '');
+
+function parseLocale(tag) {
+  if (parsedLocales.has(tag)) return parsedLocales.get(tag);
+  try {
+    const { language, script, region } = new Intl.Locale(tag.replace(/_/g, '-')).maximize();
+    parsedLocales.set(tag, { language: LANGUAGE_ALIASES[language] || language, script, region });
+  } catch {
+    parsedLocales.set(tag, null);
+  }
+  return parsedLocales.get(tag);
+}
+
+const langTag = (tag) => (tag && parseLocale(tag) ? tag.replace(/_/g, '-') : '');
+
 function getLocalizedPrompt(prompts, locale) {
-  if (!prompts) return '';
-  return prompts[locale]
-    || prompts[locale.split('-')[0]]
-    || prompts[Object.keys(prompts).find((k) => k.split('-')[0] === locale.split('-')[0])]
-    || prompts['en-US']
-    || Object.values(prompts)[0]
-    || '';
+  const want = parseLocale(locale);
+  const score = (key) => {
+    const have = parseLocale(key);
+    if (!want || !have || have.language !== want.language || have.script !== want.script) return 0;
+    return have.region === want.region ? 2 : 1;
+  };
+  const entries = Object.entries(prompts || {}).filter(([, v]) => text(v));
+  const match = (minScore) => entries.find(([key]) => score(key) >= minScore);
+  const [key = '', value] = match(2) || match(1) || entries.find(([k]) => k === 'en-US') || entries[0] || [];
+  return [langTag(key), text(value)];
 }
 
 function parseModelTags(machineTags) {
@@ -136,8 +158,12 @@ function apiAssetToCard(asset, locale) {
   const rendition = asset?._links?.rendition;
   if (!rendition?.href || !asset.id) return null;
 
-  const prompts = asset.custom?.input?.['firefly#prompts'];
-  const prompt = getLocalizedPrompt(prompts, locale);
+  const input = asset.custom?.input;
+  const [lang, prompt] = [
+    getLocalizedPrompt(input?.['firefly#prompts'], locale),
+    [langTag(text(input?.['firefly#locale'])), text(input?.['firefly#originalPrompt'])],
+    ['', text(asset.title)],
+  ].find(([, v]) => v) || ['', ''];
   const fireflyUrl = asset.urn
     ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
     : null;
@@ -146,10 +172,11 @@ function apiAssetToCard(asset, locale) {
     renditionHref: componentRenditionHref(rendition.href, asset.id),
     maxWidth: rendition.max_width || null,
     maxHeight: rendition.max_height || null,
-    alt: prompt ? prompt.slice(0, ALT_MAX_CHARS) : '',
+    alt: prompt.slice(0, ALT_MAX_CHARS),
     modelId,
     modelVersionName,
     prompt,
+    lang,
     fireflyUrl,
     crossOrigin: 'anonymous',
   };
@@ -180,7 +207,14 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
     const cards = assets.map((a) => apiAssetToCard(a, loc)).filter(Boolean);
-    return cards.length ? cards : null;
+    if (!cards.length) {
+      window.lana?.log?.(
+        `firefly-globe: no usable assets (${assets.length} returned): ${url}`,
+        { tags: 'firefly-globe', severity: 'warn' },
+      );
+      return null;
+    }
+    return cards;
   } catch (e) {
     window.lana?.log?.(
       `firefly-globe: assets fetch error (${e.message}): ${url}`,
@@ -205,7 +239,7 @@ export function parseAuthoredContent(el) {
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     categoryId: categoryId || null,
-    machineTag: machineTag || null,
+    machineTag: machineTag || DEFAULT_MACHINE_TAG,
     cgenId,
     ctaLabel,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },

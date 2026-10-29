@@ -3,6 +3,7 @@ import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/utils.js';
 import {
+  DEFAULT_MACHINE_TAG,
   escapeHtml,
   fireflyRenditionUrl,
   scatterCards,
@@ -144,31 +145,31 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
 
   it('parses "categoryId || machineTag || cgenId || ctaLabel" from the cards cell', () => {
     const el = makeEl(`
-      ${makeRow('<div><p>cat-123 || acom_ff_globe_assets || promo-9 || Open in Firefly</p></div>')}
+      ${makeRow('<div><p>cat-123 || custom_tag || promo-9 || Open in Firefly</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
     const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
     expect(categoryId).to.equal('cat-123');
-    expect(machineTag).to.equal('acom_ff_globe_assets');
+    expect(machineTag).to.equal('custom_tag');
     expect(cgenId).to.equal('promo-9');
     expect(ctaLabel).to.equal('Open in Firefly');
   });
 
-  it('machineTag is null when omitted', () => {
+  it('machineTag defaults to DEFAULT_MACHINE_TAG when omitted', () => {
     const el = makeEl(`
       ${makeRow('<div><p>cat-123</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    expect(parseAuthoredContent(el).machineTag).to.be.null;
+    expect(parseAuthoredContent(el).machineTag).to.equal(DEFAULT_MACHINE_TAG);
   });
 
   // Authors can skip the machineTag slot with an empty field and keep the
   // later slots in place: "cat || || cgen || cta" or "cat |||| cgen || cta".
   ['cat-123 || || promo-9 || Open in Firefly', 'cat-123 |||| promo-9 || Open in Firefly']
     .forEach((cards) => {
-      it(`treats an empty machineTag slot as none: "${cards}"`, () => {
+      it(`treats an empty machineTag slot as the default: "${cards}"`, () => {
         const el = makeEl(`
           ${makeRow(`<div><p>${cards}</p></div>`)}
           ${makeRow('<div></div><div><p>Drag</p></div>')}
@@ -176,7 +177,7 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
         `);
         const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
         expect(categoryId).to.equal('cat-123');
-        expect(machineTag).to.be.null;
+        expect(machineTag).to.equal(DEFAULT_MACHINE_TAG);
         expect(cgenId).to.equal('promo-9');
         expect(ctaLabel).to.equal('Open in Firefly');
       });
@@ -357,12 +358,12 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false, status: 503 });
     const log = sinon.spy();
     window.lana = { log };
-    expect(await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets')).to.be.null;
+    expect(await fetchFireflyAssets('cat', 'en-US', 'custom_tag')).to.be.null;
     expect(log.calledOnce).to.be.true;
     const [msg, opts] = log.firstCall.args;
     expect(msg).to.include('503');
     expect(msg).to.include('category_id=cat');
-    expect(msg).to.include('machine_tag=acom_ff_globe_assets');
+    expect(msg).to.include('machine_tag=custom_tag');
     expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'error' });
   });
 
@@ -373,6 +374,27 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect(await fetchFireflyAssets('cat')).to.be.null;
     expect(log.calledOnce).to.be.true;
     expect(log.firstCall.args[0]).to.include('boom');
+  });
+
+  it('warns with the request URL and returns null when no assets come back', async () => {
+    stubAssets([]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat', 'en-US', 'custom_tag')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    const [msg, opts] = log.firstCall.args;
+    expect(msg).to.include('0 returned');
+    expect(msg).to.include('category_id=cat');
+    expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'warn' });
+  });
+
+  it('warns and returns null when every asset is unusable', async () => {
+    stubAssets([asset({ _links: {} })]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    expect(log.firstCall.args[0]).to.include('1 returned');
   });
 
   it('maps an asset to a card with the high-res component-rendition template and model tags', async () => {
@@ -421,6 +443,64 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect((await fetchFireflyAssets('cat'))[0].prompt).to.equal('English');
   });
 
+  const promptFor = async (prompts, loc) => {
+    fetchStub?.restore();
+    stubAssets([asset({ custom: { input: { 'firefly#prompts': prompts } } })]);
+    return (await fetchFireflyAssets('cat', loc))[0].prompt;
+  };
+
+  it('matches Chinese prompts by script, not just language', async () => {
+    const zh = { 'en-US': 'English', 'zh-Hans-CN': '简体', 'zh-Hant-TW': '繁體' };
+    expect(await promptFor(zh, 'zh-CN')).to.equal('简体');
+    expect(await promptFor(zh, 'zh-TW')).to.equal('繁體');
+    expect(await promptFor(zh, 'zh-HK')).to.equal('繁體');
+    expect(await promptFor(zh, 'zh_TW')).to.equal('繁體');
+    expect(await promptFor({ 'en-US': 'English', 'zh-Hant-TW': '繁體' }, 'zh-CN')).to.equal('English');
+  });
+
+  it('prefers a same-region key among same language and script', async () => {
+    const zh = { 'zh-Hant-TW': 'TW', 'zh-Hant-HK': 'HK' };
+    expect(await promptFor(zh, 'zh-HK')).to.equal('HK');
+    expect(await promptFor({ 'es-ES': 'España', 'en-US': 'English' }, 'es-MX')).to.equal('España');
+  });
+
+  it('maps Milo no-NO to the API nb-NO key', async () => {
+    expect(await promptFor({ 'en-US': 'English', 'nb-NO': 'Norsk' }, 'no-NO')).to.equal('Norsk');
+  });
+
+  it('skips blank localized prompts and ignores invalid page locales', async () => {
+    expect(await promptFor({ 'fr-FR': '  ', 'en-US': 'English' }, 'fr-FR')).to.equal('English');
+    expect(await promptFor({ 'fr-FR': 'Français', 'en-US': 'English' }, 'not a locale')).to.equal('English');
+  });
+
+  it('falls back to originalPrompt, then title, when localized prompts are missing', async () => {
+    stubAssets([
+      asset({ title: 'Title', custom: { input: { 'firefly#originalPrompt': 'Original' } } }),
+      asset({ title: 'Prompt: Title only', custom: { input: {} } }),
+      asset({ title: 'Title', custom: { input: { 'firefly#prompts': { 'en-US': ' ' }, 'firefly#originalPrompt': '' } } }),
+      asset({ title: undefined, custom: undefined }),
+    ]);
+    const cards = await fetchFireflyAssets('cat', 'es-MX');
+    expect(cards.map((c) => c.prompt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
+    expect(cards.map((c) => c.alt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
+  });
+
+  it('tags the prompt with its source locale, or none when unknown', async () => {
+    stubAssets([
+      asset(),
+      asset({ custom: { input: { 'firefly#prompts': { zh_TW: '繁體' } } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'pt-BR' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'fr_CA' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'not a locale' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#prompts': { bogus_key_x: 'B' } } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O' } } }),
+      asset({ title: 'T', custom: { input: {} } }),
+    ]);
+    const cards = await fetchFireflyAssets('cat', 'ja-JP');
+    expect(cards.map((c) => c.lang)).to.deep.equal(['en-US', 'zh-TW', 'pt-BR', 'fr-CA', '', '', '', '']);
+    expect(cards[5].prompt).to.equal('B');
+  });
+
   it('uses the prompt as the alt fallback', async () => {
     stubAssets([asset()]);
     expect((await fetchFireflyAssets('cat', 'en-US'))[0].alt).to.equal('English');
@@ -433,10 +513,10 @@ describe('firefly-globe: fetchFireflyAssets', () => {
 
   it('adds machine_tag to the query when authored', async () => {
     stubAssets([asset()]);
-    await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets');
+    await fetchFireflyAssets('cat', 'en-US', 'custom_tag');
     const url = new URL(fetchStub.firstCall.args[0]);
     expect(url.searchParams.get('category_id')).to.equal('cat');
-    expect(url.searchParams.get('machine_tag')).to.equal('acom_ff_globe_assets');
+    expect(url.searchParams.get('machine_tag')).to.equal('custom_tag');
   });
 
   it('omits machine_tag when not authored', async () => {

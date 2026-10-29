@@ -898,7 +898,7 @@ function createGlobeGalleryRuntime(
 
   function snapToBrowseView() {
     if (suppressFocusSnap) return;
-    const top = blockDocTop;
+    const top = Math.ceil(blockDocTop);
     // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
     // before the callback below lands. Above the block that tick would reset the orientation and
     // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
@@ -943,6 +943,10 @@ function createGlobeGalleryRuntime(
     getCardLabel: (i) => {
       const m = getCardMetadata(i);
       return (m && m.alt) || `Image ${authoredNo(i)}`;
+    },
+    getCardLang: (i) => {
+      const m = getCardMetadata(i);
+      return (m && m.alt && m.lang) || '';
     },
     // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
     centerCard: (i) => centerCardOnScreen(i, !suppressFocusSnap),
@@ -1145,7 +1149,10 @@ function createGlobeGalleryRuntime(
     if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
     const { mesh } = cards[idx];
     mesh.getWorldPosition(ringWorld);
-    if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
+    if (canvasHidden || !mesh.visible || camera.position.z - ringWorld.z <= 0.01) {
+      a11y.setFocusRect(0, 0, 0, 0);
+      return;
+    }
     const groupScale = sphereGroup.scale.x;
     ringEdge.set(
       ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,
@@ -1492,6 +1499,7 @@ function createGlobeGalleryRuntime(
       renderer = new THREE.WebGLRenderer({ canvas, antialias: aa, alpha: true });
     } catch (e) {
       renderer = null;
+      window.lana?.log?.(`firefly-globe: WebGL renderer creation failed: ${e?.message || e}`, { tags: 'firefly-globe', severity: 'warn' });
       return false;
     }
     appliedDpr = capDpr();
@@ -1739,6 +1747,8 @@ export default async function init(el) {
   let authored = null;
   if (categoryId) {
     authored = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf, machineTag);
+  } else {
+    window.lana?.log?.('firefly-globe: no categoryId authored', { tags: 'firefly-globe', severity: 'warn' });
   }
   if (cgenId && authored) {
     authored.forEach((card) => {

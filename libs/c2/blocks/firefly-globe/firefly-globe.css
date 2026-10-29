@@ -34,10 +34,13 @@
   overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
   -webkit-tap-highlight-color: transparent;
 
-  &.firefly-globe-reduced,
-  &.firefly-globe-empty {
+  &.firefly-globe-reduced {
     height: auto;
     min-height: 0;
+  }
+
+  &.firefly-globe-empty {
+    display: none;
   }
 }
 
@@ -122,10 +125,6 @@
 /* Scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
 .firefly-globe-reduced .firefly-globe-world {
   position: relative;
-}
-
-.firefly-globe-empty .firefly-globe-world {
-  display: none;
 }
 
 .firefly-globe-controls {
