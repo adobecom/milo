@@ -17,7 +17,7 @@ Two content rows. Cells are read by position.
   icon link. At render time the heading is moved in front of the eyebrow in
   the DOM, and `order: -1` keeps the eyebrow visually on top, so the heading
   comes first for SEO and assistive tech.
-- **media**: image or video-poster pattern, shown inside `.sh-media-frame`.
+- **media**: image or video-poster pattern, shown inside `.split-hero-media-frame`.
 - **background**: image, video, or a CSS color/gradient as plain text.
   Omit the third cell (2-column row) for no background.
 - **merch**: headless MAS field links (`&field=…`) plus authored text.
