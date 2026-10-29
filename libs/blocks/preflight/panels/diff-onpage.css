@@ -75,7 +75,6 @@
 }
 
 .preflight-diff-del {
-  margin-inline: 0.25em;
   color: var(--s2a-color-red-900);
   background: var(--s2a-color-red-100);
 }

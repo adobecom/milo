@@ -188,4 +188,23 @@ describe('preflight diffWords', () => {
       { type: 'added', text: 'four' },
     ]);
   });
+
+  it('diffs a large text with one edit instead of giving up', () => {
+    const words = Array.from({ length: 20000 }, (_, i) => `w${i}`);
+    const edited = words.map((w, i) => (i === 10000 ? 'changed' : w));
+    const result = diffWords(words.join(' '), edited.join(' '));
+
+    expect(result.filter(({ type }) => type !== 'same')).to.deep.equal([
+      { type: 'removed', text: 'w10000' },
+      { type: 'added', text: 'changed' },
+    ]);
+    expect(result.filter(({ type }) => type === 'same')).to.have.length(19999);
+  });
+
+  it('gives up when the changed middle is too large to diff cheaply', () => {
+    const live = Array.from({ length: 2000 }, (_, i) => `a${i}`).join(' ');
+    const preview = Array.from({ length: 2000 }, (_, i) => `b${i}`).join(' ');
+
+    expect(diffWords(live, preview)).to.equal(null);
+  });
 });
