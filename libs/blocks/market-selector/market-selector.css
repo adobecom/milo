@@ -174,8 +174,8 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--s2a-color-gray-25);
-    opacity: 0.6;
+    color: var(--s2a-color-content-body-subtle);
+    opacity: 1;
     font: inherit;
     font-size: var(--s2a-typography-font-size-caption);
     line-height: var(--s2a-typography-line-height-caption);

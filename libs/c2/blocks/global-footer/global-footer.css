@@ -294,6 +294,28 @@ span.feds-footer-privacyLink-divider {
   fill: var(--s2a-color-gray-25);
 }
 
+.global-footer:not(.mobile) .feds-footer-legalWrapper {
+  color: var(--s2a-color-gray-25);
+  opacity: 0.6;
+}
+
+.global-footer:not(.event) .feds-footer-legalWrapper {
+  color: var(--s2a-color-content-body-subtle);
+  opacity: 1;
+}
+
+.global-footer:not(.event) .feds-footer-privacyLink {
+  color: var(--s2a-color-content-body-subtle);
+  fill: currentcolor;
+}
+
+.global-footer:not(.event) .feds-regionPicker {
+  color: var(--s2a-color-content-body-subtle);
+  border-color: currentcolor;
+  fill: currentcolor;
+  opacity: 1;
+}
+
 .feds-adChoices-icon {
   width: 12px;
   height: 12px;
@@ -335,6 +357,10 @@ span.feds-footer-privacyLink-divider {
   column-gap: 12px;
   row-gap: 26px;
   align-items: center;
+}
+
+.global-footer:not(.event) .feds-footer-options {
+  --s2a-color-content-body-subtle: var(--s2a-color-transparent-white-64);
 }
 
 .global-footer .feds-footer-options > .feds-regionPicker-wrapper {
@@ -643,11 +669,6 @@ span.feds-footer-privacyLink-divider {
   outline-offset: 2px;
 }
 
-.global-footer:not(.mobile) .feds-footer-legalWrapper {
-  color: var(--s2a-color-gray-25);
-  opacity: 0.6;
-}
-
 @media (min-width: 380px) {
   .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
     position: absolute;
@@ -818,8 +839,13 @@ span.feds-footer-privacyLink-divider {
     flex-direction: row;
   }
 
-  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]) {
-    padding-left: var(--s2a-spacing-xl);
+  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]),
+  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child:has(.feds-footer-privacyLink) {
+    padding-left: var(--s2a-spacing-lg);
+  }
+
+  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-options > .feds-footer-miscLinks-legal {
+    gap: var(--s2a-spacing-xl);
   }
 
   .global-footer .feds-footer-options > .feds-social {
@@ -853,7 +879,7 @@ span.feds-footer-privacyLink-divider {
   }
 
   .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-options > .feds-regionPicker-wrapper {
-    margin-inline-end: var(--s2a-spacing-md);
+    margin-inline-end: var(--s2a-spacing-xs);
   }
 
   .global-footer.event:not(.mobile) .feds-footer-options {

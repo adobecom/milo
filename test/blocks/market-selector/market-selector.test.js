@@ -142,6 +142,7 @@ describe('Market selector block', () => {
     footer.className = 'global-footer';
     footer.style.setProperty('--s2a-spacing-xs', '8px');
     footer.style.setProperty('--s2a-color-transparent-white-64', 'rgb(255 255 255 / 64%)');
+    footer.style.setProperty('--s2a-color-content-body-subtle', 'rgb(255 255 255 / 64%)');
     footer.style.setProperty('--s2a-color-gray-25', '#fff');
     footer.style.setProperty('--s2a-color-content-knockout', '#fff');
     block.replaceWith(footer);
@@ -181,10 +182,10 @@ describe('Market selector block', () => {
       expect(getComputedStyle(c1Popover).position).to.equal('static');
       expect(block.querySelectorAll('.market-selector-dropdown')).to.have.length(2);
       expect(getComputedStyle(popover).display).to.equal('none');
-      expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
-      expect(getComputedStyle(languageButton).opacity).to.equal('0.6');
-      expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
-      expect(getComputedStyle(marketButton).opacity).to.equal('0.6');
+      expect(getComputedStyle(languageButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(languageButton).opacity).to.equal('1');
+      expect(getComputedStyle(marketButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(marketButton).opacity).to.equal('1');
       expect(getComputedStyle(globe).display).to.equal('none');
       block.querySelectorAll('.market-selector-popover').forEach((dropdownPopover) => {
         expect(getComputedStyle(dropdownPopover).overflowY).to.equal('hidden');
@@ -202,8 +203,8 @@ describe('Market selector block', () => {
       expect(getComputedStyle(popover).display).to.equal('block');
       expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
       expect(getComputedStyle(languageButton).opacity).to.equal('1');
-      expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
-      expect(getComputedStyle(marketButton).opacity).to.equal('0.6');
+      expect(getComputedStyle(marketButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(marketButton).opacity).to.equal('1');
       expect(getComputedStyle(globe).display).to.equal('none');
       expect(list.querySelectorAll('.market-selector-link').length).to.equal(14);
       expect(list.scrollHeight).to.be.greaterThan(list.clientHeight);
@@ -263,8 +264,8 @@ describe('Market selector block', () => {
       expect(footerWheel.calledTwice).to.equal(true);
 
       marketButton.click();
-      expect(getComputedStyle(languageButton).color).to.equal('rgb(255, 255, 255)');
-      expect(getComputedStyle(languageButton).opacity).to.equal('0.6');
+      expect(getComputedStyle(languageButton).color).to.equal('rgba(255, 255, 255, 0.64)');
+      expect(getComputedStyle(languageButton).opacity).to.equal('1');
       expect(getComputedStyle(marketButton).color).to.equal('rgb(255, 255, 255)');
       expect(getComputedStyle(marketButton).opacity).to.equal('1');
       expect(getComputedStyle(globe).display).to.equal('none');
@@ -361,6 +362,7 @@ describe('Market selector block', () => {
     footer.className = 'global-footer';
     footer.style.width = '1380px';
     footer.style.setProperty('--s2a-spacing-xs', '8px');
+    footer.style.setProperty('--s2a-spacing-sm', '12px');
     footer.style.setProperty('--s2a-spacing-md', '16px');
     footer.style.setProperty('--s2a-spacing-lg', '24px');
     footer.style.setProperty('--s2a-spacing-xl', '32px');
@@ -375,6 +377,7 @@ describe('Market selector block', () => {
             <li class="feds-footer-privacy-listitem"><a class="feds-footer-privacyLink" href="/site-map">Site Map</a></li>
           </ul>
         </div>
+        <a class="footer-logo" href="/">Adobe</a>
       </div>
       <ul class="feds-social"></ul>
     </div>`;
@@ -387,6 +390,8 @@ describe('Market selector block', () => {
     const [, optOut, adChoices, siteMap] = footer.querySelectorAll('.feds-footer-privacy-listitem');
     const adChoicesLink = adChoices.querySelector('a');
     const siteMapLink = siteMap.querySelector('a');
+    const legalWrapper = legal.querySelector('.feds-footer-legalWrapper');
+    const logo = legal.querySelector('.footer-logo');
     const gap = (first, second) => (
       second.getBoundingClientRect().left - first.getBoundingClientRect().right
     );
@@ -394,22 +399,29 @@ describe('Market selector block', () => {
       document.head.append(style);
       document.body.append(footer);
       await setViewport({ width: 1600, height: 900 });
-      expect(gap(region, legal)).to.be.closeTo(40, 1);
-      expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
-      expect(gap(adChoices, siteMapLink)).to.be.closeTo(40, 1);
+      expect(gap(region, legal)).to.be.closeTo(32, 1);
+      expect(gap(optOut, adChoicesLink)).to.be.closeTo(32, 1);
+      expect(gap(adChoices, siteMapLink)).to.be.closeTo(32, 1);
+      expect(gap(legalWrapper, logo)).to.be.closeTo(32, 1);
       selector.classList.remove('market-selector-c2');
       expect(gap(region, legal)).to.be.closeTo(24, 1);
       expect(gap(optOut, adChoicesLink)).to.be.closeTo(8, 1);
+      expect(gap(adChoices, siteMapLink)).to.be.closeTo(40, 1);
       selector.classList.add('market-selector-c2');
       for (const width of [1024, 1200, 1439]) {
         await setViewport({ width, height: 900 });
         footer.style.width = `${Math.min(1100, width - 32)}px`;
-        expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
+        expect(gap(optOut, adChoicesLink)).to.be.closeTo(32, 1);
+        expect(gap(adChoices, siteMapLink)).to.be.closeTo(32, 1);
+        expect(gap(legalWrapper, logo)).to.be.closeTo(32, 1);
       }
+      selector.classList.remove('market-selector-c2');
+      expect(gap(legalWrapper, logo)).to.be.closeTo(12, 1);
+      selector.classList.add('market-selector-c2');
       await setViewport({ width: 1600, height: 900 });
       footer.style.width = '1380px';
       siteMap.remove();
-      expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
+      expect(gap(optOut, adChoicesLink)).to.be.closeTo(32, 1);
       selector.classList.remove('market-selector-c2');
       expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
       adChoices.after(siteMap);
@@ -428,6 +440,81 @@ describe('Market selector block', () => {
       style.remove();
       footer.remove();
       await setViewport(initialViewport);
+    }
+  });
+
+  it('uses the dark body-subtle token for normal C2 footer controls and legal links', async () => {
+    const style = document.createElement('style');
+    style.textContent = `${await readFile({ path: '../../../libs/c2/blocks/global-footer/global-footer.css' })}
+      ${await readFile({ path: '../../../libs/blocks/market-selector/market-selector.css' })}`;
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const expected = document.createElement('span');
+    expected.style.color = 'rgb(255 255 255 / 64%)';
+    const footers = ['region', 'market', 'none', 'event'].map((type) => {
+      const footer = document.createElement('footer');
+      footer.className = `global-footer${type === 'event' ? ' event' : ''}`;
+      footer.style.setProperty('--s2a-color-content-body-subtle', 'rgb(0 0 0 / 64%)');
+      footer.style.setProperty('--s2a-color-transparent-white-64', 'rgb(255 255 255 / 64%)');
+      footer.style.setProperty('--s2a-color-gray-25', '#fff');
+      footer.style.setProperty('--s2a-color-content-knockout', '#fff');
+      footer.innerHTML = `<div class="feds-footer-options">
+        ${type === 'region' ? '<div class="feds-regionPicker-wrapper"><a class="feds-regionPicker" href="/region">Change region</a></div>' : ''}
+        ${type === 'market' ? '<div class="market-selector market-selector-c2"><button class="market-selector-button" type="button" aria-expanded="false">Language</button></div>' : ''}
+        <div class="feds-footer-miscLinks-legal">
+          <div class="feds-footer-legalWrapper">
+            <span class="feds-footer-copyright">Copyright</span>
+            <a class="feds-footer-privacyLink" href="#interest-based-ads">
+              <svg class="feds-adChoices-icon"><path /></svg>AdChoices
+            </a>
+          </div>
+        </div>
+      </div>`;
+      return footer;
+    });
+    try {
+      document.head.append(style);
+      document.body.append(expected, ...footers);
+      const expectedColor = getComputedStyle(expected).color;
+      for (const width of [412, 1200, 1600]) {
+        await setViewport({ width, height: 900 });
+        footers.forEach((footer) => footer.classList.toggle('mobile', width < 1024));
+        footers.slice(0, 3).forEach((footer) => {
+          const options = footer.querySelector('.feds-footer-options');
+          const legal = footer.querySelector('.feds-footer-legalWrapper');
+          const link = footer.querySelector('.feds-footer-privacyLink');
+          expect(getComputedStyle(options).getPropertyValue('--s2a-color-content-body-subtle').trim())
+            .to.equal('rgb(255 255 255 / 64%)');
+          expect(getComputedStyle(legal).opacity).to.equal('1');
+          expect(getComputedStyle(footer.querySelector('.feds-footer-copyright')).color)
+            .to.equal(expectedColor);
+          expect(getComputedStyle(link).color).to.equal(expectedColor);
+          expect(getComputedStyle(link).opacity).to.equal('1');
+          expect(getComputedStyle(link.querySelector('svg')).fill).to.equal(expectedColor);
+        });
+        const [region, market, , event] = footers;
+        const regionLink = region.querySelector('.feds-regionPicker');
+        const marketButton = market.querySelector('.market-selector-button');
+        expect(getComputedStyle(regionLink).color).to.equal(expectedColor);
+        expect(getComputedStyle(regionLink).opacity).to.equal('1');
+        expect(getComputedStyle(regionLink, '::after').width).to.equal('8px');
+        expect(getComputedStyle(marketButton).color).to.equal(expectedColor);
+        expect(getComputedStyle(marketButton).opacity).to.equal('1');
+        expect(getComputedStyle(marketButton, '::after').width).to.equal('6px');
+        expect(getComputedStyle(event.querySelector('.feds-footer-options'))
+          .getPropertyValue('--s2a-color-content-body-subtle').trim())
+          .to.equal('rgb(0 0 0 / 64%)');
+        expect(getComputedStyle(event.querySelector('.feds-footer-privacyLink')).color)
+          .to.equal('rgb(255, 255, 255)');
+        expect(getComputedStyle(event.querySelector('.feds-footer-copyright')).color)
+          .to.equal('rgb(255, 255, 255)');
+        expect(getComputedStyle(event.querySelector('.feds-footer-legalWrapper')).opacity)
+          .to.equal('1');
+      }
+    } finally {
+      style.remove();
+      expected.remove();
+      footers.forEach((footer) => footer.remove());
+      await setViewport(originalViewport);
     }
   });
 
