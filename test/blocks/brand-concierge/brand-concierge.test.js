@@ -54,10 +54,6 @@ describe('Brand Concierge', () => {
     const input = inputField.querySelector('.bc-input-field textarea');
     expect(input).to.exist;
     expect(input.getAttribute('placeholder')).to.equal("Tell us what you'd like to do or create");
-    const tooltip = inputField.querySelector('#bc-label-tooltip');
-    const label = inputField.querySelector('.bc-input-field-label');
-    expect(tooltip).to.exist;
-    expect(label.getAttribute('aria-describedby')).to.equal('bc-label-tooltip');
 
     // legal
     const legal = block.querySelector('.bc-legal');

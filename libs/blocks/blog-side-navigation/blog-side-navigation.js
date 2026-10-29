@@ -1,8 +1,40 @@
-import { createTag, getConfig, loadBlock, scrollToHashedElement } from '../../utils/utils.js';
+import { createTag, getConfig, loadBlock, MILO_EVENTS, scrollToHashedElement } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { getBlogSections } from '../blog-header/blog-header.js';
 
 const sectionTrackers = new WeakMap();
+const authoredConfigs = new WeakMap();
+const pendingInitializations = new WeakMap();
+
+function getAuthoredConfig(block) {
+  if (!authoredConfigs.has(block)) {
+    const [firstRow, secondRow] = block.querySelectorAll(':scope > div:not(.blog-related-content)');
+    const listFirst = firstRow && (
+      firstRow.querySelector('ol, ul') || /^\s*1\.(?:\s|$)/.test(firstRow.textContent)
+    );
+    const headingRow = listFirst ? undefined : firstRow;
+    const labelsRow = listFirst ? firstRow : secondRow;
+    const list = labelsRow?.querySelector('ol, ul');
+    let labels = [];
+    if (list) {
+      labels = [...list.querySelectorAll(':scope > li')].map((item) => item.textContent);
+    } else if (labelsRow) {
+      const content = labelsRow.cloneNode(true);
+      content.querySelectorAll('p, br').forEach((element) => element.after('\n'));
+      labels = content.textContent.split(/\r?\n/)
+        .filter((line) => line.trim())
+        .map((line) => line.trim().replace(/^\d+\.\s*/, ''));
+    }
+    authoredConfigs.set(block, {
+      heading: headingRow?.textContent.trim(),
+      labels: labels.map((label) => {
+        const text = label.trim();
+        return text.toLowerCase() === 'no change' ? '' : text;
+      }),
+    });
+  }
+  return authoredConfigs.get(block);
+}
 
 function scrollToSection(hash, block) {
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -81,7 +113,7 @@ function trackActiveSection(block, headings, collapseControls) {
   return { setActiveIndex };
 }
 
-function addCollapseControl(list, label, nav) {
+function addCollapseControl(list, label, collapsed) {
   if (list.children.length <= 1) return undefined;
 
   list.id = 'blog-side-navigation-sections';
@@ -97,20 +129,13 @@ function addCollapseControl(list, label, nav) {
   const items = [...list.children];
   items[0].append(button);
   const tablet = window.matchMedia('(min-width: 600px)');
-  const expanded = { tablet: true, mobile: false };
-  const currentLabel = createTag('span', { class: 'blog-side-navigation-label' });
-  const current = createTag('div', { class: 'blog-side-navigation-current', hidden: '' }, currentLabel);
-  nav.append(current);
+  const expanded = { tablet: !collapsed, mobile: false };
   let activeIndex = 0;
   const render = () => {
     const collapsible = items.length > 3;
     const open = !collapsible || expanded[tablet.matches ? 'tablet' : 'mobile'];
     const focusedElement = document.activeElement;
-    const showCurrent = collapsible && open && !tablet.matches;
-    current.hidden = !showCurrent;
-    currentLabel.textContent = items[activeIndex].querySelector('a').textContent;
-    let visibleItem = open ? items[0] : items[activeIndex];
-    if (showCurrent) visibleItem = current;
+    const visibleItem = open ? items[0] : items[activeIndex];
     button.hidden = !collapsible;
     visibleItem.hidden = false;
     if (button.parentElement !== visibleItem) {
@@ -179,6 +204,30 @@ export default async function init(block) {
     return;
   }
 
+  if (main.querySelector(':scope > .section[data-status="pending"]')) {
+    block.hidden = true;
+    if (pendingInitializations.has(block)) return;
+    const retry = () => {
+      pendingInitializations.delete(block);
+      if (!block.isConnected) return;
+      init(block).catch((error) => {
+        window.lana?.log(`Blog side navigation failed to initialize: ${error.message}`, {
+          tags: 'blog-side-navigation',
+          severity: 'error',
+        });
+      });
+    };
+    pendingInitializations.set(block, retry);
+    document.addEventListener(MILO_EVENTS.DEFERRED, retry, { once: true });
+    return;
+  }
+
+  const pendingRetry = pendingInitializations.get(block);
+  if (pendingRetry) {
+    document.removeEventListener(MILO_EVENTS.DEFERRED, pendingRetry);
+    pendingInitializations.delete(block);
+  }
+
   const headerSection = main.querySelector('.blog-header').closest('.section');
   const layout = block.closest('.blog-article-layout');
   const articleSections = layout
@@ -191,17 +240,35 @@ export default async function init(block) {
     && !heading.closest('.blog-header, nav, .fragment, [hidden], [aria-hidden="true"]')
     && block.compareDocumentPosition(heading) === Node.DOCUMENT_POSITION_FOLLOWING
   ));
+  const { heading: authoredHeading, labels } = getAuthoredConfig(block);
+  delete block.dataset.failed;
+  delete block.dataset.reason;
+  if (labels.some(Boolean) && labels.length > headings.length) {
+    const message = `Blog side navigation: ${labels.length} list items for ${headings.length} headings. `
+      + 'Extra items have no destination heading and are ignored. Remove the extra items.';
+    window.lana?.log(message, { tags: 'blog-side-navigation', severity: 'warning' });
+    if (getConfig().env?.name !== 'prod') {
+      block.dataset.failed = 'true';
+      block.dataset.reason = message;
+    }
+  }
+
   if (!headings.length) {
-    block.hidden = true;
+    block.hidden = block.dataset.failed !== 'true';
+    if (!block.hidden) block.replaceChildren();
     return;
   }
 
-  const label = await replaceKey('jump-to-section', getConfig());
+  const label = authoredHeading || await replaceKey('jump-to-section', getConfig());
   const nav = createTag('nav', { 'aria-label': label });
   const list = createTag('ul');
 
   headings.forEach((heading, index) => {
-    const baseId = `section-${index + 1}`;
+    const title = labels[index] || heading.textContent.trim();
+    const slug = title.normalize('NFC').toLowerCase()
+      .replace(/[^\p{L}\p{N}\p{M}]+/gu, '-').replace(/^-|-$/g, '');
+    // The shared scroll helper uses CSS selectors, which cannot start with a digit.
+    const baseId = /^\d/.test(slug) ? `section-${slug}` : slug || `section-${index + 1}`;
     let id = baseId;
     let suffix = 1;
     while (document.getElementById(id) && document.getElementById(id) !== heading) {
@@ -209,16 +276,19 @@ export default async function init(block) {
       suffix += 1;
     }
     heading.id = id;
-    const text = createTag('span', { class: 'blog-side-navigation-label' }, heading.textContent.trim());
+    const text = createTag('span', { class: 'blog-side-navigation-label' });
+    text.textContent = title;
     const link = createTag('a', { href: `#${id}` }, text);
     list.append(createTag('li', null, link));
   });
 
-  const collapseControls = addCollapseControl(list, label, nav);
+  const collapseControls = addCollapseControl(list, label, block.classList.contains('collapsed'));
   const relatedContent = block.querySelector('.blog-related-content')
     || articleSections.map((section) => section.querySelector('.blog-related-content')).find(Boolean);
   nav.append(list);
-  block.replaceChildren(createTag('p', null, createTag('strong', null, label)), nav);
+  const title = createTag('strong');
+  title.textContent = label;
+  block.replaceChildren(createTag('p', null, title), nav);
   block.hidden = false;
   createLayout(block, headerSection, articleSections);
   const sectionTracker = trackActiveSection(block, headings, collapseControls);
@@ -253,7 +323,7 @@ export default async function init(block) {
       });
     });
   }
-  if (headings.some((heading) => window.location.hash === `#${heading.id}`)) {
+  if (headings.some((heading) => window.location.hash === `#${encodeURIComponent(heading.id)}`)) {
     await scrollToSection(window.location.hash, block);
   }
 }

@@ -129,6 +129,54 @@ describe('mas-field', () => {
       expect(descriptionField.querySelector('aem-fragment').getAttribute('fragment')).to.equal('field-scope-1');
     });
 
+    const fieldLink = (fragment, field) => {
+      const a = document.createElement('a');
+      a.href = `https://mas.adobe.com/studio.html#content-type=merch-card&fragment=${fragment}&field=${field}`;
+      a.textContent = `[[pzn-test:${field}]]`;
+      document.body.append(a);
+      return a;
+    };
+    const fragmentOf = (field) => document.querySelector(`mas-field[field="${field}"] aem-fragment`);
+
+    it('card-level mep row with pzn applies fragment and pzn to field links', async () => {
+      setConfig({ mep: { inBlock: { mas: { fragments: { 'pzn-card-1': { '': { action: 'replace', content: 'tgt-pzn', pzn: 'pzn-cc-lapsed' } } } } } } });
+      await init(fieldLink('pzn-card-1', 'description'));
+      const el = fragmentOf('description');
+      expect(el.getAttribute('fragment')).to.equal('tgt-pzn');
+      expect(el.getAttribute('pzn')).to.equal('pzn-cc-lapsed');
+    });
+
+    it('field-specific mep row wins over card-level pzn row', async () => {
+      setConfig({
+        mep: {
+          inBlock: {
+            mas: {
+              fragments: {
+                'pzn-card-2': {
+                  '': { action: 'replace', content: 'tgt-pzn', pzn: 'pzn-cc-lapsed' },
+                  cardTitle: { action: 'replace', content: 'title-only' },
+                },
+              },
+            },
+          },
+        },
+      });
+      await init(fieldLink('pzn-card-2', 'cardTitle'));
+      await init(fieldLink('pzn-card-2', 'description'));
+      expect(fragmentOf('cardTitle').getAttribute('fragment')).to.equal('title-only');
+      expect(fragmentOf('cardTitle').hasAttribute('pzn')).to.be.false;
+      expect(fragmentOf('description').getAttribute('fragment')).to.equal('tgt-pzn');
+      expect(fragmentOf('description').getAttribute('pzn')).to.equal('pzn-cc-lapsed');
+    });
+
+    it('card-level mep row without pzn does not apply to field links', async () => {
+      setConfig({ mep: { inBlock: { mas: { fragments: { 'pzn-none-1': { '': { action: 'replace', content: 'no-pzn-tgt' } } } } } } });
+      await init(fieldLink('pzn-none-1', 'description'));
+      const el = fragmentOf('description');
+      expect(el.getAttribute('fragment')).to.equal('pzn-none-1');
+      expect(el.hasAttribute('pzn')).to.be.false;
+    });
+
     it('creates mas-field wrapping aem-fragment with correct attributes', async () => {
       const p = document.createElement('p');
       const a = document.createElement('a');
