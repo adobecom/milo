@@ -1414,11 +1414,15 @@ describe('blog-header reading progress', () => {
     it(`respects hidden sections and ${name} before and after reparenting`, async () => {
       const { main, block, headerSection, first, related } = buildArticle();
       related.remove();
-      first.parentElement.insertAdjacentHTML('beforebegin',
-        '<div class="section" hidden><div class="content">Hidden copy</div></div>');
+      first.parentElement.insertAdjacentHTML(
+        'beforebegin',
+        '<div class="section" hidden><div class="content">Hidden copy</div></div>',
+      );
       mockRect(main.querySelector('[hidden] > .content'), 100, 900);
-      main.insertAdjacentHTML('beforeend', boundary
-        + '<div class="section"><div class="content">Footer copy</div></div>');
+      main.insertAdjacentHTML(
+        'beforeend',
+        `${boundary}<div class="section"><div class="content">Footer copy</div></div>`,
+      );
       mockRect(main.lastElementChild.firstElementChild, 3000, 5000);
       await init(block);
       const bar = block.querySelector('.blog-progress-bar');
