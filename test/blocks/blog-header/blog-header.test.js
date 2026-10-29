@@ -1182,6 +1182,321 @@ describe('blog-header section dividers', () => {
   });
 });
 
+describe('blog-header reading progress', () => {
+  const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+  let fetchStub;
+  let scrollStub;
+  let heightStub;
+  let style;
+  let styleObserver;
+  let scrollTop;
+  let viewportHeight;
+
+  const nextFrame = () => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  const progress = (bar) => new DOMMatrix(getComputedStyle(bar).transform).a;
+
+  function mockRect(element, top, bottom) {
+    stub(element, 'getBoundingClientRect').callsFake(
+      () => new DOMRect(0, top - scrollTop, 600, bottom - top),
+    );
+  }
+
+  function buildArticle() {
+    const { main, block } = buildBlock({ authors: 0 });
+    block.classList.add('no-dividers');
+    const headerSection = block.closest('.section');
+    mockRect(headerSection, 0, 400);
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="content">'
+      + '<h2>Article section</h2><p>First copy.</p></div></div>'
+      + '<div class="section"><div class="content"><p>Final copy.</p></div></div>'
+      + '<div class="section"><div class="text">Related articles</div>'
+      + '<div class="card-metadata"></div></div>');
+    const [first, last] = main.querySelectorAll('.content');
+    mockRect(first, 600, 1800);
+    mockRect(last, 1800, 2600);
+    const globalNav = document.createElement('header');
+    globalNav.className = 'global-navigation';
+    stub(globalNav, 'getBoundingClientRect').returns(new DOMRect(0, 0, 600, 64));
+    main.prepend(globalNav);
+    return {
+      main, block, headerSection, first, last, related: main.lastElementChild,
+    };
+  }
+
+  async function scrollTo(top) {
+    scrollTop = top;
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+  }
+
+  beforeEach(() => {
+    fetchStub = mockFetch();
+    scrollTop = 1000;
+    viewportHeight = 800;
+    scrollStub = stub(window, 'scrollY').get(() => scrollTop);
+    heightStub = stub(window, 'innerHeight').get(() => viewportHeight);
+    style = document.createElement('style');
+    style.textContent = blogHeaderCss;
+    document.head.append(style);
+  });
+
+  afterEach(async () => {
+    styleObserver?.disconnect();
+    styleObserver = undefined;
+    await cleanup();
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+    style.remove();
+    scrollStub.restore();
+    heightStub.restore();
+    fetchStub.restore();
+    await setViewport(originalViewport);
+  });
+
+  it('fills between the article boundaries, clamps, and reverses without counting related cards', async () => {
+    const { block } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(bar.hidden).to.equal(false);
+    expect(bar.getAttribute('aria-hidden')).to.equal('true');
+    expect(block.closest('.section').classList.contains('blog-divider-frame')).to.equal(false);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    await scrollTo(1800);
+    expect(progress(bar)).to.equal(1);
+    await scrollTo(2200);
+    expect(progress(bar)).to.equal(1);
+    await scrollTo(536);
+    expect(progress(bar)).to.equal(0);
+    await scrollTo(400);
+    expect(progress(bar)).to.equal(0);
+    await scrollTo(1000);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+  });
+
+  it('counts final copy sharing the related-cards section without requiring side navigation', async () => {
+    const { block, last, related } = buildArticle();
+    const lastSection = last.parentElement;
+    related.prepend(last);
+    lastSection.remove();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    await scrollTo(1800);
+    expect(progress(bar)).to.equal(1);
+  });
+
+  ['same section', 'separate section', 'mixed related-cards section'].forEach((layout) => {
+    it(`starts at a leading AI summary in the ${layout}, including after reparenting`, async () => {
+      const { block, headerSection, first, last, related } = buildArticle();
+      if (layout === 'mixed related-cards section') {
+        const lastSection = last.parentElement;
+        first.parentElement.append(last, ...related.children);
+        lastSection.remove();
+        related.remove();
+      }
+      await init(block);
+      const bar = block.querySelector('.blog-progress-bar');
+      expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+      const summary = document.createElement('div');
+      summary.className = 'ai-summary';
+      summary.innerHTML = '<div><div><h2>Key takeaways</h2><p>Summary copy.</p></div></div>';
+      mockRect(summary, 400, 600);
+      if (layout === 'separate section') {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.append(summary);
+        first.parentElement.before(section);
+      } else {
+        first.before(summary);
+      }
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo((1000 - 336) / (1800 - 336), 0.000001);
+      await scrollTo(336);
+      expect(progress(bar)).to.equal(0);
+      await scrollTo(400);
+      expect(progress(bar)).to.be.closeTo((400 - 336) / (1800 - 336), 0.000001);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo((400 - 336) / (1800 - 336), 0.000001);
+      await scrollTo(1800);
+      expect(progress(bar)).to.equal(1);
+    });
+  });
+
+  it('omits the bar for short articles and restores it when the viewport gets smaller', async () => {
+    const { block } = buildArticle();
+    viewportHeight = 2200;
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(bar.hidden).to.equal(true);
+    viewportHeight = 2064;
+    window.dispatchEvent(new Event('resize'));
+    await nextFrame();
+    expect(bar.hidden).to.equal(true);
+    viewportHeight = 800;
+    window.dispatchEvent(new Event('resize'));
+    await nextFrame();
+    expect(bar.hidden).to.equal(false);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    viewportHeight = 2200;
+    window.dispatchEvent(new Event('resize'));
+    await nextFrame();
+    expect(bar.hidden).to.equal(true);
+  });
+
+  it('does not create a bar when no-progress-bar is authored', async () => {
+    const { block } = buildArticle();
+    block.classList.add('no-progress-bar');
+    await init(block);
+    expect(block.querySelector('.blog-progress-bar')).not.to.exist;
+  });
+
+  it('discovers article copy added after initialization', async () => {
+    const { main, block, first, last, related } = buildArticle();
+    const sections = [first.parentElement, last.parentElement];
+    sections.forEach((section) => section.remove());
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(bar.hidden).to.equal(true);
+    related.before(...sections);
+    await nextFrame();
+    expect(bar.hidden).to.equal(false);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    expect(main.querySelector('.blog-article-layout')).not.to.exist;
+  });
+
+  it('refreshes cached boundaries when copy is replaced or decorated through a class change', async () => {
+    const { block, last } = buildArticle();
+    last.classList.remove('content');
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(progress(bar)).to.equal(1);
+    last.classList.add('content');
+    await nextFrame();
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    const replacement = last.cloneNode(true);
+    mockRect(replacement, 1800, 3400);
+    last.replaceWith(replacement);
+    await nextFrame();
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (2600 - 536), 0.000001);
+  });
+
+  it('remeasures cached copy when its height changes without replacing the element', async () => {
+    const { block, last } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    last.getBoundingClientRect.callsFake(
+      () => new DOMRect(0, 1800 - scrollTop, 600, 1600),
+    );
+    last.style.height = '1600px';
+    await waitFor(() => Math.abs(progress(bar) - (1000 - 536) / (2600 - 536)) < 0.000001);
+    expect(bar.hidden).to.equal(false);
+  });
+
+  it('preserves progress after deferred side navigation reparents the article', async () => {
+    const { main, block, headerSection } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    const before = progress(bar);
+    const navigation = document.createElement('div');
+    navigation.className = 'blog-side-navigation';
+    headerSection.append(navigation);
+    await initSideNavigation(navigation);
+    await nextFrame();
+    expect(main.querySelector('.blog-article-layout')).to.exist;
+    expect(progress(bar)).to.equal(before);
+    await scrollTo(1800);
+    expect(progress(bar)).to.equal(1);
+  });
+
+  [false, true].forEach((noDividers) => {
+    it(`follows stage's mobile divider and tablet rail with no-dividers=${noDividers}`, async () => {
+      await setViewport({ width: 599, height: 900 });
+      scrollTop = 0;
+      style.textContent += sideNavigationCss;
+      const { main, block, headerSection } = buildArticle();
+      block.classList.toggle('no-dividers', noDividers);
+      await init(block);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      const article = main.querySelector('.blog-article-content');
+      mockRect(article, 600, 2600);
+      await nextFrame();
+      const bar = block.querySelector('.blog-progress-bar');
+      expect(getComputedStyle(navigation).display).to.equal('contents');
+      const gap = noDividers ? 32 : 113.5;
+      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 - 4);
+      expect(progress(bar)).to.equal(0);
+      await scrollTo(600);
+      expect(parseFloat(bar.style.top)).to.equal(64);
+      await scrollTo(0);
+      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 - 4);
+      for (const width of [600, 1199, 1440]) {
+        await setViewport({ width, height: 900 });
+        await nextFrame();
+        expect(parseFloat(bar.style.top)).to.equal(395);
+      }
+    });
+  });
+
+  [
+    ['blog-layout-end', '<div class="section blog-layout-end"></div>'],
+    ['footer promo', '<div class="section" data-footer-promo></div>'],
+    ['undecorated section metadata', '<div class="section"><div class="section-metadata" hidden>'
+      + '<div><div>Style</div><div>blog-layout-end</div></div></div></div>'],
+  ].forEach(([name, boundary]) => {
+    it(`respects hidden sections and ${name} before and after reparenting`, async () => {
+      const { main, block, headerSection, first, related } = buildArticle();
+      related.remove();
+      first.parentElement.insertAdjacentHTML(
+        'beforebegin',
+        '<div class="section" hidden><div class="content">Hidden copy</div></div>',
+      );
+      mockRect(main.querySelector('[hidden] > .content'), 100, 900);
+      main.insertAdjacentHTML(
+        'beforeend',
+        `${boundary}<div class="section"><div class="content">Footer copy</div></div>`,
+      );
+      mockRect(main.lastElementChild.firstElementChild, 3000, 5000);
+      await init(block);
+      const bar = block.querySelector('.blog-progress-bar');
+      const expected = (1000 - 536) / (1800 - 536);
+      expect(progress(bar)).to.be.closeTo(expected, 0.000001);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo(expected, 0.000001);
+      await scrollTo(1800);
+      expect(progress(bar)).to.equal(1);
+    });
+  });
+
+  it('reuses article discovery and avoids unchanged style writes after completion', async () => {
+    const { block, last } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    await scrollTo(2000);
+    const queries = stub(last.parentElement, 'querySelectorAll').callThrough();
+    const changes = [];
+    styleObserver = new MutationObserver((records) => changes.push(...records));
+    styleObserver.observe(bar, { attributes: true, attributeFilter: ['style', 'hidden'] });
+    await scrollTo(2100);
+    await scrollTo(2200);
+    expect(queries.called).to.equal(false);
+    expect(changes).to.have.length(0);
+    expect(progress(bar)).to.equal(1);
+  });
+});
+
 describe('blog-header share modal', () => {
   let fetchStub;
   let clipboardStub;
