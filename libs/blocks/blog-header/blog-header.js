@@ -7,6 +7,14 @@ const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
 const ICON_PATH = 'blocks/blog-header/blog-header.svg';
 
+const SOCIAL_PLATFORMS = {
+  'linkedin.com': { name: 'LinkedIn', icon: 'linkedin' },
+  'twitter.com': { name: 'X', icon: 'twitter' },
+  'x.com': { name: 'X', icon: 'twitter' },
+  'facebook.com': { name: 'Facebook', icon: 'facebook' },
+  'instagram.com': { name: 'Instagram', icon: 'instagram' },
+};
+
 const SHARE_PLATFORMS = {
   x: {
     icon: 'x',
@@ -39,6 +47,104 @@ const SHARE_LABEL_KEYS = {
 
 function logError(message) {
   window.lana?.log(`Blog header: ${message}`, { tags: 'blog-header', errorType: 'e' });
+}
+
+function logSchemaError(message) {
+  window.lana?.log(`Blog schema: ${message}`, { tags: 'blog-schema', severity: 'warning' });
+}
+
+function httpUrl(value, base) {
+  try {
+    const url = new URL(value, base);
+    if (url.protocol === 'https:' || url.protocol === 'http:') return url;
+  } catch (error) {
+    logSchemaError(`invalid URL: ${value}`);
+    return null;
+  }
+  logSchemaError(`unsupported URL protocol: ${value}`);
+  return null;
+}
+
+function resolveSocialPlatform(value) {
+  const url = httpUrl(value);
+  if (!url) return undefined;
+  const domain = Object.keys(SOCIAL_PLATFORMS).find((host) => (
+    url.hostname === host || url.hostname.endsWith(`.${host}`)
+  ));
+  return SOCIAL_PLATFORMS[domain];
+}
+
+function getSchemaUrl(value, doc = document, base = window.location.href) {
+  const canonical = doc.head.querySelector('link[rel="canonical"]')?.getAttribute('href')
+    || doc.head.querySelector('meta[property="og:url"]')?.content;
+  const canonicalUrl = httpUrl(canonical || base, base);
+  if (!canonicalUrl) return null;
+  const url = httpUrl(value || canonicalUrl.href, base);
+  if (!url) return null;
+  // Relative author links on previews must identify the production author.
+  if (url.origin === new URL(base).origin) {
+    url.protocol = canonicalUrl.protocol;
+    url.host = canonicalUrl.host;
+    url.port = canonicalUrl.port;
+  }
+  url.search = '';
+  url.hash = '';
+  return url.href;
+}
+
+function getPersonSchema(author, pageUrl) {
+  if (!pageUrl) return null;
+  const decorated = author.querySelector('.blog-author-name');
+  const rows = [...author.querySelectorAll(':scope > div > div')].filter((row) => (
+    !row.querySelector('picture, img')
+    && !/^#[0-9a-fA-F]{3,6}(?:\s*,\s*#[0-9a-fA-F]{3,6})?$/.test(row.textContent.trim())
+  ));
+  const socialIndex = rows.findIndex((row) => [...row.querySelectorAll('a')]
+    .some((link) => resolveSocialPlatform(link.href)));
+  const textRows = socialIndex < 0 ? rows : rows.slice(0, socialIndex);
+  const name = (decorated || textRows[0])?.textContent.trim();
+  if (!name) {
+    logSchemaError(`author profile has no name: ${pageUrl}`);
+    return null;
+  }
+  if (/\s(?:and|&)\s/i.test(name) || /-and-/i.test(new URL(pageUrl).pathname)) {
+    logSchemaError(`combined author profile requires individual author pages: ${pageUrl}`);
+    return null;
+  }
+  const schema = {
+    '@type': 'Person',
+    name,
+    url: pageUrl,
+    '@id': `${pageUrl}#person`,
+    worksFor: { '@type': 'Organization', name: 'Adobe' },
+  };
+  const title = (decorated ? author.querySelector('.blog-author-title') : textRows[1])
+    ?.textContent.trim();
+  if (title) schema.jobTitle = title;
+  const description = (decorated ? [...author.querySelectorAll('.blog-author-description')]
+    : textRows.slice(2)).map((row) => row.textContent.trim()).filter(Boolean).join(' ');
+  if (description) schema.description = description;
+  const image = author.querySelector('picture img, img')?.getAttribute('src');
+  const imageUrl = image && httpUrl(image, pageUrl);
+  if (imageUrl) schema.image = imageUrl.href;
+  const socialLinks = decorated
+    ? author.querySelectorAll('.blog-author-social a:not([hidden])')
+    : rows.slice(Math.max(socialIndex, 0)).flatMap((row) => [...row.querySelectorAll('a')]);
+  const sameAs = [...new Set([...socialLinks].filter((link) => resolveSocialPlatform(link.href))
+    .map((link) => link.href))];
+  if (sameAs.length) schema.sameAs = sameAs;
+  return schema;
+}
+
+function injectBlogSchema(type, schema) {
+  let script = document.head.querySelector(`script[data-blog-schema="${type}"]`);
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.blogSchema = type;
+    document.head.append(script);
+  }
+  script.textContent = JSON.stringify({ '@context': 'https://schema.org', ...schema });
 }
 
 export function getReadingTime(main) {
@@ -85,7 +191,7 @@ function resolveMediaUrls(picture, base) {
   if (img?.getAttribute('srcset')) img.setAttribute('srcset', resolveSrcset(img.getAttribute('srcset'), base));
 }
 
-function getProfileData(doc) {
+function getProfileData(doc, profileUrl) {
   const author = doc.querySelector('.blog-author');
   if (!author) return null;
   const rows = [...author.querySelectorAll(':scope > div > div')].filter((row) => (
@@ -99,11 +205,18 @@ function getProfileData(doc) {
   const companyRow = socialIndex < 0
     ? rows[5] || rows[4]
     : rows.slice(socialIndex + 1).at(-1);
+  let schema = null;
+  if (doc.querySelectorAll('.blog-author').length === 1) {
+    schema = getPersonSchema(author, getSchemaUrl(new URL(profileUrl).pathname));
+  } else {
+    logError(`author profile must describe a single author: ${profileUrl}`);
+  }
   return {
     picture: author.querySelector('picture') || author.querySelector('img'),
     name: nameRow?.textContent.trim() || '',
     title: titleRow?.textContent.trim() || '',
     company: companyRow?.textContent.trim() || '',
+    schema,
   };
 }
 
@@ -111,13 +224,19 @@ function fetchAuthorProfile(profileUrl) {
   if (!profileCache.has(profileUrl)) {
     profileCache.set(profileUrl, (async () => {
       try {
-        const resp = await fetch(`${profileUrl}.plain.html`);
+        const url = new URL(profileUrl);
+        url.search = '';
+        url.hash = '';
+        url.pathname = `${url.pathname}.plain.html`;
+        const resp = await fetch(url.href);
         if (!resp.ok) {
           logError(`author profile responded ${resp.status} for ${profileUrl}`);
           return null;
         }
         const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-        return getProfileData(doc);
+        const profile = getProfileData(doc, profileUrl);
+        if (!profile) logError(`author profile has no blog-author block: ${profileUrl}`);
+        return profile;
       } catch (e) {
         logError(`author profile request failed for ${profileUrl}: ${e.message}`);
         return null;
@@ -224,8 +343,7 @@ function getAuthorData(row) {
   };
 }
 
-function decorateAuthor(row, authorLinkEnabled, base) {
-  const data = getAuthorData(row);
+function decorateAuthor(data, authorLinkEnabled, base) {
   const { picture, name, href, details, needsName } = data;
   const author = createTag('div', { class: 'blog-header-author' });
   const avatar = createTag('div', { class: 'blog-header-author-avatar' });
@@ -489,12 +607,37 @@ function decorateSummary(row) {
   }
 }
 
-async function buildByline(authorRows, config, base) {
+async function buildByline(authorsData, config, base) {
   const authorLinkEnabled = getMetadata('article-author-link') !== 'off';
   const authors = createTag('div', { class: 'blog-header-authors' });
-  authorRows.forEach((row) => authors.append(decorateAuthor(row, authorLinkEnabled, base)));
+  authorsData.forEach((data) => authors.append(decorateAuthor(data, authorLinkEnabled, base)));
   const shareButton = await buildShareButton(config, base);
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
+}
+
+async function decorateArticleSchema(el, authorsData) {
+  const url = getSchemaUrl();
+  if (!url) return;
+  const profiles = await Promise.all(authorsData.slice(0, 2).map(({ href }) => (
+    href ? fetchAuthorProfile(resolveUrl(href, window.location.href)) : null
+  )));
+  if (!el.isConnected) return;
+  const authors = [];
+  profiles.forEach((profile) => {
+    if (!profile?.schema) return;
+    if (authors.some((person) => person['@id'] === profile.schema['@id'])) {
+      logError(`duplicate author profile omitted from schema: ${profile.schema.url}`);
+      return;
+    }
+    authors.push({ ...profile.schema });
+  });
+  if (authors[1]) delete authors[1].description;
+  injectBlogSchema('posting', {
+    '@type': 'BlogPosting',
+    headline: el.querySelector('h1')?.textContent.trim() || getMetadata('og:title') || document.title,
+    url,
+    author: authors,
+  });
 }
 
 const dividerObservers = new WeakMap();
@@ -567,19 +710,21 @@ export default async function init(el) {
   const base = config.miloLibs || config.codeRoot;
 
   const [titleRow, summaryRow, ...authorRows] = el.children;
+  const authorsData = authorRows.map(getAuthorData);
   titleRow?.classList.add('blog-header-title');
   summaryRow?.classList.add('blog-header-summary');
   decorateSummary(summaryRow);
 
   const [eyebrow, byline] = await Promise.all([
     buildEyebrow(config, readingTime),
-    buildByline(authorRows, config, base),
+    buildByline(authorsData, config, base),
   ]);
 
   el.prepend(eyebrow);
   authorRows.forEach((row) => row.remove());
   el.append(byline);
   decorateDividers(el);
+  decorateArticleSchema(el, authorsData).catch((error) => logError(`schema failed: ${error.message}`));
 
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;
