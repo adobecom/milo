@@ -431,6 +431,226 @@ describe('preflight diff-onpage', () => {
     });
   });
 
+  describe('word-level marks on changed elements', () => {
+    let root;
+    const source = (html) => Object.assign(document.createElement('p'), { innerHTML: html });
+    const changed = (liveHtml, previewHtml) => ({
+      added: [],
+      modified: [{
+        type: 'modified', kind: 'leaf', tag: 'P', path: '/div[1]/p[1]', liveEl: source(liveHtml), previewEl: source(previewHtml),
+      }],
+    });
+    const preview = 'Starting at <strong>$29.99/mo</strong> today';
+    const marks = (tag) => [...root.querySelectorAll(tag)].map((el) => el.textContent.trim());
+    const plain = (el) => {
+      const copy = el.cloneNode(true);
+      copy.querySelectorAll('.preflight-diff-overlay, .preflight-diff-sr-only')
+        .forEach((n) => n.remove());
+      return copy.textContent;
+    };
+    const blockChange = (liveHtml, previewHtml) => ({
+      added: [],
+      modified: [{
+        type: 'modified', kind: 'block', blockName: 'text', path: '/div[1]', previewText: source(previewHtml).textContent, liveEl: source(liveHtml, 'div'), previewEl: source(previewHtml, 'div'),
+      }],
+    });
+
+    beforeEach(() => {
+      root = document.createElement('main');
+      root.innerHTML = `<div><p>${preview}</p></div>`;
+      document.body.append(root);
+    });
+
+    afterEach(() => {
+      clearHighlights(root);
+      root.remove();
+    });
+
+    it('marks added words and inserts removed words before them, keeping the changed frame', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', preview), root);
+
+      const p = root.querySelector('p');
+      expect(marks('ins')).to.deep.equal(['$29.99/mo', 'today']);
+      const del = p.querySelector('del');
+      expect(del.textContent).to.equal(' $19.99/mo');
+      expect(del.nextElementSibling.textContent).to.equal('$29.99/mo');
+      expect(p.querySelector(':scope > .preflight-diff-overlay.is-modified')).to.exist;
+    });
+
+    it('treats line breaks as word boundaries and joins neighboring added words', () => {
+      root.innerHTML = '<div><p>changed from live<br>HELLO</p></div>';
+      highlightOnPage(changed('changed<br>HELLO', 'changed from live<br>HELLO'), root);
+
+      expect(marks('ins')).to.deep.equal(['from live']);
+      expect(marks('del')).to.deep.equal([]);
+    });
+
+    it('appends words removed from the end', () => {
+      root.innerHTML = '<div><p>Buy now</p></div>';
+      highlightOnPage(changed('Buy now today only', 'Buy now'), root);
+
+      expect(root.querySelector('del').textContent).to.equal(' today only');
+      expect(plain(root.querySelector('p'))).to.equal('Buy now today only');
+    });
+
+    it('keeps removed words with the text they were removed from', () => {
+      root.innerHTML = '<div><p><strong>Heading</strong> Body text</p></div>';
+      highlightOnPage(changed('<strong>Heading old tail</strong> Body text', '<strong>Heading</strong> Body text'), root);
+
+      expect(root.querySelector('del').parentElement.tagName).to.equal('STRONG');
+    });
+
+    it('keeps a word whole when inline formatting splits it on the page', () => {
+      root.innerHTML = '<div><p>Try Photo<strong>shop</strong> tomorrow</p></div>';
+      highlightOnPage(changed('Try Photoshop today', 'Try Photo<strong>shop</strong> tomorrow'), root);
+
+      expect(marks('ins')).to.deep.equal(['tomorrow']);
+      expect(marks('del')).to.deep.equal(['today']);
+    });
+
+    it('keeps a word whole when inline formatting that split it was removed', () => {
+      root.innerHTML = '<div><p>Try Photoshop tomorrow</p></div>';
+      highlightOnPage(changed('Try Photo<strong>shop</strong> today', 'Try Photoshop tomorrow'), root);
+
+      expect(marks('ins')).to.deep.equal(['tomorrow']);
+      expect(marks('del')).to.deep.equal(['today']);
+    });
+
+    it('marks every part of an added word that spans inline formatting', () => {
+      root.innerHTML = '<div><p>Try Photo<strong>shop</strong> today</p></div>';
+      highlightOnPage(changed('Try today', 'Try Photo<strong>shop</strong> today'), root);
+
+      expect(marks('ins')).to.deep.equal(['Photo', 'shop']);
+      clearHighlights(root);
+      expect(root.querySelector('p').innerHTML).to.equal('Try Photo<strong>shop</strong> today');
+    });
+
+    it('adds no word marks when the page text differs from the preview source, keeping the frame', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', 'Starting at {{price}} today'), root);
+
+      const p = root.querySelector('p');
+      expect(p.querySelectorAll('ins, del').length).to.equal(0);
+      expect(p.querySelector(':scope > .preflight-diff-overlay.is-modified')).to.exist;
+    });
+
+    it('inserts removed text as text, never as markup', () => {
+      highlightOnPage(changed('Starting at &lt;b&gt;bold&lt;/b&gt; today', preview), root);
+
+      expect(root.querySelectorAll('b').length).to.equal(0);
+      expect(root.querySelector('del').textContent.trim()).to.equal('<b>bold</b>');
+    });
+
+    it('restores the original text nodes when highlights are cleared', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', preview), root);
+      clearHighlights(root);
+
+      const p = root.querySelector('p');
+      expect(p.textContent).to.equal('Starting at $29.99/mo today');
+      expect(p.childNodes).to.have.length(3);
+      expect(p.querySelector('strong').childNodes).to.have.length(1);
+    });
+
+    it('inserts words removed from the start before the first word', () => {
+      root.innerHTML = '<div><p>price $10</p></div>';
+      highlightOnPage(changed('Old price $10', 'price $10'), root);
+
+      const p = root.querySelector('p');
+      expect(p.firstElementChild.tagName).to.equal('DEL');
+      expect(p.textContent.startsWith('Old price $10')).to.equal(true);
+      expect(marks('del')).to.deep.equal(['Old']);
+      expect(marks('ins')).to.deep.equal([]);
+    });
+
+    it('marks added words on both sides of an unchanged word separately', () => {
+      root.innerHTML = '<div><p>new one same new two</p></div>';
+      highlightOnPage(changed('same', 'new one same new two'), root);
+
+      expect(marks('ins')).to.deep.equal(['new one', 'new two']);
+    });
+
+    it('does not join a word with the text of a following block element', () => {
+      root.innerHTML = '<div><p>foo</p></div>';
+      root.querySelector('p').append(Object.assign(document.createElement('div'), { textContent: 'baz' }));
+      highlightOnPage(changed('foo<div>bar</div>', 'foo<div>baz</div>'), root);
+
+      expect(marks('ins')).to.deep.equal(['baz']);
+      expect(marks('del')).to.deep.equal(['bar']);
+    });
+
+    it('keeps a real space around removed words in the text content', () => {
+      root.innerHTML = '<div><p>small light</p></div>';
+      highlightOnPage(changed('small dark light', 'small light'), root);
+
+      expect(plain(root.querySelector('p'))).to.equal('small dark light');
+      expect(marks('del')).to.deep.equal(['dark']);
+    });
+
+    it('puts a run removed across two elements back with the element it came from', () => {
+      root.innerHTML = '<div class="text"><h2>Hello big</h2><p>body text</p></div>';
+      highlightOnPage(blockChange('<h2>Hello big world</h2><p>Old body text</p>', '<h2>Hello big</h2><p>body text</p>'), root);
+
+      expect(plain(root.querySelector('h2'))).to.equal('Hello big world');
+      expect(plain(root.querySelector('p'))).to.equal('Old body text');
+      expect(marks('del')).to.deep.equal(['world', 'Old']);
+    });
+
+    it('keeps every removed word when blocks removed at the end have nothing to attach to', () => {
+      root.innerHTML = '<div class="text"><h2>A</h2></div>';
+      highlightOnPage(blockChange('<h2>A</h2><p>B</p><p>C</p>', '<h2>A</h2>'), root);
+
+      expect(marks('del')).to.deep.equal(['B', 'C']);
+      expect(plain(root.querySelector('h2'))).to.equal('A B C');
+    });
+
+    it('gives back the exact original text nodes, including ones it did not split', () => {
+      root.innerHTML = '<div><p></p></div>';
+      const p = root.querySelector('p');
+      const first = document.createTextNode('Hello big ');
+      const second = document.createTextNode('world');
+      p.append(first, second);
+      highlightOnPage(changed('Hello big old world', 'Hello big world'), root);
+      expect(marks('del')).to.deep.equal(['old']);
+      clearHighlights(root);
+
+      expect([...p.childNodes]).to.deep.equal([first, second]);
+      expect(first.data).to.equal('Hello big ');
+      expect(second.data).to.equal('world');
+    });
+
+    it('rebuilds an identical DOM across repeated Hide/Show of word marks', () => {
+      highlightOnPage(changed('Starting at $19.99/mo', preview), root, true);
+      const marked = root.innerHTML;
+      const toggle = () => document.querySelector('.preflight-diff-control-hide');
+      for (let i = 0; i < 5; i += 1) {
+        toggle().click();
+        expect(root.querySelector('p').innerHTML).to.equal(preview);
+        toggle().click();
+        expect(root.innerHTML).to.equal(marked);
+      }
+    });
+
+    it('falls back to the changed frame, and still frames later changes, when marking throws', () => {
+      root.innerHTML = '<div><p>Starting at $29.99/mo today</p><h2>Other</h2></div>';
+      window.lana = { log: sinon.stub() };
+      sinon.stub(Range.prototype, 'surroundContents').throws(new Error('IndexSizeError'));
+      const diff = changed('Starting at $19.99/mo today', 'Starting at $29.99/mo today');
+      diff.added.push({ type: 'added', kind: 'leaf', tag: 'H2', path: '/div[1]/h2[1]' });
+      const p = root.querySelector('p');
+      const original = [...p.childNodes];
+
+      highlightOnPage(diff, root);
+
+      expect(p.querySelectorAll('ins, del').length).to.equal(0);
+      const texts = [...p.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE);
+      expect(texts).to.deep.equal(original);
+      expect(p.querySelector(':scope > .preflight-diff-overlay.is-modified')).to.exist;
+      expect(root.querySelector('h2 > .preflight-diff-overlay.is-added')).to.exist;
+      expect(window.lana.log.calledOnce).to.equal(true);
+      sinon.restore();
+      delete window.lana;
+    });
+  });
+
   describe('on-page Hide/Show toggle control', () => {
     let root;
     let diff;

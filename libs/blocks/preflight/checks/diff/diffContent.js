@@ -114,6 +114,41 @@ function lcsPairs(live, preview) {
   return pairs;
 }
 
+const MAX_WORD_COMPARISONS = 1e6;
+
+export function diffWords(liveText, previewText) {
+  const toWords = (text) => (text.match(/\S+/g) || []).map((sig) => ({ sig }));
+  const live = toWords(liveText);
+  const preview = toWords(previewText);
+  let head = 0;
+  while (
+    head < live.length
+    && head < preview.length
+    && live[head].sig === preview[head].sig
+  ) head += 1;
+  let tail = 0;
+  while (
+    tail < live.length - head
+    && tail < preview.length - head
+    && live[live.length - 1 - tail].sig === preview[preview.length - 1 - tail].sig
+  ) tail += 1;
+  const midLive = live.slice(head, live.length - tail);
+  const midPreview = preview.slice(head, preview.length - tail);
+  if (midLive.length * midPreview.length > MAX_WORD_COMPARISONS) return null;
+
+  const same = (list) => list.map(({ sig }) => ({ type: 'same', text: sig }));
+  const words = same(live.slice(0, head));
+  let i = 0;
+  let j = 0;
+  [...lcsPairs(midLive, midPreview), [midLive.length, midPreview.length]].forEach(([li, pj]) => {
+    midLive.slice(i, li).forEach(({ sig }) => words.push({ type: 'removed', text: sig }));
+    midPreview.slice(j, pj).forEach(({ sig }) => words.push({ type: 'added', text: sig }));
+    if (li < midLive.length) words.push({ type: 'same', text: midLive[li].sig });
+    [i, j] = [li + 1, pj + 1];
+  });
+  return words.concat(same(live.slice(live.length - tail)));
+}
+
 function isSameSlot(removedUnit, addedUnit) {
   if (removedUnit.tag !== addedUnit.tag) return false;
   if (removedUnit.kind === 'block') {
