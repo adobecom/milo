@@ -5,6 +5,13 @@ const DEF_DESC = 'Checking...';
 const decorativeImages = signal([]);
 const altTextImages = signal([]);
 const altResult = signal({ title: 'Audit Image Alt value', description: DEF_DESC });
+
+export function resetAltAudit() {
+  decorativeImages.value = [];
+  altTextImages.value = [];
+  altResult.value = { title: 'Audit Image Alt value', description: DEF_DESC };
+}
+
 const groups = [
   { title: 'Images with alt text', imgArray: altTextImages },
   { title: 'Decorative images (empty alt text)', imgArray: decorativeImages, closed: true },
