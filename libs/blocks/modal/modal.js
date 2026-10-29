@@ -18,6 +18,7 @@ const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" w
 let delayedModalId = null;
 let prevHash = '';
 let isDeepLink = false;
+let clickedTrigger = null;
 const dialogLoadingSet = new Set();
 
 function isUnsafeHash(id) {
@@ -232,17 +233,18 @@ export async function getModal(details, custom) {
   if (!(custom || (details?.path && details?.id && isTrustedUrl(details.path)))) return null;
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
-  const activeElementData = document.activeElement.dataset;
   const triggerId = custom?.hash?.slice(1) || id;
-  const isConfirmedTrigger = !isDeepLink
-    && (activeElementData.modalHash === `#${triggerId}` || activeElementData.modalId === triggerId);
-  if (isConfirmedTrigger) {
-    document.activeElement.dataset.isModalTrigger = 'true';
+  const isTrigger = (node) => node?.isConnected
+    && (node.dataset?.modalHash === `#${triggerId}` || node.dataset?.modalId === triggerId);
+  const trigger = isDeepLink ? null : [document.activeElement, clickedTrigger].find(isTrigger);
+  clickedTrigger = null;
+  if (trigger) {
+    trigger.dataset.isModalTrigger = 'true';
   }
   let openedViaKeyboard = true;
-  if (isConfirmedTrigger) {
+  if (trigger) {
     try {
-      openedViaKeyboard = document.activeElement.matches(':focus-visible');
+      openedViaKeyboard = trigger.matches(':focus-visible');
     } catch (e) {
       openedViaKeyboard = true;
     }
@@ -454,6 +456,11 @@ function safeQuerySelector(selector) {
     return null;
   }
 }
+
+// Safari doesn't focus clicked links, so remember the clicked modal link
+document.addEventListener('click', (e) => {
+  clickedTrigger = e.target.closest?.('[data-modal-hash], [data-modal-id]') ?? null;
+}, true);
 
 // Click-based modal
 window.addEventListener('hashchange', async (e) => {

@@ -11,6 +11,9 @@ import {
   getPhoneFieldConfig,
   fetchConsentString,
   getPageLocale,
+  getMarketingPayload,
+  getFormCountry,
+  getFormTrigger,
 } from '../../../libs/blocks/email-collection/utils.js';
 
 const locales = {
@@ -26,6 +29,8 @@ const config = {
 };
 
 setConfig(config);
+// Prevent geo IP prefetch from hitting geo2.adobe.com during tests
+sessionStorage.setItem('akamai', 'us');
 
 const emailCollectionModule = await import('../../../libs/blocks/email-collection/email-collection.js');
 const { default: init, overrideForegroundContent } = emailCollectionModule;
@@ -447,6 +452,100 @@ describe('Email collection', () => {
     expect(text[2].classList.contains('hidden')).to.be.true;
   });
 
+  it('Should send consentId in is-subscribed request', async () => {
+    mockFetch({ subscribed: false });
+    const fetchSpy = sinon.spy(window, 'fetch');
+    const block = document.querySelector('#waitlist');
+    await init(block);
+    await sleep();
+
+    const isSubscribedCall = fetchSpy.getCalls().find((call) => String(call.args[0]).endsWith('/is-subscribed'));
+    expect(isSubscribedCall).to.exist;
+    const body = JSON.parse(isSubscribedCall.args[1].body);
+    expect(body.consentId).to.equal('consent-id');
+  });
+
+  describe('Submit payload per consent', () => {
+    const CS1D_CONSENT_URL = 'https://main--federal--adobecom.aem.page/federal/email-collection/consents/cs1d.plain.html';
+    let fetchSpy;
+
+    function setSectionMetadata(block, rows) {
+      const metadata = block.parentElement.querySelector('.section-metadata');
+      metadata.replaceChildren(...rows.map(([key, value]) => {
+        const row = document.createElement('div');
+        const keyEl = document.createElement('div');
+        keyEl.textContent = key;
+        const valueEl = document.createElement('div');
+        valueEl.textContent = value;
+        row.append(keyEl, valueEl);
+        return row;
+      }));
+    }
+
+    async function initAndSubmit(block) {
+      await init(block);
+      await sleep();
+      block.querySelector('form input#email').value = 'test@test.com';
+      block.querySelector('form button[type="submit"]').click();
+      await sleep(50);
+      const submitCall = fetchSpy.getCalls().find((call) => String(call.args[0]).endsWith('/form-submit'));
+      expect(submitCall).to.exist;
+      return JSON.parse(submitCall.args[1].body);
+    }
+
+    afterEach(() => {
+      fetchSpy?.restore();
+      fetchSpy = null;
+    });
+
+    it('Should send marketing payload and country code for cs1D consent', async () => {
+      sessionStorage.setItem('akamai', 'us');
+      mockFetch({ consentUrl: CS1D_CONSENT_URL, consentId: 'cs1D;ve1;en' });
+      fetchSpy = sinon.spy(window, 'fetch');
+      const block = document.querySelector('#mailing-list');
+      setSectionMetadata(block, [['email', 'Email address'], ['consent-id', 'cs1D']]);
+
+      const body = await initAndSubmit(block);
+      const pagePath = window.location.pathname.replace(/^\//, '').replace(/\.html$/, '').replaceAll('/', '|');
+      expect(body.consentId).to.equal('cs1D;ve1;en');
+      expect(body.mpsSname).to.be.undefined;
+      expect(body.countryCode).to.equal('US');
+      expect(body.marketing).to.deep.equal({
+        entryPoint: `_${pagePath}`,
+        language: 'en',
+        currentUrl: `${window.location.origin}${window.location.pathname}`,
+      });
+
+      const isSubscribedCall = fetchSpy.getCalls().find((call) => String(call.args[0]).endsWith('/is-subscribed'));
+      expect(JSON.parse(isSubscribedCall.args[1].body).consentId).to.equal('cs1D;ve1;en');
+    });
+
+    it('Should not send marketing payload or country code for cs4 consent without country field', async () => {
+      mockFetch({ consentId: 'cs4;ve1;en' });
+      fetchSpy = sinon.spy(window, 'fetch');
+      const block = document.querySelector('#mailing-list');
+      setSectionMetadata(block, [['email', 'Email address'], ['mps-sname', '1111'], ['subscription-name', '1234']]);
+
+      const body = await initAndSubmit(block);
+      expect(body.consentId).to.equal('cs4;ve1;en');
+      expect(body.mpsSname).to.equal('1111');
+      expect(body).to.not.have.any.keys('countryCode', 'marketing');
+      expect(getFormData('geoCountry')).to.be.undefined;
+    });
+
+    it('Should keep sending the profile country for cs4 consent with country field', async () => {
+      mockFetch({ consentId: 'cs4;ve1;en' });
+      fetchSpy = sinon.spy(window, 'fetch');
+      const block = document.querySelector('#mailing-list');
+
+      const body = await initAndSubmit(block);
+      expect(body.consentId).to.equal('cs4;ve1;en');
+      expect(body.mpsSname).to.equal('1111');
+      expect(body.countryCode).to.equal('US');
+      expect(body.marketing).to.be.undefined;
+    });
+  });
+
   it('Should submit form and show subscribed message if user is subscribed', async () => {
     mockFetch({ subscribed: true });
     const block = document.querySelector('#waitlist');
@@ -674,7 +773,7 @@ describe('Phone fields rendering', () => {
     newUrl.pathname = '/br/';
     window.history.replaceState({}, '', newUrl.toString());
     setConfig(config);
-    mockFetch({ consentUrl: BR_CONSENT_URL, subscribed: false });
+    mockFetch({ consentUrl: BR_CONSENT_URL, consentId: 'cs8A;ve1;pt', subscribed: false });
   });
 
   afterEach(() => {
@@ -756,6 +855,19 @@ describe('Phone fields rendering', () => {
     expect(body.phoneNumber).to.equal('11912345678');
     expect(body.phoneCountryCode).to.equal('55');
     expect(body.phoneExtension).to.be.undefined;
+    expect(body.consentId).to.equal('cs8A;ve1;pt');
+    expect(body).to.not.have.any.keys('countryCode', 'marketing');
+    fetchSpy.restore();
+  });
+
+  it('Should not call is-subscribed for cs8A consent', async () => {
+    const fetchSpy = sinon.spy(window, 'fetch');
+    const block = document.querySelector('#phone-number');
+    await init(block);
+    await sleep();
+    const isSubscribedCall = fetchSpy.getCalls().find((call) => String(call.args[0]).endsWith('/is-subscribed'));
+    expect(isSubscribedCall).to.not.exist;
+    expect(block.querySelector('form')).to.exist;
     fetchSpy.restore();
   });
 });
@@ -775,7 +887,7 @@ describe('India phone fields rendering', () => {
     newUrl.pathname = '/in/';
     window.history.replaceState({}, '', newUrl.toString());
     setConfig(config);
-    mockFetch({ consentUrl: IN_CONSENT_URL, subscribed: false });
+    mockFetch({ consentUrl: IN_CONSENT_URL, consentId: 'cs8A;ve1;en', subscribed: false });
   });
 
   afterEach(() => {
@@ -959,5 +1071,289 @@ describe('fetchConsentString', () => {
     window.fetch = async () => new Response(null, { status: 404 });
     const result = await fetchConsentString();
     expect(result).to.deep.equal({});
+  });
+});
+
+describe('General Marketing (cs1D) consent', () => {
+  const MARKETING_CONSENT_ID = 'cs1D;ve1;en';
+  let originalHref;
+
+  function createBlock(rows, { country = false } = {}) {
+    const section = document.createElement('div');
+    const block = document.createElement('div');
+    block.className = 'email-collection';
+    const trigger = document.createElement('a');
+    trigger.href = '#signup';
+    trigger.dataset.modalHash = '#signup';
+    trigger.textContent = 'Sign up';
+    const main = document.createElement('main');
+    main.appendChild(trigger);
+    const sectionMeta = document.createElement('div');
+    sectionMeta.className = 'section-metadata';
+    const allRows = [['email', 'Email address'], ...rows];
+    if (country) allRows.push(['country', 'Country']);
+    allRows.forEach(([key, value]) => {
+      const row = document.createElement('div');
+      const keyEl = document.createElement('div');
+      keyEl.textContent = key;
+      const valEl = document.createElement('div');
+      valEl.textContent = value;
+      row.append(keyEl, valEl);
+      sectionMeta.appendChild(row);
+    });
+    section.append(block, sectionMeta);
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog-modal';
+    dialog.id = 'signup';
+    dialog.appendChild(section);
+    document.body.append(main, dialog);
+    return { block, trigger };
+  }
+
+  function setCountryCookie(value) {
+    document.cookie = value
+      ? `country=${value}; path=/`
+      : 'country=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  }
+
+  beforeEach(() => {
+    originalHref = window.location.href;
+    mockFetch({});
+    setIms(false);
+    setCountryCookie();
+    sessionStorage.setItem('akamai', 'us');
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+    restoreFetch();
+    setIms();
+    setCountryCookie();
+    sessionStorage.setItem('akamai', 'us');
+    window.history.replaceState({}, '', originalHref);
+  });
+
+  describe('setFormData', () => {
+    it('Should not require mps-sname for cs1D consent', () => {
+      const { block } = createBlock([['consent-id', 'cs1D']]);
+      expect(setFormData(block)).to.be.null;
+    });
+
+    it('Should still require mps-sname for other consent ids', () => {
+      const { block } = createBlock([['consent-id', 'cs4']]);
+      expect(setFormData(block)).to.include('mps-sname');
+    });
+
+    it('Should match cs1D consent id case-sensitively', () => {
+      const { block } = createBlock([['consent-id', 'cs1d']]);
+      expect(setFormData(block)).to.include('mps-sname');
+    });
+
+    it('Should store the section of the modal trigger link as the form trigger', () => {
+      const { block, trigger } = createBlock([['consent-id', 'cs1D']]);
+      trigger.dataset.isModalTrigger = 'true';
+      setFormData(block);
+      expect(getFormData('trigger')?.tagName).to.equal('MAIN');
+    });
+
+    it('Should prefetch geo country only for cs1D forms without country field', async () => {
+      const { block } = createBlock([['consent-id', 'cs1D']]);
+      setFormData(block);
+      expect(await getFormData('geoCountry')).to.equal('us');
+
+      document.body.innerHTML = '';
+      const { block: countryBlock } = createBlock([['consent-id', 'cs1D']], { country: true });
+      setFormData(countryBlock);
+      expect(getFormData('geoCountry')).to.be.undefined;
+
+      document.body.innerHTML = '';
+      const { block: otherBlock } = createBlock([['consent-id', 'cs4'], ['mps-sname', '1111']]);
+      setFormData(otherBlock);
+      expect(getFormData('geoCountry')).to.be.undefined;
+    });
+  });
+
+  describe('getFormTrigger', () => {
+    function createModalBlock(triggerParents) {
+      const triggers = triggerParents.map((tag) => {
+        const parent = document.querySelector(tag) ?? document.createElement(tag);
+        const link = document.createElement('a');
+        link.href = '#signup';
+        link.dataset.modalHash = '#signup';
+        parent.appendChild(link);
+        document.body.appendChild(parent);
+        return link;
+      });
+      const dialog = document.createElement('div');
+      dialog.className = 'dialog-modal';
+      dialog.id = 'signup';
+      const block = document.createElement('div');
+      dialog.appendChild(block);
+      document.body.appendChild(dialog);
+      return { block, triggers };
+    }
+
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+
+    it('Should use the section of the link marked as modal trigger', () => {
+      const { block, triggers } = createModalBlock(['header', 'main', 'footer']);
+      triggers[2].dataset.isModalTrigger = 'true';
+      expect(getFormTrigger(block)?.tagName).to.equal('FOOTER');
+    });
+
+    it('Should ignore focus outside the trigger links (Safari)', () => {
+      const { block, triggers } = createModalBlock(['main', 'footer']);
+      triggers[1].dataset.isModalTrigger = 'true';
+      const input = document.createElement('input');
+      document.querySelector('main').appendChild(input);
+      input.focus();
+      expect(getFormTrigger(block)?.tagName).to.equal('FOOTER');
+    });
+
+    it('Should use the section when all trigger links are in it', () => {
+      const { block } = createModalBlock(['main', 'main']);
+      expect(getFormTrigger(block)?.tagName).to.equal('MAIN');
+    });
+
+    it('Should ignore trigger links inside the dialog', () => {
+      const { block } = createModalBlock(['footer']);
+      const link = document.createElement('a');
+      link.dataset.modalHash = '#signup';
+      block.closest('.dialog-modal').appendChild(link);
+      expect(getFormTrigger(block)?.tagName).to.equal('FOOTER');
+    });
+
+    it('Should return null when unmarked trigger links are in different sections', () => {
+      const { block } = createModalBlock(['header', 'main']);
+      expect(getFormTrigger(block)).to.be.null;
+    });
+
+    it('Should return null without trigger links', () => {
+      const { block } = createModalBlock([]);
+      expect(getFormTrigger(block)).to.be.null;
+    });
+
+    it('Should return null when the block is not in a modal', () => {
+      const block = document.createElement('div');
+      document.body.appendChild(block);
+      expect(getFormTrigger(block)).to.be.null;
+    });
+  });
+
+  describe('getMarketingPayload', () => {
+    it('Should return an empty object for non-marketing consent ids', async () => {
+      const { block } = createBlock([['consent-id', 'cs4'], ['mps-sname', '1111']]);
+      setFormData(block);
+      expect(await getMarketingPayload('cs4;ve1;en')).to.deep.equal({});
+      expect(await getMarketingPayload('cs1d;ve1;en')).to.deep.equal({});
+      expect(await getMarketingPayload(undefined)).to.deep.equal({});
+    });
+
+    it('Should use authored entry-point', async () => {
+      const { block } = createBlock([
+        ['consent-id', 'cs1D'],
+        ['entry-point', 'custom_entry'],
+      ]);
+      setFormData(block);
+      const { marketing } = await getMarketingPayload(MARKETING_CONSENT_ID);
+      expect(marketing).to.deep.equal({
+        entryPoint: 'custom_entry',
+        language: 'en',
+        currentUrl: `${window.location.origin}${window.location.pathname}`,
+      });
+    });
+
+    it('Should build entry point from trigger section and page path without .html', async () => {
+      const url = new URL(window.location.href);
+      url.pathname = '/products/photoshop/features.html';
+      url.search = '?foo=bar';
+      window.history.replaceState({}, '', url.toString());
+
+      const { block, trigger } = createBlock([['consent-id', 'cs1D']]);
+      trigger.dataset.isModalTrigger = 'true';
+      setFormData(block);
+      const { marketing } = await getMarketingPayload(MARKETING_CONSENT_ID);
+      expect(marketing.entryPoint).to.equal('main_products|photoshop|features');
+      expect(marketing.currentUrl).to.equal(`${window.location.origin}/products/photoshop/features.html`);
+    });
+
+    it('Should build entry point without section when there is no trigger', async () => {
+      const url = new URL(window.location.href);
+      url.pathname = '/products/photoshop';
+      window.history.replaceState({}, '', url.toString());
+
+      const { block, trigger } = createBlock([['consent-id', 'cs1D']]);
+      trigger.remove();
+      setFormData(block);
+      const { marketing } = await getMarketingPayload(MARKETING_CONSENT_ID);
+      expect(marketing.entryPoint).to.equal('_products|photoshop');
+    });
+  });
+
+  describe('getFormCountry', () => {
+    it('Should use profile country, then field country when country field is authored', async () => {
+      const { block } = createBlock([['consent-id', 'cs1D']], { country: true });
+      setFormData(block);
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, fieldCountry: 'GB', profileCountry: 'US' }))
+        .to.deep.equal({ countryCode: 'US' });
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, fieldCountry: 'GB' }))
+        .to.deep.equal({ countryCode: 'GB' });
+    });
+
+    it('Should return an empty object for non-marketing consent without country field', async () => {
+      const { block } = createBlock([['consent-id', 'cs4'], ['mps-sname', '1111']]);
+      setFormData(block);
+      expect(await getFormCountry({ consentId: 'cs4;ve1;en' })).to.deep.equal({});
+    });
+
+    it('Should prefer the country cookie and normalize it', async () => {
+      setCountryCookie('uk');
+      const { block } = createBlock([['consent-id', 'cs1D']]);
+      setFormData(block);
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, profileCountry: 'US' }))
+        .to.deep.equal({ countryCode: 'GB' });
+    });
+
+    it('Should skip non-country market cookie values (e.g. latam)', async () => {
+      setCountryCookie('latam');
+      sessionStorage.setItem('akamai', 'fr');
+      const { block } = createBlock([['consent-id', 'cs1D']]);
+      setFormData(block);
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID }))
+        .to.deep.equal({ countryCode: 'FR' });
+
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, profileCountry: 'US' }))
+        .to.deep.equal({ countryCode: 'US' });
+    });
+
+    it('Should use IMS profile country for signed-in users without cookie', async () => {
+      sessionStorage.setItem('akamai', 'fr');
+      const { block } = createBlock([['consent-id', 'cs1D']]);
+      setFormData(block);
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID, profileCountry: 'US' }))
+        .to.deep.equal({ countryCode: 'US' });
+    });
+
+    it('Should fall back to geo IP country for guests without cookie', async () => {
+      sessionStorage.setItem('akamai', 'fr');
+      const { block } = createBlock([['consent-id', 'cs1D']]);
+      setFormData(block);
+      expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID }))
+        .to.deep.equal({ countryCode: 'FR' });
+    });
+
+    it('Should omit country code instead of failing when geo lookup throws (blocked storage)', async () => {
+      const getItem = sinon.stub(Storage.prototype, 'getItem')
+        .throws(new DOMException('Access denied', 'SecurityError'));
+      try {
+        const { block } = createBlock([['consent-id', 'cs1D']]);
+        setFormData(block);
+        expect(await getFormCountry({ consentId: MARKETING_CONSENT_ID })).to.deep.equal({});
+      } finally {
+        getItem.restore();
+      }
+    });
   });
 });
