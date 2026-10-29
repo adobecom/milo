@@ -30,6 +30,10 @@ import { Input as FormInput, Select as FormSelect } from '../../ui/controls/form
 import TagSelect from '../../ui/controls/TagSelector.js';
 import MultiField from '../../ui/controls/MultiField.js';
 import '../../utils/lana.js';
+import {
+  createAuthoringServiceClient,
+  isAuthoringServiceEnabled,
+} from './authoring-service.js';
 
 const LS_KEY = 'caasConfiguratorState';
 
@@ -43,15 +47,25 @@ const updateObj = (obj, defaultObj) => {
   return obj;
 };
 
-const getHashConfig = async () => {
+const getHashConfig = async (authoringClient = null) => {
   const { hash } = window.location;
   if (!hash) return null;
-  window.location.hash = '';
+  const url = window.location.href;
+
+  if (authoringClient) {
+    const result = await authoringClient.decode(url);
+    if (!result.valid) {
+      throw new Error(result.validation.errors.map(({ message }) => message).join(' '));
+    }
+    window.location.hash = '';
+    return result.state;
+  }
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
   const config = encodedConfig.startsWith('~~')
     ? await decodeCompressedString(encodedConfig.substring(2))
     : parseEncodedConfig(encodedConfig);
+  window.location.hash = '';
   return config;
 };
 
@@ -798,7 +812,7 @@ const AdvancedPanel = () => {
   const { dispatch } = useContext(ConfiguratorContext);
   const context = useContext(ConfiguratorContext);
   const onClick = () => {
-    dispatch({ type: 'RESET_STATE' });
+    dispatch({ type: 'RESET_STATE', value: context.defaults });
   };
 
   const onChange = (prop) => (values) => {
@@ -830,7 +844,7 @@ const AdvancedPanel = () => {
       type="text"}
     />
     <${Input} label="Map Text Strings From Word Doc" prop="placeholderUrl" type="text" />
-    <${Input} label="Tags Url" prop="tagsUrl" defaultValue=${defaultState.tagsUrl} type="text" />
+    <${Input} label="Tags Url" prop="tagsUrl" defaultValue=${context.defaults.tagsUrl} type="text" />
     <${MultiField}
       onChange=${onChange('additionalRequestParams')}
       className="additionalRequestParams"
@@ -851,7 +865,7 @@ const reducer = (state, action) => {
     case 'MULTI_SELECT_CHANGE':
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
-      return cloneObj(defaultState);
+      return cloneObj(action.value || defaultState);
     case 'SET_STATE':
       return cloneObj(action.value);
     /* c8 ignore next 2 */
@@ -860,8 +874,8 @@ const reducer = (state, action) => {
   }
 };
 
-const getInitialState = async () => {
-  let state = await getHashConfig();
+const getInitialState = async (defaults = defaultState, authoringClient = null) => {
+  let state = await getHashConfig(authoringClient);
   // /* c8 ignore next 2 */
   if (!state) {
     const lsState = localStorage.getItem(LS_KEY);
@@ -878,7 +892,7 @@ const getInitialState = async () => {
 
   if (!state) state = {};
 
-  return updateObj(state, defaultState);
+  return updateObj(state, defaults);
 };
 
 const saveStateToLocalStorage = (state) => {
@@ -925,7 +939,12 @@ const getEncodedObject = async (obj, replacer = null) => {
 
 /* c8 ignore start */
 const CopyBtn = () => {
-  const { state } = useContext(ConfiguratorContext);
+  const {
+    authoringClient,
+    defaults,
+    setAuthoringMessage,
+    state,
+  } = useContext(ConfiguratorContext);
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
   const [configUrl, setConfigUrl] = useState('');
@@ -941,7 +960,7 @@ const CopyBtn = () => {
   const removeDefaultsFromState = (fullState) => {
     const reducedState = {};
     Object.keys(fullState).forEach((key) => {
-      if (JSON.stringify(fullState[key]) !== JSON.stringify(defaultState[key])) {
+      if (JSON.stringify(fullState[key]) !== JSON.stringify(defaults[key])) {
         reducedState[key] = fullState[key];
       }
     });
@@ -949,6 +968,14 @@ const CopyBtn = () => {
   };
 
   const getUrl = async () => {
+    if (authoringClient) {
+      const result = await authoringClient.createUrl(state);
+      if (!result.valid) {
+        throw new Error(result.validation.errors.map(({ message }) => message).join(' '));
+      }
+      return result.url;
+    }
+
     const url = new URL(window.location.href);
     url.search = '';
     const reducedState = removeDefaultsFromState(state);
@@ -959,7 +986,16 @@ const CopyBtn = () => {
   };
 
   const copyConfig = async () => {
-    const url = await getUrl();
+    let url;
+    try {
+      url = await getUrl();
+      setAuthoringMessage('');
+    } catch (e) {
+      setConfigUrl('');
+      setAuthoringMessage(e.message);
+      setTempStatus(setIsError);
+      return;
+    }
     setConfigUrl(url);
     if (!navigator?.clipboard) {
       setTempStatus(setIsError);
@@ -1103,7 +1139,15 @@ const Configurator = ({ rootEl }) => {
   const [panels, setPanels] = useState([]);
   const [title] = useState(rootEl.querySelector('h1, h2, h3, h4, h5, h6, p'));
   const [error, setError] = useState();
+  const [authoringClient, setAuthoringClient] = useState(
+    isAuthoringServiceEnabled() ? createAuthoringServiceClient() : null,
+  );
+  const [authoringNotice, setAuthoringNotice] = useState(null);
+  const [defaults, setDefaults] = useState(defaultState);
   const [cardMutationObsv, setCardMutationObsv] = useState(null);
+  const setAuthoringMessage = (message, type = 'error') => {
+    setAuthoringNotice(message ? { message, type } : null);
+  };
 
   useEffect(async () => {
     caasFilesLoaded
@@ -1119,12 +1163,70 @@ const Configurator = ({ rootEl }) => {
 
   useEffect(() => {
     const setInitialState = async () => {
-      const initialState = await getInitialState();
+      let activeClient = authoringClient;
+      let activeDefaults = defaultState;
+      if (activeClient) {
+        try {
+          const contract = await activeClient.getContract();
+          activeDefaults = contract.defaults;
+          setDefaults(activeDefaults);
+        } catch (e) {
+          activeClient = null;
+          setAuthoringClient(null);
+          setAuthoringMessage(
+            `Shared authoring service unavailable; using local logic. ${e.message}`,
+            'warning',
+          );
+        }
+      }
+
+      let initialState;
+      try {
+        initialState = await getInitialState(activeDefaults, activeClient);
+      } catch (e) {
+        setAuthoringMessage(
+          `Unable to decode with the shared authoring service; using local logic. ${e.message}`,
+          'warning',
+        );
+        activeClient = null;
+        setAuthoringClient(null);
+        initialState = await getInitialState(activeDefaults);
+      }
       dispatch({ type: 'SET_STATE', value: initialState });
     };
 
     setInitialState();
   }, []);
+
+  useEffect(() => {
+    if (!authoringClient || !Object.keys(state).length) return undefined;
+    let cancelled = false;
+    const timeout = setTimeout(async () => {
+      try {
+        const validation = await authoringClient.validate(state);
+        if (cancelled) return;
+        if (validation.errors.length) {
+          setAuthoringMessage(
+            validation.errors.map(({ message }) => message).join(' '),
+          );
+        } else if (validation.warnings.length) {
+          setAuthoringMessage(
+            validation.warnings.map(({ message }) => message).join(' '),
+            'warning',
+          );
+        } else {
+          setAuthoringMessage('');
+        }
+      } catch (e) {
+        if (cancelled) return;
+        setAuthoringMessage(`Shared validation unavailable. ${e.message}`, 'warning');
+      }
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [authoringClient, state]);
 
   useEffect(() => {
     if (state.showIds && !cardMutationObsv) {
@@ -1163,8 +1265,16 @@ const Configurator = ({ rootEl }) => {
     document.body.classList.toggle('panel-collapsed');
   };
 
+  const context = {
+    authoringClient,
+    defaults,
+    dispatch,
+    setAuthoringMessage,
+    state,
+  };
+
   return html`
-    <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
+    <${ConfiguratorContext.Provider} value=${context}>
     <div class="tool-header">
       <div class="tool-title">
           ${/* c8 ignore next */''}
@@ -1175,6 +1285,11 @@ const Configurator = ({ rootEl }) => {
       <div class="tool-content ${state.showIds && 'show-ids'}">
         <div class="config-panel">
           ${error && html`<div class="tool-error">${error}</div>`}
+          ${authoringNotice && html`
+            <div class=${authoringNotice.type === 'warning' ? 'tool-warning' : 'tool-error'}>
+              ${authoringNotice.message}
+            </div>
+          `}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
         <div>

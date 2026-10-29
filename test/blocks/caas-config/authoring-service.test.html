@@ -1,0 +1,153 @@
+<html>
+  <body>
+    <script type="module">
+      import { runTests } from '@web/test-runner-mocha';
+      import { expect } from '@esm-bundle/chai';
+      import { stub } from 'sinon';
+      import {
+        createAuthoringServiceClient,
+        isAuthoringServiceEnabled,
+      } from '../../../libs/blocks/caas-config/authoring-service.js';
+
+      runTests(() => {
+        describe('CaaS authoring service feature flag', () => {
+          it('uses local behavior by default', () => {
+            expect(isAuthoringServiceEnabled({ search: '', cookie: '' })).to.equal(false);
+          });
+
+          it('enables the service with a query parameter', () => {
+            expect(isAuthoringServiceEnabled({
+              search: '?caas-authoring-service=on',
+              cookie: '',
+            })).to.equal(true);
+          });
+
+          it('enables the service with a cookie', () => {
+            expect(isAuthoringServiceEnabled({
+              search: '',
+              cookie: 'other=value; caas-authoring-service=on',
+            })).to.equal(true);
+          });
+
+          it('lets the off query parameter override the cookie', () => {
+            expect(isAuthoringServiceEnabled({
+              search: '?caas-authoring-service=off',
+              cookie: 'caas-authoring-service=on',
+            })).to.equal(false);
+          });
+        });
+
+        describe('CaaS authoring service client', () => {
+          it('loads and validates the shared contract version', async () => {
+            const fetchImpl = stub().resolves({
+              json: async () => ({
+                coreVersion: '1',
+                defaults: { layoutType: '4up' },
+              }),
+              ok: true,
+              status: 200,
+            });
+            const client = createAuthoringServiceClient({
+              fetchImpl,
+              serviceUrl: 'https://example.com/authoring',
+            });
+
+            const contract = await client.getContract();
+
+            expect(contract.defaults.layoutType).to.equal('4up');
+            expect(fetchImpl.firstCall.args[0]).to.equal(
+              'https://example.com/authoring/contract',
+            );
+            expect(fetchImpl.firstCall.args[1].method).to.equal('GET');
+          });
+
+          it('posts state to the create-url operation', async () => {
+            const fetchImpl = stub().resolves({
+              json: async () => ({
+                coreVersion: '1',
+                valid: true,
+                url: 'https://milo.adobe.com/tools/caas#~~payload',
+              }),
+              ok: true,
+              status: 200,
+            });
+            const client = createAuthoringServiceClient({
+              fetchImpl,
+              serviceUrl: 'https://example.com/authoring',
+            });
+
+            await client.createUrl({ layoutType: '3up' });
+
+            const options = fetchImpl.firstCall.args[1];
+            expect(options.method).to.equal('POST');
+            expect(JSON.parse(options.body)).to.eql({
+              state: { layoutType: '3up' },
+            });
+          });
+
+          it('rejects incompatible core versions', async () => {
+            const fetchImpl = stub().resolves({
+              json: async () => ({ coreVersion: '2' }),
+              ok: true,
+              status: 200,
+            });
+            const client = createAuthoringServiceClient({ fetchImpl });
+
+            let message;
+            try {
+              await client.getContract();
+            } catch (error) {
+              message = error.message;
+            }
+
+            expect(message).to.equal(
+              'Unsupported card collection authoring core version: 2.',
+            );
+          });
+
+          it('surfaces structured service errors', async () => {
+            const fetchImpl = stub().resolves({
+              json: async () => ({
+                error: { message: 'Invalid authoring state.' },
+              }),
+              ok: false,
+              status: 400,
+            });
+            const client = createAuthoringServiceClient({ fetchImpl });
+
+            let message;
+            try {
+              await client.validate({});
+            } catch (error) {
+              message = error.message;
+            }
+
+            expect(message).to.equal('Invalid authoring state.');
+          });
+
+          it('reports request timeouts', async () => {
+            const fetchImpl = stub().callsFake((url, { signal }) => new Promise(
+              (resolve, reject) => signal.addEventListener('abort', () => {
+                const error = new Error('Aborted');
+                error.name = 'AbortError';
+                reject(error);
+              }),
+            ));
+            const client = createAuthoringServiceClient({ fetchImpl, timeout: 1 });
+
+            let message;
+            try {
+              await client.getContract();
+            } catch (error) {
+              message = error.message;
+            }
+
+            expect(message).to.equal(
+              'Card collection authoring service request timed out.',
+            );
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

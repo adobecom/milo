@@ -7,6 +7,10 @@
   color: red;
 }
 
+.tool-warning {
+  color: #ffcf5c;
+}
+
 dd.content .sort-options {
   margin-left: 10px;
   margin-bottom: 10px;
