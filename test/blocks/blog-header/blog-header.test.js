@@ -227,9 +227,35 @@ describe('blog-header decoration', () => {
       const { block } = buildBlock();
       await init(block);
       const text = block.querySelector(selector);
-      expect(text.textContent).to.equal(value);
+      expect(text.textContent).to.equal(selector === '.blog-header-eyebrow-start' ? `Updated: ${value}` : value);
       expect(text.children.length).to.equal(0);
     });
+  });
+
+  it('prefixes the authored eyebrow start with Updated', async () => {
+    fetchStub = mockFetch();
+    setMetadata('eyebrow-start', 'October 28, 2026');
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+      .to.equal('Updated: October 28, 2026');
+  });
+
+  it('prefixes generated dates without changing the existing date format', async () => {
+    fetchStub = mockFetch();
+    setMetadata('publication-date', '2026-10-01');
+    setMetadata('updated-date', '2026-10-28');
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+      .to.equal('Updated: October 1, 2026 [October 28, 2026]');
+  });
+
+  it('does not render the Updated prefix without eyebrow start text or dates', async () => {
+    fetchStub = mockFetch();
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start')).not.to.exist;
   });
 
   it('renders share labels as text rather than HTML', async () => {
