@@ -1693,6 +1693,60 @@ describe('Utils', () => {
     });
   });
 
+  describe('C2 gnav on a C1 page', () => {
+    const setHead = (meta) => {
+      document.head.innerHTML = head + Object.entries(meta)
+        .map(([name, content]) => `<meta name="${name}" content="${content}">`).join('');
+    };
+    const decorateHeaderWith = async (meta) => {
+      setHead(meta);
+      document.body.innerHTML = '<header></header><main></main>';
+      await utils.loadArea();
+      return document.querySelector('header').classList;
+    };
+
+    after(() => { document.head.innerHTML = head; });
+
+    it('detects the C2-gnav-on-C1 combination from metadata', () => {
+      setHead({ 'gnav-foundation': 'c2' });
+      expect(utils.isC2GnavOnC1Host()).to.be.true;
+      setHead({ 'gnav-foundation': 'c2', foundation: 'c2' });
+      expect(utils.isC2GnavOnC1Host()).to.be.false;
+      setHead({});
+      expect(utils.isC2GnavOnC1Host()).to.be.false;
+    });
+
+    it('tags the header when it is decorated, before the nav block loads', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', localnav: 'true' });
+      expect(classes.contains('c2-gnav-c1-host')).to.be.true;
+    });
+
+    it('does not tag C1 headers', async () => {
+      const classes = await decorateHeaderWith({ localnav: 'true' });
+      expect(classes.contains('global-navigation')).to.be.true;
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('does not tag a header authored as another block', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', header: 'custom-header' });
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('re-syncs the tag if gnav metadata changes before the nav loads (post-LCP MEP)', async () => {
+      setHead({ 'gnav-foundation': 'c2' });
+      document.body.innerHTML = '<header></header><main><div><p>Content</p></div></main>';
+      const header = document.querySelector('header');
+      const observer = new MutationObserver(() => {
+        if (!header.classList.contains('c2-gnav-c1-host')) return;
+        observer.disconnect();
+        document.head.querySelector('meta[name="gnav-foundation"]').content = 'c1';
+      });
+      observer.observe(header, { attributeFilter: ['class'] });
+      await utils.loadArea();
+      expect(header.classList.contains('c2-gnav-c1-host')).to.be.false;
+    });
+  });
+
   describe('loadFooter', async () => {
     it('Should load if footer meta is not off', async () => {
       const footer = document.createElement('footer');

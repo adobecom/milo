@@ -187,9 +187,18 @@
   --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
 }
 
+/* Federal renders the local-nav bar from the same "localnav" metadata, so its row can be reserved
+   before the nav loads. On desktop that row shows the breadcrumbs, or the bar once is-compact. */
 @media (max-width: 1023px) {
-  :root header.c2-gnav-c1-host:has(.feds-localnav-bar) {
+  :root header.c2-gnav-c1-host:has(.feds-localnav-bar),
+  :root:has(> head > meta[name="localnav"][content="true"]) header.c2-gnav-c1-host {
     --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+  }
+}
+
+@media (min-width: 1024px) {
+  :root:has(> head > meta[name="localnav"][content="true"]) header.c2-gnav-c1-host:not(.is-compact):has(> .breadcrumbs, > nav > .feds-breadcrumbs) {
+    padding-bottom: var(--global-height-breadcrumbs);
   }
 }
 
