@@ -9,6 +9,7 @@
     flex-direction: column;
     gap: var(--s2a-spacing-xl);
     padding-block: var(--s2a-spacing-xl) var(--s2a-section-spacing-4xl);
+    position: relative;
   }
 
   .sh-foreground {
@@ -39,7 +40,27 @@
     }
   }
 
-  .sh-product-lockup {
+  .sh-background {
+    inset: 0;
+    position: absolute;
+
+    picture,
+    .video-container {
+      block-size: 100%;
+      display: block;
+      inline-size: 100%;
+      margin: 0;
+    }
+
+    img,
+    video {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .sh-eyebrow {
     order: -1;
     align-items: center;
     color: var(--s2a-color-content-default);

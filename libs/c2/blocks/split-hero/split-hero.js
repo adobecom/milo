@@ -1,5 +1,5 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { decorateBlockText, decorateButtons, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
+import { decorateBlockBg, decorateBlockText, decorateButtons, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 
 const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
 
@@ -63,52 +63,65 @@ function buildMerchCard(col) {
   return merchCard;
 }
 
+const hasContent = (cell) => !!cell && (cell.children.length > 0 || !!cell.textContent.trim());
+
 function decorateCopy(copy) {
   decorateBlockText(copy, { heading: '2', body: 'md', button: 'md' });
   const [heading, ...otherHeadings] = copy.querySelectorAll('h1, h2, h3, h4, h5, h6');
   otherHeadings.forEach((other) => other.classList.remove('heading-2'));
-  const lockup = heading?.nextElementSibling;
-  if (lockup?.matches('p') && lockup.querySelector('picture')) {
-    lockup.querySelectorAll('img[src*=".svg"]').forEach((img) => {
+  const eyebrow = heading?.previousElementSibling;
+  if (eyebrow?.matches('p')) {
+    eyebrow.querySelectorAll('img[src*=".svg"]').forEach((img) => {
       img.src = getFederatedUrl(img.getAttribute('src'));
     });
-    lockup.classList.add('sh-product-lockup', 'eyebrow');
+    eyebrow.classList.remove('body-md');
+    eyebrow.classList.add('sh-eyebrow', 'eyebrow');
+    eyebrow.before(heading);
   }
   normalizeMasFieldText(copy, 'md');
   copy.classList.add('sh-text');
 }
 
+function decorateBackground(block, bg) {
+  if (!hasContent(bg)) return null;
+  decorateBlockBg(block, bg, { className: 'sh-background' });
+  if (!block.style.background) return bg;
+  const colorBg = createTag('div', { class: 'sh-background', style: `background: ${block.style.background}` });
+  block.style.removeProperty('background');
+  return colorBg;
+}
+
 function decorate(block, root) {
-  const [mainRow, merchRow, supportingRow] = block.children;
-  const [copy, media] = mainRow?.children || [];
+  const [mainRow, offerRow] = block.children;
+  const [copy, media, bg] = mainRow?.children || [];
+  const [merch, supporting] = offerRow?.children || [];
   if (!copy) return;
 
   decorateCopy(copy);
-  const merch = merchRow?.firstElementChild;
-  const supporting = supportingRow?.firstElementChild;
   const copyGroup = createTag('div', { class: 'sh-copy' }, copy);
   const foreground = createTag('div', { class: 'sh-foreground' }, copyGroup);
-  if (merch?.children.length) {
+  if (hasContent(merch)) {
     const card = buildMerchCard(merch);
     if (root.classList.contains('special-promo')) {
       card.classList.add(root.classList.contains('dark') ? 'light' : 'dark');
     }
     copyGroup.append(createTag('div', { class: 'sh-promo-area' }, card));
   }
-  if (supporting) {
+  if (hasContent(supporting)) {
     supporting.classList.add('sh-supporting', 'caption');
     foreground.append(supporting);
   }
 
   const content = createTag('div', { class: 'sh-content container' }, foreground);
-  if (media) {
+  if (hasContent(media)) {
     const frame = createTag('div', { class: 'sh-media-frame' });
     frame.append(...media.childNodes);
     media.append(frame);
     media.classList.add('sh-media');
     content.append(media);
   }
-  block.replaceChildren(content);
+  const background = decorateBackground(block, bg);
+  block.replaceChildren(...[background, content].filter(Boolean));
 }
 
 export default function init(el) {
