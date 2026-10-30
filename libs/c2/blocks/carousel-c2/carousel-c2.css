@@ -332,10 +332,12 @@
 
     > [class*="title-"] {
       transform: translateY(50%);
+      opacity: 0;
     }
 
     > :not([class*="title-"]) {
       transform: translateY(100%);
+      opacity: 0;
     }
   }
 
@@ -348,20 +350,22 @@
   transform: translate(5%, 70%);
 }
 
-/* Durations and delays keep stage's scroll choreography, converted at the shared
-   entrance rate: content and text start later, and lower text lines later still. */
+/* Durations and delays keep stage's scroll choreography, converted at a fixed rate
+   independent of the shared entrance: content and text start later, and lower text lines
+   later still. */
 .carousel-c2 {
-  --carousel-entrance-duration: calc(var(--c2-entrance-duration) * 1.65);
-  --carousel-content-delay: calc(var(--c2-entrance-duration) * 0.44);
-  --carousel-content-duration: calc(var(--c2-entrance-duration) * 0.8);
-  --carousel-text-delay: calc(var(--c2-entrance-duration) * 0.82);
-  --carousel-text-duration: calc(var(--c2-entrance-duration) * 0.63);
+  --carousel-entrance-base: 1050ms;
+  --carousel-entrance-duration: calc(var(--carousel-entrance-base) * 1.65);
+  --carousel-content-delay: calc(var(--carousel-entrance-base) * 0.44);
+  --carousel-content-duration: calc(var(--carousel-entrance-base) * 0.8);
+  --carousel-text-delay: calc(var(--carousel-entrance-base) * 0.82);
+  --carousel-text-duration: calc(var(--carousel-entrance-base) * 0.63);
 }
 
 @media (width >= 768px) {
   .carousel-c2 {
-    --carousel-content-delay: calc(var(--c2-entrance-duration) * 0.16);
-    --carousel-content-duration: calc(var(--c2-entrance-duration) * 0.85);
+    --carousel-content-delay: calc(var(--carousel-entrance-base) * 0.16);
+    --carousel-content-duration: calc(var(--carousel-entrance-base) * 0.85);
   }
 }
 
@@ -424,12 +428,19 @@
   to { transform: translate(0%, 0%); }
 }
 
+/* The quote keeps its scale and gains the shared opacity fade. */
 @keyframes title-enter {
-  from { transform: translateY(50%); }
+  from {
+    transform: translateY(50%);
+    opacity: 0;
+  }
 }
 
 @keyframes text-enter {
-  from { transform: translateY(100%); }
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
 }
 
 @keyframes button-enter {

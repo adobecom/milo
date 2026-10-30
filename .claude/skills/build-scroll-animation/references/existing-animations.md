@@ -20,11 +20,9 @@ C2 has two kinds of motion, and they must not be mixed:
   it (mobile `elastic-carousel` stacking, section stacking, sticky
   effects). Only these use `@supports (animation-timeline: view())`.
 
-An animation is an entrance when it starts offset, scaled or hidden,
-ends at the element's natural state, and finishes as the element
-arrives. When converting one, keep stage's choreography: map each part's
-scroll range to a duration and delay at the shared rate (about one
-`--c2-entrance-duration` per 440px of scroll).
+An animation is an entrance when it starts offset or hidden, ends at the
+element's natural state, and finishes as the element arrives. Entrances
+rise and fade only (no scale or blur), with the shared timing below.
 
 Do not add scroll-driven CSS to an entrance class, and do not "lock" a
 scroll animation to make it behave like a timed one.
@@ -59,37 +57,37 @@ other animation keeps its own motion and gets no entrance.
 
 ### Authored inputs
 
-The authored classes only feed custom-property inputs to the shared timed
-keyframes (all outside `@supports`):
-
-| Class | Input | Timed effect |
-|-------|-------|--------------|
-| `parallax-move-up` | `--c2-entrance-y: 100px` (opacity stays 1 without `parallax-opacity`) | Slides up 100px |
-| `parallax-opacity` | `--c2-entrance-y: 0` (fade only) | Fades from 0 to 1 |
-| `parallax-scale-up` | `--c2-entrance-scale-from: 0.9` | Scales from 90% to 100% |
-| `parallax-scale-down` | `--c2-entrance-scale-from: 1.1` | Scales from 110% to 100% (may need clipping) |
-| `parallax-blur` | `--c2-entrance-blur-from: 10px` | Blurs from 10px to 0 |
-
-These compose: `parallax-move-up parallax-opacity` slides and fades.
-Scale, blur and the base-card clip on their own (no move/opacity class)
-are "effect-only" (`c2-entrance-effect`): the element stays visible and in
-place while only that effect plays. Block CSS can add one extra animation
-through the non-inheriting `--c2-entrance-clip-animation` slot (used for
-the featured base-card radius below 2560px).
+Every entrance uses one motion: opacity and Y only, with no scale or blur.
+The authored classes (`parallax-move-up`, `parallax-opacity`,
+`parallax-scale-up`, `parallax-scale-down`, `parallax-scale-down-grid`,
+`parallax-blur`, `parallax-featured-card-media`) and `.social-proof`,
+`.faq-list`, `.tabs.staggered-intro-merch-cards` and
+`.side-by-side.featured` all get the `self` role and play the same rise and
+fade. Dense blocks (FAQ list, pricing tabs) enter as one block.
+Carousels (`carousel-c2`, `elastic-carousel`) have the `block` role and
+animate their own content.
 
 ### Timing
 
-Existing entrances keep stage's start line (90% of the viewport, measured
-from the FAQ question for FAQ items), distances, stagger offsets and
-`--parallax-easing`, with the fade running for the whole movement. They
-finish after the shared 1050ms duration.
+Shared values on `.c2-entrance-group` / `.c2-entrance-item` in
+`libs/c2/styles/styles.css`:
 
-Rich Content text (on by default, except heroes and carousel slides; translate only, never
-line-height) and the hover list following the
-aside composition use the prototype's 1050ms timing, curve and fade
-windows, triggered at 80% and 90% of the viewport respectively. CSS
-distributes any number of items within the prototype's displacement and
-opacity windows; there are no numbered step selectors or maximum count.
+| Property | Value |
+|----------|-------|
+| `--c2-entrance-trigger` | `90%` of the viewport (FAQ items measure from the question) |
+| `--c2-entrance-distance` | `64px` |
+| `--c2-entrance-duration` | `800ms` |
+| `--c2-entrance-easing` | `cubic-bezier(0.16, 1, 0.3, 1)` (fast start, soft ease-out, no hold) |
+
+Opacity and Y run on the same curve and finish together. Items that trigger
+together form one cascade in page order (eyebrow, headline, body, then
+content), 100ms apart, across sections and sources;
+`content-animations.js` writes each item's `--c2-entrance-delay`.
+
+Content in view (or scrolled past) when its section is set up shows
+settled, without playing. Content jumped past later (in-page links, a fast
+scroll while the page grows) still counts as reached, so it never stays
+hidden.
 
 Pending items are hidden without a transform, so their viewport trigger is
 not delayed by their movement. Played animations fill only backwards: once
@@ -103,16 +101,13 @@ Applied to a **section** (parent of multiple blocks).
 
 | Class | Effect |
 |-------|--------|
-| `parallax-stagger-ltr` | Children rise left-to-right based on column position |
+| `parallax-stagger-ltr` | Children rise left-to-right |
 | `parallax-stagger-rtl` | Children rise right-to-left |
 
-- `--parallax-stagger-index` (column) and `--parallax-stagger-row-index`
-  are assigned via `:nth-child()` per `two-up`/`three-up`/`four-up`/
-  `six-up` class; `masonry-layout` uses its own drift (150px at 768px+).
-- `--parallax-stagger-drift` (default 48px) and the indices produce
-  `--parallax-stagger-from`, which becomes each item's `--c2-entrance-y`.
-- Each item is delayed by its step (up to 150ms). Card rows trigger
-  independently, so lower rows on mobile start when they arrive.
+- Grids enter row by row: a row plays once any of its items reaches the
+  trigger line, so rows below the fold never play unseen.
+- Each item's `--c2-entrance-column` steps its rise: 64px, 128px, then
+  192px for the rest of the row.
 
 ---
 

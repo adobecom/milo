@@ -4,10 +4,6 @@
   container-type: inline-size;
 
   > div {
-    --stretch-target: 100cqi;
-    --stretch-peak: min(2560px, 100vw);
-    --stretch-from: calc(var(--stretch-peak) / var(--stretch-target));
-    transform-origin: center top;
     will-change: transform;
     display: flex;
     flex-direction: column-reverse;
@@ -134,53 +130,18 @@
   initial-value: 0%;
 }
 
-/* One-time entrance: libs/c2/content-animations.js adds c2-entrance-played once the
-   block reaches its trigger line; until then the card waits in its stretched state. */
-.social-proof.c2-entrance-item:not(.c2-entrance-played) > div {
-  transform: scale(var(--stretch-from));
-
-  .foreground {
-    --social-proof-content-scale: var(--stretch-from);
-    --social-proof-content-shift: 15%;
-  }
-
-  .media img {
-    transform: scale(var(--stretch-from));
-  }
+/* The tile enters like any other (libs/c2/styles/styles.css); its headline and quote
+   follow a beat later on the same motion. */
+.social-proof.c2-entrance-item:not(.c2-entrance-played) > div .foreground {
+  opacity: 0;
 }
 
-.social-proof.c2-entrance-played:not(.c2-entrance-settled) > div {
-  animation: social-proof-stretch var(--c2-entrance-duration) var(--parallax-easing) both;
-
-  .foreground {
-    animation: social-proof-content-enter var(--c2-entrance-duration) var(--parallax-easing) both;
-  }
-
-  .media img {
-    animation: social-proof-image-zoom var(--c2-entrance-duration) var(--parallax-easing) both;
-  }
-}
-
-@keyframes social-proof-stretch {
-  from { transform: scale(var(--stretch-from)); }
-  to   { transform: scale(1); }
-}
-
-@keyframes social-proof-image-zoom {
-  from { transform: scale(var(--stretch-from)); }
-  to   { transform: scale(1); }
-}
-
-@keyframes social-proof-content-enter {
-  from {
-    --social-proof-content-scale: var(--stretch-from);
-    --social-proof-content-shift: 15%;
-  }
-
-  to {
-    --social-proof-content-scale: 1;
-    --social-proof-content-shift: 0%;
-  }
+.social-proof.c2-entrance-played:not(.c2-entrance-settled) > div .foreground {
+  animation-name: c2-entrance-rise, c2-entrance-fade;
+  animation-duration: var(--c2-entrance-duration);
+  animation-timing-function: var(--c2-entrance-easing);
+  animation-delay: calc(var(--c2-entrance-delay, 0ms) + 100ms);
+  animation-fill-mode: backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -143,6 +143,13 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     margin-block: calc(-1 * var(--s2a-border-radius-22)) auto;
   }
 
+  /* Only the top corners round, so content rising into place past the bottom edge
+     (content entrances rise up to 192px) is not cut off. */
+  &.rounded-corners-top:has(.c2-entrance-item) {
+    overflow: visible;
+    clip-path: inset(0 0 -192px round var(--s2a-border-radius-22) var(--s2a-border-radius-22) 0 0);
+  }
+
   /* Fix to remove blank gap caused by rounded-corners :before/:after
      spacing/height adjustment that fall in "-up" layouts */
   &.rounded-corners + .section,

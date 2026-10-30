@@ -409,10 +409,6 @@ const init = async (block) => {
       }
       scrollTabIntoView(activeTab);
     }
-    if (block.classList.contains('staggered-intro-merch-cards')) {
-      const activePanel = tabContentContainer.querySelector('.tabpanel:not([hidden])');
-      if (activePanel) triggerTabEnterAnimation(activePanel);
-    }
   });
 };
 

@@ -86,22 +86,7 @@
     .foreground {
       padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-2xl) var(--s2a-spacing-md);
     }
-
-    .parallax-featured-card-media {
-      @media (width < 2560px) {
-        --c2-entrance-clip-animation: grow-featured-card-radius;
-
-        &.c2-entrance-item:not(.c2-entrance-played) {
-          clip-path: inset(0 round 0);
-        }
-      }
-    }
   }
-}
-
-@keyframes grow-featured-card-radius {
-  from { clip-path: inset(0 round 0); }
-  to { clip-path: inset(0 round var(--s2a-border-radius-md)); }
 }
 
 @media (width < 768px) {
