@@ -16,6 +16,7 @@ body:has(header.local-nav) .split-hero {
 
 /* stylelint-disable-next-line no-descending-specificity */
 .split-hero {
+  --split-hero-top-padding: var(--s2a-spacing-lg);
   --split-hero-media-padding: var(--s2a-spacing-2xs);
   --split-hero-media-radius: var(--s2a-border-radius-2xs);
   --split-hero-frame-radius: var(--s2a-border-radius-xs);
@@ -30,7 +31,9 @@ body:has(header.local-nav) .split-hero {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xl);
-    padding-block: calc(var(--split-hero-nav-extra-h, 0) + var(--global-height-nav, 64px)) var(--s2a-spacing-xl);
+    padding-block:
+      calc(var(--global-height-nav, 80px) + var(--split-hero-nav-extra-h) + var(--split-hero-top-padding))
+      var(--s2a-spacing-xl);
     position: relative;
   }
 
@@ -418,6 +421,8 @@ body:has(header.local-nav) .split-hero {
 
 @media (width >= 1280px) {
   .split-hero {
+    --split-hero-top-padding: var(--s2a-spacing-xl);
+
     .split-hero-content {
       --grid-margin-width: var(--s2a-spacing-4xl);
     }
