@@ -133,14 +133,12 @@ body:has(header.local-nav) .split-hero {
   }
 
   .split-hero-media-frame {
-    background: linear-gradient(0deg, var(--s2a-color-transparent-white-04) 0%, var(--s2a-color-transparent-white-04) 100%), var(--s2a-color-transparent-black-16);
+    background: rgb(255 255 255 / 5%);
     backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
     border-radius: var(--split-hero-frame-radius);
     inline-size: 120%;
-    border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--split-hero-media-padding);
-    /* stylelint-disable-next-line alpha-value-notation, color-function-notation */
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.12), 0 12px 24px 0 rgba(0, 0, 0, 0.14), 0 32px 64px 0 rgba(0, 0, 0, 0.16);
+    box-shadow: inset 0 0 0 1px white, 0 32px 64px rgb(0 0 0 / 16%), 0 12px 24px rgb(0 0 0 / 14%), 0 4px 8px rgb(0 0 0 / 12%);
   }
 
   .split-hero-merch-card {
