@@ -1,3 +1,5 @@
+/* Following specs, which don't follow Consonant */
+
 @property --split-hero-nav-extra-h {
   syntax: '<length>';
   inherits: true;
@@ -28,7 +30,7 @@ body:has(header.local-nav) .split-hero {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xl);
-    padding-block: calc(var(--split-hero-nav-extra-h, 0) + var(--global-height-nav, 64px)) var(--s2a-spacing-3xl);
+    padding-block: calc(var(--split-hero-nav-extra-h, 0) + var(--global-height-nav, 64px)) var(--s2a-spacing-xl);
     position: relative;
   }
 
@@ -134,7 +136,6 @@ body:has(header.local-nav) .split-hero {
     background: linear-gradient(0deg, var(--s2a-color-transparent-white-04) 0%, var(--s2a-color-transparent-white-04) 100%), var(--s2a-color-transparent-black-16);
     backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
     border-radius: var(--split-hero-frame-radius);
-    box-sizing: border-box;
     inline-size: 120%;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--split-hero-media-padding);
@@ -322,18 +323,17 @@ body:has(header.local-nav) .split-hero {
 
     .split-hero-foreground {
       flex: none;
-      inline-size: 420px;
+      max-inline-size: 420px;
       padding-block-start: var(--s2a-spacing-lg);
     }
 
     .split-hero-media {
       min-height: 628px;
-      padding-block-start: var(--s2a-spacing-xl);
       padding-inline-start: var(--s2a-spacing-2xl);
     }
 
     .split-hero-media-frame {
-      inline-size: calc(1052px + 2 * var(--split-hero-media-padding));
+      inline-size: 1052px;
     }
   }
 }
@@ -345,7 +345,9 @@ body:has(header.local-nav) .split-hero {
     }
 
     .split-hero-foreground {
-      max-inline-size: 500px;
+      inline-size: 500px;
+      max-inline-size: initial;
+      padding-block-end: var(--s2a-spacing-xl);
     }
 
     .split-hero-media {
@@ -353,7 +355,7 @@ body:has(header.local-nav) .split-hero {
     }
 
     .split-hero-media-frame {
-      inline-size: calc(1148px + 2 * var(--split-hero-media-padding));
+      min-inline-size: 1148px;
       position: absolute;
     }
   }
@@ -366,8 +368,7 @@ body:has(header.local-nav) .split-hero {
     }
 
     .split-hero-media-frame {
-      min-inline-size: calc(1160px + 2 * var(--split-hero-media-padding));
-      max-inline-size: calc(1920px + 2 * var(--split-hero-media-padding));
+      inline-size: 1334px;
     }
   }
 
