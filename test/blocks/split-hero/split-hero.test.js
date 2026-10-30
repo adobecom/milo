@@ -153,6 +153,13 @@ describe('Split Hero', () => {
       expect(block.querySelector('.split-hero-merch-ctas a[href="/buy"]').classList.contains('con-button')).to.be.true;
     });
 
+    it('groups a top-level headless CTA field', async () => {
+      const block = buildBlock([copy], ['<mas-field field="ctas[abc]"><a href="/buy">Buy now</a></mas-field>']);
+      await init(block);
+
+      expect(block.querySelector('.split-hero-merch-ctas > mas-field[field="ctas[abc]"]')).to.exist;
+    });
+
     it('keeps a description that contains a button in the content, not the cta wrapper', async () => {
       const block = buildBlock([copy], [
         '<p><mas-field field="description">Learn more <a class="con-button" href="/learn">here</a></mas-field></p>'
@@ -298,6 +305,101 @@ describe('Split Hero', () => {
         expect(right.width).to.be.greaterThan(left.width);
         expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
       });
+    });
+  });
+
+  describe('variants', () => {
+    const MERCH = [
+      '<p><mas-field field="description">Description copy.</mas-field></p>',
+      '<p><strong><a href="https://www.adobe.com/free-trial">Free trial</a></strong></p>',
+    ].join('');
+
+    const initVariant = async (classes, merch = MERCH) => {
+      const block = buildBlock(['<h1>Headline</h1>', MEDIA], [merch, '']);
+      block.classList.add(...classes);
+      await init(block);
+      return block;
+    };
+
+    const fontSizeWith = (block, cls) => {
+      const description = block.querySelector('.mas-description');
+      const without = parseFloat(getComputedStyle(description).fontSize);
+      block.classList.add(cls);
+      const withClass = parseFloat(getComputedStyle(description).fontSize);
+      block.classList.remove(cls);
+      return { without, withClass };
+    };
+
+    it('groups legacy inline prices and wcs links', async () => {
+      const block = await initVariant([], [
+        '<p><span is="inline-price" data-wcs-osi="osi-price"></span></p>',
+        '<p><a href="https://www.adobe.com/buy" data-wcs-osi="osi-cta">Buy now</a></p>',
+      ].join(''));
+
+      const cardContent = block.querySelector('.split-hero-merch-content');
+      expect(cardContent.querySelector(':scope > p > [is="inline-price"]')).to.exist;
+      expect(cardContent.querySelector('.split-hero-merch-ctas a[data-wcs-osi]').textContent)
+        .to.equal('Buy now');
+    });
+
+    it('gives special-promo a dark card on a light hero', async () => {
+      const card = (await initVariant(['special-promo'])).querySelector('.split-hero-merch-card');
+      expect(card.classList.contains('dark')).to.be.true;
+      expect(card.classList.contains('light')).to.be.false;
+    });
+
+    it('gives special-promo a light card on a dark hero', async () => {
+      const card = (await initVariant(['special-promo', 'dark'])).querySelector('.split-hero-merch-card');
+      expect(card.classList.contains('light')).to.be.true;
+      expect(card.classList.contains('dark')).to.be.false;
+    });
+
+    it('leaves the card surface alone without special-promo', async () => {
+      const card = (await initVariant(['dark'])).querySelector('.split-hero-merch-card');
+      expect(card.classList.contains('light')).to.be.false;
+      expect(card.classList.contains('dark')).to.be.false;
+    });
+
+    it('darkens the block background with dark', async () => {
+      const block = await initVariant([]);
+      const light = getComputedStyle(block).backgroundColor;
+      block.classList.add('dark');
+      expect(getComputedStyle(block).backgroundColor).to.not.equal(light);
+    });
+
+    it('moves the ctas after the content and lays the card out as a pill with cta-pill', async () => {
+      await setViewport({ width: 1000, height: 800 });
+      const block = await initVariant(['cta-pill']);
+
+      const card = block.querySelector('.split-hero-merch-card');
+      const ctas = card.querySelector('.split-hero-merch-ctas');
+      expect(ctas.parentElement).to.equal(card);
+      expect(card.lastElementChild).to.equal(ctas);
+      expect(card.querySelector('.split-hero-merch-content .split-hero-merch-ctas')).to.be.null;
+      expect(getComputedStyle(card).flexDirection).to.equal('row');
+    });
+
+    it('stacks the ctas with cta-stack', async () => {
+      const block = await initVariant(['cta-stack']);
+      expect(getComputedStyle(block.querySelector('.split-hero-merch-ctas')).flexDirection)
+        .to.equal('column');
+    });
+
+    it('enlarges the description with merch-md', async () => {
+      const { without, withClass } = fontSizeWith(await initVariant([]), 'merch-md');
+      expect(withClass).to.be.greaterThan(without);
+    });
+
+    it('uses a small description on mobile and a larger one from 768px with legal', async () => {
+      await setViewport({ width: 390, height: 844 });
+      const block = await initVariant([]);
+      const mobile = fontSizeWith(block, 'legal');
+      expect(mobile.withClass).to.equal(mobile.without);
+
+      await setViewport({ width: 800, height: 900 });
+      await nextFrame();
+      const tablet = fontSizeWith(block, 'legal');
+      expect(tablet.withClass).to.be.greaterThan(tablet.without);
     });
   });
 

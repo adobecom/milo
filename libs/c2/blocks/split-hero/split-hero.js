@@ -26,7 +26,7 @@ function decorateMasField(cardContent) {
   commitmentEl.classList.add('mas-price-commitment');
 }
 
-function buildMerchCard(col) {
+function buildMerchCard(col, { pillCtas = false } = {}) {
   [...col.children]
     .filter((el) => !el.matches(MAS_BODY_FIELDS) && !el.querySelector(MAS_BODY_FIELDS))
     .forEach((el) => decorateButtons(el));
@@ -36,7 +36,7 @@ function buildMerchCard(col) {
 
   let allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div)')]
     .filter((el) => el.textContent.trim() || el.matches('mas-field')
-      || el.querySelector('mas-field, .con-button'));
+      || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
   if (!allParas.length && col.textContent.trim()) {
     const para = createTag('p');
     para.append(...col.childNodes);
@@ -50,7 +50,7 @@ function buildMerchCard(col) {
 
   const merchCard = createTag('div', { class: 'split-hero-merch-card' });
   merchCard.append(cardContent);
-  const ctaSelector = '.con-button, mas-field[field^="ctas"]';
+  const ctaSelector = '.con-button, a[data-wcs-osi], mas-field[field^="ctas"]';
   const isCtaPara = (el) => {
     const cta = el.matches(ctaSelector) ? el : el.querySelector(ctaSelector);
     return !!cta && !cta.closest(MAS_BODY_FIELDS);
@@ -58,7 +58,8 @@ function buildMerchCard(col) {
   const ctaParas = [...cardContent.children].filter(isCtaPara);
   if (ctaParas.length) {
     const ctaWrapper = createTag('div', { class: 'split-hero-merch-ctas' });
-    ctaParas[0].replaceWith(ctaWrapper);
+    if (pillCtas) merchCard.append(ctaWrapper);
+    else ctaParas[0].replaceWith(ctaWrapper);
     ctaParas.forEach((para) => ctaWrapper.append(para));
   }
 
@@ -91,7 +92,7 @@ function decorateBackground(block, bg) {
   return colorBg;
 }
 
-function decorate(block) {
+function decorate(block, root) {
   const [mainRow, offerRow] = block.children;
   const [copy, media, bg] = mainRow?.children || [];
   const [merch, supporting] = offerRow?.children || [];
@@ -100,7 +101,13 @@ function decorate(block) {
   decorateCopy(copy);
   const copyGroup = createTag('div', { class: 'split-hero-copy' }, copy);
   const foreground = createTag('div', { class: 'split-hero-foreground' }, copyGroup);
-  if (hasContent(merch)) copyGroup.append(buildMerchCard(merch));
+  if (hasContent(merch)) {
+    const card = buildMerchCard(merch, { pillCtas: root.classList.contains('cta-pill') });
+    if (root.classList.contains('special-promo')) {
+      card.classList.add(root.classList.contains('dark') ? 'light' : 'dark');
+    }
+    copyGroup.append(card);
+  }
   if (hasContent(supporting)) {
     supporting.classList.add('split-hero-supporting', 'caption');
     foreground.append(supporting);

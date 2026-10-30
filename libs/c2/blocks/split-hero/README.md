@@ -20,7 +20,8 @@ Two content rows. Cells are read by position.
 - **media**: image or video-poster pattern, shown inside `.split-hero-media-frame`.
 - **background**: image, video, or a CSS color/gradient as plain text.
   Omit the third cell (2-column row) for no background.
-- **merch**: headless MAS field links (`&field=…`) plus authored text.
+- **merch**: headless MAS field links (`&field=…`), legacy inline prices and
+  `data-wcs-osi` CTAs, plus authored text.
   Empty cell means no merch card.
 - **supporting**: caption text below the copy. Empty cell means none.
   The whole second row may be omitted.
@@ -41,3 +42,21 @@ tablet-viewport
 |       | tablet media |                    |
 |       |              |
 ```
+
+## Variants
+
+Same merch variants as `product-marquee-grid`, set on the block name:
+
+- `dark`: dark block background.
+- `special-promo`: gives the merch card its own surface that contrasts with
+  the hero (a dark card on a light hero, a light card with `dark`).
+- `merch-md`: medium MAS description text. Small is the default, so
+  `merch-sm` is accepted but changes nothing.
+- `legal`: small description text on mobile, medium from 768px.
+- `cta-stack`: full-width stacked CTAs.
+- `cta-pill`: CTAs move to the end of the card, and from 768px the card is a
+  rounded pill with the content and CTAs side by side.
+
+Variants are read from the block's own classes when it is decorated, so
+classes added through a viewport marker, e.g. `tablet-viewport (cta-pill)`,
+only apply their CSS; they don't change the card structure.

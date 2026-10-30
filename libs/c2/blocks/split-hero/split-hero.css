@@ -274,6 +274,57 @@ body:has(header.local-nav) .split-hero {
     }
   }
 
+  &.dark {
+    background: var(--s2a-color-gray-1000);
+  }
+
+  &.dark .split-hero-merch-card {
+    border-block-start-color: var(--s2a-color-transparent-white-16);
+  }
+
+  .split-hero-merch-card.dark {
+    --split-hero-content: var(--s2a-color-gray-25);
+    --split-hero-content-subtle: var(--s2a-color-transparent-white-64);
+    --split-hero-badge-color: var(--s2a-color-gray-1000);
+
+    background: var(--s2a-color-gray-900);
+    padding: var(--s2a-spacing-md);
+  }
+
+  .split-hero-merch-card.light {
+    --split-hero-content: var(--s2a-color-gray-1000);
+    --split-hero-content-subtle: var(--s2a-color-transparent-black-64);
+    --split-hero-badge-color: var(--s2a-color-gray-25);
+
+    background: var(--s2a-color-gray-50);
+    padding: var(--s2a-spacing-md);
+  }
+
+  &.merch-md .split-hero-merch-content :is(.mas-description, .mas-short-description) {
+    font-size: var(--s2a-typography-font-size-body-md);
+  }
+
+  &.cta-stack .split-hero-merch-ctas {
+    flex-direction: column;
+
+    .con-button {
+      flex: none;
+      inline-size: 100%;
+    }
+  }
+
+  &.cta-pill {
+    .split-hero-merch-card {
+      gap: var(--s2a-section-spacing-3xs);
+    }
+
+    .split-hero-merch-content {
+      align-items: center;
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      text-align: center;
+    }
+  }
+
   mas-field span.placeholder-resolved[data-template='priceStrikethrough'],
   mas-field span.placeholder-resolved[data-template='strikethrough'],
   mas-field span.price.price-strikethrough,
@@ -303,6 +354,35 @@ body:has(header.local-nav) .split-hero {
 
     .split-hero-merch-ctas {
       padding-block-start: var(--s2a-spacing-sm);
+    }
+
+    &.legal .split-hero-merch-content :is(.mas-description, .mas-short-description) {
+      font-size: var(--s2a-typography-font-size-body-md);
+    }
+
+    &.cta-pill {
+      .split-hero-merch-card {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: var(--s2a-section-spacing-2xs);
+        padding-block: var(--s2a-spacing-lg);
+        padding-inline: var(--s2a-spacing-xl) var(--s2a-spacing-lg);
+        border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+        border-radius: var(--s2a-border-radius-round);
+      }
+
+      .split-hero-merch-content {
+        align-items: flex-start;
+        align-self: center;
+        text-align: start;
+      }
+
+      .split-hero-merch-ctas {
+        flex: none;
+        align-self: center;
+        padding-block-start: 0;
+      }
     }
   }
 }
