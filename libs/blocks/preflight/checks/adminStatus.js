@@ -29,7 +29,8 @@ export async function getPageStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   if (!adminUrl) return null;
   // no-store: the skip / new-page decision depends on current publish state, not a cached one.
-  const resp = await fetch(adminUrl, { cache: 'no-store' });
+  // include: protected sites return 401 unless the author's Sidekick login cookie is sent.
+  const resp = await fetch(adminUrl, { cache: 'no-store', credentials: 'include' });
   if (!resp.ok) return null;
   const json = await resp.json();
   const pick = (o) => ({
