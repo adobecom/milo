@@ -120,7 +120,8 @@ function toActivity({
   name, event, manifest, variantNames, selectedVariantName,
   disabled, disabledPromo, analyticsTitle, source, countryRestriction, countryEnabled,
   consentType, consentNotSpecified, consentEnabled,
-  manifestType, manifestOverrideName, executionOrder,
+  manifestType, manifestOverrideName, placeholderColumn, placeholderMatch,
+  hasPlaceholderData, executionOrder,
 }) {
   let pathname = manifest;
   try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
@@ -143,6 +144,9 @@ function toActivity({
     consentEnabled,
     manifestType,
     manifestOverrideName,
+    placeholderColumn,
+    placeholderMatch,
+    hasPlaceholderData,
     executionOrder,
   };
 }
@@ -217,6 +221,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     consentEnabled,
     manifestType,
     manifestOverrideName,
+    placeholderColumn,
+    placeholderMatch,
+    hasPlaceholderData,
     executionOrder,
   } = manifest;
 
@@ -272,6 +279,9 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     countryEnabled,
     manifestType,
     manifestOverrideName,
+    placeholderColumn,
+    placeholderMatch,
+    hasPlaceholderData,
     executionOrder: getExecutionOrderLabel(executionOrder),
     showActive: !!(eventStartParts && eventEndParts) || !!disabled,
     isActive: disabled ? 'inactive' : 'active',
