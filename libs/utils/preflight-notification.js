@@ -1,4 +1,5 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
+import { CHECK_PRIORITIES, PRIORITY, PRIORITY_ORDER, SEVERITY, STATUS } from '../blocks/preflight/checks/constants.js';
 import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
 import { createTag, loadStyle, getConfig } from './utils.js';
 
@@ -24,7 +25,35 @@ function openPreflightPanel() {
   });
 });
 
+const SNOOZE_KEY = 'milo-preflight-popup-snooze';
+const SNOOZE_MS = 24 * 60 * 60 * 1000;
+
+function readSnoozes() {
+  try {
+    return JSON.parse(localStorage.getItem(SNOOZE_KEY)) || {};
+  } catch {
+    return {};
+  }
+}
+
+export function isPageSnoozed(path = window.location.pathname) {
+  return readSnoozes()[path] > Date.now();
+}
+
+// Per page and time-bound: editing a page doesn't nag, but no page is silenced for good.
+export function snoozePage(path = window.location.pathname, now = Date.now()) {
+  const snoozes = Object.fromEntries(Object.entries(readSnoozes())
+    .filter(([, until]) => until > now));
+  snoozes[path] = now + SNOOZE_MS;
+  try {
+    localStorage.setItem(SNOOZE_KEY, JSON.stringify(snoozes));
+  } catch {
+    // Storage blocked: the pop-up simply shows again next time.
+  }
+}
+
 function dismissNotification() {
+  if (document.querySelector('.milo-preflight-overlay .notification-snooze input')?.checked) snoozePage();
   document.querySelector('.milo-preflight-overlay')?.remove();
   wasDismissed = true;
   if (!linkCheckListener) return;
@@ -48,20 +77,103 @@ function isPreflightOpen() {
   return !!document.getElementById('preflight');
 }
 
-async function createPreflightNotification(masUnpublishedCount = 0) {
+// Stands in for an SEO check that threw (usually the network link check).
+const failedCheck = { status: STATUS.FAIL, severity: SEVERITY.CRITICAL, title: 'SEO check (could not run)' };
+const isFail = (check) => check?.status === STATUS.FAIL;
+// Limbo shows as a warning in the panel, so it counts here too.
+const isIssue = (check) => isFail(check) || check?.status === STATUS.LIMBO;
+const issue = (check, key, title, count) => (
+  { key, title, count, severity: check.severity, status: check.status });
+
+// Tab order (General, SEO, M@S, Accessibility, Performance, Assets), matching countIssues.
+function listIssues({
+  structure = [], seo = [], merch = [], accessibility = [], performance = [], assets = [],
+} = {}) {
+  const plain = (checks) => checks.filter(isIssue)
+    .map((check) => issue(check, check.checkId ?? check.id, check.title));
+  const aggregates = [
+    ...merch.filter(isFail).map((check) => issue(
+      check,
+      check.checkId ?? check.name,
+      check.title ?? check.name,
+      (check.details?.unpublished ?? check.details?.prices)?.length,
+    )),
+    ...accessibility.filter((check) => isFail(check) && check.details?.issuesCount > 0)
+      .map((check) => issue(check, check.checkId, check.title, check.details.issuesCount)),
+  ];
+  const assetIssues = assets.flatMap((check) => {
+    const { criticalAssetFailures = [], warningAssetFailures = [] } = check?.details || {};
+    return [
+      issue(check, 'image-dimensions-above-fold', `${check.title} above the fold`, criticalAssetFailures.length),
+      issue(check, 'image-dimensions-below-fold', `${check.title} below the fold`, warningAssetFailures.length),
+    ].filter(({ count }) => count > 0);
+  });
+  return [...plain(structure), ...plain(seo), ...aggregates, ...plain(performance),
+    ...assetIssues];
+}
+
+// Limbo means the check couldn't decide (e.g. link service unreachable); the panel shows it
+// as a warning, so it never outranks Normal here.
+const priorityOf = ({ key, severity, status }) => {
+  if (status === STATUS.LIMBO) return PRIORITY.NORMAL;
+  return CHECK_PRIORITIES[key]
+    ?? (severity === SEVERITY.CRITICAL ? PRIORITY.CRITICAL : PRIORITY.NORMAL);
+};
+
+// Failing check titles per priority level, Blocker first; empty levels are dropped.
+export function groupByPriority(runChecks) {
+  const issues = listIssues(runChecks);
+  return PRIORITY_ORDER.map((level) => ({
+    level,
+    items: issues.filter((item) => priorityOf(item) === level)
+      .map(({ title, count }) => (count ? `${title} (${count})` : title)),
+  })).filter(({ items }) => items.length);
+}
+
+const settle = (check) => Promise.resolve(check).catch(() => failedCheck);
+// Pending SEO checks (the network link check) are skipped so they can't hold the pop-up back.
+const settleNow = (check) => Promise.race([settle(check), new Promise((r) => { setTimeout(r); })]);
+
+async function resolveSeo(runChecks, now) {
+  const seo = await Promise.all((runChecks.seo ?? []).map(now ? settleNow : settle));
+  return { ...runChecks, seo: seo.filter(Boolean) };
+}
+
+// Every level counts; preflightLinksComplete reports link failures that land later.
+export async function hasSettledIssues(runChecks = {}) {
+  return groupByPriority(await resolveSeo(runChecks, true)).length > 0;
+}
+
+function renderIssueGroups(container, runChecks) {
+  if (!container.isConnected) return;
+  container.replaceChildren(...groupByPriority(runChecks).map(({ level, items }) => createTag(
+    'p',
+    { class: `notification-group is-${level.toLowerCase()}` },
+    [createTag('strong', null, `${level}:`), ` ${items.join(' · ')}`],
+  )));
+}
+
+// Ranks the run that triggered the pop-up instead of re-running Preflight: what has
+// settled now, then again once the slow link check lands.
+// shortcut: skips the page-wide localization link scan, so Links can be missing
+// here while the panel flags it; add it only if authors need the exact list.
+async function addIssueGroups(container, runChecks) {
+  renderIssueGroups(container, await resolveSeo(runChecks, true));
+  renderIssueGroups(container, await resolveSeo(runChecks));
+}
+
+async function createPreflightNotification(results) {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
   // The modal already surfaces the results, so don't also show the notification.
-  if (isPreflightOpen()) return;
+  if (isPreflightOpen() || isPageSnoozed()) return;
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
 
-  const reviewLink = createTag('button', { class: 'preflight-review-link' }, 'review');
-  const closeBtn = createTag('button', { class: 'notification-close' }, '×');
-  const message = createTag('span', { class: 'notification-message' }, [
-    'Content quality checks are failing. Please ', reviewLink, ' before publishing.',
-  ]);
+  const masUnpublishedCount = getMasUnpublishedCount(results);
+  const title = createTag('p', { id: 'preflight-popup-title', class: 'notification-title' }, 'Preflight found issues on this page');
+  const message = createTag('p', { id: 'preflight-popup-message', class: 'notification-message' }, 'Please review before publishing.');
 
   if (masUnpublishedCount > 0) {
     const masLine = createTag('span', { class: 'notification-mas-line' });
@@ -69,15 +181,40 @@ async function createPreflightNotification(masUnpublishedCount = 0) {
     message.append(createTag('br'), masLine);
   }
 
-  reviewLink.addEventListener('click', openPreflightPanel);
-  closeBtn.addEventListener('click', dismissNotification);
+  const issues = createTag('div', { class: 'notification-issues' });
+  const reviewBtn = createTag('button', { class: 'notification-review' }, 'Review issues');
+  const dismissBtn = createTag('button', { class: 'notification-dismiss' }, 'Dismiss');
+  reviewBtn.addEventListener('click', openPreflightPanel);
+  dismissBtn.addEventListener('click', dismissNotification);
 
-  const content = createTag('div', { class: 'notification-content' }, [message, closeBtn]);
-  const notification = createTag('div', { class: 'preflight-notification' }, content);
-  document.body.append(createTag('div', { class: 'milo-preflight-overlay' }, notification));
+  const snooze = createTag('label', { class: 'notification-snooze' }, [
+    createTag('input', { type: 'checkbox' }),
+    "Don't show again today for this page",
+  ]);
+
+  const content = createTag('div', { class: 'notification-content' }, [
+    title,
+    message,
+    issues,
+    createTag('div', { class: 'notification-actions' }, [snooze, dismissBtn, reviewBtn]),
+  ]);
+  const notification = createTag('div', {
+    class: 'preflight-notification',
+    role: 'alertdialog',
+    'aria-labelledby': title.id,
+    'aria-describedby': message.id,
+  }, content);
+  notification.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') dismissNotification();
+  });
+  // Don't pull focus away from something the author is already using.
+  const isFocusFree = !document.activeElement || document.activeElement === document.body;
+  document.body.append(createTag('div', { class: 'milo-preflight-overlay preflight-popup' }, notification));
+  if (isFocusFree) reviewBtn.focus();
+  await addIssueGroups(issues, results?.runChecks ?? {});
 }
 
-function setupLinkCheckListener() {
+function setupLinkCheckListener(results) {
   if (linkCheckListener) return;
 
   linkCheckListener = async (event) => {
@@ -90,7 +227,7 @@ function setupLinkCheckListener() {
         ?.querySelector('sk-action-button.publish[disabled]');
 
       if (!existingNotification && !isPublishButtonDisabled) {
-        await createPreflightNotification();
+        await createPreflightNotification(results);
       }
     }
   };
@@ -111,7 +248,9 @@ function createObserver() {
       url: window.location.href,
       area: document,
     }).catch(() => null);
-    if (results?.hasFailures) await createPreflightNotification(getMasUnpublishedCount(results));
+    if (results && await hasSettledIssues(results.runChecks)) {
+      await createPreflightNotification(results);
+    }
   });
 
   sidekickObserver.observe(sidekick, {
@@ -141,9 +280,9 @@ export default async function show() {
 
   if (!results) return;
 
-  if (results.hasFailures) {
-    await createPreflightNotification(getMasUnpublishedCount(results));
+  if (await hasSettledIssues(results.runChecks)) {
+    await createPreflightNotification(results);
   } else {
-    setupLinkCheckListener();
+    setupLinkCheckListener(results);
   }
 }

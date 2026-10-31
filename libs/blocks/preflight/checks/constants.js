@@ -17,6 +17,51 @@ export const SEVERITY = {
   WARNING: 'warning',
 };
 
+// Declared highest first; PRIORITY_ORDER follows this order.
+export const PRIORITY = {
+  BLOCKER: 'Blocker',
+  CRITICAL: 'Critical',
+  MAJOR: 'Major',
+  NORMAL: 'Normal',
+};
+
+export const PRIORITY_ORDER = Object.values(PRIORITY);
+
+// Display-only ranking for the preview pop-up, keyed by check id (or name when a
+// check has no id). It never changes `severity`, which metrics and scoring use.
+// Asset dimensions rank per fold via the -above-fold / -below-fold keys.
+// Unlisted checks rank from severity: critical → Critical, anything else → Normal.
+export const CHECK_PRIORITIES = {
+  'M@S Unpublished Fragments': PRIORITY.BLOCKER,
+  navigation: PRIORITY.BLOCKER,
+  footer: PRIORITY.BLOCKER,
+  links: PRIORITY.BLOCKER,
+  'broken-links': PRIORITY.BLOCKER,
+  'lorem-ipsum': PRIORITY.BLOCKER,
+  title: PRIORITY.CRITICAL,
+  'title-size': PRIORITY.CRITICAL,
+  description: PRIORITY.CRITICAL,
+  'meta-description': PRIORITY.CRITICAL,
+  'h1-count': PRIORITY.CRITICAL,
+  'region-selector': PRIORITY.CRITICAL,
+  breadcrumbs: PRIORITY.CRITICAL,
+  accessibility: PRIORITY.CRITICAL,
+  'image-dimensions-above-fold': PRIORITY.CRITICAL,
+  'static-prices': PRIORITY.CRITICAL,
+  'body-size': PRIORITY.MAJOR,
+  'lcp-element': PRIORITY.MAJOR,
+  'single-block': PRIORITY.MAJOR,
+  canonical: PRIORITY.MAJOR,
+  georouting: PRIORITY.MAJOR,
+  'image-size': PRIORITY.NORMAL,
+  'video-poster': PRIORITY.NORMAL,
+  fragments: PRIORITY.NORMAL,
+  placeholders: PRIORITY.NORMAL,
+  icons: PRIORITY.NORMAL,
+  personalization: PRIORITY.NORMAL,
+  'image-dimensions-below-fold': PRIORITY.NORMAL,
+};
+
 export const PERFORMANCE_IDS = {
   lcpElement: 'lcp-element',
   singleBlock: 'single-block',
