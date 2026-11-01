@@ -125,6 +125,78 @@ function decorate(block, root) {
   block.replaceChildren(...[background, content].filter(Boolean));
 }
 
+function initParallax(el) {
+  if (!el.classList.contains('parallax-reveal')) return;
+  const section = el.closest('.section');
+  const next = section?.nextElementSibling;
+  if (!next?.matches('.section') || !el.querySelector('.split-hero-media-frame')) return;
+  section.classList.add('split-hero-reveal');
+  if (!CSS.supports('timeline-scope: --split-hero')) return;
+
+  const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+  const measure = () => {
+    if (!motion.matches) return;
+    const frame = [...el.querySelectorAll('.split-hero-media-frame')]
+      .find((item) => item.offsetWidth);
+    if (!frame) return;
+    const headers = document.querySelectorAll('header, header nav, header .feds-breadcrumbs, header .feds-localnav-bar');
+    const head = Math.max(0, ...[...headers].map((item) => item.getBoundingClientRect().bottom));
+    section.style.setProperty('--sh-head', `${head}px`);
+    if (window.innerWidth < 900) {
+      section.style.setProperty('--sh-mobile-span', `${Math.max(200, el.offsetHeight - head)}px`);
+      return;
+    }
+
+    section.style.setProperty('--sh-height', `${window.innerHeight}px`);
+    const top = parseFloat(getComputedStyle(frame.closest('.split-hero-content')).paddingBlockStart)
+      - head;
+    const width = document.documentElement.clientWidth;
+    const fit = Math.max(360, Math.min(800, (width * 27) / 64));
+    const lip = el.offsetHeight - 32;
+    const frameHeight = Math.max(1, frame.offsetHeight);
+    const frameWidth = Math.max(1, frame.offsetWidth);
+    const { left } = frame.getBoundingClientRect();
+    const widthScale = (width - left - 24) / frameWidth;
+    const heightScale = (Math.min(lip, window.innerHeight) - head - 64) / frameHeight;
+    const scale = Math.max(0.01, Math.min(0.98, widthScale, heightScale));
+    const drop = Math.max(0, lip + 32 - head - top - frameHeight);
+    const lift = top - 16;
+    const horizontalFit = (left + frameWidth - width) / (frameWidth * (1 - scale));
+    const verticalFit = (head + top + drop + frameHeight - lip)
+      / (drop + lift + frameHeight * (1 - scale));
+    // Pace the sheet against both media edges, not just its bottom edge.
+    const revealed = fit * Math.max(0, Math.min(1, Math.max(horizontalFit, verticalFit)));
+    const release = Math.max(80, revealed - Math.min(80, fit * 0.12));
+    // Small frames must remain visible long enough for the sheet to return.
+    const returnDistance = lip + release * 1.25 - fit - head;
+    const mediaRate = Math.min(0.22, Math.max(0, (frameHeight * scale - 32) / returnDistance));
+    const values = {
+      '--sh-fit': `${fit}px`,
+      '--sh-release': `${release}px`,
+      '--sh-media-drop': `${drop}px`,
+      '--sh-media-lift': `${lift}px`,
+      '--sh-media-rate': mediaRate,
+      '--sh-scale': scale,
+    };
+    Object.entries(values).forEach(([name, value]) => section.style.setProperty(name, value));
+    next.style.setProperty('--sh-release', `${release}px`);
+  };
+  const observer = new ResizeObserver(measure);
+  el.querySelectorAll('.split-hero-foreground, .split-hero-media-frame')
+    .forEach((item) => observer.observe(item));
+  const header = document.querySelector('header');
+  if (header) {
+    observer.observe(header);
+    new MutationObserver(measure).observe(header, { childList: true, subtree: true });
+  }
+  el.addEventListener('load', measure, true);
+  el.addEventListener('loadedmetadata', measure, true);
+  window.addEventListener('resize', measure);
+  motion.addEventListener('change', measure);
+  measure();
+}
+
 export default function init(el) {
   decorateViewportContent(el, decorate);
+  initParallax(el);
 }

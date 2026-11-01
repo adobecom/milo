@@ -460,4 +460,206 @@ describe('Split Hero', () => {
       expect(block.children.length).to.equal(0);
     });
   });
+
+  describe('video control position', () => {
+    let foundation;
+
+    before(async () => loadStyles('/libs/blocks/video/video.css'));
+
+    beforeEach(() => {
+      foundation = document.createElement('meta');
+      foundation.name = 'foundation';
+      foundation.content = 'c2';
+      document.head.append(foundation);
+    });
+
+    afterEach(() => foundation.remove());
+
+    [false, true].forEach((parallax) => {
+      it(`keeps the control ${parallax ? 'top' : 'bottom'}-left ${parallax ? 'with' : 'without'} parallax`, async () => {
+        const block = buildBlock([
+          '<h1>Headline</h1>',
+          '<div class="video-container"><video width="1600" height="900"></video><button class="play-pause-button video-button" aria-label="Pause video"></button></div>',
+        ]);
+        if (parallax) block.classList.add('parallax-reveal');
+        init(block);
+
+        for (const width of [390, 1440]) {
+          await setViewport({ width, height: 900 });
+          await nextFrame();
+          const holder = block.querySelector('.video-container').getBoundingClientRect();
+          const button = block.querySelector('.play-pause-button').getBoundingClientRect();
+          const style = getComputedStyle(block);
+          const left = parseFloat(style.getPropertyValue('--s2a-spacing-md'));
+          expect(button.left).to.be.closeTo(holder.left + left, 1);
+          if (parallax) {
+            expect(button.top).to.be.closeTo(holder.top + left, 1);
+          } else {
+            const token = width >= 1280 ? '--s2a-spacing-xl' : '--s2a-spacing-md';
+            const bottom = parseFloat(style.getPropertyValue(token));
+            expect(button.bottom).to.be.closeTo(holder.bottom - bottom, 1);
+          }
+        }
+      });
+    });
+  });
+
+  describe('parallax reveal', () => {
+    before(async () => loadStyles('/libs/c2/blocks/section-metadata/section-metadata.css'));
+
+    async function renderReveal(width, variant = true, media = MEDIA) {
+      await setViewport({ width, height: 900 });
+      document.body.innerHTML = `
+        <header style="position:fixed;inset:0 0 auto;height:80px">
+          <div class="feds-breadcrumbs" style="position:absolute;top:80px;height:44px"></div>
+        </header>
+        <main>
+          <div class="section parallax-double-garage-door">
+            <div class="split-hero${variant ? ' parallax-reveal' : ''}">
+              ${row('<p>Product</p><h1>Headline</h1><p>Body copy.</p>', media)}
+              ${row('<p>US$9.99/mo</p><p><strong><a href="https://www.adobe.com/free-trial">Free trial</a></strong></p>', 'Supporting text')}
+            </div>
+          </div>
+          <div class="section rounded-corners-top" style="height:1800px"></div>
+        </main>`;
+      const block = document.querySelector('.split-hero');
+      init(block);
+      await Promise.all([...block.querySelectorAll('img')].map((image) => image.decode()));
+      await nextFrame();
+      await nextFrame();
+      return block;
+    }
+
+    async function scrollToPosition(y) {
+      window.scrollTo(0, y);
+      await nextFrame();
+      await nextFrame();
+    }
+
+    afterEach(async () => {
+      await scrollToPosition(0);
+      document.body.innerHTML = '';
+    });
+
+    it('does not replace the section animation without the variant', async () => {
+      const block = await renderReveal(1440, false);
+      expect(block.closest('.section').classList.contains('split-hero-reveal')).to.be.false;
+      expect(getComputedStyle(block.closest('.section')).animationName).to.include('dg-top-door');
+    });
+
+    it('fully reveals the media before the rounded section covers it again', async () => {
+      const block = await renderReveal(1440);
+      const copy = block.querySelector('.split-hero-text');
+      const frame = block.querySelector('.split-hero-media-frame');
+      const next = block.closest('.section').nextElementSibling;
+      const initialCopy = copy.getBoundingClientRect().top;
+      const initialMedia = frame.getBoundingClientRect();
+      const initialLip = next.getBoundingClientRect().top;
+      expect(initialCopy).to.be.at.least(124);
+      expect(initialLip).to.be.lessThan(window.innerHeight);
+      expect(initialMedia.bottom).to.be.greaterThan(initialLip);
+
+      await scrollToPosition(100);
+      expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
+      expect(frame.getBoundingClientRect().top).to.be.within(124, initialMedia.top);
+      expect(frame.getBoundingClientRect().width).to.be.lessThan(initialMedia.width);
+      expect(next.getBoundingClientRect().top).to.be.closeTo(initialLip, 1);
+
+      const style = getComputedStyle(block.closest('.section'));
+      const fit = parseFloat(style.getPropertyValue('--sh-fit'));
+      const release = parseFloat(style.getPropertyValue('--sh-release'));
+      await scrollToPosition(fit);
+      const revealed = frame.getBoundingClientRect();
+      expect(revealed.top).to.be.at.least(124);
+      expect(revealed.left).to.be.at.least(0);
+      expect(revealed.right).to.be.at.most(document.documentElement.clientWidth);
+      expect(revealed.bottom).to.be.at.most(next.getBoundingClientRect().top);
+      expect(revealed.bottom).to.be.at.most(window.innerHeight);
+
+      let covered = false;
+      for (let y = release + 80; y <= release + window.innerHeight; y += 80) {
+        await scrollToPosition(y);
+        const sheet = next.getBoundingClientRect();
+        if (sheet.top > 124 && sheet.top + 16 < frame.getBoundingClientRect().bottom) {
+          covered = true;
+          break;
+        }
+      }
+      expect(covered).to.be.true;
+      expect(copy.getBoundingClientRect().top).to.be.lessThan(initialCopy);
+      await scrollToPosition(0);
+      expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
+      expect(frame.getBoundingClientRect().width).to.be.closeTo(initialMedia.width, 1);
+      expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
+    });
+
+    it('drifts mobile layers without pinning or shrinking the media', async () => {
+      const block = await renderReveal(390);
+      const copy = block.querySelector('.split-hero-text');
+      const offer = block.querySelector('.split-hero-merch-card');
+      const frame = block.querySelector('.split-hero-media-frame');
+      const initial = [copy, offer, frame].map((item) => item.getBoundingClientRect());
+      await scrollToPosition(100);
+      expect(copy.getBoundingClientRect().top).to.be.closeTo(initial[0].top - 92, 1);
+      expect(offer.getBoundingClientRect().top).to.be.closeTo(initial[1].top - 88, 1);
+      expect(frame.getBoundingClientRect().top).to.be.closeTo(initial[2].top - 92, 1);
+      expect(frame.getBoundingClientRect().width).to.be.closeTo(initial[2].width, 1);
+      expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
+    });
+
+    it('remeasures when switching between desktop and mobile layouts', async () => {
+      const block = await renderReveal(1440);
+      const copy = block.querySelector('.split-hero-text');
+      const frame = block.querySelector('.split-hero-media-frame');
+      const initial = frame.getBoundingClientRect();
+
+      await setViewport({ width: 390, height: 900 });
+      await nextFrame();
+      await nextFrame();
+      const mobileCopy = copy.getBoundingClientRect().top;
+      const mobileFrame = frame.getBoundingClientRect();
+      await scrollToPosition(100);
+      expect(copy.getBoundingClientRect().top).to.be.closeTo(mobileCopy - 92, 1);
+      expect(frame.getBoundingClientRect().width).to.be.closeTo(mobileFrame.width, 1);
+
+      await scrollToPosition(0);
+      await setViewport({ width: 1440, height: 900 });
+      await nextFrame();
+      await nextFrame();
+      expect(frame.getBoundingClientRect().top).to.be.closeTo(initial.top, 1);
+      expect(frame.getBoundingClientRect().width).to.be.closeTo(initial.width, 1);
+    });
+
+    it('updates clearance when navigation is inserted after initialization', async () => {
+      const block = await renderReveal(1440);
+      const copy = block.querySelector('.split-hero-text');
+      const initial = copy.getBoundingClientRect().top;
+      const nav = document.createElement('div');
+      nav.className = 'feds-localnav-bar';
+      nav.style.cssText = 'position:absolute;top:124px;height:48px';
+      document.querySelector('header').append(nav);
+      await nextFrame();
+      await nextFrame();
+      expect(copy.getBoundingClientRect().top).to.be.at.least(172);
+      expect(copy.getBoundingClientRect().top).to.be.greaterThan(initial);
+      nav.remove();
+      await nextFrame();
+      await nextFrame();
+      expect(copy.getBoundingClientRect().top).to.be.closeTo(initial, 1);
+    });
+
+    it('sizes poster-only video before playback metadata is available', async () => {
+      const poster = new Image();
+      poster.src = '/test/blocks/split-hero/mocks/wide-media.svg';
+      await poster.decode();
+      const block = await renderReveal(1440, true, `<video poster="${poster.src}"></video>`);
+      const frame = block.querySelector('.split-hero-media-frame');
+      const next = block.closest('.section').nextElementSibling;
+      expect(block.querySelector('video').videoWidth).to.equal(0);
+      expect(frame.getBoundingClientRect().bottom)
+        .to.be.greaterThan(next.getBoundingClientRect().top);
+      await scrollToPosition(100);
+      expect(block.querySelector('.split-hero-text').getBoundingClientRect().top).to.be.at.least(124);
+    });
+  });
 });

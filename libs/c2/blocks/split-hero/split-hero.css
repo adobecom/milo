@@ -462,3 +462,222 @@ body:has(header.local-nav) .split-hero {
   inset-inline-start: var(--s2a-spacing-md);
   inset-inline-end: auto;
 }
+
+:root .split-hero.parallax-reveal .split-hero-media .video-container button.play-pause-button {
+  inset-block-start: var(--s2a-spacing-md);
+  inset-block-end: auto;
+}
+
+@supports (animation-timeline: view()) {
+  /* stylelint-disable property-no-unknown, unit-no-unknown */
+  @supports (timeline-scope: --split-hero) {
+    @media (prefers-reduced-motion: no-preference) {
+      main:has(> .split-hero-reveal) {
+        timeline-scope: --split-hero;
+      }
+
+      .section.split-hero-reveal {
+        view-timeline: --split-hero block;
+        view-timeline-inset: 0;
+
+        > .split-hero.parallax-reveal {
+          animation: none;
+          will-change: auto;
+
+          .split-hero-content {
+            padding-block-start: calc(var(--sh-head, 124px) + 32px);
+          }
+
+          .split-hero-copy {
+            animation: sh-intro 650ms ease-out both;
+          }
+
+          .split-hero-text,
+          .split-hero-media-frame,
+          .split-hero-merch-card,
+          .split-hero-supporting {
+            --sh-lag: calc(var(--sh-mobile-span) * 0.08);
+
+            animation: sh-mobile-drift linear both;
+            animation-timeline: --split-hero;
+            animation-range: exit-crossing 0 exit-crossing var(--sh-mobile-span);
+          }
+
+          .split-hero-merch-card,
+          .split-hero-supporting {
+            --sh-lag: calc(var(--sh-mobile-span) * 0.12);
+          }
+        }
+      }
+
+      @media (width >= 900px) {
+        .section.split-hero-reveal,
+        .section.split-hero-reveal + .section.rounded-corners-top {
+          --sh-park: calc(var(--sh-release) * 1.5);
+          --sh-hold: calc(var(--sh-release) * 1.25);
+        }
+
+        .section.split-hero-reveal {
+          --sh-row: 672px;
+          --sh-top: clamp(32px, calc((var(--sh-height) - var(--sh-head) - var(--sh-row)) / 2), 128px);
+          --sh-span: calc(var(--sh-park) + var(--sh-height));
+          --sh-media-rise: calc((var(--sh-span) - var(--sh-fit)) * var(--sh-media-rate));
+
+          padding-block-end: var(--sh-hold);
+
+          &:has(> .split-hero)::after {
+            display: none;
+          }
+
+          > .split-hero.parallax-reveal {
+            min-height: 0;
+            animation: sh-stage-drift linear both;
+            animation-timeline: --split-hero;
+            animation-range: exit-crossing 0 exit-crossing var(--sh-park);
+
+            .split-hero-content {
+              box-sizing: border-box;
+              min-block-size: min(var(--sh-height), calc(var(--sh-head) + var(--sh-top) + var(--sh-row) + 32px));
+              padding-block-start: calc(var(--sh-head) + var(--sh-top));
+            }
+
+            .split-hero-foreground {
+              align-self: flex-start;
+              padding-block-start: 0;
+            }
+
+            .split-hero-media {
+              block-size: 0;
+              flex: 1;
+              min-inline-size: 0;
+              animation: sh-cancel-drift linear both, sh-media-lift linear both,
+                sh-media-exit linear both;
+              animation-timeline: --split-hero, --split-hero, --split-hero;
+              animation-range: exit-crossing 0 exit-crossing var(--sh-park),
+                exit-crossing 0 exit-crossing var(--sh-fit),
+                exit-crossing var(--sh-fit) exit-crossing var(--sh-span);
+              animation-composition: replace, add, add;
+            }
+
+            .split-hero-media-frame {
+              inline-size: 1328px;
+              min-inline-size: 0;
+              min-height: 0;
+              transform-origin: top left;
+              animation: sh-scroll-counter linear both, sh-media-shrink linear both;
+              animation-timeline: --split-hero, --split-hero;
+              animation-range: exit-crossing 0 exit-crossing var(--sh-span),
+                exit-crossing 0 exit-crossing var(--sh-fit);
+            }
+
+            .split-hero-text,
+            .split-hero-merch-card,
+            .split-hero-supporting {
+              animation: none;
+            }
+          }
+
+          + .section.rounded-corners-top {
+            animation: sh-lip-drift linear both;
+            animation-timeline: --split-hero;
+            animation-range: exit-crossing 0 exit-crossing var(--sh-park);
+          }
+        }
+
+        @media (width >= 1280px) {
+          .section.split-hero-reveal {
+            --sh-row: 680px;
+          }
+        }
+
+        @media (width > 1440px) {
+          .section.split-hero-reveal {
+            --sh-row: 660px;
+          }
+
+          .section.split-hero-reveal > .split-hero.parallax-reveal .split-hero-media-frame {
+            inline-size: max(1196px, calc(100% + 36px));
+          }
+        }
+      }
+    }
+  }
+  /* stylelint-enable property-no-unknown, unit-no-unknown */
+
+  @keyframes sh-intro {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes sh-mobile-drift {
+    from { transform: translateY(0); }
+    to { transform: translateY(var(--sh-lag)); }
+  }
+
+  @keyframes sh-stage-drift {
+    from {
+      transform: translateY(0);
+      animation-timing-function: linear;
+    }
+
+    66.6667% {
+      transform: translateY(var(--sh-release));
+      animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
+    }
+
+    to { transform: translateY(var(--sh-hold)); }
+  }
+
+  @keyframes sh-cancel-drift {
+    from {
+      transform: translateY(0);
+      animation-timing-function: linear;
+    }
+
+    66.6667% {
+      transform: translateY(calc(-1 * var(--sh-release)));
+      animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
+    }
+
+    to { transform: translateY(calc(-1 * var(--sh-hold))); }
+  }
+
+  @keyframes sh-scroll-counter {
+    from { translate: 0 0; }
+    to { translate: 0 var(--sh-span); }
+  }
+
+  @keyframes sh-media-shrink {
+    from { scale: 1; }
+    to { scale: var(--sh-scale); }
+  }
+
+  @keyframes sh-media-lift {
+    from { transform: translateY(var(--sh-media-drop)); }
+    to { transform: translateY(calc(-1 * var(--sh-media-lift))); }
+  }
+
+  @keyframes sh-media-exit {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-1 * var(--sh-media-rise))); }
+  }
+
+  @keyframes sh-lip-drift {
+    from {
+      margin-block-start: calc(-1 * (var(--sh-hold) + var(--s2a-border-radius-xl, 32px)));
+      animation-timing-function: linear;
+    }
+
+    66.6667% {
+      margin-block-start: calc(var(--sh-release) - var(--sh-hold) - var(--s2a-border-radius-xl, 32px));
+      animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
+    }
+
+    to { margin-block-start: calc(-1 * var(--s2a-border-radius-xl, 32px)); }
+  }
+}
+
+main > .section.split-hero-reveal:has(> .split-hero.parallax-reveal) {
+  animation: none;
+  transform: none;
+}

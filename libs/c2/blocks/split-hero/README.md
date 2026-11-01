@@ -3,6 +3,17 @@
 Copy and optional offer on one side, framed media on the other, over an
 optional background.
 
+## Parallax reveal (experimental)
+
+Use `Split Hero (parallax-reveal)` in the first section, followed by a section
+with `rounded-corners-top`. Desktop starts with media behind the rounded
+section, reveals the whole frame while holding the copy, then lets the lower
+section rise over it. Mobile uses subtle layer drift without pinning or scaling.
+Video play/pause controls sit top-left for this variant, instead of bottom-left.
+The variant replaces a section's garage-door animation. Reduced motion and
+browsers without scroll-timeline support retain the static layout.
+Use `?milolibs=local` to test local code with the authored variant.
+
 ## Authoring
 
 Two content rows. Cells are read by position.
