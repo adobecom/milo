@@ -324,7 +324,8 @@ describe('Split Hero', () => {
         await setViewport({ width, height: 900 });
 
         const left = block.querySelector('.split-hero-foreground').getBoundingClientRect();
-        const right = block.querySelector('.split-hero-media').getBoundingClientRect();
+        // From 1280px the frame is absolutely positioned, so measure it rather than its column.
+        const right = block.querySelector('.split-hero-media-frame').getBoundingClientRect();
         expect(right.left).to.be.at.least(left.right);
         expect(right.width).to.be.greaterThan(left.width);
         expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
@@ -568,6 +569,11 @@ describe('Split Hero', () => {
       init(block);
       await Promise.all([...block.querySelectorAll('img')].map((image) => image.decode()));
       await nextFrame();
+      await nextFrame();
+      // Settle the load-in transitions so measurements reflect only scroll-driven motion.
+      block.getAnimations({ subtree: true })
+        .filter((animation) => animation instanceof window.CSSTransition)
+        .forEach((animation) => animation.finish());
       await nextFrame();
       return block;
     }
