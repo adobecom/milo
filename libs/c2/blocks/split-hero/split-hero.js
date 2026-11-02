@@ -3,7 +3,8 @@ import { decorateBlockBg, decorateBlockText, decorateButtons, decorateViewportCo
 
 const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
 
-const hasContent = (cell) => !!cell && (cell.children.length > 0 || !!cell.textContent.trim());
+const hasContent = (cell) => !!cell
+  && (!!cell.textContent.trim() || !!cell.querySelector(':not(p, br)'));
 
 const MAS_FIELD_CLASSES = {
   description: ['mas-description'],
@@ -86,7 +87,8 @@ function decorateCopy(copy) {
 function decorateBackground(block, bg) {
   if (!hasContent(bg)) return null;
   decorateBlockBg(block, bg, { className: 'split-hero-background' });
-  if (!block.style.background) return bg;
+  if (bg.classList.contains('split-hero-background')) return bg;
+  if (!block.style.background) return null;
   const colorBg = createTag('div', { class: 'split-hero-background', style: `background: ${block.style.background}` });
   block.style.removeProperty('background');
   return colorBg;

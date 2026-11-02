@@ -21,7 +21,8 @@ Use `?milolibs=local` to test local code with the authored variant.
 
 ## Authoring
 
-Three content rows, two columns. Cells are read by position.
+Three content rows, two columns. Cells are read by position. A cell with
+only empty paragraphs renders as empty.
 
 ```
 | copy       | media                 |
@@ -36,7 +37,8 @@ Three content rows, two columns. Cells are read by position.
   comes first for SEO and assistive tech.
 - **media**: image or video-poster pattern, shown inside `.split-hero-media-frame`.
 - **background**: image, video, or a CSS color/gradient as plain text.
-  Leave the second cell of the second row empty for no background.
+  Leave the second cell of the second row empty for no background. Invalid
+  CSS text renders no background.
 - **merch**: headless MAS field links (`&field=…`), legacy inline prices and
   `data-wcs-osi` CTAs, plus authored text.
   Empty cell means no merch card.

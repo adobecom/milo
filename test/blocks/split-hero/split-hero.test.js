@@ -215,6 +215,14 @@ describe('Split Hero', () => {
       expect(block.querySelector('.split-hero-supporting').textContent).to.equal('Support text');
     });
 
+    it('renders no background or raw text for an invalid color', async () => {
+      const block = buildBlock([copy, MEDIA], ['', 'not-a-colour']);
+      await init(block);
+
+      expect(block.querySelector('.split-hero-background')).to.be.null;
+      expect(block.textContent).to.not.contain('not-a-colour');
+    });
+
     it('covers the block with a background image', async () => {
       const block = buildBlock([copy, MEDIA], ['', MEDIA]);
       await init(block);
@@ -324,7 +332,6 @@ describe('Split Hero', () => {
         await setViewport({ width, height: 900 });
 
         const left = block.querySelector('.split-hero-foreground').getBoundingClientRect();
-        // From 1280px the frame is absolutely positioned, so measure it rather than its column.
         const right = block.querySelector('.split-hero-media-frame').getBoundingClientRect();
         expect(right.left).to.be.at.least(left.right);
         expect(right.width).to.be.greaterThan(left.width);
@@ -470,6 +477,22 @@ describe('Split Hero', () => {
       expect(block.querySelector('.split-hero-supporting')).to.exist;
     });
 
+    it('treats cells holding only empty paragraphs as empty', async () => {
+      const block = buildBlock(['<h1>Headline</h1>', '<p></p>'], ['<p></p>', '<p> </p>'], ['<p><br></p>', '']);
+      await init(block);
+
+      ['media', 'merch-card', 'background', 'supporting'].forEach((part) => {
+        expect(block.querySelector(`.split-hero-${part}`)).to.be.null;
+      });
+    });
+
+    it('keeps a merch card whose only content is a textless element', async () => {
+      const block = buildBlock(['<h1>Headline</h1>'], ['<p><span is="inline-price" data-wcs-osi="osi"></span></p>', '']);
+      await init(block);
+
+      expect(block.querySelector('.split-hero-merch-card [is="inline-price"]')).to.exist;
+    });
+
     it('renders no supporting text for an empty supporting cell', async () => {
       const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['<p><mas-field field="prices">US$9.99/mo</mas-field></p>', ''], ['', '']);
       await init(block);
@@ -570,7 +593,6 @@ describe('Split Hero', () => {
       await Promise.all([...block.querySelectorAll('img')].map((image) => image.decode()));
       await nextFrame();
       await nextFrame();
-      // Settle the load-in transitions so measurements reflect only scroll-driven motion.
       block.getAnimations({ subtree: true })
         .filter((animation) => animation instanceof window.CSSTransition)
         .forEach((animation) => animation.finish());
