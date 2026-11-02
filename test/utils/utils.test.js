@@ -1732,6 +1732,12 @@ describe('Utils', () => {
       expect(classes.contains('c2-gnav-c1-host')).to.be.false;
     });
 
+    it('does not tag a header whose block is not global-navigation', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', header: 'custom-header global-navigation' });
+      expect(classes.contains('global-navigation')).to.be.true;
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
     it('re-syncs the tag if gnav metadata changes before the nav loads (post-LCP MEP)', async () => {
       setHead({ 'gnav-foundation': 'c2' });
       document.body.innerHTML = '<header></header><main><div><p>Content</p></div></main>';
