@@ -228,6 +228,39 @@ describe('Elastic Carousel responsive geometry', () => {
   });
 
   ['ltr', 'rtl'].forEach((direction) => {
+    [1024, 1280, 1366, 1920].forEach((width) => {
+      [false, true].forEach((textSpacing) => {
+        it(`keeps expanded ${direction} edge cards visible with hover enabled at ${width}px and text spacing ${textSpacing}`, async () => {
+          await setViewport({ width, height: 720 });
+          document.documentElement.setAttribute('dir', direction);
+          const block = await loadCarousel();
+          expect(window.matchMedia('(hover: hover)').matches).to.be.true;
+          if (textSpacing) applyTextSpacing();
+          await settleLayout();
+          const cards = [...block.querySelectorAll('.elastic-carousel-item')];
+          for (const card of [cards.at(-1), cards[0]]) {
+            for (const interaction of ['focus', 'hover']) {
+              if (interaction === 'focus') card.focus();
+              else card.dispatchEvent(new MouseEvent('mouseenter'));
+              await settleLayout();
+              finishTransitions(block);
+              await settleLayout();
+              const bounds = block.getBoundingClientRect();
+              const rect = card.getBoundingClientRect();
+              expect(rect.left, `${interaction}: left edge stays visible`)
+                .to.be.at.least(bounds.left - 1);
+              expect(rect.right, `${interaction}: right edge stays visible`)
+                .to.be.at.most(bounds.right + 1);
+              expectFullText(card);
+              card.blur();
+              card.classList.remove('hovered');
+            }
+          }
+          expect(document.documentElement.scrollWidth).to.be.at.most(window.innerWidth);
+        });
+      });
+    });
+
     [false, true].forEach((textSpacing) => {
       it(`reveals complete ${direction} desktop text on hover/focus with text spacing ${textSpacing}`, async () => {
         await setViewport({ width: 1366, height: 768 });

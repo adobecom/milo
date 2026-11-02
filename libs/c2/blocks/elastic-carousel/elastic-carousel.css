@@ -3,6 +3,9 @@
 html[dir="rtl"] {
   .elastic-carousel {
     & .elastic-carousel-container {
+      /* Normalize the right-anchored RTL row before applying its viewport transforms. */
+      --elastic-carousel-row-offset: calc(100% - 100vw);
+
       & .elastic-carousel-item {
         & .elastic-carousel-item-footer {
           &:after {
@@ -46,7 +49,7 @@ html[dir="rtl"] {
     position: relative;
     width: max-content;
     left: 0;
-    transform: translateX(calc(50vw - 50%));
+    transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 50vw - 50%));
     transition: transform .5s ease;
     max-width: var(--elastic-carousel-container-width);
 
@@ -174,11 +177,11 @@ html[dir="rtl"] {
     transform: translateX(-50%);
 
     &.stick-left {
-      transform: translateX(0);
+      transform: translateX(var(--elastic-carousel-row-offset, 0));
     }
 
     &.stick-right {
-      transform: translateX(calc(100vw - 100%));
+      transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 100vw - 100%));
     }
   }
 }
