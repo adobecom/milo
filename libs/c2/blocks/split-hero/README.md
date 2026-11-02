@@ -10,12 +10,10 @@ with `rounded-corners-top`. Desktop starts with media behind the rounded
 section, reveals the whole frame while holding the copy, then lets the lower
 section rise over it. Mobile uses subtle layer drift without pinning or scaling.
 Video play/pause controls sit top-left for this variant, instead of bottom-left.
-On load, the copy text rises in as one, the media lifts in behind it, then the
-merch card and supporting text fade and rise in turn. The copy text and media
-never fade, so they don't delay LCP.
-The intro transitions `translate` and `opacity`, so scroll-driven drifts on the
-same elements must stay on `transform`. It plays when the section is first
-displayed.
+On load, the copy text and media fade and rise in, then the merch card and
+supporting text fade and rise in turn. Copy text and media start at
+`opacity: 0.05`, never 0 (LCP). The intro uses `translate`, so scroll-driven
+drifts on the same elements must stay on `transform`.
 The variant replaces a section's garage-door animation. Reduced motion and
 browsers without scroll-timeline support retain the static layout.
 Use `?milolibs=local` to test local code with the authored variant.

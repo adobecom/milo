@@ -489,17 +489,21 @@ body:has(header.local-nav) .split-hero {
           }
 
           .split-hero-text {
-            transition: translate 900ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
+            transition: 900ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
+            transition-property: opacity, translate;
 
             @starting-style {
+              opacity: 0.05;
               translate: 0 40px;
             }
           }
 
           .split-hero-media {
-            transition: translate 1700ms cubic-bezier(0.16, 1, 0.3, 1) 480ms;
+            transition: opacity 1000ms cubic-bezier(0.33, 0, 0.2, 1) 480ms,
+              translate 1700ms cubic-bezier(0.16, 1, 0.3, 1) 480ms;
 
             @starting-style {
+              opacity: 0.05;
               translate: 0 120px;
             }
           }
