@@ -299,7 +299,10 @@
     max-height: 292px;
     margin: var(--s2a-spacing-xs) 0 0;
     padding: 0;
+    padding-block: var(--s2a-spacing-2xs);
+    padding-inline-start: var(--s2a-spacing-2xs);
     padding-inline-end: var(--s2a-spacing-xs);
+    scroll-padding-block: var(--s2a-spacing-2xs);
     overflow-y: auto;
     overscroll-behavior-y: contain;
     touch-action: pan-y;
@@ -326,7 +329,7 @@
   }
 
   & .market-selector-item {
-    margin: 0 0 var(--s2a-spacing-3xs);
+    margin: 0 0 var(--s2a-spacing-2xs);
   }
 
   & .market-selector-item:hover {

@@ -141,6 +141,7 @@ describe('Market selector block', () => {
     const footer = document.createElement('footer');
     footer.className = 'global-footer';
     footer.style.setProperty('--s2a-spacing-xs', '8px');
+    footer.style.setProperty('--s2a-spacing-2xs', '4px');
     footer.style.setProperty('--s2a-color-transparent-white-64', 'rgb(255 255 255 / 64%)');
     footer.style.setProperty('--s2a-color-content-body-subtle', 'rgb(255 255 255 / 64%)');
     footer.style.setProperty('--s2a-color-gray-25', '#fff');
@@ -170,6 +171,7 @@ describe('Market selector block', () => {
       expect(getComputedStyle(popover).overflowY).to.equal('visible');
       expect(getComputedStyle(languageButton).color).to.equal('rgb(80, 80, 80)');
       expect(getComputedStyle(languageButton).opacity).to.equal('1');
+      expect(getComputedStyle(c1Popover.querySelector('.market-selector-list')).paddingTop).to.equal('0px');
       foundation.content = 'c2';
       expect(getComputedStyle(popover).position).to.equal('static');
       expect(getComputedStyle(c1Popover).position).to.equal('static');
@@ -195,9 +197,16 @@ describe('Market selector block', () => {
       expect(getComputedStyle(list).maxHeight).to.equal('292px');
       expect(getComputedStyle(list).scrollbarWidth).to.equal('thin');
       expect(getComputedStyle(list).touchAction).to.equal('pan-y');
+      expect(getComputedStyle(list).paddingTop).to.equal('4px');
+      expect(getComputedStyle(list).paddingBottom).to.equal('4px');
+      expect(getComputedStyle(list).paddingInlineStart).to.equal('4px');
       expect(getComputedStyle(list).paddingInlineEnd).to.equal('8px');
+      expect(getComputedStyle(list).scrollPaddingTop).to.equal('4px');
+      expect(getComputedStyle(list).scrollPaddingBottom).to.equal('4px');
+      expect(getComputedStyle(list.querySelector('.market-selector-item')).marginBottom).to.equal('4px');
       footer.dir = 'rtl';
       expect(getComputedStyle(list).paddingLeft).to.equal('8px');
+      expect(getComputedStyle(list).paddingRight).to.equal('4px');
       footer.dir = 'ltr';
       languageButton.click();
       expect(getComputedStyle(popover).display).to.equal('block');
@@ -208,9 +217,29 @@ describe('Market selector block', () => {
       expect(getComputedStyle(globe).display).to.equal('none');
       expect(list.querySelectorAll('.market-selector-link').length).to.equal(14);
       expect(list.scrollHeight).to.be.greaterThan(list.clientHeight);
+      list.scrollTop = 0;
       const option = list.querySelector('.market-selector-link');
+      expect(option.getBoundingClientRect().top - list.getBoundingClientRect().top)
+        .to.be.at.least(4);
+      expect(option.getBoundingClientRect().left - list.getBoundingClientRect().left)
+        .to.be.at.least(4);
       expect(list.getBoundingClientRect().right - option.getBoundingClientRect().right)
         .to.be.at.least(8);
+      const selectedItem = list.querySelector('.market-selector-item.selected');
+      const followingOption = selectedItem.nextElementSibling?.querySelector('.market-selector-link');
+      expect(followingOption).to.exist;
+      expect(followingOption.getBoundingClientRect().top
+        - selectedItem.querySelector('.market-selector-link').getBoundingClientRect().bottom)
+        .to.be.at.least(4);
+      footer.dir = 'rtl';
+      expect(list.getBoundingClientRect().right - option.getBoundingClientRect().right)
+        .to.be.at.least(4);
+      footer.dir = 'ltr';
+      const lastOption = list.querySelector('.market-selector-item:last-child .market-selector-link');
+      list.scrollTop = list.scrollHeight;
+      expect(list.getBoundingClientRect().bottom - lastOption.getBoundingClientRect().bottom)
+        .to.be.at.least(4);
+      list.scrollTop = 0;
       const footerWheel = sinon.spy();
       footer.addEventListener('wheel', footerWheel);
       list.scrollTop = list.scrollHeight;
@@ -584,6 +613,10 @@ describe('Market selector block', () => {
           .to.be.closeTo(language.querySelector('span').getBoundingClientRect().width + 11, 1);
         expect(getComputedStyle(block.querySelector('.market-selector-popover .market-selector-link')).fontSize)
           .to.equal('16px');
+        const mobileListStyle = getComputedStyle(block.querySelector('.market-selector-list'));
+        expect(mobileListStyle.paddingTop).to.equal('4px');
+        expect(mobileListStyle.paddingBottom).to.equal('4px');
+        expect(mobileListStyle.paddingInlineStart).to.equal('4px');
         const regionBounds = block.getBoundingClientRect();
         expect(language.getBoundingClientRect().left).to.be.at.least(regionBounds.left - 1);
         expect(language.getBoundingClientRect().right).to.be.at.most(regionBounds.right + 1);
