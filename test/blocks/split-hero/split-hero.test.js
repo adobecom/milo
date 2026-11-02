@@ -731,6 +731,45 @@ describe('Split Hero', () => {
       expect(frame.getBoundingClientRect().width).to.be.closeTo(initial.width, 1);
     });
 
+    it('batches repeated resize events into one measurement per frame', async () => {
+      const block = await renderReveal(1440);
+      const frame = block.querySelector('.split-hero-media-frame');
+      const getRect = frame.getBoundingClientRect;
+      let measurements = 0;
+      frame.getBoundingClientRect = () => {
+        measurements += 1;
+        return getRect.call(frame);
+      };
+      try {
+        for (let i = 0; i < 10; i += 1) window.dispatchEvent(new Event('resize'));
+        expect(measurements).to.equal(0);
+        await nextFrame();
+        await nextFrame();
+        expect(measurements).to.equal(1);
+
+        window.dispatchEvent(new Event('resize'));
+        await nextFrame();
+        await nextFrame();
+        expect(measurements).to.equal(2);
+      } finally {
+        frame.getBoundingClientRect = getRect;
+      }
+    });
+
+    it('updates the stage when only the viewport height changes', async () => {
+      const block = await renderReveal(1440);
+      const content = block.querySelector('.split-hero-content');
+      const initialHeight = content.offsetHeight;
+      await setViewport({ width: 1440, height: 800 });
+      await nextFrame();
+      await nextFrame();
+      expect(content.offsetHeight).to.equal(800);
+      await setViewport({ width: 1440, height: 900 });
+      await nextFrame();
+      await nextFrame();
+      expect(content.offsetHeight).to.equal(initialHeight);
+    });
+
     it('reserves breadcrumb clearance before the breadcrumbs render', async () => {
       const block = await renderReveal(1440);
       const copy = block.querySelector('.split-hero-text');

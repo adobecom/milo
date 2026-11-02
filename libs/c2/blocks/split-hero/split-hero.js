@@ -195,7 +195,14 @@ function initParallax(el, head) {
     .forEach((item) => observer.observe(item));
   el.addEventListener('load', measure, true);
   el.addEventListener('loadedmetadata', measure, true);
-  window.addEventListener('resize', measure);
+  let resizeFrame = 0;
+  window.addEventListener('resize', () => {
+    if (resizeFrame) return;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = 0;
+      measure();
+    });
+  });
   motion.addEventListener('change', measure);
   measure();
 }
