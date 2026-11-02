@@ -17,6 +17,17 @@
 .offer-hero {
   overflow-x: clip;
 
+  /* MAS paragraphs are inline copy within the authored body container. */
+  mas-field > [data-role="mas-field-content"] p {
+    display: inline;
+    font: inherit;
+    letter-spacing: inherit;
+
+    & + p::before {
+      content: ' ';
+    }
+  }
+
   .hero {
     position: relative;
     min-height: 100vh;

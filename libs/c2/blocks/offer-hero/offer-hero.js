@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 // Each STACK_REF_DESKTOP / STACK_REF_MOBILE entry positions one card in the pile:
@@ -67,9 +67,15 @@ function decorate(block) {
   if (!heroCell) return;
 
   decorateBlockText(heroCell, { heading: '1', body: 'lg', button: 'lg' });
+  normalizeMasFieldText(heroCell, 'lg');
   heroCell.classList.add('hero-content');
   const mainHeading = heroCell.querySelector(':is(h2, h3, h4, h5, h6)');
-  if (mainHeading) mainHeading.replaceWith(createTag('h1', { class: mainHeading.className }, mainHeading.innerHTML));
+  if (mainHeading) {
+    const heading = createTag('h1');
+    [...mainHeading.attributes].forEach(({ name, value }) => heading.setAttribute(name, value));
+    heading.append(...mainHeading.childNodes);
+    mainHeading.replaceWith(heading);
+  }
 
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
   const heroEyebrow = heroCell.querySelector('.eyebrow');
@@ -106,9 +112,10 @@ function decorate(block) {
     const [textCell, mediaCell] = row.children;
 
     decorateBlockText(textCell, { heading: '6', body: 'md' });
+    normalizeMasFieldText(textCell, 'md');
     const heading = textCell.querySelector(':is(h1, h2, h3, h4, h5, h6)');
     heading?.classList.add('hero-card-title');
-    const paras = [...textCell.querySelectorAll('p')];
+    const paras = [...textCell.querySelectorAll(':scope > p, :scope > div.body-md')];
     paras.forEach((p) => p.classList.add('hero-card-body-text'));
 
     const media = createTag('div', { class: 'hero-card-media' });
@@ -116,7 +123,7 @@ function decorate(block) {
 
     setupVideo(media);
 
-    const learnMore = textCell.querySelector('a');
+    const learnMore = [...textCell.querySelectorAll('a')].find((link) => !link.closest('mas-field'));
     if (learnMore) {
       learnMore.classList.add('learn-more', 'label');
       const trailing = learnMore.nextSibling;
@@ -126,7 +133,7 @@ function decorate(block) {
       learnMore.insertAdjacentHTML('beforeend', CHEVRON);
       learnMore.remove();
     }
-    const bodyParas = paras.filter((p) => p.textContent.trim() !== '');
+    const bodyParas = paras.filter((p) => p.textContent.trim() !== '' || p.querySelector('mas-field'));
 
     const cardText = createTag('div', { class: 'hero-card-text' });
     const textWrapper = createTag('div', { class: 'hero-card-text-wrapper' });

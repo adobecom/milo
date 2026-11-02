@@ -235,7 +235,7 @@
   top: 0;
   bottom: clamp(
     0px,
-    calc(var(--fg-pq-half-box, var(--fg-runway-height)) + var(--s2a-border-radius-xl)),
+    var(--fg-pq-half-box, var(--fg-runway-height)),
     calc((1 - var(--fg-pq-appear-t, 0.7)) * var(--fg-runway-height) - var(--fg-optical-center))
   );
   left: 0;

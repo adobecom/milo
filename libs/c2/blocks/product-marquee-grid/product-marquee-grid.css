@@ -1,3 +1,13 @@
+.product-marquee-grid :where(mas-field > [data-role="mas-field-content"]) p {
+  display: inline;
+  font: inherit;
+  letter-spacing: inherit;
+
+  & + p::before {
+    content: ' ';
+  }
+}
+
 .product-marquee-grid {
   --pmg-base-height: 350px;
   --pmg-content-block-start: var(--s2a-spacing-3xl);

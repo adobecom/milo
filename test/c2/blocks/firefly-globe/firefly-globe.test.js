@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { readFile } from '@web/test-runner-commands';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/utils.js';
 import {
   escapeHtml,
@@ -212,6 +213,29 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
       ${makeRow('<blockquote>A quote</blockquote>')}
     `);
     expect(() => parseAuthoredContent(el)).not.to.throw();
+  });
+
+  it('parses a representative authored DA block fixture end to end', async () => {
+    const content = parseAuthoredContent(makeEl(
+      await readFile({ path: './mocks/authored.html' }),
+    ));
+
+    expect(content.categoryId).to.equal('featured-category');
+    expect(content.machineTag).to.equal('acom_firefly_globe');
+    expect(content.cgenId).to.equal('campaign-123');
+    expect(content.ctaLabel).to.equal('Open in Firefly');
+    expect(content.touchHint.paras.map((p) => p.textContent)).to.deep.equal([
+      'Drag to explore Firefly creations.',
+      'Select an image to see how it was made.',
+    ]);
+    expect(content.hintText).to.equal('Click and Drag');
+    expect(content.instructions).to.equal('Enter Firefly gallery');
+    expect(content.labels.cardLabel(3, 12)).to.equal('Creation 3 of 12');
+    expect(content.pullQuote).to.deep.equal({
+      quote: 'Imagine it, then create it.',
+      name: 'Firefly Community',
+      role: 'Creative AI artists',
+    });
   });
 });
 

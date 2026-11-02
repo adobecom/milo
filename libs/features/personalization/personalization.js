@@ -217,6 +217,24 @@ const getUpdatedHref = (el, content, action) => {
   return newContent;
 };
 
+const MEDIA_SEL = 'img[src*="media_"], source[srcset*="media_"]';
+
+const isBrokenImage = (el) => {
+  const img = el.tagName === 'IMG' ? el : el.parentElement?.querySelector('img');
+  return !!img?.complete && !img.naturalWidth;
+};
+
+const recordRemovedMedia = (el) => {
+  const { mep } = getConfig();
+  if (!mep) return;
+  [el, ...el.querySelectorAll(MEDIA_SEL)]
+    .filter((m) => m.matches(MEDIA_SEL) && !isBrokenImage(m))
+    .forEach((m) => {
+      mep.removedMedia ??= new Set();
+      mep.removedMedia.add(m.getAttribute(m.tagName === 'IMG' ? 'src' : 'srcset'));
+    });
+};
+
 const createFrag = async (el, action, content, manifestId, targetManifestId) => {
   if (action === 'replace') el.classList.add(CLASS_EL_DELETE, CLASS_EL_REPLACE);
   let href = content;
@@ -442,6 +460,7 @@ export async function replaceInner(path, element) {
   const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
+  recordRemovedMedia(element);
   element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
@@ -740,7 +759,10 @@ export const updateFragDataProps = (a, inline, sections, fragment) => {
 
 export const deleteMarkedEls = (rootEl = document) => {
   [...rootEl.querySelectorAll(`.${CLASS_EL_DELETE}`)]
-    .forEach((el) => el.remove());
+    .forEach((el) => {
+      recordRemovedMedia(el);
+      el.remove();
+    });
 };
 
 export function addSectionAnchors(rootEl = document) {

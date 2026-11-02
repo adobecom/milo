@@ -1,5 +1,7 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { decorateViewportContent, decorateButtons } from '../../../utils/decorate.js';
+import { decorateViewportContent, decorateButtons, normalizeMasFieldText } from '../../../utils/decorate.js';
+
+const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
 
 const MAS_FIELD_CLASSES = {
   description: ['mas-description'],
@@ -28,8 +30,8 @@ function parseLeftColumn(col) {
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
 
-  const bodyEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
-    .filter((el) => el !== heading && el.textContent.trim());
+  const bodyEls = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field)')]
+    .filter((el) => el !== heading && (el.textContent.trim() || el.matches('mas-field') || el.querySelector('mas-field')));
 
   return { iconEl, heading, bodyEls };
 }
@@ -45,13 +47,19 @@ function buildChicletRow(iconEl, heading) {
 }
 
 function buildMerchCard(col) {
-  decorateButtons(col);
+  [...col.children]
+    .filter((el) => !el.matches(MAS_BODY_FIELDS) && !el.querySelector(MAS_BODY_FIELDS))
+    .forEach((el) => decorateButtons(el));
+  col.querySelectorAll(`:scope > p:has(> ${MAS_BODY_FIELDS})`)
+    .forEach((p) => p.classList.add('body-md'));
+  normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
 
-  const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')];
+  const buttons = [...col.querySelectorAll('.con-button, a[data-wcs-osi]')]
+    .filter((btn) => !btn.closest(MAS_BODY_FIELDS));
   buttons.forEach((btn) => btn.remove());
 
-  const allParas = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
-    .filter((el) => el.textContent.trim() || el.querySelector('mas-field, [is="inline-price"]'));
+  const allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div.body-md)')]
+    .filter((el) => el.textContent.trim() || el.matches('mas-field') || el.querySelector('mas-field, [is="inline-price"]'));
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
@@ -73,7 +81,8 @@ function toSubtext(el) {
     el.classList.add('pm-subtext');
     return el;
   }
-  const p = createTag('p', null, el.innerHTML);
+  const p = createTag('p');
+  p.append(...el.childNodes);
   [...el.attributes].forEach(({ name, value }) => p.setAttribute(name, value));
   p.classList.add('pm-subtext', `heading-${level}`);
   return p;
@@ -89,6 +98,10 @@ function decorate(block, blockEl = block) {
 
   const foreground = createTag('div', { class: 'pm-foreground' });
   foreground.append(buildChicletRow(iconEl, heading), ...subtextEls);
+  foreground.querySelectorAll(`:scope > p:has(> ${MAS_BODY_FIELDS})`)
+    .forEach((p) => p.classList.add('body-md'));
+  normalizeMasFieldText(foreground, 'md', MAS_BODY_FIELDS);
+  foreground.querySelectorAll(':scope > div.body-md').forEach((body) => body.classList.add('pm-subtext'));
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   const col2 = row?.children[1];

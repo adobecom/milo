@@ -1,7 +1,7 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import { setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getConfig, loadStyle } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -169,5 +169,78 @@ describe('article header', () => {
     await init(document.body.querySelector('.article-header'));
     await delay(100);
     expect(document.querySelector('.article-author').childElementCount).to.equal(0);
+  });
+});
+
+describe('article author spacing', () => {
+  before(async () => {
+    await Promise.all([
+      new Promise((resolve) => {
+        loadStyle('/libs/styles/styles.css', resolve);
+      }),
+      new Promise((resolve) => {
+        loadStyle('/libs/blocks/article-header/article-header.css', resolve);
+      }),
+    ]);
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  ['ltr', 'rtl'].forEach((direction) => {
+    it(`keeps a 16px gap between the avatar and author info in ${direction} on mobile and desktop`, async () => {
+      document.body.innerHTML = `
+        <div class="article-header" dir="${direction}">
+          <div class="article-byline">
+            <div class="article-author-image">
+              <img src="/libs/blocks/article-header/adobe-logo.svg" alt="Author">
+            </div>
+            <div class="article-byline-info">
+              <p class="article-author">Adrienne Tsai</p>
+              <p class="article-date">04-20-2026</p>
+            </div>
+          </div>
+        </div>`;
+
+      for (const width of [375, 1200]) {
+        await setViewport({ width, height: 800 });
+        const image = document.querySelector('.article-author-image img').getBoundingClientRect();
+        const info = document.querySelector('.article-byline-info').getBoundingClientRect();
+        const gap = direction === 'rtl' ? image.left - info.right : info.left - image.right;
+
+        expect(gap).to.be.closeTo(16, 0.1);
+        expect(info.top).to.be.lessThan(image.bottom);
+        expect(info.bottom).to.be.greaterThan(image.top);
+      }
+    });
+
+    it(`keeps an 8px visible gap between social icons in ${direction} on tablet and desktop`, async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/body-without-category.html' });
+      const block = document.querySelector('.article-header');
+      block.dir = direction;
+      await init(block);
+
+      const visibleBounds = (icon) => {
+        const box = icon.getBBox();
+        const matrix = icon.getScreenCTM();
+        return {
+          left: matrix.a * box.x + matrix.e,
+          right: matrix.a * (box.x + box.width) + matrix.e,
+        };
+      };
+
+      for (const width of [600, 1200]) {
+        await setViewport({ width, height: 800 });
+        const icons = [...document.querySelectorAll('.article-byline-sharing svg')];
+        icons.slice(1).forEach((icon, index) => {
+          const previous = visibleBounds(icons[index]);
+          const current = visibleBounds(icon);
+          const gap = direction === 'rtl' ? previous.left - current.right : current.left - previous.right;
+
+          expect(gap).to.be.closeTo(8, 0.1);
+        });
+      }
+    });
   });
 });

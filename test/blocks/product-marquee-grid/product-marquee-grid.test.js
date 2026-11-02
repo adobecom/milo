@@ -1,5 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
+import { loadStyle } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/product-marquee-grid/product-marquee-grid.js';
 
@@ -13,6 +17,114 @@ async function initBlock(path) {
 }
 
 describe('Product Marquee Grid', () => {
+  describe('MEP inline MAS editing', () => {
+    afterEach(() => {
+      unwatchForMasContent();
+      delete document.body.dataset.mepMasHighlight;
+      sinon.restore();
+    });
+
+    it('preserves Studio editing and live field state when demoting a foreground heading', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.product-marquee-grid');
+      const heading = block.querySelector('h5');
+      heading.id = 'product-description';
+      heading.innerHTML = '<mas-field field="description" data-mas-block="inline"><span data-role="mas-field-content">Product description</span></mas-field>';
+      const leftField = heading.firstElementChild;
+      const rightField = block.querySelector('mas-field[field="prices"]');
+      rightField.dataset.masBlock = 'inline';
+      const fields = [leftField, rightField];
+      const urls = [
+        'https://mas.adobe.com/studio.html#content-type=merch-card&query=left&field=description',
+        'https://mas.adobe.com/studio.html#content-type=merch-card&query=right&field=prices',
+      ];
+      fields.forEach((field, index) => mepMasStudioUrls.set(field, urls[index]));
+      const readySpy = sinon.spy();
+      leftField.addEventListener('mas:ready', readySpy);
+      const openStub = sinon.stub(window, 'open');
+      document.body.dataset.mepMasHighlight = 'true';
+      watchForMasContent();
+
+      init(block);
+
+      const renderedLeft = block.querySelector('.pm-foreground mas-field');
+      expect(renderedLeft).to.equal(leftField);
+      const subtext = renderedLeft.closest('.pm-subtext');
+      expect(subtext.tagName).to.equal('DIV');
+      expect(subtext.id).to.equal('product-description');
+      expect(subtext.classList.contains('heading-5')).to.be.true;
+      expect(block.querySelector('.pm-foreground h5')).to.be.null;
+      leftField.dispatchEvent(new Event('mas:ready'));
+      expect(readySpy.calledOnce).to.be.true;
+
+      fields.forEach((field, index) => {
+        sinon.stub(field, 'getBoundingClientRect').returns({ top: 100, right: 400, height: 30 });
+        field.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true, cancelable: true, clientX: 300, clientY: 90 }));
+        expect(openStub.getCall(index).args).to.deep.equal([urls[index], '_blank', 'noopener,noreferrer']);
+      });
+    });
+  });
+
+  describe('MAS body copy', () => {
+    before(async () => {
+      await new Promise((resolve, reject) => {
+        loadStyle('/libs/c2/blocks/product-marquee-grid/product-marquee-grid.css', (status) => {
+          if (status === 'error') reject(new Error('Failed to load Product Marquee Grid styles'));
+          else resolve();
+        });
+      });
+    });
+
+    ['before decoration', 'after decoration', 'already unwrapped'].forEach((timing) => {
+      [1, 2].forEach((paragraphs) => {
+        it(`preserves ${paragraphs} paragraphs resolved ${timing} in both columns`, async () => {
+          document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+          const block = document.querySelector('.product-marquee-grid');
+          const foreground = block.firstElementChild.firstElementChild;
+          foreground.querySelector('h5').outerHTML = '<p><mas-field field="shortDescription"><span data-role="mas-field-content"></span></mas-field></p>';
+          const description = block.querySelector('mas-field[field="description"]');
+          description.innerHTML = '<span data-role="mas-field-content"></span>';
+          const fields = [foreground.querySelector('mas-field'), description];
+          const resolve = () => fields.forEach((field) => {
+            field.firstElementChild.innerHTML = `<p>Create with <span is="inline-price">US$9.99/mo</span>.</p>${paragraphs === 2 ? '<p><strong><a href="/terms" data-wcs-osi="terms">Terms apply</a></strong></p>' : ''}`;
+          });
+          if (timing !== 'after decoration') resolve();
+          if (timing === 'already unwrapped') {
+            fields.forEach((field) => field.parentElement.replaceWith(field));
+          }
+          init(block);
+          if (timing === 'after decoration') resolve();
+          fields.forEach((field) => {
+            const body = field.parentElement;
+            expect(body.tagName).to.equal('DIV');
+            expect(body.classList.contains('body-md')).to.be.true;
+            expect(field.querySelectorAll('p').length).to.equal(paragraphs);
+            body.style.fontSize = '22px';
+            body.style.lineHeight = '30px';
+            field.querySelectorAll('p').forEach((p) => {
+              expect(getComputedStyle(p).display).to.equal('inline');
+              expect(getComputedStyle(p).fontSize).to.equal('22px');
+              expect(getComputedStyle(p).lineHeight).to.equal('30px');
+            });
+            expect(field.querySelector('[is="inline-price"]').textContent).to.equal('US$9.99/mo');
+            if (paragraphs === 2) {
+              expect(field.querySelector('strong a').getAttribute('href')).to.equal('/terms');
+              expect(getComputedStyle(field.querySelector('p + p'), '::before').content).to.equal('" "');
+            }
+          });
+          expect(fields[0].parentElement.classList.contains('pm-subtext')).to.be.true;
+          expect(fields[0].closest('.pm-foreground')).to.exist;
+          expect(fields[1].closest('.pm-merch-content')).to.exist;
+          expect(block.querySelectorAll('.pm-merch-ctas a').length).to.equal(2);
+          expect(block.querySelector('.pm-chiclet-row h1').textContent).to.equal('Photoshop');
+          expect(block.querySelector('.mas-price').parentElement.tagName).to.equal('P');
+          expect(block.querySelector('.mas-price-commitment').textContent).to.equal('Annual, billed monthly');
+          expect(block.querySelectorAll('mas-field').length).to.equal(3);
+        });
+      });
+    });
+  });
+
   describe('default variant', () => {
     let block;
     let content;

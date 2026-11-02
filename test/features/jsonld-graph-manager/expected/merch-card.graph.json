@@ -25,7 +25,24 @@
       "name": "Photoshop",
       "brand": { "@type": "Brand", "name": "Adobe" },
       "offers": [
-        { "@id": "https://www.adobe.com/products/photoshop.html#offer-https-main-cc-adobecom-aem-page-drafts-axel-document5-662-9-usd--1zmjfy" }
+        {
+          "@type": "Offer",
+          "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+          "priceCurrency": "USD",
+          "price": "662.9",
+          "availability": "https://schema.org/InStock",
+          "category": "Subscription",
+          "seller": { "@id": "https://www.adobe.com/#organization" },
+          "itemOffered": { "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication" },
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "662.9",
+            "priceCurrency": "USD",
+            "billingDuration": "P1Y",
+            "billingIncrement": 1,
+            "priceWithoutDiscount": "779.88"
+          }
+        }
       ],
       "image": [
         "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg?format=png&width=800&height=800",
@@ -34,25 +51,6 @@
       "isPartOf": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
       "mainEntityOfPage": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
       "provider": { "@id": "https://www.adobe.com/#organization" }
-    },
-    {
-      "@type": "Offer",
-      "@id": "https://www.adobe.com/products/photoshop.html#offer-https-main-cc-adobecom-aem-page-drafts-axel-document5-662-9-usd--1zmjfy",
-      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
-      "priceCurrency": "USD",
-      "price": "662.9",
-      "availability": "https://schema.org/InStock",
-      "category": "Subscription",
-      "seller": { "@id": "https://www.adobe.com/#organization" },
-      "itemOffered": { "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication" },
-      "priceSpecification": {
-        "@type": "UnitPriceSpecification",
-        "price": "662.9",
-        "priceCurrency": "USD",
-        "billingDuration": "P1Y",
-        "billingIncrement": 1,
-        "priceWithoutDiscount": "779.88"
-      }
     }
   ]
 }
