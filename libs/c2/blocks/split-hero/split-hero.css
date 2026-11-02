@@ -499,8 +499,8 @@ body:has(header.local-nav) .split-hero {
           }
 
           .split-hero-media {
-            transition: opacity 1000ms cubic-bezier(0.33, 0, 0.2, 1) 480ms,
-              translate 1700ms cubic-bezier(0.16, 1, 0.3, 1) 480ms;
+            transition: opacity 1000ms cubic-bezier(0.33, 0, 0.2, 1) 1100ms,
+              translate 1700ms cubic-bezier(0.16, 1, 0.3, 1) 1100ms;
 
             @starting-style {
               opacity: 0.05;
@@ -578,6 +578,7 @@ body:has(header.local-nav) .split-hero {
               block-size: 0;
               flex: 1;
               min-inline-size: 0;
+              transition-delay: 480ms;
               animation: sh-cancel-drift linear both, sh-media-lift linear both,
                 sh-media-exit linear both;
               animation-timeline: --split-hero, --split-hero, --split-hero;
