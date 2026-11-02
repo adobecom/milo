@@ -481,7 +481,8 @@ body:has(header.local-nav) .split-hero {
       }
 
       .section.split-hero-reveal {
-        view-timeline: --split-hero block;
+        view-timeline-name: --split-hero;
+        view-timeline-axis: block;
         view-timeline-inset: 0;
 
         > .split-hero.parallax-reveal {
