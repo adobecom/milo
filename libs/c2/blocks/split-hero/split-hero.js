@@ -93,9 +93,10 @@ function decorateBackground(block, bg) {
 }
 
 function decorate(block, root) {
-  const [mainRow, offerRow] = block.children;
-  const [copy, media, bg] = mainRow?.children || [];
-  const [merch, supporting] = offerRow?.children || [];
+  const [mainRow, offerRow, supportingRow] = block.children;
+  const [copy, media] = mainRow?.children || [];
+  const [merch, bg] = offerRow?.children || [];
+  const [supporting] = supportingRow?.children || [];
   if (!copy) return;
 
   decorateCopy(copy);

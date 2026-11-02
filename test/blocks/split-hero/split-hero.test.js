@@ -19,8 +19,8 @@ async function initBlock(path) {
 
 const row = (...cells) => `<div>${cells.map((cell) => `<div>${cell}</div>`).join('')}</div>`;
 
-const buildBlock = (mainCells, offerCells) => {
-  document.body.innerHTML = `<div class="split-hero">${row(...mainCells)}${offerCells ? row(...offerCells) : ''}</div>`;
+const buildBlock = (mainCells, offerCells, supportingCells) => {
+  document.body.innerHTML = `<div class="split-hero">${row(...mainCells)}${offerCells ? row(...offerCells) : ''}${supportingCells ? row(...supportingCells) : ''}</div>`;
   return document.querySelector('.split-hero');
 };
 
@@ -104,7 +104,7 @@ describe('Split Hero', () => {
       expect(content.querySelector('.split-hero-media > .split-hero-media-frame picture')).to.exist;
     });
 
-    it('renders no background for a two-cell row', () => {
+    it('renders no background for an empty background cell', () => {
       expect(block.querySelector('.split-hero-background')).to.be.null;
     });
   });
@@ -195,15 +195,15 @@ describe('Split Hero', () => {
   describe('background', () => {
     const copy = '<h1>Photoshop</h1>';
 
-    it('renders no background for an empty third cell', async () => {
-      const block = buildBlock([copy, MEDIA, '']);
+    it('renders no background for an empty second-row right cell', async () => {
+      const block = buildBlock([copy, MEDIA], ['', '']);
       await init(block);
 
       expect(block.querySelector('.split-hero-background')).to.be.null;
     });
 
     it('turns a text color into a background layer behind the content', async () => {
-      const block = buildBlock([copy, MEDIA, 'rgb(255, 0, 0)']);
+      const block = buildBlock([copy, MEDIA], ['<p>Merch offer</p>', 'rgb(255, 0, 0)'], ['Support text', '']);
       await init(block);
 
       const background = block.firstElementChild;
@@ -211,10 +211,12 @@ describe('Split Hero', () => {
       expect(background.style.background).to.include('rgb(255, 0, 0)');
       expect(block.style.background).to.equal('');
       expect(background.nextElementSibling.classList.contains('split-hero-content')).to.be.true;
+      expect(block.querySelector('.split-hero-merch-content').textContent).to.equal('Merch offer');
+      expect(block.querySelector('.split-hero-supporting').textContent).to.equal('Support text');
     });
 
     it('covers the block with a background image', async () => {
-      const block = buildBlock([copy, MEDIA, MEDIA]);
+      const block = buildBlock([copy, MEDIA], ['', MEDIA]);
       await init(block);
 
       const background = block.querySelector('.split-hero-background');
@@ -247,22 +249,44 @@ describe('Split Hero', () => {
       await setViewport({ width: 390, height: 844 });
       await nextFrame();
       expect(block.querySelector('.split-hero-media picture')).to.exist;
+
+      await setViewport({ width: 1440, height: 900 });
+      await nextFrame();
+      expect(block.querySelector('h1').textContent).to.equal('Mobile headline');
+      expect(block.querySelector('.split-hero-media video')).to.exist;
+      expect(block.querySelector('.split-hero-background').style.background).to.include('rgb(0, 0, 255)');
+      expect(block.querySelector('.split-hero-merch-card .mas-price').textContent).to.equal('US$9.99/mo');
+      expect(block.querySelector('.split-hero-supporting').textContent).to.equal('Support text');
     });
 
-    it('drops the background when a later viewport omits the third cell', async () => {
-      const tabletMain = block.children[4];
-      tabletMain.lastElementChild.remove();
+    it('drops the background when a later viewport omits the second-row right cell', async () => {
+      const tabletOffer = block.children[6];
+      tabletOffer.lastElementChild.remove();
       await init(block);
 
       expect(block.querySelector('.split-hero-background')).to.be.null;
     });
 
-    it('drops merch and supporting text when a later viewport omits the second row', async () => {
-      block.lastElementChild.remove();
+    it('drops supporting text but keeps merch and background when a later viewport omits the third row', async () => {
+      block.children[7].remove();
       await init(block);
 
-      expect(block.querySelector('.split-hero-merch-card')).to.be.null;
+      expect(block.querySelector('.split-hero-merch-card')).to.exist;
+      expect(block.querySelector('.split-hero-background')).to.exist;
       expect(block.querySelector('.split-hero-supporting')).to.be.null;
+    });
+
+    it('overrides relocated cells without changing inherited copy and media', async () => {
+      block.children[6].children[0].innerHTML = '<p>Tablet offer</p>';
+      block.children[6].children[1].textContent = 'rgb(255, 0, 0)';
+      block.children[7].children[0].textContent = 'Tablet support';
+      await init(block);
+
+      expect(block.querySelector('h1').textContent).to.equal('Mobile headline');
+      expect(block.querySelector('.split-hero-media video')).to.exist;
+      expect(block.querySelector('.split-hero-merch-content').textContent).to.equal('Tablet offer');
+      expect(block.querySelector('.split-hero-background').style.background).to.include('rgb(255, 0, 0)');
+      expect(block.querySelector('.split-hero-supporting').textContent).to.equal('Tablet support');
     });
   });
 
@@ -404,6 +428,23 @@ describe('Split Hero', () => {
   });
 
   describe('fallback / negative branches', () => {
+    [
+      { name: 'all optional content omitted', expected: [] },
+      { name: 'merch only', offer: ['<p>Offer</p>'], expected: ['merch-card'] },
+      { name: 'background only', offer: ['', 'rgb(255, 0, 0)'], expected: ['background'] },
+      { name: 'supporting text only', offer: ['', ''], supporting: ['Support text'], expected: ['supporting'] },
+    ].forEach(({ name, offer, supporting, expected }) => {
+      it(`renders copy with ${name} and no media cell`, async () => {
+        const block = buildBlock(['<h1>Headline</h1>'], offer, supporting);
+        await init(block);
+
+        expect(block.querySelector('.split-hero-text h1').textContent).to.equal('Headline');
+        ['media', 'merch-card', 'background', 'supporting'].forEach((part) => {
+          expect(!!block.querySelector(`.split-hero-${part}`)).to.equal(expected.includes(part));
+        });
+      });
+    });
+
     it('leaves copy without an eyebrow untouched', async () => {
       const block = buildBlock(['<h1>Headline</h1><p>Body copy.</p>', MEDIA]);
       await init(block);
@@ -421,7 +462,7 @@ describe('Split Hero', () => {
     });
 
     it('renders no card for an empty merch cell but keeps supporting text', async () => {
-      const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['', 'Support text']);
+      const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['', ''], ['Support text', '']);
       await init(block);
 
       expect(block.querySelector('.split-hero-merch-card')).to.be.null;
@@ -429,7 +470,7 @@ describe('Split Hero', () => {
     });
 
     it('renders no supporting text for an empty supporting cell', async () => {
-      const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['<p><mas-field field="prices">US$9.99/mo</mas-field></p>', '']);
+      const block = buildBlock(['<h1>Headline</h1>', MEDIA], ['<p><mas-field field="prices">US$9.99/mo</mas-field></p>', ''], ['', '']);
       await init(block);
 
       expect(block.querySelector('.split-hero-merch-card')).to.exist;
@@ -517,7 +558,8 @@ describe('Split Hero', () => {
           <div class="section parallax-double-garage-door">
             <div class="split-hero${variant ? ' parallax-reveal' : ''}">
               ${row('<p>Product</p><h1>Headline</h1><p>Body copy.</p>', media)}
-              ${row('<p>US$9.99/mo</p><p><strong><a href="https://www.adobe.com/free-trial">Free trial</a></strong></p>', 'Supporting text')}
+              ${row('<p>US$9.99/mo</p><p><strong><a href="https://www.adobe.com/free-trial">Free trial</a></strong></p>', '')}
+              ${row('Supporting text', '')}
             </div>
           </div>
           <div class="section rounded-corners-top" style="height:1800px"></div>

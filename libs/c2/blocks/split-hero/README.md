@@ -21,11 +21,12 @@ Use `?milolibs=local` to test local code with the authored variant.
 
 ## Authoring
 
-Two content rows. Cells are read by position.
+Three content rows, two columns. Cells are read by position.
 
 ```
-| copy  | media      | background (optional) |
-| merch | supporting |
+| copy       | media                 |
+| merch      | background (optional) |
+| supporting |                       |
 ```
 
 - **copy**: eyebrow paragraph, heading, body. The eyebrow is the paragraph
@@ -35,28 +36,38 @@ Two content rows. Cells are read by position.
   comes first for SEO and assistive tech.
 - **media**: image or video-poster pattern, shown inside `.split-hero-media-frame`.
 - **background**: image, video, or a CSS color/gradient as plain text.
-  Omit the third cell (2-column row) for no background.
+  Leave the second cell of the second row empty for no background.
 - **merch**: headless MAS field links (`&field=…`), legacy inline prices and
   `data-wcs-osi` CTAs, plus authored text.
   Empty cell means no merch card.
 - **supporting**: caption text below the copy. Empty cell means none.
-  The whole second row may be omitted.
+  The third row may be omitted when there is no supporting text. If there
+  is also neither merch nor background, the second row may be omitted too.
+  Keep an empty second row when authoring supporting text without merch
+  or background, so the supporting cell stays in the third row.
 
 ## Viewport groups
 
 With `mobile-viewport` / `tablet-viewport` / `desktop-viewport` markers, an
 empty cell inherits the matching cell from the previous group, but only if the
-cell exists. A later group must therefore repeat both rows, and must keep the
-third column (empty) whenever an earlier group sets a background, or that
-viewport renders without one.
+cell exists. A later group must therefore repeat all three rows to inherit
+all content, including an empty second cell in the second row to inherit
+the background. Omitting a row or cell renders that viewport without its
+corresponding content.
 
 ```
 mobile-viewport
-| copy  | media        | linear-gradient(…) |
-| merch | supporting   |
+| copy       | media              |
+| merch      | linear-gradient(…) |
+| supporting |                    |
 tablet-viewport
-|       | tablet media |                    |
-|       |              |
+|            | tablet media       |
+|            |                    |
+|            |                    |
+desktop-viewport
+|            |                    |
+|            |                    |
+|            |                    |
 ```
 
 ## Variants
