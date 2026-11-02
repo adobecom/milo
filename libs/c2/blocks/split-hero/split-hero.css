@@ -469,7 +469,7 @@ body:has(header.local-nav) .split-hero {
 }
 
 @supports (animation-timeline: view()) {
-  /* stylelint-disable property-no-unknown, unit-no-unknown */
+  /* stylelint-disable property-no-unknown, unit-no-unknown, at-rule-no-unknown */
   @supports (timeline-scope: --split-hero) {
     @media (prefers-reduced-motion: no-preference) {
       main:has(> .split-hero-reveal) {
@@ -488,8 +488,20 @@ body:has(header.local-nav) .split-hero {
             padding-block-start: calc(var(--sh-head, 124px) + 32px);
           }
 
-          .split-hero-copy {
-            animation: sh-intro 650ms ease-out both;
+          .split-hero-text {
+            transition: translate 900ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
+
+            @starting-style {
+              translate: 0 40px;
+            }
+          }
+
+          .split-hero-media {
+            transition: translate 1700ms cubic-bezier(0.16, 1, 0.3, 1) 480ms;
+
+            @starting-style {
+              translate: 0 120px;
+            }
           }
 
           .split-hero-text,
@@ -506,6 +518,18 @@ body:has(header.local-nav) .split-hero {
           .split-hero-merch-card,
           .split-hero-supporting {
             --sh-lag: calc(var(--sh-mobile-span) * 0.12);
+
+            transition: 900ms cubic-bezier(0.22, 1, 0.36, 1) 560ms;
+            transition-property: opacity, translate;
+
+            @starting-style {
+              opacity: 0;
+              translate: 0 16px;
+            }
+          }
+
+          .split-hero-supporting {
+            transition-delay: 920ms;
           }
         }
       }
@@ -602,12 +626,7 @@ body:has(header.local-nav) .split-hero {
       }
     }
   }
-  /* stylelint-enable property-no-unknown, unit-no-unknown */
-
-  @keyframes sh-intro {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+  /* stylelint-enable property-no-unknown, unit-no-unknown, at-rule-no-unknown */
 
   @keyframes sh-mobile-drift {
     from { transform: translateY(0); }
