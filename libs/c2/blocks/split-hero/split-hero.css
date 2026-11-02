@@ -401,7 +401,7 @@ body:has(header.local-nav) .split-hero {
     }
 
     .split-hero-content {
-      column-gap: var(--s2a-spacing-xs);
+      gap: 0;
       flex-direction: row;
       padding-block-end: 0;
     }
