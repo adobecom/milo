@@ -601,6 +601,10 @@ body:has(header.local-nav) .split-hero {
               animation-timeline: --split-hero, --split-hero;
               animation-range: exit-crossing 0 exit-crossing var(--sh-span),
                 exit-crossing 0 exit-crossing var(--sh-fit);
+
+              &:dir(rtl) {
+                transform-origin: top right;
+              }
             }
 
             .split-hero-text,

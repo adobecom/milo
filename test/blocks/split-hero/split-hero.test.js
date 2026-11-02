@@ -642,50 +642,58 @@ describe('Split Hero', () => {
       }
     });
 
-    it('fully reveals the media before the rounded section covers it again', async () => {
-      const block = await renderReveal(1440);
-      const copy = block.querySelector('.split-hero-text');
-      const frame = block.querySelector('.split-hero-media-frame');
-      const next = block.closest('.section').nextElementSibling;
-      const initialCopy = copy.getBoundingClientRect().top;
-      const initialMedia = frame.getBoundingClientRect();
-      const initialLip = next.getBoundingClientRect().top;
-      expect(initialCopy).to.be.at.least(124);
-      expect(initialLip).to.be.lessThan(window.innerHeight);
-      expect(initialMedia.bottom).to.be.greaterThan(initialLip);
+    ['ltr', 'rtl'].forEach((direction) => {
+      it(`fully reveals the media before the rounded section covers it again (${direction})`, async () => {
+        const originalDirection = document.documentElement.dir;
+        document.documentElement.dir = direction;
+        try {
+          const block = await renderReveal(1440);
+          const copy = block.querySelector('.split-hero-text');
+          const frame = block.querySelector('.split-hero-media-frame');
+          const next = block.closest('.section').nextElementSibling;
+          const initialCopy = copy.getBoundingClientRect().top;
+          const initialMedia = frame.getBoundingClientRect();
+          const initialLip = next.getBoundingClientRect().top;
+          expect(initialCopy).to.be.at.least(124);
+          expect(initialLip).to.be.lessThan(window.innerHeight);
+          expect(initialMedia.bottom).to.be.greaterThan(initialLip);
 
-      await scrollToPosition(100);
-      expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
-      expect(frame.getBoundingClientRect().top).to.be.within(124, initialMedia.top);
-      expect(frame.getBoundingClientRect().width).to.be.lessThan(initialMedia.width);
-      expect(next.getBoundingClientRect().top).to.be.closeTo(initialLip, 1);
+          await scrollToPosition(100);
+          expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
+          expect(frame.getBoundingClientRect().top).to.be.within(124, initialMedia.top);
+          expect(frame.getBoundingClientRect().width).to.be.lessThan(initialMedia.width);
+          expect(next.getBoundingClientRect().top).to.be.closeTo(initialLip, 1);
 
-      const style = getComputedStyle(block.closest('.section'));
-      const fit = parseFloat(style.getPropertyValue('--sh-fit'));
-      const release = parseFloat(style.getPropertyValue('--sh-release'));
-      await scrollToPosition(fit);
-      const revealed = frame.getBoundingClientRect();
-      expect(revealed.top).to.be.at.least(124);
-      expect(revealed.left).to.be.at.least(0);
-      expect(revealed.right).to.be.at.most(document.documentElement.clientWidth);
-      expect(revealed.bottom).to.be.at.most(next.getBoundingClientRect().top);
-      expect(revealed.bottom).to.be.at.most(window.innerHeight);
+          const style = getComputedStyle(block.closest('.section'));
+          const fit = parseFloat(style.getPropertyValue('--sh-fit'));
+          const release = parseFloat(style.getPropertyValue('--sh-release'));
+          await scrollToPosition(fit);
+          const revealed = frame.getBoundingClientRect();
+          expect(revealed.top).to.be.at.least(124);
+          expect(revealed.left).to.be.at.least(0);
+          expect(revealed.right).to.be.at.most(document.documentElement.clientWidth);
+          expect(revealed.bottom).to.be.at.most(next.getBoundingClientRect().top);
+          expect(revealed.bottom).to.be.at.most(window.innerHeight);
 
-      let covered = false;
-      for (let y = release + 80; y <= release + window.innerHeight; y += 80) {
-        await scrollToPosition(y);
-        const sheet = next.getBoundingClientRect();
-        if (sheet.top > 124 && sheet.top + 16 < frame.getBoundingClientRect().bottom) {
-          covered = true;
-          break;
+          let covered = false;
+          for (let y = release + 80; y <= release + window.innerHeight; y += 80) {
+            await scrollToPosition(y);
+            const sheet = next.getBoundingClientRect();
+            if (sheet.top > 124 && sheet.top + 16 < frame.getBoundingClientRect().bottom) {
+              covered = true;
+              break;
+            }
+          }
+          expect(covered).to.be.true;
+          expect(copy.getBoundingClientRect().top).to.be.lessThan(initialCopy);
+          await scrollToPosition(0);
+          expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
+          expect(frame.getBoundingClientRect().width).to.be.closeTo(initialMedia.width, 1);
+          expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
+        } finally {
+          document.documentElement.dir = originalDirection;
         }
-      }
-      expect(covered).to.be.true;
-      expect(copy.getBoundingClientRect().top).to.be.lessThan(initialCopy);
-      await scrollToPosition(0);
-      expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
-      expect(frame.getBoundingClientRect().width).to.be.closeTo(initialMedia.width, 1);
-      expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
+      });
     });
 
     it('drifts mobile layers without pinning or shrinking the media', async () => {

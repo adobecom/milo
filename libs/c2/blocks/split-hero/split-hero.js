@@ -158,13 +158,14 @@ function initParallax(el) {
     const lip = el.offsetHeight - 32;
     const frameHeight = Math.max(1, frame.offsetHeight);
     const frameWidth = Math.max(1, frame.offsetWidth);
-    const { left } = frame.getBoundingClientRect();
-    const widthScale = (width - left - 24) / frameWidth;
+    const { left, right } = frame.getBoundingClientRect();
+    const start = getComputedStyle(frame).direction === 'rtl' ? width - right : left;
+    const widthScale = (width - start - 24) / frameWidth;
     const heightScale = (Math.min(lip, window.innerHeight) - head - 64) / frameHeight;
     const scale = Math.max(0.01, Math.min(0.98, widthScale, heightScale));
     const drop = Math.max(0, lip + 32 - head - top - frameHeight);
     const lift = top - 16;
-    const horizontalFit = (left + frameWidth - width) / (frameWidth * (1 - scale));
+    const horizontalFit = (start + frameWidth - width) / (frameWidth * (1 - scale));
     const verticalFit = (head + top + drop + frameHeight - lip)
       / (drop + lift + frameHeight * (1 - scale));
     // Pace the sheet against both media edges, not just its bottom edge.
