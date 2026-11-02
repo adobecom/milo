@@ -235,6 +235,12 @@ a.blog-header-author-name:hover {
   }
 }
 
+@media (min-width: 600px) and (max-width: 1199px) {
+  .blog-divider-frame::before {
+    inset-inline: 40px;
+  }
+}
+
 .blog-divider-frame::after {
   content: "";
   position: absolute;
