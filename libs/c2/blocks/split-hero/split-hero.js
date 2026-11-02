@@ -2,6 +2,8 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateBlockBg, decorateBlockText, decorateButtons, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 
 const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
+const NAV_HEIGHT = 80;
+const BREADCRUMBS_HEIGHT = 44;
 
 const hasContent = (cell) => !!cell
   && (!!cell.textContent.trim() || !!cell.querySelector(':not(p, br)'));
@@ -128,7 +130,13 @@ function decorate(block, root) {
   block.replaceChildren(...[background, content].filter(Boolean));
 }
 
-function initParallax(el) {
+function getHeaderHeight() {
+  const header = document.querySelector('header');
+  if (!header) return 0;
+  return NAV_HEIGHT + (header.classList.contains('has-breadcrumbs') ? BREADCRUMBS_HEIGHT : 0);
+}
+
+function initParallax(el, head) {
   if (!el.classList.contains('parallax-reveal')) return;
   const section = el.closest('.section');
   const next = section?.nextElementSibling;
@@ -139,9 +147,6 @@ function initParallax(el) {
   const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
   const measure = () => {
     if (!motion.matches) return;
-    const headers = document.querySelectorAll('header, header nav, header .feds-breadcrumbs, header .feds-localnav-bar');
-    const head = Math.max(0, ...[...headers].map((item) => item.getBoundingClientRect().bottom));
-    section.style.setProperty('--sh-head', `${head}px`);
     if (window.innerWidth < 900) {
       section.style.setProperty('--sh-mobile-span', `${Math.max(200, el.offsetHeight - head)}px`);
       return;
@@ -188,11 +193,6 @@ function initParallax(el) {
   const observer = new ResizeObserver(measure);
   el.querySelectorAll('.split-hero-foreground, .split-hero-media-frame')
     .forEach((item) => observer.observe(item));
-  const header = document.querySelector('header');
-  if (header) {
-    observer.observe(header);
-    new MutationObserver(measure).observe(header, { childList: true, subtree: true });
-  }
   el.addEventListener('load', measure, true);
   el.addEventListener('loadedmetadata', measure, true);
   window.addEventListener('resize', measure);
@@ -202,5 +202,7 @@ function initParallax(el) {
 
 export default function init(el) {
   decorateViewportContent(el, decorate);
-  initParallax(el);
+  const head = getHeaderHeight();
+  (el.closest('.section') || el).style.setProperty('--sh-head', `${head}px`);
+  initParallax(el, head);
 }

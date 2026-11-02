@@ -572,12 +572,10 @@ describe('Split Hero', () => {
   describe('parallax reveal', () => {
     before(async () => loadStyles('/libs/c2/blocks/section-metadata/section-metadata.css'));
 
-    async function renderReveal(width, variant = true, media = MEDIA) {
+    async function renderReveal(width, variant = true, media = MEDIA, breadcrumbs = true) {
       await setViewport({ width, height: 900 });
       document.body.innerHTML = `
-        <header style="position:fixed;inset:0 0 auto;height:80px">
-          <div class="feds-breadcrumbs" style="position:absolute;top:80px;height:44px"></div>
-        </header>
+        <header class="${breadcrumbs ? 'has-breadcrumbs' : ''}" style="position:fixed;inset:0 0 auto;height:80px"></header>
         <main>
           <div class="section parallax-double-garage-door">
             <div class="split-hero${variant ? ' parallax-reveal' : ''}">
@@ -733,22 +731,20 @@ describe('Split Hero', () => {
       expect(frame.getBoundingClientRect().width).to.be.closeTo(initial.width, 1);
     });
 
-    it('updates clearance when navigation is inserted after initialization', async () => {
+    it('reserves breadcrumb clearance before the breadcrumbs render', async () => {
       const block = await renderReveal(1440);
       const copy = block.querySelector('.split-hero-text');
       const initial = copy.getBoundingClientRect().top;
-      const nav = document.createElement('div');
-      nav.className = 'feds-localnav-bar';
-      nav.style.cssText = 'position:absolute;top:124px;height:48px';
-      document.querySelector('header').append(nav);
-      await nextFrame();
-      await nextFrame();
-      expect(copy.getBoundingClientRect().top).to.be.at.least(172);
-      expect(copy.getBoundingClientRect().top).to.be.greaterThan(initial);
-      nav.remove();
+      expect(initial).to.be.at.least(124);
+      document.querySelector('header').insertAdjacentHTML('beforeend', '<div class="feds-breadcrumbs" style="position:absolute;top:80px;height:44px"></div>');
       await nextFrame();
       await nextFrame();
       expect(copy.getBoundingClientRect().top).to.be.closeTo(initial, 1);
+    });
+
+    it('reserves only the nav without breadcrumbs', async () => {
+      const block = await renderReveal(1440, true, MEDIA, false);
+      expect(block.closest('.section').style.getPropertyValue('--sh-head')).to.equal('80px');
     });
 
     it('sizes poster-only video before playback metadata is available', async () => {
