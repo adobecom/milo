@@ -1942,6 +1942,7 @@ export function isC2GnavOnC1Host() {
 }
 
 function syncC2GnavHost(header) {
+  // The first class is the block loadBlock loads for the header (see getBlockData).
   const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
   header.classList.toggle('c2-gnav-c1-host', isHost);
 }
