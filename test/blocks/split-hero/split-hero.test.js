@@ -617,6 +617,31 @@ describe('Split Hero', () => {
       expect(getComputedStyle(block.closest('.section')).animationName).to.include('dg-top-door');
     });
 
+    it('reserves the initial layout when initialized in a hidden section', async () => {
+      const style = document.createElement('style');
+      style.textContent = 'main > .section:first-child { display: none; }';
+      document.head.append(style);
+      try {
+        const block = await renderReveal(1440);
+        const foreground = block.querySelector('.split-hero-foreground');
+        const content = block.querySelector('.split-hero-content');
+        const next = block.closest('.section').nextElementSibling;
+        style.remove();
+        const initial = [
+          foreground.getBoundingClientRect().top,
+          content.offsetHeight,
+          next.getBoundingClientRect().top,
+        ];
+        await nextFrame();
+        await nextFrame();
+        expect(foreground.getBoundingClientRect().top).to.be.closeTo(initial[0], 1);
+        expect(content.offsetHeight).to.equal(initial[1]);
+        expect(next.getBoundingClientRect().top).to.be.closeTo(initial[2], 1);
+      } finally {
+        style.remove();
+      }
+    });
+
     it('fully reveals the media before the rounded section covers it again', async () => {
       const block = await renderReveal(1440);
       const copy = block.querySelector('.split-hero-text');

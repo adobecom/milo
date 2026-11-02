@@ -139,9 +139,6 @@ function initParallax(el) {
   const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
   const measure = () => {
     if (!motion.matches) return;
-    const frame = [...el.querySelectorAll('.split-hero-media-frame')]
-      .find((item) => item.offsetWidth);
-    if (!frame) return;
     const headers = document.querySelectorAll('header, header nav, header .feds-breadcrumbs, header .feds-localnav-bar');
     const head = Math.max(0, ...[...headers].map((item) => item.getBoundingClientRect().bottom));
     section.style.setProperty('--sh-head', `${head}px`);
@@ -151,6 +148,9 @@ function initParallax(el) {
     }
 
     section.style.setProperty('--sh-height', `${window.innerHeight}px`);
+    const frame = [...el.querySelectorAll('.split-hero-media-frame')]
+      .find((item) => item.offsetWidth);
+    if (!frame) return;
     const top = parseFloat(getComputedStyle(frame.closest('.split-hero-content')).paddingBlockStart)
       - head;
     const width = document.documentElement.clientWidth;
