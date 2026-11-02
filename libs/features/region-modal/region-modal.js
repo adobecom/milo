@@ -1,7 +1,14 @@
 /* eslint-disable no-underscore-dangle */
-import { getCountry, setMarket, pageExist, getCookie, getMetadata } from '../../utils/utils.js';
+import {
+  getCountry,
+  setMarket,
+  pageExist,
+  getCookie,
+  getMetadata,
+  marketsLangForLocale,
+  norm,
+} from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
-import { marketsLangForLocale, norm } from '../../utils/market.js';
 
 let config;
 let createTag;

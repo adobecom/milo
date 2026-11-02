@@ -1,7 +1,6 @@
 import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import { HIGHLIGHT_KEYS } from './mep-overlay-highlight.js';
 import { applyGeoSpoof } from '../spoof-country-ip.js';
-import { getMarketConfig, marketsLangForLocale } from '../../../../utils/market.js';
 import {
   hasMasSurfaces,
   MAS_OSI_SELECTOR,
@@ -15,6 +14,8 @@ import {
   getGeoLocalePrefix,
   resolveDetectedMarketCountry,
   getPromoMepEnablement,
+  getMarketConfig,
+  marketsLangForLocale,
 } from '../../../../utils/utils.js';
 import {
   US_GEO,

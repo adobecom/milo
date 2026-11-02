@@ -8,6 +8,8 @@
   --footer-icon-size: calc(var(--s2a-font-size-sm) + 2 * var(--s2a-spacing-md) + 2 * var(--s2a-border-width-sm));
   --media-mobile-max-width: 500px;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
+  --card-expand-duration: 0.35s;
+  --card-expand-easing: ease-in-out;
   --hub-hero-carousel-container-height: min(60vh, 548px);
   --grid-img-width: min(20vw, 302px);
   --grid-img-width-min: 164px;
@@ -287,7 +289,7 @@
 }
 
 .hub-hero-carousel-item-media img {
-  transition: transform 0.3s var(--paralax-easing);
+  transition: transform var(--card-expand-duration) var(--card-expand-easing);
   object-fit: cover;
   display: block;
   height: 100%;
@@ -439,6 +441,7 @@
   @media (width < 768px) {
     --icon-padding: var(--s2a-spacing-sm);
     --icon-size: 18px;
+    --reveal-radius: var(--s2a-border-radius-sm);
 
     .hub-hero-image-grid-container-col div img,
     .hub-hero-image-grid-container-col div video {
@@ -621,7 +624,6 @@
     --start-gap: 40px;
     --end-gap: 12rem;
     --grid-gap-animation-range: 20% 100%;
-    --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
     --hub-hero-grip-col-float-mobile: -5%;
     --hub-hero-nav-h: 124px;
@@ -632,7 +634,7 @@
 
   .hub-hero-carousel-header {
     position: sticky;
-    top: var(--carousel-header-top);
+    top: calc(var(--carousel-header-top) + var(--hub-hero-carousel-header-follow, 0px));
     height: 0;
     overflow: visible;
     animation: none;
@@ -640,10 +642,14 @@
   }
 
   .hub-hero-carousel-header > div {
-    animation: hubHeroCarouselHeaderMobileLeave ease both;
-    animation-timeline: --hub-hero;
-    animation-range: contain 25% contain 107%;
+    animation: hubHeroCarouselHeaderMobileFadeIn ease both,
+      hubHeroFirstCardLiftMobile var(--first-card-lift-easing) both,
+      hubHeroCarouselHeaderMobileExit linear both;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: contain 8% contain 100%, var(--first-card-lift-range),
+      exit var(--hub-hero-carousel-header-exit-start, 0px) exit calc(var(--hub-hero-carousel-header-exit-start, 0px) + 100vh);
     position: relative;
+    top: calc(var(--hub-hero-carousel-header-follow, 0px) * -1);
     will-change: transform, opacity;
     left: unset;
     right: unset;
@@ -694,9 +700,9 @@
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
-    animation: hubHeroGridMobileFadeOut ease both;
+    animation: hubHeroGridCol3LeadLeaveMobile cubic-bezier(0.55, 0, 0.75, 0.2) both;
     animation-timeline: --hub-hero;
-    animation-range: var(--grid-gap-animation-range);
+    animation-range: contain 0% contain 17%;
     display: flex;
     justify-content: center;
   }
@@ -724,9 +730,9 @@
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
-    animation: hubHeroGridCol3TightenMobile linear both;
+    animation: hubHeroGridCol3TrailLeaveMobile cubic-bezier(0.4, 0, 0.7, 0.3) both;
     animation-timeline: --hub-hero;
-    animation-range: var(--grid-col-rise-animation-range);
+    animation-range: contain 1% contain 20%;
   }
 
   .hub-hero-image-grid-container-col div:nth-child(3) {
@@ -740,8 +746,10 @@
     --offset-adjuster: 50px;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
-    --slide-one-header-footer-reveal: 45% 50%;
     --stack-edge-gap: 6px;
+    --first-card-lift: 12vh;
+    --first-card-lift-easing: cubic-bezier(0.45, 0, 0.55, 1);
+    --first-card-lift-range: contain 0% contain 22%;
 
     position: relative;
     top: unset;
@@ -757,8 +765,8 @@
 
   .hub-hero-carousel-container {
     --expand-progress: 0;
-    --expand-start: 0.08;
-    --expand-end: 0.25;
+    --expand-start: 0.05;
+    --expand-end: 0.2;
     --expand-fade-range: 0.03;
 
     margin-top: var(--elastic-mobile-first-slide-offset);
@@ -800,16 +808,20 @@
     --stack-contrast: 0;
     --stack-scale-x: 0.79;
     z-index: 1;
-    animation: none;
+    margin-top: calc((var(--first-card-lift) + var(--start-gap)) * -1);
+    animation: hubHeroFirstCardLiftMobile var(--first-card-lift-easing) both;
+    animation-timeline: --hub-hero;
+    animation-range: var(--first-card-lift-range);
     transform: translateZ(0);
     backface-visibility: hidden;
   }
 
   .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-container {
-    animation: elasticItemsShrink ease both, elasticMobileFirstSlideContainer ease both;
-    animation-timeline: --hub-hero, --hub-hero;
-    animation-range: entry 50% exit 100%, entry 100% exit 100%;
-    background-color: transparent;
+    animation: elasticItemsShrink ease both, elasticMobileFirstSlideContainer ease both,
+      hubHeroFirstCardStackMobile var(--first-card-lift-easing) both;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: entry 50% exit 100%, entry 100% exit 100%, var(--first-card-lift-range);
+    background-color: color-mix(in srgb, var(--s2a-color-gray-1000) calc(var(--chrome-reveal) * 100%), transparent);
   }
 
   .hub-hero-carousel-item[data-index="1"] .hub-hero-carousel-item-header {
@@ -833,7 +845,6 @@
     z-index: 2;
     --stack-contrast: .25;
     --stack-scale-x: 0.86;
-    margin-top: calc(var(--slide-footer-h) + var(--slide-header-h) + 200px);
   }
 
   .hub-hero-carousel-item:nth-child(4) {
@@ -893,16 +904,12 @@
   .hub-hero-carousel-item-media {
     --width: min(var(--media-mobile-max-width), calc(100vw - var(--s2a-spacing-lg)));
     --carousel-item-media-height: calc(var(--width) * .8);
-    border-radius: 0;
-  }
-
-  .hub-hero-carousel-item-media {
     --reveal-shrink: calc(1 - max(0, min(1, (var(--expand-progress) - var(--expand-start)) / (var(--expand-end) - var(--expand-start)))));
 
     clip-path: inset(
       calc((50% - (var(--grid-img-width-min) * var(--grid-img-clip-ratio) / 2)) * var(--reveal-shrink))
       calc((50% - (var(--grid-img-width-min) / 2)) * var(--reveal-shrink))
-      round 0
+      round var(--reveal-radius, var(--s2a-border-radius-md))
     );
   }
 
@@ -945,12 +952,6 @@
       -webkit-line-clamp: 2;
       overflow: hidden;
     }
-  }
-
-  .hub-hero-carousel-item:is(.hovered, .focused) .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
-    display: block;
-    -webkit-line-clamp: unset;
-    overflow: visible;
   }
 
   @media (hover: none) {
@@ -1042,8 +1043,7 @@
   }
 
   .hub-hero-carousel {
-    height: auto;
-    min-height: var(--hub-hero-carousel-container-height);
+    height: var(--hub-hero-carousel-container-height);
   }
 
   .hub-hero-carousel-scroll {
@@ -1070,8 +1070,9 @@
     width: max(var(--grid-img-width), var(--slide-max-width));
     max-width: var(--slide-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
-
-    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), min-width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
+    transition-property: max-width, width, min-width, background-color;
+    transition-duration: var(--card-expand-duration);
+    transition-timing-function: var(--card-expand-easing);
   }
 
   @media (hover: hover) {
@@ -1129,7 +1130,7 @@
       .hub-hero-carousel-item-footer .hub-hero-carousel-item-footer-text {
         min-width: 0;
         max-width: calc(max(var(--slide-max-width), var(--hub-hero-carousel-item-min-width)) - 2 * var(--s2a-spacing-lg));
-        transition: max-width .3s var(--paralax-easing), color .1s var(--paralax-easing);
+        transition: max-width var(--card-expand-duration) var(--card-expand-easing), color .1s var(--paralax-easing);
       }
 
       .hub-hero-carousel-item-footer span {
@@ -1152,7 +1153,7 @@
       .hub-hero-carousel-item:is(.hovered, .focused) .hub-hero-carousel-item-footer span {
         opacity: 1;
         max-width: none;
-        transition: opacity .1s ease-out .3s, color .1s var(--paralax-easing);
+        transition: opacity .2s ease-out calc(var(--card-expand-duration) * .6), color .1s var(--paralax-easing);
       }
     }
   }
@@ -1220,13 +1221,6 @@
     transform: translateY(-100%);
   }
 
-  .hub-hero-carousel-item[data-index]:is(.hovered, .focused) {
-    /* Expanded text must not inherit the scroll animation's card-height cap. */
-    --slide-max-height: none;
-
-    align-self: flex-start;
-  }
-
   @media (prefers-reduced-motion: no-preference) {
     @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
       .hub-hero {
@@ -1241,7 +1235,7 @@
     }
 
     .hub-hero-carousel-container {
-      transition: transform .3s var(--paralax-easing);
+      transition: transform var(--card-expand-duration) var(--card-expand-easing);
     }
 
     .hub-hero .hub-hero-carousel-container.stick-left {
@@ -1660,18 +1654,6 @@
   }
 }
 
-@keyframes hubHeroGridCarouselSlideHover {
-  0% {
-    width: var(--grid-img-width-min);
-    transform: translateY(0%);
-  }
-
-  100% {
-    width: var(--hub-hero-carousel-width-mobile);
-    transform: translateY(-80px);
-  }
-}
-
 @keyframes elasticMobileFirstSlideContainer {
   0% {
     opacity: 1;
@@ -1683,14 +1665,18 @@
   }
 
   75% {
-    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: 1;
   }
 
   100% {
-    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: .2;
     filter: contrast(var(--stack-contrast, 1));
+  }
+}
+
+@keyframes hubHeroFirstCardStackMobile {
+  to {
+    translate: 0 calc(var(--stack-offset) - var(--offset-adjuster));
   }
 }
 
@@ -1811,28 +1797,23 @@
   }
 }
 
-@keyframes hubHeroCarouselHeaderMobileLeave {
+@keyframes hubHeroCarouselHeaderMobileFadeIn {
   0% {
-    transform: translate(0, 0%);
     opacity: 0;
   }
 
-  10% {
+  7.5% {
     opacity: 0;
   }
 
-  25% {
+  16% {
     opacity: 1;
   }
+}
 
-  94% {
-    transform: translate(0, -5%);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translate(0, -100%);
-    opacity: 0;
+@keyframes hubHeroCarouselHeaderMobileExit {
+  to {
+    transform: translateY(-100vh);
   }
 }
 
@@ -2057,13 +2038,41 @@
   }
 }
 
-@keyframes hubHeroGridCol3TightenMobile {
-  0% {
-    translate: 0 var(--start-gap);
+@keyframes hubHeroGridCol3LeadLeaveMobile {
+  70% {
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+
+  90% {
+    opacity: 0;
   }
 
   100% {
-    translate: 0 calc(var(--start-gap) * -1);
+    translate: 0 -55vh;
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroGridCol3TrailLeaveMobile {
+  82% {
+    opacity: 1;
+    animation-timing-function: linear;
+  }
+
+  94% {
+    opacity: 0;
+  }
+
+  100% {
+    translate: 0 -45vh;
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroFirstCardLiftMobile {
+  from {
+    translate: 0 var(--first-card-lift);
   }
 }
 

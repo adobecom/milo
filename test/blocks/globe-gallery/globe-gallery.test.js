@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import init from '../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
 import {
   escapeHtml,
-  layoutQuote,
+  plainQuote,
   optimizeImgUrl,
   parseAuthoredContent,
   scatterCards,
@@ -249,31 +249,22 @@ describe('C2 globe gallery', () => {
       expect(() => renderParagraphs(null, [p])).to.not.throw();
     });
 
-    it('splits a quote into hidden visual lines plus screen-reader text', async () => {
+    it('keeps the quote as its plain authored text, idempotently', async () => {
       const { block } = await loadBlock('heading-quote');
       const quote = block.querySelector('.globe-gallery-pullquote-quote');
-      const lines = layoutQuote(quote);
-      expect(lines.length).to.be.greaterThan(0);
-      expect(quote.classList.contains('globe-gallery-pullquote-lines')).to.be.true;
-      lines.forEach((line) => {
-        expect(line.classList.contains('globe-gallery-pullquote-line')).to.be.true;
-        expect(line.getAttribute('aria-hidden')).to.equal('true');
-        expect(line.querySelector('.globe-gallery-pullquote-line-inner')).to.exist;
-      });
-      expect(lines.map((l) => l.textContent).join(' ')).to.equal('Creativity connects us.');
-      expect(quote.querySelector('.sr-only.globe-gallery-pullquote-sr').textContent)
-        .to.equal('Creativity connects us.');
-      const again = layoutQuote(quote);
-      expect(again.map((l) => l.textContent)).to.deep.equal(lines.map((l) => l.textContent));
-      expect(quote.querySelectorAll('.globe-gallery-pullquote-sr')).to.have.length(1);
+      expect(plainQuote(quote)).to.equal('Creativity connects us.');
+      quote.innerHTML = '<span>later markup</span>'; // relayouts restart from the authored text
+      expect(plainQuote(quote)).to.equal('Creativity connects us.');
+      expect(quote.children).to.have.length(0);
+      expect(quote.textContent).to.equal('Creativity connects us.');
+      expect(plainQuote(null)).to.equal('');
     });
 
-    it('returns no lines for missing or empty quotes', async () => {
+    it('leaves a missing or empty quote empty', async () => {
       const { block } = await loadBlock('empty-quote');
       const quote = block.querySelector('.globe-gallery-pullquote-quote');
-      expect(layoutQuote(null)).to.deep.equal([]);
-      expect(layoutQuote(quote)).to.deep.equal([]);
-      expect(quote.classList.contains('globe-gallery-pullquote-lines')).to.be.false;
+      expect(plainQuote(quote)).to.equal('');
+      expect(quote.textContent).to.equal('');
     });
   });
 });

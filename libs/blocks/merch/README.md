@@ -38,9 +38,9 @@ follows the same Commerce environment as `mas-commerce-service`.
 
 ## Market validation
 
-`market.js` is a static dependency of `merch.js`, so the browser discovers it with the
-initial merch module graph rather than waiting for commerce service initialization.
-Importing it does not fetch market configuration or geo data. Market detection during
+The market helpers live in `utils.js`, which `merch.js` already imports statically, so they
+load with the initial module graph rather than waiting for commerce service initialization.
+Importing them does not fetch market configuration or geo data. Market detection during
 service initialization and checkout-country validation remain gated by
 `mas-geo-detection`; supported IMS countries are retained, while unsupported countries
 fall back to the service's validated market.

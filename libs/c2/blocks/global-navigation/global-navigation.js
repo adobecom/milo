@@ -2,6 +2,7 @@ import {
   getEnv,
   getConfig,
   getMetadata,
+  getGnavSource,
   localizeLink,
   localizeLinkAsync,
   appendHtmlToLink,
@@ -12,6 +13,7 @@ import {
   loadIms,
   isAcomAssistantEnabled,
   isAupEnabled,
+  getValidatedMarket,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -151,8 +153,9 @@ export default async function init(el) {
   // original promise so UNAV can wait for readiness and recover from a timeout.
   imsReady.catch((error) => {
     if (error?.message === 'IMS timeout') return;
-    window.lana?.log?.('Failed to initialize IMS for federal global navigation', {
-      error,
+    lanaLog({
+      message: 'Failed to initialize IMS for federal global navigation',
+      e: error,
       tags: 'global-navigation',
       errorType: 'i',
     });
@@ -213,14 +216,12 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
+  const gnavUrl = new URL(await getGnavSource(), window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
-    const base = config.miloLibs || config.codeRoot;
-    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
     return (await getValidatedMarket())?.toUpperCase();
   })().catch(() => undefined);
 
@@ -255,8 +256,9 @@ export default async function init(el) {
       convertStageLinks({ anchors, config, hostname, href });
     },
   }).catch((error) => {
-    window.lana?.log?.('Failed to initialize federal global navigation', {
-      error,
+    lanaLog({
+      message: 'Failed to initialize federal global navigation',
+      e: error,
       tags: 'global-navigation',
       errorType: 'e',
     });
@@ -276,7 +278,12 @@ export default async function init(el) {
         const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
         decorateAcomAssistantGnav(el);
       } catch (error) {
-        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+        lanaLog({
+          message: 'AcomAssistant: failed to load GNav module',
+          e: error,
+          tags: 'acom-assistant',
+          severity: 'error',
+        });
       }
     }
   });

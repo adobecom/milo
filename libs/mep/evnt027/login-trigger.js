@@ -164,7 +164,7 @@ export default function init({ path: authoredPath } = {}) {
       if (!canOpen()) return;
       const heading = content.querySelector('h1, h2, h3, h4, h5, h6');
       content.hidden = false;
-      await getModal(null, {
+      const dialog = await getModal(null, {
         id: MODAL_ID,
         title: heading?.textContent,
         content,
@@ -176,6 +176,7 @@ export default function init({ path: authoredPath } = {}) {
           }
         },
       });
+      dialog?.querySelector('.dialog-close')?.setAttribute('daa-ll', 'Close|Login Modal');
       stop();
     } catch (error) {
       stop();

@@ -11,7 +11,7 @@ export default async function init(block) {
   block.hidden = true;
 
   const rows = [...block.children].map((row) => [...row.children]);
-  const collection = rows.find(([key]) => key?.textContent.trim().toLowerCase() === 'collection')
+  const collection = rows.find(([key]) => key?.textContent.trim().toLowerCase() === 'caas-collection')
     ?.[1]?.querySelector('a');
   if (!collection?.hash) {
     window.lana?.log('Blog related content requires a CaaS collection link.', {
@@ -20,9 +20,10 @@ export default async function init(block) {
     });
     return;
   }
-  const title = rows.find(([key]) => key?.textContent.trim().toLowerCase() === 'heading')
+  const title = rows.find(([key]) => key?.textContent.trim().toLowerCase() === 'caas-heading')
     ?.[1]?.textContent.trim() || await replaceKey('related-content', getConfig());
-  const heading = createTag('h3', null, title);
+  const heading = createTag('h3');
+  heading.textContent = title;
   const content = createTag('div', { class: 'blog-related-content-collection' }, collection);
   block.replaceChildren(heading, content);
   block.dataset.relatedContentInitialized = 'true';

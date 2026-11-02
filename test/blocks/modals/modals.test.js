@@ -11,6 +11,7 @@ document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const {
   default: init,
   getModal,
+  findDetails,
   getHashParams,
   delayedModal,
   sendAnalytics,
@@ -96,6 +97,42 @@ describe('Modals', () => {
     window.location.hash = '';
     await waitForRemoval('#otis');
     expect(document.getElementById('otis')).not.to.exist;
+  });
+
+  it('Ignores a hash containing markup', async () => {
+    window.__modalXss = false;
+    const payload = '<img src=x onerror=window.__modalXss=true>';
+    const meta = document.createElement('meta');
+    meta.name = `-${payload}`;
+    meta.content = 'http://localhost:2000/test/blocks/modals/mocks/otis';
+    document.head.append(meta);
+    window.location.hash = `#${payload}`;
+    await delay(100);
+    expect(document.querySelector('.dialog-modal')).to.be.null;
+    expect(document.querySelector('img[src="x"]')).to.be.null;
+    expect(window.__modalXss).to.be.false;
+    expect((await findDetails(`#${payload}`)).path).to.be.undefined;
+    meta.remove();
+    window.location.hash = '';
+  });
+
+  it('Blocks script-scheme and foreign-origin modal paths', async () => {
+    const metas = ['badpath', 'foreignpath'].map((name) => {
+      const meta = document.createElement('meta');
+      meta.name = `-${name}`;
+      meta.content = name === 'badpath' ? ['java', 'script:alert(1)'].join('') : 'https://example.com/modal';
+      document.head.append(meta);
+      return meta;
+    });
+    window.location.hash = '#badpath';
+    await delay(100);
+    expect(document.querySelector('.dialog-modal')).to.be.null;
+    window.location.hash = '#foreignpath';
+    await delay(100);
+    expect(document.querySelector('.dialog-modal')).to.be.null;
+    expect(await getModal({ id: 'x', path: 'https://example.com/modal' })).to.be.null;
+    metas.forEach((meta) => meta.remove());
+    window.location.hash = '';
   });
 
   it('Doesnt open a modal', async () => {
@@ -218,6 +255,23 @@ describe('Modals', () => {
 
     window.location.hash = '';
     await waitForRemoval('#milo');
+  });
+
+  it('returns focus to the trigger on close without scrolling the page', async () => {
+    const trigger = document.getElementById('milo-modal-link');
+    trigger.focus();
+    window.location.hash = '#milo';
+    await waitForElement('#milo');
+    await delay(100);
+
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+    document.querySelector('#milo .dialog-close').click();
+    await waitForRemoval('#milo');
+
+    const triggerFocusCall = focusSpy.getCalls().find((call) => call.thisValue === trigger);
+    expect(triggerFocusCall).to.exist;
+    expect(triggerFocusCall.args[0]).to.include({ preventScroll: true });
+    expect(document.activeElement).to.equal(trigger);
   });
 
   it('Focuses on close when there are no other focusables', async () => {

@@ -23,7 +23,6 @@ import {
   easeInOutCubic,
   easeInOutQuint,
   easeOutCubic,
-  easeOutQuart,
   getFanData,
   pxPerWorldAt,
   rotateArcPoint,
@@ -503,9 +502,6 @@ describe('globe-gallery: math', () => {
   it('keeps easing endpoints and midpoint symmetry stable', () => {
     expect(easeOutCubic(0)).to.equal(0);
     expect(easeOutCubic(1)).to.equal(1);
-    expect(easeOutQuart(0)).to.equal(0);
-    expect(easeOutQuart(0.5)).to.equal(0.9375);
-    expect(easeOutQuart(1)).to.equal(1);
     expect(easeInOutCubic(0.5)).to.equal(0.5);
     expect(easeInOutQuint(0.5)).to.equal(0.5);
   });
@@ -617,6 +613,7 @@ describe('globe-gallery: timeline', () => {
       'blockDocTop',
       'blockHeight',
       'formPx',
+      'zoomPx',
       'viewportH',
       'arcScale',
       'entryLeadVh',
@@ -635,6 +632,17 @@ describe('globe-gallery: timeline', () => {
     expect(derive(2000).zoomT).to.equal(0);
     expect(derive(3000).zoomT).to.be.closeTo(0.5, 1e-12);
     expect(derive(4000).zoomT).to.equal(1);
+  });
+
+  it('paces the zoom by its own span when given one, and inverts that mapping', () => {
+    const span = { blockDocTop: 1000, blockHeight: 3000, formPx: 1000, zoomPx: 1200 };
+    expect(derive(2600, { zoomPx: 1200 }).zoomT).to.be.closeTo(0.5, 1e-12);
+    expect(derive(3200, { zoomPx: 1200 }).zoomT).to.equal(1);
+    expect(derive(4000, { zoomPx: 1200 }).zoomT).to.equal(1);
+    expect(TL.scrollYAtZoomT(0, span)).to.equal(2000);
+    expect(TL.scrollYAtZoomT(0.5, span)).to.equal(2600);
+    expect(TL.scrollYAtZoomT(1, { ...span, zoomPx: 0 })).to.equal(4000);
+    expect(derive(TL.scrollYAtZoomT(0.3, span), { zoomPx: 1200 }).zoomT).to.be.closeTo(0.3, 1e-12);
   });
 
   it('derives entry progress before the block reaches its pin', () => {

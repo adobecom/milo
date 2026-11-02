@@ -1,7 +1,7 @@
 // Every phase constant, threshold, and the per-frame clock derivation.
 // Pure — no THREE, no DOM, no closure state.
 
-import { clamp01, easeOutCubic, lerpN } from './math.js';
+import { clamp01, lerpN } from './math.js';
 
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
@@ -51,8 +51,6 @@ export const ARC_COPY_OUT_FORM_END = 0.90;
 
 export const CANVAS_HIDE_MARGIN_T = 0.05;
 
-export const CURSOR_ZOOM_RETIRE_T = 0.35; // zoomT
-
 // frame.dtScale rescales per-60fps-frame rates; clamped.
 
 export const FRAME_MS = 1000 / 60;
@@ -63,27 +61,28 @@ export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
 
 export const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
 
-// zoomT is a fraction of the ZOOM span; the CSS pin and hold ceiling reason in fractions of the
-// whole tail. Identical only while PROGRESS_ZOOM_END is 1, so convert at the boundary.
-export const ZOOM_TO_TAIL_T = (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS)
-  / (1 - SPHERE_FORMED_PROGRESS);
-
 export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
 export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
+
+export const ZOOM_EASE_POW = 2;
 
 // The zoom camera's world z at zoomT, and its inverse. An inverse pair: neither is derivable
 // from the other at runtime, so they must be edited together — hence they live side by side.
 // Break the pairing and pqAppearZoomT drifts silently, taking the controls, the canvas cursor,
 // the canvas hide and the pull-quote reveal with it.
 export function camZAtZoomT(t, camZSphere, camZEnd) {
-  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+  return lerpN(camZSphere, camZEnd, 1 - (1 - clamp01(t)) ** ZOOM_EASE_POW);
 }
 
 export function zoomTAtCamZ(z, camZSphere, camZEnd) {
   const span = camZSphere - camZEnd;
   if (!(span > 0)) return 0;
   const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
-  return 1 - ((1 - eased) ** (1 / 3));
+  return 1 - ((1 - eased) ** (1 / ZOOM_EASE_POW));
+}
+
+export function zoomSpanPx({ blockHeight, formPx, zoomPx = 0 }) {
+  return zoomPx > 0 ? zoomPx : Math.max(1, blockHeight - formPx);
 }
 
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays
@@ -118,6 +117,7 @@ export function createFrameInput() {
     blockDocTop: 0,
     blockHeight: 0,
     formPx: 0,
+    zoomPx: 0,
     viewportH: 0,
     arcScale: 1,
     entryLeadVh: 0,
@@ -127,7 +127,7 @@ export function createFrameInput() {
 // No allocation; caller carries frame.lenisY back into input.prevLenisY.
 export function deriveFrame(frame, input) {
   const {
-    reducedMotion, blockDocTop, blockHeight, formPx, viewportH, entryLeadVh,
+    reducedMotion, blockDocTop, blockHeight, formPx, zoomPx, viewportH, entryLeadVh,
   } = input;
 
   const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
@@ -145,7 +145,7 @@ export function deriveFrame(frame, input) {
   frame.arcCopyEntryT = arcCopyEntryT;
 
   const rawScroll = lenisY - blockDocTop;
-  const tailPx = Math.max(1, blockHeight - formPx);
+  const tailPx = zoomSpanPx({ blockHeight, formPx, zoomPx });
   const progress = rawScroll <= formPx
     ? clamp01(rawScroll / Math.max(1, formPx)) * SPHERE_FORMED_PROGRESS
     : SPHERE_FORMED_PROGRESS
@@ -164,6 +164,10 @@ export function deriveFrame(frame, input) {
   frame.arcScale = input.arcScale;
 
   return frame;
+}
+
+export function scrollYAtZoomT(zoomT, span) {
+  return span.blockDocTop + span.formPx + zoomT * zoomSpanPx(span);
 }
 
 export function cardFoldStartProgress(gpDelay) {
