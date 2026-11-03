@@ -411,6 +411,20 @@ describe('Split Hero', () => {
       expect(getComputedStyle(card).flexDirection).to.equal('row');
     });
 
+    [
+      ['one cta', '<p><strong><a href="/trial">Free trial</a></strong></p>', 900, '200px'],
+      ['one cta', '<p><strong><a href="/trial">Free trial</a></strong></p>', 899, 'none'],
+      ['two ctas', '<p><strong><a href="/trial">Free trial</a></strong> <em><a href="/plans">See plans</a></em></p>', 900, 'none'],
+    ].forEach(([label, ctas, width, max]) => {
+      it(`caps the button width only with a single cta from 900px (${label} at ${width}px)`, async () => {
+        await setViewport({ width, height: 900 });
+        const block = await initVariant([], ctas);
+        block.querySelectorAll('.split-hero-merch-ctas .con-button').forEach((button) => {
+          expect(getComputedStyle(button).maxInlineSize).to.equal(max);
+        });
+      });
+    });
+
     it('stacks the ctas with cta-stack', async () => {
       const block = await initVariant(['cta-stack']);
       expect(getComputedStyle(block.querySelector('.split-hero-merch-ctas')).flexDirection)
