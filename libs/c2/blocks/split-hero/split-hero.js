@@ -141,12 +141,15 @@ function initParallax(el) {
   const desktop = window.matchMedia('(width >= 900px)');
   const measure = () => {
     if (!motion.matches) return;
-    const head = parseFloat(getComputedStyle(section).getPropertyValue('--sh-head')) || 0;
+    const style = getComputedStyle(section);
+    const read = (name) => parseFloat(style.getPropertyValue(name)) || 0;
+    const head = read('--sh-head');
     if (!desktop.matches) {
       section.style.setProperty('--sh-mobile-span', `${Math.max(200, el.offsetHeight - head)}px`);
       return;
     }
 
+    const tune = (name) => read(`--sh-desktop-${name}`);
     section.style.setProperty('--sh-height', `${window.innerHeight}px`);
     const frame = [...el.querySelectorAll('.split-hero-media-frame')]
       .find((item) => item.offsetWidth);
@@ -154,16 +157,16 @@ function initParallax(el) {
     const top = parseFloat(getComputedStyle(frame.closest('.split-hero-content')).paddingBlockStart)
       - head;
     const width = document.documentElement.clientWidth;
-    const fit = Math.max(360, Math.min(800, (width * 27) / 64));
-    const lip = el.offsetHeight - 32;
+    const fit = Math.max(tune('fit-min'), Math.min(tune('fit-max'), width * tune('fit-ratio')));
+    const lip = el.offsetHeight - tune('lip');
     const frameHeight = Math.max(1, frame.offsetHeight);
     const frameWidth = Math.max(1, frame.offsetWidth);
     const { left, right } = frame.getBoundingClientRect();
     const start = getComputedStyle(frame).direction === 'rtl' ? width - right : left;
-    const widthScale = (width - start - 24) / frameWidth;
-    const heightScale = (Math.min(lip, window.innerHeight) - head - 64) / frameHeight;
-    const scale = Math.max(0.01, Math.min(0.98, widthScale, heightScale));
-    const drop = Math.max(0, lip + 32 - head - top - frameHeight);
+    const widthScale = (width - start - tune('edge-inline')) / frameWidth;
+    const heightScale = (Math.min(lip, window.innerHeight) - head - tune('edge-block')) / frameHeight;
+    const scale = Math.max(0.01, Math.min(tune('scale-max'), widthScale, heightScale));
+    const drop = Math.max(0, el.offsetHeight - head - top - frameHeight);
     const lift = top - 16;
     const horizontalFit = (start + frameWidth - width) / (frameWidth * (1 - scale));
     const verticalFit = (head + top + drop + frameHeight - lip)
@@ -172,8 +175,9 @@ function initParallax(el) {
     const revealed = fit * Math.max(0, Math.min(1, Math.max(horizontalFit, verticalFit)));
     const release = Math.max(80, revealed - Math.min(80, fit * 0.12));
     // Small frames must remain visible long enough for the sheet to return.
-    const returnDistance = lip + release * 1.25 - fit - head;
-    const mediaRate = Math.min(0.22, Math.max(0, (frameHeight * scale - 32) / returnDistance));
+    const returnDistance = lip + release * tune('hold-ratio') - fit - head;
+    const visible = frameHeight * scale - 32;
+    const mediaRate = Math.min(tune('media-rate-max'), Math.max(0, visible / returnDistance));
     const values = {
       '--sh-fit': `${fit}px`,
       '--sh-release': `${release}px`,

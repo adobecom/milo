@@ -22,6 +22,14 @@ declared while the section is hidden. The timeline is therefore declared with
 longhands, and only once Milo removes the section's `data-status`.
 Use `?milolibs=local` to test local code with the authored variant.
 
+Motion settings are custom properties on `main:has(> .split-hero-reveal)`:
+`--sh-mobile-*` below 900px and `--sh-desktop-*` from 900px. JS reads the
+desktop ones in `measure()`, so they must stay plain numbers or `px` lengths,
+not `calc()`. Each `--sh-mobile-rate-*` is how much slower that layer scrolls
+than the page (`0.08` = 8%).
+`--sh-park` stays 1.5 × release, not a setting: the `66.6667%` keyframes in
+`sh-stage-drift` and `sh-lip-drift` depend on that ratio.
+
 ## Authoring
 
 Three content rows, two columns. Cells are read by position. A cell with

@@ -137,7 +137,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
     background: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
     border-radius: var(--split-hero-frame-radius);
-    inline-size: 120%;
+    inline-size: 105%;
     padding: var(--split-hero-media-padding);
     box-shadow:
       inset 0 0 0 var(--s2a-border-width-sm) var(--s2a-color-gray-25),
@@ -475,6 +475,21 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
   @supports (timeline-scope: --split-hero) {
     @media (prefers-reduced-motion: no-preference) {
       main:has(> .split-hero-reveal) {
+        --sh-mobile-rate-text: 0.08;
+        --sh-mobile-rate-merch: 0.12;
+        --sh-mobile-rate-supporting: 0.12;
+        --sh-mobile-rate-frame: 0.08;
+        --sh-mobile-ease: ease-in;
+        --sh-desktop-fit-ratio: 0.4219;
+        --sh-desktop-fit-min: 360px;
+        --sh-desktop-fit-max: 800px;
+        --sh-desktop-hold-ratio: 1.25;
+        --sh-desktop-scale-max: 0.98;
+        --sh-desktop-edge-inline: 24px;
+        --sh-desktop-edge-block: 64px;
+        --sh-desktop-media-rate-max: 0.22;
+        --sh-desktop-lip: var(--s2a-border-radius-xl);
+
         timeline-scope: --split-hero;
       }
 
@@ -490,10 +505,12 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           will-change: auto;
 
           .split-hero-content {
-            padding-block-start: calc(var(--sh-head) + 32px);
+            padding-block-start: calc(var(--sh-head) + var(--s2a-spacing-xl));
           }
 
           .split-hero-text {
+            --sh-rate: var(--sh-mobile-rate-text);
+
             transition: 900ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
             transition-property: opacity, translate;
 
@@ -517,17 +534,18 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           .split-hero-media-frame,
           .split-hero-merch-card,
           .split-hero-supporting {
-            --sh-lag: calc(var(--sh-mobile-span) * 0.08);
+            --sh-lag: calc(var(--sh-mobile-span) * var(--sh-rate));
 
-            animation: sh-mobile-drift linear both;
+            animation: sh-mobile-drift var(--sh-mobile-ease) both;
             animation-timeline: --split-hero;
             animation-range: exit-crossing 0 exit-crossing var(--sh-mobile-span);
           }
 
+          .split-hero-media-frame { --sh-rate: var(--sh-mobile-rate-frame); }
+          .split-hero-merch-card { --sh-rate: var(--sh-mobile-rate-merch); }
+
           .split-hero-merch-card,
           .split-hero-supporting {
-            --sh-lag: calc(var(--sh-mobile-span) * 0.12);
-
             transition: 900ms cubic-bezier(0.22, 1, 0.36, 1) 560ms;
             transition-property: opacity, translate;
 
@@ -538,6 +556,8 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           }
 
           .split-hero-supporting {
+            --sh-rate: var(--sh-mobile-rate-supporting);
+
             transition-delay: 920ms;
           }
         }
@@ -547,7 +567,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
         .section.split-hero-reveal,
         .section.split-hero-reveal + .section.rounded-corners-top {
           --sh-park: calc(var(--sh-release) * 1.5);
-          --sh-hold: calc(var(--sh-release) * 1.25);
+          --sh-hold: calc(var(--sh-release) * var(--sh-desktop-hold-ratio));
         }
 
         .section.split-hero-reveal {
@@ -570,7 +590,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
             .split-hero-content {
               box-sizing: border-box;
-              min-block-size: min(var(--sh-height), calc(var(--sh-head) + var(--sh-top) + var(--sh-row) + 32px));
+              min-block-size: min(var(--sh-height), calc(var(--sh-head) + var(--sh-top) + var(--sh-row) + var(--sh-desktop-lip)));
               padding-block-start: calc(var(--sh-head) + var(--sh-top));
             }
 
@@ -697,16 +717,16 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
   @keyframes sh-lip-drift {
     from {
-      margin-block-start: calc(-1 * (var(--sh-hold) + var(--s2a-border-radius-xl)));
+      margin-block-start: calc(-1 * (var(--sh-hold) + var(--sh-desktop-lip)));
       animation-timing-function: linear;
     }
 
     66.6667% {
-      margin-block-start: calc(var(--sh-release) - var(--sh-hold) - var(--s2a-border-radius-xl));
+      margin-block-start: calc(var(--sh-release) - var(--sh-hold) - var(--sh-desktop-lip));
       animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
     }
 
-    to { margin-block-start: calc(-1 * var(--s2a-border-radius-xl)); }
+    to { margin-block-start: calc(-1 * var(--sh-desktop-lip)); }
   }
 }
 

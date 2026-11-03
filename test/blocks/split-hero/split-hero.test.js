@@ -720,16 +720,26 @@ describe('Split Hero', () => {
       });
     });
 
+    async function scrollMobileSpan(block) {
+      const span = parseFloat(block.closest('.section').style.getPropertyValue('--sh-mobile-span'));
+      await scrollToPosition(span);
+      return span;
+    }
+
+    const mobileLag = (item, span) => span * parseFloat(getComputedStyle(item).getPropertyValue('--sh-rate'));
+
     it('drifts mobile layers without pinning or shrinking the media', async () => {
       const block = await renderReveal(390);
       const copy = block.querySelector('.split-hero-text');
       const offer = block.querySelector('.split-hero-merch-card');
       const frame = block.querySelector('.split-hero-media-frame');
       const initial = [copy, offer, frame].map((item) => item.getBoundingClientRect());
-      await scrollToPosition(100);
-      expect(copy.getBoundingClientRect().top).to.be.closeTo(initial[0].top - 92, 1);
-      expect(offer.getBoundingClientRect().top).to.be.closeTo(initial[1].top - 88, 1);
-      expect(frame.getBoundingClientRect().top).to.be.closeTo(initial[2].top - 92, 1);
+      const span = await scrollMobileSpan(block);
+      [copy, offer, frame].forEach((item, i) => {
+        const lag = mobileLag(item, span);
+        expect(lag).to.be.greaterThan(0);
+        expect(item.getBoundingClientRect().top).to.be.closeTo(initial[i].top - span + lag, 1);
+      });
       expect(frame.getBoundingClientRect().width).to.be.closeTo(initial[2].width, 1);
       expect(document.documentElement.scrollWidth).to.equal(window.innerWidth);
     });
@@ -745,8 +755,9 @@ describe('Split Hero', () => {
       await nextFrame();
       const mobileCopy = copy.getBoundingClientRect().top;
       const mobileFrame = frame.getBoundingClientRect();
-      await scrollToPosition(100);
-      expect(copy.getBoundingClientRect().top).to.be.closeTo(mobileCopy - 92, 1);
+      const span = await scrollMobileSpan(block);
+      expect(copy.getBoundingClientRect().top)
+        .to.be.closeTo(mobileCopy - span + mobileLag(copy, span), 1);
       expect(frame.getBoundingClientRect().width).to.be.closeTo(mobileFrame.width, 1);
 
       await scrollToPosition(0);
