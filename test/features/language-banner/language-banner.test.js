@@ -3,6 +3,9 @@ import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import {
   setConfig,
+  getConfig,
+  getMarketConfig,
+  getValidatedMarket,
   setLangRoutingConfig,
   decorateLanguageBanner,
   getLangRoutingConfig,
@@ -307,6 +310,9 @@ describe('Language Banner', () => {
 
     let fetchStub;
 
+    const countMarketRequests = () => fetchStub.getCalls()
+      .filter(({ args: [url] }) => parseTestFetchUrl(url).pathname.includes('supported-markets')).length;
+
     beforeEach(() => {
       setLangRoutingConfig(null);
       document.head.innerHTML = '<meta name="languagebanner" content="on">';
@@ -344,15 +350,22 @@ describe('Language Banner', () => {
       expect(getLangRoutingConfig()).to.be.null;
     });
 
-    it('returns when markets config fetch fails', async () => {
+    it('returns when markets config fetch fails and allows banner initialization to retry', async () => {
       fetchStub.callsFake((url, opts) => {
         const { pathname } = parseTestFetchUrl(url);
         if (pathname.includes('supported-markets')) return Promise.resolve({ ok: false });
         return defaultFetchForLanguageBanner(mockMarketsData, true)(url, opts);
       });
       setPathConfig('/de/page');
+      Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
       await decorateLanguageBanner();
       expect(getLangRoutingConfig()).to.be.null;
+      expect(getConfig().marketsConfig).to.be.undefined;
+
+      fetchStub.callsFake(defaultFetchForLanguageBanner(marketsWithFrSupportedInDe, true));
+      await decorateLanguageBanner();
+      expect(getLangRoutingConfig()?.markets[0].prefix).to.equal('fr');
+      expect(countMarketRequests()).to.equal(2);
     });
 
     it('returns when markets data is empty', async () => {
@@ -384,6 +397,75 @@ describe('Language Banner', () => {
       expect(cfg?.showBanner).to.equal(true);
       expect(cfg?.showModal).to.equal(false);
       expect(cfg?.markets?.some((m) => m.prefix === 'fr')).to.equal(true);
+    });
+
+    ['flat', 'nested'].forEach((shape) => {
+      const payload = shape === 'nested'
+        ? { languages: marketsWithFrSupportedInDe } : marketsWithFrSupportedInDe;
+
+      it(`renders from cached ${shape} market data without another request or changing the raw cache`, async () => {
+        setPathConfig('/de/page');
+        getConfig().marketsConfig = payload;
+        Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
+
+        await decorateLanguageBanner();
+        const routing = getLangRoutingConfig();
+        expect(routing?.showBanner).to.be.true;
+        expect(routing?.showModal).to.be.false;
+        expect(routing?.markets[0].prefix).to.equal('fr');
+        expect(await getValidatedMarket()).to.equal('de');
+        expect(countMarketRequests()).to.equal(0);
+        expect(getConfig().marketsConfig).to.equal(payload);
+        expect(marketsWithFrSupportedInDe.data[2].supportedRegions).to.equal('de,fr');
+
+        await init();
+        const banner = document.querySelector('.language-banner');
+        expect(banner.querySelector('.language-banner-text').textContent).to.equal('FR');
+        expect(banner.querySelector('.language-banner-link').textContent).to.equal('Continuer');
+        expect(banner.querySelector('.language-banner-link').href).to.include('/fr/');
+        expect(banner.getAttribute('dir')).to.equal('ltr');
+      });
+
+      it(`reuses ${shape} market data fetched before banner initialization`, async () => {
+        fetchStub.callsFake(defaultFetchForLanguageBanner(payload, true));
+        setPathConfig('/de/page');
+        Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
+        await getMarketConfig();
+        const cached = getConfig().marketsConfig;
+        expect(countMarketRequests()).to.equal(1);
+
+        await decorateLanguageBanner();
+        expect(getLangRoutingConfig()?.markets[0].prefix).to.equal('fr');
+        expect(countMarketRequests()).to.equal(1);
+        expect(getConfig().marketsConfig).to.equal(cached);
+      });
+
+      it(`shares one ${shape} market request between market validation and banner initialization`, async () => {
+        let resolveData;
+        const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+        const defaultFetch = defaultFetchForLanguageBanner(payload, true);
+        fetchStub.callsFake((url, opts) => {
+          if (parseTestFetchUrl(url).pathname.includes('supported-markets')) {
+            return Promise.resolve({ ok: true, json: () => dataPromise });
+          }
+          return defaultFetch(url, opts);
+        });
+        setPathConfig('/de/page');
+        Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
+
+        const marketPromise = getValidatedMarket();
+        await Promise.resolve();
+        const bannerPromise = decorateLanguageBanner();
+        resolveData(payload);
+        const [market] = await Promise.all([marketPromise, bannerPromise]);
+
+        expect(market).to.equal('de');
+        expect(countMarketRequests()).to.equal(1);
+        expect(getLangRoutingConfig()?.markets[0].prefix).to.equal('fr');
+        expect(getConfig().marketsConfig).to.equal(payload);
+        expect((await getMarketConfig()).languages).to.equal(marketsWithFrSupportedInDe.data);
+        expect(countMarketRequests()).to.equal(1);
+      });
     });
 
     it('onlybanner flow sets single-market banner when a candidate page exists', async () => {

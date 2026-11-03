@@ -2872,15 +2872,36 @@ const DEFAULT_MARKET = 'us';
 
 export const norm = normCountryCode;
 
+const marketConfigRequests = new WeakMap();
+
 export async function getMarketConfig() {
   try {
     const config = getConfig();
-    if (!config.marketsConfig) {
-      const resp = await fetch(getMarketsUrl());
-      if (!resp.ok) throw new Error('Failed to load market config');
-      config.marketsConfig = await resp.json();
+    const url = getMarketsUrl();
+    let request = marketConfigRequests.get(config);
+    if (request && request.url !== url && config.marketsConfig === request.data) {
+      delete config.marketsConfig;
     }
-    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    let { marketsConfig } = config;
+    if (!marketsConfig) {
+      if (!request?.promise || request.url !== url) {
+        request = { url };
+        request.promise = (async () => {
+          const resp = await fetch(url);
+          if (!resp.ok) throw new Error('Failed to load market config');
+          const data = await resp.json();
+          request.data = data;
+          if (getConfig() === config && getMarketsUrl() === url
+            && marketConfigRequests.get(config) === request && !config.marketsConfig) {
+            config.marketsConfig = data;
+          }
+          return data;
+        })().finally(() => { delete request.promise; });
+        marketConfigRequests.set(config, request);
+      }
+      marketsConfig = await request.promise;
+    }
+    const languages = marketsConfig.languages?.data ?? marketsConfig.data ?? [];
     return { languages };
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
@@ -2985,14 +3006,11 @@ export async function decorateLanguageBanner() {
 
   const [geoIpCode, marketsConfig] = await Promise.all([
     getCountry(),
-    fetch(getMarketsUrl())
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
+    getMarketConfig(),
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
-  getConfig().marketsConfig = marketsConfig;
-  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  const rawEntries = marketsConfig.languages;
   if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
   const languageEntries = rawEntries.map((entry) => ({

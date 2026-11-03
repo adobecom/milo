@@ -4447,7 +4447,7 @@ describe('utils.js market — getMarketConfig()', () => {
   it('fetches and caches marketsConfig when not present', async () => {
     const mockData = { languages: { data: [{ prefix: '', langName: 'English' }] } };
     setConfig({ locale: { prefix: '' } });
-    sinon.stub(window, 'fetch').resolves({
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
       json: () => Promise.resolve(mockData),
     });
@@ -4456,33 +4456,152 @@ describe('utils.js market — getMarketConfig()', () => {
     expect(result).to.not.be.null;
     expect(result.languages).to.be.an('array');
     expect(result.languages[0].langName).to.equal('English');
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
+    expect(await getMarketConfig()).to.deep.equal(result);
+    expect(fetchStub.calledOnce).to.be.true;
   });
 
   it('returns cached config on subsequent calls', async () => {
     const mockData = { languages: { data: [{ prefix: 'de', langName: 'German' }] } };
     setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    const fetchStub = sinon.stub(window, 'fetch');
 
     const result = await getMarketConfig();
     expect(result.languages[0].langName).to.equal('German');
+    expect(fetchStub.called).to.be.false;
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
   });
 
-  it('returns null on fetch failure', async () => {
+  it('shares an in-flight request until its JSON has been parsed', async () => {
+    const mockData = { languages: { data: [{ prefix: 'de', langName: 'German' }] } };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    setConfig({});
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      json: () => dataPromise,
+    });
+
+    const first = getMarketConfig();
+    await Promise.resolve();
+    const second = getMarketConfig();
+    resolveData(mockData);
+    const results = await Promise.all([first, second]);
+
+    expect(fetchStub.calledOnce).to.be.true;
+    expect(results).to.deep.equal([{ languages: mockData.languages.data },
+      { languages: mockData.languages.data }]);
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
+  });
+
+  it('does not share requests across replacement configurations', async () => {
+    const oldData = { data: [{ prefix: 'de' }] };
+    const newData = { data: [{ prefix: 'fr' }] };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: true, json: () => dataPromise });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(newData) });
+    setConfig({});
+    const first = getMarketConfig();
+
+    setConfig({});
+    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
+    resolveData(oldData);
+    expect(await first).to.deep.equal({ languages: oldData.data });
+    expect(fetchStub.calledTwice).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.equal(newData);
+  });
+
+  it('does not let an older source request overwrite the current source cache', async () => {
+    const oldData = { data: [{ prefix: 'de' }] };
+    const newData = { data: [{ prefix: 'fr' }] };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: true, json: () => dataPromise });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(newData) });
+    setConfig({ marketsSource: 'express', contentRoot: '/original' });
+    const first = getMarketConfig();
+
+    utils.getConfig().contentRoot = '/replacement';
+    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
+    resolveData(oldData);
+    expect(await first).to.deep.equal({ languages: oldData.data });
+    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
+    expect(fetchStub.calledTwice).to.be.true;
+    expect(fetchStub.firstCall.args[0]).to.equal('/original/assets/supported-markets/supported-markets-express.json');
+    expect(fetchStub.secondCall.args[0]).to.equal('/replacement/assets/supported-markets/supported-markets-express.json');
+    expect(utils.getConfig().marketsConfig).to.equal(newData);
+  });
+
+  it('refetches resolved data when the markets source changes', async () => {
+    const oldData = { data: [{ prefix: 'de' }] };
+    const newData = { data: [{ prefix: 'fr' }] };
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: true, json: () => Promise.resolve(oldData) });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(newData) });
+    setConfig({});
+    await getMarketConfig();
+
+    utils.getConfig().marketsSource = 'express';
+    utils.getConfig().contentRoot = '/replacement';
+    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
+    expect(fetchStub.calledTwice).to.be.true;
+    expect(fetchStub.secondCall.args[0]).to.equal('/replacement/assets/supported-markets/supported-markets-express.json');
+    expect(utils.getConfig().marketsConfig).to.equal(newData);
+  });
+
+  it('logs network failures and retries a shared failed request', async () => {
+    const mockData = { data: [{ prefix: '', langName: 'English' }] };
     setConfig({ locale: { prefix: '' } });
-    sinon.stub(window, 'fetch').rejects(new Error('Network error'));
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().rejects(new Error('Network error'));
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
     window.lana = { log: sinon.stub() };
 
-    const result = await getMarketConfig();
-    expect(result).to.be.null;
+    const results = await Promise.all([getMarketConfig(), getMarketConfig()]);
+    expect(results).to.deep.equal([null, null]);
+    expect(window.lana.log.calledWithExactly('Market Utils Error: Network error')).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+    expect(fetchStub.calledTwice).to.be.true;
     delete window.lana;
   });
 
-  it('returns null when fetch response is not ok', async () => {
+  it('logs HTTP failures and retries without caching the failure', async () => {
+    const mockData = { data: [{ prefix: '', langName: 'English' }] };
     setConfig({ locale: { prefix: '' } });
-    sinon.stub(window, 'fetch').resolves({ ok: false, status: 500 });
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: false, status: 500 });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
     window.lana = { log: sinon.stub() };
 
     const result = await getMarketConfig();
     expect(result).to.be.null;
+    expect(window.lana.log.calledWithExactly('Market Utils Error: Failed to load market config')).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+    expect(fetchStub.calledTwice).to.be.true;
+    delete window.lana;
+  });
+
+  it('logs invalid JSON and retries without caching the failure', async () => {
+    const mockData = { data: [{ prefix: '', langName: 'English' }] };
+    setConfig({});
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({
+      ok: true,
+      json: () => Promise.reject(new Error('Invalid JSON')),
+    });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
+    window.lana = { log: sinon.stub() };
+
+    expect(await getMarketConfig()).to.be.null;
+    expect(window.lana.log.calledWithExactly('Market Utils Error: Invalid JSON')).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+    expect(fetchStub.calledTwice).to.be.true;
     delete window.lana;
   });
 
