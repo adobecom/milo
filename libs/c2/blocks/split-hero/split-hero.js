@@ -143,51 +143,39 @@ function initParallax(el) {
     if (!motion.matches) return;
     const style = getComputedStyle(section);
     const read = (name) => parseFloat(style.getPropertyValue(name)) || 0;
-    const head = read('--sh-head');
+    const headerHeight = read('--sh-header-height');
     if (!desktop.matches) {
-      section.style.setProperty('--sh-mobile-span', `${Math.max(200, el.offsetHeight - head)}px`);
+      const driftEnd = Math.max(200, el.offsetHeight - headerHeight);
+      section.style.setProperty('--sh-drift-end', `${driftEnd}px`);
       return;
     }
 
     const tune = (name) => read(`--sh-desktop-${name}`);
-    section.style.setProperty('--sh-height', `${window.innerHeight}px`);
+    section.style.setProperty('--sh-viewport-height', `${window.innerHeight}px`);
     const frame = [...el.querySelectorAll('.split-hero-media-frame')]
       .find((item) => item.offsetWidth);
     if (!frame) return;
-    const top = parseFloat(getComputedStyle(frame.closest('.split-hero-content')).paddingBlockStart)
-      - head;
+    const content = frame.closest('.split-hero-content');
+    const topGap = parseFloat(getComputedStyle(content).paddingBlockStart) - headerHeight;
     const width = document.documentElement.clientWidth;
-    const fit = Math.max(tune('fit-min'), Math.min(tune('fit-max'), width * tune('fit-ratio')));
-    const lip = el.offsetHeight - tune('lip');
+    const nextSectionTop = el.offsetHeight - tune('next-section-overlap');
     const frameHeight = Math.max(1, frame.offsetHeight);
     const frameWidth = Math.max(1, frame.offsetWidth);
     const { left, right } = frame.getBoundingClientRect();
-    const start = getComputedStyle(frame).direction === 'rtl' ? width - right : left;
-    const widthScale = (width - start - tune('edge-inline')) / frameWidth;
-    const heightScale = (Math.min(lip, window.innerHeight) - head - tune('edge-block')) / frameHeight;
-    const scale = Math.max(0.01, Math.min(tune('scale-max'), widthScale, heightScale));
-    const drop = Math.max(0, el.offsetHeight - head - top - frameHeight);
-    const lift = top - 16;
-    const horizontalFit = (start + frameWidth - width) / (frameWidth * (1 - scale));
-    const verticalFit = (head + top + drop + frameHeight - lip)
-      / (drop + lift + frameHeight * (1 - scale));
-    // Pace the sheet against both media edges, not just its bottom edge.
-    const revealed = fit * Math.max(0, Math.min(1, Math.max(horizontalFit, verticalFit)));
-    const release = Math.max(80, revealed - Math.min(80, fit * 0.12));
-    // Small frames must remain visible long enough for the sheet to return.
-    const returnDistance = lip + release * tune('hold-ratio') - fit - head;
-    const visible = frameHeight * scale - 32;
-    const mediaRate = Math.min(tune('media-rate-max'), Math.max(0, visible / returnDistance));
+    const frameStart = getComputedStyle(frame).direction === 'rtl' ? width - right : left;
+    const widthScale = (width - frameStart - tune('frame-margin-inline')) / frameWidth;
+    const visibleHeight = Math.min(nextSectionTop, window.innerHeight) - headerHeight;
+    const heightScale = (visibleHeight - tune('frame-margin-block')) / frameHeight;
+    const frameEndScale = Math.max(
+      tune('frame-scale-min'),
+      Math.min(tune('frame-scale-max'), widthScale, heightScale),
+    );
+    const mediaStartDrop = Math.max(0, el.offsetHeight - headerHeight - topGap - frameHeight);
     const values = {
-      '--sh-fit': `${fit}px`,
-      '--sh-release': `${release}px`,
-      '--sh-media-drop': `${drop}px`,
-      '--sh-media-lift': `${lift}px`,
-      '--sh-media-rate': mediaRate,
-      '--sh-scale': scale,
+      '--sh-media-start-drop': `${mediaStartDrop}px`,
+      '--sh-frame-end-scale': frameEndScale,
     };
     Object.entries(values).forEach(([name, value]) => section.style.setProperty(name, value));
-    next.style.setProperty('--sh-release', `${release}px`);
   };
   let scheduled = 0;
   const schedule = () => {

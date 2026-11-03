@@ -1,13 +1,19 @@
 /* Following specs, which don't follow Consonant */
 
-@property --sh-head {
+@property --sh-header-height {
   syntax: '<length>';
   inherits: true;
   initial-value: 124px;
 }
 
+@property --sh-shrink-end {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0;
+}
+
 .section:has(> .split-hero) {
-  --sh-head: calc(var(--global-height-nav, 80px) + var(--split-hero-breadcrumbs-h, 0px));
+  --sh-header-height: calc(var(--global-height-nav, 80px) + var(--split-hero-breadcrumbs-h, 0px));
 }
 
 body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
@@ -31,7 +37,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xl);
-    padding-block: calc(var(--sh-head) + var(--split-hero-top-padding)) var(--s2a-spacing-xl);
+    padding-block: calc(var(--sh-header-height) + var(--split-hero-top-padding)) var(--s2a-spacing-xl);
     position: relative;
   }
 
@@ -475,20 +481,22 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
   @supports (timeline-scope: --split-hero) {
     @media (prefers-reduced-motion: no-preference) {
       main:has(> .split-hero-reveal) {
-        --sh-mobile-rate-text: 0.08;
-        --sh-mobile-rate-merch: 0.12;
-        --sh-mobile-rate-supporting: 0.12;
-        --sh-mobile-rate-frame: 0.08;
-        --sh-mobile-ease: ease-in;
-        --sh-desktop-fit-ratio: 0.4219;
-        --sh-desktop-fit-min: 360px;
-        --sh-desktop-fit-max: 800px;
-        --sh-desktop-hold-ratio: 1.25;
-        --sh-desktop-scale-max: 0.98;
-        --sh-desktop-edge-inline: 24px;
-        --sh-desktop-edge-block: 64px;
-        --sh-desktop-media-rate-max: 0.22;
-        --sh-desktop-lip: var(--s2a-border-radius-xl);
+        --sh-mobile-drift-rate-text: 0.08;
+        --sh-mobile-drift-rate-merch: 0.12;
+        --sh-mobile-drift-rate-supporting: 0.12;
+        --sh-mobile-drift-rate-frame: 0.08;
+        --sh-mobile-drift-ease: ease-in;
+        --sh-desktop-shrink-end: min(800px, 55vw);
+        --sh-desktop-shrink-ease: ease-in-out;
+        --sh-desktop-pin-end-ratio: 0.2;
+        --sh-desktop-release-ratio: 0.3;
+        --sh-desktop-pan-rate: 0.22;
+        --sh-desktop-lock-rate: 0.5;
+        --sh-desktop-frame-scale-min: 0.65;
+        --sh-desktop-frame-scale-max: 0.98;
+        --sh-desktop-frame-margin-inline: 24px;
+        --sh-desktop-frame-margin-block: 64px;
+        --sh-desktop-next-section-overlap: var(--s2a-border-radius-xl);
 
         timeline-scope: --split-hero;
       }
@@ -505,11 +513,11 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           will-change: auto;
 
           .split-hero-content {
-            padding-block-start: calc(var(--sh-head) + var(--s2a-spacing-xl));
+            padding-block-start: calc(var(--sh-header-height) + var(--s2a-spacing-xl));
           }
 
           .split-hero-text {
-            --sh-rate: var(--sh-mobile-rate-text);
+            --sh-drift-rate: var(--sh-mobile-drift-rate-text);
 
             transition: 900ms cubic-bezier(0.22, 1, 0.36, 1) 80ms;
             transition-property: opacity, translate;
@@ -534,15 +542,15 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           .split-hero-media-frame,
           .split-hero-merch-card,
           .split-hero-supporting {
-            --sh-lag: calc(var(--sh-mobile-span) * var(--sh-rate));
+            --sh-drift-distance: calc(var(--sh-drift-end) * var(--sh-drift-rate));
 
-            animation: sh-mobile-drift var(--sh-mobile-ease) both;
+            animation: sh-mobile-drift var(--sh-mobile-drift-ease) both;
             animation-timeline: --split-hero;
-            animation-range: exit-crossing 0 exit-crossing var(--sh-mobile-span);
+            animation-range: exit-crossing 0 exit-crossing var(--sh-drift-end);
           }
 
-          .split-hero-media-frame { --sh-rate: var(--sh-mobile-rate-frame); }
-          .split-hero-merch-card { --sh-rate: var(--sh-mobile-rate-merch); }
+          .split-hero-media-frame { --sh-drift-rate: var(--sh-mobile-drift-rate-frame); }
+          .split-hero-merch-card { --sh-drift-rate: var(--sh-mobile-drift-rate-merch); }
 
           .split-hero-merch-card,
           .split-hero-supporting {
@@ -556,7 +564,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           }
 
           .split-hero-supporting {
-            --sh-rate: var(--sh-mobile-rate-supporting);
+            --sh-drift-rate: var(--sh-mobile-drift-rate-supporting);
 
             transition-delay: 920ms;
           }
@@ -566,17 +574,19 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
       @media (width >= 900px) {
         .section.split-hero-reveal,
         .section.split-hero-reveal + .section.rounded-corners-top {
-          --sh-park: calc(var(--sh-release) * 1.5);
-          --sh-hold: calc(var(--sh-release) * var(--sh-desktop-hold-ratio));
+          --sh-shrink-end: var(--sh-desktop-shrink-end);
+          --sh-pin-end: calc(var(--sh-shrink-end) * var(--sh-desktop-pin-end-ratio));
+          --sh-release-distance: calc(var(--sh-shrink-end) * var(--sh-desktop-release-ratio));
+          --sh-unpin-end: calc(var(--sh-pin-end) + var(--sh-release-distance));
+          --sh-next-section-offset: calc(var(--sh-pin-end) + var(--sh-release-distance) / 2);
         }
 
         .section.split-hero-reveal {
-          --sh-row: 672px;
-          --sh-top: clamp(32px, calc((var(--sh-height) - var(--sh-head) - var(--sh-row)) / 2), 128px);
-          --sh-span: calc(var(--sh-park) + var(--sh-height));
-          --sh-media-rise: calc((var(--sh-span) - var(--sh-fit)) * var(--sh-media-rate));
+          --sh-content-row-height: 672px;
+          --sh-content-top-gap: clamp(32px, calc((var(--sh-viewport-height) - var(--sh-header-height) - var(--sh-content-row-height)) / 2), 128px);
+          --sh-effect-end: calc(var(--sh-unpin-end) + var(--sh-viewport-height));
 
-          padding-block-end: var(--sh-hold);
+          padding-block-end: var(--sh-next-section-offset);
 
           &:has(> .split-hero)::after {
             display: none;
@@ -584,33 +594,42 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
           > .split-hero.parallax-reveal {
             min-height: 0;
-            animation: sh-stage-drift linear both;
+            animation: sh-hero-fix-in-viewport linear both;
             animation-timeline: --split-hero;
-            animation-range: exit-crossing 0 exit-crossing var(--sh-park);
+            animation-range: exit-crossing 0 exit-crossing var(--sh-effect-end);
 
             .split-hero-content {
               box-sizing: border-box;
-              min-block-size: min(var(--sh-height), calc(var(--sh-head) + var(--sh-top) + var(--sh-row) + var(--sh-desktop-lip)));
-              padding-block-start: calc(var(--sh-head) + var(--sh-top));
+              min-block-size: min(var(--sh-viewport-height), calc(var(--sh-header-height) + var(--sh-content-top-gap) + var(--sh-content-row-height) + var(--sh-desktop-next-section-overlap)));
+              padding-block-start: calc(var(--sh-header-height) + var(--sh-content-top-gap));
             }
 
             .split-hero-foreground {
+              --sh-lock-join-rate: var(--sh-desktop-lock-rate);
+
               align-self: flex-start;
               padding-block-start: 0;
+              animation: sh-lock-join cubic-bezier(0.3333, 0, 0.6667, 0.3333) both, sh-lock-pan linear both;
+              animation-timeline: --split-hero, --split-hero;
+              animation-range: exit-crossing var(--sh-pin-end) exit-crossing var(--sh-unpin-end),
+                exit-crossing var(--sh-unpin-end) exit-crossing var(--sh-effect-end);
+              animation-composition: replace, add;
             }
 
             .split-hero-media {
+              --sh-lock-join-rate: calc(var(--sh-desktop-lock-rate) - var(--sh-desktop-pan-rate));
+
               block-size: 0;
               flex: 1;
               min-inline-size: 0;
+              transform: translateY(var(--sh-media-start-drop));
               transition-delay: 480ms;
-              animation: sh-cancel-drift linear both, sh-media-lift linear both,
-                sh-media-exit linear both;
+              animation: sh-media-pan linear both, sh-lock-join cubic-bezier(0.3333, 0, 0.6667, 0.3333) both, sh-lock-pan linear both;
               animation-timeline: --split-hero, --split-hero, --split-hero;
-              animation-range: exit-crossing 0 exit-crossing var(--sh-park),
-                exit-crossing 0 exit-crossing var(--sh-fit),
-                exit-crossing var(--sh-fit) exit-crossing var(--sh-span);
-              animation-composition: replace, add, add;
+              animation-range: exit-crossing 0 exit-crossing var(--sh-effect-end),
+                exit-crossing var(--sh-pin-end) exit-crossing var(--sh-unpin-end),
+                exit-crossing var(--sh-unpin-end) exit-crossing var(--sh-effect-end);
+              animation-composition: add;
             }
 
             .split-hero-media-frame {
@@ -618,10 +637,9 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
               min-inline-size: 0;
               min-height: 0;
               transform-origin: top left;
-              animation: sh-scroll-counter linear both, sh-media-shrink linear both;
-              animation-timeline: --split-hero, --split-hero;
-              animation-range: exit-crossing 0 exit-crossing var(--sh-span),
-                exit-crossing 0 exit-crossing var(--sh-fit);
+              animation: sh-frame-shrink var(--sh-desktop-shrink-ease) both;
+              animation-timeline: --split-hero;
+              animation-range: exit-crossing 0 exit-crossing var(--sh-shrink-end);
 
               &:dir(rtl) {
                 transform-origin: top right;
@@ -636,21 +654,23 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           }
 
           + .section.rounded-corners-top {
-            animation: sh-lip-drift linear both;
-            animation-timeline: --split-hero;
-            animation-range: exit-crossing 0 exit-crossing var(--sh-park);
+            animation: sh-next-section-pin linear both, sh-next-section-release cubic-bezier(0.3333, 0.6667, 0.6667, 1) both;
+            animation-timeline: --split-hero, --split-hero;
+            animation-range: exit-crossing 0 exit-crossing var(--sh-pin-end),
+              exit-crossing var(--sh-pin-end) exit-crossing var(--sh-unpin-end);
+            animation-composition: replace, add;
           }
         }
 
         @media (width >= 1280px) {
           .section.split-hero-reveal {
-            --sh-row: 680px;
+            --sh-content-row-height: 680px;
           }
         }
 
         @media (width > 1440px) {
           .section.split-hero-reveal {
-            --sh-row: 660px;
+            --sh-content-row-height: 660px;
           }
 
           .section.split-hero-reveal > .split-hero.parallax-reveal .split-hero-media-frame {
@@ -664,69 +684,42 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
   @keyframes sh-mobile-drift {
     from { transform: translateY(0); }
-    to { transform: translateY(var(--sh-lag)); }
+    to { transform: translateY(var(--sh-drift-distance)); }
   }
 
-  @keyframes sh-stage-drift {
-    from {
-      transform: translateY(0);
-      animation-timing-function: linear;
-    }
-
-    66.6667% {
-      transform: translateY(var(--sh-release));
-      animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
-    }
-
-    to { transform: translateY(var(--sh-hold)); }
-  }
-
-  @keyframes sh-cancel-drift {
-    from {
-      transform: translateY(0);
-      animation-timing-function: linear;
-    }
-
-    66.6667% {
-      transform: translateY(calc(-1 * var(--sh-release)));
-      animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
-    }
-
-    to { transform: translateY(calc(-1 * var(--sh-hold))); }
-  }
-
-  @keyframes sh-scroll-counter {
-    from { translate: 0 0; }
-    to { translate: 0 var(--sh-span); }
-  }
-
-  @keyframes sh-media-shrink {
-    from { scale: 1; }
-    to { scale: var(--sh-scale); }
-  }
-
-  @keyframes sh-media-lift {
-    from { transform: translateY(var(--sh-media-drop)); }
-    to { transform: translateY(calc(-1 * var(--sh-media-lift))); }
-  }
-
-  @keyframes sh-media-exit {
+  @keyframes sh-hero-fix-in-viewport {
     from { transform: translateY(0); }
-    to { transform: translateY(calc(-1 * var(--sh-media-rise))); }
+    to { transform: translateY(var(--sh-effect-end)); }
   }
 
-  @keyframes sh-lip-drift {
-    from {
-      margin-block-start: calc(-1 * (var(--sh-hold) + var(--sh-desktop-lip)));
-      animation-timing-function: linear;
-    }
+  @keyframes sh-frame-shrink {
+    from { scale: 1; }
+    to { scale: var(--sh-frame-end-scale); }
+  }
 
-    66.6667% {
-      margin-block-start: calc(var(--sh-release) - var(--sh-hold) - var(--sh-desktop-lip));
-      animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
-    }
+  @keyframes sh-media-pan {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-1 * var(--sh-desktop-pan-rate) * var(--sh-effect-end))); }
+  }
 
-    to { margin-block-start: calc(-1 * var(--sh-desktop-lip)); }
+  @keyframes sh-lock-join {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-0.5 * var(--sh-lock-join-rate) * var(--sh-release-distance))); }
+  }
+
+  @keyframes sh-lock-pan {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-1 * var(--sh-lock-join-rate) * (var(--sh-effect-end) - var(--sh-unpin-end)))); }
+  }
+
+  @keyframes sh-next-section-pin {
+    from { margin-block-start: calc(-1 * (var(--sh-next-section-offset) + var(--sh-desktop-next-section-overlap))); }
+    to { margin-block-start: calc(var(--sh-pin-end) - var(--sh-next-section-offset) - var(--sh-desktop-next-section-overlap)); }
+  }
+
+  @keyframes sh-next-section-release {
+    from { margin-block-start: 0; }
+    to { margin-block-start: calc(var(--sh-release-distance) / 2); }
   }
 }
 

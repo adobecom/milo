@@ -6,9 +6,13 @@ optional background.
 ## Parallax reveal (experimental)
 
 Use `Split Hero (parallax-reveal)` in the first section, followed by a section
-with `rounded-corners-top`. Desktop starts with media behind the rounded
-section, reveals the whole frame while holding the copy, then lets the lower
-section rise over it. Mobile uses subtle layer drift without pinning or scaling.
+with `rounded-corners-top`. On desktop the hero holds in the viewport while
+the frame shrinks (to at least `--sh-desktop-frame-scale-min`, so large frames
+may stay cropped) and pans up from the first pixel, passing behind the nav.
+The frame pans at `--sh-desktop-pan-rate` from the first pixel; after
+`--sh-pin-end` the copy and frame both ease to `--sh-desktop-lock-rate` over
+`--sh-release-distance`, then rise together while the lower section covers
+them. Mobile uses subtle layer drift without pinning or scaling.
 On load, the copy text, merch card and supporting text fade and rise in turn,
 with the media after the copy text from 900px and last below that. Copy text
 and media start at
@@ -24,11 +28,13 @@ Use `?milolibs=local` to test local code with the authored variant.
 
 Motion settings are custom properties on `main:has(> .split-hero-reveal)`:
 `--sh-mobile-*` below 900px and `--sh-desktop-*` from 900px. JS reads the
-desktop ones in `measure()`, so they must stay plain numbers or `px` lengths,
-not `calc()`. Each `--sh-mobile-rate-*` is how much slower that layer scrolls
-than the page (`0.08` = 8%).
-`--sh-park` stays 1.5 × release, not a setting: the `66.6667%` keyframes in
-`sh-stage-drift` and `sh-lip-drift` depend on that ratio.
+desktop frame settings in `measure()`, so they must stay plain numbers or `px`
+lengths, not `calc()`. Each `--sh-mobile-drift-rate-*` is how much slower that layer
+scrolls than the page (`0.08` = 8%). Other `--sh-*-end` values are measured
+scroll distances from the hero's top edge reaching the viewport top.
+The copy, frame and lower section change speed over `--sh-release-distance`
+with fixed quadratic curves, so the speed changes without a jump; changing
+those curves reintroduces one.
 
 ## Authoring
 

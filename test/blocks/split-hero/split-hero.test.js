@@ -651,11 +651,13 @@ describe('Split Hero', () => {
         const content = block.querySelector('.split-hero-content');
         const next = block.closest('.section').nextElementSibling;
         style.remove();
-        const initial = [
-          foreground.getBoundingClientRect().top,
-          content.offsetHeight,
-          next.getBoundingClientRect().top,
-        ];
+        const initial = await new Promise((resolve) => {
+          requestAnimationFrame(() => resolve([
+            foreground.getBoundingClientRect().top,
+            content.offsetHeight,
+            next.getBoundingClientRect().top,
+          ]));
+        });
         await nextFrame();
         await nextFrame();
         expect(foreground.getBoundingClientRect().top).to.be.closeTo(initial[0], 1);
@@ -667,7 +669,7 @@ describe('Split Hero', () => {
     });
 
     ['ltr', 'rtl'].forEach((direction) => {
-      it(`fully reveals the media before the rounded section covers it again (${direction})`, async () => {
+      it(`shrinks the media to at least the minimum scale before the rounded section covers it (${direction})`, async () => {
         const originalDirection = document.documentElement.dir;
         document.documentElement.dir = direction;
         try {
@@ -684,23 +686,24 @@ describe('Split Hero', () => {
 
           await scrollToPosition(100);
           expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
-          expect(frame.getBoundingClientRect().top).to.be.within(124, initialMedia.top);
+          expect(frame.getBoundingClientRect().top).to.be.lessThan(initialMedia.top);
           expect(frame.getBoundingClientRect().width).to.be.lessThan(initialMedia.width);
           expect(next.getBoundingClientRect().top).to.be.closeTo(initialLip, 1);
 
           const style = getComputedStyle(block.closest('.section'));
-          const fit = parseFloat(style.getPropertyValue('--sh-fit'));
-          const release = parseFloat(style.getPropertyValue('--sh-release'));
-          await scrollToPosition(fit);
-          const revealed = frame.getBoundingClientRect();
-          expect(revealed.top).to.be.at.least(124);
-          expect(revealed.left).to.be.at.least(0);
-          expect(revealed.right).to.be.at.most(document.documentElement.clientWidth);
-          expect(revealed.bottom).to.be.at.most(next.getBoundingClientRect().top);
-          expect(revealed.bottom).to.be.at.most(window.innerHeight);
+          const shrinkEnd = parseFloat(style.getPropertyValue('--sh-shrink-end'));
+          const ratio = (name) => parseFloat(style.getPropertyValue(`--sh-desktop-${name}-ratio`));
+          const pinEnd = shrinkEnd * ratio('pin-end');
+          const effectEnd = pinEnd + shrinkEnd * ratio('release') + window.innerHeight;
+          await scrollToPosition(shrinkEnd);
+          const shrunk = frame.getBoundingClientRect();
+          const scaleMin = parseFloat(style.getPropertyValue('--sh-desktop-frame-scale-min'));
+          expect(shrunk.width / initialMedia.width).to.be.at.least(scaleMin - 0.01);
+          if (direction === 'ltr') expect(shrunk.left).to.be.at.least(0);
+          else expect(shrunk.right).to.be.at.most(document.documentElement.clientWidth);
 
           let covered = false;
-          for (let y = release + 80; y <= release + window.innerHeight; y += 80) {
+          for (let y = pinEnd + 80; y <= effectEnd; y += 80) {
             await scrollToPosition(y);
             const sheet = next.getBoundingClientRect();
             if (sheet.top > 124 && sheet.top + 16 < frame.getBoundingClientRect().bottom) {
@@ -721,12 +724,12 @@ describe('Split Hero', () => {
     });
 
     async function scrollMobileSpan(block) {
-      const span = parseFloat(block.closest('.section').style.getPropertyValue('--sh-mobile-span'));
+      const span = parseFloat(block.closest('.section').style.getPropertyValue('--sh-drift-end'));
       await scrollToPosition(span);
       return span;
     }
 
-    const mobileLag = (item, span) => span * parseFloat(getComputedStyle(item).getPropertyValue('--sh-rate'));
+    const mobileLag = (item, span) => span * parseFloat(getComputedStyle(item).getPropertyValue('--sh-drift-rate'));
 
     it('drifts mobile layers without pinning or shrinking the media', async () => {
       const block = await renderReveal(390);
@@ -820,7 +823,7 @@ describe('Split Hero', () => {
 
     it('reserves only the nav without breadcrumbs', async () => {
       const block = await renderReveal(1440, true, MEDIA, false);
-      expect(getComputedStyle(block.closest('.section')).getPropertyValue('--sh-head')).to.equal('80px');
+      expect(getComputedStyle(block.closest('.section')).getPropertyValue('--sh-header-height')).to.equal('80px');
     });
 
     it('sizes poster-only video before playback metadata is available', async () => {
