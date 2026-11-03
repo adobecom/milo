@@ -466,13 +466,8 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
 /* Keep the shared control on the visible edge of bleeding video. */
 :root .split-hero .split-hero-media .video-container button.play-pause-button {
-  inset-inline-start: var(--s2a-spacing-md);
-  inset-inline-end: auto;
-}
-
-:root .split-hero.parallax-reveal .split-hero-media .video-container button.play-pause-button {
-  inset-block-start: var(--s2a-spacing-md);
-  inset-block-end: auto;
+  inset-block: var(--s2a-spacing-md) auto;
+  inset-inline: var(--s2a-spacing-md) auto;
 }
 
 @supports (animation-timeline: view()) {

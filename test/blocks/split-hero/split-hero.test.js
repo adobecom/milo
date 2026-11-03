@@ -551,29 +551,31 @@ describe('Split Hero', () => {
     afterEach(() => foundation.remove());
 
     [false, true].forEach((parallax) => {
-      it(`keeps the control ${parallax ? 'top' : 'bottom'}-left ${parallax ? 'with' : 'without'} parallax`, async () => {
-        const block = buildBlock([
-          '<h1>Headline</h1>',
-          '<div class="video-container"><video width="1600" height="900"></video><button class="play-pause-button video-button" aria-label="Pause video"></button></div>',
-        ]);
-        if (parallax) block.classList.add('parallax-reveal');
+      it(`keeps the control top-left and visible ${parallax ? 'with' : 'without'} parallax`, async () => {
+        document.body.innerHTML = `<main><div class="section">
+          <div class="split-hero${parallax ? ' parallax-reveal' : ''}">${row('<h1>Headline</h1>', '<div class="video-container"><video width="1600" height="900" style="aspect-ratio:16/9"></video><button class="play-pause-button video-button" aria-label="Pause video"></button></div>')}</div>
+        </div><div class="section" style="background:#fff;height:1200px"></div></main>`;
+        const block = document.querySelector('.split-hero');
         init(block);
 
-        for (const width of [390, 1440]) {
+        for (const width of [390, 1440, 1920]) {
           await setViewport({ width, height: 900 });
           await nextFrame();
+          block.getAnimations({ subtree: true })
+            .filter((animation) => animation instanceof window.CSSTransition)
+            .forEach((animation) => animation.finish());
+          await nextFrame();
           const holder = block.querySelector('.video-container').getBoundingClientRect();
-          const button = block.querySelector('.play-pause-button').getBoundingClientRect();
-          const style = getComputedStyle(block);
-          const left = parseFloat(style.getPropertyValue('--s2a-spacing-md'));
-          expect(button.left).to.be.closeTo(holder.left + left, 1);
-          if (parallax) {
-            expect(button.top).to.be.closeTo(holder.top + left, 1);
-          } else {
-            const token = width >= 1280 ? '--s2a-spacing-xl' : '--s2a-spacing-md';
-            const bottom = parseFloat(style.getPropertyValue(token));
-            expect(button.bottom).to.be.closeTo(holder.bottom - bottom, 1);
-          }
+          const control = block.querySelector('.play-pause-button');
+          const button = control.getBoundingClientRect();
+          const inset = parseFloat(getComputedStyle(block).getPropertyValue('--s2a-spacing-md'));
+          expect(button.left).to.be.closeTo(holder.left + inset, 1);
+          expect(button.top).to.be.closeTo(holder.top + inset, 1);
+          const hit = document.elementFromPoint(
+            button.left + button.width / 2,
+            button.top + button.height / 2,
+          );
+          expect(hit?.closest('.play-pause-button')).to.equal(control);
         }
       });
     });

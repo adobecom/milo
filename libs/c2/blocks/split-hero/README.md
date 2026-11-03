@@ -9,7 +9,6 @@ Use `Split Hero (parallax-reveal)` in the first section, followed by a section
 with `rounded-corners-top`. Desktop starts with media behind the rounded
 section, reveals the whole frame while holding the copy, then lets the lower
 section rise over it. Mobile uses subtle layer drift without pinning or scaling.
-Video play/pause controls sit top-left for this variant, instead of bottom-left.
 On load, the copy text, merch card and supporting text fade and rise in turn,
 with the media after the copy text from 900px and last below that. Copy text
 and media start at
