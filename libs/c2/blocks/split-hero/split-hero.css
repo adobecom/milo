@@ -186,6 +186,11 @@
     }
   }
 
+  /* extra 12px gives 24px below the CTAs. */
+  .split-hero-merch-ctas + .supplemental-text {
+    margin-block-start: var(--s2a-spacing-sm);
+  }
+
   .split-hero-merch-content {
     align-items: flex-start;
     align-self: stretch;
