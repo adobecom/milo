@@ -40,6 +40,12 @@ Use separate live and post-event fragments containing `max26-login-prompt (dark)
 2. A single-cell row containing a logo picture in its own paragraph, a heading,
    body copy, a primary sign-in/sign-up link, and an optional guest link.
 
+Backgrounds and the logo also accept direct PNG, JPG/JPEG, GIF, WebP, or AVIF
+links. Use the full absolute image URL as both the destination and display text;
+optionally append ` | alt text` to the display text. SVG links use the shared
+link decoration. Inserted images with `./media_` paths are resolved relative to
+the fragment URL, not the treatment page.
+
 The primary CTA is the last content link, or the link immediately before the
 explicit guest link. Author Continue as guest with destination `#guest`.
 Only that explicit hash creates a guest close button; body-copy links remain
