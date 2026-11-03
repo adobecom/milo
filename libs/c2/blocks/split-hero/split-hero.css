@@ -58,12 +58,9 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
 
-    .heading-2 {
-      text-wrap: balance;
-    }
-
+    .heading-2,
     p {
-      text-wrap: pretty;
+      text-wrap: balance;
     }
   }
 
@@ -143,7 +140,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
     background: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
     border-radius: var(--split-hero-frame-radius);
-    inline-size: 105%;
+    inline-size: 110%;
     padding: var(--split-hero-media-padding);
     box-shadow:
       inset 0 0 0 var(--s2a-border-width-sm) var(--s2a-color-gray-25),
