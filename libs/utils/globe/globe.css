@@ -132,14 +132,11 @@
   pointer-events: none;
   z-index: 1;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+  transition: opacity 0.35s ease;
 }
 
 .globe-controls.is-visible {
   opacity: 1;
-  visibility: visible;
-  transition: opacity 0.35s ease, visibility 0s;
 }
 
 .globe-control,

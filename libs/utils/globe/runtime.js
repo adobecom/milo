@@ -863,7 +863,6 @@ function createGlobeRuntime(spec, {
   let a11y;
 
   let suppressFocusSnap = false;
-  let focusSnapPending = false;
 
   function measureBlock() {
     blockDocTop = root.getBoundingClientRect().top + window.scrollY;
@@ -981,12 +980,8 @@ function createGlobeRuntime(spec, {
   function snapToBrowseView() {
     if (suppressFocusSnap) return;
     const top = build.hooks.browseScrollTop();
-    focusSnapPending = true;
-    requestAnimationFrame(() => {
-      if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
-      else window.scrollTo(0, top);
-      focusSnapPending = false;
-    });
+    if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
+    else window.scrollTo(0, top);
   }
 
   // Armed on blur/hidden, disarmed a frame after focus, so a tab-return can't re-snap.
@@ -1099,7 +1094,7 @@ function createGlobeRuntime(spec, {
     return orientation.update({
       dtScale: frame.dtScale,
       interactive: frame.interactive,
-      orientReset: frame.orientReset && !focusSnapPending,
+      orientReset: frame.orientReset,
       frozen: modal.getModalIdx() >= 0,
       browsing: a11y.isBrowsing(),
       spinEnabled: !reducedMotion && !controls.isSpinPaused(),
@@ -1242,7 +1237,6 @@ function createGlobeRuntime(spec, {
     clearTimeout(ctxLoss.stableTimer);
     clearTimeout(ctxLoss.recoverTimer);
     ctxLoss.recovering = false;
-    focusSnapPending = false;
     build.disposer.dispose();
     build = createBuild();
     modal.destroy(finalize);

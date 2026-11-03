@@ -188,7 +188,7 @@ const buildMarkup = ({ name, labels, arcCopyHtml, modalInfoHtml }) => {
   return `
   <div class="globe-world">
     <canvas class="globe-canvas"></canvas>
-    <div class="globe-controls">
+    <div class="globe-controls" inert>
       <button class="globe-control globe-spin-toggle" type="button" daa-ll="pause_spin--${daaName}" aria-label="${escapeHtml(labels.pauseSpin)}">
         <svg class="globe-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
         <svg class="globe-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>

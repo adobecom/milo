@@ -327,8 +327,7 @@ the canvas; pointer capture keeps coordinates live through a drag. It needs `has
 ## Globe controls
 
 A spin play/pause toggle (top inline-end, every shape; hidden under reduced motion) and, on the barrel, a rotate ← /
-hint copy / rotate → row. One visibility window for the layer: `globeLive()`. CSS transitions `opacity` and `visibility`;
-`visibility` pulls hidden buttons out of the tab order, flipping only after the fade.
+hint copy / rotate → row. One visibility window for the layer: `globeLive()`. `is-visible` and `inert` flip together.
 
 - Tab order is entry widget → spin → rotate ← → rotate →; `controls.setup()` runs after `a11y.setup()`. Hiding doesn't
   move focus anywhere: the browser keeps the sequential focus start point.
@@ -463,7 +462,7 @@ samples targets (alpha ≥ `INK_ALPHA`). The figure drops `-webkit-font-smoothin
 re-raster or re-pair; the old draws stay until the new ones swap in.
 
 **Swap and pinning.** From `QUOTE_LIVE_P` the crisp plane shows without waiting for a pairing, so landing mid-page never
-blanks. `--globe-pq-dom` mixes the DOM ink and crosshair in, then the canvas hides.
+blanks. `--globe-pq-dom` mixes the DOM ink and crosshair in, then the canvas hides; a one-viewport jump skips the tween.
 `-pin` covers the block; `-rail` sticks like the world, `--globe-pq-rail-h` tall. With `manageCanvas`, the canvas
 switches from `fixed` to `absolute` inside the stuck world once `p > 0`.
 

@@ -257,6 +257,7 @@ export function createGlobeControls(ctx, { name, labels, getVisible, getHintDism
 
   function teardown() {
     layerEl.classList.remove('is-visible');
+    layerEl.inert = true;
     hintEl.classList.remove('is-dismissed');
     layerEl = null;
     spinBtn = null;
@@ -286,6 +287,7 @@ export function createGlobeControls(ctx, { name, labels, getVisible, getHintDism
     if (visible !== appliedVisible) {
       appliedVisible = visible;
       layerEl.classList.toggle('is-visible', visible);
+      layerEl.inert = !visible;
     }
     const dismissed = getHintDismissed();
     if (dismissed !== appliedDismissed) {
