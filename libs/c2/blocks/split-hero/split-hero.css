@@ -470,9 +470,11 @@
       }
 
       .section.split-hero-reveal {
-        view-timeline-name: --split-hero;
-        view-timeline-axis: block;
-        view-timeline-inset: 0;
+        &:not([data-status]) {
+          view-timeline-name: --split-hero;
+          view-timeline-axis: block;
+          view-timeline-inset: 0;
+        }
 
         > .split-hero.parallax-reveal {
           animation: none;

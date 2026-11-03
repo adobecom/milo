@@ -17,6 +17,10 @@ and media start at
 drifts on the same elements must stay on `transform`.
 The variant replaces a section's garage-door animation. Reduced motion and
 browsers without scroll-timeline support retain the static layout.
+Firefox supports scroll-driven animations but does not create a named view
+timeline from the `view-timeline` shorthand, and keeps it inactive if it is
+declared while the section is hidden. The timeline is therefore declared with
+longhands, and only once Milo removes the section's `data-status`.
 Use `?milolibs=local` to test local code with the authored variant.
 
 ## Authoring
