@@ -2,8 +2,6 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateBlockBg, decorateBlockText, decorateButtons, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 
 const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
-const NAV_HEIGHT = 80;
-const BREADCRUMBS_HEIGHT = 44;
 
 const hasContent = (cell) => !!cell
   && (!!cell.textContent.trim() || !!cell.querySelector(':not(p, br)'));
@@ -130,13 +128,7 @@ function decorate(block, root) {
   block.replaceChildren(...[background, content].filter(Boolean));
 }
 
-function getHeaderHeight() {
-  const header = document.querySelector('header');
-  if (!header) return 0;
-  return NAV_HEIGHT + (header.classList.contains('has-breadcrumbs') ? BREADCRUMBS_HEIGHT : 0);
-}
-
-function initParallax(el, head) {
+function initParallax(el) {
   if (!el.classList.contains('parallax-reveal')) return;
   const section = el.closest('.section');
   const next = section?.nextElementSibling;
@@ -147,6 +139,7 @@ function initParallax(el, head) {
   const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
   const measure = () => {
     if (!motion.matches) return;
+    const head = parseFloat(getComputedStyle(section).getPropertyValue('--sh-head')) || 0;
     if (window.innerWidth < 900) {
       section.style.setProperty('--sh-mobile-span', `${Math.max(200, el.offsetHeight - head)}px`);
       return;
@@ -209,7 +202,5 @@ function initParallax(el, head) {
 
 export default function init(el) {
   decorateViewportContent(el, decorate);
-  const head = getHeaderHeight();
-  (el.closest('.section') || el).style.setProperty('--sh-head', `${head}px`);
-  initParallax(el, head);
+  initParallax(el);
 }

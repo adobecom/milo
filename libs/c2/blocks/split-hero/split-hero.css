@@ -1,5 +1,19 @@
 /* Following specs, which don't follow Consonant */
 
+@property --sh-head {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 124px;
+}
+
+.section:has(> .split-hero) {
+  --sh-head: calc(var(--global-height-nav, 80px) + var(--split-hero-breadcrumbs-h, 0px));
+}
+
+body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
+  --split-hero-breadcrumbs-h: 44px;
+}
+
 /* stylelint-disable-next-line no-descending-specificity */
 .split-hero {
   --split-hero-top-padding: var(--s2a-spacing-lg);
@@ -17,7 +31,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xl);
-    padding-block: calc(var(--sh-head, 124px) + var(--split-hero-top-padding)) var(--s2a-spacing-xl);
+    padding-block: calc(var(--sh-head) + var(--split-hero-top-padding)) var(--s2a-spacing-xl);
     position: relative;
   }
 
@@ -481,7 +495,7 @@
           will-change: auto;
 
           .split-hero-content {
-            padding-block-start: calc(var(--sh-head, 124px) + 32px);
+            padding-block-start: calc(var(--sh-head) + 32px);
           }
 
           .split-hero-text {

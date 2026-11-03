@@ -783,7 +783,7 @@ describe('Split Hero', () => {
 
     it('reserves only the nav without breadcrumbs', async () => {
       const block = await renderReveal(1440, true, MEDIA, false);
-      expect(block.closest('.section').style.getPropertyValue('--sh-head')).to.equal('80px');
+      expect(getComputedStyle(block.closest('.section')).getPropertyValue('--sh-head')).to.equal('80px');
     });
 
     it('sizes poster-only video before playback metadata is available', async () => {
