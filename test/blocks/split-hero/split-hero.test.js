@@ -520,6 +520,16 @@ describe('Split Hero', () => {
       expect(clicked).to.be.true;
     });
 
+    it('removes autoplay videos from the tab order but keeps native controls focusable', async () => {
+      const block = buildBlock(['<h1>Headline</h1>', '<video muted autoplay></video><video controls></video>'], ['', '<video muted autoplay></video>']);
+      await init(block);
+
+      const [autoplay, controls] = block.querySelectorAll('.split-hero-media video');
+      expect(autoplay.getAttribute('tabindex')).to.equal('-1');
+      expect(controls.hasAttribute('tabindex')).to.be.false;
+      expect(block.querySelector('.split-hero-background video').getAttribute('tabindex')).to.equal('-1');
+    });
+
     it('is a no-op and does not throw when the block has no rows', async () => {
       const block = await initBlock('./mocks/empty.html');
       expect(block.children.length).to.equal(0);

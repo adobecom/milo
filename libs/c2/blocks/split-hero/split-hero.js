@@ -126,6 +126,7 @@ function decorate(block, root) {
   }
   const background = decorateBackground(block, bg);
   block.replaceChildren(...[background, content].filter(Boolean));
+  block.querySelectorAll('video:not([controls])').forEach((video) => video.setAttribute('tabindex', '-1'));
 }
 
 function initParallax(el) {

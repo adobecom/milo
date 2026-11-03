@@ -503,7 +503,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
             transition-property: opacity, translate;
 
             @starting-style {
-              opacity: 0.05;
+              opacity: 0.01;
               translate: 0 40px;
             }
           }
