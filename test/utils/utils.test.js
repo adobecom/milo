@@ -4446,19 +4446,28 @@ describe('utils.js market — getMarketConfig()', () => {
 
   it('fetches and caches marketsConfig when not present', async () => {
     const mockData = { languages: { data: [{ prefix: '', langName: 'English' }] } };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    const jsonStub = sinon.stub().returns(dataPromise);
     setConfig({ locale: { prefix: '' } });
     const fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
-      json: () => Promise.resolve(mockData),
+      json: jsonStub,
     });
 
-    const result = await getMarketConfig();
+    const first = getMarketConfig();
+    await Promise.resolve();
+    const second = getMarketConfig();
+    resolveData(mockData);
+    const [result, concurrentResult] = await Promise.all([first, second]);
     expect(result).to.not.be.null;
     expect(result.languages).to.be.an('array');
     expect(result.languages[0].langName).to.equal('English');
+    expect(concurrentResult).to.deep.equal(result);
     expect(utils.getConfig().marketsConfig).to.equal(mockData);
     expect(await getMarketConfig()).to.deep.equal(result);
     expect(fetchStub.calledOnce).to.be.true;
+    expect(jsonStub.calledOnce).to.be.true;
   });
 
   it('returns cached config on subsequent calls', async () => {
@@ -4469,30 +4478,6 @@ describe('utils.js market — getMarketConfig()', () => {
     const result = await getMarketConfig();
     expect(result.languages[0].langName).to.equal('German');
     expect(fetchStub.called).to.be.false;
-    expect(utils.getConfig().marketsConfig).to.equal(mockData);
-  });
-
-  it('shares an in-flight request until its JSON has been parsed', async () => {
-    const mockData = { languages: { data: [{ prefix: 'de', langName: 'German' }] } };
-    let resolveData;
-    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
-    setConfig({});
-    const jsonStub = sinon.stub().returns(dataPromise);
-    const fetchStub = sinon.stub(window, 'fetch').resolves({
-      ok: true,
-      json: jsonStub,
-    });
-
-    const first = getMarketConfig();
-    await Promise.resolve();
-    const second = getMarketConfig();
-    resolveData(mockData);
-    const results = await Promise.all([first, second]);
-
-    expect(fetchStub.calledOnce).to.be.true;
-    expect(jsonStub.calledOnce).to.be.true;
-    expect(results).to.deep.equal([{ languages: mockData.languages.data },
-      { languages: mockData.languages.data }]);
     expect(utils.getConfig().marketsConfig).to.equal(mockData);
   });
 
@@ -4540,40 +4525,25 @@ describe('utils.js market — getMarketConfig()', () => {
     delete window.lana;
   });
 
-  it('logs HTTP failures and retries without caching the failure', async () => {
-    const mockData = { data: [{ prefix: '', langName: 'English' }] };
-    setConfig({ locale: { prefix: '' } });
-    const fetchStub = sinon.stub(window, 'fetch');
-    fetchStub.onFirstCall().resolves({ ok: false, status: 500 });
-    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
-    window.lana = { log: sinon.stub() };
+  [
+    ['non-OK response', { ok: false, status: 500 }, 'Failed to load market config'],
+    ['invalid JSON', { ok: true, json: () => Promise.reject(new Error('Invalid JSON')) }, 'Invalid JSON'],
+  ].forEach(([failure, response, error]) => {
+    it(`logs ${failure} and retries without caching the failure`, async () => {
+      const mockData = { data: [{ prefix: '', langName: 'English' }] };
+      setConfig({});
+      const fetchStub = sinon.stub(window, 'fetch');
+      fetchStub.onFirstCall().resolves(response);
+      fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
+      window.lana = { log: sinon.stub() };
 
-    const result = await getMarketConfig();
-    expect(result).to.be.null;
-    expect(window.lana.log.calledWithExactly('Market Utils Error: Failed to load market config')).to.be.true;
-    expect(utils.getConfig().marketsConfig).to.be.undefined;
-    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
-    expect(fetchStub.calledTwice).to.be.true;
-    delete window.lana;
-  });
-
-  it('logs invalid JSON and retries without caching the failure', async () => {
-    const mockData = { data: [{ prefix: '', langName: 'English' }] };
-    setConfig({});
-    const fetchStub = sinon.stub(window, 'fetch');
-    fetchStub.onFirstCall().resolves({
-      ok: true,
-      json: () => Promise.reject(new Error('Invalid JSON')),
+      expect(await getMarketConfig()).to.be.null;
+      expect(window.lana.log.calledWithExactly(`Market Utils Error: ${error}`)).to.be.true;
+      expect(utils.getConfig().marketsConfig).to.be.undefined;
+      expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+      expect(fetchStub.calledTwice).to.be.true;
+      delete window.lana;
     });
-    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
-    window.lana = { log: sinon.stub() };
-
-    expect(await getMarketConfig()).to.be.null;
-    expect(window.lana.log.calledWithExactly('Market Utils Error: Invalid JSON')).to.be.true;
-    expect(utils.getConfig().marketsConfig).to.be.undefined;
-    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
-    expect(fetchStub.calledTwice).to.be.true;
-    delete window.lana;
   });
 
   it('handles marketsConfig with flat data array', async () => {
