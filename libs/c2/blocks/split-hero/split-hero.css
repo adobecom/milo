@@ -134,7 +134,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
   }
 
   .split-hero-media-frame {
-    background: rgb(255 255 255 / 5%);
+    background: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
     border-radius: var(--split-hero-frame-radius);
     inline-size: 120%;
@@ -155,7 +155,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    border-block-start: var(--s2a-border-width-1) solid var(--s2a-color-transparent-black-16);
+    border-block-start: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-16);
     gap: var(--s2a-spacing-sm);
     padding-block-start: var(--s2a-spacing-sm);
 
@@ -227,7 +227,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
     merch-badge {
       --merch-badge-background-color: var(--split-hero-content) !important;
-      --merch-badge-border: 1px solid var(--split-hero-content) !important;
+      --merch-badge-border: var(--s2a-border-width-sm) solid var(--split-hero-content) !important;
       --merch-badge-border-radius: var(--s2a-border-radius-2xs) !important;
       --merch-badge-color: var(--split-hero-badge-color) !important;
       --merch-badge-padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs) !important;
@@ -453,10 +453,6 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
 @media (width >= 1440px) {
   .split-hero {
-    .split-hero-content {
-      --grid-margin-width: var(--s2a-spacing-4xl);
-    }
-
     .split-hero-media-frame {
       inline-size: 1334px;
     }
@@ -697,16 +693,16 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
   @keyframes sh-lip-drift {
     from {
-      margin-block-start: calc(-1 * (var(--sh-hold) + var(--s2a-border-radius-xl, 32px)));
+      margin-block-start: calc(-1 * (var(--sh-hold) + var(--s2a-border-radius-xl)));
       animation-timing-function: linear;
     }
 
     66.6667% {
-      margin-block-start: calc(var(--sh-release) - var(--sh-hold) - var(--s2a-border-radius-xl, 32px));
+      margin-block-start: calc(var(--sh-release) - var(--sh-hold) - var(--s2a-border-radius-xl));
       animation-timing-function: cubic-bezier(0.3333, 0.6667, 0.6667, 1);
     }
 
-    to { margin-block-start: calc(-1 * var(--s2a-border-radius-xl, 32px)); }
+    to { margin-block-start: calc(-1 * var(--s2a-border-radius-xl)); }
   }
 }
 

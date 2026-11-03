@@ -138,10 +138,11 @@ function initParallax(el) {
   if (!CSS.supports('timeline-scope: --split-hero')) return;
 
   const motion = window.matchMedia('(prefers-reduced-motion: no-preference)');
+  const desktop = window.matchMedia('(width >= 900px)');
   const measure = () => {
     if (!motion.matches) return;
     const head = parseFloat(getComputedStyle(section).getPropertyValue('--sh-head')) || 0;
-    if (window.innerWidth < 900) {
+    if (!desktop.matches) {
       section.style.setProperty('--sh-mobile-span', `${Math.max(200, el.offsetHeight - head)}px`);
       return;
     }
@@ -184,20 +185,21 @@ function initParallax(el) {
     Object.entries(values).forEach(([name, value]) => section.style.setProperty(name, value));
     next.style.setProperty('--sh-release', `${release}px`);
   };
+  let scheduled = 0;
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = requestAnimationFrame(() => {
+      scheduled = 0;
+      measure();
+    });
+  };
   const observer = new ResizeObserver(measure);
   el.querySelectorAll('.split-hero-foreground, .split-hero-media-frame')
     .forEach((item) => observer.observe(item));
-  el.addEventListener('load', measure, true);
-  el.addEventListener('loadedmetadata', measure, true);
-  let resizeFrame = 0;
-  window.addEventListener('resize', () => {
-    if (resizeFrame) return;
-    resizeFrame = requestAnimationFrame(() => {
-      resizeFrame = 0;
-      measure();
-    });
-  });
-  motion.addEventListener('change', measure);
+  el.addEventListener('load', schedule, true);
+  el.addEventListener('loadedmetadata', schedule, true);
+  window.addEventListener('resize', schedule);
+  motion.addEventListener('change', schedule);
   measure();
 }
 
