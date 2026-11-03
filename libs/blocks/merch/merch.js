@@ -1828,9 +1828,11 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  const command = fragments?.[fragment]?.[options.field || ''];
+  const rows = fragments?.[fragment];
+  let command = rows?.[options.field || ''];
+  if (!command && options.field && rows?.['']?.pzn) command = rows[''];
   if (command && command.action === 'replace') {
-    return { ...options, fragment: command.content };
+    return { ...options, fragment: command.content, ...(command.pzn && { pzn: command.pzn }) };
   }
   return options;
 }
