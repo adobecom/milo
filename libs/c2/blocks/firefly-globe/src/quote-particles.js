@@ -1121,7 +1121,7 @@ export function createPullQuote({
     return scrollY >= blockDocTop + blockHeight - getView().H;
   };
 
-  function update({ scrollY, dtScale }) {
+  function update({ scrollY, scrollVel, dtScale }) {
     if (!fx) return;
     s.on = fx.isReady() && !forcedColors?.matches;
     const startY = scrollYAtTravelT(s.startT, getSpan());
@@ -1129,7 +1129,9 @@ export function createPullQuote({
     const live = s.p >= QUOTE_LIVE_P;
     const want = isOn() && live;
     const step = (dtScale * FRAME_MS) / SWAP_MS;
-    s.swapT = want && worldReleased(scrollY) ? 1 : clamp01(s.swapT + (want ? step : -step));
+    const jumped = scrollVel * dtScale >= getView().H;
+    s.swapT = jumped || (want && worldReleased(scrollY))
+      ? Number(want) : clamp01(s.swapT + (want ? step : -step));
     const str = s.swapT.toFixed(3);
     if (str !== s.swapStr) {
       s.swapStr = str;

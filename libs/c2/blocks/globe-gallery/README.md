@@ -1376,9 +1376,8 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
 
 - **One visibility window** for the whole layer: `sphereFormT >= SPHERE_INTERACTIVE_T`, no modal
   open, `zoomT < liveUntil()` — i.e. exactly while the globe is draggable. `controls.js`
-  writes the `is-visible` class only when that boolean flips. CSS transitions `opacity` **and
-  `visibility`**; the latter is what pulls the buttons out of the tab order while hidden, so the
-  block's tab stops never point at invisible chrome.
+  writes the `is-visible` class only when that boolean flips, with `inert` alongside it (and in the
+  markup). CSS fades only `opacity`, so a fading button is already out of the tab order.
 - **The hide edge is a place in the scene, not a scalar** — the same cue the pull-quote rides, so
   the two share one number and can't drift apart. A band-independent constant cannot work here:
   every input to the cue is per-band — `publishPqAppearZoomT` derives the clear point from
@@ -1396,7 +1395,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   forward-tabbing user would walk past them while they're still hidden and never come back.
   `controls.setup()` therefore runs after `a11y.setup()` and re-appends its layer last. Focusing
   the entry widget snaps the page to the formed globe, so the controls are visible by the time the
-  next Tab lands on them. **Hiding does NOT hand focus anywhere, deliberately.** When the fade takes
+  next Tab lands on them. **Hiding does NOT hand focus anywhere, deliberately.** When `inert` takes
   a focused control unfocusable, `document.activeElement` goes to `<body>` — which looks like a
   dropped tab stop but isn't: the browser keeps its *sequential focus navigation starting point*
   where the control was, so Tab continues into the sections below and Shift+Tab returns to the entry
@@ -2070,7 +2069,8 @@ crisp plane shows and the cards hide without waiting for a pairing, so landing p
 reload or an anchor jump) never shows a blank frame. `update` tweens `--gg-pq-dom` 0 → 1 over
 `SWAP_MS`: the DOM copy's ink and the CSS crosshair's border colour mix in from transparent
 (`color-mix`), then `updateCanvasVisibility` hides the canvas. Below `QUOTE_LIVE_P` it runs back and
-the canvas reappears before the reverse flight. The raster comes from the DOM's own layout, and three
+the canvas reappears before the reverse flight. A scroll of a viewport or more in one frame skips
+the tween. The raster comes from the DOM's own layout, and three
 details make the two match: the figure drops the page's `-webkit-font-smoothing: antialiased` (canvas
 can't use it), the raster uses the DOM-measured ascent, and it snaps positions to device pixels as
 layout does. The frames either side of the swap differ by a fraction of one 8-bit level on average.

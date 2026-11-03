@@ -254,7 +254,7 @@ export function parseAuthoredContent(el) {
 const buildMarkup = (gid, labels, ctaLabel) => `
   <div class="firefly-globe-world">
     <canvas class="firefly-globe-canvas" style="position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
-    <div class="firefly-globe-controls">
+    <div class="firefly-globe-controls" inert>
       <button class="firefly-globe-control firefly-globe-spin-toggle" type="button" daa-ll="pause_spin--firefly_globe" aria-label="${escapeHtml(labels.pauseSpin)}">
         <svg class="firefly-globe-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
         <svg class="firefly-globe-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>

@@ -474,7 +474,6 @@ function createGlobeGalleryRuntime(
   let cursor = null;
 
   let suppressFocusSnap = false;
-  let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
 
   let arcCtx = null; // current arc context, rebuilt per frame in tick() via buildArcCtx
 
@@ -961,15 +960,8 @@ function createGlobeGalleryRuntime(
     const top = reducedMotion
       ? worldEl.getBoundingClientRect().top + window.scrollY
       : blockDocTop + formedScrollPx() * TL.BROWSE_VIEW_SCROLL_FRAC;
-    // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
-    // before the callback below lands. Above the block that tick would reset the orientation and
-    // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
-    focusSnapPending = true;
-    requestAnimationFrame(() => {
-      if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
-      else window.scrollTo(0, top);
-      focusSnapPending = false;
-    });
+    if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
+    else window.scrollTo(0, top);
   }
 
   // Armed on blur/hidden, disarmed a frame after focus, so a tab-return can't re-snap.
@@ -1230,7 +1222,7 @@ function createGlobeGalleryRuntime(
     if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
 
     // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
-    if (sphereFormT < TL.SPHERE_ORIENT_RESET_T && !focusSnapPending) {
+    if (sphereFormT < TL.SPHERE_ORIENT_RESET_T) {
       resetSphereOrientation();
       drag.velX = 0;
       drag.velY = 0;

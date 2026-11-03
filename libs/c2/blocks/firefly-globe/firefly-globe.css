@@ -133,17 +133,11 @@
   pointer-events: none; /* not intercepting canvas drag */
   z-index: 1;
   opacity: 0;
-  visibility: hidden; /* pulls the buttons out of the tab order while the globe isn't live */
-
-  /* visibility flips AFTER the fade, never during: an interpolated `visible` would leave the
-     buttons tappable and tabbable at opacity 0 for the whole 0.35s. */
-  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+  transition: opacity 0.35s ease;
 }
 
 .firefly-globe-controls.is-visible {
   opacity: 1;
-  visibility: visible;
-  transition: opacity 0.35s ease, visibility 0s;
 }
 
 .firefly-globe-control {

@@ -48,6 +48,7 @@ export default function createGlobeControls({ q, labels, getVisible, getHintDism
     if (visible !== appliedVisible) {
       appliedVisible = visible;
       layerEl.classList.toggle('is-visible', visible);
+      layerEl.inert = !visible;
     }
     const dismissed = typeof getHintDismissed === 'function' && getHintDismissed();
     if (dismissed !== appliedDismissed) {
@@ -62,6 +63,7 @@ export default function createGlobeControls({ q, labels, getVisible, getHintDism
     spinBtn?.removeEventListener('click', onSpinClick);
     rotateBtns.forEach((btn) => btn.removeEventListener('click', onRotateClick));
     layerEl?.classList.remove('is-visible');
+    if (layerEl) layerEl.inert = true;
     hintEl?.classList.remove('is-dismissed');
     layerEl = null;
     spinBtn = null;

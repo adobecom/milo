@@ -379,7 +379,6 @@ function createGlobeGalleryRuntime(
   let fadeRefH = 0; // wall-wide card height the near-camera fade bands off; recomputeDragFlip
   let cameraInsideSphere = false;
   let dragFlipZ = 0; // camera z at which drag inverts; set in buildCards
-  let focusSnapPending = false; // focus armed a nudge; the snap lands next frame
   let textMesh = null;
   let hintRetired = false;
   let hintExitT = 0;
@@ -899,15 +898,8 @@ function createGlobeGalleryRuntime(
   function snapToBrowseView() {
     if (suppressFocusSnap) return;
     const top = Math.ceil(blockDocTop);
-    // The rAF loop re-arms itself each tick, so exactly one tick runs on the OLD scroll position
-    // before the callback below lands. Above the block that tick would reset the orientation and
-    // cancel the nudge focus just armed, leaving the card off screen. Hold the reset for it.
-    focusSnapPending = true;
-    requestAnimationFrame(() => {
-      if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
-      else window.scrollTo(0, top);
-      focusSnapPending = false;
-    });
+    if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
+    else window.scrollTo(0, top);
   }
 
   // Armed on blur/hidden, disarmed a frame after focus, so a tab-return can't re-snap.
@@ -1132,7 +1124,7 @@ function createGlobeGalleryRuntime(
     // Fast-path flag so the rotation math can be skipped when upright.
     const sphereRotActive = (sphereOrient.y !== 0 || sphereOrient.x !== 0 || sphereOrient.z !== 0);
     // Full reset only at the very top — a dip mid-scroll keeps orientation and inertia.
-    if (!interactive && !focusSnapPending) {
+    if (!interactive) {
       resetSphereOrientation();
       drag.velX = 0;
       drag.velY = 0;
@@ -1717,7 +1709,6 @@ function createGlobeGalleryRuntime(
     pullQuote.teardown();
     pqAppearT = 1;
     canvasHidden = false;
-    focusSnapPending = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();
     sphereDragWarp = 0;
