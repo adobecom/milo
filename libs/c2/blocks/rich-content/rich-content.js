@@ -83,12 +83,16 @@ function getJumpTarget(hash) {
   return target && !target.classList.contains('dialog-modal') ? target : null;
 }
 
+// Focus the first visible heading so screen readers announce only the title;
+// headings in hidden viewport variants can't take focus.
 function focusJumpTarget(target) {
-  if (!target.hasAttribute('tabindex')) {
-    target.setAttribute('tabindex', '-1');
-    target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+  const el = [...target.querySelectorAll('h1, h2, h3, h4, h5, h6')]
+    .find((heading) => heading.getClientRects().length) ?? target;
+  if (!el.hasAttribute('tabindex')) {
+    el.setAttribute('tabindex', '-1');
+    el.addEventListener('blur', () => el.removeAttribute('tabindex'), { once: true });
   }
-  target.focus({ preventScroll: true });
+  el.focus({ preventScroll: true });
 }
 
 function decorateJumpLinks(content, foreground) {

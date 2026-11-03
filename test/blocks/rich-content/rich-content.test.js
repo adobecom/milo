@@ -266,7 +266,8 @@ describe('Rich Content', () => {
         <p><a href="#get-insights">Get Insights</a> | <a href="#share">Share</a> | <a href="#missing">Missing</a></p>
         </div></div></div></div>
         <div class="section" id="get-insights"><a href="/x">First link</a></div>
-        <div class="section" id="share" tabindex="0"></div>`;
+        <div class="section" id="share" tabindex="0"></div>
+        <div class="section" id="titled"><h2 style="display:none">Hidden title</h2><h3>Visible title</h3></div>`;
       init(document.querySelector('.rich-content'));
     });
     afterEach(() => {
@@ -291,6 +292,15 @@ describe('Rich Content', () => {
       expect(document.activeElement === target).to.be.true;
       target.blur();
       expect(target.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('focuses the first visible heading in the target section', () => {
+      document.querySelector('.jump-link-anchor').href = '#titled';
+      const heading = document.querySelector('#titled h3');
+      click(0);
+      expect(document.activeElement === heading).to.be.true;
+      heading.blur();
+      expect(heading.hasAttribute('tabindex')).to.be.false;
     });
 
     it('moves focus when scrolling with Lenis', () => {
