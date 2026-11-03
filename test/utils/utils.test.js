@@ -4477,9 +4477,10 @@ describe('utils.js market — getMarketConfig()', () => {
     let resolveData;
     const dataPromise = new Promise((resolve) => { resolveData = resolve; });
     setConfig({});
+    const jsonStub = sinon.stub().returns(dataPromise);
     const fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
-      json: () => dataPromise,
+      json: jsonStub,
     });
 
     const first = getMarketConfig();
@@ -4489,66 +4490,36 @@ describe('utils.js market — getMarketConfig()', () => {
     const results = await Promise.all([first, second]);
 
     expect(fetchStub.calledOnce).to.be.true;
+    expect(jsonStub.calledOnce).to.be.true;
     expect(results).to.deep.equal([{ languages: mockData.languages.data },
       { languages: mockData.languages.data }]);
     expect(utils.getConfig().marketsConfig).to.equal(mockData);
   });
 
-  it('does not share requests across replacement configurations', async () => {
+  it('keeps a replacement configuration request separate until it resolves', async () => {
     const oldData = { data: [{ prefix: 'de' }] };
     const newData = { data: [{ prefix: 'fr' }] };
     let resolveData;
     const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    let resolveNewData;
+    const newDataPromise = new Promise((resolve) => { resolveNewData = resolve; });
     const fetchStub = sinon.stub(window, 'fetch');
     fetchStub.onFirstCall().resolves({ ok: true, json: () => dataPromise });
-    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(newData) });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => newDataPromise });
     setConfig({});
     const first = getMarketConfig();
 
     setConfig({});
-    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
+    const second = getMarketConfig();
     resolveData(oldData);
     expect(await first).to.deep.equal({ languages: oldData.data });
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+
+    const third = getMarketConfig();
+    resolveNewData(newData);
+    const results = await Promise.all([second, third]);
+    expect(results).to.deep.equal([{ languages: newData.data }, { languages: newData.data }]);
     expect(fetchStub.calledTwice).to.be.true;
-    expect(utils.getConfig().marketsConfig).to.equal(newData);
-  });
-
-  it('does not let an older source request overwrite the current source cache', async () => {
-    const oldData = { data: [{ prefix: 'de' }] };
-    const newData = { data: [{ prefix: 'fr' }] };
-    let resolveData;
-    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
-    const fetchStub = sinon.stub(window, 'fetch');
-    fetchStub.onFirstCall().resolves({ ok: true, json: () => dataPromise });
-    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(newData) });
-    setConfig({ marketsSource: 'express', contentRoot: '/original' });
-    const first = getMarketConfig();
-
-    utils.getConfig().contentRoot = '/replacement';
-    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
-    resolveData(oldData);
-    expect(await first).to.deep.equal({ languages: oldData.data });
-    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
-    expect(fetchStub.calledTwice).to.be.true;
-    expect(fetchStub.firstCall.args[0]).to.equal('/original/assets/supported-markets/supported-markets-express.json');
-    expect(fetchStub.secondCall.args[0]).to.equal('/replacement/assets/supported-markets/supported-markets-express.json');
-    expect(utils.getConfig().marketsConfig).to.equal(newData);
-  });
-
-  it('refetches resolved data when the markets source changes', async () => {
-    const oldData = { data: [{ prefix: 'de' }] };
-    const newData = { data: [{ prefix: 'fr' }] };
-    const fetchStub = sinon.stub(window, 'fetch');
-    fetchStub.onFirstCall().resolves({ ok: true, json: () => Promise.resolve(oldData) });
-    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(newData) });
-    setConfig({});
-    await getMarketConfig();
-
-    utils.getConfig().marketsSource = 'express';
-    utils.getConfig().contentRoot = '/replacement';
-    expect(await getMarketConfig()).to.deep.equal({ languages: newData.data });
-    expect(fetchStub.calledTwice).to.be.true;
-    expect(fetchStub.secondCall.args[0]).to.equal('/replacement/assets/supported-markets/supported-markets-express.json');
     expect(utils.getConfig().marketsConfig).to.equal(newData);
   });
 

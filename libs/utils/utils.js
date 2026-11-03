@@ -2872,34 +2872,25 @@ const DEFAULT_MARKET = 'us';
 
 export const norm = normCountryCode;
 
-const marketConfigRequests = new WeakMap();
-
 export async function getMarketConfig() {
   try {
     const config = getConfig();
-    const url = getMarketsUrl();
-    let request = marketConfigRequests.get(config);
-    if (request && request.url !== url && config.marketsConfig === request.data) {
-      delete config.marketsConfig;
-    }
     let { marketsConfig } = config;
     if (!marketsConfig) {
-      if (!request?.promise || request.url !== url) {
-        request = { url };
-        request.promise = (async () => {
-          const resp = await fetch(url);
+      config.marketsConfigPromise ||= fetch(getMarketsUrl())
+        .then((resp) => {
           if (!resp.ok) throw new Error('Failed to load market config');
-          const data = await resp.json();
-          request.data = data;
-          if (getConfig() === config && getMarketsUrl() === url
-            && marketConfigRequests.get(config) === request && !config.marketsConfig) {
-            config.marketsConfig = data;
-          }
-          return data;
-        })().finally(() => { delete request.promise; });
-        marketConfigRequests.set(config, request);
+          return resp.json();
+        });
+      const request = config.marketsConfigPromise;
+      try {
+        marketsConfig = await request;
+        if (config.marketsConfigPromise === request && !config.marketsConfig) {
+          config.marketsConfig = marketsConfig;
+        }
+      } finally {
+        if (config.marketsConfigPromise === request) delete config.marketsConfigPromise;
       }
-      marketsConfig = await request.promise;
     }
     const languages = marketsConfig.languages?.data ?? marketsConfig.data ?? [];
     return { languages };

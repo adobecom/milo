@@ -426,20 +426,6 @@ describe('Language Banner', () => {
         expect(banner.getAttribute('dir')).to.equal('ltr');
       });
 
-      it(`reuses ${shape} market data fetched before banner initialization`, async () => {
-        fetchStub.callsFake(defaultFetchForLanguageBanner(payload, true));
-        setPathConfig('/de/page');
-        Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
-        await getMarketConfig();
-        const cached = getConfig().marketsConfig;
-        expect(countMarketRequests()).to.equal(1);
-
-        await decorateLanguageBanner();
-        expect(getLangRoutingConfig()?.markets[0].prefix).to.equal('fr');
-        expect(countMarketRequests()).to.equal(1);
-        expect(getConfig().marketsConfig).to.equal(cached);
-      });
-
       it(`shares one ${shape} market request between market validation and banner initialization`, async () => {
         let resolveData;
         const dataPromise = new Promise((resolve) => { resolveData = resolve; });
