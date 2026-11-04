@@ -143,15 +143,14 @@ function initParallax(el) {
     if (!motion.matches) return;
     const style = getComputedStyle(section);
     const read = (name) => parseFloat(style.getPropertyValue(name)) || 0;
-    const headerHeight = read('--sh-header-height');
+    const headerHeight = read('--sh-header-h');
     if (!desktop.matches) {
       const driftEnd = Math.max(200, el.offsetHeight - headerHeight);
       section.style.setProperty('--sh-drift-end', `${driftEnd}px`);
       return;
     }
 
-    const tune = (name) => read(`--sh-desktop-${name}`);
-    section.style.setProperty('--sh-viewport-height', `${window.innerHeight}px`);
+    const tune = (name) => read(`--sh-d-${name}`);
     const frame = [...el.querySelectorAll('.split-hero-media-frame')]
       .find((item) => item.offsetWidth);
     if (!frame) return;
@@ -162,13 +161,13 @@ function initParallax(el) {
     const frameWidth = Math.max(1, frame.offsetWidth);
     const { left, right } = frame.getBoundingClientRect();
     const frameStart = getComputedStyle(frame).direction === 'rtl' ? width - right : left;
-    const fitWidth = Math.max(width, tune('frame-fit-width'));
-    const widthScale = (fitWidth - frameStart - tune('frame-margin-inline')) / frameWidth;
-    const frameEndScale = Math.max(tune('frame-scale-min'), Math.min(1, widthScale));
+    const fitWidth = Math.max(width, tune('fit-width'));
+    const widthScale = (fitWidth - frameStart - tune('margin')) / frameWidth;
+    const frameEndScale = Math.max(tune('scale-min'), Math.min(1, widthScale));
     const mediaStartDrop = Math.max(0, el.offsetHeight - headerHeight - topGap - frameHeight);
     const values = {
-      '--sh-media-start-drop': `${mediaStartDrop}px`,
-      '--sh-frame-end-scale': frameEndScale,
+      '--sh-drop': `${mediaStartDrop}px`,
+      '--sh-scale': frameEndScale,
     };
     Object.entries(values).forEach(([name, value]) => section.style.setProperty(name, value));
   };

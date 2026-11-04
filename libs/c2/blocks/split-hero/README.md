@@ -7,17 +7,15 @@ optional background.
 
 Use `Split Hero (parallax-reveal)` in the first section, followed by a section
 with `rounded-corners-top`. On desktop the hero holds in the viewport while
-the frame shrinks to the width it would end at on a
-`--sh-desktop-frame-fit-width` screen (narrower screens crop its right edge)
-and pans up from the first pixel, passing behind the nav.
-The frame eases up to `--sh-desktop-pan-rate` over `--sh-pan-ramp`; the copy
-does the same from `--sh-copy-start`. A shared boost then takes both to
-`--sh-desktop-lock-rate` at the same scroll positions (`--sh-lock-*`), so
-they rise together. The lower section has its own pin and release
-(`--sh-next-section-*`), then covers both; above 1440px its start is delayed
-by `--sh-desktop-next-section-wide-delay` px per extra px of viewport width.
-Mobile uses subtle layer drift
-without pinning or scaling.
+the frame shrinks to the width it would end at on a `--sh-d-fit-width` screen
+(narrower screens crop its right edge) and pans up from the first pixel,
+passing behind the nav. The frame and, from `--sh-d-copy-start`, the copy ease
+up to `--sh-d-pan-rate`; a shared boost then takes both to `--sh-d-lock-rate`
+at the same scroll positions, so they rise together. The lower section has its
+own pin and release (`--sh-d-next-*`), then covers both; above
+`--sh-d-fit-width` its start is delayed by `--sh-d-next-wide-delay` px per
+extra px of viewport width. Mobile uses subtle layer drift without pinning or
+scaling.
 On load, the copy text, merch card and supporting text fade and rise in turn,
 with the media after the copy text from 900px and last below that. Copy text
 and media start at
@@ -32,14 +30,14 @@ longhands, and only once Milo removes the section's `data-status`.
 Use `?milolibs=local` to test local code with the authored variant.
 
 Motion settings are custom properties on `main:has(> .split-hero-reveal)`:
-`--sh-mobile-*` below 900px and `--sh-desktop-*` from 900px. JS reads the
-desktop frame settings in `measure()`, so they must stay plain numbers or `px`
-lengths, not `calc()`. Each `--sh-mobile-drift-rate-*` is how much slower that layer
-scrolls than the page (`0.08` = 8%). Other `--sh-*-end` values are measured
-scroll distances from the hero's top edge reaching the viewport top.
-The copy, frame and lower section change speed over their ramps
-with fixed quadratic curves, so the speed changes without a jump; changing
-those curves reintroduces one.
+`--sh-m-*` below 900px and `--sh-d-*` from 900px. JS reads the frame settings
+(`--sh-d-fit-width`, `--sh-d-margin`, `--sh-d-scale-min`) in `measure()`, so
+they must stay plain numbers or `px` lengths. Each `--sh-m-rate-*` is how much
+slower that layer scrolls than the page (`0.08` = 8%). Desktop start and ramp
+values are fractions of `--sh-d-shrink`, the scroll distance of the shrink,
+measured from the hero's top edge reaching the viewport top. Speed changes use
+fixed S-curves that start or end at the neighbouring speed, so editing them
+reintroduces a jump.
 
 ## Authoring
 

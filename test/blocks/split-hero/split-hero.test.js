@@ -691,13 +691,13 @@ describe('Split Hero', () => {
           expect(next.getBoundingClientRect().top).to.be.closeTo(initialLip, 1);
 
           const style = getComputedStyle(block.closest('.section'));
-          const shrinkEnd = parseFloat(style.getPropertyValue('--sh-shrink-end'));
-          const ratio = (name) => parseFloat(style.getPropertyValue(`--sh-desktop-${name}-ratio`));
-          const pinEnd = shrinkEnd * ratio('next-section-pin-end');
-          const effectEnd = pinEnd + shrinkEnd * ratio('next-section-release') + window.innerHeight;
+          const shrinkEnd = parseFloat(style.getPropertyValue('--sh-d-shrink'));
+          const setting = (name) => parseFloat(style.getPropertyValue(`--sh-d-${name}`));
+          const pinEnd = shrinkEnd * setting('next-start');
+          const effectEnd = pinEnd + shrinkEnd * setting('next-ramp') + window.innerHeight;
           await scrollToPosition(shrinkEnd);
           const shrunk = frame.getBoundingClientRect();
-          const scaleMin = parseFloat(style.getPropertyValue('--sh-desktop-frame-scale-min'));
+          const scaleMin = parseFloat(style.getPropertyValue('--sh-d-scale-min'));
           expect(shrunk.width / initialMedia.width).to.be.at.least(scaleMin - 0.01);
           if (direction === 'ltr') expect(shrunk.left).to.be.at.least(0);
           else expect(shrunk.right).to.be.at.most(document.documentElement.clientWidth);
@@ -729,7 +729,7 @@ describe('Split Hero', () => {
       return span;
     }
 
-    const mobileLag = (item, span) => span * parseFloat(getComputedStyle(item).getPropertyValue('--sh-drift-rate'));
+    const mobileLag = (item, span) => span * parseFloat(getComputedStyle(item).getPropertyValue('--sh-rate'));
 
     it('drifts mobile layers without pinning or shrinking the media', async () => {
       const block = await renderReveal(390);
@@ -823,7 +823,7 @@ describe('Split Hero', () => {
 
     it('reserves only the nav without breadcrumbs', async () => {
       const block = await renderReveal(1440, true, MEDIA, false);
-      expect(getComputedStyle(block.closest('.section')).getPropertyValue('--sh-header-height')).to.equal('80px');
+      expect(getComputedStyle(block.closest('.section')).getPropertyValue('--sh-header-h')).to.equal('80px');
     });
 
     it('sizes poster-only video before playback metadata is available', async () => {
