@@ -224,6 +224,19 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
   }
 }
 
+const FF_SOURCE = 'adobe-com';
+const DEFAULT_FF_CAMPAIGN = 'marketing-page';
+const LEGACY_CAMPAIGN_ID = 'NQCJQWSV';
+
+export function appendFireflyParams(cards, campaignId) {
+  const campaign = !campaignId || campaignId === LEGACY_CAMPAIGN_ID
+    ? DEFAULT_FF_CAMPAIGN : campaignId;
+  const params = new URLSearchParams({ ff_source: FF_SOURCE, ff_campaign: campaign });
+  cards.forEach((card) => {
+    if (card.fireflyUrl) card.fireflyUrl += `&${params}`;
+  });
+}
+
 export function fireflyRenditionUrl(card, px, axis = 'width') {
   if (!card?.renditionHref) return '';
   return buildRenditionUrl(card.renditionHref, Math.round(px), axis);
@@ -232,7 +245,7 @@ export function fireflyRenditionUrl(card, px, axis = 'width') {
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
-  const [categoryId = '', machineTag = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
+  const [categoryId = '', machineTag = '', campaignId = '', ctaLabel = ''] = cellText(firstCell)
     .split(LABEL_DIVIDER)
     .map((s) => s.trim());
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
@@ -240,7 +253,7 @@ export function parseAuthoredContent(el) {
   return {
     categoryId: categoryId || null,
     machineTag: machineTag || DEFAULT_MACHINE_TAG,
-    cgenId,
+    campaignId,
     ctaLabel,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
     hintText: cellText(cells[1]) || DEFAULT_HINT,
