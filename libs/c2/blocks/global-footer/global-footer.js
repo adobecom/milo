@@ -513,14 +513,15 @@ class Footer {
     }
 
     const regionPickerClass = 'feds-regionPicker';
-    const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text">${regionSelector.textContent}</span>`;
+    const regionPickerTextElem = toFragment`<span class="feds-regionPicker-text"></span>`;
+    regionPickerTextElem.textContent = regionSelector.textContent;
     const regionPickerElem = toFragment`
       <a
-        href="${regionSelector.href}"
         class="${regionPickerClass}"
         role="button">
         ${regionPickerTextElem}
       </a>`;
+    regionPickerElem.href = regionSelector.href;
     regionPickerElem.dataset.modalPath = `${url.pathname}#_inline`;
     regionPickerElem.dataset.modalHash = url.hash;
     const regionPickerWrapperClass = 'feds-regionPicker-wrapper';
@@ -614,7 +615,6 @@ class Footer {
 
       const iconElem = toFragment`<li class="feds-social-item">
           <a
-            href="${sanitizeLink(link.href)}"
             class="feds-social-link"
             aria-label="${platform}"
             daa-ll="${getAnalyticsValue(platform, index + 1)}"
@@ -624,6 +624,7 @@ class Footer {
             </svg>
           </a>
         </li>`;
+      iconElem.querySelector('a').href = sanitizeLink(link.href);
 
       socialElem.append(iconElem);
     });
@@ -679,7 +680,9 @@ class Footer {
         copyrightListItem.classList.add('feds-footer-privacy-listitem');
         copyrightListItem.innerHTML = '';
         copyrightListItem.prepend(copyrightElem);
-        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">© ${currentYear} Adobe Inc. ${copyrightElem.textContent}</span>`);
+        const copyrightText = toFragment`<span class="feds-footer-copyright"></span>`;
+        copyrightText.textContent = `© ${currentYear} Adobe Inc. ${copyrightElem.textContent}`;
+        copyrightElem.replaceWith(copyrightText);
         privacySectionList.prepend(copyrightListItem);
         privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
         privacySection.parentNode.replaceChild(privacySectionList, privacySection);
@@ -730,12 +733,17 @@ class Footer {
     const mailingListBlock = this.body.querySelector('.mailing-list');
     if (!mailingListBlock) return this.elements.mailingList;
     const mailingListElem = toFragment`<div class="feds-footer-mailingList" daa-lh="MailingList"></div>`;
+    const mailingListText = (value) => {
+      const p = toFragment`<p class="feds-footer-mailingList-text body-md"></p>`;
+      p.textContent = value;
+      return p;
+    };
     const text = mailingListBlock.textContent.replace(/\s+/g, ' ').trim();
     const link = mailingListBlock.querySelector('a');
     if (link) {
       const linkText = link.textContent.trim();
       const description = text.replace(linkText, '').trim();
-      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text body-md">${description}</p>`);
+      mailingListElem.append(mailingListText(description));
       link.classList.add('feds-footer-mailingList-cta', 'body-md');
       link.setAttribute('daa-ll', getAnalyticsValue(linkText, 1));
       const linkWrapper = link.closest('em, strong') || link;
@@ -744,7 +752,7 @@ class Footer {
 
       await this.decorateModalLink(link);
     } else {
-      mailingListElem.append(toFragment`<p class="feds-footer-mailingList-text body-md">${text}</p>`);
+      mailingListElem.append(mailingListText(text));
     }
 
     this.elements.mailingList = mailingListElem;
@@ -834,8 +842,11 @@ class Footer {
     const authoredLogo = this.decorateAuthoredLogo();
     const logoSrc = authoredLogo?.src || FOOTER_LOGO_FULL_SRC;
     const logoAlt = authoredLogo?.alt || 'Adobe';
+    const footerLogoImg = document.createElement('img');
+    footerLogoImg.src = logoSrc;
+    footerLogoImg.alt = logoAlt;
     const footerLogo = toFragment`<div class="feds-footer-logo">
-        <img src="${logoSrc}" alt="${logoAlt}" />
+        {{footerLogoImg}}
       </div>`;
     this.elements.footerLogo = footerLogo;
     return this.elements.footer;
