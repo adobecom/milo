@@ -41,6 +41,7 @@ function sendAnalyticsEvent(eventName, type = 'click') {
 }
 
 const FOCUS_KEYS = ['Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+const overlapCleanups = new WeakMap();
 
 let miloLangIsKeyboard = false;
 document.addEventListener('keydown', (e) => {
@@ -311,7 +312,50 @@ function createDropdown(
 
   if (routeWheelToList) popover.addEventListener('wheel', onPopoverWheel, { passive: false });
 
+  let overlapFrame;
+  let footerObserver;
+  const updateOverlappedOptions = () => {
+    overlapFrame = undefined;
+    if (popover.dataset.open !== 'true') return;
+    const footer = container.closest('.global-footer');
+    const header = document.querySelector('header.global-navigation');
+    const desktop = container.closest('.market-selector-c2')
+      && !footer?.classList.contains('mobile') && window.innerWidth > 600;
+    const nav = desktop ? header?.getBoundingClientRect() : null;
+    list.querySelectorAll('.market-selector-link').forEach((link) => {
+      const bounds = link.getBoundingClientRect();
+      link.classList.toggle('obscured-by-gnav', !!nav
+        && bounds.top < nav.bottom && bounds.bottom > nav.top
+        && bounds.left < nav.right && bounds.right > nav.left);
+    });
+  };
+  const scheduleOverlapUpdate = () => {
+    if (!overlapFrame) overlapFrame = requestAnimationFrame(updateOverlappedOptions);
+  };
+  const stopOverlapUpdate = () => {
+    document.removeEventListener('scroll', scheduleOverlapUpdate, true);
+    window.removeEventListener('resize', scheduleOverlapUpdate);
+    footerObserver?.disconnect();
+    footerObserver = undefined;
+    if (overlapFrame) cancelAnimationFrame(overlapFrame);
+    overlapFrame = undefined;
+    list.querySelectorAll('.obscured-by-gnav').forEach((link) => link.classList.remove('obscured-by-gnav'));
+  };
+  overlapCleanups.set(popover, stopOverlapUpdate);
+  list.addEventListener('focusin', (e) => {
+    if (!e.target.matches('.market-selector-link')
+      || !container.closest('.market-selector-c2')
+      || container.closest('.global-footer')?.classList.contains('mobile')
+      || window.innerWidth <= 600) return;
+    const nav = document.querySelector('header.global-navigation')?.getBoundingClientRect();
+    const bounds = e.target.getBoundingClientRect();
+    if (nav && bounds.top < nav.bottom && bounds.bottom > nav.top) {
+      window.scrollBy(0, bounds.top - nav.bottom - 4);
+    }
+  });
+
   const closePopoverElement = (popoverEl) => {
+    overlapCleanups.get(popoverEl)?.();
     popoverEl.style.display = 'none';
     delete popoverEl.dataset.open;
     popoverEl.classList.remove('fixed-height');
@@ -328,6 +372,9 @@ function createDropdown(
 
   const renderItems = (filteredItems) => {
     list.innerHTML = '';
+    if (popover.dataset.open === 'true' && container.closest('.market-selector-c2')) {
+      scheduleOverlapUpdate();
+    }
     if (filteredItems.length === 0) {
       const noResult = createTag('li', { class: 'market-selector-item no-search-result-text' }, noResultLabel);
       list.append(noResult);
@@ -402,6 +449,14 @@ function createDropdown(
       button.setAttribute('aria-expanded', 'true');
       searchInput.value = '';
       renderItems(items);
+      const footer = container.closest('.global-footer');
+      if (footer && container.closest('.market-selector-c2')) {
+        document.addEventListener('scroll', scheduleOverlapUpdate, true);
+        window.addEventListener('resize', scheduleOverlapUpdate);
+        footerObserver = new MutationObserver(scheduleOverlapUpdate);
+        footerObserver.observe(footer, { attributes: true, attributeFilter: ['class'] });
+        scheduleOverlapUpdate();
+      }
       const focusActiveLink = focusOnPointerOpen || e.detail === 0;
       requestAnimationFrame(() => {
         if (popover.dataset.open !== 'true') return;
@@ -664,6 +719,7 @@ function createDropdown(
     updateItems: renderItems,
     button,
     cleanup: () => {
+      stopOverlapUpdate();
       document.removeEventListener('click', onOutsideClick);
       if (!focusOnPointerOpen) {
         button.removeEventListener('keydown', onEscapeFromButton);

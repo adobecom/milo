@@ -351,6 +351,12 @@
     text-decoration: none;
   }
 
+  & .market-selector-link.obscured-by-gnav {
+    filter: blur(3px);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   & .market-selector-item-text {
     flex: 1;
     color: inherit;
