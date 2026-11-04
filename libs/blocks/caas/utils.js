@@ -11,6 +11,13 @@ import {
 import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
+import { getCaasIdentityUrl, isHtmlIdentityEnabled } from '../../utils/caasIdentity.js';
+
+// A site whose cards are published under forced-`.html` identities must resolve
+// authored uuid references the same way, or a collection's featured/excluded
+// lookups would hash the extensionless url and miss every card. Opt in once per
+// site via the `caas-identity-html` metadata property.
+const htmlIdentityEnabled = () => isHtmlIdentityEnabled(getMetadata('caas-identity-html'));
 
 // CaaS deep-link URL per wrapper element, keyed off-DOM for MEP preview (URL too large for data-*).
 export const mepCaasConfigUrls = new WeakMap();
@@ -985,7 +992,7 @@ const fetchUuidForCard = async (card) => {
   try {
     const localizedLink = await localizeLinkAsync(card.contentId, null, true);
     const substr = String(localizedLink).split('https://').pop();
-    return await getUuid(substr);
+    return await getUuid(getCaasIdentityUrl(substr, htmlIdentityEnabled()));
   } catch (error) {
     return null;
   }
@@ -1136,7 +1143,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const currentPage = `${window.location.hostname}${window.location.pathname}`;
   let currentPageUuid = null;
   try {
-    currentPageUuid = await getUuid(currentPage);
+    currentPageUuid = await getUuid(getCaasIdentityUrl(currentPage, htmlIdentityEnabled()));
   } catch (error) {
     window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
   }

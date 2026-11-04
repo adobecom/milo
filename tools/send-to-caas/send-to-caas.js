@@ -2,6 +2,7 @@
 /* global tingle */
 /* eslint-disable no-alert */
 import { getImsToken } from '../utils/utils.js';
+import { isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
 
 import {
   getCardMetadata,
@@ -228,13 +229,23 @@ const sortObjByPropName = (obj) => Object.keys(obj)
   .sort().reduce((c, d) => (c[d] = obj[d], c), {});
 
 const validateProps = async (prodHost, publishingModal) => {
+  // The sidekick publishes the page it is running on, so the page's own opt-in
+  // metadata is the flag source. Without this the single-page tool would mint a
+  // legacy id for a page the bulk/auto publishers give a forced-`.html` id,
+  // creating a duplicate card for one page.
+  const htmlIdentity = isHtmlIdentityEnabled(
+    document.head.querySelector('meta[name="caas-identity-html"]')?.content,
+  );
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
-    { prodUrl: `${prodHost}${window.location.pathname}` },
+    { prodUrl: `${prodHost}${window.location.pathname}`, htmlIdentity },
   );
 
   const showAllPropertiesAlert = async () => {
     const { caasMetadata: cMetaData } = await getCardMetadata(
-      { prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}` },
+      {
+        prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}`,
+        htmlIdentity,
+      },
     );
     const mdStr = JSON.stringify(sortObjByPropName(cMetaData), undefined, 4);
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${mdStr}</pre>`);
@@ -266,7 +277,7 @@ const validateProps = async (prodHost, publishingModal) => {
   let metaWithUseHtml;
   if (useHtml) {
     ({ caasMetadata: metaWithUseHtml } = await getCardMetadata(
-      { prodUrl: `${prodHost}${window.location.pathname}.html` },
+      { prodUrl: `${prodHost}${window.location.pathname}.html`, htmlIdentity },
     ));
   }
 

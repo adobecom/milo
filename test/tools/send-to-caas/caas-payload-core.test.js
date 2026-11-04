@@ -5,6 +5,7 @@ import getUuid from '../../../libs/utils/getUuid.js';
 const {
   buildCaasXdmPayload,
   getBulkPublishLangAttr,
+  getCaasIds,
   getProdUrl,
   initBulkPublisherLingoMapping,
 } = await import('../../../tools/send-to-caas/caas-payload-core.js');
@@ -151,5 +152,99 @@ describe('caas-payload-core: getBulkPublishLangAttr with a BACOM /ara base-site 
     });
 
     expect(result).to.equal('ar-xx');
+  });
+});
+
+describe('caas-payload-core: forced-.html card identity', () => {
+  const BACOM = 'business.adobe.com';
+  let fetchStub;
+
+  beforeEach(() => {
+    // Same reason as the sibling describe above: never depend on live internet.
+    fetchStub = stub(window, 'fetch').rejects(new Error('network disabled in test'));
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+  });
+
+  const dom = () => buildDom([['CardTitle', 'Test card'], ['CardImage', 'https://example.com/img.jpg']]);
+
+  const build = async ({ path, htmlIdentity, floodgatecolor }) => {
+    const { caasMetadata } = await buildCaasXdmPayload({
+      dom: dom(),
+      pageUrl: getProdUrl({ host: BACOM, path }),
+      host: BACOM,
+      repo: 'bacom',
+      htmlIdentity,
+      floodgatecolor,
+    });
+    return caasMetadata;
+  };
+
+  it('hashes the .html form while publishing the extensionless url', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: true });
+    expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x.html`));
+    // The public url and uci must stay extensionless: only identity is forced.
+    expect(md.url).to.equal(`https://${BACOM}/resources/x`);
+    expect(md.uci).to.equal(`${BACOM}/resources/x`);
+  });
+
+  it('produces the same ids whether or not the source path carried .html', async () => {
+    const withExt = await build({ path: '/resources/x.html', htmlIdentity: true });
+    const withoutExt = await build({ path: '/resources/x', htmlIdentity: true });
+    expect(withoutExt.contentid).to.equal(withExt.contentid);
+    expect(withoutExt.entityid).to.equal(withExt.entityid);
+  });
+
+  it('keeps the legacy ids when the flag is off', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: false });
+    expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('exempts /blog/ pages, including localized and landing paths', async () => {
+    const cases = ['/blog/post', '/fr/blog/post', '/blog', '/fr/blog'];
+    await Promise.all(cases.map(async (path) => {
+      const md = await build({ path, htmlIdentity: true });
+      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}`));
+    }));
+  });
+
+  it('accepts the string flag form config sheets store', async () => {
+    const enabled = await build({ path: '/resources/x', htmlIdentity: 'true' });
+    expect(enabled.contentid).to.equal(await getUuid(`${BACOM}/resources/x.html`));
+    // A sheet cell reading 'false' must not enable the policy.
+    const disabled = await build({ path: '/resources/x', htmlIdentity: 'false' });
+    expect(disabled.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('leaves other production hostnames unchanged', async () => {
+    const host = 'www.adobe.com';
+    const { caasMetadata } = await buildCaasXdmPayload({
+      dom: dom(),
+      pageUrl: getProdUrl({ host, path: '/resources/x' }),
+      host,
+      repo: 'milo',
+      htmlIdentity: true,
+    });
+    expect(caasMetadata.contentid).to.equal(await getUuid(`${host}/resources/x`));
+  });
+
+  it('applies the forced .html before the floodgate salt', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: true, floodgatecolor: 'pink' });
+    expect(md.entityid).to.equal(await getUuid(`${BACOM}/resources/x.htmlpink`));
+    expect(md.entityid).to.not.equal(md.contentid);
+  });
+
+  it('getCaasIds reproduces the published identity so removal matches', async () => {
+    const published = await build({ path: '/resources/x', htmlIdentity: true });
+    const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+    expect(ids.contentId).to.equal(published.contentid);
+    expect(ids.entityId).to.equal(published.entityid);
+  });
+
+  it('getCaasIds leaves the legacy ids alone when the flag is off', async () => {
+    const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default');
+    expect(ids.contentId).to.equal(await getUuid(`${BACOM}/resources/x`));
   });
 });

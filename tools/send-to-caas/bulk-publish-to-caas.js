@@ -17,6 +17,7 @@ import {
   setConfig,
 } from './send-utils.js';
 import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
@@ -205,6 +206,7 @@ const processData = async (data, accessToken) => {
     publishToFloodgate,
     languageFirst,
     autoDetectLingo,
+    htmlIdentity,
   } = getConfig();
 
   if (!repo) {
@@ -215,6 +217,9 @@ const processData = async (data, accessToken) => {
 
   const hostFgColor = getFloodgateColorFromHost(host);
   const floodgateColor = hostFgColor || publishToFloodgate;
+  // Authored per preset in the bulk publisher presets sheet, so teams can turn
+  // the forced-`.html` identity policy on per site without a code change.
+  const htmlIdentityEnabled = isHtmlIdentityEnabled(htmlIdentity);
 
   let domain = `https://${host}`;
 
@@ -248,6 +253,7 @@ const processData = async (data, accessToken) => {
       setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
       const { caasMetadata, errors } = await getCardMetadata({
         prodUrl,
+        htmlIdentity: htmlIdentityEnabled,
         host,
         repo,
         floodgatecolor: floodgateColor,
@@ -430,6 +436,12 @@ presetSelector.addEventListener('change', () => {
 
   if (value === 'advanced') {
     BODY.classList.add('advanced');
+    // Advanced mode has no control for htmlIdentity, so rather than silently
+    // inherit the last preset's policy it declares none and falls back to the
+    // legacy identity. (A leftover value could not affect an unrelated host --
+    // the policy is host-gated -- but it must not apply unseen to a bacom one.)
+    setConfig({ htmlIdentity: '' });
+    window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
     return;
   }
   if (value === 'default') {
@@ -448,6 +460,7 @@ presetSelector.addEventListener('change', () => {
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
   config.useHtml = selectedPreset.useHtml === 'true';
+  config.htmlIdentity = selectedPreset.htmlIdentity || '';
   config.languageFirst = selectedPreset.languageFirst === 'false';
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
     config.contentType = '';
@@ -621,8 +634,16 @@ helpButtons.forEach((btn) => {
         break;
 
       case 'use-html':
-        showAlert(`<p><b>Add HTML to Links</b></p>
-          <p>When this option is checked, the bulkpublisher will add the <b>.html</b> extension to the CTA links.</p>`);
+        showAlert(`<p><b>Use .html extension on the published URL</b></p>
+          <p>When this option is checked, the bulkpublisher adds the <b>.html</b> extension to the page URL
+            it publishes. That URL becomes the card's link and is what the card's <b>ID</b> is derived from,
+            so changing this option changes the IDs of the cards you publish. It is also used for CTA 1 only
+            when the page does not author its own <b>CardCta1Url</b>.</p>
+          <p>Sites that serve extensionless URLs but need their existing card IDs to stay valid should leave
+            this unchecked and have the <b>htmlIdentity</b> column set on their preset instead, which keeps
+            the <b>.html</b> form for ID purposes only. That is owned by the Milo CaaS team, and it must be
+            enabled together with the <b>caas-identity-html</b> page metadata on the consuming site &mdash;
+            enabling only one of the two silently breaks featured-card lookups.</p>`);
         break;
 
       case 'use-preview':

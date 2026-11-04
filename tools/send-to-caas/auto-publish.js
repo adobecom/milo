@@ -34,6 +34,7 @@ import {
   postDataToCaaS,
 } from './send-utils.js';
 import { getCustomConfig } from '../utils/utils.js';
+import { isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
 // from this module (used by tests and any host that already depends on it).
@@ -138,7 +139,10 @@ export const caasAutoPublish = async ({
 
     // Card identity is the PRODUCTION url, not the aem.page/aem.live url the job
     // fires from. The site declares its prod host and .html rule in config, so
-    // this path produces the same contentId/entityId as the milo-caas poller.
+    // this path produces the same contentId/entityId as the milo-caas poller --
+    // except for `htmlIdentity`, which the poller ignores until the committed
+    // caas-payload-builder.js bundle it runs is rebuilt. Do not enable the flag
+    // for a site before that lands, or the two publishers will disagree.
     // `repo` (the CaaS source) likewise comes from config when set — e.g. the
     // bacom blog files under `bacom`, which the aem hostname can't tell us.
     // Falls back to the caller-supplied url/host/repo when config omits them.
@@ -154,6 +158,10 @@ export const caasAutoPublish = async ({
     if (!hasCardMetadata(dom)) return { skipped: true, reason: 'no-card-metadata' };
     if (isDisabledOnPage(dom)) return { skipped: true, reason: 'page-override-disabled' };
 
+    // Keeps a site's existing `.html`-derived card identities stable while its
+    // public urls go extensionless. Declared per rule alongside htmlExt.
+    const htmlIdentity = isHtmlIdentityEnabled(rule.htmlIdentity);
+
     const { caasProps, errors, tags } = await buildCaasXdmPayload({
       dom,
       pageUrl: prodUrl,
@@ -161,6 +169,7 @@ export const caasAutoPublish = async ({
       host: effHost,
       repo: effRepo,
       floodgatecolor,
+      htmlIdentity,
       // A rule opts a language-first (Lingo) site into per-page locale resolution;
       // an explicit caller-supplied languageFirst (used by the legacy bulk tool) wins.
       languageFirst: languageFirst ?? rule.languageFirst,
@@ -189,7 +198,10 @@ export const caasAutoPublish = async ({
     };
 
     const results = await Promise.all(targets.map(postOne));
-    return { skipped: false, results };
+    // Echoed so a caller can tell after the fact which identity policy produced
+    // a card: the live module and the frozen bundle can disagree, and htmlExt /
+    // htmlIdentity are authored independently in the same rule.
+    return { skipped: false, htmlIdentity, results };
   } catch (e) {
     return { skipped: false, error: e?.message || String(e) };
   }

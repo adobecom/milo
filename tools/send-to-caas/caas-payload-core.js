@@ -3,8 +3,9 @@
 // This is a LEAF module: it intentionally does NOT import libs/utils/utils.js or
 // libs/blocks/caas/utils.js, so it can be bundled into a single self-contained
 // file (those two files drag in Milo's entire bootstrap + lazy chunks, which
-// breaks bundling). The only libs/ import allowed here is getUuid.js, which is
-// itself leaf-safe (only uses crypto.subtle / TextEncoder).
+// breaks bundling). The only libs/ imports allowed here are getUuid.js and
+// caasIdentity.js, which are themselves leaf-safe (getUuid only uses
+// crypto.subtle / TextEncoder; caasIdentity is pure string logic).
 //
 // The functions inlined below (getMetadata, lingoActive, getLocale, LOCALES,
 // LANGS, getPageLocale, getGrayboxExperienceId and the lang-first subsystem) are
@@ -17,6 +18,7 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
 import getUuid from '../../libs/utils/getUuid.js';
+import { getCaasIdentityUrl } from '../../libs/utils/caasIdentity.js';
 // The 706KB caas-tags.js taxonomy is NOT imported here. It is only needed as a
 // fallback when the network tag fetch fails, so the host injects it lazily via
 // setConfig({ getCaasTagsFallback }). Keeping it out of the leaf means: (a) the
@@ -187,7 +189,10 @@ const LANGS = {
 };
 
 // Copied verbatim from libs/blocks/caas/utils.js (LOCALES).
-const LOCALES = {
+// Exported for test/utils/caasIdentity.test.js, which asserts this table stays
+// in sync with caasIdentity.js's BLOG_PATH locale bound. Not part of the UMD
+// bundle's export list.
+export const LOCALES = {
   // Americas
   ar: { ietf: 'es-AR' },
   br: { ietf: 'pt-BR' },
@@ -1073,6 +1078,12 @@ function localizeCtaUrl(val, options = {}) {
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
  */
+// The hash input for contentId/entityId. Deliberately separate from
+// options.prodUrl, which continues to drive the public url, uci and CTA urls:
+// BACOM publishes extensionless public urls while keeping its existing
+// `.html`-derived card identities, so the two must not be coupled.
+const getIdentityUrl = (options = {}) => getCaasIdentityUrl(options.prodUrl, options.htmlIdentity);
+
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => (pair)),
   badgeimage: () => getImagePathMd('badgeimage'),
@@ -1092,7 +1103,7 @@ const props = {
   cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
-  contentid: (_, options) => getUuid(options.prodUrl),
+  contentid: (_, options) => getUuid(getIdentityUrl(options)),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
@@ -1131,7 +1142,7 @@ const props = {
   entityid: (_, options) => {
     const floodGateColor = options.floodgatecolor || getMetadata('floodgatecolor') || '';
     const salt = floodGateColor === 'default' || floodGateColor === '' ? '' : floodGateColor;
-    return getUuid(`${options.prodUrl}${salt}`);
+    return getUuid(`${getIdentityUrl(options)}${salt}`);
   },
   env: (s) => s || '',
   eventduration: 0,
@@ -1326,6 +1337,7 @@ const buildCaasXdmPayload = async ({
   floodgatecolor = 'default',
   languageFirst,
   autoDetectLingo,
+  htmlIdentity = false,
 } = {}) => {
   setConfig({
     bulkPublish: true,
@@ -1345,6 +1357,7 @@ const buildCaasXdmPayload = async ({
   const prodUrl = pageUrl?.replace(/^https?:\/\//, '') ?? pageUrl;
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({
     prodUrl,
+    htmlIdentity,
     host,
     repo,
     floodgatecolor,
@@ -1364,15 +1377,17 @@ const buildCaasXdmPayload = async ({
 const hasContentTypeTag = (tags) => Array.isArray(tags)
   && tags.some((id) => typeof id === 'string' && id.startsWith('caas:content-type'));
 
-// Canonical production-URL builder — the single source of how a card's identity
+// Canonical production-URL builder — the single source of how a card's PUBLIC
 // URL is formed, shared by every publisher (the browser bulk-publish hook, the
 // milo-caas poller, and the manual send-to-caas tool). Returns a scheme-qualified
 // URL (needed so callers can also use it as a real, parseable/fetchable URL —
 // e.g. buildCaasXdmPayload's graybox-experience-ID lookup via getCaasProps, or
-// getConfig().pageUrl-based image resolution). The exact PATHNAME portion is
-// what matters for card identity; buildCaasXdmPayload strips the scheme before
-// hashing it into contentId/entityId, to match the (untouched) legacy tool's
-// own scheme-less `${prodHost}${pathname}${useHtml ? '.html' : ''}` exactly.
+// getConfig().pageUrl-based image resolution). buildCaasXdmPayload strips the
+// scheme before hashing, to match the (untouched) legacy tool's own scheme-less
+// `${prodHost}${pathname}${useHtml ? '.html' : ''}` exactly.
+// NOTE: this is no longer necessarily the string that gets hashed. When the
+// htmlIdentity policy is on, libs/utils/caasIdentity.js derives the identity URL
+// from this one so the public URL can go extensionless without changing ids.
 // `htmlExt` accepts a boolean or the string 'true' (config sheets store strings).
 const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   if (!host || !path) return '';
@@ -1386,17 +1401,24 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
 
 // Compute the CaaS identifiers for a page from its prodUrl alone (no DOM needed).
 // Used for removal: a deactivated/deleted page's HTML is gone, but its card
-// identity is fully determined by the prodUrl, exactly as on publish
-// (contentId = uuid(prodUrl); entityId = uuid(prodUrl + floodgate salt)).
-const getCaasIds = async (prodUrl, floodgatecolor = 'default') => {
+// identity is fully determined by the prodUrl, exactly as on publish:
+//   identityUrl = getCaasIdentityUrl(prodUrl, htmlIdentity)
+//   contentId   = uuid(identityUrl); entityId = uuid(identityUrl + floodgate salt)
+// IMPORTANT: callers MUST pass the same `htmlIdentity` the page was published
+// under. Removal is matched by id, so a mismatch does not error — it computes
+// ids that match no card and leaves the real one live in CaaS forever.
+const getCaasIds = async (prodUrl, floodgatecolor = 'default', htmlIdentity = false) => {
   // Strip the scheme the same way buildCaasXdmPayload does before hashing, so a
   // schemed prodUrl (e.g. from getProdUrl()) hashes to the same contentId/entityId
   // as the one computed at publish time, instead of a different, unmatched id.
   const bareProdUrl = prodUrl?.replace(/^https?:\/\//, '') ?? prodUrl;
+  // Removal has to reproduce the identity the page was published under, so it
+  // applies the same forced-`.html` policy as publish.
+  const identityUrl = getCaasIdentityUrl(bareProdUrl, htmlIdentity);
   const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
   const [contentId, entityId] = await Promise.all([
-    getUuid(bareProdUrl),
-    getUuid(`${bareProdUrl}${salt}`),
+    getUuid(identityUrl),
+    getUuid(`${identityUrl}${salt}`),
   ]);
   return { contentId, entityId };
 };
