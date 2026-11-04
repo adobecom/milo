@@ -5,13 +5,11 @@ describe('C2 gnav on a C1 page: header height reservation', () => {
   let header;
   let localnavMeta;
   const height = () => header.getBoundingClientRect().height;
-  // Mirrors decorateHeader: authored breadcrumbs are moved into the header.
   const decorate = ({ breadcrumbs = false, hasBreadcrumbsClass = breadcrumbs } = {}) => {
     header.className = 'global-navigation c2-gnav-c1-host';
     if (hasBreadcrumbsClass) header.classList.add('has-breadcrumbs');
     header.innerHTML = breadcrumbs ? '<div class="breadcrumbs"></div>' : '';
   };
-  // Mirrors the markup federal renders into the header.
   const renderNav = ({ breadcrumbs = false } = {}) => {
     header.innerHTML = `<nav class="localnav"><ul><li class="feds-menu-wrapper">
       <button class="feds-localnav-bar"></button></li></ul>
