@@ -40,7 +40,7 @@ For entrances that differ from existing classes only in magnitude.
 
 ```css
 .parallax-move-up-large {
-  --c2-entrance-y: 200px;
+  --c2-entrance-distance: 96px;
 }
 ```
 
@@ -48,7 +48,7 @@ The shared timed keyframes pick up the input automatically. Never add a
 scroll timeline or range to an entrance.
 
 ### When to use
-- The effect involves move, opacity, scale, blur, or any combination
+- The effect is a rise and fade (entrances never scale or blur)
 - Only the magnitude differs from existing classes
 
 ---
@@ -187,10 +187,8 @@ Before finalizing any animation, answer these questions:
 |---|---|
 | Fade in once | `parallax-opacity` |
 | Slide up + fade in | `parallax-move-up parallax-opacity` |
-| Scale up + fade in | `parallax-scale-up parallax-opacity` |
-| Zoom out + blur clear | `parallax-scale-down parallax-blur` |
 | Card grid stagger (LTR) | `parallax-stagger-ltr` on section |
 | Card grid stagger (RTL) | `parallax-stagger-rtl` on section |
 | Sticky section with darkening | `parallax-move-up-fast` |
 | Section growing from below | `parallax-garage-door-reveal` |
-| Custom slide distance | Override `--c2-entrance-y` in new class |
+| Custom slide distance | Override `--c2-entrance-distance` in new class (keep it consistent with the shared 64px) |

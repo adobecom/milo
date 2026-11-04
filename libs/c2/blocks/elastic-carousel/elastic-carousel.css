@@ -279,6 +279,11 @@ html[dir="rtl"] {
 
   /* One-time entrance: libs/c2/content-animations.js adds c2-entrance-played once the
      carousel reaches its trigger line, then c2-entrance-settled when it finishes. */
+  .elastic-carousel {
+    /* Bespoke moment: keeps its own timing, independent of the shared entrance. */
+    --elastic-carousel-entrance-base: 1050ms;
+  }
+
   .elastic-carousel.c2-entrance-item:not(.c2-entrance-played) .elastic-carousel-container {
     margin-left: var(--start-margin);
     opacity: 0;
@@ -291,11 +296,11 @@ html[dir="rtl"] {
   .elastic-carousel.c2-entrance-played:not(.c2-entrance-settled) .elastic-carousel-container {
     /* Stage's keyframes finish at 40%; durations place that point where stage's scroll
        range put it at the shared entrance rate, then hold for the rest. */
-    animation: elasticCarouselSlideIn calc(var(--c2-entrance-duration) * 3.125)
+    animation: elasticCarouselSlideIn calc(var(--elastic-carousel-entrance-base) * 3.125)
       var(--parallax-easing) both;
 
     .elastic-carousel-item {
-      animation: elasticItemsGapShrink calc(var(--c2-entrance-duration) * 2.875)
+      animation: elasticItemsGapShrink calc(var(--elastic-carousel-entrance-base) * 2.875)
         var(--parallax-easing) both;
     }
   }

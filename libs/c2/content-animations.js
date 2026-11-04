@@ -5,9 +5,13 @@
 // only reads each element's --c2-entrance role and the scroll-driven --c2-entrance-off flag.
 const ENTRANCE_ROLES = ['content', 'self', 'stagger', 'stagger-rtl'];
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const singleColumn = window.matchMedia('(width < 768px)');
 const states = new WeakMap();
 const sections = new Set();
+// Everything that starts together plays as one cascade, across sources and sections:
+// eyebrow, headline, body, then the tiles, each one step after the previous.
+const CASCADE_STEP = 100;
+let cascadeEnd = 0;
+const ABOVE_VIEWPORT = 1e6;
 
 const styleValue = (el, name) => getComputedStyle(el).getPropertyValue(name).trim();
 const roleOf = (el) => styleValue(el, '--c2-entrance');
@@ -21,6 +25,8 @@ const playsInPlace = (role) => role === 'effect' || role === 'block';
 
 function itemsOf(source, role) {
   if (role === 'content') return [...source.querySelector('.content')?.children ?? []];
+  // A section's own background stays opaque; its blocks enter instead.
+  if (role === 'self' && source.classList.contains('section')) return childItems(source);
   if (role === 'self' || playsInPlace(role)) return [source];
   return childItems(source);
 }
@@ -58,38 +64,81 @@ function settleWhenDone(item, signal) {
   }, { signal });
 }
 
-function reveal(state, items, settled) {
-  items.forEach((item) => {
-    if (!state.pending.delete(item)) return;
-    item.classList.add('c2-entrance-played');
-    if (settled) item.classList.add('c2-entrance-settled');
-    else if (item === state.source) settleWhenDone(item, state.abort.signal);
+// Items that trigger in the same task (each observer calls back separately) join one batch,
+// cascaded in page order, then each source's own order (right-to-left staggers).
+let batch;
+const inPageOrder = (a, b) => {
+  if (a.state !== b.state) {
+    /* eslint-disable-next-line no-bitwise */
+    return a.state.source.compareDocumentPosition(b.state.source) & Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1 : 1;
+  }
+  return a.state.order.indexOf(a.item) - b.state.order.indexOf(b.item);
+};
+
+function cascade(state, items) {
+  const now = performance.now();
+  if (!batch || now - batch.now > CASCADE_STEP / 2) {
+    batch = { now, start: Math.max(now, cascadeEnd), entries: [] };
+    const current = batch;
+    setTimeout(() => { if (batch === current) batch = undefined; });
+  }
+  batch.entries.push(...items.map((item) => ({ state, item })));
+  batch.entries.sort(inPageOrder).forEach(({ item }, index) => {
+    const delay = batch.start + index * CASCADE_STEP - batch.now;
+    item.style.setProperty('--c2-entrance-delay', `${Math.round(delay)}ms`);
   });
-  if (!state.pending.size) state.observer.disconnect();
+  cascadeEnd = batch.start + batch.entries.length * CASCADE_STEP;
 }
 
-// Multi-column grids enter as one, like stage's shared section timeline. Masonry and
-// single-column grids enter row by row, so each row gets its own stagger order.
+function reveal(state, items, settled) {
+  const revealed = state.order.filter((item) => items.includes(item) && state.pending.delete(item));
+  if (settled) {
+    revealed.forEach((item) => item.classList.add('c2-entrance-played', 'c2-entrance-settled'));
+  } else if (revealed.length) {
+    cascade(state, revealed);
+    revealed.forEach((item) => {
+      item.classList.add('c2-entrance-played');
+      if (item === state.source) settleWhenDone(item, state.abort.signal);
+    });
+  }
+  if (!state.pending.size) state.observer?.disconnect();
+}
+
+const rowsOf = (items) => items.reduce((rows, item) => {
+  const last = rows[rows.length - 1];
+  if (last && Math.abs(last[0].offsetTop - item.offsetTop) < 2) last.push(item);
+  else rows.push([item]);
+  return rows;
+}, []);
+
+// Staggered grids enter row by row as each row scrolls in, so rows below the fold never
+// play unseen and every row cascades from its first column.
 function updateOrder(state) {
-  const { source } = state;
-  state.byRow = isStagger(state.role)
-    && (source.classList.contains('masonry-layout') || singleColumn.matches);
-  const groups = [];
-  state.items.filter((item) => state.pending.has(item)).forEach((item) => {
-    const last = groups[groups.length - 1];
-    if (last && (!state.byRow || Math.abs(last[0].offsetTop - item.offsetTop) < 2)) last.push(item);
-    else groups.push([item]);
-  });
-  groups.forEach((group) => {
-    const ordered = state.role === 'stagger-rtl' ? group.reverse() : group;
+  state.byRow = isStagger(state.role);
+  const pending = state.items.filter((item) => state.pending.has(item));
+  const rows = rowsOf(pending);
+  state.rows = rows;
+  const groups = state.byRow ? rows : [pending];
+  const inOrder = (group) => (state.role === 'stagger-rtl' ? [...group].reverse() : group);
+  state.order = groups.flatMap((group) => {
+    const ordered = inOrder(group);
     ordered.forEach((item, index) => {
       item.style.setProperty('--c2-entrance-index', String(index));
       item.style.setProperty('--c2-entrance-count', String(ordered.length));
     });
+    return ordered;
   });
 }
 
-function setup(source, role, settleVisible) {
+// Content in view (or already scrolled past) when it is set up is part of the page as
+// loaded, so it shows without playing; only content scrolled into view animates.
+const isShown = (el) => {
+  const rect = el.getBoundingClientRect();
+  return (rect.width || rect.height) && rect.top < window.innerHeight;
+};
+
+function setup(source, role) {
   const items = itemsOf(source, role).filter((item) => isLoaded(item) && !hasOtherAnimation(item));
   if (!items.length) return;
   source.classList.add('c2-entrance-group');
@@ -104,37 +153,51 @@ function setup(source, role, settleVisible) {
   // item itself reaches the trigger line.
   const anchorOf = (item) => [...item.children].find((child) => styleValue(child, '--c2-entrance-anchor')) ?? item;
   const anchors = new Map(items.map((item) => [anchorOf(item), item]));
-  let firstReport = true;
+  const shown = [...anchors].filter(([anchor]) => isShown(anchor)).map(([, item]) => item);
+  // A row enters together once any of its items reaches the line.
+  const rowsWith = (hits) => state.rows
+    .filter((row) => row.some((item) => hits.includes(item))).flat();
+  if (shown.length) reveal(state, state.byRow ? rowsWith(shown) : items, true);
+  if (!state.pending.size) {
+    state.abort.abort();
+    return;
+  }
+  // The root reaches far above the viewport, so content jumped past (in-page links, End key,
+  // the page growing under a fast scroll) still counts as reached and never stays hidden.
+  // Jumped-past content shows settled: playing it unseen would only hold back the cascade
+  // of the content actually in view.
   state.observer = new IntersectionObserver((entries) => {
-    // Content at or above the trigger line plays; content already scrolled past
-    // (deep links, reloads mid-page) is caught by the observer's first report.
-    const hits = entries
-      .filter((entry) => entry.isIntersecting || entry.boundingClientRect.bottom < 0)
+    const reached = entries.filter((entry) => entry.isIntersecting);
+    const passed = reached.filter((entry) => entry.boundingClientRect.bottom <= 0)
       .map((entry) => anchors.get(entry.target));
-    const batch = state.byRow ? hits : [...state.pending];
-    if (hits.length) reveal(state, batch, settleVisible && firstReport);
-    firstReport = false;
-  }, { rootMargin: `0px 0px -${100 - trigger}% 0px` });
+    const hits = reached.filter((entry) => entry.boundingClientRect.bottom > 0)
+      .map((entry) => anchors.get(entry.target));
+    if (!state.byRow) {
+      if (reached.length) reveal(state, [...state.pending], !hits.length);
+      return;
+    }
+    if (passed.length) reveal(state, rowsWith(passed).filter((item) => !hits.includes(item)), true);
+    if (hits.length) reveal(state, rowsWith(hits), false);
+  }, { rootMargin: `${ABOVE_VIEWPORT}px 0px -${100 - trigger}% 0px` });
   anchors.forEach((item, anchor) => state.observer.observe(anchor));
   source.addEventListener('focusin', () => reveal(state, [...state.pending], true), { signal: state.abort.signal });
 }
 
 function clear(source) {
   const state = states.get(source);
-  state.observer.disconnect();
+  state.observer?.disconnect();
   state.abort.abort();
   state.items.forEach((item) => {
     item.classList.remove('c2-entrance-item', 'c2-entrance-played', 'c2-entrance-settled');
-    item.style.removeProperty('--c2-entrance-index');
-    item.style.removeProperty('--c2-entrance-count');
+    ['index', 'count', 'delay'].forEach((name) => item.style.removeProperty(`--c2-entrance-${name}`));
   });
   source.classList.remove('c2-entrance-group', 'c2-entrance-effect');
   states.delete(source);
 }
 
 // After a resize, responsive authoring may have changed the section's classes and grids
-// may have new rows. Content set up then that is already in view shows without playing.
-function refresh(section, settleVisible) {
+// may have new rows.
+function refresh(section) {
   const sources = sourcesIn(section);
   const current = [...section.querySelectorAll('.c2-entrance-group')];
   if (section.classList.contains('c2-entrance-group')) current.unshift(section);
@@ -142,7 +205,7 @@ function refresh(section, settleVisible) {
   sources.forEach((role, source) => {
     const state = states.get(source);
     if (!state) {
-      setup(source, role, settleVisible);
+      setup(source, role);
       return;
     }
     state.role = role;
@@ -155,14 +218,14 @@ let listening = false;
 function onResize() {
   frame = undefined;
   sections.forEach((section) => {
-    if (section.isConnected) refresh(section, true);
+    if (section.isConnected) refresh(section);
     else sections.delete(section);
   });
 }
 
 export default function initContentAnimations(section) {
   if (reducedMotion.matches || !section?.isConnected) return;
-  refresh(section, false);
+  refresh(section);
   sections.add(section);
   if (listening) return;
   listening = true;
