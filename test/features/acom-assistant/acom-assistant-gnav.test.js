@@ -1,6 +1,10 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { getAcomAssistantGnavFabState, decorateNavWithAssistant } from '../../../libs/features/acom-assistant-gnav.js';
+import {
+  getAcomAssistantGnavFabState,
+  decorateNavWithAssistant,
+  decorateAcomAssistantGnav,
+} from '../../../libs/features/acom-assistant-gnav.js';
 
 describe('getAcomAssistantGnavFabState', () => {
   let meta;
@@ -37,7 +41,7 @@ describe('getAcomAssistantGnavFabState', () => {
 });
 
 /* eslint-disable no-underscore-dangle */
-describe('decorateNavWithAssistant BC-GNav-shown analytics', () => {
+describe('acom-assistant GNav BC-GNav-shown analytics', () => {
   const metas = [];
   let matchMediaStub;
 
@@ -87,6 +91,17 @@ describe('decorateNavWithAssistant BC-GNav-shown analytics', () => {
     renderClientUi(nav);
     await flush();
     expect(getCustom()).to.deep.include({ propertyName: 'BC-GNav-shown', propertyValue: 'true', propertyType: 'string' });
+  });
+
+  it('tracks the C2 path that calls decorateAcomAssistantGnav directly', async () => {
+    const nav = buildNav();
+    decorateAcomAssistantGnav(nav);
+    await flush();
+    expect(countProp('BC-GNav-shown')).to.equal(0);
+
+    renderClientUi(nav);
+    await flush();
+    expect(countProp('BC-GNav-shown')).to.equal(1);
   });
 
   it('waits for the entry point, not just the client root', async () => {

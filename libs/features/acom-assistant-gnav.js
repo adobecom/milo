@@ -35,29 +35,6 @@ export async function loadAcomAssistantGnav() {
 
 export const getAuthoredGnavCards = () => authoredCards;
 
-/** Per the wiki, the client discovers this mount point and builds its own GNav
- *  icon/expanded-input/minimized states into it.
- *  https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration */
-export function decorateAcomAssistantGnav(el, cards, block) {
-  if (!isAcomAssistantEnabled()) return null;
-  if (cards) authoredCards = cards;
-  if (block !== undefined) noGnavMobile = !!block?.classList.contains('no-gnav-mobile');
-  if (noGnavMobile && !window.matchMedia('(min-width: 900px)').matches) return null;
-  const wrapper = el.querySelector('.feds-bc-wrapper');
-  if (!wrapper) return null;
-  let mount = wrapper.querySelector('#acomAssistant-gnav-mount');
-  if (!mount) {
-    // The GNav CSS keys off data-fab-state; the client applies gnavFabState itself.
-    const fabState = getAcomAssistantGnavFabState();
-    if (fabState) wrapper.dataset.fabState = fabState;
-    mount = document.createElement('div');
-    mount.id = 'acomAssistant-gnav-mount';
-    wrapper.append(mount);
-    loadAcomAssistantGnav().catch(logInitializationError);
-  }
-  return mount;
-}
-
 const observedMounts = new WeakSet();
 // The client renders .acomAssistantGnavRoot > .acomAssistantGnavInput (the entry point).
 const GNAV_ENTRY_SELECTOR = '.acomAssistantGnavInput';
@@ -80,10 +57,33 @@ export function trackAcomAssistantGnavShown(mount) {
   observer.observe(mount, { childList: true, subtree: true });
 }
 
+/** Per the wiki, the client discovers this mount point and builds its own GNav
+ *  icon/expanded-input/minimized states into it.
+ *  https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration */
+export function decorateAcomAssistantGnav(el, cards, block) {
+  if (!isAcomAssistantEnabled()) return null;
+  if (cards) authoredCards = cards;
+  if (block !== undefined) noGnavMobile = !!block?.classList.contains('no-gnav-mobile');
+  if (noGnavMobile && !window.matchMedia('(min-width: 900px)').matches) return null;
+  const wrapper = el.querySelector('.feds-bc-wrapper');
+  if (!wrapper) return null;
+  let mount = wrapper.querySelector('#acomAssistant-gnav-mount');
+  if (!mount) {
+    // The GNav CSS keys off data-fab-state; the client applies gnavFabState itself.
+    const fabState = getAcomAssistantGnavFabState();
+    if (fabState) wrapper.dataset.fabState = fabState;
+    mount = document.createElement('div');
+    mount.id = 'acomAssistant-gnav-mount';
+    wrapper.append(mount);
+    loadAcomAssistantGnav().catch(logInitializationError);
+  }
+  trackAcomAssistantGnavShown(mount);
+  return mount;
+}
+
 export function decorateNavWithAssistant(cards, topNav, block) {
   const mount = decorateAcomAssistantGnav(topNav, cards, block);
   if (!mount) return;
-  trackAcomAssistantGnavShown(mount);
   window.milo ||= {};
   window.milo.brandConcierge = { brandConciergeGlobal: true };
 }
