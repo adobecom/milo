@@ -1,6 +1,7 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
+  getAupSelectValue, whenTargetReady, getValidatedMarket, isSupportedMarket,
 } from '../../utils/utils.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
@@ -273,7 +274,6 @@ export async function resolveCheckoutCountry(service) {
   try {
     const imsCountry = await service.imsCountryPromise;
     if (imsCountry) {
-      const { isSupportedMarket } = await import('../../utils/market.js');
       if (await isSupportedMarket(imsCountry)) return imsCountry;
     }
   } catch { /* ignore, fall back to validated market country */ }
@@ -302,7 +302,6 @@ function guardCheckoutLinkImsCountry(service) {
       // Setting dataset.imsCountry back to `fallback` below re-triggers this same observer;
       // bailing out here (value already matches fallback) is what stops the loop.
       if (!country || !fallback || country.toLowerCase() === fallback.toLowerCase()) return;
-      const { isSupportedMarket } = await import('../../utils/market.js');
       if (await isSupportedMarket(country)) return;
       cta.dataset.imsCountry = fallback;
     });
@@ -570,10 +569,15 @@ export async function fetchEntitlements() {
 }
 
 export async function fetchCheckoutLinkConfigs(base = '', env = '') {
+  let configBase = base;
+  if (/\.page$/.test(document.location.origin)) {
+    /* c8 ignore next 2 */
+    configBase = configBase.replace('.live', '.page');
+  }
   const params = new URLSearchParams(window.location.search);
   const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
-    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
-    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
+    ? `${configBase}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${configBase}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
     ?? fetch(path)
       .catch((e) => {
@@ -620,12 +624,7 @@ export async function getCheckoutLinkConfig(
     delete extraOptionsObj.svar;
     options.extraOptions = JSON.stringify(extraOptionsObj);
   }
-  let { base } = getConfig();
-  const { env } = getConfig();
-  if (/\.page$/.test(document.location.origin)) {
-    /* c8 ignore next 2 */
-    base = base.replace('.live', '.page');
-  }
+  const { base, env } = getConfig();
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
@@ -1256,7 +1255,6 @@ export async function getCheckoutAction(
   el,
 ) {
   try {
-    await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
       getDownloadAction(options, imsSignedInPromise, offers),
       getUpgradeAction(options, imsSignedInPromise, offers, el),
@@ -1283,6 +1281,44 @@ function isAnnualPriceEnabled(params) {
   return undefined;
 }
 
+let aupSelectService;
+
+/*
+ * Gnav only loads the AUP SDK when aup-select is on at IMS-ready. MAS needs window.aupsdk to
+ * open the AUP flow, so load it (or refresh its features) when aup-select is enabled later.
+ */
+function syncAupSdk() {
+  if (!getAupSelectValue()) return;
+  import('../global-navigation/utilities/aup-sdk.js')
+    .then(({ preloadAupSdk }) => preloadAupSdk())
+    .catch((e) => {
+      window.lana?.log(`AUP SDK load after late aup-select failed: ${e?.message}`, { tags: 'merch', errorType: 'i' });
+    });
+}
+
+function applyAupSelect(service) {
+  aupSelectService = service;
+  let applied = false;
+  const setValue = () => {
+    const value = getAupSelectValue();
+    if (value) {
+      service.setAttribute('aup-select', value);
+      applied = true;
+    } else if (applied) {
+      // Only undo what we set; keep aup-select passed via attributes or commerce config.
+      service.removeAttribute('aup-select');
+      applied = false;
+    }
+  };
+  setValue();
+  // Personalization may still change aup-select until target is ready.
+  whenTargetReady().then(() => {
+    if (aupSelectService !== service) return;
+    setValue();
+    syncAupSdk();
+  });
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -1293,7 +1329,8 @@ export async function initService(force = false, attributes = {}) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
+  const { base, commerce, env: miloEnv, locale: miloLocale } = getConfig();
+  fetchCheckoutLinkConfigs(base, miloEnv);
 
   const extraAttrs = [
     'checkout-workflow-step',
@@ -1327,7 +1364,7 @@ export async function initService(force = false, attributes = {}) {
           : Promise.resolve(),
         localeSettingsPromise,
         useGeoMarket
-          ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
+          ? getValidatedMarket()
           : Promise.resolve(null),
       ]);
 
@@ -1389,6 +1426,7 @@ export async function initService(force = false, attributes = {}) {
         }
         if (localeFromMarket !== locale) service.setAttribute('locale', localeFromMarket);
       }
+      applyAupSelect(service);
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
@@ -1790,9 +1828,11 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  const command = fragments?.[fragment]?.[options.field || ''];
+  const rows = fragments?.[fragment];
+  let command = rows?.[options.field || ''];
+  if (!command && options.field && rows?.['']?.pzn) command = rows[''];
   if (command && command.action === 'replace') {
-    return { ...options, fragment: command.content };
+    return { ...options, fragment: command.content, ...(command.pzn && { pzn: command.pzn }) };
   }
   return options;
 }

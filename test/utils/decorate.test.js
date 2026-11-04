@@ -1,6 +1,45 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { setBackgroundFocus, decorateBlockText, getButtonType, decoratePictures, decorateViewportContent } from '../../libs/utils/decorate.js';
+import { getConfig } from '../../libs/utils/utils.js';
+import {
+  setBackgroundFocus, decorateBlockText, getButtonType,
+  decoratePictures, decorateViewportContent, normalizeMasFieldText,
+} from '../../libs/utils/decorate.js';
+
+describe('normalizeMasFieldText', () => {
+  it('can normalize body fields without wrapping other MAS roles', () => {
+    const cell = document.createElement('div');
+    cell.innerHTML = '<mas-field field="description"></mas-field><mas-field field="prices"></mas-field><mas-field field="badge"></mas-field>';
+    normalizeMasFieldText(cell, 'md', 'mas-field[field="description"]');
+    expect(cell.querySelector('[field="description"]').parentElement.className).to.equal('body-md');
+    expect(cell.querySelector('[field="prices"]').parentElement).to.equal(cell);
+    expect(cell.querySelector('[field="badge"]').parentElement).to.equal(cell);
+  });
+
+  it('preserves paragraph attributes and siblings without duplicating field containers', () => {
+    const cell = document.createElement('div');
+    cell.innerHTML = '<p id="copy" class="body-lg" data-tracking="copy">Before <mas-field field="description"></mas-field> after</p>';
+    const field = cell.querySelector('mas-field');
+    normalizeMasFieldText(cell, 'lg');
+    const body = cell.firstElementChild;
+    expect(body.tagName).to.equal('DIV');
+    expect(body.id).to.equal('copy');
+    expect(body.dataset.tracking).to.equal('copy');
+    expect(body.textContent).to.equal('Before  after');
+    expect(field.parentElement).to.equal(body);
+    normalizeMasFieldText(cell, 'lg');
+    expect(cell.firstElementChild).to.equal(body);
+    expect(cell.querySelectorAll('div').length).to.equal(1);
+  });
+
+  it('leaves headings, CTAs, and ordinary paragraphs untouched', () => {
+    const cell = document.createElement('div');
+    cell.innerHTML = '<h1><mas-field field="cardTitle"></mas-field></h1><mas-field field="description"><h2>Title</h2></mas-field><mas-field field="ctas[buy]"></mas-field><p class="body-lg">Ordinary copy</p>';
+    const original = cell.innerHTML;
+    normalizeMasFieldText(cell, 'lg');
+    expect(cell.innerHTML).to.equal(original);
+  });
+});
 
 describe('setBackgroundFocus', () => {
   let container;
@@ -345,6 +384,27 @@ describe('decorateViewportContent — resolveInheritance extra-row handling', ()
   // `el` (via applyViewportContent's replaceChildren), so assert against
   // `el.children` — the same DOM a block's own decorate() would see — rather
   // than the internal per-viewport container references.
+
+  it('does not notify MEP about inherited content outside preview mode', () => {
+    const config = getConfig();
+    const originalMep = config.mep;
+    const events = [];
+    const listener = (event) => events.push(event);
+    document.addEventListener('mep:content-cloned', listener);
+    try {
+      config.mep = { ...originalMep, preview: false };
+      const el = buildBlock({
+        mobileText: ['mobile A', 'mobile B'],
+        tabletMedia: ['', ''],
+        tabletText: ['', ''],
+      });
+      decorateViewportContent(el, () => {});
+      expect(events.length).to.equal(0);
+    } finally {
+      config.mep = originalMep;
+      document.removeEventListener('mep:content-cloned', listener);
+    }
+  });
 
   it('content row (row 0): empty cell still inherits from the previous viewport', () => {
     const el = buildBlock({

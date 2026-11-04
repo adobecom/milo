@@ -22,6 +22,7 @@ export const LANGS = {
   'fr-ca': 'fr-ca',
   ja: 'ja',
   ar: 'ar',
+  ara: 'ar',
   arabic: 'ar',
   bg: 'bg',
   cs: 'cs',
@@ -658,6 +659,18 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
   return foundInMapping && !isEnglishRegional;
 }
 
+// Some lingo-site-mapping base-site path segments don't match an existing
+// caas:language tag id (e.g. the '/ara' base-site resolves to the 3-letter
+// path segment 'ara', but the CaaS language taxonomy only has 'ar'). This maps
+// those base-site segments to the tag id they should resolve to everywhere
+// a base-site segment is compared against, or returned as, a language value.
+const BASE_SITE_LANG_TAG_ALIASES = { ara: 'ar' };
+const normalizeBaseSiteLang = (lang) => (
+  Object.prototype.hasOwnProperty.call(BASE_SITE_LANG_TAG_ALIASES, lang)
+    ? BASE_SITE_LANG_TAG_ALIASES[lang]
+    : lang
+);
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
@@ -675,20 +688,24 @@ async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com
     }
     isKnownLingoSiteLocale = siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => {
       if (uniqueSiteId !== siteId) return false;
-      const baseLocale = baseSite?.split('/')[1];
-      const matchesBase = country === baseLocale;
-      const langMatchesBase = language === baseLocale;
+      // Compare country against the raw (un-normalized) base-site segment, not its
+      // language-tag alias, so a normalized alias (e.g. 'ara' -> 'ar') can never
+      // collide with an unrelated country code (e.g. 'ar' = Argentina).
+      const rawBaseSegment = baseSite?.split('/')[1];
+      const normalizedBaseLang = normalizeBaseSiteLang(rawBaseSegment);
+      const matchesBase = country === rawBaseSegment;
+      const langMatchesBase = normalizeBaseSiteLang(language) === normalizedBaseLang;
       const matchesRegional = isLocaleInRegionalSites(regionalSites, country, language);
       return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
-      const baseSiteLocale = language === 'en' ? '' : language;
+      const baseSiteLocale = language === 'en' ? '' : normalizeBaseSiteLang(language);
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
-          if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
+          if (baseSiteLocale === baseSite || baseSiteLocale === normalizeBaseSiteLang(baseSite.split('/')[1])) {
             if (country === 'xx' || isLocaleInRegionalSites(regionalSites, country, language)) {
               isPermittedLingoSiteLocale = true;
             }
@@ -774,7 +791,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
         if (baseLocale && localeStr === baseLocale) {
           lingoSiteMapping = {
             country: 'xx',
-            language: baseLocale,
+            language: normalizeBaseSiteLang(baseLocale),
           };
           return;
         }
@@ -788,7 +805,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
           }
           lingoSiteMapping = {
             country: localeStr,
-            language: baseLocale,
+            language: normalizeBaseSiteLang(baseLocale),
           };
         }
       });
@@ -1047,6 +1064,31 @@ export const getProducts = async (state) => {
   }
 };
 
+/**
+ * Chimera returns cards in order, with featured cards first. With the default `featured` sort
+ * the card library keeps that order, so when users can't filter, search or re-sort, only the
+ * first `totalCardsToShow` cards are ever shown and the rest of `collectionSize` is unused.
+ * Other sorts (and event filters) need the full set, including to backfill slots left by
+ * featured cards that are unavailable.
+ */
+export const getRequestSize = (state) => {
+  const collectionSize = parseInt(state.collectionSize, 10);
+  if (!collectionSize) return state.totalCardsToShow;
+  if (state.sortDefault !== 'featured' || state.filterEvent?.length) return state.collectionSize;
+
+  const shownLimit = parseInt(state.totalCardsToShow, 10);
+  if (!(shownLimit > 0) || collectionSize <= shownLimit) return state.collectionSize;
+
+  const hasUserControls = state.sortEnablePopup
+    || state.showFilters
+    || state.showSearch
+    || state.showBookmarksFilter
+    || state.onlyShowBookmarkedCards
+    || state.partialLoadEnabled
+    || state.container === 'categories';
+  return hasUserControls ? state.collectionSize : shownLimit;
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1136,7 +1178,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }&excludeIds=${excludedCardsWithCurrent
       }&currentEntityId=&featuredCards=${featuredCards
       }&environment=&draft=${state.draftDb
-      }&size=${state.collectionSize || state.totalCardsToShow
+      }&size=${getRequestSize(state)
       }${geoCountryParam
       }${localesQueryParam
       }${debug

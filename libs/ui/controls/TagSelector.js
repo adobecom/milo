@@ -163,6 +163,7 @@ const TagSelect = ({
   options = {},
   value = [],
   singleSelect = false,
+  tooltip,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isModal, setIsModal] = useState(false);
@@ -183,21 +184,42 @@ const TagSelect = ({
     if (!Array.isArray(value)) {
       onChange([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const toggleOpen = () => setIsOpen(!isOpen);
+
   useEffect(() => {
-    if (isOpen) {
-      const escClose = (e) => {
-        if (e.key === 'Escape') {
-          toggleOpen();
-        }
-      };
-      document.addEventListener('keyup', escClose);
-      return () => document.removeEventListener('keyup', escClose);
-    }
+    if (!isOpen) return undefined;
+    const escClose = (e) => {
+      if (e.key === 'Escape') {
+        toggleOpen();
+      }
+    };
+    document.addEventListener('keyup', escClose);
+    return () => document.removeEventListener('keyup', escClose);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const toggleOpen = () => setIsOpen(!isOpen);
+  const addOption = (val) => {
+    if (!value.includes(val)) {
+      value.push(val);
+    }
+    onChange(singleSelect ? [val] : [...value]);
+  };
+
+  const removeOption = (val) => {
+    const optionIndex = value.indexOf(val);
+    if (optionIndex === -1) return;
+    value.splice(optionIndex, 1);
+    onChange([...value]);
+  };
+
+  const onTagDelete = (ev, val) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    removeOption(val);
+  };
 
   const selectedItems = [...value].map((option) => {
     if (!optionMap[option]) return null;
@@ -225,26 +247,6 @@ const TagSelect = ({
     `;
   });
 
-  const addOption = (val) => {
-    if (!value.includes(val)) {
-      value.push(val);
-    }
-    onChange(singleSelect ? [val] : [...value]);
-  };
-
-  const removeOption = (val) => {
-    const optionIndex = value.indexOf(val);
-    if (optionIndex === -1) return;
-    value.splice(optionIndex, 1);
-    onChange([...value]);
-  };
-
-  const onTagDelete = (ev, val) => {
-    ev.preventDefault();
-    ev.stopPropagation();
-    removeOption(val);
-  };
-
   const onToggle = (val) => {
     if (value.includes(val)) {
       removeOption(val);
@@ -255,7 +257,7 @@ const TagSelect = ({
 
   return html`
     <div class="tagselect" ref=${tagSelectRef}>
-      <label>${label}</label>
+      <label title=${tooltip}>${label}</label>
       <div class="tagselect-input" onClick=${toggleOpen}>
         <div class="tagselect-values">${selectedItems}</div>
         <div class="tagselect-add">

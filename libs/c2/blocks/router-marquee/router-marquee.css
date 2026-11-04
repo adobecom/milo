@@ -579,4 +579,8 @@
 /* Rejoin parser-split nested paragraphs into one line. */
 .router-marquee mas-field > [data-role="mas-field-content"] p {
   display: inline;
+
+  & + p::before {
+    content: ' ';
+  }
 }

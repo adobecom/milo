@@ -18,7 +18,7 @@ permissions:
 jobs:
   run-nala-tests:
     name: ${{ matrix.project == 'mas' && 'Running MAS (all browsers)' || matrix.project == 'mep' && 'Running MEP (all browsers)' || format('Running MILO ({0} browser)', matrix.browser) }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 18
     strategy:
       fail-fast: false

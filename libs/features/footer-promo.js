@@ -40,7 +40,7 @@ export default async function initFooterPromo(footerPromoTag, footerPromoType, d
   const { default: loadFragment } = await import('../blocks/fragment/fragment.js');
   const a = createTag('a', { href }, href);
   const div = createTag('div', null, a);
-  const section = createTag('div', null, div);
+  const section = createTag('div', { 'data-footer-promo': '' }, div);
   doc.querySelector('main > div:last-of-type').insertAdjacentElement('afterend', section);
   await loadFragment(a);
   section.classList.add('section');

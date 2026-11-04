@@ -93,7 +93,7 @@ describe('C2 content animations', () => {
     const hero = block('rich-content', '<div class="foreground"><div class="content"><h2>Hero</h2></div></div>');
     initContentAnimations(section);
     expect(hero.querySelector('.c2-entrance-item')).to.be.null;
-    expect(getComputedStyle(section).animationName).to.equal('garage-door-grow');
+    expect(getComputedStyle(section).animationName).to.equal('garage-door-section-parallax');
     expect(observers).to.have.length(0);
   });
 
@@ -180,7 +180,7 @@ describe('C2 content animations', () => {
       expect(getComputedStyle(item).opacity).to.equal('0');
     });
     enter(observers[0]);
-    expect(getComputedStyle(items[0]).translate).to.equal('0px 100%');
+    expect(getComputedStyle(items[0]).translate).to.equal('0px 40px');
     expect(getComputedStyle(items[0]).animationDuration).to.equal('1.05s, 1.05s, 1.05s, 1.05s, 1.05s');
     expect(getComputedStyle(items[0]).animationTimingFunction).to.include('cubic-bezier(0.42, 0, 0, 1)');
     expect(items[1].classList.contains('c2-entrance-played')).to.be.false;
@@ -383,7 +383,7 @@ describe('C2 content animations', () => {
     expect(el.classList.contains('c2-entrance-group')).to.be.false;
     expect(el.querySelector('.c2-entrance-item')).to.be.null;
     expect(observers[0].disconnect.called).to.be.true;
-    expect(getComputedStyle(section).animationName).to.equal('garage-door-grow');
+    expect(getComputedStyle(section).animationName).to.equal('garage-door-section-parallax');
   });
 
   it('shows content that responsive authoring adds in view without replaying it', async () => {

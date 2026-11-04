@@ -10,6 +10,7 @@ export function escapeHtml(s) {
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
 const DEFAULT_HINT = 'Click & Drag';
+export const DEFAULT_MACHINE_TAG = 'acom_ff_globe_assets';
 const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
 const LABEL_DIVIDER = '||';
@@ -86,65 +87,15 @@ function hangOpeningMark(el, room) {
   }
 }
 
-const QUOTE_TEXT = new WeakMap(); // authored text, so every relayout re-splits from scratch
+const QUOTE_TEXT = new WeakMap();
 
-// Group the words by the line box they landed on; under a pixel is baseline noise, not a wrap.
-function measureLines(quoteEl, words, room) {
-  const probes = words.map((w, i) => {
-    const s = document.createElement('span');
-    s.textContent = w;
-    if (!i) hangOpeningMark(s, room);
-    return s;
-  });
-  const nodes = [];
-  probes.forEach((s, i) => {
-    if (i) nodes.push(document.createTextNode(' '));
-    nodes.push(s);
-  });
-  quoteEl.replaceChildren(...nodes);
-  const lines = [];
-  let top = null;
-  probes.forEach((s, i) => {
-    const y = s.offsetTop;
-    if (top === null || y - top > 1) {
-      lines.push([]);
-      top = y;
-    }
-    lines[lines.length - 1].push(words[i]);
-  });
-  return lines;
-}
-
-// Re-typeset the quote as one masked block per rendered line, and return those lines for the
-// caller to write progress vars to. Idempotent; plain text if there is nothing to split.
-export function layoutQuote(quoteEl) {
-  if (!quoteEl) return [];
+export function plainQuote(quoteEl) {
+  if (!quoteEl) return '';
   if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
   const text = QUOTE_TEXT.get(quoteEl).trim();
-  quoteEl.classList.remove('firefly-globe-pullquote-lines');
   quoteEl.textContent = text;
-  if (!text) return [];
-  const room = gutterOf(quoteEl.closest('.firefly-globe-pullquote'));
-  const lines = measureLines(quoteEl, text.split(/\s+/), room);
-  const lineEls = lines.map((wordsOnLine, i) => {
-    const inner = createTag('span', { class: 'firefly-globe-pullquote-line-inner' });
-    inner.textContent = wordsOnLine.join(' ');
-    if (!i) hangOpeningMark(inner, room);
-    return createTag('span', { class: 'firefly-globe-pullquote-line', 'aria-hidden': 'true' }, inner);
-  });
-  const srEl = createTag('span', { class: 'sr-only firefly-globe-pullquote-sr' });
-  srEl.textContent = text;
-  quoteEl.classList.add('firefly-globe-pullquote-lines');
-  // Spaced, or textContent runs the lines together ("the differentapps."). Whitespace between
-  // flex items generates no box, so the layout is untouched.
-  const nodes = [];
-  lineEls.forEach((line, i) => {
-    if (i) nodes.push(document.createTextNode(' '));
-    nodes.push(line);
-  });
-  nodes.push(srEl);
-  quoteEl.replaceChildren(...nodes);
-  return lineEls;
+  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.firefly-globe-pullquote')));
+  return text;
 }
 
 const ALT_MAX_CHARS = 120;
@@ -164,14 +115,35 @@ function buildRenditionUrl(href, size, dimension = 'width') {
     .replace(/{size}/g, size);
 }
 
+const LANGUAGE_ALIASES = { no: 'nb' };
+const parsedLocales = new Map();
+
+const text = (v) => (typeof v === 'string' ? v.trim() : '');
+
+function parseLocale(tag) {
+  if (parsedLocales.has(tag)) return parsedLocales.get(tag);
+  try {
+    const { language, script, region } = new Intl.Locale(tag.replace(/_/g, '-')).maximize();
+    parsedLocales.set(tag, { language: LANGUAGE_ALIASES[language] || language, script, region });
+  } catch {
+    parsedLocales.set(tag, null);
+  }
+  return parsedLocales.get(tag);
+}
+
+const langTag = (tag) => (tag && parseLocale(tag) ? tag.replace(/_/g, '-') : '');
+
 function getLocalizedPrompt(prompts, locale) {
-  if (!prompts) return '';
-  return prompts[locale]
-    || prompts[locale.split('-')[0]]
-    || prompts[Object.keys(prompts).find((k) => k.split('-')[0] === locale.split('-')[0])]
-    || prompts['en-US']
-    || Object.values(prompts)[0]
-    || '';
+  const want = parseLocale(locale);
+  const score = (key) => {
+    const have = parseLocale(key);
+    if (!want || !have || have.language !== want.language || have.script !== want.script) return 0;
+    return have.region === want.region ? 2 : 1;
+  };
+  const entries = Object.entries(prompts || {}).filter(([, v]) => text(v));
+  const match = (minScore) => entries.find(([key]) => score(key) >= minScore);
+  const [key = '', value] = match(2) || match(1) || entries.find(([k]) => k === 'en-US') || entries[0] || [];
+  return [langTag(key), text(value)];
 }
 
 function parseModelTags(machineTags) {
@@ -186,8 +158,12 @@ function apiAssetToCard(asset, locale) {
   const rendition = asset?._links?.rendition;
   if (!rendition?.href || !asset.id) return null;
 
-  const prompts = asset.custom?.input?.['firefly#prompts'];
-  const prompt = getLocalizedPrompt(prompts, locale);
+  const input = asset.custom?.input;
+  const [lang, prompt] = [
+    getLocalizedPrompt(input?.['firefly#prompts'], locale),
+    [langTag(text(input?.['firefly#locale'])), text(input?.['firefly#originalPrompt'])],
+    ['', text(asset.title)],
+  ].find(([, v]) => v) || ['', ''];
   const fireflyUrl = asset.urn
     ? `https://firefly.adobe.com/open?assetOrigin=community&assetType=ImageGeneration&id=${asset.urn}`
     : null;
@@ -196,10 +172,11 @@ function apiAssetToCard(asset, locale) {
     renditionHref: componentRenditionHref(rendition.href, asset.id),
     maxWidth: rendition.max_width || null,
     maxHeight: rendition.max_height || null,
-    alt: prompt ? prompt.slice(0, ALT_MAX_CHARS) : '',
+    alt: prompt.slice(0, ALT_MAX_CHARS),
     modelId,
     modelVersionName,
     prompt,
+    lang,
     fireflyUrl,
     crossOrigin: 'anonymous',
   };
@@ -230,7 +207,14 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
     // eslint-disable-next-line no-underscore-dangle
     const assets = (data._embedded?.assets || []);
     const cards = assets.map((a) => apiAssetToCard(a, loc)).filter(Boolean);
-    return cards.length ? cards : null;
+    if (!cards.length) {
+      window.lana?.log?.(
+        `firefly-globe: no usable assets (${assets.length} returned): ${url}`,
+        { tags: 'firefly-globe', severity: 'warn' },
+      );
+      return null;
+    }
+    return cards;
   } catch (e) {
     window.lana?.log?.(
       `firefly-globe: assets fetch error (${e.message}): ${url}`,
@@ -238,6 +222,19 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
     );
     return null;
   }
+}
+
+const FF_SOURCE = 'adobe-com';
+const DEFAULT_FF_CAMPAIGN = 'marketing-page';
+const LEGACY_CAMPAIGN_ID = 'NQCJQWSV';
+
+export function appendFireflyParams(cards, campaignId) {
+  const campaign = !campaignId || campaignId === LEGACY_CAMPAIGN_ID
+    ? DEFAULT_FF_CAMPAIGN : campaignId;
+  const params = new URLSearchParams({ ff_source: FF_SOURCE, ff_campaign: campaign });
+  cards.forEach((card) => {
+    if (card.fireflyUrl) card.fireflyUrl += `&${params}`;
+  });
 }
 
 export function fireflyRenditionUrl(card, px, axis = 'width') {
@@ -248,15 +245,15 @@ export function fireflyRenditionUrl(card, px, axis = 'width') {
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
-  const [categoryId = '', machineTag = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
+  const [categoryId = '', machineTag = '', campaignId = '', ctaLabel = ''] = cellText(firstCell)
     .split(LABEL_DIVIDER)
     .map((s) => s.trim());
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     categoryId: categoryId || null,
-    machineTag: machineTag || null,
-    cgenId,
+    machineTag: machineTag || DEFAULT_MACHINE_TAG,
+    campaignId,
     ctaLabel,
     touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
     hintText: cellText(cells[1]) || DEFAULT_HINT,

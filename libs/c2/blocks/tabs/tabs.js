@@ -329,7 +329,7 @@ const init = async (block) => {
         const tabBtnAttributes = {
           ...sharedAttrs,
           role: 'tab',
-          class: isQuiet ? 'tab-button heading-4' : 'tab-button label',
+          class: isQuiet ? 'tab-button heading-5' : 'tab-button label',
           tabindex: (i === 0) ? '0' : '-1',
           'aria-selected': (i === 0) ? 'true' : 'false',
           'aria-controls': controlId,

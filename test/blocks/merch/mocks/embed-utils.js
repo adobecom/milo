@@ -71,13 +71,21 @@ export const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
 
 // Unused directly by these tests; needed because merch.js statically imports
 // decorate.js and autoblock.js, which import these from utils.js.
+export const isBot = () => false;
+export const getMarketsUrl = () => '';
+export const getValidatedMarket = () => Promise.resolve(null);
+export const isSupportedMarket = () => Promise.resolve(false);
 export const createIntersectionObserver = stub();
 export const getFederatedContentRoot = () => '';
 export const getFedsPlaceholderConfig = () => ({});
 export const shouldBlockFreeTrialLinks = () => false;
 export const isAupEnabled = () => false;
+export const getAupSelectValue = () => null;
+export const whenTargetReady = () => Promise.resolve();
 export const decorateLinksAsync = stub().resolves();
 export const loadBlock = stub().resolves();
+export const getMepEnablement = () => false;
+export const isSignedOut = () => true;
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -99,3 +107,5 @@ export function getValidatedMasLibsUrl(masLibs) {
   if (!url.hostname.endsWith('.aem.live')) return null;
   return url.origin;
 }
+
+export const isTrustedUrl = () => true;

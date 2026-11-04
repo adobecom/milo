@@ -131,6 +131,31 @@ describe('initBentoStack', () => {
     expect(section.style.getPropertyValue('--card-height')).to.equal('528px');
   });
 
+  describe('static fallback when cards do not fit', () => {
+    const root = document.documentElement;
+    afterEach(() => { delete root.clientHeight; });
+
+    async function initWithViewport(clientHeight, cardHeight) {
+      Object.defineProperty(root, 'clientHeight', { value: clientHeight, configurable: true });
+      const card = createCard({ height: cardHeight });
+      card.style.top = '145px';
+      const section = createSection([card]);
+      initBentoStack(section);
+      await waitUntil(() => section.style.getPropertyValue('--card-height'));
+      return section;
+    }
+
+    it('keeps stacking when the pinned card fits in the viewport', async () => {
+      const section = await initWithViewport(800, 540);
+      expect(section.classList.contains('bento-stack-static')).to.be.false;
+    });
+
+    it('switches to the static layout when the pinned card is cut off', async () => {
+      const section = await initWithViewport(325, 540);
+      expect(section.classList.contains('bento-stack-static')).to.be.true;
+    });
+  });
+
   it('does not reinitialize a section already marked bento-stack-ready', async () => {
     const card = createCard();
     const section = createSection([card]);

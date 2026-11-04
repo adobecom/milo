@@ -218,6 +218,13 @@ describe('init: DOM structure — stage env first call', () => {
     expect(bodyEl.querySelector('#toggle-preview-link')).to.exist;
   });
 
+  it('LCP Img Check is the last toggle and is off without ?meplcp', () => {
+    const last = [...bodyEl.querySelectorAll('[data-card-key="Toggle"] .mep-toggle-row')].pop();
+    expect(last?.querySelector('h2')?.textContent).to.equal('LCP Img Check');
+    expect(last?.querySelector('.mep-row-value')?.textContent).to.equal('Add meplcp');
+    expect(last?.querySelector('#toggle-lcp-img-check')?.checked).to.be.false;
+  });
+
   it('persists the Manifest Parameters toggle to sessionStorage on change', () => {
     const cb = bodyEl.querySelector('#toggle-manifest-parameters');
     expect(cb).to.exist;
@@ -1542,8 +1549,8 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   let headerEl;
 
   before(async () => {
-    window.history.replaceState({}, '', '/?mepHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true');
-    setConfig(BASE_CONFIG);
+    window.history.replaceState({}, '', '/?mepHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true&meplcp');
+    setConfig({ ...BASE_CONFIG, mep: { ...BASE_CONFIG.mep, lcpCheck: true } });
     bodyEl = makeBody();
     headerEl = makeHeader();
     await init();
@@ -1571,6 +1578,13 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   it('#toggle-mep checkbox gets "checked" attribute set', () => {
     const cb = bodyEl.querySelector('#toggle-mep');
     expect(cb?.hasAttribute('checked')).to.be.true;
+  });
+
+  it('?meplcp checks the LCP Img Check toggle and keeps a bare meplcp in the preview link', () => {
+    const cb = bodyEl.querySelector('#toggle-lcp-img-check');
+    expect(cb?.checked).to.be.true;
+    const href = bodyEl.querySelector('#mep-drawer .mep-footer a.con-button')?.getAttribute('href');
+    expect(href).to.match(/[?&]meplcp(&|#|$)/);
   });
 });
 

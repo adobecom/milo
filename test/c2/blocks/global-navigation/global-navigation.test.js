@@ -1,8 +1,43 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { getFederalDomain } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { getFederalDomain, localizeGnavLinks } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 
 const DEFAULT = 'https://main--federal--adobecom.aem.page/federal';
+
+describe('c2 global-navigation decorateBody (localizeGnavLinks)', () => {
+  let originalConfig;
+
+  before(() => {
+    originalConfig = getConfig();
+    setConfig({
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+      },
+      pathname: '/fr/education/higher-ed.html',
+      prodDomains: ['www.adobe.com'],
+    });
+  });
+
+  after(() => setConfig(originalConfig));
+
+  it('localizes regular links and leaves #_dnt links untouched', async () => {
+    const { origin } = window.location;
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <a id="regular" href="${origin}/education/students.html">Students</a>
+      <a id="dnt" href="${origin}/acrobat/student-spaces.html#_dnt">Student Spaces</a>`;
+
+    await localizeGnavLinks(body);
+
+    expect(body.querySelector('#regular').getAttribute('href'))
+      .to.equal('/fr/education/students.html');
+    expect(body.querySelector('#dnt').getAttribute('href'))
+      .to.equal(`${origin}/acrobat/student-spaces.html#_dnt`);
+  });
+});
 
 describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
   let getStub;
@@ -13,6 +48,61 @@ describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
 
   afterEach(() => {
     getStub?.restore();
+  });
+
+  describe('C2 Assistant in authored navigation wrappers', () => {
+    let meta;
+
+    beforeEach(() => {
+      meta = document.createElement('meta');
+      meta.name = 'acom-assistant';
+      meta.content = 'on';
+      document.head.append(meta);
+    });
+
+    afterEach(() => {
+      meta.remove();
+      document.body.innerHTML = '';
+    });
+
+    it('does not create a wrapper when authoring has not provided one', () => {
+      document.body.innerHTML = '<header><nav><div class="feds-utilities"></div></nav></header>';
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('.feds-bc-wrapper')).to.be.null;
+    });
+
+    it('mounts once in the existing wrapper without changing its placement', () => {
+      document.body.innerHTML = `
+        <header><nav>
+          <div class="feds-utilities"></div>
+          <div class="feds-bc-wrapper"></div>
+        </nav></header>`;
+      const header = document.querySelector('header');
+      const wrapper = header.querySelector('.feds-bc-wrapper');
+      const previous = wrapper.previousElementSibling;
+      const mount = decorateAcomAssistantGnav(header);
+
+      expect(mount.parentElement).to.equal(wrapper);
+      expect(decorateAcomAssistantGnav(header)).to.equal(mount);
+      expect(wrapper.previousElementSibling).to.equal(previous);
+      expect(header.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+    });
+
+    it('does not mount when Assistant is disabled', () => {
+      meta.content = 'off';
+      document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
+
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    });
+
+    it('does not mount when Assistant metadata is absent', () => {
+      meta.remove();
+      document.body.innerHTML = '<header><nav><div class="feds-bc-wrapper"></div></nav></header>';
+
+      expect(decorateAcomAssistantGnav(document.querySelector('header'))).to.be.null;
+      expect(document.querySelector('#acomAssistant-gnav-mount')).to.be.null;
+    });
   });
 
   it('accepts a valid branch name', () => {

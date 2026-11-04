@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import diffContent from '../../../../../libs/blocks/preflight/checks/diff/diffContent.js';
+import diffContent, { diffWords } from '../../../../../libs/blocks/preflight/checks/diff/diffContent.js';
 
 function root(htmlStr) {
   const el = document.createElement('main');
@@ -167,5 +167,44 @@ describe('preflight diffContent', () => {
       expect(r.modified[0].previewText).to.equal('A paragraph that HAS BEEN modified');
       expect(r.modified[0].liveText).to.equal('A paragraph that will be modified');
     });
+  });
+});
+
+describe('preflight diffWords', () => {
+  it('marks a replaced word as removed then added, keeping unchanged words', () => {
+    expect(diffWords('Starting at $19.99/mo', 'Starting at $29.99/mo')).to.deep.equal([
+      { type: 'same', text: 'Starting' },
+      { type: 'same', text: 'at' },
+      { type: 'removed', text: '$19.99/mo' },
+      { type: 'added', text: '$29.99/mo' },
+    ]);
+  });
+
+  it('reports a word removed in the middle and one added at the end', () => {
+    expect(diffWords('one two three', 'one three four')).to.deep.equal([
+      { type: 'same', text: 'one' },
+      { type: 'removed', text: 'two' },
+      { type: 'same', text: 'three' },
+      { type: 'added', text: 'four' },
+    ]);
+  });
+
+  it('diffs a large text with one edit instead of giving up', () => {
+    const words = Array.from({ length: 20000 }, (_, i) => `w${i}`);
+    const edited = words.map((w, i) => (i === 10000 ? 'changed' : w));
+    const result = diffWords(words.join(' '), edited.join(' '));
+
+    expect(result.filter(({ type }) => type !== 'same')).to.deep.equal([
+      { type: 'removed', text: 'w10000' },
+      { type: 'added', text: 'changed' },
+    ]);
+    expect(result.filter(({ type }) => type === 'same')).to.have.length(19999);
+  });
+
+  it('gives up when the changed middle is too large to diff cheaply', () => {
+    const live = Array.from({ length: 2000 }, (_, i) => `a${i}`).join(' ');
+    const preview = Array.from({ length: 2000 }, (_, i) => `b${i}`).join(' ');
+
+    expect(diffWords(live, preview)).to.equal(null);
   });
 });

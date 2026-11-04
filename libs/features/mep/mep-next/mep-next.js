@@ -3,8 +3,9 @@ import {
   getConfig,
   getMetadata,
   lingoActive,
+  getMarketConfig,
+  marketsLangForLocale,
 } from '../../../utils/utils.js';
-import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
 import { mepMasSubCollections } from './mep-mas-subcollection.js';
 import { applyGeoSpoof } from './spoof-country-ip.js';
@@ -44,7 +45,7 @@ export function escapeAttr(str) {
 }
 
 // Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
-function safeUrl(url) {
+export function safeUrl(url) {
   if (typeof url !== 'string') return '';
   try {
     const { protocol } = new URL(url, window.location.origin);
