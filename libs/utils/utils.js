@@ -157,6 +157,7 @@ const C2_BLOCKS = [
   'side-by-side',
   'social-proof',
   'split-aside-grid',
+  'split-hero',
   'tabs',
   'tour',
   'visually-hidden',
