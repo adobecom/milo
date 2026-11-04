@@ -1942,7 +1942,6 @@ export function isC2GnavOnC1Host() {
 }
 
 function syncC2GnavHost(header) {
-  // The first class is the block loadBlock loads for the header (see getBlockData).
   const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
   header.classList.toggle('c2-gnav-c1-host', isHost);
 }
@@ -1959,7 +1958,6 @@ async function decorateHeader() {
     return;
   }
   header.className = headerMeta || 'global-navigation';
-  // Tag before the nav renders so styles.css reserves its final height up front (CLS).
   syncC2GnavHost(header);
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
     || getConfig().breadcrumbs;
@@ -2679,7 +2677,6 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
-    // Post-LCP personalization may have changed the gnav metadata since decorateHeader.
     syncC2GnavHost(header);
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
