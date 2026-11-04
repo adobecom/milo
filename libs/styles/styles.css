@@ -41,7 +41,7 @@
   --color-info-accent-light: #DEDEF9;
 
   /* Fonts */
-  --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --body-font-family: 'Adobe Clean', adobe-clean, 'Adobe Clean Fallback', 'Adobe Clean Fallback Roboto', 'Trebuchet MS', sans-serif;
   --fixed-font-family: 'Roboto Mono', menlo, consolas, 'Liberation Mono', monospace;
 
   /* Spacing */
@@ -710,6 +710,62 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
   size-adjust: 93%;
   src: local('Trebuchet MS'),
     local('TrebuchetMS');
+}
+
+/*
+ * Metric-matched fallbacks for Adobe Clean (Typekit): Arial-compatible fonts (macOS, iOS, Windows,
+ * Linux) and Roboto (Android), scaled to Adobe Clean widths so the late web font swap does not
+ * reflow text and move the content below it. Overrides follow the Adobe Clean vertical metrics
+ * (ascent 95.3%, descent 25%). Trebuchet MS stays as the last named fallback.
+ */
+@font-face {
+  font-family: 'Adobe Clean Fallback';
+  font-weight: 400;
+  size-adjust: 89.5%;
+  ascent-override: 106.5%;
+  descent-override: 27.9%;
+  line-gap-override: 0%;
+  src: local('Arial'),
+    local('ArialMT'),
+    local('Liberation Sans'),
+    local('LiberationSans'),
+    local('Arimo');
+}
+
+@font-face {
+  font-family: 'Adobe Clean Fallback';
+  font-weight: 700;
+  size-adjust: 87%;
+  ascent-override: 109.5%;
+  descent-override: 28.7%;
+  line-gap-override: 0%;
+  src: local('Arial Bold'),
+    local('Arial-BoldMT'),
+    local('Liberation Sans Bold'),
+    local('LiberationSans-Bold'),
+    local('Arimo Bold');
+}
+
+@font-face {
+  font-family: 'Adobe Clean Fallback Roboto';
+  font-weight: 400;
+  size-adjust: 90%;
+  ascent-override: 105.9%;
+  descent-override: 27.8%;
+  line-gap-override: 0%;
+  src: local('Roboto'),
+    local('Roboto-Regular');
+}
+
+@font-face {
+  font-family: 'Adobe Clean Fallback Roboto';
+  font-weight: 700;
+  size-adjust: 92.5%;
+  ascent-override: 103%;
+  descent-override: 27%;
+  line-gap-override: 0%;
+  src: local('Roboto Bold'),
+    local('Roboto-Bold');
 }
 
 html {

@@ -3313,10 +3313,8 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    if (getMetadata('foundation') === 'c2') {
-      warmTypekit();
-      importFonts();
-    }
+    warmTypekit();
+    importFonts();
     setCountry();
     preloadMarketsConfig();
     try {
