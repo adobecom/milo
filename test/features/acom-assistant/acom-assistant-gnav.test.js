@@ -45,8 +45,14 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
   const metas = [];
   let matchMediaStub;
 
+  let trackStub;
   const getCustom = () => window.alloy_all?.data?._adobe_corpnew?.event?.custom ?? [];
-  const countProp = (name) => getCustom().filter((e) => e.propertyName === name).length;
+  const gnavShownCalls = () => (trackStub?.getCalls() ?? []).filter(
+    (call) => call.args[1]?.data?.web?.webInteraction?.name === 'BC-GNav-shown',
+  );
+  const countProp = (name) => (name === 'BC-GNav-shown'
+    ? gnavShownCalls().length
+    : getCustom().filter((e) => e.propertyName === name).length);
   const flush = () => new Promise((resolve) => { setTimeout(resolve, 0); });
   const addMeta = (name, content) => {
     const meta = document.createElement('meta');
@@ -72,6 +78,8 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
   beforeEach(() => {
     addMeta('acom-assistant', 'on');
     delete window.alloy_all;
+    trackStub = stub();
+    window._satellite = { track: trackStub };
     setDesktop(true);
   });
 
@@ -80,9 +88,10 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     matchMediaStub?.restore();
     matchMediaStub = null;
     delete window.alloy_all;
+    delete window._satellite;
   });
 
-  it('waits for the client to render into the mount before setting BC-GNav-shown', async () => {
+  it('sends a BC-GNav-shown event once the client renders into the mount', async () => {
     const nav = buildNav();
     decorateNavWithAssistant(null, nav, document.createElement('div'));
     await flush();
@@ -90,7 +99,35 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
 
     renderClientUi(nav);
     await flush();
-    expect(getCustom()).to.deep.include({ propertyName: 'BC-GNav-shown', propertyValue: 'true', propertyType: 'string' });
+    expect(trackStub.calledOnce).to.be.true;
+    const [type, payload] = trackStub.firstCall.args;
+    expect(type).to.equal('event');
+    expect(payload.data.web.webInteraction.name).to.equal('BC-GNav-shown');
+    expect(payload.data._adobe_corpnew.event.custom).to.deep.equal([
+      { propertyName: 'BC-GNav-shown', propertyValue: 'true', propertyType: 'string' },
+    ]);
+  });
+
+  it('does not add BC-GNav-shown to the page-load data', async () => {
+    const nav = buildNav();
+    decorateNavWithAssistant(null, nav, document.createElement('div'));
+    renderClientUi(nav);
+    await flush();
+    expect(getCustom().some((e) => e.propertyName === 'BC-GNav-shown')).to.be.false;
+  });
+
+  it('waits for analytics to load before sending the event', async () => {
+    delete window._satellite;
+    const nav = buildNav();
+    decorateNavWithAssistant(null, nav, document.createElement('div'));
+    renderClientUi(nav);
+    await flush();
+    expect(trackStub.called).to.be.false;
+
+    window._satellite = { track: trackStub };
+    window.dispatchEvent(new Event('alloy_sendEvent'));
+    window.dispatchEvent(new Event('alloy_sendEvent'));
+    expect(countProp('BC-GNav-shown')).to.equal(1);
   });
 
   it('tracks the C2 path that calls decorateAcomAssistantGnav directly', async () => {
@@ -127,7 +164,7 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     expect(countProp('BC-GNav-shown')).to.equal(1);
   });
 
-  it('sets the property immediately if the mount is already rendered', () => {
+  it('sends the event immediately if the mount is already rendered', () => {
     const nav = buildNav();
     const mount = document.createElement('div');
     mount.id = 'acomAssistant-gnav-mount';
@@ -137,7 +174,7 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     expect(countProp('BC-GNav-shown')).to.equal(1);
   });
 
-  it('does not duplicate the property on repeated calls or renders', async () => {
+  it('does not send duplicate events on repeated calls or renders', async () => {
     const nav = buildNav();
     const block = document.createElement('div');
     decorateNavWithAssistant(null, nav, block);
@@ -149,7 +186,7 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     expect(countProp('BC-GNav-shown')).to.equal(1);
   });
 
-  it('keeps BC-Inline-shown alongside BC-GNav-shown', async () => {
+  it('leaves BC-Inline-shown in the page-load data untouched', async () => {
     window.alloy_all = { data: { _adobe_corpnew: { event: { custom: [{ propertyName: 'BC-Inline-shown', propertyValue: 'true', propertyType: 'string' }] } } } };
     const nav = buildNav();
     decorateNavWithAssistant(null, nav, document.createElement('div'));
@@ -159,7 +196,7 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     expect(countProp('BC-GNav-shown')).to.equal(1);
   });
 
-  it('does not set the property when the GNav state is hidden', async () => {
+  it('does not send the event when the GNav state is hidden', async () => {
     addMeta('gnav-brand-concierge-state', 'hidden');
     const nav = buildNav();
     decorateNavWithAssistant(null, nav, document.createElement('div'));
@@ -168,13 +205,13 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     expect(countProp('BC-GNav-shown')).to.equal(0);
   });
 
-  it('does not set the property without a feds-bc-wrapper', async () => {
+  it('does not send the event without a feds-bc-wrapper', async () => {
     decorateNavWithAssistant(null, buildNav(false), document.createElement('div'));
     await flush();
     expect(countProp('BC-GNav-shown')).to.equal(0);
   });
 
-  it('does not set the property on mobile when no-gnav-mobile is authored', async () => {
+  it('does not send the event on mobile when no-gnav-mobile is authored', async () => {
     setDesktop(false);
     const block = document.createElement('div');
     block.className = 'no-gnav-mobile';
@@ -185,7 +222,7 @@ describe('acom-assistant GNav BC-GNav-shown analytics', () => {
     expect(countProp('BC-GNav-shown')).to.equal(0);
   });
 
-  it('does not set the property when acom-assistant is off', async () => {
+  it('does not send the event when acom-assistant is off', async () => {
     metas.splice(0).forEach((meta) => meta.remove());
     decorateNavWithAssistant(null, buildNav(), document.createElement('div'));
     await flush();
