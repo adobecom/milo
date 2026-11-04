@@ -3,6 +3,7 @@ import loadC2Tokens from '../../c2-tokens.js';
 import fetchVersions from './fetchVersions.js';
 import computeDiff from './computeDiff.js';
 import collectFragmentChanges from './fragments.js';
+import collectDependencyChanges from './dependencies.js';
 import { highlightOnPage } from '../../panels/diff-onpage.js';
 
 export default async function autoHighlightUnpublished(forceHighlights) {
@@ -10,11 +11,15 @@ export default async function autoHighlightUnpublished(forceHighlights) {
   if (!root) return;
   try {
     const url = new URL(window.location.href);
-    const page = computeDiff(await fetchVersions(url)).content;
-    const fragments = await collectFragmentChanges(root, url);
+    const [page, fragments, dependencies] = await Promise.all([
+      fetchVersions(url).then((versions) => computeDiff(versions).content),
+      collectFragmentChanges(root, url),
+      collectDependencyChanges(root, url),
+    ]);
+    const changes = [page, fragments, dependencies];
     const content = {
-      added: [...(page?.added || []), ...fragments.added],
-      modified: [...(page?.modified || []), ...fragments.modified],
+      added: changes.flatMap((change) => change?.added || []),
+      modified: changes.flatMap((change) => change?.modified || []),
     };
     if (!content.added.length && !content.modified.length) return;
     const { miloLibs, codeRoot } = getConfig();

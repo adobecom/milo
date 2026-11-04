@@ -357,6 +357,23 @@ describe('preflight diff-onpage', () => {
       expect(window.getComputedStyle(wrapper).isolation).to.equal('isolate');
     });
 
+    it('frames an element once when two changes resolve to it', () => {
+      const change = { type: 'added', kind: 'leaf', tag: 'P', path: '/div[1]/p[1]' };
+
+      highlightOnPage({ added: [change, change], modified: [] }, root);
+
+      expect(root.querySelectorAll('.preflight-diff-overlay')).to.have.length(1);
+    });
+
+    it('frames a wrapped image once when two changes resolve to it', () => {
+      root.innerHTML = '<div><img src="/icon.svg" alt=""></div>';
+      const change = { type: 'added', kind: 'leaf', tag: 'IMG', path: '/div[1]/img[1]' };
+
+      highlightOnPage({ added: [change, change], modified: [] }, root);
+
+      expect(root.querySelectorAll('.preflight-diff-overlay')).to.have.length(1);
+    });
+
     it('skips removed changes on the page (no overlay for them)', () => {
       const diff = {
         added: [],

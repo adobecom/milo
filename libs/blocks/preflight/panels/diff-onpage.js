@@ -122,6 +122,9 @@ export function clearHighlights(root) {
   document.querySelector(`.${CONTROL_CLASS}`)?.remove();
 }
 
+const isFramed = (el) => el.classList.contains(ISOLATE_CLASS)
+  || el.parentElement.classList.contains(WRAP_CLASS);
+
 function ensureOverlayHost(el) {
   const inPicture = el.tagName === 'IMG' && el.parentElement?.tagName === 'PICTURE';
   const target = inPicture ? el.parentElement : el;
@@ -309,6 +312,7 @@ export function highlightOnPage(diff, root, forceHighlights) {
         logUnmapped(change);
         return;
       }
+      if (isFramed(el)) return;
       if (change.liveEl) {
         try {
           markWords(el, change.liveEl, change.previewEl);
