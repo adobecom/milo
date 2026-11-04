@@ -484,7 +484,9 @@ const init = async (block) => {
         assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
       }
       const section = sectionMetadata.closest('.section');
-      assocTabItem.append(section);
+      // append() detaches and re-attaches a node even when it is already in place, which re-runs
+      // connectedCallback on every custom element (e.g. hydrated merch-cards) inside the section.
+      if (section.parentElement !== assocTabItem) assocTabItem.append(section);
     }
   }));
   handleDeferredImages(block);
