@@ -634,9 +634,9 @@ export default function Merch() {
   useEffect(() => {
     checkMasFieldsMultipleFragments();
     setTimeout(() => {
-      checkStaticPricesForPanel();
       checkWcsElements();
       checkUnpublishedFragmentsForPanel();
+      checkStaticPricesForPanel();
     }, 3000);
   }, []);
 

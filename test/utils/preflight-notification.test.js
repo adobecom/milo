@@ -134,7 +134,7 @@ describe('preview pop-up', function previewPopupSuite() {
   it('shows a focused alert dialog with issue levels in order and closes on Escape', async () => {
     await showNotification();
 
-    const dialog = document.querySelector('.milo-preflight-overlay.preflight-popup [role="alertdialog"]');
+    const dialog = document.querySelector('.milo-preflight-overlay.preflight-popup [role="dialog"]');
     expect(dialog).to.exist;
     expect(document.getElementById(dialog.getAttribute('aria-labelledby')).textContent)
       .to.equal('Preflight found issues on this page');

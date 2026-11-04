@@ -65,14 +65,6 @@ function dismissNotification() {
 // the sidekick plugin) — both routes fire `custom:preflight` on the sidekick.
 sidekick?.addEventListener('custom:preflight', dismissNotification);
 
-function getMasUnpublishedCount(results) {
-  const merchResults = results?.runChecks?.merch || [];
-  return merchResults.reduce((sum, check) => {
-    if (check?.status !== 'fail') return sum;
-    return sum + (check.details?.unpublished?.length || 0);
-  }, 0);
-}
-
 function isPreflightOpen() {
   return !!document.getElementById('preflight');
 }
@@ -171,15 +163,8 @@ async function createPreflightNotification(results) {
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
 
-  const masUnpublishedCount = getMasUnpublishedCount(results);
   const title = createTag('p', { id: 'preflight-popup-title', class: 'notification-title' }, 'Preflight found issues on this page');
   const message = createTag('p', { id: 'preflight-popup-message', class: 'notification-message' }, 'Please review before publishing.');
-
-  if (masUnpublishedCount > 0) {
-    const masLine = createTag('span', { class: 'notification-mas-line' });
-    masLine.textContent = `M@S: ${masUnpublishedCount} unpublished fragment${masUnpublishedCount === 1 ? '' : 's'} on this page.`;
-    message.append(createTag('br'), masLine);
-  }
 
   const issues = createTag('div', { class: 'notification-issues' });
   const reviewBtn = createTag('button', { class: 'notification-review' }, 'Review issues');
@@ -189,7 +174,7 @@ async function createPreflightNotification(results) {
 
   const snooze = createTag('label', { class: 'notification-snooze' }, [
     createTag('input', { type: 'checkbox' }),
-    "Don't show again today for this page",
+    "Don't show again for 24 hours on this page",
   ]);
 
   const content = createTag('div', { class: 'notification-content' }, [
@@ -200,7 +185,7 @@ async function createPreflightNotification(results) {
   ]);
   const notification = createTag('div', {
     class: 'preflight-notification',
-    role: 'alertdialog',
+    role: 'dialog',
     'aria-labelledby': title.id,
     'aria-describedby': message.id,
   }, content);

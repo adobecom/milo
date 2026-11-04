@@ -80,17 +80,38 @@ const RECUR = String.raw`(?:\s?\/\s?(?:mo|month|yr|year|mes|mês|mois|an|ano|añ
 // Amounts with a magnitude ("$54 billion", "$15K") are statistics, not prices.
 const END = String.raw`(?![.,]?\d)(?!\s?(?:K|M|B|bn|k|[Mm]illions?|[Bb]illions?|[Tt]rillions?|Mio\.?|Mrd\.?|milliards?|万|億|억|만)(?!\p{L}))`;
 // Lookbehinds are ASCII-only so a price glued to CJK text ("에₩30,300/월") still matches.
-const PRICE_RE = new RegExp([
+const PRICE_PATTERNS = [
   String.raw`(?<![A-Za-z\d])${SYM_PRE}\s?(?:${AMT})${END}(?:${RECUR})?`,
   String.raw`(?<![A-Za-z\d.,])(?:${AMT})\s?${SYM_POST}(?!\p{L})(?:${RECUR})?`,
   String.raw`(?<![A-Za-z\d])${ISO}\s?(?:${AMT})${END}(?:${RECUR})?`,
   String.raw`(?<![A-Za-z\d.,])(?:${AMT})\s?${ISO}(?!\p{L})(?:${RECUR})?`,
   String.raw`(?<![A-Za-z\d.,])\d+[.,]\d{2}${RECUR}`,
-].join('|'), 'gu');
+];
+let priceRe;
+
+// Built on first use: lookbehind needs Safari 16.4+, and a module-level throw would
+// break all of Preflight on older browsers. null = not supported here.
+function getPriceRe() {
+  if (priceRe === undefined) {
+    try {
+      priceRe = new RegExp(PRICE_PATTERNS.join('|'), 'gu');
+    } catch {
+      priceRe = null;
+    }
+  }
+  return priceRe;
+}
+
+const isHidden = (el) => (typeof el.checkVisibility === 'function'
+  ? !el.checkVisibility({ checkVisibilityCSS: true, visibilityProperty: true })
+  : !el.getClientRects().length);
+
 const SNIPPET_CONTEXT = 30;
 
 // Hidden text is scanned too: closed tabs and footnotes go live with the page.
 export function findStaticPrices(area = document) {
+  const re = getPriceRe();
+  if (!re) return [];
   const root = area.querySelector('main') || area;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) => (/\d/.test(node.nodeValue) && !node.parentElement?.closest(NOT_PAGE_TEXT_SELECTOR)
@@ -100,9 +121,9 @@ export function findStaticPrices(area = document) {
   const prices = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const { nodeValue, parentElement: element } = node;
-    const matches = [...nodeValue.matchAll(PRICE_RE)];
+    const matches = [...nodeValue.matchAll(re)];
     if (matches.length) {
-      const hidden = !element.checkVisibility({ visibilityProperty: true });
+      const hidden = isHidden(element);
       matches.forEach(({ 0: text, index }) => {
         const snippet = nodeValue
           .slice(Math.max(0, index - SNIPPET_CONTEXT), index + text.length + SNIPPET_CONTEXT)
@@ -116,11 +137,15 @@ export function findStaticPrices(area = document) {
 }
 
 function checkStaticPrices(area) {
+  const base = { checkId: 'static-prices', title: 'Static prices', severity: SEVERITY.CRITICAL };
+  // Unsupported browser: say so rather than report a clean page.
+  if (!getPriceRe()) {
+    return { ...base, status: 'limbo', description: "This browser can't run the static price check. Use a current Chrome.", details: { prices: [] } };
+  }
   const prices = findStaticPrices(area);
   const failed = prices.length > 0;
   return {
-    checkId: 'static-prices',
-    title: 'Static prices',
+    ...base,
     status: failed ? 'fail' : 'pass',
     severity: SEVERITY.CRITICAL,
     description: failed

@@ -174,6 +174,17 @@ describe('Preflight static prices check', () => {
     expect(hidden.element.tagName).to.equal('P');
   });
 
+  it('still tells hidden from visible when the browser lacks checkVisibility', () => {
+    const { checkVisibility } = Element.prototype;
+    delete Element.prototype.checkVisibility;
+    try {
+      area.innerHTML = '<p>From $9.99/mo</p><div style="display: none"><p>Only $5.99/mo</p></div>';
+      expect(findStaticPrices(area).map(({ hidden }) => hidden)).to.deep.equal([false, true]);
+    } finally {
+      Element.prototype.checkVisibility = checkVisibility;
+    }
+  });
+
   it('only scans main when the area contains it', () => {
     area.innerHTML = '<header>$5.99/mo</header><main><p>$7.99/mo</p></main>';
     expect(findStaticPrices(area).map(({ text }) => text)).to.deep.equal(['$7.99/mo']);
