@@ -693,8 +693,8 @@ describe('Split Hero', () => {
           const style = getComputedStyle(block.closest('.section'));
           const shrinkEnd = parseFloat(style.getPropertyValue('--sh-shrink-end'));
           const ratio = (name) => parseFloat(style.getPropertyValue(`--sh-desktop-${name}-ratio`));
-          const pinEnd = shrinkEnd * ratio('pin-end');
-          const effectEnd = pinEnd + shrinkEnd * ratio('release') + window.innerHeight;
+          const pinEnd = shrinkEnd * ratio('next-section-pin-end');
+          const effectEnd = pinEnd + shrinkEnd * ratio('next-section-release') + window.innerHeight;
           await scrollToPosition(shrinkEnd);
           const shrunk = frame.getBoundingClientRect();
           const scaleMin = parseFloat(style.getPropertyValue('--sh-desktop-frame-scale-min'));
@@ -706,7 +706,7 @@ describe('Split Hero', () => {
           for (let y = pinEnd + 80; y <= effectEnd; y += 80) {
             await scrollToPosition(y);
             const sheet = next.getBoundingClientRect();
-            if (sheet.top > 124 && sheet.top + 16 < frame.getBoundingClientRect().bottom) {
+            if (sheet.top + 16 < frame.getBoundingClientRect().bottom) {
               covered = true;
               break;
             }

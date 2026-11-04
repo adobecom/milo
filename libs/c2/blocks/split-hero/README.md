@@ -7,12 +7,17 @@ optional background.
 
 Use `Split Hero (parallax-reveal)` in the first section, followed by a section
 with `rounded-corners-top`. On desktop the hero holds in the viewport while
-the frame shrinks (to at least `--sh-desktop-frame-scale-min`, so large frames
-may stay cropped) and pans up from the first pixel, passing behind the nav.
-The frame pans at `--sh-desktop-pan-rate` from the first pixel; after
-`--sh-pin-end` the copy and frame both ease to `--sh-desktop-lock-rate` over
-`--sh-release-distance`, then rise together while the lower section covers
-them. Mobile uses subtle layer drift without pinning or scaling.
+the frame shrinks to the width it would end at on a
+`--sh-desktop-frame-fit-width` screen (narrower screens crop its right edge)
+and pans up from the first pixel, passing behind the nav.
+The frame eases up to `--sh-desktop-pan-rate` over `--sh-pan-ramp`; the copy
+does the same from `--sh-copy-start`. A shared boost then takes both to
+`--sh-desktop-lock-rate` at the same scroll positions (`--sh-lock-*`), so
+they rise together. The lower section has its own pin and release
+(`--sh-next-section-*`), then covers both; above 1440px its start is delayed
+by `--sh-desktop-next-section-wide-delay` px per extra px of viewport width.
+Mobile uses subtle layer drift
+without pinning or scaling.
 On load, the copy text, merch card and supporting text fade and rise in turn,
 with the media after the copy text from 900px and last below that. Copy text
 and media start at
@@ -32,7 +37,7 @@ desktop frame settings in `measure()`, so they must stay plain numbers or `px`
 lengths, not `calc()`. Each `--sh-mobile-drift-rate-*` is how much slower that layer
 scrolls than the page (`0.08` = 8%). Other `--sh-*-end` values are measured
 scroll distances from the hero's top edge reaching the viewport top.
-The copy, frame and lower section change speed over `--sh-release-distance`
+The copy, frame and lower section change speed over their ramps
 with fixed quadratic curves, so the speed changes without a jump; changing
 those curves reintroduces one.
 

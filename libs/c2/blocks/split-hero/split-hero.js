@@ -158,18 +158,13 @@ function initParallax(el) {
     const content = frame.closest('.split-hero-content');
     const topGap = parseFloat(getComputedStyle(content).paddingBlockStart) - headerHeight;
     const width = document.documentElement.clientWidth;
-    const nextSectionTop = el.offsetHeight - tune('next-section-overlap');
     const frameHeight = Math.max(1, frame.offsetHeight);
     const frameWidth = Math.max(1, frame.offsetWidth);
     const { left, right } = frame.getBoundingClientRect();
     const frameStart = getComputedStyle(frame).direction === 'rtl' ? width - right : left;
-    const widthScale = (width - frameStart - tune('frame-margin-inline')) / frameWidth;
-    const visibleHeight = Math.min(nextSectionTop, window.innerHeight) - headerHeight;
-    const heightScale = (visibleHeight - tune('frame-margin-block')) / frameHeight;
-    const frameEndScale = Math.max(
-      tune('frame-scale-min'),
-      Math.min(tune('frame-scale-max'), widthScale, heightScale),
-    );
+    const fitWidth = Math.max(width, tune('frame-fit-width'));
+    const widthScale = (fitWidth - frameStart - tune('frame-margin-inline')) / frameWidth;
+    const frameEndScale = Math.max(tune('frame-scale-min'), Math.min(1, widthScale));
     const mediaStartDrop = Math.max(0, el.offsetHeight - headerHeight - topGap - frameHeight);
     const values = {
       '--sh-media-start-drop': `${mediaStartDrop}px`,
