@@ -35,6 +35,12 @@
   padding-bottom: var(--s2a-spacing-xl);
 }
 
+@media (min-width: 601px) {
+  .global-footer:not(.mobile):has(.market-selector-c2 .market-selector-popover[data-open='true']) > .feds-footer-wrapper {
+    z-index: 11;
+  }
+}
+
 .feds-footer-wrapper ul {
   margin: 0;
   padding: 0;
