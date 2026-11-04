@@ -20,6 +20,14 @@
  * /.milo/caas/config.json file describing which paths participate, with
  * the same URL-pattern shape used by /.milo/publish-permissions-config.json.
  *
+ * Columns that shape a card's url and identity:
+ *   htmlExt       rule-wide `.html` policy for the public url
+ *   htmlExt<Env>  per-target override, e.g. htmlExtStage / htmlExtProd, for a
+ *                 site rolling extensionless urls out one environment at a time
+ *   htmlIdentity  hash contentId/entityId from the `.html` form regardless of
+ *                 the public url, so ids survive that rollout. Rule-wide, and
+ *                 REQUIRED when htmlExt<Env> splits the targets.
+ *
  * The function NEVER throws. CaaS publishing is best-effort — the underlying
  * Helix publish must not be blocked by a CaaS failure. All outcomes return
  * a structured result for the host to surface in its UI.
@@ -34,7 +42,7 @@ import {
   postDataToCaaS,
 } from './send-utils.js';
 import { getCustomConfig } from '../utils/utils.js';
-import { isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
+import { getCaasIdentityUrl, isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
 // from this module (used by tests and any host that already depends on it).
@@ -88,6 +96,29 @@ export const resolveRule = (rules, path) => {
     return (a?.url?.endsWith('**') ? 1 : 0) - (b?.url?.endsWith('**') ? 1 : 0);
   });
   return sorted.find((rule) => rule?.url && matchesUrl(rule.url, path)) || null;
+};
+
+// A site mid-migration can serve extensionless urls in one CaaS environment
+// while another still serves `.html` -- bacom is rolling extensionless out to
+// stage before prod. `htmlExt` stays the rule-wide default; an `htmlExt<Env>`
+// column overrides it for one target (htmlExtStage, htmlExtProd).
+//
+// Per-env columns rather than a nested value because this config is a
+// spreadsheet: every cell is a string, so `{"stage":false}` cannot be authored.
+// An absent or empty override falls back to the rule-wide value, so existing
+// configs -- which have no override columns -- behave exactly as before.
+//
+// Note this scopes the PUBLIC url only. Card identity must NOT vary by
+// environment: a collection authored in DA holds one contentId and is promoted
+// unchanged, so an id that differed per environment would resolve in only one.
+// `htmlIdentity` is therefore rule-wide, and is a no-op in any environment
+// still serving `.html` (forceSingleHtml collapses `/x.html` to `/x.html`).
+export const resolveHtmlExt = (rule, caasEnv) => {
+  const envKey = caasEnv ? `htmlExt${caasEnv.charAt(0).toUpperCase()}${caasEnv.slice(1)}` : '';
+  const override = envKey ? rule?.[envKey] : undefined;
+  const useDefault = override === undefined || override === null || override === '';
+  const value = useDefault ? rule?.htmlExt : override;
+  return value === true || value === 'true';
 };
 
 export const resolveTargets = (rule, action) => {
@@ -148,9 +179,6 @@ export const caasAutoPublish = async ({
     // Falls back to the caller-supplied url/host/repo when config omits them.
     const effHost = rule.host || host;
     const effRepo = rule.repo || repo;
-    const prodUrl = effHost
-      ? getProdUrl({ host: effHost, path, htmlExt: rule.htmlExt })
-      : url;
 
     const { dom, error: fetchErr, lastModified } = await fetchPageDom(url);
     if (fetchErr) return { skipped: false, error: `fetch-failed: ${fetchErr}` };
@@ -162,45 +190,93 @@ export const caasAutoPublish = async ({
     // public urls go extensionless. Declared per rule alongside htmlExt.
     const htmlIdentity = isHtmlIdentityEnabled(rule.htmlIdentity);
 
-    const { caasProps, errors, tags } = await buildCaasXdmPayload({
-      dom,
-      pageUrl: prodUrl,
-      lastModified,
-      host: effHost,
-      repo: effRepo,
-      floodgatecolor,
-      htmlIdentity,
-      // A rule opts a language-first (Lingo) site into per-page locale resolution;
-      // an explicit caller-supplied languageFirst (used by the legacy bulk tool) wins.
-      languageFirst: languageFirst ?? rule.languageFirst,
-      // A fully Lingo-enabled site (e.g. bacom) sets rule.autoDetectLingo: true so
-      // every page's LFL-ness is resolved per-URL from lingo-site-mapping.json —
-      // the same behavior as checking "Auto-detect Lingo" in the bulk publisher —
-      // instead of relying on a single site-wide manual languageFirst flag.
-      autoDetectLingo: autoDetectLingo ?? rule.autoDetectLingo,
-    });
-    if (errors?.length) return { skipped: false, error: 'metadata-errors', errors };
-    // Only pages with a caas:content-type tag participate. Pages without one
-    // (product/solution/index/etc.) are a normal skip, not an error.
-    if (!hasContentTypeTag(tags)) return { skipped: true, reason: 'no-content-type-tag' };
-
     const targets = resolveTargets(rule, action);
+
+    // Group targets by the `.html` policy they resolve to and build one payload
+    // per distinct policy. Targets that agree -- every site not mid-migration --
+    // collapse to a single build, exactly as before.
+    const byHtmlExt = new Map();
+    targets.forEach((target) => {
+      const htmlExt = resolveHtmlExt(rule, target.caasEnv);
+      if (!byHtmlExt.has(htmlExt)) byHtmlExt.set(htmlExt, []);
+      byHtmlExt.get(htmlExt).push(target);
+    });
+
+    const variantProdUrl = (htmlExt) => (
+      effHost ? getProdUrl({ host: effHost, path, htmlExt }) : url
+    );
+
+    // Divergent public urls are the point; divergent IDENTITY never is. The
+    // same page would land in two environments under two contentIds, and a
+    // promoted DA collection -- which holds one uuid literal -- would resolve
+    // in only one of them. Splitting a card's identity is not something a later
+    // republish can clean up, so refuse rather than write it.
+    //
+    // Asserted on the real hash inputs rather than on the htmlIdentity flag:
+    // the policy only normalizes in-scope urls (bacom, non-blog), so the flag
+    // being on does NOT prove the ids converge. A non-bacom host or a /blog/
+    // path leaves getCaasIdentityUrl a no-op and the ids fork regardless.
+    const identityUrls = new Set([...byHtmlExt.keys()].map((htmlExt) => (
+      getCaasIdentityUrl(variantProdUrl(htmlExt).replace(/^https?:\/\//, ''), htmlIdentity)
+    )));
+    if (identityUrls.size > 1) {
+      return { skipped: true, reason: 'env-split-requires-html-identity' };
+    }
+
+    const buildVariant = async ([htmlExt, variantTargets]) => {
+      const prodUrl = variantProdUrl(htmlExt);
+      const { caasProps, errors, tags } = await buildCaasXdmPayload({
+        dom,
+        pageUrl: prodUrl,
+        lastModified,
+        host: effHost,
+        repo: effRepo,
+        floodgatecolor,
+        htmlIdentity,
+        // A rule opts a language-first (Lingo) site into per-page locale resolution;
+        // an explicit caller-supplied languageFirst (used by the legacy bulk tool) wins.
+        languageFirst: languageFirst ?? rule.languageFirst,
+        // A fully Lingo-enabled site (e.g. bacom) sets rule.autoDetectLingo: true so
+        // every page's LFL-ness is resolved per-URL from lingo-site-mapping.json —
+        // the same behavior as checking "Auto-detect Lingo" in the bulk publisher —
+        // instead of relying on a single site-wide manual languageFirst flag.
+        autoDetectLingo: autoDetectLingo ?? rule.autoDetectLingo,
+      });
+      return { htmlExt, caasProps, errors, tags, targets: variantTargets };
+    };
+
+    const variants = await Promise.all([...byHtmlExt.entries()].map(buildVariant));
+
+    const failed = variants.find((variant) => variant.errors?.length);
+    if (failed) return { skipped: false, error: 'metadata-errors', errors: failed.errors };
+    // Only pages with a caas:content-type tag participate. Pages without one
+    // (product/solution/index/etc.) are a normal skip, not an error. Tags come
+    // from the dom, so every variant agrees -- checking one is enough.
+    if (!hasContentTypeTag(variants[0]?.tags)) {
+      return { skipped: true, reason: 'no-content-type-tag' };
+    }
+
     const accessToken = await getAuthToken();
     if (!accessToken) return { skipped: false, error: 'no-auth-token' };
 
-    const postOne = async ({ caasEnv, draftOnly }) => {
+    const postOne = async (caasProps, htmlExt, { caasEnv, draftOnly }) => {
       try {
         const response = await postDataToCaaS({ accessToken, caasEnv, caasProps, draftOnly });
-        return { caasEnv, draftOnly, ok: !!response?.success, response };
+        return { caasEnv, draftOnly, htmlExt, ok: !!response?.success, response };
       } catch (e) {
-        return { caasEnv, draftOnly, ok: false, error: e?.message || String(e) };
+        return { caasEnv, draftOnly, htmlExt, ok: false, error: e?.message || String(e) };
       }
     };
 
-    const results = await Promise.all(targets.map(postOne));
-    // Echoed so a caller can tell after the fact which identity policy produced
-    // a card: the live module and the frozen bundle can disagree, and htmlExt /
-    // htmlIdentity are authored independently in the same rule.
+    const results = (await Promise.all(variants.map(
+      (variant) => Promise.all(variant.targets.map(
+        (target) => postOne(variant.caasProps, variant.htmlExt, target),
+      )),
+    ))).flat();
+
+    // Echoed so a caller can tell after the fact which policy produced a card:
+    // the live module and the frozen bundle can disagree, and htmlExt is now
+    // resolved per target while htmlIdentity stays rule-wide.
     return { skipped: false, htmlIdentity, results };
   } catch (e) {
     return { skipped: false, error: e?.message || String(e) };

@@ -5,6 +5,7 @@ import {
   caasAutoPublish,
   isDisabledOnPage,
   matchesUrl,
+  resolveHtmlExt,
   resolveRule,
   resolveTargets,
 } from '../../../tools/send-to-caas/auto-publish.js';
@@ -871,5 +872,167 @@ describe('auto-publish: caasAutoPublish — autoDetectLingo (fully Lingo-enabled
     // not lingo-site-mapping (news is excluded from the mapping index entirely).
     expect(postCalls[0].body.language).to.equal('es');
     expect(postCalls[0].body.country).to.equal('mx');
+  });
+});
+
+describe('auto-publish: resolveHtmlExt', () => {
+  it('falls back to the rule-wide value when no env override is authored', () => {
+    expect(resolveHtmlExt({ htmlExt: 'true' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'false' }, 'stage')).to.be.false;
+    expect(resolveHtmlExt({}, 'prod')).to.be.false;
+    expect(resolveHtmlExt(undefined, 'prod')).to.be.false;
+  });
+
+  it('lets an env override win over the rule-wide value', () => {
+    const rule = { htmlExt: 'true', htmlExtStage: 'false' };
+    expect(resolveHtmlExt(rule, 'stage')).to.be.false;
+    expect(resolveHtmlExt(rule, 'prod')).to.be.true;
+  });
+
+  it('treats an empty override cell as unauthored', () => {
+    // A spreadsheet emits '' for a column the row leaves blank; that must not
+    // read as `false` and silently strip .html from that environment.
+    expect(resolveHtmlExt({ htmlExt: 'true', htmlExtStage: '' }, 'stage')).to.be.true;
+  });
+
+  it('accepts booleans as well as sheet strings', () => {
+    expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'stage')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'prod')).to.be.true;
+  });
+});
+
+describe('auto-publish: per-environment htmlExt', () => {
+  let envFetchStub;
+  afterEach(() => envFetchStub?.restore());
+
+  const setup = (origin, rule, rulePath = '/x') => {
+    const posts = [];
+    envFetchStub = sinon.stub(window, 'fetch');
+    envFetchStub.callsFake(async (input, init) => {
+      const u = typeof input === 'string' ? input : input.url;
+      if (u.includes('/.milo/caas/config.json')) {
+        return jsonResponse({ autoPublish: { data: [{ url: rulePath, enabled: true, ...rule }] } });
+      }
+      if (u.startsWith(POST_XDM_URL)) {
+        posts.push({ caasEnv: init?.headers?.['caas-env'], body: JSON.parse(init.body) });
+        return jsonResponse({ success: true, status: 201 });
+      }
+      if (u.includes('/chimera-api/tags')) return new Response('not found', { status: 404 });
+      if (u.startsWith(origin)) return htmlResponse(PAGE_HTML_WITH_METADATA);
+      return new Response('not found', { status: 404 });
+    });
+    return posts;
+  };
+
+  const setupPath = (origin, rulePath, rule) => setup(origin, rule, rulePath);
+
+  const run = (origin) => caasAutoPublish({
+    action: 'preview',
+    url: `${origin}/x`,
+    path: '/x',
+    origin,
+    getAuthToken: async () => 'tok',
+  });
+
+  it('serves an extensionless url to stage and .html to prod, with ONE identity', async () => {
+    // bacom's migration window: stage is extensionless before prod is. The
+    // public url must differ per environment, but contentId must NOT -- a DA
+    // collection holds one id and is promoted unchanged, so an id that varied
+    // per environment would resolve in only one of them.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await run(origin);
+
+    expect(result.skipped).to.be.false;
+    expect(posts).to.have.lengthOf(2);
+    const stage = posts.find((post) => post.caasEnv === 'stage');
+    const prod = posts.find((post) => post.caasEnv === 'prod');
+
+    expect(stage.body.url).to.equal('https://business.adobe.com/x');
+    expect(prod.body.url).to.equal('https://business.adobe.com/x.html');
+
+    const expectedId = await getUuid('business.adobe.com/x.html');
+    expect(stage.body.contentId).to.equal(expectedId);
+    expect(prod.body.contentId).to.equal(expectedId);
+  });
+
+  it('refuses an env split without htmlIdentity, which would fork the card id', async () => {
+    const origin = uniqueOrigin();
+    const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
+    const result = await run(origin);
+    expect(result).to.deep.equal({ skipped: true, reason: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses an env split the htmlIdentity policy does not actually cover', async () => {
+    // htmlIdentity only normalizes in-scope urls (bacom, non-blog). On another
+    // host the policy is inert, so the flag being on does not prove the ids
+    // converge -- stage would hash `/x` and prod `/x.html`. Guarding on the
+    // flag instead of the real hash input would wave this through.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'www.adobe.com',
+      repo: 'milo',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await run(origin);
+    expect(result).to.deep.equal({ skipped: true, reason: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses an env split on a blog path, which the policy exempts', async () => {
+    const origin = uniqueOrigin();
+    const posts = setupPath(origin, '/blog/post', {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await caasAutoPublish({
+      action: 'preview',
+      url: `${origin}/blog/post`,
+      path: '/blog/post',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result).to.deep.equal({ skipped: true, reason: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('reports the resolved htmlExt per target', async () => {
+    const origin = uniqueOrigin();
+    setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await run(origin);
+    const byEnv = Object.fromEntries(result.results.map((r) => [r.caasEnv, r.htmlExt]));
+    expect(byEnv).to.deep.equal({ stage: false, prod: true });
+  });
+
+  it('sends one identical payload to every target when no override is authored', async () => {
+    // The pre-existing path for every other tenant: targets agree, so they
+    // collapse to a single build and byte-identical posts.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true' });
+    const result = await run(origin);
+
+    expect(result.skipped).to.be.false;
+    expect(posts).to.have.lengthOf(2);
+    expect(posts[0].body).to.deep.equal(posts[1].body);
+    expect(posts[0].body.url).to.equal('https://business.adobe.com/x.html');
+    expect(result.results.every((r) => r.htmlExt === true)).to.be.true;
   });
 });
