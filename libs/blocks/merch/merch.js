@@ -1329,9 +1329,7 @@ export async function initService(force = false, attributes = {}) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  const { base, commerce, env: miloEnv, locale: miloLocale } = getConfig();
-  fetchCheckoutLinkConfigs(base, miloEnv);
-
+  const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
   const extraAttrs = [
     'checkout-workflow-step',
     'force-tax-exclusive',
