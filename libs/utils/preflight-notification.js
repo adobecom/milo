@@ -79,10 +79,18 @@ const issue = (check, key, title, count) => (
 
 // Tab order (General, SEO, M@S, Accessibility, Performance, Assets), matching countIssues.
 function listIssues({
-  structure = [], seo = [], merch = [], accessibility = [], performance = [], assets = [],
+  structure = [], content = [], seo = [], merch = [], accessibility = [], performance = [],
+  assets = [],
 } = {}) {
   const plain = (checks) => checks.filter(isIssue)
     .map((check) => issue(check, check.checkId ?? check.id, check.title));
+  // Content checks show in the General tab; undecided (limbo) ones have no reliable count.
+  const contentIssues = content.filter(isIssue).map((check) => issue(
+    check,
+    check.checkId,
+    check.title,
+    isFail(check) ? check.details?.items?.length : undefined,
+  ));
   const aggregates = [
     ...merch.filter(isFail).map((check) => issue(
       check,
@@ -100,8 +108,8 @@ function listIssues({
       issue(check, 'image-dimensions-below-fold', `${check.title} below the fold`, warningAssetFailures.length),
     ].filter(({ count }) => count > 0);
   });
-  return [...plain(structure), ...plain(seo), ...aggregates, ...plain(performance),
-    ...assetIssues];
+  return [...plain(structure), ...contentIssues, ...plain(seo), ...aggregates,
+    ...plain(performance), ...assetIssues];
 }
 
 // Limbo means the check couldn't decide (e.g. link service unreachable); the panel shows it

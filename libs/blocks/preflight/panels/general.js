@@ -3,6 +3,7 @@ import { STATUS_TO_ICON_MAP, STRUCTURE_TITLES } from '../checks/constants.js';
 import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
+import { runChecks as runContentChecks } from '../checks/content.js';
 import { getAdminUrl } from '../checks/adminStatus.js';
 
 const DEF_NOT_FOUND = 'Not found';
@@ -25,6 +26,39 @@ const breadcrumbsResult = signal({ icon: 'purple', title: STRUCTURE_TITLES.bread
 const localizationResult = signal({ icon: 'purple', title: 'Links', description: 'Checking...' });
 const localizationIssues = signal([]);
 const localizationClosed = signal(false);
+const fragmentsResult = signal({ icon: 'purple', title: 'Unpublished fragments', description: 'Checking...' });
+const placeholdersResult = signal({ icon: 'purple', title: 'Unresolved placeholders', description: 'Checking...' });
+
+const FRAGMENT_REASONS = {
+  unpublished: 'not published',
+  'failed-to-load': 'failed to load',
+  unchecked: 'publish status unknown',
+};
+
+const listFragments = ({ items = [], unchecked = [] }) => [
+  ...items,
+  ...unchecked.map((path) => ({ path, reason: 'unchecked' })),
+].map(({ path, reason }) => html`
+  <li><a href=${path} target=_blank>${path}</a> (${FRAGMENT_REASONS[reason]})</li>`);
+
+const listPlaceholders = ({ items = [] }) => items
+  .map(({ key, where }) => html`<li><code>${key}</code> (${where})</li>`);
+
+async function getContentResults() {
+  const [fragments, placeholders] = runContentChecks({ area: document });
+  const show = (resultSignal, list) => (res) => {
+    resultSignal.value = {
+      icon: STATUS_TO_ICON_MAP[res.status] || 'orange',
+      title: res.title,
+      description: res.description,
+      list: list(res.details ?? {}),
+    };
+  };
+  await Promise.all([
+    fragments.then(show(fragmentsResult, listFragments)),
+    placeholders.then(show(placeholdersResult, listPlaceholders)),
+  ]);
+}
 
 async function getStructureResults() {
   const signals = [
@@ -283,13 +317,14 @@ function ContentGroup({ name, group }) {
     </div>`;
 }
 
-function StructureItem({ icon, title, description }) {
+function StructureItem({ icon, title, description, list }) {
   return html`
     <div class="preflight-item">
       <div class="result-icon ${icon}"></div>
       <div class="preflight-item-text">
         <p class="preflight-item-title">${title}</p>
         <p class="preflight-item-description">${description}</p>
+        ${list?.length > 0 && html`<ul class="preflight-item-description">${list}</ul>`}
       </div>
     </div>`;
 }
@@ -321,7 +356,9 @@ function LocalizationIssuesList({ issues }) {
 }
 
 export default function General() {
-  useEffect(() => { setContent(); getStructureResults(); getLocalizationResults(); }, []);
+  useEffect(() => {
+    setContent(); getStructureResults(); getLocalizationResults(); getContentResults();
+  }, []);
 
   const allChecked = Object.values(content.value)
     .flatMap((item) => item.items).filter((item) => item.checked);
@@ -356,6 +393,15 @@ export default function General() {
         </div>
       </div>
       <${LocalizationIssuesList} issues=${localizationIssues.value} />
+      <p class="preflight-structure-title">Fragments and placeholders</p>
+      <div class=preflight-structure-columns>
+        <div class=preflight-column>
+          <${StructureItem} ...${fragmentsResult.value} />
+        </div>
+        <div class=preflight-column>
+          <${StructureItem} ...${placeholdersResult.value} />
+        </div>
+      </div>
       <p class="preflight-structure-title">Content</p>
       ${Object.keys(content.value).map((key) => html`<${ContentGroup} name=${key} group=${content.value[key]} />`)}
     </div>

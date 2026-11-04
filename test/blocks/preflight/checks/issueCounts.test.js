@@ -25,6 +25,16 @@ describe('Preflight issue counts', () => {
     });
   });
 
+  it('adds content check items to General errors and undecided content checks to its warnings', () => {
+    expect(countIssues({
+      structure: [{ status: 'fail', severity: 'critical' }],
+      content: [
+        { status: 'fail', severity: 'critical', details: { items: [1, 2, 3] } },
+        { status: 'limbo', severity: 'critical', details: { items: [] } },
+      ],
+    }, 1).General).to.deep.equal({ errors: 5, warnings: 1 });
+  });
+
   it('counts nothing for missing, passing, or detail-less categories', () => {
     const empty = Object.fromEntries(['General', 'SEO', 'M@S', 'Accessibility', 'Performance', 'Assets']
       .map((tab) => [tab, { errors: 0, warnings: 0 }]));
@@ -33,6 +43,7 @@ describe('Preflight issue counts', () => {
       accessibility: [{ status: 'pass', details: { issuesCount: 4 } }],
       merch: [{ status: 'fail' }, { status: 'pass', details: { prices: [] } }],
       assets: [{}],
+      content: [{ status: 'pass', details: { items: [] } }, { status: 'fail' }],
     })).to.deep.equal(empty);
   });
 });

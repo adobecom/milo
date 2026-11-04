@@ -27,6 +27,7 @@ import {
 } from './seo.js';
 import { runChecks as runChecksStructure } from './structure.js';
 import { runChecks as runChecksMerch } from './merch.js';
+import { runChecks as runChecksContent } from './content.js';
 import { SEVERITY } from './constants.js';
 
 let checksSuite = null;
@@ -110,6 +111,8 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
   const merch = await Promise.all(runChecksMerch({ area }));
+  // Not part of the metrics upload: captureMetrics only sends the categories above.
+  const content = await Promise.all(runChecksContent({ area }));
   return {
     accessibility,
     assets,
@@ -117,6 +120,7 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
     seo,
     structure,
     merch,
+    content,
   };
 };
 
@@ -154,6 +158,7 @@ export async function getPreflightResults(options = {}) {
     ...(res.seo || []),
     ...(res.structure || []),
     ...(res.merch || []),
+    ...(res.content || []),
   ];
 
   const result = {

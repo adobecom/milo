@@ -13,13 +13,22 @@ const countChecks = (checks = []) => issues(
   checks.filter(isWarning).length,
 );
 
+const countContent = (checks = []) => issues(
+  checks.filter(isFail).reduce((sum, check) => sum + (check.details?.items?.length ?? 0), 0),
+  checks.filter(isWarning).length,
+);
+
 export function countIssues(checks, linkErrors = 0) {
   const [a11y] = checks.accessibility || [];
   const [assets] = checks.assets || [];
   const { criticalAssetFailures = [], warningAssetFailures = [] } = assets?.details || {};
   const general = countChecks(checks.structure);
+  const content = countContent(checks.content);
   return {
-    General: issues(general.errors + linkErrors, general.warnings),
+    General: issues(
+      general.errors + content.errors + linkErrors,
+      general.warnings + content.warnings,
+    ),
     SEO: countChecks(checks.seo),
     'M@S': issues((checks.merch || []).filter(isFail)
       .reduce((sum, { details: d }) => sum + (d?.unpublished ?? d?.prices ?? []).length, 0)),

@@ -101,6 +101,26 @@ describe('groupByPriority', () => {
     ]);
   });
 
+  it('ranks unpublished fragments as Blocker and unresolved placeholders as Critical, with item counts', () => {
+    const content = [
+      fail({ checkId: 'unpublished-fragments', title: 'Unpublished fragments', severity: 'critical', details: { items: [{}, {}] } }),
+      fail({ checkId: 'unresolved-placeholders', title: 'Unresolved placeholders', severity: 'critical', details: { items: [{}] } }),
+    ];
+    expect(groupByPriority({ content })).to.deep.equal([
+      { level: 'Blocker', items: ['Unpublished fragments (2)'] },
+      { level: 'Critical', items: ['Unresolved placeholders (1)'] },
+    ]);
+  });
+
+  it('lists undecided content checks as Normal without a count, and skips passing ones', () => {
+    expect(groupByPriority({
+      content: [
+        { checkId: 'unpublished-fragments', title: 'Unpublished fragments', status: 'limbo', severity: 'critical', details: { items: [], unchecked: ['/a'] } },
+        { checkId: 'unresolved-placeholders', title: 'Unresolved placeholders', status: 'pass', details: { items: [] } },
+      ],
+    })).to.deep.equal([{ level: 'Normal', items: ['Unpublished fragments'] }]);
+  });
+
   it('ignores passing checks and accessibility runs that could not count issues', () => {
     expect(groupByPriority({
       accessibility: [{ checkId: 'accessibility', status: 'limbo', details: { issuesCount: null } }],

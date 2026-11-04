@@ -33,6 +33,7 @@ export const PRIORITY_ORDER = Object.values(PRIORITY);
 // Unlisted checks rank from severity: critical → Critical, anything else → Normal.
 export const CHECK_PRIORITIES = {
   'M@S Unpublished Fragments': PRIORITY.BLOCKER,
+  'unpublished-fragments': PRIORITY.BLOCKER,
   navigation: PRIORITY.BLOCKER,
   footer: PRIORITY.BLOCKER,
   links: PRIORITY.BLOCKER,
@@ -48,6 +49,7 @@ export const CHECK_PRIORITIES = {
   accessibility: PRIORITY.CRITICAL,
   'image-dimensions-above-fold': PRIORITY.CRITICAL,
   'static-prices': PRIORITY.CRITICAL,
+  'unresolved-placeholders': PRIORITY.CRITICAL,
   'body-size': PRIORITY.MAJOR,
   'lcp-element': PRIORITY.MAJOR,
   'single-block': PRIORITY.MAJOR,
