@@ -2,7 +2,7 @@ import * as THREE from '../../../deps/three.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
   parseAuthoredContent, fetchFireflyAssets, buildGlobeDom,
-  fireflyRenditionUrl, scatterCards,
+  fireflyRenditionUrl, scatterCards, appendFireflyParams,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
@@ -1739,7 +1739,7 @@ export default async function init(el) {
   // Before buildGlobeDom() wipes the children.
   const {
     hintText, touchHint, instructions, labels,
-    categoryId, machineTag, cgenId, ctaLabel, pullQuote,
+    categoryId, machineTag, campaignId, ctaLabel, pullQuote,
   } = parseAuthoredContent(el);
 
   const gid = buildGlobeDom(el, labels, { touchHint, ctaLabel, pullQuote });
@@ -1750,11 +1750,7 @@ export default async function init(el) {
   } else {
     window.lana?.log?.('firefly-globe: no categoryId authored', { tags: 'firefly-globe', severity: 'warn' });
   }
-  if (cgenId && authored) {
-    authored.forEach((card) => {
-      if (card.fireflyUrl) card.fireflyUrl += `&promoid=${cgenId}&mv=other`;
-    });
-  }
+  if (authored) appendFireflyParams(authored, campaignId);
   if (!authored || authored.length === 0) {
     el.classList.add('firefly-globe-empty');
     return el;
