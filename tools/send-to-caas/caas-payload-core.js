@@ -189,10 +189,7 @@ const LANGS = {
 };
 
 // Copied verbatim from libs/blocks/caas/utils.js (LOCALES).
-// Exported for test/utils/caasIdentity.test.js, which asserts this table stays
-// in sync with caasIdentity.js's BLOG_PATH locale bound. Not part of the UMD
-// bundle's export list.
-export const LOCALES = {
+const LOCALES = {
   // Americas
   ar: { ietf: 'es-AR' },
   br: { ietf: 'pt-BR' },

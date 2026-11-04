@@ -202,11 +202,14 @@ describe('caas-payload-core: forced-.html card identity', () => {
     expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
   });
 
-  it('exempts /blog/ pages, including localized and landing paths', async () => {
-    const cases = ['/blog/post', '/fr/blog/post', '/blog', '/fr/blog'];
+  it('applies to every path, with no section carved out', async () => {
+    // Sections are scoped out by their own repo's config not setting the flag,
+    // never by path here -- otherwise the flag silently does nothing for a
+    // section that migrates later and orphans all of its cards.
+    const cases = ['/blog/post', '/fr/blog/post', '/blog', '/products/y'];
     await Promise.all(cases.map(async (path) => {
       const md = await build({ path, htmlIdentity: true });
-      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}`));
+      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}.html`));
     }));
   });
 

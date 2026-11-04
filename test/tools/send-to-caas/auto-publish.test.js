@@ -971,7 +971,7 @@ describe('auto-publish: per-environment htmlExt', () => {
   });
 
   it('refuses an env split the htmlIdentity policy does not actually cover', async () => {
-    // htmlIdentity only normalizes in-scope urls (bacom, non-blog). On another
+    // htmlIdentity only normalizes in-scope urls (the bacom prod host). On another
     // host the policy is inert, so the flag being on does not prove the ids
     // converge -- stage would hash `/x` and prod `/x.html`. Guarding on the
     // flag instead of the real hash input would wave this through.
@@ -988,7 +988,11 @@ describe('auto-publish: per-environment htmlExt', () => {
     expect(posts).to.have.lengthOf(0);
   });
 
-  it('refuses an env split on a blog path, which the policy exempts', async () => {
+  it('covers a blog path rather than exempting it, so its ids survive', async () => {
+    // The blog is scoped out by its own repo's config, never by path here. If
+    // the blog repo turns the flag on, an env split must behave like any other
+    // section: both environments keep hashing the .html url the ids were
+    // minted from.
     const origin = uniqueOrigin();
     const posts = setupPath(origin, '/blog/post', {
       host: 'business.adobe.com',
@@ -1004,8 +1008,18 @@ describe('auto-publish: per-environment htmlExt', () => {
       origin,
       getAuthToken: async () => 'tok',
     });
-    expect(result).to.deep.equal({ skipped: true, reason: 'env-split-requires-html-identity' });
-    expect(posts).to.have.lengthOf(0);
+    expect(result.skipped).to.be.false;
+    expect(posts).to.have.lengthOf(2);
+    const stage = posts.find((post) => post.caasEnv === 'stage');
+    const prod = posts.find((post) => post.caasEnv === 'prod');
+
+    // The public urls still differ per environment; only identity converges.
+    expect(stage.body.url).to.equal('https://business.adobe.com/blog/post');
+    expect(prod.body.url).to.equal('https://business.adobe.com/blog/post.html');
+
+    const expectedId = await getUuid('business.adobe.com/blog/post.html');
+    expect(stage.body.contentId).to.equal(expectedId);
+    expect(prod.body.contentId).to.equal(expectedId);
   });
 
   it('reports the resolved htmlExt per target', async () => {

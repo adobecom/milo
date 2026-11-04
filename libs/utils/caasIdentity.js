@@ -9,23 +9,21 @@
 // URLs. Card identity (contentId/entityId) is a hash of the page URL, so
 // dropping `.html` from the published URL would mint new ids and orphan every
 // previously authored id reference. To avoid that, identity is computed from
-// its own input: for non-blog BACOM pages the identity pathname keeps exactly
-// one terminal `.html`, regardless of what the public URL looks like.
+// its own input: the identity pathname keeps exactly one terminal `.html`,
+// regardless of what the public URL looks like.
+//
+// Scope is the host plus the authored flag, with no path carve-outs. BACOM
+// splits its content across repos (`da-bacom`, `da-bacom-blog`, ...) and each
+// repo serves its own /.milo/caas/config.json, so the flag is already scoped
+// by whoever owns the content. A hardcoded path exemption would sit *under*
+// that boundary and silently neutralize the flag for a section that later
+// migrates -- the failure mode being a section-wide orphaning with no error
+// raised anywhere. Sections opt in by setting the flag in their own config.
 //
 // Only the identity hash input is affected. The public url, uci and CTA urls
 // continue to use prodUrl untouched.
 
 const BACOM_PROD_HOST = 'business.adobe.com';
-// The blog lives at the site root, optionally behind a single locale segment.
-// Anchored, and `blog` must be a whole segment, so `/blog`, `/fr/blog` and
-// `/mena_ar/blog/post` are exempt while `/resources/blog/x` (a content section,
-// not a locale) and `/resources/jp/blog-post` are not. A bare
-// `includes('/blog/')` would miss the landing pages and wrongly exempt
-// `/resources/blog/x`; dropping to `includes('/blog')` would also exempt
-// `/resources/jp/blog-post`, which is why `blog` must match a whole segment.
-// The locale segment is length-bounded rather than `[^/]+` precisely to tell a
-// locale (`fr`, `ch_fr`, `mena_ar`, `africa`) apart from a section name.
-const BLOG_PATH = /^\/(?:[a-z]{2,6}(?:_[a-z]{2,3})?\/)?blog(?:\/|$)/i;
 const HTML_EXT = '.html';
 
 // prodUrl reaches us in both schemed (`https://host/path`, from getProdUrl) and
@@ -35,8 +33,8 @@ const HTML_EXT = '.html';
 const splitUrl = (url) => {
   const scheme = url.match(/^https?:\/\//)?.[0] ?? '';
   const rest = url.slice(scheme.length);
-  // The blog exception and the `.html` suffix apply to the pathname only, never
-  // to a query string or fragment.
+  // The `.html` suffix applies to the pathname only, never to a query string
+  // or fragment.
   const suffixIdx = rest.search(/[?#]/);
   const beforeSuffix = suffixIdx === -1 ? rest : rest.slice(0, suffixIdx);
   const suffix = suffixIdx === -1 ? '' : rest.slice(suffixIdx);
@@ -62,8 +60,8 @@ const forceSingleHtml = (pathname) => {
 };
 
 /**
- * Whether a url is in scope for the forced-`.html` identity policy: a BACOM
- * production url whose pathname is not under /blog/.
+ * Whether a url is in scope for the forced-`.html` identity policy: any BACOM
+ * production url with a pathname.
  * @param {string} url schemed or scheme-less url
  * @returns {boolean}
  */
@@ -74,8 +72,7 @@ export const isForcedHtmlIdentityUrl = (url) => {
   // preview/aem host the content happened to be fetched from. Lowercased
   // because a host is case-insensitive, unlike the pathname.
   if (host.toLowerCase() !== BACOM_PROD_HOST) return false;
-  if (!pathname) return false;
-  return !BLOG_PATH.test(pathname);
+  return !!pathname;
 };
 
 /**

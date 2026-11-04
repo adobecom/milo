@@ -4,7 +4,6 @@ import {
   isForcedHtmlIdentityUrl,
   isHtmlIdentityEnabled,
 } from '../../libs/utils/caasIdentity.js';
-import { LOCALES } from '../../tools/send-to-caas/caas-payload-core.js';
 
 describe('caasIdentity', () => {
   describe('isHtmlIdentityEnabled', () => {
@@ -23,27 +22,22 @@ describe('caasIdentity', () => {
   });
 
   describe('isForcedHtmlIdentityUrl', () => {
-    it('matches bacom production pages outside /blog/', () => {
+    it('matches bacom production pages', () => {
       expect(isForcedHtmlIdentityUrl('business.adobe.com/resources/x')).to.be.true;
       expect(isForcedHtmlIdentityUrl('https://business.adobe.com/resources/x')).to.be.true;
     });
 
-    it('excludes blog pages, including locale prefixes and landing pages', () => {
+    it('carves out no path, so a section that migrates later is covered', () => {
+      // The blog is a separate repo serving its own /.milo/caas/config.json, so
+      // it is scoped out by not setting the flag there -- not by path. A path
+      // exemption here would sit under that boundary and silently neutralize
+      // the flag once the section does migrate, orphaning all of its cards.
       [
-        '/blog/post', '/blog', '/blog/',
-        '/fr/blog/post', '/fr/blog', '/ch_fr/blog/post', '/mena_ar/blog/post',
-        '/africa/blog/x', '/ph_fil/blog/x',
-        '/FR/Blog/post',
+        '/blog/post', '/blog', '/blog/', '/fr/blog/post', '/mena_ar/blog/post',
+        '/resources/blog/x', '/resources/jp/blog-post', '/products/y',
       ].forEach((path) => {
-        expect(isForcedHtmlIdentityUrl(`business.adobe.com${path}`), path).to.be.false;
+        expect(isForcedHtmlIdentityUrl(`business.adobe.com${path}`), path).to.be.true;
       });
-    });
-
-    it('does not exempt a blog segment under a non-locale section', () => {
-      expect(isForcedHtmlIdentityUrl('business.adobe.com/resources/blog/x')).to.be.true;
-      expect(isForcedHtmlIdentityUrl('business.adobe.com/resources/a/b/blog/x')).to.be.true;
-      // `blog` must be a whole segment.
-      expect(isForcedHtmlIdentityUrl('business.adobe.com/resources/jp/blog-post')).to.be.true;
     });
 
     it('matches the prod host case-insensitively', () => {
@@ -117,11 +111,9 @@ describe('caasIdentity', () => {
         .to.equal('business.adobe.com/resources/x.html#frag');
     });
 
-    it('decides the blog exception on the pathname, not the query string', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x?ref=/blog/y', true))
-        .to.equal('business.adobe.com/resources/x.html?ref=/blog/y');
-      expect(getCaasIdentityUrl('business.adobe.com/blog/y?ref=/resources/x', true))
-        .to.equal('business.adobe.com/blog/y?ref=/resources/x');
+    it('appends to the pathname even when the query string ends in .html', () => {
+      expect(getCaasIdentityUrl('business.adobe.com/resources/x?ref=/y.html', true))
+        .to.equal('business.adobe.com/resources/x.html?ref=/y.html');
     });
 
     it('is case-sensitive, matching the legacy publishers\' .html check', () => {
@@ -132,27 +124,16 @@ describe('caasIdentity', () => {
     it('leaves out-of-scope urls alone even when enabled', () => {
       expect(getCaasIdentityUrl('www.adobe.com/resources/x', true))
         .to.equal('www.adobe.com/resources/x');
-      expect(getCaasIdentityUrl('business.adobe.com/blog/post', true))
-        .to.equal('business.adobe.com/blog/post');
+      expect(getCaasIdentityUrl('business.adobe.com', true))
+        .to.equal('business.adobe.com');
     });
-  });
 
-  // BLOG_PATH bounds its locale segment by length to tell a locale apart from a
-  // content section, and `africa` (6) / `ph_fil` (_fil, 3) sit exactly on both
-  // bounds. A longer locale added later would silently stop exempting that
-  // locale's blog subtree and orphan its cards, with no error anywhere. Fail
-  // the build instead.
-  describe('BLOG_PATH vs the locale table', () => {
-    it('exempts the blog under every published locale prefix', () => {
-      Object.keys(LOCALES)
-        // An authoring prefix, never a published business.adobe.com path.
-        .filter((key) => key && key !== 'langstore')
-        .forEach((key) => {
-          expect(
-            isForcedHtmlIdentityUrl(`business.adobe.com/${key}/blog/post`),
-            `locale "${key}" is no longer exempt -- widen BLOG_PATH's locale bound`,
-          ).to.be.false;
-        });
+    it('preserves blog identity across the extensionless switch', () => {
+      // The blog still serves .html, so its ids were minted with it. Once the
+      // flag is on for the blog repo, the extensionless public url must keep
+      // hashing the same string the .html url did.
+      expect(getCaasIdentityUrl('business.adobe.com/blog/post.html', true))
+        .to.equal(getCaasIdentityUrl('business.adobe.com/blog/post', true));
     });
   });
 });

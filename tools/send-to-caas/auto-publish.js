@@ -213,9 +213,9 @@ export const caasAutoPublish = async ({
     // republish can clean up, so refuse rather than write it.
     //
     // Asserted on the real hash inputs rather than on the htmlIdentity flag:
-    // the policy only normalizes in-scope urls (bacom, non-blog), so the flag
-    // being on does NOT prove the ids converge. A non-bacom host or a /blog/
-    // path leaves getCaasIdentityUrl a no-op and the ids fork regardless.
+    // the policy only normalizes in-scope urls (the bacom prod host), so the
+    // flag being on does NOT prove the ids converge. On any other host
+    // getCaasIdentityUrl is a no-op and the ids fork regardless.
     const identityUrls = new Set([...byHtmlExt.keys()].map((htmlExt) => (
       getCaasIdentityUrl(variantProdUrl(htmlExt).replace(/^https?:\/\//, ''), htmlIdentity)
     )));
