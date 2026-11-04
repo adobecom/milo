@@ -142,18 +142,34 @@ const PRESERVED_STYLE_PROPS = [
   'display', 'alignItems', 'gap',
 ];
 
-function applyPreservedStyles(heading) {
-  const origLevel = Number(heading.dataset.masOrigLevel);
-  if (!origLevel || !heading.isConnected) return;
-  const probe = createTag(`h${origLevel}`);
+function createStyleProbe(heading) {
+  const probe = createTag(`h${Number(heading.dataset.masOrigLevel)}`);
   [...heading.attributes].forEach(({ name, value }) => probe.setAttribute(name, value));
   // Content-dependent selectors such as h4:has(> svg) control icon alignment.
   probe.append(...[...heading.childNodes].map((node) => node.cloneNode(true)));
   probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
-  heading.after(probe);
-  const computed = getComputedStyle(probe);
-  PRESERVED_STYLE_PROPS.forEach((prop) => { heading.style[prop] = computed[prop]; });
-  probe.remove();
+  return probe;
+}
+
+// Measures and reapplies in three phases (insert all probes, read all values, write all values)
+// so a whole batch costs a single forced style recalc instead of one per property read.
+function applyPreservedStyles(headings) {
+  const targets = headings
+    .filter((heading) => Number(heading.dataset.masOrigLevel) && heading.isConnected)
+    .map((heading) => ({ heading, probe: createStyleProbe(heading) }));
+  if (!targets.length) return;
+  try {
+    targets.forEach(({ heading, probe }) => heading.after(probe));
+    const measured = targets.map(({ probe }) => {
+      const computed = getComputedStyle(probe);
+      return PRESERVED_STYLE_PROPS.map((prop) => computed[prop]);
+    });
+    targets.forEach(({ heading }, i) => {
+      PRESERVED_STYLE_PROPS.forEach((prop, j) => { heading.style[prop] = measured[i][j]; });
+    });
+  } finally {
+    targets.forEach(({ probe }) => probe.remove());
+  }
 }
 
 let responsiveSyncAdded = false;
@@ -164,7 +180,7 @@ function ensureResponsiveHeadingSync() {
   window.addEventListener('resize', () => {
     clearTimeout(timer);
     timer = setTimeout(() => {
-      document.querySelectorAll('[data-mas-orig-level]').forEach(applyPreservedStyles);
+      applyPreservedStyles([...document.querySelectorAll('[data-mas-orig-level]')]);
     }, 150);
   });
 }
@@ -179,6 +195,7 @@ export function overrideCardHeadingLevel(card, targetLevel) {
   });
   const base = Math.min(...origLevels);
   const delta = targetLevel - base;
+  const swapped = [];
   headings.forEach((heading, i) => {
     const newLevel = Math.min(6, Math.max(1, origLevels[i] + delta));
     if (newLevel === Number(heading.tagName[1])) return;
@@ -186,8 +203,9 @@ export function overrideCardHeadingLevel(card, targetLevel) {
     [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
     next.append(...heading.childNodes);
     heading.replaceWith(next);
-    applyPreservedStyles(next);
+    swapped.push(next);
   });
+  applyPreservedStyles(swapped);
   ensureResponsiveHeadingSync();
 }
 
