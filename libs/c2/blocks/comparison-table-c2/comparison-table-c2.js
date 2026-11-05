@@ -551,19 +551,26 @@ function setupCollapsingHeader(el) {
 
   let wasCollapsed = false;
   let isExpanding = false;
-  let lastScrollY = window.scrollY;
+  let lastScrollY = 0;
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
-  let stickyTopCache = 0;
+  // Read lazily by the scroll handler, which already reads layout, so syncTop() never has to
+  // force a style recalc right after writing --ct-nav-height.
+  let stickyTopCache = null;
 
   const syncTop = () => {
     cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
-    stickyTopCache = getStickyTop();
+    stickyTopCache = null;
   };
-  syncTop();
+  // The first scroll/layout reads run at the next frame, ahead of its own style/layout, instead
+  // of forcing a flush while the block is still being decorated.
+  requestAnimationFrame(() => {
+    lastScrollY = window.scrollY;
+    syncTop();
+  });
 
   const syncHeaderHeight = () => {
     if (isMobile()) {
@@ -616,6 +623,7 @@ function setupCollapsingHeader(el) {
       const y = window.scrollY;
       const goingDown = y > lastScrollY;
       lastScrollY = y;
+      if (stickyTopCache === null) stickyTopCache = getStickyTop();
       const isStuck = cardsContainer.getBoundingClientRect().top <= stickyTopCache;
       if (!isStuck) { removeCollapsed(); return; }
       if (goingDown && !wasCollapsed) applyCollapsed();
