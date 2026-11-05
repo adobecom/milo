@@ -257,3 +257,19 @@ export const initAnalytics = (blockValue) => {
   initBackNavAnalytics();
   blockRenderAnalytics(blockValue);
 };
+
+/** Sends `_satellite.track('event', payload)`, waiting for Launch to load if needed. */
+const trackEvent = (payload) => {
+  const send = () => window._satellite?.track?.('event', payload);
+  if (window._satellite?.track) send();
+  else window.addEventListener('alloy_sendEvent', send, { once: true });
+};
+
+/** For surfaces that render after the page view has been sent, where a page-load
+ *  property (initAnalytics) would never reach analytics. */
+export const sendRenderEvent = (blockValue) => trackEvent({
+  data: {
+    web: { webInteraction: { name: blockValue } },
+    _adobe_corpnew: { event: { custom: [{ propertyName: blockValue, propertyValue: 'true', propertyType: 'string' }] } },
+  },
+});
