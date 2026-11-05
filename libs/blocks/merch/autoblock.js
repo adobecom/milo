@@ -172,6 +172,23 @@ function applyPreservedStyles(headings) {
   }
 }
 
+// Cards finish at different async points, so measuring per card forces one style recalc per card.
+// Queue the swapped headings and measure them together right before the next frame: rAF callbacks
+// run ahead of that frame's style/layout/paint, so no frame is painted without the styles.
+let queuedHeadings = [];
+let flushQueued = false;
+function queuePreservedStyles(headings) {
+  queuedHeadings.push(...headings);
+  if (flushQueued) return;
+  flushQueued = true;
+  requestAnimationFrame(() => {
+    flushQueued = false;
+    const batch = queuedHeadings;
+    queuedHeadings = [];
+    applyPreservedStyles(batch);
+  });
+}
+
 let responsiveSyncAdded = false;
 function ensureResponsiveHeadingSync() {
   if (responsiveSyncAdded) return;
@@ -185,7 +202,7 @@ function ensureResponsiveHeadingSync() {
   });
 }
 
-export function overrideCardHeadingLevel(card, targetLevel) {
+export function overrideCardHeadingLevel(card, targetLevel, { batch = false } = {}) {
   const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
   if (!headings.length) return;
   const origLevels = headings.map((h) => {
@@ -205,7 +222,8 @@ export function overrideCardHeadingLevel(card, targetLevel) {
     heading.replaceWith(next);
     swapped.push(next);
   });
-  applyPreservedStyles(swapped);
+  if (batch) queuePreservedStyles(swapped);
+  else applyPreservedStyles(swapped);
   ensureResponsiveHeadingSync();
 }
 
@@ -216,7 +234,7 @@ async function postProcessCard(card) {
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);
   const headingLevel = getMerchCardHeadingLevel();
-  if (headingLevel) overrideCardHeadingLevel(card, headingLevel);
+  if (headingLevel) overrideCardHeadingLevel(card, headingLevel, { batch: true });
 }
 
 export async function postProcessAutoblock(autoblockEl, isCard = false) {
