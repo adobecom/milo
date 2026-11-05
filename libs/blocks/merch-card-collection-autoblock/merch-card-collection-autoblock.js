@@ -12,6 +12,8 @@ import {
   overrideOptions,
   updateModalState,
   loadMasComponent,
+  getMasComponentUrl,
+  getMasLibs,
   createFragmentErrorEl,
   isMasErrorEnv,
   MAS_MERCH_CARD,
@@ -1055,6 +1057,8 @@ export default async function init(el) {
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
+  // The cards always need their Lit, which merch-card.js only requests once it has been fetched.
+  preloadModule(getMasComponentUrl('lit-all.min', getMasLibs(), window.location.hostname));
   // Spectrum waits for the fragment to say whether a sidenav renders; its lit dependency does not.
   if (options.sidenav) preloadModule(`${getConfig().base}/deps/lit-all.min.js`);
   await loadDependencies(options);
