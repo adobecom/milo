@@ -542,35 +542,31 @@ function setAccessibilityLabels(el) {
   });
 }
 
-// Every table on the page shares one nav-height measurement per pass: one read, then one write
-// per table. Per-table read/write pairs would force a style recalc for each table after the first.
+// All tables share one header ResizeObserver. Its callback runs after layout, when reading
+// window.scrollY and the header height is free, so tables decorated in different frames never
+// force a style recalc for the initial nav-height/scroll sync (a rAF read lands on a dirty tree).
 const topSyncs = new Set();
 const pendingInits = [];
 let headerObserver = null;
 
-function syncAllTops() {
+function onHeaderResize() {
+  const { scrollY } = window;
   const navHeight = `${getGnavHeight()}px`;
+  pendingInits.splice(0).forEach((initFn) => initFn(scrollY));
   topSyncs.forEach((applyTop) => applyTop(navHeight));
 }
 
-function scheduleInitialSync(initTable) {
+function requestInitialSync(initTable) {
   pendingInits.push(initTable);
-  if (pendingInits.length > 1) return;
-  // Runs ahead of the frame's own style/layout, once for all tables registered before it fires.
-  requestAnimationFrame(() => {
-    const { scrollY } = window;
-    const navHeight = `${getGnavHeight()}px`;
-    pendingInits.splice(0).forEach((initFn) => initFn(scrollY, navHeight));
-  });
-}
-
-function observeHeader() {
-  if (headerObserver) return;
   const header = document.querySelector('header');
-  if (header) {
-    headerObserver = new ResizeObserver(syncAllTops);
-    headerObserver.observe(header);
+  if (!header) {
+    requestAnimationFrame(onHeaderResize);
+    return;
   }
+  if (headerObserver) headerObserver.unobserve(header);
+  else headerObserver = new ResizeObserver(onHeaderResize);
+  // (Re)observing delivers a fresh initial notification after the next layout.
+  headerObserver.observe(header);
 }
 
 function setupCollapsingHeader(el) {
@@ -598,12 +594,7 @@ function setupCollapsingHeader(el) {
   };
   const syncTop = () => applyTop(`${getGnavHeight()}px`);
   topSyncs.add(applyTop);
-  // The first scroll/layout reads are shared by all tables and run at the next frame instead of
-  // forcing a flush while the blocks are still being decorated.
-  scheduleInitialSync((scrollY, navHeight) => {
-    lastScrollY = scrollY;
-    applyTop(navHeight);
-  });
+  requestInitialSync((scrollY) => { lastScrollY = scrollY; });
 
   const syncHeaderHeight = () => {
     if (isMobile()) {
@@ -663,8 +654,6 @@ function setupCollapsingHeader(el) {
       if (!goingDown && wasCollapsed) removeCollapsed();
     });
   }, { passive: true });
-
-  observeHeader();
 
   new ResizeObserver(() => {
     if (!isExpanding) syncHeaderHeight();
