@@ -1,8 +1,6 @@
 import { html, render, signal } from '../../deps/htm-preact.js';
 import { createTag, getConfig } from '../../utils/utils.js';
-import { getPreflightResults } from './checks/preflightApi.js';
-import { runChecks as runLocalizationChecks } from './checks/localization.js';
-import { SEVERITY } from './checks/constants.js';
+import { getIssueCounts } from './checks/issueCounts.js';
 import General from './panels/general.js';
 import SEO from './panels/seo.js';
 import Accessibility from './accessibility/accessibility.js';
@@ -48,76 +46,9 @@ function setTab(active) {
 // Per-tab issue counts surfaced as badges in the rail. Keyed by tab title.
 const tabStatus = signal({});
 
-// Each tab maps to a category returned by getPreflightResults().runChecks.
-// Martech extracts metadata only, so it has no pass/fail state.
-const TAB_CATEGORY = {
-  General: 'structure',
-  SEO: 'seo',
-  'M@S': 'merch',
-  Accessibility: 'accessibility',
-  Performance: 'performance',
-  Assets: 'assets',
-};
-
-// structure/seo/performance return one check per item, so failing checks map 1:1
-// to the cards the panel shows.
-export function countChecks(checks = []) {
-  return checks.reduce((acc, check) => {
-    if (check?.status === 'fail') {
-      if (check.severity === SEVERITY.WARNING) acc.warnings += 1;
-      else acc.errors += 1;
-    } else if (check?.status === 'limbo') {
-      acc.warnings += 1;
-    }
-    return acc;
-  }, { errors: 0, warnings: 0 });
-}
-
-// accessibility/merch/assets return a single aggregate check whose granular counts
-// live in `details`, so the badge matches the items the panel actually lists.
-export function countCategory(title, runChecks) {
-  const checks = runChecks[TAB_CATEGORY[title]] || [];
-  const [first] = checks;
-  if (title === 'Accessibility') {
-    return { errors: first?.status === 'fail' ? first.details?.issuesCount || 0 : 0, warnings: 0 };
-  }
-  if (title === 'M@S') {
-    return { errors: first?.status === 'fail' ? first.details?.unpublished?.length || 0 : 0, warnings: 0 };
-  }
-  if (title === 'Assets') {
-    return {
-      errors: first?.details?.criticalAssetFailures?.length || 0,
-      warnings: first?.details?.warningAssetFailures?.length || 0,
-    };
-  }
-  return countChecks(checks);
-}
-
-// Localization (faulty links) is shown in the General panel but is not part of
-// the central run, so fold its violations into the General badge separately.
-async function getLocalizationErrors() {
-  try {
-    const [loc] = await runLocalizationChecks({ area: document });
-    return loc?.details?.violations?.length || 0;
-  } catch {
-    return 0;
-  }
-}
-
 async function loadIssueCounts() {
   try {
-    const results = await getPreflightResults({ url: window.location.href, area: document });
-    if (!results?.runChecks) return;
-    const status = Object.keys(TAB_CATEGORY).reduce((acc, title) => {
-      acc[title] = countCategory(title, results.runChecks);
-      return acc;
-    }, {});
-    const locErrors = await getLocalizationErrors();
-    status.General = {
-      errors: status.General.errors + locErrors,
-      warnings: status.General.warnings,
-    };
-    tabStatus.value = status;
+    tabStatus.value = await getIssueCounts() ?? {};
   } catch (e) {
     window.lana?.log?.(`Preflight tab badges failed: ${e}`, { tags: 'preflight' });
   }

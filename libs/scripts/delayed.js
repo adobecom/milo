@@ -118,15 +118,29 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
+const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
+
+const hasDaPreviewParam = (params) => ['dapreview', 'quick-edit'].some((name) => params.get(name));
+
+export const isDaPreview = ({ hostname, search }) => {
+  const isDaHost = isLocalHost(hostname) || hostname.endsWith('.aem.page')
+    || /\.(stage-)?preview\.da\.live$/.test(hostname);
+  return isDaHost && hasDaPreviewParam(new URLSearchParams(search));
+};
+
 export const shouldAutoHighlight = ({ isLocal, isPreview, params }) => {
-  const isDaPreview = params.has('dapreview') || params.has('quick-edit');
   const mode = params.get('autoHighlight');
-  return !isDaPreview && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
+  return !hasDaPreviewParam(params) && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
 };
 
 export const loadPreflightResults = async () => {
+  if (isDaPreview(window.location)) {
+    const { default: showDraftStatus } = await import('../features/preflight/draft-status.js');
+    showDraftStatus();
+    return;
+  }
   const { hostname, search } = window.location;
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isLocal = isLocalHost(hostname);
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
