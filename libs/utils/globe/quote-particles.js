@@ -1,10 +1,16 @@
-import * as THREE from '../../../../deps/three.js';
+import * as THREE from '../../deps/three.js';
 import {
-  TRAVEL_EASE_POW, FRAME_MS, clamp01, capDpr,
-  camZAtTravelT, travelTAtCamZ, travelSpanPx, scrollYAtTravelT,
-} from './utils.js';
-import { plainQuote } from './authoring.js';
-import { RR_SDF, HASH21, glf } from './shaders.js';
+  FRAME_MS, clamp01, capDpr, camZAtT, tAtCamZ, RR_SDF, HASH21, glf,
+} from './core.js';
+import { plainQuote } from './ui.js';
+
+// One globe per page, so the owning block's naming and easing live in module state.
+const GLOBE = {
+  name: 'firefly-globe',
+  vars: 'fg',
+  easePow: 3,
+};
+export const configureGlobe = (cfg) => Object.assign(GLOBE, cfg);
 
 const PULL_BP = {
   sm: { startR: 0.5, expand: 0.5, count: 15000 },
@@ -78,7 +84,7 @@ const PX_TO_CLIP = [
   '}',
 ];
 
-const POINTS_VERT = [
+const pointsVert = () => [
   'uniform float uP;',
   'uniform vec2 uView;',
   'uniform float uDpr;',
@@ -108,7 +114,7 @@ const POINTS_VERT = [
   ...CURL_NOISE,
   'float camZAt(float p) {',
   '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
-  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(TRAVEL_EASE_POW)}));`,
+  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(GLOBE.easePow)}));`,
   '}',
   'vec2 toPx(vec3 w, float camZ) {',
   '  vec4 c = projectionMatrix * vec4(w.xy, w.z - camZ, 1.0);',
@@ -262,7 +268,7 @@ function textLines(el, ox, oy) {
   const cs = getComputedStyle(el);
   const style = {
     font: fontOf(cs),
-    color: cs.getPropertyValue('--fg-pq-ink').trim() || '#fafafa',
+    color: cs.getPropertyValue(`--${GLOBE.vars}-pq-ink`).trim() || '#fafafa',
     rtl: cs.direction === 'rtl',
     letterSpacing: cs.letterSpacing,
   };
@@ -314,10 +320,10 @@ function textLines(el, ox, oy) {
   }));
 }
 
-const TEXT_SEL = '.firefly-globe-pullquote-quote, .firefly-globe-pullquote-name, .firefly-globe-pullquote-role';
+const textSel = () => ['quote', 'name', 'role'].map((k) => `.${GLOBE.name}-pullquote-${k}`).join(', ');
 
 function fontsFor(figureEl) {
-  return [...figureEl.querySelectorAll(TEXT_SEL)]
+  return [...figureEl.querySelectorAll(textSel())]
     .map((el) => ({ font: fontOf(getComputedStyle(el)), text: el.textContent }));
 }
 
@@ -328,7 +334,7 @@ function measure(figureEl, railEl) {
   const cs = getComputedStyle(figureEl);
   const fx = fig.left - origin.left;
   const fy = fig.top - origin.top;
-  const rw = parseFloat(cs.getPropertyValue('--fg-crosshair-width')) || 1;
+  const rw = parseFloat(cs.getPropertyValue(`--${GLOBE.vars}-crosshair-width`)) || 1;
   const pad = (side) => parseFloat(cs[`padding${side}`]) || 0;
   const rules = [
     [fx, fy + pad('Top'), fig.width, rw],
@@ -344,10 +350,10 @@ function measure(figureEl, railEl) {
       w: fig.width + 2 * RASTER_PAD,
       h: fig.height + 2 * RASTER_PAD,
     },
-    runs: [...figureEl.querySelectorAll(TEXT_SEL)]
+    runs: [...figureEl.querySelectorAll(textSel())]
       .flatMap((el) => textLines(el, origin.left, origin.top)),
     rules,
-    ruleColor: cs.getPropertyValue('--fg-pq-rule-color').trim() || '#3a3a3a',
+    ruleColor: cs.getPropertyValue(`--${GLOBE.vars}-pq-rule-color`).trim() || '#3a3a3a',
     rtl: cs.direction === 'rtl',
   };
 }
@@ -462,7 +468,7 @@ function createCardPointsMaterial(shared, scatterP = -1) {
       uScreenSrc: { value: 0 },
       uScatterP: { value: scatterP },
     },
-    vertexShader: POINTS_VERT,
+    vertexShader: pointsVert(),
     fragmentShader: POINTS_FRAG,
     transparent: true,
     depthTest: false,
@@ -503,11 +509,16 @@ function seededRandom(seed) {
   };
 }
 
-const camZAt = (zoom, p) => camZAtTravelT(zoom[0] + p * zoom[1], zoom[2], zoom[2] - zoom[3]);
+const camZAt = (zoom, p) => camZAtT(
+  zoom[0] + p * zoom[1],
+  zoom[2],
+  zoom[2] - zoom[3],
+  GLOBE.easePow,
+);
 
 function pAtCamZ(zoom, cz) {
   if (!(zoom[1] > 0) || !(zoom[3] > 0)) return Infinity;
-  return (travelTAtCamZ(cz, zoom[2], zoom[2] - zoom[3]) - zoom[0]) / zoom[1];
+  return (tAtCamZ(cz, zoom[2], zoom[2] - zoom[3], GLOBE.easePow) - zoom[0]) / zoom[1];
 }
 
 function bounds(n, at) {
@@ -1012,17 +1023,25 @@ export function createCardScatter({ expand }) {
   };
 }
 
+// timeline: { easePow, spanPx(span), scrollYAt(t, span) } — the block's scroll-to-camera-travel
+// mapping. travelVar: the block's CSS var (vh) that sizes that travel.
 export function createPullQuote({
-  root, getBp, getView, getSpan, getCards, getSphereGroup, isCardManaged, onHeightChange,
+  name, cssVars, timeline, travelVar, root, getBp, getView, getSpan, getCards,
+  getSphereGroup, isCardManaged, onHeightChange,
+  getFormationVh = () => 0, // gallery: scroll spent forming the globe before the travel starts
+  requireOnSphere = false, // gallery: only cards settled on the sphere feed the near-plane scatter
+  manageCanvas = false, // gallery: the canvas flips fixed → absolute while the quote flies
 }) {
-  const figureEl = root.querySelector('.firefly-globe-pullquote');
-  const quoteEl = root.querySelector('.firefly-globe-pullquote-quote');
-  const railEl = root.querySelector('.firefly-globe-pullquote-rail');
+  configureGlobe({ name, vars: cssVars, easePow: timeline.easePow });
+  const figureEl = root.querySelector(`.${GLOBE.name}-pullquote`);
+  const quoteEl = root.querySelector(`.${GLOBE.name}-pullquote-quote`);
+  const railEl = root.querySelector(`.${GLOBE.name}-pullquote-rail`);
   const forcedColors = window.matchMedia?.('(forced-colors: active)') ?? null;
   const near = [];
   let fx = null;
   let scatter = null;
   let camera = null;
+  let canvas = null;
   let rasterTimer = 0;
   const s = { appearT: 0.5, startT: 0.5 };
   const reset = () => Object.assign(s, {
@@ -1035,6 +1054,7 @@ export function createPullQuote({
     viewKey: '',
     nextKey: '',
     nextAt: 0,
+    canvasPos: '',
     layoutKey: '',
     on: false,
     swapT: 0,
@@ -1047,15 +1067,15 @@ export function createPullQuote({
   const travelPx = () => (s.travelVh / 100) * getView().H;
 
   function syncHeight() {
-    const travelVh = parseFloat(getComputedStyle(root).getPropertyValue('--fg-travel-vh'));
+    const travelVh = parseFloat(getComputedStyle(root).getPropertyValue(travelVar));
     s.travelVh = fx && travelVh > 0 ? travelVh : 0;
     if (!s.travelVh) return;
-    const at = (travelT, vh) => travelT * s.travelVh + vh;
+    const at = (travelT, vh) => getFormationVh() + travelT * s.travelVh + vh;
     const quoteDone = Math.max(at(s.startT, QUOTE_LIVE_P * FLY_VH * 100), at(s.appearT, 0));
     const next = Math.round((quoteDone + READ_VH * 100 + 100) * 10) / 10;
     if (next === s.heightVh) return;
     s.heightVh = next;
-    root.style.setProperty('--fg-pq-height', `${next}vh`);
+    root.style.setProperty(`--${GLOBE.vars}-pq-height`, `${next}vh`);
     onHeightChange();
   }
 
@@ -1063,7 +1083,7 @@ export function createPullQuote({
     const bp = getBp();
     const startZ = PULL_BP[bp.name].startR * bp.SPHERE_R;
     s.appearT = appearT;
-    s.startT = Math.min(appearT, travelTAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
+    s.startT = Math.min(appearT, tAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END, GLOBE.easePow));
     syncHeight();
   }
 
@@ -1089,7 +1109,7 @@ export function createPullQuote({
       quoteEl.style.fontSize = `${next.toFixed(1)}px`;
       if (origLh) quoteEl.style.lineHeight = `${(origLh * k).toFixed(1)}px`;
       quoteEl.style.letterSpacing = `${(origLs * k).toFixed(2)}px`;
-      plainQuote(quoteEl);
+      plainQuote(quoteEl, GLOBE.name);
     }
   }
 
@@ -1100,11 +1120,11 @@ export function createPullQuote({
     if (!force && key === s.layoutKey) return;
     s.layoutKey = key;
     quoteEl.removeAttribute('style');
-    plainQuote(quoteEl);
+    plainQuote(quoteEl, GLOBE.name);
     if (!fx) return;
     fitQuote();
     const railH = figureEl.getBoundingClientRect().bottom - railEl.getBoundingClientRect().top;
-    root.style.setProperty('--fg-pq-rail-h', `${railH.toFixed(1)}px`);
+    root.style.setProperty(`--${GLOBE.vars}-pq-rail-h`, `${railH.toFixed(1)}px`);
     clearTimeout(rasterTimer);
     rasterTimer = setTimeout(() => {
       fx?.layout({ dpr: capDpr() }).then(() => { s.viewKey = ''; });
@@ -1121,10 +1141,18 @@ export function createPullQuote({
     return scrollY >= blockDocTop + blockHeight - getView().H;
   };
 
-  function update({ scrollY, scrollVel, dtScale }) {
+  function placeCanvas() {
+    if (!manageCanvas || !canvas) return;
+    const pos = s.p > 0 ? 'absolute' : 'fixed';
+    if (pos === s.canvasPos) return;
+    s.canvasPos = pos;
+    canvas.style.position = pos;
+  }
+
+  function update({ scrollVel, dtScale }, scrollY) {
     if (!fx) return;
     s.on = fx.isReady() && !forcedColors?.matches;
-    const startY = scrollYAtTravelT(s.startT, getSpan());
+    const startY = timeline.scrollYAt(s.startT, getSpan());
     s.p = clamp01((scrollY - startY) / Math.max(1, FLY_VH * getView().H));
     const live = s.p >= QUOTE_LIVE_P;
     const want = isOn() && live;
@@ -1135,9 +1163,10 @@ export function createPullQuote({
     const str = s.swapT.toFixed(3);
     if (str !== s.swapStr) {
       s.swapStr = str;
-      figureEl.style.setProperty('--fg-pq-dom', str);
+      figureEl.style.setProperty(`--${GLOBE.vars}-pq-dom`, str);
     }
     figureEl.classList.toggle('is-dom', !s.on);
+    placeCanvas();
     if (live === s.live) return;
     s.live = live;
     if (!live) dropSelection();
@@ -1181,7 +1210,7 @@ export function createPullQuote({
   function cardPlanes() {
     const out = [];
     getCards().forEach((card) => {
-      if (isCardManaged(card)) return;
+      if ((requireOnSphere && !card.onSphere) || isCardManaged(card)) return;
       const plane = cardPlane(card);
       if (plane.alpha > 0.002) out.push(plane);
     });
@@ -1209,7 +1238,7 @@ export function createPullQuote({
   function updateParticles(W, H) {
     const owns = ownsCards();
     const { CAM_Z_SPHERE, CAM_Z_END } = getBp();
-    const flyT = (FLY_VH * H) / travelSpanPx(getSpan());
+    const flyT = (FLY_VH * H) / timeline.spanPx(getSpan());
     const zoom = [s.startT, flyT, CAM_Z_SPHERE, CAM_Z_SPHERE - CAM_Z_END];
     if (owns) {
       const e = camera.projectionMatrix.elements;
@@ -1245,6 +1274,7 @@ export function createPullQuote({
 
   function build(ctx) {
     ({ camera } = ctx);
+    canvas = ctx.renderer.domElement;
     const cfg = PULL_BP[getBp().name];
     scatter = createCardScatter({ expand: cfg.expand });
     ctx.scene.add(scatter.object);
@@ -1254,7 +1284,7 @@ export function createPullQuote({
       ctx.scene.add(fx.object);
       fx.warm(ctx.renderer, camera);
     }
-    root.classList.toggle('firefly-globe-pq-particles', !!fx);
+    root.classList.toggle(`${GLOBE.name}-pq-particles`, !!fx);
   }
 
   function teardown() {
@@ -1264,10 +1294,11 @@ export function createPullQuote({
     fx = null;
     scatter = null;
     camera = null;
+    canvas = null;
     near.length = 0;
-    root.classList.remove('firefly-globe-pq-particles');
-    root.style.removeProperty('--fg-pq-height');
-    root.style.removeProperty('--fg-pq-rail-h');
+    root.classList.remove(`${GLOBE.name}-pq-particles`);
+    root.style.removeProperty(`--${GLOBE.vars}-pq-height`);
+    root.style.removeProperty(`--${GLOBE.vars}-pq-rail-h`);
     if (figureEl) {
       figureEl.style.cssText = '';
       figureEl.classList.remove('is-live', 'is-dom');

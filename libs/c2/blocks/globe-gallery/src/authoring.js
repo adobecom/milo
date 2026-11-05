@@ -1,10 +1,9 @@
 // eslint-disable-next-line import/no-relative-packages
-import { getFederatedUrl } from '../../../../utils/utils.js';
+import { getFederatedUrl, getConfig } from '../../../../utils/utils.js';
+// eslint-disable-next-line import/no-relative-packages
+import { processTrackingLabels } from '../../../../martech/attributes.js';
 
-export function escapeHtml(s) {
-  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-  return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
-}
+import { escapeHtml, renderParagraphs, hangParagraphs, buildGlobeSkeleton, parseCommonRows } from '../../../../utils/globe/ui.js';
 
 function badgeSvgUrl(a) {
   const href = a.getAttribute('href') || '';
@@ -24,93 +23,6 @@ function badgeIconHtml(url) {
   return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
-// Fallback only; authored inline so it stays localizable.
-const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
-
-const DEFAULT_HINT = 'Click & Drag';
-const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
-
-const LABEL_DIVIDER = '||';
-const DEFAULT_LABELS = [
-  DEFAULT_GALLERY_INSTRUCTIONS,
-  'Rotate left', 'Rotate right', 'Pause spinning', 'Resume spinning',
-  'Previous card', '{index} of {count}', 'Next card', 'Close',
-];
-const CARD_TPL_INDEX = 6;
-
-function buildLabels(parts) {
-  const at = (i) => parts[i] || DEFAULT_LABELS[i];
-  const cardTplRaw = parts[CARD_TPL_INDEX];
-  const cardTpl = cardTplRaw?.includes('{index}') && cardTplRaw?.includes('{count}')
-    ? cardTplRaw
-    : DEFAULT_LABELS[CARD_TPL_INDEX];
-  return {
-    rotateLeft: at(1),
-    rotateRight: at(2),
-    pauseSpin: at(3),
-    resumeSpin: at(4),
-    prevCard: at(5),
-    nextCard: at(7),
-    closeBtn: at(8),
-    cardLabel: (index, count) => cardTpl
-      .replace('{index}', String(index))
-      .replace('{count}', String(count)),
-  };
-}
-
-function cellText(cell) {
-  if (!cell) return '';
-  const paras = [...cell.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
-  return (paras.length ? paras.join(' ') : cell.textContent).trim();
-}
-
-function cellParas(cell) {
-  return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
-}
-
-// Move the authored <p>s into a container.
-export function renderParagraphs(container, paras) {
-  if (container) container.replaceChildren(...paras);
-}
-
-const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
-
-function gutterOf(el) {
-  return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
-}
-
-function hangOpeningMark(el, room) {
-  el.style.textIndent = '';
-  const text = el.textContent.trim();
-  if (!room || !OPENING_MARK.test(text)) return;
-  const cs = getComputedStyle(el);
-  const ctx = document.createElement('canvas').getContext('2d');
-  ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-  if (!ctx.font.includes(cs.fontSize)) return; // font didn't parse; canvas is on its 10px default
-  // Canvas ignores letter-spacing, and heading-1 has some.
-  const advance = ctx.measureText([...text][0]).width + (parseFloat(cs.letterSpacing) || 0);
-  // Too wide to hang — a CJK bracket, or just past the padding.
-  if (advance >= parseFloat(cs.fontSize) * 0.8 || advance > room) return;
-  if (advance > 0) el.style.textIndent = `${-advance / parseFloat(cs.fontSize)}em`;
-}
-
-export function hangParagraphs(container) {
-  if (!container) return;
-  const room = gutterOf(container);
-  [...container.children].forEach((p) => hangOpeningMark(p, room));
-}
-
-const QUOTE_TEXT = new WeakMap();
-
-export function plainQuote(quoteEl) {
-  if (!quoteEl) return '';
-  if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
-  const text = QUOTE_TEXT.get(quoteEl).trim();
-  quoteEl.textContent = text;
-  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.globe-gallery-pullquote')));
-  return text;
-}
-
 function parseArcCopy(row) {
   if (!row) return { title: '', body: [] };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
@@ -119,16 +31,6 @@ function parseArcCopy(row) {
   return {
     title: heading ? heading.textContent : paras.shift()?.textContent.trim() || '',
     body: paras,
-  };
-}
-
-function parsePullQuote(row) {
-  const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent).filter(Boolean);
-  return {
-    quote: quoteEl ? quoteEl.textContent : paras.shift() || '',
-    name: paras[0] || '',
-    role: paras[1] || '',
   };
 }
 
@@ -273,64 +175,25 @@ export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
   // Row 2 is two cells: the barrel's bottom-row copy, then the hint plane / cursor label.
-  const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
-  const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());
   return {
     arcCopy: parseArcCopy(arcCopyRow),
-    pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
-    touchHint: { paras: cellParas(cells[0]), text: cellText(cells[0]) || DEFAULT_TOUCH_HINT },
-    hintText: cellText(cells[1]) || DEFAULT_HINT,
-    instructions: parts[0] || DEFAULT_GALLERY_INSTRUCTIONS,
-    labels: buildLabels(parts),
+    ...parseCommonRows(hintTextRow, a11yRow, pullQuoteRow),
   };
 }
 
 // `gid` makes the modal's document-wide aria-labelledby/describedby id refs unique per instance.
-const buildMarkup = (gid, labels) => `
-  <div class="globe-gallery-world">
-    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
-    <div class="globe-gallery-controls" inert>
-      <button class="globe-gallery-control globe-gallery-spin-toggle" type="button" daa-ll="pause_spin--globe_gallery" aria-label="${escapeHtml(labels.pauseSpin)}">
-        <svg class="globe-gallery-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
-        <svg class="globe-gallery-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
-      </button>
-      <div class="globe-gallery-hint">
-        <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="-1" daa-ll="rotate_left--globe_gallery" aria-label="${escapeHtml(labels.rotateLeft)}">
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div class="globe-gallery-hint-text"></div>
-        <button class="globe-gallery-control globe-gallery-rotate" type="button" data-dir="1" daa-ll="rotate_right--globe_gallery" aria-label="${escapeHtml(labels.rotateRight)}">
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
 
-  <div class="globe-gallery-arc-copy">
+const CANVAS_STYLE = 'position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;';
+
+const ARC_COPY_HTML = `  <div class="globe-gallery-arc-copy">
     <h2 class="globe-gallery-arc-copy-title"></h2>
     <div class="globe-gallery-arc-copy-body body-md"></div>
   </div>
 
-  <div class="globe-gallery-pullquote-pin">
-    <div class="globe-gallery-pullquote-rail">
-      <figure class="globe-gallery-pullquote">
-        <blockquote class="globe-gallery-pullquote-quote heading-1"></blockquote>
-        <figcaption class="globe-gallery-pullquote-attribution">
-          <p class="globe-gallery-pullquote-name body-lg"></p>
-          <p class="globe-gallery-pullquote-role body-lg"></p>
-        </figcaption>
-      </figure>
-    </div>
-  </div>
+`;
 
-  <div class="globe-gallery-modal" aria-hidden="true">
-    <div class="globe-gallery-modal-backdrop"></div>
-  </div>
-
-  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
-
-  <dialog class="globe-gallery-modal-chrome">
+const modalInfoHtml = (gid) => `
     <div class="globe-gallery-modal-info" data-lenis-prevent>
       <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
@@ -338,62 +201,43 @@ const buildMarkup = (gid, labels) => `
       <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document"></div>
       <ul class="globe-gallery-modal-badges"></ul>
     </div>
-    <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
-    <span class="globe-gallery-modal-image sr-only" role="img"></span>
-    <!-- Controls after the info scrim so they paint on top of it. -->
-    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div class="globe-gallery-modal-counter" aria-hidden="true"></div>
-    <span class="globe-gallery-modal-position sr-only" role="note"></span>
-    <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button class="globe-gallery-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-    </button>
-    <span class="globe-gallery-modal-announce sr-only" aria-live="polite"></span>
-  </dialog>
 `;
 
-let globeInstanceSeq = 0;
-
 export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
-  globeInstanceSeq += 1;
-  const gid = globeInstanceSeq;
-  el.innerHTML = buildMarkup(gid, labels);
-  const hintEl = el.querySelector('.globe-gallery-hint-text');
-  if (touchHint.paras.length) renderParagraphs(hintEl, touchHint.paras);
-  else hintEl.textContent = touchHint.text;
+  const gid = buildGlobeSkeleton(el, 'globe-gallery', labels, {
+    touchHint,
+    pullQuote,
+    canvasStyle: CANVAS_STYLE,
+    arcCopyHtml: ARC_COPY_HTML,
+    modalInfoHtml,
+  });
   el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
   renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
-  if (pullQuote) {
-    const quoteEl = el.querySelector('.globe-gallery-pullquote-quote');
-    quoteEl.textContent = pullQuote.quote;
-    el.querySelector('.globe-gallery-pullquote-name').textContent = pullQuote.name;
-    el.querySelector('.globe-gallery-pullquote-role').textContent = pullQuote.role;
-  } else {
-    el.querySelector('.globe-gallery-pullquote-pin').remove();
-  }
   return gid;
 }
 
-const SCATTER_KEY = 'One day I will return to your side';
-const SCATTER_MOD = 2147483647;
-
-function seedFrom(key) {
-  let h = 0;
-  for (let i = 0; i < key.length; i += 1) h = (h * 31 + key.charCodeAt(i)) % SCATTER_MOD;
-  return h || 1;
-}
-
-export function scatterCards(cards) {
-  const out = cards.map((card, i) => ({ ...card, authoredIndex: i }));
-  let rand = seedFrom(SCATTER_KEY);
-  for (let i = out.length - 1; i > 0; i -= 1) {
-    rand = (rand * 48271) % SCATTER_MOD;
-    const j = Math.floor((rand / SCATTER_MOD) * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
+// The modal's role, name, description and badge fields; see utils/globe/modal.js.
+export function renderModalContent(targetEl, meta) {
+  const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
+  if (roleLabelEl) roleLabelEl.textContent = meta.role;
+  targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
+  const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+  renderParagraphs(descEl, meta.description);
+  hangParagraphs(descEl);
+  const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
+  badgesEl.innerHTML = '';
+  const config = getConfig();
+  meta.badges.forEach((b) => {
+    const row = document.createElement('li');
+    row.className = 'globe-gallery-modal-badge';
+    // Labelled by product, not by card, and unindexed.
+    const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
+    const nameHtml = b.href
+      ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
+      : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;
+    // Rows without a logo just render the name — no empty chip.
+    row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
+    badgesEl.appendChild(row);
+  });
+  return { descEl, speech: [[meta.name], [meta.role]] };
 }

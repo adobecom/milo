@@ -45,7 +45,7 @@
   }
 }
 
-/* Custom cursor (src/cursor.js). */
+/* Custom cursor (utils/globe/ui.js). */
 @media (hover: hover) and (pointer: fine) {
   .globe-gallery-cursor {
     pointer-events: none;
@@ -328,7 +328,7 @@ html[dir="rtl"] .globe-gallery-arc-copy {
   border-inline-width: var(--gg-crosshair-width);
 }
 
-/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See
+/* Opening mark is outdented by utils/globe/ui.js; `hanging-punctuation` deliberately unused. See
    README. */
 .globe-gallery-pullquote-quote {
   color: var(--gg-pq-ink);

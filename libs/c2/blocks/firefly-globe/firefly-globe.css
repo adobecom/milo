@@ -44,7 +44,7 @@
   }
 }
 
-/* Custom cursor (src/cursor.js). */
+/* Custom cursor (utils/globe/ui.js). */
 @media (hover: hover) and (pointer: fine) {
   .firefly-globe-cursor {
     pointer-events: none;
@@ -311,7 +311,7 @@
   border-inline-width: var(--fg-crosshair-width);
 }
 
-/* Opening mark is outdented by authoring.js; `hanging-punctuation` deliberately unused. See
+/* Opening mark is outdented by utils/globe/ui.js; `hanging-punctuation` deliberately unused. See
    README. */
 .firefly-globe-pullquote-quote {
   color: var(--fg-pq-ink);

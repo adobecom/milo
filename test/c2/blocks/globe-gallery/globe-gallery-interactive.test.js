@@ -2,9 +2,10 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import * as THREE from '../../../../libs/deps/three.js';
-import createInteraction from '../../../../libs/c2/blocks/globe-gallery/src/interaction.js';
-import createCursor from '../../../../libs/c2/blocks/globe-gallery/src/cursor.js';
-import createGlobeModal from '../../../../libs/c2/blocks/globe-gallery/src/modal.js';
+import createInteraction from '../../../../libs/utils/globe/interaction.js';
+import { createCursor } from '../../../../libs/utils/globe/ui.js';
+import { renderModalContent, fetchFragmentCards } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
+import createGlobeModal from '../../../../libs/utils/globe/modal.js';
 import {
   createCardMaterial,
   createModalMaterial,
@@ -13,8 +14,7 @@ import {
   loadCardTextures,
   loadModalTexture,
   createClickDragTexture,
-} from '../../../../libs/c2/blocks/globe-gallery/src/materials.js';
-import { fetchFragmentCards } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
+} from '../../../../libs/utils/globe/core.js';
 
 function dispatch(target, type, props = {}) {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -320,6 +320,7 @@ describe('globe-gallery: custom cursor', () => {
   function create(matches = true) {
     window.matchMedia = sinon.stub().returns({ matches });
     cursor = createCursor({
+      name: 'globe-gallery',
       getGlobeLive: () => live,
       getCursorRetired: () => retired,
       labelText: 'Explore',
@@ -621,6 +622,11 @@ describe('globe-gallery: modal DOM behavior', () => {
     upgrade = sinon.spy(() => ({ src: '/upgrade' }));
     window.lenis = lenis;
     modal = createGlobeModal({
+      name: 'globe-gallery',
+      cssVars: 'gg',
+      descClass: 'description',
+      bodyOpenClass: true,
+      renderContent: renderModalContent,
       q: (selector) => (selector === '.globe-gallery-modal-canvas'
         ? null : root.querySelector(selector)),
       getScene: () => scene,
@@ -721,6 +727,11 @@ describe('globe-gallery: modal DOM behavior', () => {
     modal.destroy();
     cards.length = 1;
     modal = createGlobeModal({
+      name: 'globe-gallery',
+      cssVars: 'gg',
+      descClass: 'description',
+      bodyOpenClass: true,
+      renderContent: renderModalContent,
       q: (selector) => (selector === '.globe-gallery-modal-canvas'
         ? null : root.querySelector(selector)),
       getScene: () => scene,

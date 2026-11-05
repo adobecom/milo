@@ -1,15 +1,14 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import * as THREE from '../../../../libs/deps/three.js';
-import createGlobeControls from '../../../../libs/c2/blocks/firefly-globe/src/controls.js';
-import createGalleryA11y from '../../../../libs/c2/blocks/firefly-globe/src/a11y.js';
-import createInteraction from '../../../../libs/c2/blocks/firefly-globe/src/interaction.js';
-import createCursor from '../../../../libs/c2/blocks/firefly-globe/src/cursor.js';
+import { renderModalContent } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
+import { createGalleryA11y, createGlobeControls, createCursor } from '../../../../libs/utils/globe/ui.js';
+import createInteraction from '../../../../libs/utils/globe/interaction.js';
 import {
   createCardMaterial, createModalMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture, loadHintFont, createClickDragTexture,
-} from '../../../../libs/c2/blocks/firefly-globe/src/materials.js';
-import createGlobeModal from '../../../../libs/c2/blocks/firefly-globe/src/modal.js';
+} from '../../../../libs/utils/globe/core.js';
+import createGlobeModal from '../../../../libs/utils/globe/modal.js';
 
 const tick = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
@@ -44,6 +43,7 @@ describe('firefly-globe controls', () => {
     visible = true;
     dismissed = false;
     controls = createGlobeControls({
+      name: 'firefly-globe',
       q: (sel) => root.querySelector(sel),
       labels: { pauseSpin: 'Pause', resumeSpin: 'Resume' },
       getVisible: () => visible,
@@ -109,6 +109,7 @@ describe('firefly-globe accessibility gallery', () => {
     open = sinon.spy();
     focus = sinon.spy();
     gallery = createGalleryA11y({
+      name: 'firefly-globe',
       q: (sel) => root.querySelector(sel),
       getCount: () => 3,
       cardOrder: [2, 0, 1],
@@ -398,6 +399,7 @@ describe('firefly-globe custom cursor', () => {
     window.matchMedia = () => ({ matches: fine });
     clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
     cursor = createCursor({
+      name: 'firefly-globe',
       getGlobeLive: () => live,
       getCursorRetired: () => retired,
       labelText: 'Drag globe',
@@ -650,6 +652,11 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
     camera.position.z = 30;
     modal = createGlobeModal({
+      name: 'firefly-globe',
+      cssVars: 'fg',
+      descClass: 'prompt',
+      hoistToBody: true,
+      renderContent: (el, meta) => renderModalContent(el, meta, '/libs/c2/blocks/firefly-globe/icons/'),
       q: (sel) => root.querySelector(sel) || modalNode.querySelector(sel),
       getScene: () => scene,
       getCamera: () => camera,
@@ -683,7 +690,6 @@ describe('firefly-globe modal without a WebGL canvas', () => {
       requestNavNudge: sinon.spy(),
       applyMotionCA: sinon.spy(),
       restoreFocusOnClose: restore,
-      iconBaseUrl: '/libs/c2/blocks/firefly-globe/icons/',
     });
     modal.setup();
   });

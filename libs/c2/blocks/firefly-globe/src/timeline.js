@@ -1,41 +1,24 @@
-export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
-export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
+// Firefly's scroll-to-camera mapping and per-frame clocks (gallery's counterpart is a longer
+// timeline.js). Pure — no THREE, no DOM, no closure state.
+import { clamp01, camZAtT, tAtCamZ, dtScaleOf } from '../../../../utils/globe/core.js';
 
-export function lerpN(a, b, t) { return a + (b - a) * t; }
-
-export function clamp01(t) { return t > 0 ? Math.min(1, t) : 0; }
-
-export function coverFit(imgAspect, planeAspect, out = {}) {
-  out.rx = 1; out.ry = 1; out.ox = 0; out.oy = 0;
-  if (!(imgAspect > 0) || !(planeAspect > 0)) return out;
-  if (imgAspect > planeAspect) {
-    out.rx = planeAspect / imgAspect; out.ox = (1 - out.rx) / 2;
-  } else if (imgAspect < planeAspect) {
-    out.ry = imgAspect / planeAspect; out.oy = (1 - out.ry) / 2;
-  }
-  return out;
-}
-
-const MAX_DPR = 2;
-export const capDpr = () => Math.min(window.devicePixelRatio, MAX_DPR);
-
-export const CAM_FOV = 60;
-export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
-
-export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
+export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';
 
 export const TRAVEL_EASE_POW = 3;
 
-export function camZAtTravelT(t, camZSphere, camZEnd) {
-  return lerpN(camZSphere, camZEnd, 1 - (1 - clamp01(t)) ** TRAVEL_EASE_POW);
-}
+export const camZAtTravelT = (t, camZSphere, camZEnd) => camZAtT(
+  t,
+  camZSphere,
+  camZEnd,
+  TRAVEL_EASE_POW,
+);
 
-export function travelTAtCamZ(z, camZSphere, camZEnd) {
-  const span = camZSphere - camZEnd;
-  if (!(span > 0)) return 0;
-  const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
-  return 1 - ((1 - eased) ** (1 / TRAVEL_EASE_POW));
-}
+export const travelTAtCamZ = (z, camZSphere, camZEnd) => tAtCamZ(
+  z,
+  camZSphere,
+  camZEnd,
+  TRAVEL_EASE_POW,
+);
 
 export function travelSpanPx({ blockHeight, travelPx = 0 }) {
   return travelPx > 0 ? travelPx : Math.max(1, blockHeight);
@@ -46,11 +29,6 @@ export function scrollYAtTravelT(t, span) {
 }
 
 export const SPHERE_INTERACTIVE_T = 0.02;
-
-// frame.dtScale rescales per-60fps-frame rates; clamped.
-export const FRAME_MS = 1000 / 60;
-export const DT_SCALE_MIN = 0.25;
-export const DT_SCALE_MAX = 3;
 
 // Allocated once per runtime, mutated in place. Every field initialized here so the shape stays
 // monomorphic; activeCamera and below are written by tick()'s producer stages.
@@ -86,8 +64,7 @@ export function createFrameInput() {
 export function deriveFrame(frame, input) {
   const { reducedMotion, blockDocTop, blockHeight, travelPx, viewportH } = input;
 
-  const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
-  frame.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
+  frame.dtScale = dtScaleOf(input.now, input.prevNow);
 
   // RM pins scroll input to the formed-sphere position.
   const scrollY = reducedMotion ? blockDocTop : input.scrollY;

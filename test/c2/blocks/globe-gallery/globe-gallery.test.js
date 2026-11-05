@@ -3,30 +3,24 @@ import sinon from 'sinon';
 import { readFile, setViewport } from '@web/test-runner-commands';
 import init from '../../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
 import {
-  escapeHtml,
   fetchFragmentCards,
   optimizeImgUrl,
   parseAuthoredContent,
   buildGlobeDom,
-  scatterCards,
 } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
-import createGalleryA11y from '../../../../libs/c2/blocks/globe-gallery/src/a11y.js';
-import createGlobeControls from '../../../../libs/c2/blocks/globe-gallery/src/controls.js';
+import { escapeHtml, scatterCards, createGalleryA11y, createGlobeControls } from '../../../../libs/utils/globe/ui.js';
+import {
+  capDpr, clamp01, coverFit, easeInOutCubic, easeOutCubic, pxPerWorldAt,
+} from '../../../../libs/utils/globe/core.js';
 import {
   arcCamZ,
   arcRotationEase,
   buildArcCtx,
-  capDpr,
-  clamp01,
-  coverFit,
   cssToWorld,
-  easeInOutCubic,
   easeInOutQuint,
-  easeOutCubic,
   getFanData,
-  pxPerWorldAt,
   rotateArcPoint,
-} from '../../../../libs/c2/blocks/globe-gallery/src/math.js';
+} from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
 import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
 
 function makeEl(innerHTML) {
@@ -715,6 +709,7 @@ describe('globe-gallery: controls', () => {
     dismissed = false;
     rotate = sinon.spy();
     controls = createGlobeControls({
+      name: 'globe-gallery',
       q: (selector) => root.querySelector(selector),
       labels: LABELS,
       getVisible: () => visible,
@@ -802,6 +797,7 @@ describe('globe-gallery: accessibility gallery', () => {
     opened = sinon.spy();
     focused = sinon.spy();
     a11y = createGalleryA11y({
+      name: 'globe-gallery',
       q: (selector) => root.querySelector(selector),
       getCount: () => 3,
       cardOrder: [2, 0, 1],

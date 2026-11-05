@@ -1,7 +1,8 @@
-// Every phase constant, threshold, and the per-frame clock derivation.
-// Pure — no THREE, no DOM, no closure state.
+// Every phase constant, threshold, the per-frame clock derivation, and the arc-phase geometry.
+// Pure — no THREE, no DOM, no closure state. The runtime owns the per-frame arcCtx.
+import { clamp01, camZAtT, tAtCamZ, dtScaleOf, TAN_HALF_FOV } from '../../../../utils/globe/core.js';
 
-import { clamp01, lerpN } from './math.js';
+export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';
 
 export const PROGRESS_PAN_END = 0.55;
 export const PROGRESS_ARC_PREROLL = 0.30;
@@ -51,12 +52,6 @@ export const ARC_COPY_OUT_FORM_END = 0.90;
 
 export const CANVAS_HIDE_MARGIN_T = 0.05;
 
-// frame.dtScale rescales per-60fps-frame rates; clamped.
-
-export const FRAME_MS = 1000 / 60;
-export const DT_SCALE_MIN = 0.25;
-export const DT_SCALE_MAX = 3;
-
 export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
 
 export const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
@@ -70,16 +65,19 @@ export const ZOOM_EASE_POW = 2;
 // from the other at runtime, so they must be edited together — hence they live side by side.
 // Break the pairing and pqAppearZoomT drifts silently, taking the controls, the canvas cursor,
 // the canvas hide and the pull-quote reveal with it.
-export function camZAtZoomT(t, camZSphere, camZEnd) {
-  return lerpN(camZSphere, camZEnd, 1 - (1 - clamp01(t)) ** ZOOM_EASE_POW);
-}
+export const camZAtZoomT = (t, camZSphere, camZEnd) => camZAtT(
+  t,
+  camZSphere,
+  camZEnd,
+  ZOOM_EASE_POW,
+);
 
-export function zoomTAtCamZ(z, camZSphere, camZEnd) {
-  const span = camZSphere - camZEnd;
-  if (!(span > 0)) return 0;
-  const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
-  return 1 - ((1 - eased) ** (1 / ZOOM_EASE_POW));
-}
+export const zoomTAtCamZ = (z, camZSphere, camZEnd) => tAtCamZ(
+  z,
+  camZSphere,
+  camZEnd,
+  ZOOM_EASE_POW,
+);
 
 export function zoomSpanPx({ blockHeight, formPx, zoomPx = 0 }) {
   return zoomPx > 0 ? zoomPx : Math.max(1, blockHeight - formPx);
@@ -130,8 +128,7 @@ export function deriveFrame(frame, input) {
     reducedMotion, blockDocTop, blockHeight, formPx, zoomPx, viewportH, entryLeadVh,
   } = input;
 
-  const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
-  frame.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
+  frame.dtScale = dtScaleOf(input.now, input.prevNow);
 
   // RM pins scroll input to the formed-sphere position; the pin cancels in `progress` but
   // canvas visibility still uses real scroll.
@@ -174,4 +171,67 @@ export function cardFoldStartProgress(gpDelay) {
   const foldStartFormT = gpDelay + FOLD_START_LOCAL_T * GRID_PEEL_WINDOW;
   const foldStartArcT = PROGRESS_GRID_ARC_START + Math.min(1, foldStartFormT) * GRID_ARC_RANGE;
   return Math.max(0, (foldStartArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
+}
+
+// ---- Arc-phase geometry ----
+
+export function easeInOutQuint(t) { return t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2; }
+
+// Quadratic ramp over the first `k`, then linear (C1 at the seam).
+export function arcRotationEase(t, k) {
+  const a = 1 / (k * (2 - k));
+  const v0 = a * k * k;
+  const s = 2 * a * k;
+  return t <= k ? a * t * t : v0 + s * (t - k);
+}
+
+// The fan circle (centre + radius) plus rotation offset / effective span, driven by arcPanT.
+export function buildArcCtx(arcPanT, W, H, arcSpan, rampT) {
+  const arcRot0 = arcRotationEase(arcPanT, rampT);
+  const R = Math.max(W, H) * 1.5; // smaller radius = more visible arc curvature
+  const alpha = Math.atan2(H, W);
+  const fanCX = W * 0.5 - R * Math.sin(alpha);
+  const fanCY = H * 0.5 + R * Math.cos(alpha) - H * 0.15;
+  const thetaM = Math.atan2(-Math.cos(alpha), Math.sin(alpha));
+  const rotOffset = arcSpan * 0.5 - arcSpan * 1.5 * arcRot0;
+  const effectiveSpan = arcSpan * (1 + 0.4 * arcRot0);
+  return {
+    R, fanCX, fanCY, thetaM, rotOffset, effectiveSpan,
+  };
+}
+
+export function getFanData(t, arcCtx, out = {}) {
+  const angle = arcCtx.thetaM + arcCtx.effectiveSpan / 2
+            - t * arcCtx.effectiveSpan
+            + arcCtx.rotOffset;
+  const rx = Math.cos(angle);
+  const ry = Math.sin(angle);
+  out.px = arcCtx.fanCX + arcCtx.R * rx;
+  out.py = arcCtx.fanCY + arcCtx.R * ry;
+  out.rx = rx;
+  out.ry = ry;
+  out.cssRot = Math.atan2(rx, -ry);
+  return out;
+}
+
+// CSS screen coords → world coords (origin at screen centre, Y flipped).
+export function cssToWorld(px, py, W, H, out = {}) {
+  out.x = px - W / 2;
+  out.y = -(py - H / 2);
+  return out;
+}
+
+export function rotateArcPoint(px, py, A, arcCtx, W, H, out = {}) {
+  const dx = px - arcCtx.fanCX;
+  const dy = py - arcCtx.fanCY;
+  const cosA = Math.cos(A);
+  const sinA = Math.sin(A);
+  const rpx = arcCtx.fanCX + dx * cosA - dy * sinA;
+  const rpy = arcCtx.fanCY + dx * sinA + dy * cosA;
+  return cssToWorld(rpx, rpy, W, H, out);
+}
+
+// Frustum height = H at z=0, so 1 world unit = 1 CSS pixel.
+export function arcCamZ(H) {
+  return H / (2 * TAN_HALF_FOV);
 }

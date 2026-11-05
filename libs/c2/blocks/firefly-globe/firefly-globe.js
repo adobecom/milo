@@ -1,36 +1,25 @@
 import * as THREE from '../../../deps/three.js';
 import { getConfig } from '../../../utils/utils.js';
 import {
-  parseAuthoredContent, fetchFireflyAssets, buildGlobeDom,
-  fireflyRenditionUrl, scatterCards,
+  parseAuthoredContent, renderModalContent, fetchFireflyAssets, buildGlobeDom,
+  fireflyRenditionUrl,
 } from './src/authoring.js';
 import {
   createCardMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
-  loadHintFont,
-} from './src/materials.js';
-import createGalleryA11y from './src/a11y.js';
-import createGlobeModal from './src/modal.js';
-import createInteraction from './src/interaction.js';
-import createGlobeControls from './src/controls.js';
-import createCursor from './src/cursor.js';
-import { createPullQuote } from './src/quote-particles.js';
+  loadHintFont, easeInOutCubic, easeOutCubic, lerpN, clamp01, coverFit, capDpr, CAM_FOV,
+  TAN_HALF_FOV,
+  CARD_ASPECT, sphereCardScale, prefersReducedMotion, usesCylinderGeometry, YAW_ONLY_GEOMETRY,
+  WORLD_UP, COLUMN_EPS, cylinderMasonryLayout, fibSpherePos, resolveBP,
+} from '../../../utils/globe/core.js';
+import createGlobeModal from '../../../utils/globe/modal.js';
+import createInteraction from '../../../utils/globe/interaction.js';
+import { scatterCards, createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/ui.js';
+import { createPullQuote } from '../../../utils/globe/quote-particles.js';
 import {
-  easeInOutCubic, easeOutCubic, lerpN, clamp01, coverFit,
-  capDpr, CAM_FOV, TAN_HALF_FOV, camZAtTravelT, travelTAtCamZ,
+  camZAtTravelT, travelTAtCamZ, TRAVEL_EASE_POW, travelSpanPx, scrollYAtTravelT,
   createFrame, createFrameInput, deriveFrame,
-} from './src/utils.js';
-
-const CARD_ASPECT = 456 / 631;
-
-function sphereCardScale(srcAspect) {
-  const a = Number.isFinite(srcAspect) && srcAspect > 0 ? srcAspect : CARD_ASPECT;
-  const stretch = Math.sqrt(a / CARD_ASPECT);
-  return { sX: stretch, sY: 1 / stretch };
-}
-
-const prefersReducedMotion = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  || !!window.matchMedia?.('(height <= 460px) and (resolution >= 1.5dppx)').matches;
+} from './src/timeline.js';
 
 const BREAKPOINTS = {
   sm: {
@@ -62,11 +51,6 @@ const BREAKPOINTS = {
   },
 };
 
-function resolveBP(w) {
-  if (w >= BREAKPOINTS.md.minWidth) return { name: 'md', cfg: BREAKPOINTS.md };
-  return { name: 'sm', cfg: BREAKPOINTS.sm };
-}
-
 // Card caps are on texture HEIGHT; modal caps are on the longest side.
 const CARD_TEX_SM = 384;
 const CARD_TEX_MD = 768;
@@ -75,27 +59,11 @@ const MODAL_TEX_MD = 2048;
 const ANTIALIAS_SM = false;
 const ANTIALIAS_MD = true;
 
-// Yaw-only drags (touch / narrow): a cylindrical masonry wall replaces the Fibonacci sphere.
-const YAW_ONLY_GEOMETRY = {
-  CYLINDER: true,
-  CYL_COLS_FIT: 0.80, // wall-height dial: fewest columns whose tallest fits this × frustum
-  CYL_COL_GAP_RATIO: 0.20, // column gap as a fraction of card width; also sets cardW
-  CYL_ROW_GAP_RATIO: 0.10, // row gap as a fraction of card width
-  CYL_ASPECT_CAP: 1.9, // on the LAID-OUT aspect; past it the fit crops
-  CYL_BULGE: 0.18, // r = R·(1 − bulge·t²); keep ≤~0.2 or edges overlap
-  CARD_FACE_CAMERA: 0.1, // >0 costs barrel smoothness
-};
-
-function usesCylinderGeometry(bandName) {
-  if (bandName === 'sm') return true;
-  return !!window.matchMedia?.('(pointer: coarse)').matches;
-}
-
 const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 // Every *_RATE / FRICTION / SPEED below is authored per 60fps frame and rescaled at its use site
 // by frame.dtScale: linear ones by multiply, exponential eases by ** dtScale. MAX_VEL is shared
-// with interaction.js (it clamps, core normalizes).
+// with utils/globe/interaction.js (it clamps, core normalizes).
 const DRAG_FRICTION = 0.94;
 const MAX_VEL = 0.08; // rad per 60fps frame; ceiling on a flick AND a held step
 const DRAG_CATCHUP = 0.5; // share of an over-max backlog worked off per 60fps frame
@@ -108,7 +76,6 @@ const KEY_BROWSE_FRAMES = 90;
 const KEY_MODAL_FRAMES = 20;
 const ROTATE_STEP_FRAMES = 34;
 const ROTATE_DEADZONE = 0.15;
-const COLUMN_EPS = 1e-6;
 
 // Chromatic aberration.
 const CA_ENABLED = true;
@@ -159,121 +126,6 @@ const TEXT_OPACITY_PEAK = 0.15;
 const TEXT_OPACITY_RESTING = 0.06;
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit
 const HINT_EXIT_RATE = 0.007;
-
-const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
-const WORLD_UP = new THREE.Vector3(0, 1, 0);
-const BALANCE_PASSES = 20;
-
-function balanceColumns(heights, gap, cols) {
-  const n = heights.length;
-  const load = new Array(cols).fill(0);
-  const col = new Array(n);
-  const tallestFirst = Array.from({ length: n }, (unused, i) => i)
-    .sort((a, b) => heights[b] - heights[a] || a - b);
-  for (let k = 0; k < n; k += 1) {
-    const i = tallestFirst[k];
-    let best = 0;
-    for (let c = 1; c < cols; c += 1) if (load[c] < load[best]) best = c;
-    col[i] = best;
-    load[best] += heights[i] + gap;
-  }
-  for (let pass = 0; pass < BALANCE_PASSES; pass += 1) {
-    let swapped = false;
-    for (let i = 0; i < n; i += 1) {
-      for (let j = i + 1; j < n; j += 1) {
-        const [a, b, d] = [col[i], col[j], heights[i] - heights[j]];
-        if (a !== b && d * (load[b] - load[a] + d) < 0) {
-          load[a] -= d;
-          load[b] += d;
-          col[i] = b;
-          col[j] = a;
-          swapped = true;
-        }
-      }
-    }
-    if (!swapped) break;
-  }
-  return col;
-}
-
-// Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
-// See README (yaw-only geometry) for the packing + column-count rules.
-function cylinderMasonryLayout({
-  aspects, radius, frustumH, colsFit, colGapRatio, rowGapRatio = colGapRatio, aspectCap, bulge = 0,
-}) {
-  const n = aspects.length;
-  // Clamp extremes so one panorama can't dominate a column (cover-crop handles the rest).
-  const clamped = aspects.map((ar) => {
-    const a = Number.isFinite(ar) && ar > 0 ? ar : 1;
-    return Math.max(1 / aspectCap, Math.min(aspectCap, a));
-  });
-
-  const pack = (cols) => {
-    const pitch = (2 * Math.PI * radius) / cols;
-    const cardW = pitch / (1 + colGapRatio);
-    const rowGap = cardW * rowGapRatio;
-    const hs = clamped.map((a) => cardW / a);
-    const col = balanceColumns(hs, rowGap, cols);
-    const colH = new Array(cols).fill(0);
-    const placed = new Array(n);
-    for (let c = 0; c < cols; c += 1) {
-      for (let i = 0; i < n; i += 1) {
-        if (col[i] !== c) continue; // eslint-disable-line no-continue
-        placed[i] = { col: c, offset: colH[c], w: cardW, h: hs[i] };
-        colH[c] += hs[i] + rowGap;
-      }
-    }
-    const totals = colH.map((h) => Math.max(0, h - rowGap));
-    return { placed, totals, wallH: Math.max(...totals) };
-  };
-
-  // Fewest columns that fit.
-  let packed = null;
-  for (let cols = Math.min(4, n); cols <= Math.max(4, n); cols += 1) {
-    packed = pack(cols);
-    if (packed.wallH <= frustumH * colsFit) break;
-  }
-
-  const cols = packed.totals.length;
-  // Barrel bulge: r(t) = radius·(1 − bulge·t²), t = 2y/wallH ∈ [−1,1]. Azimuth is untouched.
-  const wallH = packed.wallH || 1;
-  return packed.placed.map((p, i) => {
-    const colTotal = packed.totals[p.col];
-    const y = colTotal / 2 - p.offset - p.h / 2;
-    const azimuth = (2 * Math.PI * p.col) / cols;
-    const t = Math.max(-1, Math.min(1, (2 * y) / wallH));
-    const r = radius * (1 - bulge * t * t);
-    // Outward normal of the surface of revolution r(y): (1, −dr/dy) normalized, at this azimuth.
-    const dRdy = bulge === 0 ? 0 : radius * -2 * bulge * t * (2 / wallH);
-    const nScale = 1 / Math.hypot(1, dRdy);
-    return {
-      pos: new THREE.Vector3(
-        r * Math.cos(azimuth),
-        y,
-        r * Math.sin(azimuth),
-      ),
-      normal: new THREE.Vector3(
-        nScale * Math.cos(azimuth),
-        -dRdy * nScale,
-        nScale * Math.sin(azimuth),
-      ),
-      w: p.w,
-      h: p.h,
-      index: i,
-    };
-  });
-}
-
-function fibSpherePos(i, total, radius) {
-  const y = 1 - (2 * i + 1) / total;
-  const polarAngle = Math.acos(Math.max(-1, Math.min(1, y)));
-  const azimuth = GOLDEN_ANGLE * i;
-  return new THREE.Vector3(
-    radius * Math.sin(polarAngle) * Math.cos(azimuth),
-    radius * Math.cos(polarAngle),
-    radius * Math.sin(polarAngle) * Math.sin(azimuth),
-  );
-}
 
 // DOM lookups are scoped to `root` so >1 globe can coexist; `gid` is this instance's unique-id
 // suffix (CA filter url(#…) ref).
@@ -370,7 +222,7 @@ function createGlobeGalleryRuntime(
   let pqAppearT = 1;
   let canvasHidden = false;
 
-  // Shared by reference with interaction.js. pendingX/Y: exact unapplied travel (rad).
+  // Shared by reference with utils/globe/interaction.js. pendingX/Y: exact unapplied travel (rad).
   // velX/Y: smoothed velocity per 60fps frame.
   const drag = { isDragging: false, velX: 0, velY: 0, pendingX: 0, pendingY: 0 };
   let renderReady = false;
@@ -383,7 +235,7 @@ function createGlobeGalleryRuntime(
   let hintRetired = false;
   let hintExitT = 0;
   // x = pitch, y = yaw, z = keyboard-uprighting roll. Applied MANUALLY per card; sphereGroup
-  // .rotation stays identity and sphereRotQuat is shared into modal.js BY REFERENCE.
+  // .rotation stays identity and sphereRotQuat is shared into utils/globe/modal.js BY REFERENCE.
   // Euler order 'XYZ' is load-bearing.
   const sphereOrient = { x: 0, y: 0, z: 0 };
   // Glides ±85°→±60° when leaving browse.
@@ -444,6 +296,14 @@ function createGlobeGalleryRuntime(
   }
 
   const pullQuote = createPullQuote({
+    name: 'firefly-globe',
+    cssVars: 'fg',
+    travelVar: '--fg-travel-vh',
+    timeline: {
+      easePow: TRAVEL_EASE_POW,
+      spanPx: travelSpanPx,
+      scrollYAt: scrollYAtTravelT,
+    },
     root,
     getBp: () => bp,
     getView: () => ({ W, H, navH }),
@@ -760,7 +620,7 @@ function createGlobeGalleryRuntime(
     drag.velY = 0;
   }
 
-  // a11y.js's centerCard: the shared yaw/pitch solve plus the screen-Z roll that cancels the
+  // a11y's centerCard: the shared yaw/pitch solve plus the screen-Z roll that cancels the
   // card's residual tilt. snapPending = focus is about to scroll us back to the formed position,
   // where the camera sits OUTSIDE the sphere: solve for THERE, not for wherever the user scrolled
   // to. Trusting the live flag from inside the zoom aims at the far wall (yaw + π, pitch negated)
@@ -820,6 +680,11 @@ function createGlobeGalleryRuntime(
   }
 
   modal = createGlobeModal({
+    name: 'firefly-globe',
+    cssVars: 'fg',
+    descClass: 'prompt',
+    hoistToBody: true,
+    renderContent: (el, meta) => renderModalContent(el, meta, new URL('./icons/', import.meta.url).href),
     q,
     getScene: () => scene,
     getCamera: () => camera,
@@ -838,7 +703,7 @@ function createGlobeGalleryRuntime(
       const meta = getCardMetadata(idx);
       const axis = (meta.maxHeight || 0) > (meta.maxWidth || 0) ? 'height' : 'width';
       const src = fireflyRenditionUrl(meta, modalCap, axis);
-      return loadModalTextureRaw(src, modalCap, onReady, onError, meta.crossOrigin);
+      return loadModalTextureRaw(src, modalCap, onReady, onError, meta.crossOrigin, 'firefly-globe');
     },
     getViewport: () => ({ W, H }),
     getCanvasTop: () => renderer.domElement.getBoundingClientRect().top,
@@ -858,7 +723,6 @@ function createGlobeGalleryRuntime(
     },
     applyMotionCA,
     restoreFocusOnClose: (idx) => { if (a11y && a11y.isBrowsing()) a11y.focusCard(idx); },
-    iconBaseUrl: new URL('./icons/', import.meta.url).href,
   });
 
   function readCssVars() {
@@ -927,6 +791,7 @@ function createGlobeGalleryRuntime(
   const globeLive = () => globeFormed() && frameState.scrollT < pullQuote.liveUntil();
 
   a11y = createGalleryA11y({
+    name: 'firefly-globe',
     q,
     getCount: () => CARD_CONTENT.length,
     cardOrder: AUTHORED_ORDER,
@@ -949,6 +814,7 @@ function createGlobeGalleryRuntime(
   });
 
   controls = createGlobeControls({
+    name: 'firefly-globe',
     q,
     labels,
     getVisible: globeLive,
@@ -960,6 +826,7 @@ function createGlobeGalleryRuntime(
   });
 
   cursor = createCursor({
+    name: 'firefly-globe',
     getGlobeLive: globeFormed,
     getCursorRetired: () => hintRetired || frameState.scrollT >= pullQuote.liveUntil(),
     labelText: hintText,
@@ -1343,7 +1210,7 @@ function createGlobeGalleryRuntime(
     const frame = computeFrame(now);
 
     a11y.updateTabStops();
-    pullQuote.update(frame);
+    pullQuote.update(frame, frame.scrollY);
     frame.activeCamera = updateActiveCamera(frame);
     frame.sphereRotActive = updateSphereRotation(frame);
     modal.updateAnimation(frame.sphereRotActive, frame.dtScale);
@@ -1482,7 +1349,7 @@ function createGlobeGalleryRuntime(
     W = window.innerWidth;
     H = measureViewportH();
 
-    const band = resolveBP(W);
+    const band = resolveBP(BREAKPOINTS, W);
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
     publishPqAppearT();
 
@@ -1525,7 +1392,7 @@ function createGlobeGalleryRuntime(
 
       // A band crossing or RM toggle rebuilds (geometry is baked at build time); resizing
       // within a band takes the cheap path.
-      const nextBand = resolveBP(W);
+      const nextBand = resolveBP(BREAKPOINTS, W);
       const nextReducedMotion = prefersReducedMotion();
       if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
@@ -1643,6 +1510,7 @@ function createGlobeGalleryRuntime(
       // Ask at the cap, by HEIGHT, matching fitCardDims.
       getSrc: (i) => fireflyRenditionUrl(getCardMetadata(i), cardMaxTexH, 'height'),
       maxTexH: cardMaxTexH,
+      name: 'firefly-globe',
       getCrossOrigin: (i) => getCardMetadata(i).crossOrigin || null,
     }, onEachTexture, onDoneTextures);
     return true;

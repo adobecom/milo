@@ -2,13 +2,10 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import init from '../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
 import {
-  escapeHtml,
-  plainQuote,
   optimizeImgUrl,
   parseAuthoredContent,
-  scatterCards,
-  renderParagraphs,
 } from '../../../libs/c2/blocks/globe-gallery/src/authoring.js';
+import { escapeHtml, plainQuote, scatterCards, renderParagraphs } from '../../../libs/utils/globe/ui.js';
 
 const DEFAULT_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
@@ -252,18 +249,18 @@ describe('C2 globe gallery', () => {
     it('keeps the quote as its plain authored text, idempotently', async () => {
       const { block } = await loadBlock('heading-quote');
       const quote = block.querySelector('.globe-gallery-pullquote-quote');
-      expect(plainQuote(quote)).to.equal('Creativity connects us.');
+      expect(plainQuote(quote, 'globe-gallery')).to.equal('Creativity connects us.');
       quote.innerHTML = '<span>later markup</span>'; // relayouts restart from the authored text
-      expect(plainQuote(quote)).to.equal('Creativity connects us.');
+      expect(plainQuote(quote, 'globe-gallery')).to.equal('Creativity connects us.');
       expect(quote.children).to.have.length(0);
       expect(quote.textContent).to.equal('Creativity connects us.');
-      expect(plainQuote(null)).to.equal('');
+      expect(plainQuote(null, 'globe-gallery')).to.equal('');
     });
 
     it('leaves a missing or empty quote empty', async () => {
       const { block } = await loadBlock('empty-quote');
       const quote = block.querySelector('.globe-gallery-pullquote-quote');
-      expect(plainQuote(quote)).to.equal('');
+      expect(plainQuote(quote, 'globe-gallery')).to.equal('');
       expect(quote.textContent).to.equal('');
     });
   });

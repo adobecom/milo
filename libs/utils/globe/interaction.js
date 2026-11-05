@@ -1,6 +1,6 @@
 // Pointer interaction for the globe.
-import * as THREE from '../../../../deps/three.js';
-import { FRAME_MS } from './timeline.js';
+import * as THREE from '../../deps/three.js';
+import { FRAME_MS } from './core.js';
 
 const VEL_SMOOTH_MS = 35; // EMA time constant
 const CLICK_MAX_MOVE = 10; // px

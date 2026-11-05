@@ -14,9 +14,9 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 
 | Area | globe-gallery | firefly-globe |
 |---|---|---|
-| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, `math.js`, ortho camera) | Sphere already formed; camera eases in (`entryT³`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
-| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/utils.js`, from the pin; its own ease power (see Camera ease). |
-| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/utils.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, 0 at the pin and 1 at the end of the travel (`--fg-travel-vh`; the block height with the quote particles off). |
+| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, ortho camera) | Sphere already formed; camera eases in (`entryT³`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
+| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/timeline.js`, from the pin; its own ease power (see Camera ease). |
+| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/timeline.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, 0 at the pin and 1 at the end of the travel (`--fg-travel-vh`; the block height with the quote particles off). |
 | Arc copy pill | Authoring row 1 | None |
 | "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `scrollT` (see below). |
 | Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.firefly-globe-world`, so it travels with the block: at `entryT` 0 the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
@@ -25,11 +25,11 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Scroll budget | `--gg-formation-vh` + `--gg-zoom-vh`, per breakpoint | `--fg-travel-vh` only, per breakpoint (no formation: the entry happens in the viewport before the block top). With the quote particles off, `--fg-runway-height` is the block height and the travel span. |
 | CSS custom properties | `--gg-*` | `--fg-*` (block-scoped; nothing outside the block reads them). |
 | Tuning | — | `SPHERE_R`, `CAM_Z_SPHERE` and `CAM_Z_END` are tuned per breakpoint for the scroll budget below; `CAM_Z_ENTRY` is the only extra breakpoint field. |
-| Opening quote | Measured in canvas, hung with a negative `text-indent` | Wrapped in C2's `span.hang-opening-quote` (`styles.css`: absolute, `translateX(-100%)`), so the mark takes no inline space and is not kerned against the first letter; the letter's advance box sits on the column. Marks: `Ps`, `Pi`, `Pf`, ASCII `"` `'`. A mark ≥ 0.8em or wider than the gutter (`--fg-copy-pad`) stays inline. The particle raster draws the hung mark as its own run, at its rendered position. |
-| Modules | `math.js` + `timeline.js` | `src/utils.js` (easings, `coverFit`, camera constants, the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`). |
-| Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`utils.js`); the quote shaders bake the same value. |
+| Opening quote | Shared `hangOpeningMark` (`utils/globe/ui.js`): measured live from the rendered glyph (canvas only if the element isn't laid out), hung with a negative `text-indent` | Same: one implementation for both blocks. |
+| Modules | `src/timeline.js` (phase constants, arc geometry, the zoom camera pair, `createFrame` / `createFrameInput` / `deriveFrame`) | `src/timeline.js` (the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`); easings, `coverFit`, camera constants and the camera-pair maths live in `utils/globe/core.js`. |
+| Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`timeline.js`); the quote shaders bake the same value. |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
-| Keyboard browse | Native Tab between card buttons; `.globe-gallery-a11y-cards` is `position: fixed` | `a11y.js` moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
+| Keyboard browse | `.globe-gallery-a11y-cards` is `position: fixed` | The shared `utils/globe/ui.js` (both blocks) moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
 
 ## Authoring
 
@@ -100,7 +100,7 @@ at `CARD_TEX_SM`/`CARD_TEX_MD` (384/768); the modal requests its longest side at
 
 ## Phases
 
-`interactive` (`entryT >= SPHERE_INTERACTIVE_T`, `src/utils.js`) is globe-gallery's gate, on the
+`interactive` (`entryT >= SPHERE_INTERACTIVE_T`, `src/timeline.js`) is globe-gallery's gate, on the
 entry clock: before it there is no drag, banked drag travel is dropped, no auto-spin, no drag warp,
 no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-open
 and keyboard entry are all off. It opens while the block is still scrolling in, so the globe spins,
@@ -168,15 +168,15 @@ text's fade. The keyboard path (`globeFormed`: interactive and modal closed) is 
 
 ### Pull quote
 
-`src/quote-particles.js` is globe-gallery's module, copied: read **"Pull quote: particle transition,
+`utils/globe/quote-particles.js` is shared with globe-gallery (configured through `createPullQuote`'s `name`, `cssVars`, `timeline` and `travelVar`): read **"Pull quote: particle transition,
 DOM text at rest"**, **"Block height"** and the near-camera dissolve in that README; they are the spec.
 The differences:
 
 - Vocabulary and imports: `scrollT`/`travel` in place of `zoomT`/`zoom` (`--fg-travel-vh`,
-  `input.travelPx`, `travelSpanPx`, `scrollYAtTravelT`), from `utils.js`. There is no formation
+  `input.travelPx`, `travelSpanPx`, `scrollYAtTravelT`), from `timeline.js`. There is no formation
   offset, so the travel, the hand-off and the block height all count from the block top (the pin).
-- The canvas is always `position: absolute` in the sticky world, so the hand-off doesn't move it.
-- Every card is on the sphere, so `cardPlanes` sources every card the modal does not hold.
+- `manageCanvas` is off: the canvas is always `position: absolute` in the sticky world, so the hand-off doesn't move it.
+- `requireOnSphere` is off: every card is on the sphere, so `cardPlanes` sources every card the modal does not hold.
 
 The section around the block: a rounded section above overlaps the block's first radius (see Entry
 reveal), and a rounded next section overlaps its last radius, which at the block's end is the bottom of
@@ -221,7 +221,7 @@ rotate or tap-to-open after the pin flips `hintRetired` (`retireHint`), and `hin
 
 ## Modal and the sticky canvas
 
-`modal.js` is globe-gallery's file plus the model icon/label, prompt and CTA rendering, and one
+`utils/globe/modal.js` is shared with globe-gallery; this block supplies the model icon/label, prompt and CTA rendering (`renderModalContent` in `src/authoring.js`), and one
 offset: the modal canvas is viewport-fixed while the world canvas, until it pins, sits
 `getCanvasTop()` (the world's viewport top) lower. `shiftForCanvasOffset` moves the snapshot the
 opening animation starts from and the slot the closing animation lands on by that many pixels,
@@ -239,7 +239,7 @@ instead of propagating to the viewport, which makes `body` a scroll container an
 
 ### Modal stacking
 
-`modal.js` reparents `.firefly-globe-modal` (the `z-index: 13` backdrop scrim) and
+`utils/globe/modal.js` (with `hoistToBody: true`) reparents `.firefly-globe-modal` (the `z-index: 13` backdrop scrim) and
 `.firefly-globe-modal-canvas` (`z-index: 14`, the photo) to `<body>` in `setup()`. Their z-indexes
 only resolve at the `<body>` root; the block sits under a section whose `rounded-corners-bottom`
 gives it a `z-index: 3` stacking context that would otherwise clamp them. The `<dialog>` chrome
@@ -278,8 +278,8 @@ text restored on every call, the opening mark hung once).
 `test/c2/blocks/firefly-globe/quote-particles.test.js` runs globe-gallery's shared particle suite
 (`quote-particles.suite.js`) against this block's copy, class names and stylesheet.
 
-`test/c2/blocks/firefly-globe/modules.test.js` covers `controls.js`, the `a11y.js` keyboard gallery,
-`interaction.js`, `cursor.js`, `materials.js` and `modal.js` DOM behavior.
+`test/c2/blocks/firefly-globe/modules.test.js` covers `utils/globe/ui.js`, the `utils/globe/ui.js` keyboard gallery,
+`utils/globe/interaction.js`, `utils/globe/ui.js`, `utils/globe/core.js` and `utils/globe/modal.js` DOM behavior.
 
 `mocks/authored.html` is the authoring contract as a fixture.
 
