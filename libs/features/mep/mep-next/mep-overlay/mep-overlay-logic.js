@@ -39,6 +39,13 @@ export const API_URLS = {
 
 export const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
+const SOURCE_LABELS = { pzn: 'Personalization Metadata' };
+
+function formatSource(source) {
+  const parts = Array.isArray(source) ? source : [source];
+  return parts.map((part) => SOURCE_LABELS[part?.toLowerCase?.()] ?? part).join(', ');
+}
+
 export function safeGetItem(key) {
   try {
     return localStorage.getItem(key);
@@ -264,7 +271,7 @@ function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
     targetActivityName: targetActivityName ?? null,
     isDefaultSelected,
     selectedVariantName,
-    source: Array.isArray(source) ? source.join(', ') : source,
+    source: formatSource(source),
     consentType,
     consentNotSpecified,
     consentEnabled,
@@ -299,7 +306,7 @@ function buildMalformedManifestEntry({ name, manifestPath, error, source }, mIdx
     fileName: name,
     malformed: true,
     error,
-    source: Array.isArray(source) ? source.join(', ') : source,
+    source: formatSource(source),
     // Broken manifests never have variants; Default is offered in case the file loads again.
     options: [
       { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)" },
