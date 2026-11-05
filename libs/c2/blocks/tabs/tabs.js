@@ -83,9 +83,10 @@ function triggerTabEnterAnimation(panel) {
   });
 }
 
-function moveIndicator(indicator, target, container) {
+function moveIndicator(indicator, target, container, instant = false) {
   const btnRect = target.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
+  if (instant) indicator.style.transition = 'none';
   indicator.style.width = `${btnRect.width}px`;
   indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
 }
@@ -127,9 +128,12 @@ function changeTabs(e, config) {
   }
   if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
 
+  // Geometry is read before the indicator is written so the scroll check does not force a
+  // second style/layout flush right after moveIndicator() dirtied the tree.
+  const needsScroll = !isTabInTabListView(target);
   const indicator = parent.querySelector('.tab-indicator');
   if (indicator) moveIndicator(indicator, target, parent);
-  scrollTabIntoView(target);
+  if (needsScroll) scrollTabIntoView(target);
   content.querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`).forEach((p) => {
     p.setAttribute('hidden', true);
     p.classList.remove('tab-entering');
@@ -404,12 +408,12 @@ const init = async (block) => {
   requestAnimationFrame(() => {
     const activeTab = tabListContainer.querySelector('[aria-selected="true"], input[type="radio"]:checked');
     if (activeTab) {
+      const needsScroll = !isTabInTabListView(activeTab);
       if (indicator) {
-        indicator.style.transition = 'none';
-        moveIndicator(indicator, activeTab, tabListContainer);
+        moveIndicator(indicator, activeTab, tabListContainer, true);
         requestAnimationFrame(() => { indicator.style.transition = ''; });
       }
-      scrollTabIntoView(activeTab);
+      if (needsScroll) scrollTabIntoView(activeTab);
     }
     if (block.classList.contains('staggered-intro-merch-cards')) {
       const activePanel = tabContentContainer.querySelector('.tabpanel:not([hidden])');
