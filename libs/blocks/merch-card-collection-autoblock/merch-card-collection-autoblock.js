@@ -119,7 +119,6 @@ function loadSpectrumDependencies() {
   const { base } = getConfig();
   const dist = `${base}/features/spectrum-web-components/dist`;
   const deps = [...SPECTRUM_COMMON_DEPS, ...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS];
-  preloadModule(`${base}/deps/lit-all.min.js`);
   SPECTRUM_TRANSITIVE_DEPS.forEach((dep) => preloadModule(`${dist}/${dep}.js`));
   return Promise.all(deps.map((dep) => import(`${dist}/${dep}.js`)));
 }
@@ -1056,6 +1055,8 @@ export default async function init(el) {
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
+  // Spectrum waits for the fragment to say whether a sidenav renders; its lit dependency does not.
+  if (options.sidenav) preloadModule(`${getConfig().base}/deps/lit-all.min.js`);
   await loadDependencies(options);
   await createCollection(el, options);
 }
