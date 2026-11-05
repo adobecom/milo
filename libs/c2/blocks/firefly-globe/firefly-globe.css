@@ -53,7 +53,7 @@
   from { translate: 0 calc(-1 * var(--globe-entry-lift)); }
 }
 
-.globe-modal-cta {
+.firefly-globe .globe-modal-cta {
   display: flex;
   align-self: stretch;
   margin-top: auto;
@@ -61,7 +61,7 @@
   font-family: var(--body-font-family);
 }
 
-.globe-modal-name {
+.firefly-globe .globe-modal-name {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -70,17 +70,17 @@
 }
 
 @media (width >= 768px) {
-  .globe-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
+  .firefly-globe .globe-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
 }
 
-.globe-modal-model-icon {
+.firefly-globe .globe-modal-model-icon {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
   object-fit: contain;
 }
 
-.globe-modal-model-label {
+.firefly-globe .globe-modal-model-label {
   font-family: var(--body-font-family);
   font-size: var(--s2a-font-size-sm);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);

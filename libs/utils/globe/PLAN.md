@@ -5,10 +5,13 @@ Working notes for refactoring `firefly-globe` and `globe-gallery` onto the share
 ## Ground rules (they shaped every decision)
 
 - **No build step.** Every `.js` file is a runtime ES module request. Keep the module count per
-  page at or below what it was (see the table below). Merge small things into an existing shared
-  file rather than adding files.
+  page at or below what it was: each block now loads its entry, `src/authoring.js`,
+  `src/timeline.js` and the five shared modules (`core`, `ui`, `interaction`, `modal`,
+  `quote-particles`) plus `globe.css`; it was 11 (firefly) and 12 (gallery) modules. Merge small
+  things into an existing shared file rather than adding files.
 - **One globe per page.** Module-level state is acceptable where it keeps signatures small, but
-  prefer explicit injection when it is cheap.
+  prefer explicit injection when it is cheap. Block-only CSS (e.g. `.globe-modal-name`) is
+  unscoped for the same reason; two globes on one page would collide.
 - **No behaviour change by default.** When the two blocks differ only for historical reasons,
   consolidate into one function (a branch or option is fine; it can be cleaned up later). When a
   difference is real, keep it and say why. Behaviour changes are called out below.
@@ -17,6 +20,33 @@ Working notes for refactoring `firefly-globe` and `globe-gallery` onto the share
 - Tests/lint: `npx eslint libs/utils/globe libs/c2/blocks/firefly-globe libs/c2/blocks/globe-gallery test/c2/blocks test/blocks/globe-gallery`
   and `npx wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 "test/c2/blocks/{firefly-globe,globe-gallery}/*.test.js" "test/blocks/globe-gallery/*.test.js"`.
 - `libs/mep/ace1209/*` holds legacy copies of these blocks. Do not touch them.
+- **JS/CSS ship unminified:** no new comments in code; document only tricky current behaviour in
+  the READMEs (no rationale, no history).
+- **CSS:** shared rules live in `globe.css`; a block rule that overrides a shared one must
+  out-specify it (stylesheet load order is not guaranteed). First-paint rules (root height, the
+  root background) stay in the block CSS.
+
+## Behaviour changes adopted
+
+Everything else was kept identical.
+
+- Firefly: opening-quote hang is a `text-indent`, not a `span.hang-opening-quote`.
+- Gallery: a11y uses firefly's version (Tab handling, `preventScroll`, per-card `lang`).
+- Gallery: `parsePullQuote` ignores `<p>` inside the quote element.
+- Firefly: the description gets the hang gutter (padding offset by an equal negative margin).
+- Firefly: a11y card buttons no longer use `pointer-events: auto`.
+- Both: crosshair rules paint under the DOM text; modal dialog is `overflow: clip`; the page
+  scrollbar gutter stays reserved and is painted dark while the modal is open (gallery gained
+  the gutter).
+- Both: pull-quote raster picks the letter-spacing that matches the DOM line width.
+
+## Still to verify
+
+- A live firefly page (only unit tests and a static computed-style comparison exist for it).
+- Safari and Firefox for the hang mark, RTL pull quote and the scrollbar gutter
+  (`scrollbar-gutter` needs Safari 18.2+).
+- Keyboard path on both blocks: Tab/Shift+Tab through cards, backtab into the globe from below
+  the quote.
 
 
 ## Pattern plan
@@ -27,10 +57,9 @@ a time, with tests green and a visual check between steps.
 ### 1. Variant descriptor (Parameter Object / Configuration) - **do first**
 
 *Problem:* `name`, `timeline`, flags are passed separately to six factory
-calls per block, and `quote-particles.js` keeps a mutable module-level `GLOBE`.
+calls per block.
 *Proposal:* each block builds one frozen `variant` object (`name`,
-`timeline`, feature flags). Factories read from it; `configureGlobe()` and the module state go away
-(the particle module receives the variant in `createPullQuote`/`createQuoteParticles`).
+`timeline`, feature flags). Factories read from it (`easePow` is already injected per instance).
 *Why it is safe:* purely mechanical, no logic moves. *Cost:* touches call sites and tests.
 Not a facade; it is just data.
 
@@ -98,17 +127,11 @@ built by the runtime. Do this only if it makes the modal readable; otherwise lea
 
 ## Fix-first list (before the patterns)
 
-Candidates to settle before starting item 1; confirm which to do:
+Settle these before starting item 1:
 
-1. `ui.js` is a grab-bag (a11y + controls + cursor + authoring helpers + hang + DOM skeleton).
-   Option: split the authoring/skeleton half into a shared `authoring.js` (budget allows +1).
-2. `core.js` mixes shaders, math, materials, layout helpers. Same option, lower priority.
-3. Unused or over-exported symbols after the moves (e.g. things only the tests import).
-4. Decide whether to share the ~55 identical tuning constants or keep them per block.
-5. README drift: `firefly-globe/README.md` and `globe-gallery/README.md` still describe some of
-   the old file layout in prose; re-read both after each step.
-6. `test/blocks/globe-gallery/` duplicates part of `test/c2/blocks/globe-gallery/`; decide whether
-   the old directory should go.
-7. Behaviour differences adopted during consolidation (hang-quote text-indent for firefly,
-   firefly a11y for gallery, `parsePullQuote` fix) need a visual/keyboard pass on real pages in
-   Chrome, Safari and Firefox.
+1. `ui.js` is a grab-bag (a11y, controls, cursor, authoring helpers, hang, DOM skeleton). Option:
+   split the authoring/skeleton half into a shared `authoring.js` (the budget allows one more).
+2. `core.js` mixes shaders, math, materials and layout helpers. Same option, lower priority.
+3. Whether to share the ~55 identical tuning constants or keep them per block.
+4. `test/blocks/globe-gallery/` duplicates part of `test/c2/blocks/globe-gallery/`.
+5. Block READMEs: re-read after each step.

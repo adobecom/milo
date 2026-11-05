@@ -4,22 +4,22 @@ import { clamp01, camZAtT, tAtCamZ, dtScaleOf, TAN_HALF_FOV } from '../../../../
 
 export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';
 
-export const PROGRESS_PAN_END = 0.55;
-export const PROGRESS_ARC_PREROLL = 0.30;
-export const PROGRESS_GRID_ARC_START = 0.30;
-export const PROGRESS_GRID_ARC_END = 0.60;
+const PROGRESS_PAN_END = 0.55;
+const PROGRESS_ARC_PREROLL = 0.30;
+const PROGRESS_GRID_ARC_START = 0.30;
+const PROGRESS_GRID_ARC_END = 0.60;
 export const PROGRESS_FOLD_DUR = 0.25;
-export const PROGRESS_ZOOM_END = 1.00;
-export const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
+const PROGRESS_ZOOM_END = 1.00;
+const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
 
 export const GRID_PEEL_STAGGER = 0.20;
 export const GRID_PEEL_JITTER = 2 * GRID_PEEL_STAGGER;
 export const GRID_PEEL_WINDOW = 1.0 - GRID_PEEL_STAGGER;
 
-export const FOLD_PEEL_OVERLAP = 0.35;
+const FOLD_PEEL_OVERLAP = 0.35;
 export const FOLD_START_LOCAL_T = 1 - (FOLD_PEEL_OVERLAP ** (1 / 3));
 
-export const FOLD_FIRST_PROGRESS = Math.max(
+const FOLD_FIRST_PROGRESS = Math.max(
   0,
   (PROGRESS_GRID_ARC_START
     + FOLD_START_LOCAL_T * GRID_PEEL_WINDOW * GRID_ARC_RANGE
@@ -31,28 +31,28 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
     + Math.min(1, GRID_PEEL_STAGGER + FOLD_START_LOCAL_T * GRID_PEEL_WINDOW) * GRID_ARC_RANGE
     - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
 ) + PROGRESS_FOLD_DUR;
-export const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
+const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
 // Entry: raw-scroll space, before `progress` exists.
 
-export const ENTRY_RAMP_VH = 1.05;
+const ENTRY_RAMP_VH = 1.05;
 export const ENTRY_ROT_MAX = 0.9;
 export const ARC_ENTRY_STAGGER = 0.45;
 
 // sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
 // auto-rotate, desktop cursor, hint-plane entrance
 export const SPHERE_INTERACTIVE_T = 0.94;
-export const BROWSE_VIEW_T = 0.96;
+const BROWSE_VIEW_T = 0.96;
 export const SPHERE_ORIENT_RESET_T = 0.01;
 export const TEXT_APPEAR_START = 0.10;
 
 export const ARC_COPY_IN_ENTRY_T = 0.336;
-export const ARC_COPY_OUT_FORM_START = 0.20;
-export const ARC_COPY_OUT_FORM_END = 0.90;
+const ARC_COPY_OUT_FORM_START = 0.20;
+const ARC_COPY_OUT_FORM_END = 0.90;
 
 export const CANVAS_HIDE_MARGIN_T = 0.05;
 
-export const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
+const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
 
 export const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
 

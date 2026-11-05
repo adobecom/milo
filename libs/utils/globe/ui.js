@@ -2,9 +2,12 @@
 import { createTag, getConfig, loadStyle } from '../utils.js';
 
 // On-canvas globe chrome: auto-spin play/pause + the barrel's rotate row.
+let globeStyles;
+
 export function loadGlobeStyles() {
   const { base } = getConfig();
-  return new Promise((resolve) => { loadStyle(`${base}/utils/globe/globe.css`, resolve); });
+  globeStyles ||= new Promise((resolve) => { loadStyle(`${base}/utils/globe/globe.css`, resolve); });
+  return globeStyles;
 }
 
 export function createGlobeControls({
@@ -423,9 +426,9 @@ export function escapeHtml(s) {
 }
 
 // Fallback only; authored inline so it stays localizable.
-export const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
+const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
-export const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
+const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
 
 export const LABEL_DIVIDER = '||';
 
@@ -437,7 +440,7 @@ const DEFAULT_LABELS = [
 
 const CARD_TPL_INDEX = 6;
 
-export function buildLabels(parts) {
+function buildLabels(parts) {
   const at = (i) => parts[i] || DEFAULT_LABELS[i];
   const cardTplRaw = parts[CARD_TPL_INDEX];
   const cardTpl = cardTplRaw?.includes('{index}') && cardTplRaw?.includes('{count}')
@@ -463,7 +466,7 @@ export function cellText(cell) {
   return (paras.length ? paras.join(' ') : cell.textContent).trim();
 }
 
-export function cellParas(cell) {
+function cellParas(cell) {
   return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
 }
 
@@ -541,7 +544,7 @@ function hangLater(el, when) {
   });
 }
 
-export function hangOpeningMark(el, room, isRetry = false) {
+function hangOpeningMark(el, room, isRetry = false) {
   hangRoom.set(el, room);
   el.style.textIndent = '';
   const first = firstChar(el);

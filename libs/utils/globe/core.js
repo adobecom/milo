@@ -19,7 +19,7 @@ export const HASH21 = [
 
 // Rounded rect computed in the fragment shader, so it stays sharp at any zoom.
 // uAspect = card world-space width/height; uRadius = fraction of height.
-export const MODAL_VERT = [
+const MODAL_VERT = [
   'varying vec2 vUv;',
   'void main() {',
   '  vUv = uv;',
@@ -27,7 +27,7 @@ export const MODAL_VERT = [
   '}',
 ].join('\n');
 
-export const MODAL_FRAG = [
+const MODAL_FRAG = [
   'uniform sampler2D map;',
   'uniform float uAspect;',
   'uniform float uRadius;', // corner radius (fraction of card height); 0 = square (mobile full-bleed)
@@ -64,7 +64,7 @@ export const MODAL_FRAG = [
 
 // uRepeat/uOffset apply the cover-crop by hand — ShaderMaterial does not auto-apply
 // texture.repeat/offset.
-export const CARD_VERT = [
+const CARD_VERT = [
   'varying vec2 vUv;',
   'void main() {',
   '  vUv = uv;',
@@ -75,7 +75,7 @@ export const CARD_VERT = [
 const GRAIN_CELLS = 160;
 export const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
 
-export const CARD_FRAG = [
+const CARD_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
   'uniform float uCA;',
@@ -148,7 +148,7 @@ export const CARD_FRAG = [
 ].join('\n');
 
 // A CARD_FRAG variant over a text canvas, no corner SDF.
-export const TEXT_FRAG = [
+const TEXT_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
   'uniform float uCA;',

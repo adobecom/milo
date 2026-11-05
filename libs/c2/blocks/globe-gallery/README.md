@@ -2925,9 +2925,9 @@ keyboard gallery.
 orientation and canvas release), `utils/globe/modal.js` DOM behavior, and the quote-layout and fragment edge
 cases.
 
-`test/c2/blocks/globe-gallery/quote-particles.suite.js` is the particle suite (raster, sources,
-pairing, landing order, the DOM swap, the near burst), shared with firefly-globe: each block's
-`quote-particles.test.js` runs it against its own module, class names and stylesheet.
+`test/utils/globe/quote-particles.test.js` is the particle suite (raster, sources, pairing, landing
+order, the DOM swap, the near burst), run once per block with that block's `easePow`, class names and
+stylesheet.
 
 `mocks/authored.html` and `mocks/fragment.html` are the authoring contract as fixtures, loaded with
 `readFile` from `@web/test-runner-commands`. The fragment mock mirrors the DA card shape: metadata

@@ -17,8 +17,9 @@ page. Each block keeps its entry file, `src/authoring.js` and `src/timeline.js`.
 `globe.css` holds every rule both blocks share and is loaded by `loadGlobeStyles()` (awaited at the
 top of each block's `init`). Each block's own CSS keeps only what must paint before JS runs (root
 height, background, the `html:has(...)` scrollbar gutter, `-reduced` / `-empty` states) and what is
-specific to it. A block rule that overrides a shared rule must out-specify it (e.g.
-`.firefly-globe .globe-controls`), because load order is not guaranteed.
+specific to it. Block rules are scoped under their root (`.root .globe-*`), so two
+globes on one page don't share block styling. A block rule that overrides a shared rule must
+out-specify it (e.g. `.firefly-globe .globe-controls`), because load order is not guaranteed.
 
 Naming: the block root keeps its own class (`firefly-globe`, `globe-gallery`); everything inside it,
 and every state class, uses the family prefix `globe-` (`globe-modal-info`, `globe-reduced`,
@@ -32,8 +33,7 @@ Shared factories take the block `name` (`'firefly-globe'` / `'globe-gallery'`) o
 `daa-ll` labels.
 
 - `createPullQuote`: `timeline` `{ easePow, spanPx(span), scrollYAt(t, span) }`. Options
-  `getFormationVh`, `requireOnSphere`, `manageCanvas` are gallery's. The ease power is kept in
-  module state (`configureGlobe`). The travel length is read from `--globe-travel-vh`.
+  `getFormationVh`, `requireOnSphere`, `manageCanvas` are gallery's. `easePow` is passed per instance. The travel length is read from `--globe-travel-vh`.
 - `createGlobeModal`: `renderContent(targetEl, meta)` returning `{ descEl, speech }` (`speech` is
   `[text, lang?]` parts announced before the position). `hoistToBody` moves the modal and canvas to
   `<body>` (then `destroy(true)` removes them); `bodyOpenClass` also flags `<body>` while open.

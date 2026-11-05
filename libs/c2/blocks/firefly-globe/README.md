@@ -275,8 +275,8 @@ fallback, alt fallback), `fireflyRenditionUrl` sizing, the frame shape, the cloc
 (`deriveFrame`, including the travel span), the travel camera inverse pair and `plainQuote` (authored
 text restored on every call, the opening mark hung once).
 
-`test/c2/blocks/firefly-globe/quote-particles.test.js` runs globe-gallery's shared particle suite
-(`quote-particles.suite.js`) against this block's copy, class names and stylesheet.
+`test/utils/globe/quote-particles.test.js` runs the shared particle suite once per block, with that
+block's `easePow`, class names and stylesheet.
 
 `test/c2/blocks/firefly-globe/modules.test.js` covers `utils/globe/ui.js`, the `utils/globe/ui.js` keyboard gallery,
 `utils/globe/interaction.js`, `utils/globe/ui.js`, `utils/globe/core.js` and `utils/globe/modal.js` DOM behavior.

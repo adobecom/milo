@@ -27,7 +27,7 @@
   }
 }
 
-.globe-arc-copy {
+.globe-gallery .globe-arc-copy {
   --globe-arc-pad: var(--s2a-spacing-md);
 
   position: fixed;
@@ -51,14 +51,13 @@
   transform-origin: left bottom;
 }
 
-html[dir="rtl"] .globe-arc-copy {
+html[dir="rtl"] .globe-gallery .globe-arc-copy {
   transform-origin: right bottom;
 }
 
-.globe-arc-copy-title {
+.globe-gallery .globe-arc-copy-title {
   /* 18px: between Title-4 and body — no standard type class fits. */
   font-family: var(--heading-font-family);
-  font-weight: var(--s2a-font-weight-adobe-clean-black);
   font-size: var(--s2a-font-size-lg);
   line-height: var(--s2a-font-line-height-21);
 
@@ -68,25 +67,25 @@ html[dir="rtl"] .globe-arc-copy {
   margin: 0 0 var(--s2a-spacing-2xs);
 }
 
-.globe-arc-copy-body {
+.globe-gallery .globe-arc-copy-body {
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-400);
   margin: 0;
 }
 
-.globe-arc-copy-body p {
+.globe-gallery .globe-arc-copy-body p {
   margin: 0;
 }
 
-.globe-arc-copy-body p + p {
+.globe-gallery .globe-arc-copy-body p + p {
   margin-top: var(--s2a-spacing-xs);
 }
 
-.globe-modal-name,
-.globe-modal-role-label,
-.globe-modal-badges { flex-shrink: 0; }
+.globe-gallery .globe-modal-name,
+.globe-gallery .globe-modal-role-label,
+.globe-gallery .globe-modal-badges { flex-shrink: 0; }
 
-.globe-modal-badges {
+.globe-gallery .globe-modal-badges {
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-xs);
@@ -96,13 +95,12 @@ html[dir="rtl"] .globe-arc-copy {
 }
 
 /* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
-.globe-modal-info > .globe-modal-badges {
+.globe-gallery .globe-modal-info > .globe-modal-badges {
   margin-top: auto;
 }
 
-.globe-modal-name {
+.globe-gallery .globe-modal-name {
   font-family: var(--heading-font-family);
-  font-weight: var(--s2a-font-weight-adobe-clean-black);
   font-size: var(--s2a-font-size-xl);
   line-height: var(--s2a-font-line-height-md);
   letter-spacing: var(--s2a-font-letter-spacing-5xl);
@@ -110,7 +108,7 @@ html[dir="rtl"] .globe-arc-copy {
   margin: 0 0 var(--s2a-spacing-3xs);
 }
 
-.globe-modal-role-label {
+.globe-gallery .globe-modal-role-label {
   font-family: var(--body-font-family);
   font-size: var(--s2a-font-size-sm);
   line-height: var(--s2a-font-line-height-sm);
@@ -119,48 +117,48 @@ html[dir="rtl"] .globe-arc-copy {
   margin: 0 0 var(--s2a-spacing-xs);
 }
 
-.globe-modal-badge {
+.globe-gallery .globe-modal-badge {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s2a-spacing-sm);
 }
 
-.globe-modal-badge-left {
+.globe-gallery .globe-modal-badge-left {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.globe-modal-badge-icon {
+.globe-gallery .globe-modal-badge-icon {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
   display: block;
 }
 
-.globe-modal-badge-icon img {
+.globe-gallery .globe-modal-badge-icon img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
 }
 
-.globe-modal-badge-app {
+.globe-gallery .globe-modal-badge-app {
   font-family: var(--body-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   font-size: 13px;
   color: var(--s2a-color-gray-25);
 }
 
-.globe-modal-badge-app-link {
+.globe-gallery .globe-modal-badge-app-link {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: var(--s2a-spacing-3xs);
 }
 
-.globe-modal-badge-app-link::after {
+.globe-gallery .globe-modal-badge-app-link::after {
   content: '';
   display: inline-block;
   width: 6px;
@@ -171,11 +169,11 @@ html[dir="rtl"] .globe-arc-copy {
   flex-shrink: 0;
 }
 
-.globe-modal-badge-app-link:hover {
+.globe-gallery .globe-modal-badge-app-link:hover {
   text-decoration: underline;
 }
 
-.globe-modal-badge-role {
+.globe-gallery .globe-modal-badge-role {
   font-family: var(--body-font-family);
   font-size: 13px;
   color: var(--s2a-color-gray-400);
@@ -196,29 +194,29 @@ html[dir="rtl"] .globe-arc-copy {
 
 @media (width >= 768px) {
   /* md+: no pill background, so the copy's own left edge must sit on --globe-content-inset. */
-  .globe-arc-copy {
+  .globe-gallery .globe-arc-copy {
     width: 382px;
     max-width: none;
     bottom: var(--s2a-spacing-lg);
     inset-inline-start: calc(var(--globe-content-inset) - var(--globe-arc-pad));
   }
 
-  .globe-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
+  .globe-gallery .globe-modal-name { margin: 0 0 var(--s2a-spacing-2xs); }
 
-  .globe-modal-role-label { margin: 0 0 var(--s2a-spacing-md); }
+  .globe-gallery .globe-modal-role-label { margin: 0 0 var(--s2a-spacing-md); }
 
-  .globe-modal-badges { gap: 10px; }
+  .globe-gallery .globe-modal-badges { gap: 10px; }
 
-  .globe-modal-badge-icon {
+  .globe-gallery .globe-modal-badge-icon {
     width: 28px;
     height: 28px;
   }
 
-  .globe-modal-badge-app { font-size: var(--s2a-font-size-sm); }
-  .globe-modal-badge-role { font-size: var(--s2a-font-size-sm); }
+  .globe-gallery .globe-modal-badge-app { font-size: var(--s2a-font-size-sm); }
+  .globe-gallery .globe-modal-badge-role { font-size: var(--s2a-font-size-sm); }
 }
 
-html .globe-reduced .globe-arc-copy {
+html .globe-gallery.globe-reduced .globe-arc-copy {
   position: static;
   width: 100%;
   max-width: none;
@@ -228,18 +226,18 @@ html .globe-reduced .globe-arc-copy {
 }
 
 /* Scrolls with the globe; the base 50vh still centres on the sphere. */
-.globe-reduced .globe-a11y {
+.globe-gallery.globe-reduced .globe-a11y {
   position: absolute;
 }
 
-.globe-reduced .globe-a11y-cards {
+.globe-gallery.globe-reduced .globe-a11y-cards {
   position: absolute;
 }
 
-.globe-reduced .globe-controls {
+.globe-gallery.globe-reduced .globe-controls {
   position: absolute;
 }
 
-html[dir="rtl"] .globe-modal-badge-app-link::after {
+html[dir="rtl"] .globe-gallery .globe-modal-badge-app-link::after {
   transform: scaleX(-1) rotate(45deg) translateY(-1px);
 }

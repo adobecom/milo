@@ -4,9 +4,6 @@ import {
 } from './core.js';
 import { plainQuote } from './ui.js';
 
-const GLOBE = { easePow: 3 };
-export const configureGlobe = (cfg) => Object.assign(GLOBE, cfg);
-
 const PULL_BP = {
   sm: { startR: 0.5, expand: 0.5, count: 15000 },
   md: { startR: 0, expand: 1.5, count: 48000 },
@@ -79,7 +76,7 @@ const PX_TO_CLIP = [
   '}',
 ];
 
-const pointsVert = () => [
+const pointsVert = (easePow) => [
   'uniform float uP;',
   'uniform vec2 uView;',
   'uniform float uDpr;',
@@ -109,7 +106,7 @@ const pointsVert = () => [
   ...CURL_NOISE,
   'float camZAt(float p) {',
   '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
-  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(GLOBE.easePow)}));`,
+  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(easePow)}));`,
   '}',
   'vec2 toPx(vec3 w, float camZ) {',
   '  vec4 c = projectionMatrix * vec4(w.xy, w.z - camZ, 1.0);',
@@ -498,7 +495,7 @@ function createCardPointsMaterial(shared, scatterP = -1) {
       uScreenSrc: { value: 0 },
       uScatterP: { value: scatterP },
     },
-    vertexShader: pointsVert(),
+    vertexShader: pointsVert(shared.easePow),
     fragmentShader: POINTS_FRAG,
     transparent: true,
     depthTest: false,
@@ -539,16 +536,16 @@ function seededRandom(seed) {
   };
 }
 
-const camZAt = (zoom, p) => camZAtT(
+const camZAt = (zoom, p, easePow) => camZAtT(
   zoom[0] + p * zoom[1],
   zoom[2],
   zoom[2] - zoom[3],
-  GLOBE.easePow,
+  easePow,
 );
 
-function pAtCamZ(zoom, cz) {
+function pAtCamZ(zoom, cz, easePow) {
   if (!(zoom[1] > 0) || !(zoom[3] > 0)) return Infinity;
-  return (tAtCamZ(cz, zoom[2], zoom[2] - zoom[3], GLOBE.easePow) - zoom[0]) / zoom[1];
+  return (tAtCamZ(cz, zoom[2], zoom[2] - zoom[3], easePow) - zoom[0]) / zoom[1];
 }
 
 function bounds(n, at) {
@@ -587,7 +584,7 @@ export function coherentOrder(xs, ys, count = xs.length) {
   return out;
 }
 
-export default function createQuoteParticles({ figureEl, railEl, count }) {
+export default function createQuoteParticles({ figureEl, railEl, count, easePow }) {
   const n = count;
   const group = new THREE.Group();
   group.visible = false;
@@ -599,6 +596,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   let pairing = null;
 
   const shared = {
+    easePow,
     uP: { value: 0 },
     uView: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },
@@ -801,8 +799,8 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     }
     const { W, H, zoom, proj: [P00, P11, P02, P12] } = view;
     const rnd = seededRandom(SEED);
-    const z0 = camZAt(zoom, 0);
-    const zPair = camZAt(zoom, FLIGHT.depart[0] + 0.5 * FLIGHT.depart[1]);
+    const z0 = camZAt(zoom, 0, easePow);
+    const zPair = camZAt(zoom, FLIGHT.depart[0] + 0.5 * FLIGHT.depart[1], easePow);
     const pxX = (x, D) => ((P00 * x) / D - P02 + 1) * 0.5 * W;
     const pxY = (y, D) => (1 - ((P11 * y) / D - P12)) * 0.5 * H;
     const toPx = (x, y, z, cz) => (cz - z < 0.05 ? null : [pxX(x, cz - z), pxY(y, cz - z)]);
@@ -876,9 +874,9 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         const x = o.x + au.x * u + av.x * v;
         const y = o.y + au.y * u + av.y * v;
         const z = o.z + au.z * u + av.z * v;
-        const due = Math.min(releaseAt(edge[j]), pAtCamZ(zoom, z + tileD));
+        const due = Math.min(releaseAt(edge[j]), pAtCamZ(zoom, z + tileD, easePow));
         release[j] = Math.max(FLIGHT.release[0], due);
-        const zDep = camZAt(zoom, release[j]);
+        const zDep = camZAt(zoom, release[j], easePow);
         const d = RELEASE_REACH * Math.max(0.001, zDep - z - MIN_DEPTH);
         const D = zDep - d * (1 - Math.exp(-Math.max(0, zDep - zPair) / d)) - z;
         sx[j] = D < 0.05 ? W / 2 : pxX(x, D);
@@ -974,9 +972,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   };
 }
 
-export function createCardScatter({ expand }) {
+export function createCardScatter({ expand, easePow }) {
   const group = new THREE.Group();
   const shared = {
+    easePow,
     uScatterExpand: { value: expand },
     uView: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },
@@ -1060,7 +1059,7 @@ export function createPullQuote({
   requireOnSphere = false,
   manageCanvas = false,
 }) {
-  configureGlobe({ easePow: timeline.easePow });
+  const { easePow } = timeline;
   const figureEl = root.querySelector('.globe-pullquote');
   const quoteEl = root.querySelector('.globe-pullquote-quote');
   const railEl = root.querySelector('.globe-pullquote-rail');
@@ -1111,7 +1110,7 @@ export function createPullQuote({
     const bp = getBp();
     const startZ = PULL_BP[bp.name].startR * bp.SPHERE_R;
     s.appearT = appearT;
-    s.startT = Math.min(appearT, tAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END, GLOBE.easePow));
+    s.startT = Math.min(appearT, tAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END, easePow));
     syncHeight();
   }
 
@@ -1304,11 +1303,11 @@ export function createPullQuote({
     ({ camera } = ctx);
     canvas = ctx.renderer.domElement;
     const cfg = PULL_BP[getBp().name];
-    scatter = createCardScatter({ expand: cfg.expand });
+    scatter = createCardScatter({ expand: cfg.expand, easePow });
     ctx.scene.add(scatter.object);
     scatter.warm(ctx.renderer, camera);
     if (figureEl && railEl && figureEl.textContent.trim()) {
-      fx = createQuoteParticles({ figureEl, railEl, count: cfg.count });
+      fx = createQuoteParticles({ figureEl, railEl, count: cfg.count, easePow });
       ctx.scene.add(fx.object);
       fx.warm(ctx.renderer, camera);
     }
