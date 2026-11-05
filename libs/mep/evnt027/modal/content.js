@@ -70,6 +70,15 @@ function decorate(block) {
 }
 
 export default function init(el) {
+  el.querySelectorAll('a[href]').forEach((link) => {
+    if (link.querySelector('picture, img')) return;
+    const url = new URL(link.href);
+    if (!/^https?:$/.test(url.protocol) || !/\.(png|jpe?g|gif|webp|avif)$/i.test(url.pathname)) return;
+    const [text, ...alt] = link.textContent.split('|');
+    if (text.trim() !== link.href && text.trim() !== link.getAttribute('href')) return;
+    const img = createTag('img', { src: url.href, alt: alt.join('|').trim(), loading: 'lazy' });
+    link.replaceWith(createTag('picture', null, img));
+  });
   decorateViewportContent(el, decorate);
   el.addEventListener('click', (event) => {
     if (!event.target.closest('.max26-login-prompt-guest')) return;

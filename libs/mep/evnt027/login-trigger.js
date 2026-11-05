@@ -1,5 +1,6 @@
 import { createTag, customFetch, decorateLinksAsync, getMetadata } from '../../utils/utils.js';
 import { getModal } from '../../c2/blocks/modal/modal.js';
+import { replaceDotMedia } from '../../blocks/fragment/fragment.js';
 import decorateContent from './modal/content.js';
 
 const DISMISSED_KEY = 'evnt027-login-prompt-dismissed';
@@ -149,6 +150,7 @@ export default function init({ path: authoredPath } = {}) {
         const response = await customFetch({ resource: path, withCacheRules: true });
         if (!response.ok) throw new Error(`Could not load MAX login prompt fragment: ${path} (${response.status})`);
         const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+        replaceDotMedia(path, doc);
         const loadedContent = createTag('div', { class: 'fragment', 'data-path': path });
         loadedContent.append(...doc.body.children);
         const blocks = loadedContent.querySelectorAll('.max26-login-prompt');
