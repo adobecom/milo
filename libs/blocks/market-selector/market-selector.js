@@ -248,8 +248,7 @@ function createDropdown(
 ) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
-  const GLOBE_IMG = `<img class="market-selector-globe" src="${base}/ui/img/globe.svg" alt="globe">`;
-  const CHECKMARK_IMG = `<img class="check-icon" src="${base}/ui/img/checkmark.svg" alt="selected">`;
+  const createIcon = (cls, file, alt) => createTag('img', { class: cls, src: `${base}/ui/img/${file}`, alt });
 
   const container = createTag('div', { class: 'market-selector-dropdown' });
   const button = createTag('button', {
@@ -259,7 +258,10 @@ function createDropdown(
     type: 'button',
     tabindex: '0',
   });
-  button.innerHTML = `${showGlobe ? GLOBE_IMG : ''}<span>${label}</span>`;
+  if (showGlobe) button.append(createIcon('market-selector-globe', 'globe.svg', 'globe'));
+  const labelSpan = createTag('span');
+  labelSpan.textContent = label;
+  button.append(labelSpan);
 
   const popover = createTag('div', { class: 'market-selector-popover' });
   const dragHandle = createTag('div', { class: 'market-selector-drag-handle' });
@@ -338,7 +340,7 @@ function createDropdown(
       const span = createTag('span', { class: 'market-selector-item-text' });
       span.textContent = item.label;
       a.append(span);
-      if (selected) a.insertAdjacentHTML('beforeend', CHECKMARK_IMG);
+      if (selected) a.append(createIcon('check-icon', 'checkmark.svg', 'selected'));
 
       a.addEventListener('mouseenter', () => {
         if (item.url && item.url !== '#' && item.value) {
