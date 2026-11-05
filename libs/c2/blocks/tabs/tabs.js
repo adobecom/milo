@@ -91,6 +91,63 @@ function moveIndicator(indicator, target, container, instant = false) {
   indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
 }
 
+// The initial indicator position and scroll-into-view of every tabs block are measured in one
+// shared ResizeObserver callback. It runs after layout, where reads are free; a rAF read lands on
+// a tree dirtied by moving sections and cards and forces a style recalc per block.
+// All blocks delivered together are read first and written afterwards.
+const pendingInitialSyncs = new Map();
+let initialSyncObserver = null;
+
+function onInitialLayout(entries) {
+  const jobs = entries.map(({ target }) => {
+    const job = pendingInitialSyncs.get(target);
+    pendingInitialSyncs.delete(target);
+    initialSyncObserver.unobserve(target);
+    return job;
+  }).filter(Boolean);
+
+  const measured = jobs.map((job) => {
+    const { tabListContainer } = job;
+    const activeTab = tabListContainer.querySelector('[aria-selected="true"], input[type="radio"]:checked');
+    if (!activeTab) return { job };
+    const tabRect = activeTab.getBoundingClientRect();
+    const containerRect = tabListContainer.getBoundingClientRect();
+    const containerScrollLeft = tabListContainer.scrollLeft;
+    const result = { job, tabRect, containerRect, containerScrollLeft };
+    if (!isTabInTabListView(activeTab)) {
+      const scroller = getScrollContainer(activeTab);
+      const scrollerRect = scroller.getBoundingClientRect();
+      result.scroll = {
+        scroller,
+        left: scroller.scrollLeft + tabRect.left - scrollerRect.left
+          - (scrollerRect.width - tabRect.width) / 2,
+      };
+    }
+    return result;
+  });
+
+  measured.forEach(({ job, tabRect, containerRect, containerScrollLeft, scroll }) => {
+    const { indicator, block, tabContentContainer } = job;
+    if (tabRect && indicator) {
+      indicator.style.transition = 'none';
+      indicator.style.width = `${tabRect.width}px`;
+      indicator.style.transform = `translateX(${tabRect.left - containerRect.left + containerScrollLeft}px)`;
+      requestAnimationFrame(() => { indicator.style.transition = ''; });
+    }
+    if (scroll) scroll.scroller.scrollTo({ left: scroll.left, behavior: 'smooth' });
+    if (block.classList.contains('staggered-intro-merch-cards')) {
+      const activePanel = tabContentContainer.querySelector('.tabpanel:not([hidden])');
+      if (activePanel) triggerTabEnterAnimation(activePanel);
+    }
+  });
+}
+
+function requestInitialSync(job) {
+  pendingInitialSyncs.set(job.tabListContainer, job);
+  initialSyncObserver ??= new ResizeObserver(onInitialLayout);
+  initialSyncObserver.observe(job.tabListContainer);
+}
+
 function changeTabs(e, config) {
   const { target } = e;
   const isRadio = target.matches('input[type="radio"]');
@@ -405,21 +462,7 @@ const init = async (block) => {
   handleDeferredImages(block);
   initTabs(block, config, rootElem);
 
-  requestAnimationFrame(() => {
-    const activeTab = tabListContainer.querySelector('[aria-selected="true"], input[type="radio"]:checked');
-    if (activeTab) {
-      const needsScroll = !isTabInTabListView(activeTab);
-      if (indicator) {
-        moveIndicator(indicator, activeTab, tabListContainer, true);
-        requestAnimationFrame(() => { indicator.style.transition = ''; });
-      }
-      if (needsScroll) scrollTabIntoView(activeTab);
-    }
-    if (block.classList.contains('staggered-intro-merch-cards')) {
-      const activePanel = tabContentContainer.querySelector('.tabpanel:not([hidden])');
-      if (activePanel) triggerTabEnterAnimation(activePanel);
-    }
-  });
+  requestInitialSync({ block, tabListContainer, tabContentContainer, indicator });
 };
 
 export default init;
