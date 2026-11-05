@@ -153,14 +153,14 @@ export function parseAuthoredContent(el) {
 const CANVAS_STYLE = 'position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;';
 
 const modalInfoHtml = (labels, ctaLabel) => (gid) => `
-    <div class="firefly-globe-modal-info" data-lenis-prevent>
-      <p class="firefly-globe-modal-name" id="firefly-globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="firefly-globe-modal-prompt-${gid} firefly-globe-modal-position-${gid}">
-        <img class="firefly-globe-modal-model-icon" alt="" aria-hidden="true">
-        <span class="firefly-globe-modal-model-label"></span>
+    <div class="globe-modal-info" data-lenis-prevent>
+      <p class="globe-modal-name" id="globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-modal-description-${gid} globe-modal-position-${gid}">
+        <img class="globe-modal-model-icon" alt="" aria-hidden="true">
+        <span class="globe-modal-model-label"></span>
       </p>
-      <span class="firefly-globe-modal-position sr-only" id="firefly-globe-modal-position-${gid}" aria-hidden="true"></span>
-      <div class="firefly-globe-modal-prompt" id="firefly-globe-modal-prompt-${gid}" role="document"></div>
-      <a class="firefly-globe-modal-cta con-button blue" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>${escapeHtml(ctaLabel)}</a>
+      <span class="globe-modal-position sr-only" id="globe-modal-position-${gid}" aria-hidden="true"></span>
+      <div class="globe-modal-description" id="globe-modal-description-${gid}" role="document"></div>
+      <a class="globe-modal-cta con-button blue" target="_blank" rel="noopener noreferrer" daa-ll="open_in_firefly--globe_card_modal" hidden>${escapeHtml(ctaLabel)}</a>
     </div>
 `;
 
@@ -193,11 +193,11 @@ function setLang(el, lang) {
 }
 
 export function renderModalContent(targetEl, meta, iconBaseUrl) {
-  const nameEl = targetEl.querySelector('.firefly-globe-modal-name');
+  const nameEl = targetEl.querySelector('.globe-modal-name');
   const modelLabel = meta.modelVersionName || meta.modelId || '';
   if (nameEl) {
-    const iconEl = nameEl.querySelector('.firefly-globe-modal-model-icon');
-    const labelEl = nameEl.querySelector('.firefly-globe-modal-model-label');
+    const iconEl = nameEl.querySelector('.globe-modal-model-icon');
+    const labelEl = nameEl.querySelector('.globe-modal-model-label');
     const file = MODEL_ICON[meta.modelId?.toLowerCase()];
     const url = (file && iconBaseUrl) ? `${iconBaseUrl}${file}` : '';
     if (iconEl) {
@@ -205,12 +205,12 @@ export function renderModalContent(targetEl, meta, iconBaseUrl) {
     }
     if (labelEl) labelEl.textContent = modelLabel;
   }
-  const descEl = targetEl.querySelector('.firefly-globe-modal-prompt');
+  const descEl = targetEl.querySelector('.globe-modal-description');
   if (descEl) {
     descEl.textContent = meta.prompt || '';
     setLang(descEl, meta.lang);
   }
-  const ctaEl = targetEl.querySelector('.firefly-globe-modal-cta');
+  const ctaEl = targetEl.querySelector('.globe-modal-cta');
   if (ctaEl) {
     if (meta.fireflyUrl) {
       ctaEl.href = meta.fireflyUrl;

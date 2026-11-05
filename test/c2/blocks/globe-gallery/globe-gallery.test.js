@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile, setViewport } from '@web/test-runner-commands';
+import { setConfig } from '../../../../libs/utils/utils.js';
 import init from '../../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
 import {
   fetchFragmentCards,
@@ -22,6 +23,8 @@ import {
   rotateArcPoint,
 } from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
 import * as TL from '../../../../libs/c2/blocks/globe-gallery/src/timeline.js';
+
+setConfig({ codeRoot: '/libs' });
 
 function makeEl(innerHTML) {
   const el = document.createElement('div');
@@ -104,11 +107,11 @@ describe('globe-gallery: static-mode arc copy', () => {
       block = document.querySelector('.globe-gallery');
       await init(block);
       expect(block.globeRuntime).to.exist;
-      expect(block.classList.contains('globe-gallery-reduced')).to.be.true;
+      expect(block.classList.contains('globe-reduced')).to.be.true;
       await new Promise((resolve) => {
         requestAnimationFrame(() => requestAnimationFrame(resolve));
       });
-      const copy = block.querySelector('.globe-gallery-arc-copy');
+      const copy = block.querySelector('.globe-arc-copy');
       ['ltr', 'rtl'].forEach((dir) => {
         document.documentElement.dir = dir;
         const style = getComputedStyle(copy);
@@ -122,10 +125,10 @@ describe('globe-gallery: static-mode arc copy', () => {
         expect(copy.style.transform).to.equal('');
         expect(rect.height).to.be.greaterThan(0);
         expect(rect.width).to.be.at.most(block.clientWidth);
-        const world = block.querySelector('.globe-gallery-world');
+        const world = block.querySelector('.globe-world');
         expect(copy.nextElementSibling).to.equal(world);
         expect(world.getBoundingClientRect().top).to.be.at.least(rect.bottom);
-        expect(block.querySelector('.globe-gallery-pullquote').getBoundingClientRect().top)
+        expect(block.querySelector('.globe-pullquote').getBoundingClientRect().top)
           .to.be.at.least(world.getBoundingClientRect().bottom);
         expect(copy.querySelector('h2').textContent).to.equal('Meet our creative community');
         expect(copy.querySelector('a').getClientRects()).to.have.length.greaterThan(0);
@@ -340,7 +343,7 @@ describe('globe-gallery: fetchFragmentCards', () => {
       role: 'Featured',
       href: '/features/engine',
     });
-    expect(cards[0].badges[0].icon).to.include('globe-gallery-modal-badge-icon');
+    expect(cards[0].badges[0].icon).to.include('globe-modal-badge-icon');
     expect(cards[1]).to.include({
       img: '/media_def/work.jpg',
       alt: '',
@@ -381,7 +384,7 @@ describe('globe-gallery: fetchFragmentCards', () => {
       'https://www.adobe.com/products/photoshop.html',
     ]);
     cards.flatMap(({ badges }) => badges).forEach(({ icon }) => {
-      expect(icon).to.include('<picture class="globe-gallery-modal-badge-icon"');
+      expect(icon).to.include('<picture class="globe-modal-badge-icon"');
       expect(icon).to.include('aria-hidden="true"');
     });
   });
@@ -447,7 +450,7 @@ describe('globe-gallery: buildGlobeDom', () => {
 
   it('builds the canvas, controls, modal, and unique labelled dialog', () => {
     const firstId = build();
-    const heading = el.querySelector('.globe-gallery-modal-name');
+    const heading = el.querySelector('.globe-modal-name');
     const second = document.createElement('div');
     const secondId = buildGlobeDom(second, LABELS, {
       arcCopy: { title: '', body: [] },
@@ -455,38 +458,38 @@ describe('globe-gallery: buildGlobeDom', () => {
       touchHint: { paras: [], text: '' },
     });
 
-    expect(el.querySelector('.globe-gallery-canvas')).to.exist;
-    expect(el.querySelector('.globe-gallery-controls')).to.exist;
-    expect(el.querySelector('.globe-gallery-modal')).to.exist;
-    expect(el.querySelector('.globe-gallery-modal-chrome')).to.exist;
-    expect(heading.id).to.equal(`globe-gallery-modal-name-${firstId}`);
+    expect(el.querySelector('.globe-canvas')).to.exist;
+    expect(el.querySelector('.globe-controls')).to.exist;
+    expect(el.querySelector('.globe-modal')).to.exist;
+    expect(el.querySelector('.globe-modal-chrome')).to.exist;
+    expect(heading.id).to.equal(`globe-modal-name-${firstId}`);
     expect(heading.getAttribute('aria-describedby'))
-      .to.include(`globe-gallery-modal-role-${firstId}`);
+      .to.include(`globe-modal-role-${firstId}`);
     expect(secondId).to.be.greaterThan(firstId);
   });
 
   it('renders authored copy, pull quote, touch hint, and localized labels as text', () => {
     build();
 
-    expect(el.querySelector('.globe-gallery-arc-copy-title').textContent).to.equal('Arc title');
-    expect([...el.querySelectorAll('.globe-gallery-arc-copy-body p')]
+    expect(el.querySelector('.globe-arc-copy-title').textContent).to.equal('Arc title');
+    expect([...el.querySelectorAll('.globe-arc-copy-body p')]
       .map((p) => p.textContent)).to.deep.equal(['Body one', 'Body two']);
-    expect(el.querySelector('.globe-gallery-hint-text').textContent).to.equal('Swipe');
-    expect(el.querySelector('.globe-gallery-pullquote-quote').textContent).to.equal('Quote');
-    expect(el.querySelector('.globe-gallery-pullquote-name').textContent).to.equal('Name');
-    expect(el.querySelector('.globe-gallery-pullquote-role').textContent).to.equal('Role');
-    expect(el.querySelector('.globe-gallery-spin-toggle').getAttribute('aria-label')).to.equal('Pause');
-    expect(el.querySelector('.globe-gallery-modal-close').getAttribute('aria-label')).to.equal('Close');
+    expect(el.querySelector('.globe-hint-text').textContent).to.equal('Swipe');
+    expect(el.querySelector('.globe-pullquote-quote').textContent).to.equal('Quote');
+    expect(el.querySelector('.globe-pullquote-name').textContent).to.equal('Name');
+    expect(el.querySelector('.globe-pullquote-role').textContent).to.equal('Role');
+    expect(el.querySelector('.globe-spin-toggle').getAttribute('aria-label')).to.equal('Pause');
+    expect(el.querySelector('.globe-modal-close').getAttribute('aria-label')).to.equal('Close');
   });
 
   it('removes the pull-quote section when one is not authored', () => {
     build({ pullQuote: null });
-    expect(el.querySelector('.globe-gallery-pullquote-pin')).to.be.null;
+    expect(el.querySelector('.globe-pullquote-pin')).to.be.null;
   });
 
   it('uses plain hint text when no authored paragraphs exist', () => {
     build({ touchHint: { paras: [], text: '<Swipe safely>' } });
-    const hint = el.querySelector('.globe-gallery-hint-text');
+    const hint = el.querySelector('.globe-hint-text');
     expect(hint.textContent).to.equal('<Swipe safely>');
     expect(hint.querySelector('*')).to.be.null;
   });
@@ -694,13 +697,13 @@ describe('globe-gallery: controls', () => {
 
   beforeEach(() => {
     root = makeEl(`
-      <div class="globe-gallery-world">
+      <div class="globe-world">
         <span class="after-controls"></span>
-        <div class="globe-gallery-controls">
-          <button class="globe-gallery-spin-toggle" aria-label="Pause"></button>
-          <div class="globe-gallery-hint">
-            <button class="globe-gallery-rotate" data-dir="-1"></button>
-            <button class="globe-gallery-rotate" data-dir="1"></button>
+        <div class="globe-controls">
+          <button class="globe-spin-toggle" aria-label="Pause"></button>
+          <div class="globe-hint">
+            <button class="globe-rotate" data-dir="-1"></button>
+            <button class="globe-rotate" data-dir="1"></button>
           </div>
         </div>
       </div>
@@ -724,12 +727,12 @@ describe('globe-gallery: controls', () => {
   });
 
   it('moves controls to the end of the world for tab order', () => {
-    expect(root.querySelector('.globe-gallery-world').lastElementChild.className)
-      .to.equal('globe-gallery-controls');
+    expect(root.querySelector('.globe-world').lastElementChild.className)
+      .to.equal('globe-controls');
   });
 
   it('toggles spin state, label, class, and analytics value', () => {
-    const button = root.querySelector('.globe-gallery-spin-toggle');
+    const button = root.querySelector('.globe-spin-toggle');
     expect(controls.isSpinPaused()).to.be.false;
 
     button.click();
@@ -751,8 +754,8 @@ describe('globe-gallery: controls', () => {
   });
 
   it('updates visibility and hint dismissal from runtime state', () => {
-    const layer = root.querySelector('.globe-gallery-controls');
-    const hint = root.querySelector('.globe-gallery-hint');
+    const layer = root.querySelector('.globe-controls');
+    const hint = root.querySelector('.globe-hint');
     controls.update();
     expect(layer.classList.contains('is-visible')).to.be.false;
     expect(hint.classList.contains('is-dismissed')).to.be.false;
@@ -765,8 +768,8 @@ describe('globe-gallery: controls', () => {
   });
 
   it('removes listeners and state classes during teardown', () => {
-    const layer = root.querySelector('.globe-gallery-controls');
-    const spin = root.querySelector('.globe-gallery-spin-toggle');
+    const layer = root.querySelector('.globe-controls');
+    const spin = root.querySelector('.globe-spin-toggle');
     visible = true;
     dismissed = true;
     controls.update();
@@ -775,7 +778,7 @@ describe('globe-gallery: controls', () => {
 
     expect(controls.isSpinPaused()).to.be.false;
     expect(layer.classList.contains('is-visible')).to.be.false;
-    expect(root.querySelector('.globe-gallery-hint').classList.contains('is-dismissed')).to.be.false;
+    expect(root.querySelector('.globe-hint').classList.contains('is-dismissed')).to.be.false;
   });
 });
 
@@ -789,7 +792,7 @@ describe('globe-gallery: accessibility gallery', () => {
   let a11y;
 
   beforeEach(() => {
-    root = makeEl('<div class="globe-gallery-world"><canvas class="globe-gallery-canvas"></canvas></div>');
+    root = makeEl('<div class="globe-world"><canvas class="globe-canvas"></canvas></div>');
     document.body.appendChild(root);
     modalIdx = -1;
     formed = true;
@@ -819,19 +822,19 @@ describe('globe-gallery: accessibility gallery', () => {
   });
 
   it('creates one entry control and ordered card controls with accessible labels', () => {
-    const entry = root.querySelector('.globe-gallery-a11y');
-    const buttons = [...root.querySelectorAll('.globe-gallery-a11y-card')];
+    const entry = root.querySelector('.globe-a11y');
+    const buttons = [...root.querySelectorAll('.globe-a11y-card')];
 
-    expect(entry.getAttribute('aria-labelledby')).to.equal('globe-gallery-a11y-desc-42');
+    expect(entry.getAttribute('aria-labelledby')).to.equal('globe-a11y-desc-42');
     expect(entry.textContent).to.equal('Enter the gallery');
     expect(buttons.map((button) => button.dataset.idx)).to.deep.equal(['2', '0', '1']);
     expect(buttons.map((button) => button.getAttribute('aria-label')))
       .to.deep.equal(['Card 3', 'Card 1', 'Card 2']);
-    expect(root.querySelector('.globe-gallery-a11y-cards').inert).to.be.true;
+    expect(root.querySelector('.globe-a11y-cards').inert).to.be.true;
   });
 
   it('enters browse mode only after the globe is formed and focuses the first ordered card', () => {
-    const entry = root.querySelector('.globe-gallery-a11y');
+    const entry = root.querySelector('.globe-a11y');
     formed = false;
     entry.click();
     expect(a11y.isBrowsing()).to.be.false;
@@ -845,7 +848,7 @@ describe('globe-gallery: accessibility gallery', () => {
   });
 
   it('collapses browse mode on Escape and returns focus to the entry button', () => {
-    const entry = root.querySelector('.globe-gallery-a11y');
+    const entry = root.querySelector('.globe-a11y');
     entry.click();
     const event = new KeyboardEvent('keydown', {
       key: 'Escape',
@@ -857,12 +860,12 @@ describe('globe-gallery: accessibility gallery', () => {
     expect(event.defaultPrevented).to.be.true;
     expect(a11y.isBrowsing()).to.be.false;
     expect(document.activeElement).to.equal(entry);
-    expect(root.querySelector('.globe-gallery-a11y-cards').inert).to.be.true;
+    expect(root.querySelector('.globe-a11y-cards').inert).to.be.true;
   });
 
   it('updates tab stops while a modal is open and restores browse state afterward', () => {
-    const entry = root.querySelector('.globe-gallery-a11y');
-    const cards = root.querySelector('.globe-gallery-a11y-cards');
+    const entry = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     entry.click();
 
     modalIdx = 2;
@@ -877,7 +880,7 @@ describe('globe-gallery: accessibility gallery', () => {
   });
 
   it('focuses requested cards and exposes the focused card index', () => {
-    root.querySelector('.globe-gallery-a11y').click();
+    root.querySelector('.globe-a11y').click();
     a11y.focusCard(1);
 
     expect(document.activeElement.dataset.idx).to.equal('1');
@@ -889,7 +892,7 @@ describe('globe-gallery: accessibility gallery', () => {
   });
 
   it('positions the focus ring over the active card', () => {
-    root.querySelector('.globe-gallery-a11y').click();
+    root.querySelector('.globe-a11y').click();
     a11y.focusCard(0);
     a11y.setFocusRect(10, 20, 300, 200);
     const card = root.querySelector('[data-idx="0"]');
@@ -902,15 +905,15 @@ describe('globe-gallery: accessibility gallery', () => {
   });
 
   it('does not open cards for synthetic analytics clicks', () => {
-    root.querySelector('.globe-gallery-a11y').click();
+    root.querySelector('.globe-a11y').click();
     a11y.trackCardOpen(1);
     expect(opened.called).to.be.false;
   });
 
   it('removes generated controls during teardown', () => {
     a11y.teardown();
-    expect(root.querySelector('.globe-gallery-a11y')).to.be.null;
-    expect(root.querySelector('.globe-gallery-a11y-cards')).to.be.null;
+    expect(root.querySelector('.globe-a11y')).to.be.null;
+    expect(root.querySelector('.globe-a11y-cards')).to.be.null;
     expect(a11y.isBrowsing()).to.be.false;
     expect(a11y.getFocusedIdx()).to.equal(-1);
   });

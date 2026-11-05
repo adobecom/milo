@@ -258,32 +258,32 @@ describe('firefly-globe: buildGlobeDom', () => {
     buildGlobeDom(el, LABELS, { touchHint: TOUCH_HINT });
   });
 
-  it('creates .firefly-globe-world', () => {
-    expect(el.querySelector('.firefly-globe-world')).to.exist;
+  it('creates .globe-world', () => {
+    expect(el.querySelector('.globe-world')).to.exist;
   });
 
   it('creates the WebGL canvas', () => {
-    expect(el.querySelector('.firefly-globe-canvas')).to.exist;
+    expect(el.querySelector('.globe-canvas')).to.exist;
   });
 
   it('creates the controls container', () => {
-    expect(el.querySelector('.firefly-globe-controls')).to.exist;
+    expect(el.querySelector('.globe-controls')).to.exist;
   });
 
   it('creates the modal backdrop', () => {
-    expect(el.querySelector('.firefly-globe-modal')).to.exist;
+    expect(el.querySelector('.globe-modal')).to.exist;
   });
 
   it('creates the modal chrome dialog', () => {
-    expect(el.querySelector('.firefly-globe-modal-chrome')).to.exist;
+    expect(el.querySelector('.globe-modal-chrome')).to.exist;
   });
 
   it('does NOT create arc-copy element', () => {
-    expect(el.querySelector('.firefly-globe-arc-copy')).to.be.null;
+    expect(el.querySelector('.globe-arc-copy')).to.be.null;
   });
 
   it('drops the pullquote-pin when no pull quote is authored', () => {
-    expect(el.querySelector('.firefly-globe-pullquote-pin')).to.be.null;
+    expect(el.querySelector('.globe-pullquote-pin')).to.be.null;
   });
 
   it('renders the pull quote when authored', () => {
@@ -292,21 +292,21 @@ describe('firefly-globe: buildGlobeDom', () => {
       touchHint: TOUCH_HINT,
       pullQuote: { quote: 'Q', name: 'N', role: 'R' },
     });
-    expect(other.querySelector('.firefly-globe-pullquote-quote').textContent).to.equal('Q');
-    expect(other.querySelector('.firefly-globe-pullquote-name').textContent).to.equal('N');
-    expect(other.querySelector('.firefly-globe-pullquote-role').textContent).to.equal('R');
+    expect(other.querySelector('.globe-pullquote-quote').textContent).to.equal('Q');
+    expect(other.querySelector('.globe-pullquote-name').textContent).to.equal('N');
+    expect(other.querySelector('.globe-pullquote-role').textContent).to.equal('R');
   });
 
   it('renders the CTA label into the modal CTA', () => {
     const other = document.createElement('div');
     buildGlobeDom(other, LABELS, { touchHint: TOUCH_HINT, ctaLabel: 'Open <it>' });
-    const cta = other.querySelector('.firefly-globe-modal-cta');
+    const cta = other.querySelector('.globe-modal-cta');
     expect(cta.textContent).to.equal('Open <it>');
     expect(cta.hidden).to.be.true;
   });
 
   it('sets hint text content', () => {
-    const hintEl = el.querySelector('.firefly-globe-hint-text');
+    const hintEl = el.querySelector('.globe-hint-text');
     expect(hintEl).to.exist;
     expect(hintEl.textContent).to.equal('Drag to rotate');
   });
@@ -628,11 +628,11 @@ describe('firefly-globe: plainQuote', () => {
   let host;
 
   function makeQuote(text, pad = 40) {
-    host = makeEl(`<div class="firefly-globe-pullquote" style="width:400px;padding-inline:${pad}px">
-      <blockquote class="firefly-globe-pullquote-quote"
+    host = makeEl(`<div class="globe-pullquote" style="width:400px;padding-inline:${pad}px">
+      <blockquote class="globe-pullquote-quote"
         style="font:16px/1.2 monospace;margin:0">${text}</blockquote></div>`);
     document.body.append(host);
-    return host.querySelector('.firefly-globe-pullquote-quote');
+    return host.querySelector('.globe-pullquote-quote');
   }
 
   afterEach(() => {

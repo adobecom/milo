@@ -1,7 +1,12 @@
 // eslint-disable-next-line import/no-relative-packages
-import { createTag } from '../utils.js';
+import { createTag, getConfig, loadStyle } from '../utils.js';
 
 // On-canvas globe chrome: auto-spin play/pause + the barrel's rotate row.
+export function loadGlobeStyles() {
+  const { base } = getConfig();
+  return new Promise((resolve) => { loadStyle(`${base}/utils/globe/globe.css`, resolve); });
+}
+
 export function createGlobeControls({
   name, q, labels, getVisible, getHintDismissed, rotate,
 }) {
@@ -32,13 +37,13 @@ export function createGlobeControls({
   }
 
   function setup() {
-    layerEl = q(`.${name}-controls`);
+    layerEl = q('.globe-controls');
     if (!layerEl) return;
     // Tab order, not layout: must land AFTER a11y.setup's nodes.
     layerEl.parentNode?.appendChild(layerEl);
-    spinBtn = layerEl.querySelector(`.${name}-spin-toggle`);
-    hintEl = layerEl.querySelector(`.${name}-hint`);
-    rotateBtns = [...layerEl.querySelectorAll(`.${name}-rotate`)];
+    spinBtn = layerEl.querySelector('.globe-spin-toggle');
+    hintEl = layerEl.querySelector('.globe-hint');
+    rotateBtns = [...layerEl.querySelectorAll('.globe-rotate')];
     spinBtn?.addEventListener('click', onSpinClick);
     rotateBtns.forEach((btn) => btn.addEventListener('click', onRotateClick));
     appliedVisible = null;
@@ -95,7 +100,7 @@ const initialState = () => ({
 });
 
 export function createCursor(deps) {
-  const { name, getGlobeLive, getCursorRetired, labelText } = deps;
+  const { getGlobeLive, getCursorRetired, labelText } = deps;
   let canvasEl = null;
   let els = null;
   let state = initialState();
@@ -119,15 +124,15 @@ export function createCursor(deps) {
     if (!window.matchMedia) return;
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-    const cursorInner = `<div class="${name}-cursor-text-wrap">`
-      + `<span class="${name}-cursor-text"></span>`
+    const cursorInner = '<div class="globe-cursor-text-wrap">'
+      + '<span class="globe-cursor-text"></span>'
       + '</div>';
-    const container = createTag('div', { class: `${name}-cursor`, 'aria-hidden': 'true' }, cursorInner);
+    const container = createTag('div', { class: 'globe-cursor', 'aria-hidden': 'true' }, cursorInner);
     document.body.appendChild(container);
-    container.querySelector(`.${name}-cursor-text`).textContent = labelText || 'Click & Drag';
+    container.querySelector('.globe-cursor-text').textContent = labelText || 'Click & Drag';
     els = {
       container,
-      text: container.querySelector(`.${name}-cursor-text-wrap`),
+      text: container.querySelector('.globe-cursor-text-wrap'),
     };
     textWidth = els.text.offsetWidth;
     document.fonts?.ready?.then(() => { if (els) textWidth = els.text.offsetWidth; });
@@ -146,7 +151,7 @@ export function createCursor(deps) {
     const wantRetired = getCursorRetired();
     if (wantRetired !== (state.retireT0 >= 0)) {
       state.retireT0 = wantRetired ? now() : -1;
-      els.container.classList.toggle(`${name}-cursor-retiring`, wantRetired);
+      els.container.classList.toggle('globe-cursor-retiring', wantRetired);
     }
     const faded = state.retireT0 >= 0 && now() - state.retireT0 >= RETIRE_FADE_MS;
 
@@ -158,7 +163,7 @@ export function createCursor(deps) {
     if (wantActive !== state.active) {
       state.active = wantActive;
       state.wx = NaN;
-      els.container.classList.toggle(`${name}-cursor-active`, state.active);
+      els.container.classList.toggle('globe-cursor-active', state.active);
     }
     if (!state.active || (state.mx === state.wx && state.my === state.wy)) return;
     state.wx = state.mx;
@@ -273,27 +278,27 @@ export function createGalleryA11y({
 
   // Call after buildCards() so getCount() is final.
   function setup() {
-    const canvas = q(`.${name}-canvas`);
+    const canvas = q('.globe-canvas');
     if (!canvas || !canvas.parentNode) return;
     const parent = canvas.parentNode;
 
     // Remove existing nodes on re-init so we don't double up.
-    [`.${name}-a11y`, `.${name}-a11y-cards`].forEach((sel) => {
+    ['.globe-a11y', '.globe-a11y-cards'].forEach((sel) => {
       const existing = q(sel);
       if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
     });
 
     widgetEl = document.createElement('button');
     widgetEl.type = 'button';
-    widgetEl.className = `${name}-a11y`;
+    widgetEl.className = 'globe-a11y';
     widgetEl.setAttribute('daa-ll', ENTER_GALLERY_DAA_LL);
     widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
 
     // One element serves both the visible :focus-visible popup and the aria-labelledby name.
     if (galleryInstructions) {
       const descEl = document.createElement('span');
-      descEl.className = `${name}-a11y-tip`;
-      descEl.id = `${name}-a11y-desc-${gid}`;
+      descEl.className = 'globe-a11y-tip';
+      descEl.id = `globe-a11y-desc-${gid}`;
       descEl.textContent = galleryInstructions;
       descEl.setAttribute('aria-hidden', 'true');
       widgetEl.appendChild(descEl);
@@ -304,7 +309,7 @@ export function createGalleryA11y({
     widgetEl.addEventListener('click', () => { enterBrowse(); });
 
     cardsEl = document.createElement('div');
-    cardsEl.className = `${name}-a11y-cards`;
+    cardsEl.className = 'globe-a11y-cards';
     cardsEl.inert = true;
     const count = getCount();
     cardButtons = [];
@@ -312,7 +317,7 @@ export function createGalleryA11y({
       const i = cardOrder[n];
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = `${name}-a11y-card`;
+      btn.className = 'globe-a11y-card';
       btn.dataset.idx = String(i);
       btn.setAttribute('daa-ll', CARD_OPEN_DAA_LL);
       btn.setAttribute('aria-label', getCardLabel(i));
@@ -561,72 +566,72 @@ export function hangParagraphs(container) {
 
 const QUOTE_TEXT = new WeakMap();
 
-export function plainQuote(quoteEl, name) {
+export function plainQuote(quoteEl) {
   if (!quoteEl) return '';
   if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
   const text = QUOTE_TEXT.get(quoteEl).trim();
   quoteEl.textContent = text;
-  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest(`.${name}-pullquote`)));
+  hangOpeningMark(quoteEl, gutterOf(quoteEl.closest('.globe-pullquote')));
   return text;
 }
 
 const buildMarkup = ({ name, labels, canvasStyle, arcCopyHtml, modalInfoHtml }) => {
   const daaName = name.replace(/-/g, '_');
   return `
-  <div class="${name}-world">
-    <canvas class="${name}-canvas" style="${canvasStyle}"></canvas>
-    <div class="${name}-controls" inert>
-      <button class="${name}-control ${name}-spin-toggle" type="button" daa-ll="pause_spin--${daaName}" aria-label="${escapeHtml(labels.pauseSpin)}">
-        <svg class="${name}-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
-        <svg class="${name}-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+  <div class="globe-world">
+    <canvas class="globe-canvas" style="${canvasStyle}"></canvas>
+    <div class="globe-controls" inert>
+      <button class="globe-control globe-spin-toggle" type="button" daa-ll="pause_spin--${daaName}" aria-label="${escapeHtml(labels.pauseSpin)}">
+        <svg class="globe-icon-pause" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="8" y="5" width="3" height="14" rx="1" fill="currentColor"/><rect x="13" y="5" width="3" height="14" rx="1" fill="currentColor"/></svg>
+        <svg class="globe-icon-play" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
       </button>
-      <div class="${name}-hint">
-        <button class="${name}-control ${name}-rotate" type="button" data-dir="-1" daa-ll="rotate_left--${daaName}" aria-label="${escapeHtml(labels.rotateLeft)}">
+      <div class="globe-hint">
+        <button class="globe-control globe-rotate" type="button" data-dir="-1" daa-ll="rotate_left--${daaName}" aria-label="${escapeHtml(labels.rotateLeft)}">
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <div class="${name}-hint-text"></div>
-        <button class="${name}-control ${name}-rotate" type="button" data-dir="1" daa-ll="rotate_right--${daaName}" aria-label="${escapeHtml(labels.rotateRight)}">
+        <div class="globe-hint-text"></div>
+        <button class="globe-control globe-rotate" type="button" data-dir="1" daa-ll="rotate_right--${daaName}" aria-label="${escapeHtml(labels.rotateRight)}">
           <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
     </div>
   </div>
 
-${arcCopyHtml}  <div class="${name}-pullquote-pin">
-    <div class="${name}-pullquote-rail">
-      <figure class="${name}-pullquote">
-        <blockquote class="${name}-pullquote-quote heading-1"></blockquote>
-        <figcaption class="${name}-pullquote-attribution">
-          <p class="${name}-pullquote-name body-lg"></p>
-          <p class="${name}-pullquote-role body-lg"></p>
+${arcCopyHtml}  <div class="globe-pullquote-pin">
+    <div class="globe-pullquote-rail">
+      <figure class="globe-pullquote">
+        <blockquote class="globe-pullquote-quote heading-1"></blockquote>
+        <figcaption class="globe-pullquote-attribution">
+          <p class="globe-pullquote-name body-lg"></p>
+          <p class="globe-pullquote-role body-lg"></p>
         </figcaption>
       </figure>
     </div>
   </div>
 
-  <div class="${name}-modal" aria-hidden="true">
-    <div class="${name}-modal-backdrop"></div>
+  <div class="globe-modal" aria-hidden="true">
+    <div class="globe-modal-backdrop"></div>
   </div>
 
-  <canvas class="${name}-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
+  <canvas class="globe-modal-canvas" style="position:fixed;top:0;left:0;width:100%;height:100vh;z-index:14;display:none;pointer-events:none;"></canvas>
 
-  <dialog class="${name}-modal-chrome">
+  <dialog class="globe-modal-chrome">
     ${modalInfoHtml.trim()}
     <!-- sr-only alt for the WebGL photo; after the info so the heading is read first. -->
-    <span class="${name}-modal-image sr-only" role="img"></span>
+    <span class="globe-modal-image sr-only" role="img"></span>
     <!-- Controls after the info scrim so they paint on top of it. -->
-    <button class="${name}-modal-nav ${name}-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
+    <button class="globe-modal-nav globe-modal-nav-prev" type="button" daa-ll="prev_card-1--globe_card_modal" aria-label="${escapeHtml(labels.prevCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <div class="${name}-modal-counter" aria-hidden="true"></div>
-    <span class="${name}-modal-position sr-only" role="note"></span>
-    <button class="${name}-modal-nav ${name}-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
+    <div class="globe-modal-counter" aria-hidden="true"></div>
+    <span class="globe-modal-position sr-only" role="note"></span>
+    <button class="globe-modal-nav globe-modal-nav-next" type="button" daa-ll="next_card-2--globe_card_modal" aria-label="${escapeHtml(labels.nextCard)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="${name}-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
+    <button class="globe-modal-close" type="button" daa-ll="close-3--globe_card_modal" aria-label="${escapeHtml(labels.closeBtn)}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <span class="${name}-modal-announce sr-only" aria-live="polite"></span>
+    <span class="globe-modal-announce sr-only" aria-live="polite"></span>
   </dialog>
 `;
 };
@@ -639,16 +644,17 @@ export function buildGlobeSkeleton(el, name, labels, opts) {
   const gid = globeInstanceSeq;
   const modalInfoHtml = opts.modalInfoHtml(gid);
   const arcCopyHtml = opts.arcCopyHtml || '';
+  el.classList.add('globe');
   el.innerHTML = buildMarkup({ name, labels, canvasStyle, arcCopyHtml, modalInfoHtml });
-  const hintEl = el.querySelector(`.${name}-hint-text`);
+  const hintEl = el.querySelector('.globe-hint-text');
   if (touchHint.paras.length) renderParagraphs(hintEl, touchHint.paras);
   else hintEl.textContent = touchHint.text;
   if (pullQuote) {
-    el.querySelector(`.${name}-pullquote-quote`).textContent = pullQuote.quote;
-    el.querySelector(`.${name}-pullquote-name`).textContent = pullQuote.name;
-    el.querySelector(`.${name}-pullquote-role`).textContent = pullQuote.role;
+    el.querySelector('.globe-pullquote-quote').textContent = pullQuote.quote;
+    el.querySelector('.globe-pullquote-name').textContent = pullQuote.name;
+    el.querySelector('.globe-pullquote-role').textContent = pullQuote.role;
   } else {
-    el.querySelector(`.${name}-pullquote-pin`)?.remove();
+    el.querySelector('.globe-pullquote-pin')?.remove();
   }
   return gid;
 }

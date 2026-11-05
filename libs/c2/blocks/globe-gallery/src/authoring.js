@@ -20,7 +20,7 @@ function isSvgAnchor(a) {
 function badgeIconHtml(url) {
   if (!url) return null;
   const src = getFederatedUrl(url);
-  return `<picture class="globe-gallery-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
+  return `<picture class="globe-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
 }
 
 function parseArcCopy(row) {
@@ -186,20 +186,20 @@ export function parseAuthoredContent(el) {
 
 const CANVAS_STYLE = 'position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;';
 
-const ARC_COPY_HTML = `  <div class="globe-gallery-arc-copy">
-    <h2 class="globe-gallery-arc-copy-title"></h2>
-    <div class="globe-gallery-arc-copy-body body-md"></div>
+const ARC_COPY_HTML = `  <div class="globe-arc-copy">
+    <h2 class="globe-arc-copy-title"></h2>
+    <div class="globe-arc-copy-body body-md"></div>
   </div>
 
 `;
 
 const modalInfoHtml = (gid) => `
-    <div class="globe-gallery-modal-info" data-lenis-prevent>
-      <h2 class="globe-gallery-modal-name" id="globe-gallery-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
-      <p class="globe-gallery-modal-role-label" id="globe-gallery-modal-role-${gid}"></p>
-      <span class="globe-gallery-modal-position sr-only" id="globe-gallery-modal-position-${gid}" aria-hidden="true"></span>
-      <div class="globe-gallery-modal-description" id="globe-gallery-modal-description-${gid}" role="document"></div>
-      <ul class="globe-gallery-modal-badges"></ul>
+    <div class="globe-modal-info" data-lenis-prevent>
+      <h2 class="globe-modal-name" id="globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-modal-role-${gid} globe-modal-position-${gid}"></h2>
+      <p class="globe-modal-role-label" id="globe-modal-role-${gid}"></p>
+      <span class="globe-modal-position sr-only" id="globe-modal-position-${gid}" aria-hidden="true"></span>
+      <div class="globe-modal-description" id="globe-modal-description-${gid}" role="document"></div>
+      <ul class="globe-modal-badges"></ul>
     </div>
 `;
 
@@ -211,31 +211,31 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
     arcCopyHtml: ARC_COPY_HTML,
     modalInfoHtml,
   });
-  el.querySelector('.globe-gallery-arc-copy-title').textContent = arcCopy.title;
-  renderParagraphs(el.querySelector('.globe-gallery-arc-copy-body'), arcCopy.body);
+  el.querySelector('.globe-arc-copy-title').textContent = arcCopy.title;
+  renderParagraphs(el.querySelector('.globe-arc-copy-body'), arcCopy.body);
   return gid;
 }
 
 export function renderModalContent(targetEl, meta) {
-  const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
+  const roleLabelEl = targetEl.querySelector('.globe-modal-role-label');
   if (roleLabelEl) roleLabelEl.textContent = meta.role;
-  targetEl.querySelector('.globe-gallery-modal-name').textContent = meta.name;
-  const descEl = targetEl.querySelector('.globe-gallery-modal-description');
+  targetEl.querySelector('.globe-modal-name').textContent = meta.name;
+  const descEl = targetEl.querySelector('.globe-modal-description');
   renderParagraphs(descEl, meta.description);
   hangParagraphs(descEl);
-  const badgesEl = targetEl.querySelector('.globe-gallery-modal-badges');
+  const badgesEl = targetEl.querySelector('.globe-modal-badges');
   badgesEl.innerHTML = '';
   const config = getConfig();
   meta.badges.forEach((b) => {
     const row = document.createElement('li');
-    row.className = 'globe-gallery-modal-badge';
+    row.className = 'globe-modal-badge';
     // Labelled by product, not by card, and unindexed.
     const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
     const nameHtml = b.href
-      ? `<a class="globe-gallery-modal-badge-app globe-gallery-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
-      : `<span class="globe-gallery-modal-badge-app">${escapeHtml(b.name)}</span>`;
+      ? `<a class="globe-modal-badge-app globe-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
+      : `<span class="globe-modal-badge-app">${escapeHtml(b.name)}</span>`;
     // Rows without a logo just render the name — no empty chip.
-    row.innerHTML = `<div class="globe-gallery-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-gallery-modal-badge-role">${escapeHtml(b.role)}</span>`;
+    row.innerHTML = `<div class="globe-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-modal-badge-role">${escapeHtml(b.role)}</span>`;
     badgesEl.appendChild(row);
   });
   return { descEl, speech: [[meta.name], [meta.role]] };

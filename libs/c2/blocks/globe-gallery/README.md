@@ -30,7 +30,7 @@ change something, *replace* the old explanation instead of appending to it. Spec
 
 ## What it is
 
-Over a tall, pinned scroll range (`--gg-runway-height` in the CSS), the authored photo cards
+Over a tall, pinned scroll range (`--globe-runway-height` in the CSS), the authored photo cards
 (any count, every card on every breakpoint — see Card count) animate through four phases:
 
 ```
@@ -57,7 +57,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 
 ## Files
 
-Files under `libs/utils/globe/` (`core.js`, `ui.js`, `interaction.js`, `modal.js`, `quote-particles.js`) are shared with `firefly-globe`: they are parameterized by block name (`name`, `cssVars`, …) and take block-specific pieces (`renderContent`, `timeline`) as injected hooks. `core.js` holds the shaders, shared math and GPU-asset factories; `ui.js` the a11y widget, controls and cursor.
+Files under `libs/utils/globe/` (`core.js`, `ui.js`, `interaction.js`, `modal.js`, `quote-particles.js`, `globe.css`) are shared with `firefly-globe`: `globe.css` holds the styles both blocks share. Block-specific pieces (`renderContent`, `timeline`) are injected hooks (see `utils/globe/README.md`). `core.js` holds the shaders, shared math and GPU-asset factories; `ui.js` the a11y widget, controls and cursor.
 
 | File | What it is |
 | --- | --- |
@@ -146,7 +146,7 @@ The block expects up to **five direct child rows** (the pull-quote row is option
 
 | Row | Purpose | Content |
 | --- | --- | --- |
-| 0 | **Arc-copy** | heading → `.globe-gallery-arc-copy-title`; remaining `<p>`s → `.globe-gallery-arc-copy-body` (each authored paragraph is reused as-is, inline markup included) |
+| 0 | **Arc-copy** | heading → `.globe-arc-copy-title`; remaining `<p>`s → `.globe-arc-copy-body` (each authored paragraph is reused as-is, inline markup included) |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
 | 2 | **Hint copy** — two cells | **cell 0** → the barrel's visible bottom row (mobile), the sentence between the rotate arrows; **cell 1** → the WebGL hint plane (the short one). Cell 0 keeps its authored `<p>`s, one per line; cell 1 is a canvas texture, so its `<p>`s are joined with a space. Either may be bare cell text |
 | 3 | **A11y strings** | one cell, `\|\|`-separated in on-screen order: **instructions \|\| rotate-left \|\| rotate-right \|\| pause-spin \|\| resume-spin \|\| prev-arrow \|\| card-position template \|\| next-arrow \|\| close** — nine parts, the entry-widget instructions first. Each part falls back to English independently |
@@ -182,10 +182,10 @@ itself — AEM Edge Delivery returns all card sections as bare `<div>`s (one per
 racing the parse.
 
 Cards come solely from the fetched fragment. If the fetch yields none — a failed
-request, or no fragment link authored — the block collapses to `.globe-gallery-empty`
+request, or no fragment link authored — the block collapses to `.globe-empty`
 (`height:auto`) rather than rendering an empty scene. There is no inline-DOM-card
 fallback (authoring is expected to provide a valid fragment link). (Distinct from
-`.globe-gallery-reduced`, the reduced-motion render path — see Accessibility.)
+`.globe-reduced`, the reduced-motion render path — see Accessibility.)
 
 The same `--empty` collapse is the fallback when **WebGL is unavailable**: `initRuntime`
 creates the `WebGLRenderer` in a `try/catch` (Three.js throws when `getContext` returns
@@ -210,7 +210,7 @@ crossings, reduced-motion toggles), and a force-lost context is never restored �
 that canvas is born dead ("Context Lost"). `renderer.dispose()` alone frees this renderer's GPU
 resources. There is a comment guarding this line; leave it there.
 
-Regression-test with the `WEBGL_lose_context` extension: `const x = document.querySelector('.globe-gallery-canvas').getContext('webgl2').getExtension('WEBGL_lose_context'); x.loseContext(); setTimeout(() => x.restoreContext(), 1000);`
+Regression-test with the `WEBGL_lose_context` extension: `const x = document.querySelector('.globe-canvas').getContext('webgl2').getExtension('WEBGL_lose_context'); x.loseContext(); setTimeout(() => x.restoreContext(), 1000);`
 — the globe repaints within a frame or two of `restoreContext()`.
 
 ### Card shape
@@ -232,7 +232,7 @@ Each fragment section is flat P/UL elements:
 **Authored order does not matter.** Every row above is matched by *markup*, never by position: the
 `<em>` paragraph is the role and the `<strong>` paragraph (or a heading) is the name, whichever
 comes first. The modal renders **name above role** either way — that stacking is
-`.globe-gallery-modal-info` DOM order, not the parse.
+`.globe-modal-info` DOM order, not the parse.
 
 **A card with no copy is a lone unwrapped image.** When the image is the section's *only* content
 the pipeline drops the `<p>`, so `.plain.html` serves `<div><picture>…</picture></div>`. Both the
@@ -468,7 +468,7 @@ not just the first, and runs from `populateModal` after `renderParagraphs`. `han
 `renderParagraphs` moves rather than clones. It hangs a second time when what it measured can still change — the element wasn't laid out yet (a closed dialog: it falls back to canvas, then re-measures next frame) or a web font is still loading — using the latest gutter it was given. It skips centered and non-horizontal text, where a negative indent would mis-place the mark. It needs **no resize or breakpoint hook** — the outdent
 is the first glyph's advance and does not depend on where lines wrap.
 
-**The description clips, so it reserves a gutter.** `--gg-hang-max` is `0.8em` — the ceiling
+**The description clips, so it reserves a gutter.** `--globe-hang-max` is `0.8em` — the ceiling
 `hangOpeningMark` enforces, since it declines any advance at or past `0.8 × font-size`, so the two
 move together. It is `em` and **unregistered on purpose**: a custom property substitutes as tokens,
 so the `em` resolves against each *use site's* font-size, matching whatever text is being measured.
@@ -513,7 +513,7 @@ dashes, and the rest of `Po` (`!` `¿`) are excluded.
 ~0.96em vs ~0.55em for the widest Latin quote `«`, so the cutoff isn't delicate), or **exceeding the
 padding**, where it would be shoved past the viewport edge into the block's `overflow-x: clip` and
 sheared. Either test leaves the mark inline. The width test is what makes that result
-breakpoint-independent: `--gg-copy-pad` (24→48→64) and `heading-1` (40→56→80px) step at *different*
+breakpoint-independent: `--globe-copy-pad` (24→48→64) and `heading-1` (40→56→80px) step at *different*
 widths, so the padding test alone leaves
 `768–1023` a band where a `「` fits and hangs while being suppressed everywhere else — and since the
 measurement runs once at init, a later resize would strand it and shear.
@@ -574,19 +574,19 @@ Consequences worth keeping:
 markup, fills the arc-copy / pull-quote slots, and **returns the `gid`** (the
 per-instance unique-id suffix it mints from a module-level counter in
 `authoring.js`). The runtime finds nodes by **class, queried within
-`el`** (`root.querySelector('.globe-gallery-canvas')`, `.globe-gallery-modal-canvas`,
-`.globe-gallery-pullquote`, `.globe-gallery-modal*`, …) →
+`el`** (`root.querySelector('.globe-canvas')`, `.globe-modal-canvas`,
+`.globe-pullquote`, `.globe-modal*`, …) →
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the modal heading/role-label/position — the heading's own id plus its
 `aria-describedby` IDREFs. `el` itself is the scroll runway
-(height is `--gg-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
+(height is `--globe-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
-time) is the `.globe-gallery-modal-open` scroll lock. `html:has(.globe-gallery)` keeps `scrollbar-gutter: stable`, so the lock (`overflow: hidden`, Lenis' `lenis-stopped`) does not change the page width; the gutter is painted dark while locked.
+time) is the `.globe-modal-open` scroll lock. `html:has(.globe-gallery)` keeps `scrollbar-gutter: stable`, so the lock (`overflow: hidden`, Lenis' `lenis-stopped`) does not change the page width; the gutter is painted dark while locked.
 
 **Scroll model.** (For *what happens at each point* on that scroll, see **Lifecycle timeline**
 below — charts + an event table. This subsection is the mechanism that gets you there.) The block
-element *is* the scroll runway (its height is `--gg-runway-height`) — there's
+element *is* the scroll runway (its height is `--globe-runway-height`) — there's
 no separate runway element. Raw scroll is measured against the block's own metrics (`blockDocTop` =
 top in document space, `blockHeight` = `offsetHeight`, both refreshed in `doLayout` + a body
 `ResizeObserver`), then remapped **piecewise** (in `computeFrame`) into the `progress` 0→1 the phase
@@ -595,10 +595,10 @@ speeding up the globe:
 
 | segment | raw scroll | → progress | owns |
 |---|---|---|---|
-| **formation** (arc→grid→fold→settle) | `0 → --gg-formation-vh` | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
-| **tail** (zoom-through + pull-quote) | `--gg-formation-vh → --gg-runway-height` | `foldLast → 1` | `zoomT`, hint-text + controls retire, pull-quote |
+| **formation** (arc→grid→fold→settle) | `0 → --globe-formation-vh` | `0 → foldLast` (≈0.322) | the `P_*` phase constants |
+| **tail** (zoom-through + pull-quote) | `--globe-formation-vh → --globe-runway-height` | `foldLast → 1` | `zoomT`, hint-text + controls retire, pull-quote |
 
-Formation is **locked** to a fixed scroll length, so `--gg-runway-height` sets tail length only.
+Formation is **locked** to a fixed scroll length, so `--globe-runway-height` sets tail length only.
 `formedScrollPx()` is the single source used by the remap, the reduced-motion pin, and the focus-snap.
 Within the tail, `zoomT = clamp((scroll − formation) / (runway − formation), 0, 1)` drives the camera
 (`CAM_Z_SPHERE → CAM_Z_END`), the hint-text and controls retirement, and the pull-quote.
@@ -703,7 +703,7 @@ during that morph. It is not scroll-driven and cannot oscillate.
 ### One viewport height
 
 `H` is **not** `window.innerHeight` — that identifier does not appear in the block. It is
-`.globe-gallery-world`'s `offsetHeight`. That box is `height: 100vh` and is the canvas' own parent, so
+`.globe-world`'s `offsetHeight`. That box is `height: 100vh` and is the canvas' own parent, so
 `measureViewportH()` reads 100vh in px straight from CSS. Scroll clocks and rendering both use it, and
 it is the only viewport height here. Nav-centring does not add a second one (see **The nav band**): the
 canvas stays full-bleed `100vh` and the globe is re-centred by skewing the perspective camera's
@@ -724,7 +724,7 @@ scroll lock means the bar can't move while it's open.
 
 **Do not switch to another viewport unit.** `lvh` is what `vh` already means here, and `svh` is constant
 too, so both are pure documentation. `dvh` would make CSS agree with `innerHeight` by making the box
-grow and shrink mid-scroll — on `.globe-gallery-world` that brings the pop back, on `--gg-runway-height`
+grow and shrink mid-scroll — on `.globe-world` that brings the pop back, on `--globe-runway-height`
 it rescales the runway under the scroll mapping. Either way the artifact returns.
 
 **Consequences worth knowing:**
@@ -733,7 +733,7 @@ it rescales the runway under the scroll mapping. Either way the artifact returns
 - **`layoutObs` calls `doLayout({ fromResize: true })`** rather than measuring by hand. The un-hide
   arrives as a body resize with no window resize behind it, so it is the only thing that upgrades `H` at
   that moment.
-- **Reduced motion needs no branch.** `.globe-gallery-reduced` leaves `.globe-gallery-world` at
+- **Reduced motion needs no branch.** `.globe-reduced` leaves `.globe-world` at
   `height: 100vh` and only un-sticks it. Keep it that way — a `vh` override on that element would put an
   imprecision into the one function every clock depends on.
 - A genuine viewport change still lands: 844→600px tall moves `blockHeight` 3882→2760, and the same
@@ -741,15 +741,15 @@ it rescales the runway under the scroll mapping. Either way the artifact returns
 
 **CSS is the source of truth for the scroll budget**, read per layout in `readCssVars()`, so retuning is
 a CSS-only edit. The CSS is **mobile-first**: the base `.globe-gallery` rule is sm, `@media (width >=
-768px)` overrides md. `--gg-formation-vh` and `--gg-zoom-vh` are authored at both; the runway is
+768px)` overrides md. `--globe-formation-vh` and `--globe-travel-vh` are authored at both; the runway is
 shared.
 
 | prop | effect | ↑ does |
 |---|---|---|
-| `--gg-runway-height` | total height = formation + tail, while the quote particles are off | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
-| `--gg-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
-| `--gg-zoom-vh` | the camera dolly's scroll length while the quote particles are on; per breakpoint | slows the zoom: more scroll inside the globe before the hand-off |
-| `--gg-pq-height` | block height while the quote particles are on, written inline by `syncHeight`; unset falls back to the runway; `-reduced`/`-empty` still collapse the block | not a knob: derived from formation, zoom, hand-off and flight (see Block height) |
+| `--globe-runway-height` | total height = formation + tail, while the quote particles are off | scales the whole tail — the zoom, the controls retiring, the hint fade, the reveal point, and the sparse-shell stretch before the quote |
+| `--globe-formation-vh` | locked formation length | moves scroll from tail into formation, leaving total height alone; slows arc → grid → fold |
+| `--globe-travel-vh` | the camera dolly's scroll length while the quote particles are on; per breakpoint | slows the zoom: more scroll inside the globe before the hand-off |
+| `--globe-pq-height` | block height while the quote particles are on, written inline by `syncHeight`; unset falls back to the runway; `-reduced`/`-empty` still collapse the block | not a knob: derived from formation, zoom, hand-off and flight (see Block height) |
 
 **No JS fallback copy of these numbers exists**, so CSS cannot be quietly overridden by a stale literal.
 The zero-box gate means `readCssVars()` always finds the block's properties, so the two rules below
@@ -810,12 +810,12 @@ never overlaps the quote.
 **Tuning cheatsheet** (all visual — no test harness, so eyeball each):
 - *Scroll after the globe too long or too short:* every length is a knob of its own, and the block
   height follows (see Block height). Per breakpoint:
-  - `--gg-zoom-vh`: the dolly's pace. More gives more scroll inside the globe before the hand-off and
+  - `--globe-travel-vh`: the dolly's pace. More gives more scroll inside the globe before the hand-off and
     pushes everything after it later.
   - `PULL_BP[band].startR`: where along the dolly the hand-off happens.
   - `FLY_VH`: the scroll the particle flight takes; `READ_VH`: the still quote before the world lets go.
-  - `--gg-formation-vh`: formation pacing only.
-  - `--gg-runway-height` only matters while the particles are off.
+  - `--globe-formation-vh`: formation pacing only.
+  - `--globe-runway-height` only matters while the particles are off.
 - *Quote lands while cards are still in frame, or waits too long after they go:* nothing to tune — it is
   `zoomTAtCamZ` of the shell's far wall. If it reads early, revisit the card extent in
   `publishPqAppearZoomT`, not a scroll number.
@@ -832,14 +832,14 @@ never overlaps the quote.
 
 #### Block height
 
-While the quote particles are on, the zoom runs over its own length, `--gg-zoom-vh`
+While the quote particles are on, the zoom runs over its own length, `--globe-travel-vh`
 (`input.zoomPx`), not over `runway − formation`, and the block ends one viewport plus `READ_VH`
-after the quote is crisp: `syncHeight` writes that as `--gg-pq-height`, from formation + `startT` ×
+after the quote is crisp: `syncHeight` writes that as `--globe-pq-height`, from formation + `startT` ×
 zoom + `QUOTE_LIVE_P` × `FLY_VH`. Depending on those lengths the block can end before the zoom does
 (the camera never finishes its dolly) or after it (the camera rests at `CAM_Z_END`). It
 never ends before `pqAppearZoomT` + `READ_VH`, where the no-particles path (forced colours) reveals the
 plain quote. It re-solves on layout and whenever `startT` is republished. With the particles off
-(reduced motion, no quote) the block is `--gg-runway-height`, as without this feature. See
+(reduced motion, no quote) the block is `--globe-runway-height`, as without this feature. See
 **CSS → Pull quote**.
 
 ### Zero-box gate
@@ -857,7 +857,7 @@ Milo keeps the section `display: none` until `processSection` reaches
   starts the rAF loop *synchronously*; the observer's first callback is a frame away. On a zero-box
   block the numbers are wrong rather than absent: `getBoundingClientRect().top` is 0, so
   `blockDocTop` collapses onto the current scroll position and `arcCopyEntryT` reads `1` without
-  anyone having scrolled — and `.globe-gallery-arc-copy` is `position: fixed`, so it would paint
+  anyone having scrolled — and `.globe-arc-copy` is `position: fixed`, so it would paint
   over a page nowhere near the block. `H` 1 shrinks the entry ramp to a single pixel and takes
   `camera.aspect` to `W`; `blockHeight` 0 saturates `progress`; `readCssVars` resolves nothing.
 - **A box implies the block's stylesheet is applied.** `readCssVars()`, the quote layout and every px
@@ -872,7 +872,7 @@ thing that opens the gate — still happens.
 
 Milo's page-level Lenis keeps `window.scrollY` in sync; the driver is a plain `requestAnimationFrame`
 loop (`startTicker`/`stopTicker`). The modal pauses Lenis via `window.lenis.stop()/start()` plus a
-`.globe-gallery-modal-open { overflow:hidden }` CSS lock.
+`.globe-modal-open { overflow:hidden }` CSS lock.
 
 **Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
 (cards built — contours paint immediately, textures fill in progressively; see Progressive
@@ -954,14 +954,14 @@ pull-quote, and the a11y layers are all positioned and already in paint order in
 order alone produces the intended stack. What is left, in `globe-gallery.css` plus the modal
 canvas's inline style in `authoring.js`:
 
-- `.globe-gallery-controls` — `1`, scoped inside the world. `utils/globe/ui.js` appends its two layers to
+- `.globe-controls` — `1`, scoped inside the world. `utils/globe/ui.js` appends its two layers to
   `canvas.parentNode` (the world) *after* this markup, so DOM order alone would put them over the
-  buttons. `.globe-gallery-world` carries `z-index: 0` purely to scope it — `0` ties with `auto`,
+  buttons. `.globe-world` carries `z-index: 0` purely to scope it — `0` ties with `auto`,
   so DOM order still decides everything at page level. Not `isolation: isolate`, which would make
   the world a **backdrop root** and stop the modal backdrop sampling the canvas beneath it.
 - **Cursor label — `17`.** Body-level and above the modal band. `utils/globe/ui.js` appends it outside the
-  block, so it inherits none of its custom properties — `--gg-chrome-blur` is redeclared on
-  `.globe-gallery-cursor`, and so is any local var the cursor grows later.
+  block, so it inherits none of its custom properties — `--globe-chrome-blur` is redeclared on
+  `.globe-cursor`, and so is any local var the cursor grows later.
 - **Modal — `13` backdrop, `14` modal canvas.** The chrome needs none: `showModal()` puts the
   `<dialog>` in the top layer, above every stacking context. The backdrop and the modal canvas are
   ordinary fixed siblings and do need numbers, because they must cover the gnav.
@@ -1034,13 +1034,13 @@ do **not** share a zero. All formulas are in `deriveFrame` (`timeline.js`):
 | `sphereFormT` | `FOLD_FIRST_PROGRESS` → `SPHERE_FORMED_PROGRESS` | `progress` over that window (`FOLD_WINDOW`) | camera, depth sort, interactivity, hint text, arc-copy fade-out |
 | `zoomT` | sphere formed → end of the zoom | `progress` over `SPHERE_FORMED_PROGRESS` → `PROGRESS_ZOOM_END` | zoom camera, hint-text fade, controls retire, pull quote, canvas hide |
 
-The zoom span is `--gg-zoom-vh` while the quote particles are on, else the rest of the runway (see
+The zoom span is `--globe-travel-vh` while the quote particles are on, else the rest of the runway (see
 Block height). Two consequences worth internalizing: `arcPanT` is the only clock that depends on
 `arcCopyEntryT`, so arc/grid timing shifts with *how the user entered the block*; and `sphereFormT`
 / `zoomT` are back-to-back (`zoomT` starts the frame `sphereFormT` reaches 1), so there is no
 interactive dwell built into the scroll — the "formed globe" is a single point, not a range.
 
-### Formation — `progress` 0 → `SPHERE_FORMED_PROGRESS`, scroll 0 → `--gg-formation-vh`
+### Formation — `progress` 0 → `SPHERE_FORMED_PROGRESS`, scroll 0 → `--globe-formation-vh`
 
 ```
 cards       ###arc##|#####peel to grid######|..........peel done............
@@ -1096,7 +1096,7 @@ In scroll order. Positions are not listed: run the snippet below for the current
 | `zoomT ≥ startT` | **hand-off**: drag, tap, cursor and globe controls retire (controls leave the tab order), the spin comes to rest, the flight starts (`p` > 0) and the cards turn into particles | `pullQuote.update`, `controls.update`, `updateSphereRotation` |
 | `zoomT ≥ pqAppearZoomT` | the last card has left the screen; **hint text reaches 0** (it fades linearly across the zoom up to here). With no quote particles, this is also where the controls retire | `updateClickDragText`, `controls.update` |
 | `p ≥ QUOTE_LIVE_P` | quote crisp; the DOM copy takes over over `SWAP_MS`, then the canvas is `display:none` **and `renderer.render` is skipped**. Without particles the canvas instead goes at `pqAppearZoomT + CANVAS_HIDE_MARGIN_T` | `pullQuote.update`, `updateCanvasVisibility`, `renderScene` |
-| block end (`--gg-pq-height`) | the world un-sticks (canvas hidden); the DOM quote holds until the block's end meets its bottom edge, then scrolls away with it | CSS |
+| block end (`--globe-pq-height`) | the world un-sticks (canvas hidden); the DOM quote holds until the block's end meets its bottom edge, then scrolls away with it | CSS |
 
 Also on the timeline but **not** scroll-driven: texture loading (contours → un-dissolve, plus the
 one-time sm masonry re-solve on `onDone`), the modal (`sphereFormT ≥ SPHERE_INTERACTIVE_T` is its
@@ -1147,8 +1147,8 @@ const cues = (band) => {
   return { appear, start: Math.min(appear, zoomT(startR * num('SPHERE_R'))) };
 };
 ['sm', 'md'].forEach((band) => {
-  const form = cssVh('--gg-formation-vh', band);
-  const zoom = cssVh('--gg-zoom-vh', band);
+  const form = cssVh('--globe-formation-vh', band);
+  const zoom = cssVh('--globe-travel-vh', band);
   const vh = (p) => (p <= T.SPHERE_FORMED_PROGRESS
     ? (p / T.SPHERE_FORMED_PROGRESS) * form
     : form + ((p - T.SPHERE_FORMED_PROGRESS) / (1 - T.SPHERE_FORMED_PROGRESS)) * zoom);
@@ -1166,7 +1166,7 @@ const cues = (band) => {
   row('hand-off (startT)', atZoomT(start));
   row('last card gone, hint text 0 (pqAppearZoomT)', atZoomT(Math.max(appear, start)));
   row('quote crisp, DOM takes over, canvas hides', done);
-  row('block end (--gg-pq-height)', Math.max(done, atZoomT(appear)) + pqNum('READ_VH') * 100 + 100);
+  row('block end (--globe-pq-height)', Math.max(done, atZoomT(appear)) + pqNum('READ_VH') * 100 + 100);
 });
 "
 ```
@@ -1285,8 +1285,8 @@ cannot drift apart.
 only while that opacity is above 0, which ends at `ARC_COPY_OUT_FORM_END`, before the globe
 goes live at `SPHERE_INTERACTIVE_T`.
 CSS sets both edges: `bottom` (`--s2a-spacing-xs` at sm, `--s2a-spacing-lg` from `min-width:768px`)
-and `inset-inline-start`, which shares the pull-quote's `--gg-content-inset` (see the CSS section
-below for the derivation and for why md+ offsets it back by `--gg-arc-pad`). The logical property
+and `inset-inline-start`, which shares the pull-quote's `--globe-content-inset` (see the CSS section
+below for the derivation and for why md+ offsets it back by `--globe-arc-pad`). The logical property
 handles RTL, so no JS is involved in the side-swap.
 
 **Entry timing** — two independent knobs: `ENTRY_LEAD_VH` viewport-heights before the
@@ -1368,13 +1368,13 @@ ramp 0.75 peels at 0.24.
 ## Globe controls
 
 HTML chrome over the live globe (`utils/globe/ui.js`, markup from `buildGlobeDom`, styled from the
-`--gg-controls-*` custom properties): a **spin play/pause** toggle in the top inline-end corner and,
+`--globe-controls-*` custom properties): a **spin play/pause** toggle in the top inline-end corner and,
 on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom edge.
 
 | | Where | Why |
 | --- | --- | --- |
 | Spin toggle | every breakpoint / shape | Auto-spin is motion that starts on its own and never stops. WCAG **2.2.2** wants a pause mechanism, so this ships on the sphere too, not just the barrel. |
-| Rotate row | barrel only (`.globe-gallery-barrel`, from `bp.CYLINDER`) | The barrel has neither the WebGL hint plane (`buildTextMesh`) nor the custom cursor (`cursor.setup`) — both skip on `bp.CYLINDER` — so touch users otherwise get **no** affordance at all. The chevrons also make the copy's "click and drag" claim actionable without a drag. The **hint copy** beside them fades out once the user has actually spun the globe (see Behavior notes) — the barrel's bottom edge is too busy to keep it forever; the chevrons stay. |
+| Rotate row | barrel only (`.globe-barrel`, from `bp.CYLINDER`) | The barrel has neither the WebGL hint plane (`buildTextMesh`) nor the custom cursor (`cursor.setup`) — both skip on `bp.CYLINDER` — so touch users otherwise get **no** affordance at all. The chevrons also make the copy's "click and drag" claim actionable without a drag. The **hint copy** beside them fades out once the user has actually spun the globe (see Behavior notes) — the barrel's bottom edge is too busy to keep it forever; the chevrons stay. |
 
 - **One visibility window** for the whole layer: `sphereFormT >= SPHERE_INTERACTIVE_T`, no modal
   open, `zoomT < liveUntil()` — i.e. exactly while the globe is draggable. `utils/globe/ui.js`
@@ -1435,10 +1435,10 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
 - **Auto-spin keeps running through a press.** `AUTO_ROT_SPEED` is ≈1.7°/s against a ~45° pitch
   (8 columns on sm), so an aligned column holds for ~25s and each press re-snaps. Pausing on press
   would make the arrows silently flip the play/pause button — two controls sharing one state.
-- **Spacing.** One gap off every viewport edge, `--gg-controls-inset`, stepping `--s2a-spacing-md`
-  (sm) → `--s2a-spacing-lg` (md+) in lockstep with the modal's `--gg-modal-edge`, so the two chrome
+- **Spacing.** One gap off every viewport edge, `--globe-controls-inset`, stepping `--s2a-spacing-md`
+  (sm) → `--s2a-spacing-lg` (md+) in lockstep with the modal's `--globe-modal-edge`, so the two chrome
   layers never disagree about how far off the edge a control sits. The spin toggle's `top` adds that
-  same gap to `--gg-nav-h` (124px today, from measured fallbacks — see CSS, Tokens), clearing the sticky gnav +
+  same gap to `--globe-nav-h` (124px today, from measured fallbacks — see CSS, Tokens), clearing the sticky gnav +
   breadcrumbs the fixed layer sits under. It is not the only nav-aware rule — see **The nav band**.
 - **Reduced motion** keeps the rotate row (it's the non-drag path to the rest of the wall, and the
   nudge lands instantly under RM) and **hides the spin toggle** — there is no auto-spin to pause.
@@ -1446,7 +1446,7 @@ on the barrel only, a **rotate ← / hint copy / rotate →** row on the bottom 
   reading-order, so their SVGs mirror; rotate is *spatial* — `dir −1` sends the surface screen-left
   in every locale — so a mirrored ← would lie about which way the globe goes. Left alone, though,
   the flex row mirrors under `dir="rtl"` and parks the ← button on the right, so
-  `html[dir="rtl"] .globe-gallery-hint` sets `flex-direction: row-reverse` to cancel it.
+  `html[dir="rtl"] .globe-hint` sets `flex-direction: row-reverse` to cancel it.
 
 ## Accessibility
 
@@ -1462,13 +1462,13 @@ are real `<button>`s over the sphere (`pointer-events:none` so they never block 
    frame-counted `easeInOutCubic` tween (`KEY_BROWSE_FRAMES`; see Behavior notes → Sphere rotation).
    RM snaps. Enter opens the detail modal for **that** image.
 
-The entry widget's `.globe-gallery-a11y-tip` is `aria-hidden` **and** the `aria-labelledby` target:
+The entry widget's `.globe-a11y-tip` is `aria-hidden` **and** the `aria-labelledby` target:
 name computation traverses hidden referenced subtrees, so the button keeps the instructions as its
 accessible name while the span stops being a node of its own. Without it the button is not a leaf —
 a screen-reader cursor can land on the text inside it, where Enter has nowhere to go, while Tab onto
 the button itself works. The span still renders, so the `:focus-visible` pill is unaffected.
 
-**`.globe-gallery-a11y-cards` is `inert` unless browsing** (`setBrowseActive`). That one flag is the
+**`.globe-a11y-cards` is `inert` unless browsing** (`setBrowseActive`). That one flag is the
 whole browse gate: it keeps the N image buttons out of the tab order **and** out of the accessibility
 tree, so the buttons carry no `tabindex` of their own. Collapsed, a screen-reader virtual cursor runs
 entry widget → globe controls. Two platform behaviors it rests on: an inert button cannot take focus, so `enterBrowse()`
@@ -1512,11 +1512,11 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   `touchend` for touch and to `click` for mouse) — the photo rect itself, the info scrim, the counter
   pill, and any `button`/`a` are exempt, and a mouse gesture that moved or changed target is treated as a text
   selection, not a dismiss. No arrow-key globe rotation (browsing replaced it).
-- **Modal counter reading order:** the visible `.globe-gallery-modal-counter` ("05 / 47") is
+- **Modal counter reading order:** the visible `.globe-modal-counter` ("05 / 47") is
   `aria-hidden`; the spoken form ("5 of 47", from `cardLabel`) lives in **two** sr-only spans, both
-  classed `.globe-gallery-modal-position` so one `querySelectorAll` write in `populateModal` keeps
+  classed `.globe-modal-position` so one `querySelectorAll` write in `populateModal` keeps
   them in sync. They exist because no single element can do both jobs:
-  - the one in `.globe-gallery-modal-info` is `aria-hidden` and carries the `id` the heading's
+  - the one in `.globe-modal-info` is `aria-hidden` and carries the `id` the heading's
     `aria-describedby` points at. `aria-describedby` resolves into `aria-hidden` subtrees, so the
     position is announced with the focused heading on open, while staying out of NVDA's sweep of
     the dialog — which would otherwise speak it a second time.
@@ -1537,7 +1537,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   VoiceOver cursor reaches the links either way, and `Option`+Tab does too. Do not force
   `tabindex="0"` onto them to paper over it.
 - **Instructions popup:** on focus the entry widget shows a **visible pill** so sighted keyboard
-  users get the affordance (a11y audit). ONE element (`.globe-gallery-a11y-tip`) — hidden by
+  users get the affordance (a11y audit). ONE element (`.globe-a11y-tip`) — hidden by
   default, shown on `:focus-visible`, and simultaneously the button's `aria-labelledby` target, so
   SRs announce the same text as the accessible name. Copy is `image-gallery-instructions`.
 - **Screen reader:** the entry button has **no separate label** — its instructions popup IS its
@@ -1562,7 +1562,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
      other — it cannot be the carrier for anything.
   axe's `aria-dialog-name` does not match a native `<dialog>` (only an explicit `role="dialog"`), so
   being unnamed passes a full axe run.
-- **`role="document"` on `.globe-gallery-modal-description` is load-bearing for NVDA.** Opening a
+- **`role="document"` on `.globe-modal-description` is load-bearing for NVDA.** Opening a
   **native `<dialog>`** makes NVDA read the dialog's prose aloud; the same markup as a
   `div[role="dialog"][aria-modal="true"]` does not, so this is the element's behavior and not the
   role's. NVDA does not descend into a `document` subtree, so the attribute opts the long copy out.
@@ -1581,7 +1581,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
   in the same task as `showModal()` — a `requestAnimationFrame` later is a separate AX event and
   VoiceOver announces it as one.
 - **Prev/Next announcement:** nav keeps focus on the button, so the new card is spoken only through
-  `.globe-gallery-modal-announce` — an sr-only `aria-live="polite"` span, last child of the dialog,
+  `.globe-modal-announce` — an sr-only `aria-live="polite"` span, last child of the dialog,
   written as `"Name. Role. N of M"` by `populateModal(i, speak)` when `speak` is true (the nav call
   site only; `open()` passes nothing and so clears it, keeping the open path single-read — and it
   clears **before** `showModal()`, so a stale nav line can never be spoken as the dialog appears). It
@@ -1594,7 +1594,7 @@ auto-spin (`a11y.isBrowsing()`); mouse drag still works.
 
 **Reduced motion** (`prefers-reduced-motion: reduce`, or a viewport height of at most 460 CSS pixels
 with resolution of at least 1.5dppx, including small zoomed windows) renders a **static interactive** globe
-instead of the scroll choreography, laid out as **plain document flow** (`.globe-gallery-reduced`):
+instead of the scroll choreography, laid out as **plain document flow** (`.globe-reduced`):
 `computeFrame` pins scroll to `SPHERE_FORMED_PROGRESS` (formed sphere, `scrollVel` 0), auto-spin is
 off (drag + arrow-spin still work), the hover fisheye/scale/CA is suppressed (`hoverTarget` forced
 to 0 in `updateCardTransform`; the `cursor:pointer` affordance stays), and the modal snaps with no
@@ -1610,27 +1610,27 @@ change (no reload; the non-RM path clears the canvas `position` so a toggle-off 
 **RM overrides `position` — plus one custom property — and nothing else** for the four
 viewport-sized boxes: no duplicated geometry, and `measureViewportH()` reads the same 100vh in both
 modes. That works because the base rules are written against the canvas box rather than the window:
-`.globe-gallery-a11y` sits at `top: var(--gg-optical-center)` (not `50%`) and
-`.globe-gallery-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so each resolves identically
-whether it's `fixed` to the viewport or `absolute` inside the `100vh` `.globe-gallery-world`.
+`.globe-a11y` sits at `top: var(--globe-optical-center)` (not `50%`) and
+`.globe-a11y-cards` is a `100vh`-tall box (not `inset: 0`), so each resolves identically
+whether it's `fixed` to the viewport or `absolute` inside the `100vh` `.globe-world`.
 
-The one property is `--gg-nav-h: 0px` on `.globe-gallery-reduced` (see **The nav band**). Nothing is
+The one property is `--globe-nav-h: 0px` on `.globe-reduced` (see **The nav band**). Nothing is
 pinned under RM — the globe scrolls past the gnav like any section, so there is no fixed band to
 centre against — and that single declaration retires every consumer at once: the optical centre the
 quote rail and a11y widget ride, the controls' top offset, and (through `readCssVars`) the camera's
 centring offset, which falls to 0 and clears. The unit on the `0px` is load-bearing — it feeds
-`calc(100vh - var(--gg-nav-h))`, which a unitless zero would make invalid — hence the one-line
+`calc(100vh - var(--globe-nav-h))`, which a unitless zero would make invalid — hence the one-line
 `length-zero-no-unit` disable. It also fixes the focus-ring overlay on iOS, where `inset: 0` on a
 `fixed` element tracked `innerHeight` and so mis-scaled the ring by the URL bar's height (the ring is
 positioned in canvas px). The pieces:
 
-- **Canvas** — `position:absolute` (not `fixed`), inside the now-`relative` `.globe-gallery-world`, so
+- **Canvas** — `position:absolute` (not `fixed`), inside the now-`relative` `.globe-world`, so
   it scrolls and clips with the page; `updateCanvasVisibility` reveals it once (no coverage math).
-- **`.globe-gallery-world`** — `position:relative` (was sticky); keeps its base `height: 100vh`.
+- **`.globe-world`** — `position:relative` (was sticky); keeps its base `height: 100vh`.
 - **Globe size (desktop)** — the formed `md` sphere fills ~93% of viewport height, so `buildCards`
   scales `sphereGroup` by `RM_GLOBE_SCALE_MD` on md to bring the whole ball in view (rotation
   is per-card, so a group scale is safe). `sm` (~49%) stays 1.
-- **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); with `--gg-nav-h` zeroed
+- **A11y widget + focus-ring overlay** — `position:absolute` (were fixed); with `--globe-nav-h` zeroed
   the base optical centre / `100vh` box already centre on the sphere, so neither override carries
   any offset of its own.
 - **Globe controls** — `position:absolute` (was fixed), so the layer scrolls with the static globe;
@@ -1642,7 +1642,7 @@ positioned in canvas px). The pieces:
   pointer events; the authored heading, paragraphs, and links remain available without animation.
   `initRuntime` moves it before the globe under RM and restores the original DOM order otherwise.
 
-The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-gallery-empty`.
+The `--reduced` overrides are grouped at the **end of `globe-gallery.css`** (`no-descending-specificity`). The no-cards / WebGL-unavailable fallback is the separate `.globe-empty`.
 
 ## Breakpoints & rebuilds
 
@@ -1687,7 +1687,7 @@ the runtime closure survives a `destroy()`+`initRuntime()` rebuild, `destroy()` 
 rebuild would otherwise inherit:
 - `modal.destroy()` calls `resetModalDom()` — synchronously returns the modal DOM + page state to
   the closed baseline (clears `is-visible`/`is-open`/`aria-hidden`, hides `.modal-card-canvas`,
-  clears `globe-gallery-modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
+  clears `globe-modal-open`, restarts Lenis). Else a modal open at a breakpoint crossing survives visually
   stuck open (its mesh dropped with the old `modalScene`, `modalIdx` reset to -1 so chrome buttons
   are dead, scroll lock stuck). An open modal closes cleanly on crossing; it doesn't re-open.
 - `destroy()` **resets the sphere orientation + drag/nudge state** (`sphereOrient.x/y/z`,
@@ -1703,12 +1703,12 @@ reason the JS doesn't (see **One viewport height**):
 | axis | use | never |
 | --- | --- | --- |
 | vertical | **`vh`** — resolves against the large viewport, so it matches the canvas box and holds still while the iOS URL bar moves | `%` on a `fixed`/`sticky` box (that's the *layout* viewport, which the bar shrinks: `top: 50%` put the a11y widget ~26px off the sphere whenever the bar showed), and `dvh` anywhere the scroll timeline can see |
-| horizontal | **`%`** — the containing block / ICB width, which excludes the classic-scrollbar gutter | `vw`, which *includes* it: a `vw`-sized `fixed` box is ~15px wider than the viewport on desktop, and `--gg-content-inset` built from `100vw` put the arc copy half a scrollbar off the pull-quote's column it is supposed to share |
+| horizontal | **`%`** — the containing block / ICB width, which excludes the classic-scrollbar gutter | `vw`, which *includes* it: a `vw`-sized `fixed` box is ~15px wider than the viewport on desktop, and `--globe-content-inset` built from `100vw` put the arc copy half a scrollbar off the pull-quote's column it is supposed to share |
 
 There is no `vw` left in the block. The one place two axes had to share an expression —
-`.globe-gallery-a11y`'s square — uses `width: min(80%, calc(var(--gg-band-h) * 0.8))` + `aspect-ratio: 1` rather than
+`.globe-a11y`'s square — uses `width: min(80%, calc(var(--globe-band-h) * 0.8))` + `aspect-ratio: 1` rather than
 repeating a `min()` per axis, since `%` on `height` would mean the wrong thing. **`dvh` is the modal
-chrome only** (`.globe-gallery-modal-chrome`, the description's `max-height`): that layer *must* stay
+chrome only** (`.globe-modal-chrome`, the description's `max-height`): that layer *must* stay
 inside the visible viewport so its buttons stay reachable while the bar is up, and it can't disturb the
 timeline because opening the modal locks the scroll.
 
@@ -1716,8 +1716,8 @@ timeline because opening the modal locks the scroll.
 an S2A scale uses the token, not the literal — including positional insets (`bottom`,
 `inset-inline-start`) and the `p + p` copy rhythm. Sizes tied to a specific design measurement stay
 literal, because pinning them to a coincidentally-equal token would imply a relationship that isn't
-there: the arc-copy `359px`/`382px` widths, the counter pill (`--gg-counter-w`, which the
-md+ nav offsets read), the scrim (`--gg-scrim-w`), and the 24/28px badge icons. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
+there: the arc-copy `359px`/`382px` widths, the counter pill (`--globe-counter-w`, which the
+md+ nav offsets read), the scrim (`--globe-scrim-w`), and the 24/28px badge icons. These values are **off every S2A scale** and stay literal on purpose — if any is retuned,
 snapping it to the nearest token is the cheaper fix:
 
 Inventory of the literals themselves (a snapshot — the CSS is authoritative; where a value has a var,
@@ -1727,13 +1727,13 @@ the var is its home):
 | --- | --- | --- |
 | `13px` font-size | badge app + role (sm) | none (scale is 12 / 14) |
 | `10px` gap | badge-left, badges at md+ | `--s2a-spacing-xs` 8 / `--s2a-spacing-sm` 12 |
-| `--gg-control-radius` / `--gg-controls-radius` | modal controls / globe controls | `--s2a-border-radius-xs` / `-sm` |
-| `--gg-controls-size` 48px | globe controls | none (matches `--gg-control-size`) |
-| `--gg-nav-h` 124px (fallbacks) | the sticky-chrome band: optical centre, controls' top offset, the camera's centring offset, the pull-quote gap ceiling | none — *measured* values (top of screen → bottom of the breadcrumbs bar), not design steps. They are the fallbacks inside a live `calc()`, so re-measure them if the gnav or localnav changes height while the vars stay undefined; the `--feds-height-*` pair still can't be trusted for this (see Naming below) |
-| `--gg-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, barrel hint scrim, globe controls | `--s2a-blur-xs` / `--s2a-blur-sm` |
+| `--globe-control-radius` / `--globe-controls-radius` | modal controls / globe controls | `--s2a-border-radius-xs` / `-sm` |
+| `--globe-controls-size` 48px | globe controls | none (matches `--globe-control-size`) |
+| `--globe-nav-h` 124px (fallbacks) | the sticky-chrome band: optical centre, controls' top offset, the camera's centring offset, the pull-quote gap ceiling | none — *measured* values (top of screen → bottom of the breadcrumbs bar), not design steps. They are the fallbacks inside a live `calc()`, so re-measure them if the gnav or localnav changes height while the vars stay undefined; the `--feds-height-*` pair still can't be trusted for this (see Naming below) |
+| `--globe-chrome-blur` | modal arrows, close, info scrim, md counter pill, a11y tip, barrel hint scrim, globe controls | `--s2a-blur-xs` / `--s2a-blur-sm` |
 | `18px` blur | modal backdrop | `--s2a-blur-sm` 16 |
 
-`--gg-chrome-blur` exists because that one blur appeared six times across those places. It is
+`--globe-chrome-blur` exists because that one blur appeared six times across those places. It is
 declared once, on `.globe-gallery` — everything that reads it now lives inside the block, so
 everything inherits it.
 
@@ -1742,28 +1742,28 @@ Note the font-size tokens are **rem** (`--s2a-font-size-sm` is `0.875rem`). Neit
 with a reader's browser font-size setting — the intended C2 behaviour, and why px literals aren't used.
 
 **Naming.** Classes are `globe-gallery-*` (BEM-ish, matching the block name); every custom property
-this block *defines* is `--gg-*`, the initials convention other C2 blocks use (`--bc-` in
+this block *defines* is `--globe-*`, the initials convention other C2 blocks use (`--bc-` in
 brand-concierge, `--rm-` in router-marquee). Nothing here defines an unprefixed property: the block
 is a full-viewport hero on shared pages, so a bare `--runway-height` or `--desc-fade-top` could
 inherit a stranger's value from an ancestor. **Four props are read from JS**, and CSS is the source of truth for all
-four (`--gg-runway-height` stays CSS-only) — grep both files before renaming one:
+four (`--globe-runway-height` stays CSS-only) — grep both files before renaming one:
 
 | prop | read in | why JS needs it |
 | --- | --- | --- |
-| `--gg-formation-vh` | `readCssVars()` | the scroll clock's phase boundary |
-| `--gg-zoom-vh` | `utils/globe/quote-particles.js` `syncHeight()` | the zoom's pace and the block height it derives |
-| `--gg-nav-h` | `readCssVars()` | half of it is the camera's centring offset, and a projection matrix is not something CSS can build |
-| `--gg-modal-anim-ms` | `utils/globe/modal.js` `setup()`, once | the WebGL fly's duration and the teardown timer must land with the CSS backdrop/chrome fades |
+| `--globe-formation-vh` | `readCssVars()` | the scroll clock's phase boundary |
+| `--globe-travel-vh` | `utils/globe/quote-particles.js` `syncHeight()` | the zoom's pace and the block height it derives |
+| `--globe-nav-h` | `readCssVars()` | half of it is the camera's centring offset, and a projection matrix is not something CSS can build |
+| `--globe-modal-anim-ms` | `utils/globe/modal.js` `setup()`, once | the WebGL fly's duration and the teardown timer must land with the CSS backdrop/chrome fades |
 
-`--gg-nav-h` is the block's one `@property`, registered precisely so that read returns a length
+`--globe-nav-h` is the block's one `@property`, registered precisely so that read returns a length
 rather than `NaN`; see **The nav band** for why, and do not un-register it without moving the JS
 off `parseFloat`. The others need no registration because each is declared as a **literal**, not
 a `calc()` — an unregistered prop computes as-specified, so `getPropertyValue` hands back the token
 stream, and `parseFloat` copes with `304` or `350` but not with `calc(72px + 52px)`. That is also
-why `--gg-modal-anim-ms` is unitless and CSS multiplies it back (`calc(var(--gg-modal-anim-ms) *
+why `--globe-modal-anim-ms` is unitless and CSS multiplies it back (`calc(var(--globe-modal-anim-ms) *
 1ms)`) rather than storing `350ms` and having JS strip the unit. **JS
 writes no layout props** — the narrowness is the rule: where JS decides a *state*, it toggles a class and CSS owns the resulting value
-(`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--gg-desc-fade-len`), so a
+(`updateDescFade` → `.is-faded-top` / `.is-faded-bottom`, length in `--globe-desc-fade-len`), so a
 retune stays a CSS-only edit and no magic number is stranded in JS. The pull-quote cue comes off the WebGL
 camera curve and stays in JS; the quote's pinning is the world's own sticky box (see **WebGL pull
 quote**). Anything that
@@ -1773,7 +1773,7 @@ gnav, so the whole nav band has to be reckoned with. **Do not reach for `var(--f
 + `var(--feds-height-breadcrumbs, 33px)`** — both vars are declared upstream (`libs/styles/styles.css` `:root` and
 `global-navigation/base.css`), so the px fallbacks never fire and the calc resolves to a fixed 96px
 whatever the live nav paints; `--feds-height-breadcrumbs` isn't even a bar height, it's the
-`line-height` of breadcrumb links. `--gg-nav-h` names the *other* pair
+`line-height` of breadcrumb links. `--globe-nav-h` names the *other* pair
 (`--gnav-height-nav` / `--feds-breadcrumbs-height`), which nothing currently defines, so today the
 **measured px fallbacks** are what resolve — 124px, the value in the literals inventory above. It is
 still written as the `calc()` rather than baked flat, because those stylesheets load at runtime: if
@@ -1788,32 +1788,32 @@ profiles: sm is the unscoped `.globe` base, then `@media (min-width:768px)` (md)
 layer larger scales on top. Modal/arc-copy is the same — sm (dark frosted panels) base,
 `min-width:768px` overrides to the desktop card.
 
-The **arc copy and the pull-quote share one left copy edge**, `--gg-content-inset` on
-`.globe-gallery`: `max(0px, 100vw - --gg-copy-max) / 2 + --gg-copy-pad`, i.e. the pull-quote's own
-text edge (it centres a `--gg-copy-max` box and pads it by `--gg-copy-pad`, and the rule
+The **arc copy and the pull-quote share one left copy edge**, `--globe-content-inset` on
+`.globe-gallery`: `max(0px, 100vw - --globe-copy-max) / 2 + --globe-copy-pad`, i.e. the pull-quote's own
+text edge (it centres a `--globe-copy-max` box and pads it by `--globe-copy-pad`, and the rule
 consumes the same two vars so the pair cannot drift). The arc copy is `position: fixed`, so its
 `inset-inline-start` resolves against the viewport and RTL is handled by the logical property —
-there is no JS involved. At sm it pins 8px from the edge and its own `--gg-arc-pad` (16px) lands the
+there is no JS involved. At sm it pins 8px from the edge and its own `--globe-arc-pad` (16px) lands the
 copy on the inset; at md+ the pill background is gone, so the box is offset back by that padding
-(`calc(var(--gg-content-inset) - var(--gg-arc-pad))`) to put the *copy*, not the box, on the edge.
+(`calc(var(--globe-content-inset) - var(--globe-arc-pad))`) to put the *copy*, not the box, on the edge.
 
 ### The nav band
 
-The C2 gnav (`12`) is sticky and paints over the hero, so the top `--gg-nav-h` of the
+The C2 gnav (`12`) is sticky and paints over the hero, so the top `--globe-nav-h` of the
 viewport always has chrome in front of it. **This is not a keep-out box.** The nav is a blurred,
 translucent scrim and the hero is *meant* to run under it — cropping the scene to avoid the overlap
 throws away the effect and shrinks everything. The only real problem is that "centred" was being
-measured against the whole viewport, so anything centred read `--gg-nav-h / 2` too high.
+measured against the whole viewport, so anything centred read `--globe-nav-h / 2` too high.
 
 So the fix is a **centring offset, and nothing else**:
 
 | token | value | used by |
 | --- | --- | --- |
-| `--gg-nav-h` | `calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px))` → 124px today | `--gg-controls-top`, `--gg-optical-center`, `--gg-pq-gap`'s ceiling; read into JS as `navH` |
-| `--gg-band-h` | `calc(100vh - var(--gg-nav-h))` | the visible strip — a *measure*, not a clip |
-| `--gg-optical-center` | `calc(var(--gg-nav-h) + var(--gg-band-h) / 2)` | where "centred" means: `50vh + 62px` |
+| `--globe-nav-h` | `calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px))` → 124px today | `--globe-controls-top`, `--globe-optical-center`, `--globe-pq-gap`'s ceiling; read into JS as `navH` |
+| `--globe-band-h` | `calc(100vh - var(--globe-nav-h))` | the visible strip — a *measure*, not a clip |
+| `--globe-optical-center` | `calc(var(--globe-nav-h) + var(--globe-band-h) / 2)` | where "centred" means: `50vh + 62px` |
 
-**`--gg-nav-h` is the block's one `@property`**, and the registration exists purely so JS can read
+**`--globe-nav-h` is the block's one `@property`**, and the registration exists purely so JS can read
 it. An *unregistered* custom property computes as-specified, so `getPropertyValue` returns the
 substituted token stream — the literal string `calc(72px + 52px)` — which `parseFloat`s to `NaN`.
 (The fallbacks resolve fine for CSS either way; this is only about the JS read.) Registered with a
@@ -1827,7 +1827,7 @@ ways). It cannot be a `calc()` or a `var()` — an initial value must be computa
 and Chrome drops the whole `@property` rule if it isn't. Keep it equal to `72 + 52`.
 
 **DOM chrome** just moves down: the pull-quote figure's `top` and the a11y entry widget's centre both
-ride `--gg-optical-center`. Their *sizes* are untouched.
+ride `--globe-optical-center`. Their *sizes* are untouched.
 
 **The WebGL scene** moves down via `applyCentringOffset` → `camera.setViewOffset(W, H, 0, -navH/2,
 W, H)`. That is a projection skew: the sub-window is the same size as the virtual frame, so it
@@ -1885,7 +1885,7 @@ it instantly, the camera catches up on the next `doLayout`.
 `appliedViewOffsetY` is **write elision and nothing more**: `setViewOffset` rebuilds the projection
 matrix, so it fires only when the offset actually moves, and the cache is reset wherever the camera
 object or `W`/`H` changes since both are baked into the call. No consumer reads it back.
-Reduced motion sets `--gg-nav-h: 0` — nothing is pinned there, so the offset falls to 0 and
+Reduced motion sets `--globe-nav-h: 0` — nothing is pinned there, so the offset falls to 0 and
 `clearViewOffset()` runs, with no JS branch.
 
 **Also not nav-aware, on purpose:** the arc copy and the barrel's hint row are bottom-anchored;
@@ -1894,14 +1894,14 @@ nothing occludes the bottom of the viewport.
 ### Pull-quote box: content-sized, gap-controlled
 
 The quote box has **no height**. It is a column flex container whose only tunable vertical measure is
-`--gg-pq-gap`, the space between the `blockquote` and the name/role `.globe-gallery-pullquote-attribution`;
+`--globe-pq-gap`, the space between the `blockquote` and the name/role `.globe-pullquote-attribution`;
 everything else (padding + copy) sizes itself.
 
-`.globe-gallery-pullquote` is a **`<figure>`** and the attribution its **`<figcaption>`**, which is
+`.globe-pullquote` is a **`<figure>`** and the attribution its **`<figcaption>`**, which is
 what associates the name/role with the `<blockquote>` for AT. Its `margin: 0 auto` zeroes the UA
 `margin-block`.
 
-`--gg-pq-gap` is `min(--gg-pq-ideal-gap, --gg-band-h × 0.2)`. The ideal steps `--s2a-layout-lg` →
+`--globe-pq-gap` is `min(--globe-pq-ideal-gap, --globe-band-h × 0.2)`. The ideal steps `--s2a-layout-lg` →
 `-xl` (≥768) → `-2xl` (≥1280); the band term tapers it on short viewports, because the box is
 content-sized while the band it centres in is not: on a short, wide laptop (1280×720 is the worst
 case) a five-line quote at `heading-1`'s 80/76 makes a 684px box for a 596px band, and without the
@@ -1909,18 +1909,18 @@ taper the first line lands under the nav no matter where the box is centred. The
 whitespace in the box, so it is what yields. Raising the ideal runs the top edge into the localnav at
 lg/xl, so re-check that clearance first.
 
-The figure is centred on `--gg-optical-center` inside the rail by
-`transform: translateY(max(-50%, calc(var(--gg-band-h) * -0.5)))`: centred while it fits the band,
+The figure is centred on `--globe-optical-center` inside the rail by
+`transform: translateY(max(-50%, calc(var(--globe-band-h) * -0.5)))`: centred while it fits the band,
 top-anchored (overflowing downward only) once it doesn't. See **Pull quote** for pinning.
 
 ### Crosshair frame
 
-`--gg-copy-pad` steps **24px → 48px (≥768) → 64px (≥1440)**, and the pull-quote draws a hairline
+`--globe-copy-pad` steps **24px → 48px (≥768) → 64px (≥1440)**, and the pull-quote draws a hairline
 crosshair on it — so the quote's own text edge lands on the vertical line, and the hanging opening mark
-is the one thing outside it. Because that var also feeds `--gg-content-inset`, **the arc copy widens
+is the one thing outside it. Because that var also feeds `--globe-content-inset`, **the arc copy widens
 with it**: the two share one edge by design and cannot drift.
 
-| Width | `--gg-copy-pad` | Token |
+| Width | `--globe-copy-pad` | Token |
 | --- | --- | --- |
 | < 768 | 24px | `--s2a-spacing-lg` |
 | 768–1439 | 48px | `--s2a-spacing-3xl` |
@@ -1930,7 +1930,7 @@ This uses c2's **grid** breakpoint (768, where `--grid-columns` becomes 12) for 
 **token tier** `xl` (1440) for the second. c2's tiers are `sm` = base, `md` = 1024, `lg` = 1280, `xl` =
 1440 — so lg (1280–1439) holds md's 48px here.
 
-**Line weight.** The frame is 1px (`--gg-crosshair-width`) in `--gg-pq-rule-color` (gray-800). It sits
+**Line weight.** The frame is 1px (`--globe-crosshair-width`) in `--globe-pq-rule-color` (gray-800). It sits
 beside the quote and must not out-shout it — gray-400 `#c6c6c6` is close enough to the copy's `#fafafa`
 to read as a second headline. **Do not use fractional widths:** `border-width` snaps to device pixels
 *per edge*, so 1.5px lands as 1px on some rules and 2px on others at 1dppx and the frame goes
@@ -1940,7 +1940,7 @@ Drawn as two pseudo-elements, not four: `::before` insets top/bottom and borders
 `::after` insets inline and borders its inline edges. Each pair spans the full box instead of stopping
 at the corners, so the runs **cross** and read as a crosshair rather than a closed rectangle. They are
 `position: absolute`, which keeps them out of the flex flow and lets them inherit the parent's fade. The
-frame tracks the content-sized box, so both follow a copy or `--gg-pq-gap` change with no second number
+frame tracks the content-sized box, so both follow a copy or `--globe-pq-gap` change with no second number
 to update.
 
 ### Pull quote: particle transition, DOM text at rest
@@ -2050,14 +2050,14 @@ period and then, in one task:
 1. **Measures** one Range per character, grouped into lines, plus the DOM's own ascent (from a
    zero-size inline-block probe on the first baseline).
 2. **Rasterizes** each line at `devicePixelRatio` with the computed font, letter-spacing, direction
-   and `--gg-pq-ink`, its advance scaled (within a small bound) onto the DOM line, and the figure
+   and `--globe-pq-ink`, its advance scaled (within a small bound) onto the DOM line, and the figure
    offset and each baseline snapped to device pixels as layout does. The crosshair's rules go into
-   the same raster from the figure's padding, `--gg-crosshair-width` and `--gg-pq-rule-color`.
+   the same raster from the figure's padding, `--globe-crosshair-width` and `--globe-pq-rule-color`.
 3. **Samples targets**: each ~1 CSS px cell with alpha ≥ `INK_ALPHA`, picked at random (cycled if
    short). The landed dot size follows the sampling density (`DST_SPACING`).
 4. **Builds the text plane**: the same canvas as a `CanvasTexture`, one texel per device pixel.
 
-Coordinates are CSS px from the top-left of `.globe-gallery-pullquote-rail`. Layout re-runs when the
+Coordinates are CSS px from the top-left of `.globe-pullquote-rail`. Layout re-runs when the
 figure width, viewport height, nav height or DPR changes, and on `fonts.ready`. The DOM text and its
 fit update at once; the raster waits until those inputs have held for `DEBOUNCE_MS`, so a resize drag
 rasterizes once. A finished layout, or a change of view (size, projection, zoom span) that has held
@@ -2068,7 +2068,7 @@ the draws, so the next flight pairs from the cards as they are then.
 
 **The swap to the DOM.** At `QUOTE_LIVE_P` nothing on the canvas changes any more. From there on the
 crisp plane shows and the cards hide without waiting for a pairing, so landing past the quote (a
-reload or an anchor jump) never shows a blank frame. `update` tweens `--gg-pq-dom` 0 → 1 over
+reload or an anchor jump) never shows a blank frame. `update` tweens `--globe-pq-dom` 0 → 1 over
 `SWAP_MS`: the DOM copy's ink and the CSS crosshair's border colour mix in from transparent
 (`color-mix`), then `updateCanvasVisibility` hides the canvas. Below `QUOTE_LIVE_P` it runs back and
 the canvas reappears before the reverse flight. A scroll of a viewport or more in one frame skips
@@ -2078,7 +2078,7 @@ can't use it), the raster uses the DOM-measured ascent, and it snaps positions t
 layout does. The frames either side of the swap differ by a fraction of one 8-bit level on average.
 
 **Pinning.** `-pin` covers the whole block, and `-rail` sticks at the top like the world but is only
-as tall as the quote's bottom edge (`--gg-pq-rail-h`, measured on layout, capped at a viewport). Once
+as tall as the quote's bottom edge (`--globe-pq-rail-h`, measured on layout, capped at a viewport). Once
 `p > 0` the canvas switches from `position: fixed` to `absolute` inside the already-stuck world (a
 seamless swap). The world un-sticks first, as the block's end reaches the
 viewport bottom; the quote stays put until that end reaches its bottom edge, so the crosshair meets
@@ -2129,7 +2129,7 @@ block with four holes:
 
 1. A card is WebGL pixels raycast in `utils/globe/interaction.js` — there is no DOM node to decorate.
 2. Auto-generated labels are `${label}-${linkCount}--${header}`, where `linkCount` is the ordinal
-   among *all* links/buttons in the block. The ~50 `.globe-gallery-a11y-card` buttons precede the
+   among *all* links/buttons in the block. The ~50 `.globe-a11y-card` buttons precede the
    modal controls, so prev would read `previous card-52--`. That ordinal is **race-dependent** (the
    a11y buttons only exist after the async fragment fetch) and **never re-applied** after a
    breakpoint rebuild recreates them.
@@ -2146,7 +2146,7 @@ DAA reads `daa-ll` off the clicked node and does not check `isTrusted`, so a syn
 reports exactly like a user's. Same idiom as Milo's own modal (`libs/blocks/modal/modal.js`,
 Escape → `close.click()`).
 
-For a card tap, that control is the card's own `.globe-gallery-a11y-card` button — the one real
+For a card tap, that control is the card's own `.globe-a11y-card` button — the one real
 element that already means "open card i". It is `pointer-events: none` and 0×0, but `.click()`
 dispatches programmatically and ignores hit-testing entirely. `a11y.trackCardOpen(idx)` is the
 explicit entry point, so this dependency shows up in the module's contract rather than being an
@@ -2370,18 +2370,18 @@ through DAA, they share one consent path; there is no gate on one and not the ot
 
 - **Barrel hint copy retires after interaction.** Touch has no hover cursor and (below md) no WebGL
   hint plane, so the barrel's bottom row is the whole affordance until the user has spun the globe.
-  On `hintRetired` `controls.update()` puts `.is-dismissed` on `.globe-gallery-hint`, fading only
-  `.globe-gallery-hint-text` over 0.5s; the chevrons stay, so the non-drag path never disappears.
+  On `hintRetired` `controls.update()` puts `.is-dismissed` on `.globe-hint`, fading only
+  `.globe-hint-text` over 0.5s; the chevrons stay, so the non-drag path never disappears.
 
-  The row's scrim matches **`.globe-gallery-modal-info`** — `transparent-black-64` +
-  `--gg-chrome-blur` + a `transparent-white-00` border — not the lighter arc-copy pill, which
+  The row's scrim matches **`.globe-modal-info`** — `transparent-black-64` +
+  `--globe-chrome-blur` + a `transparent-white-00` border — not the lighter arc-copy pill, which
   floats over the arc phase with no chrome around it. The radius is the exception, taken from the
-  buttons it abuts (`--gg-controls-radius`).
+  buttons it abuts (`--globe-controls-radius`).
 
   **The chevrons read as the modal's prev/next.** Same glyphs (`M15 5l-7 7 7 7` / `M9 5l7 7-7 7`,
-  14px, stroke 2), and `.globe-gallery-control` and `.globe-gallery-modal-nav` share every box
-  property: 48px, radius 6 (`--gg-controls-radius` / `--gg-control-radius`, separate vars, equal
-  values), `transparent-white-24` border, `black-64` + `--gg-chrome-blur`, `scale(1.05)` hover,
+  14px, stroke 2), and `.globe-control` and `.globe-modal-nav` share every box
+  property: 48px, radius 6 (`--globe-controls-radius` / `--globe-control-radius`, separate vars, equal
+  values), `transparent-white-24` border, `black-64` + `--globe-chrome-blur`, `scale(1.05)` hover,
   `scale(0.98)` active.
 
   **Positions are not matched, and the pair blinks across a modal open.** The barrel's chevrons are
@@ -2403,23 +2403,23 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     a **per-breakpoint constant**: the modal card is always horizontally centred
     (`computeModalTarget` pins `x` to 0), so "centred under the image" is just `50%` — nothing to
     project, nothing to track. **Desktop/tablet:** the counter pill sits at `left: 50%` (physical, because its
-    `translateX(-50%)` is physical) with an arrow `--gg-nav-gap` out each side, offset from
-    the centre by `--gg-counter-w / 2 + gap + --gg-control-size` on `inset-inline-start` so RTL
-    mirrors for free. All three share one `bottom` — `--gg-modal-edge` from the *viewport* bottom,
+    `translateX(-50%)` is physical) with an arrow `--globe-nav-gap` out each side, offset from
+    the centre by `--globe-counter-w / 2 + gap + --globe-control-size` on `inset-inline-start` so RTL
+    mirrors for free. All three share one `bottom` — `--globe-modal-edge` from the *viewport* bottom,
     not the image bottom, so the row holds its height whatever the photo's aspect. **Mobile:** the
     same row spread into the bottom corners inside the scrim (`inset-inline-start`/`-end`). The three
-    frosted controls (both arrows + close) share one style and one 48×48 `--gg-control-size` hit
+    frosted controls (both arrows + close) share one style and one 48×48 `--globe-control-size` hit
     target everywhere; close sits at the top inline-end corner at every breakpoint. Geometry is five
-    locals on `.globe-gallery-modal-chrome`: `--gg-modal-edge` (`--s2a-spacing-md` → `-lg` at md+ —
-    the single inset for all four controls *and* the scrim padding), `--gg-control-size`,
-    `--gg-control-radius` (a literal; no S2A step), `--gg-counter-w` (`auto` at sm, fixed at md+,
-    where the pill's own `width` reads it) and `--gg-scrim-w` (md+ only). `--gg-modal-edge` is
+    locals on `.globe-modal-chrome`: `--globe-modal-edge` (`--s2a-spacing-md` → `-lg` at md+ —
+    the single inset for all four controls *and* the scrim padding), `--globe-control-size`,
+    `--globe-control-radius` (a literal; no S2A step), `--globe-counter-w` (`auto` at sm, fixed at md+,
+    where the pill's own `width` reads it) and `--globe-scrim-w` (md+ only). `--globe-modal-edge` is
     also the sm scrim's `padding-bottom` reserve (`edge + control + edge`, so the arrows clear the
     badges); at md+ the arrows sit under the image, so the override drops it to a flat `edge`.
-    At `height ≤ 360px` (e.g. 200 % browser zoom on a small window) `--gg-modal-edge` and
-    `--gg-control-size` compress to their WCAG minima; `.globe-gallery-modal-info` switches to
+    At `height ≤ 360px` (e.g. 200 % browser zoom on a small window) `--globe-modal-edge` and
+    `--globe-control-size` compress to their WCAG minima; `.globe-modal-info` switches to
     `display: block` + `overflow-y: auto` so the full panel scrolls as one container. The
-    `data-lenis-prevent` on `.globe-gallery-modal-info` is required for this: Lenis intercepts
+    `data-lenis-prevent` on `.globe-modal-info` is required for this: Lenis intercepts
     wheel events on any child that isn't covered by the attribute (checked via `closest`).
   - **Image fit + corner radius.** The **visible image** is contain-fit to the viewport minus a
     symmetric margin (desktop `DT_IMG_MARGIN`; mobile full-bleed, square corners `uRadius=0`),
@@ -2445,7 +2445,7 @@ through DAA, they share one consent path; there is no gate on one and not the ot
     notes*). Without it, the first frame of the fly would show the *whole* image at the *barrel's*
     aspect — a visible horizontal squash that resolves over the modal's fly (`modalAnimMs`). A desktop nav
     cross-warp owns its own cards' uniforms, so the push is skipped while `dnNavActive`.
-  - **Scrim + scroll region.** Desktop gets a fixed-width (`--gg-scrim-w`) dark frosted scrim
+  - **Scrim + scroll region.** Desktop gets a fixed-width (`--globe-scrim-w`) dark frosted scrim
     on the **viewport's inline-start edge, full height**; mobile gets one full-width bottom chunk
     (content-sized, capped at `60dvh`). Both are **pinned header / scrolling body / pinned footer**: name + role are
     `flex-shrink:0` at the top, **badges** are `flex-shrink:0` at the bottom (so those tabbable

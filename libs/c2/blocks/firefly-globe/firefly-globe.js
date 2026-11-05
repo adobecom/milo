@@ -14,7 +14,7 @@ import {
 } from '../../../utils/globe/core.js';
 import createGlobeModal from '../../../utils/globe/modal.js';
 import createInteraction from '../../../utils/globe/interaction.js';
-import { scatterCards, createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/ui.js';
+import { loadGlobeStyles, scatterCards, createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/ui.js';
 import { createPullQuote } from '../../../utils/globe/quote-particles.js';
 import {
   camZAtTravelT, travelTAtCamZ, TRAVEL_EASE_POW, travelSpanPx, scrollYAtTravelT,
@@ -213,11 +213,11 @@ function createGlobeGalleryRuntime(
   const frameInput = createFrameInput();
   let W = 0;
   let H = 0;
-  let navH = 0; // --fg-nav-h; see README (The nav band)
+  let navH = 0; // --globe-nav-h; see README (The nav band)
   let blockDocTop = 0; // block's top in document space (the scroll runway)
   let blockHeight = 0; // its full scroll length
 
-  const worldEl = q('.firefly-globe-world');
+  const worldEl = q('.globe-world');
   // scrollT the last card leaves the screen at; see publishPqAppearT.
   let pqAppearT = 1;
   let canvasHidden = false;
@@ -296,9 +296,6 @@ function createGlobeGalleryRuntime(
   }
 
   const pullQuote = createPullQuote({
-    name: 'firefly-globe',
-    cssVars: 'fg',
-    travelVar: '--fg-travel-vh',
     timeline: {
       easePow: TRAVEL_EASE_POW,
       spanPx: travelSpanPx,
@@ -680,9 +677,6 @@ function createGlobeGalleryRuntime(
   }
 
   modal = createGlobeModal({
-    name: 'firefly-globe',
-    cssVars: 'fg',
-    descClass: 'prompt',
     hoistToBody: true,
     renderContent: (el, meta) => renderModalContent(el, meta, new URL('./icons/', import.meta.url).href),
     q,
@@ -731,7 +725,7 @@ function createGlobeGalleryRuntime(
       const n = parseFloat(rootStyle.getPropertyValue(prop));
       return Number.isFinite(n) ? n : null;
     };
-    const nav = cssNum('--fg-nav-h');
+    const nav = cssNum('--globe-nav-h');
     if (nav !== null) navH = nav;
   }
 
@@ -826,7 +820,6 @@ function createGlobeGalleryRuntime(
   });
 
   cursor = createCursor({
-    name: 'firefly-globe',
     getGlobeLive: globeFormed,
     getCursorRetired: () => hintRetired || frameState.scrollT >= pullQuote.liveUntil(),
     labelText: hintText,
@@ -1281,7 +1274,7 @@ function createGlobeGalleryRuntime(
     destroy(false);
     // eslint-disable-next-line no-use-before-define -- same hoisted mutual ref
     if (collapsed || initRuntime() === false) {
-      root.classList.add('firefly-globe-empty');
+      root.classList.add('globe-empty');
       return;
     }
     ctxLoss.stableTimer = window.setTimeout(() => {
@@ -1295,7 +1288,7 @@ function createGlobeGalleryRuntime(
   }
   function bindContextListeners(add) {
     const fn = add ? 'addEventListener' : 'removeEventListener';
-    [q('.firefly-globe-canvas'), q('.firefly-globe-modal-canvas')].forEach((c) => {
+    [q('.globe-canvas'), q('.globe-modal-canvas')].forEach((c) => {
       if (!c) return;
       c[fn]('webglcontextlost', onContextLost, false);
       c[fn]('webglcontextrestored', onContextRestored, false);
@@ -1326,7 +1319,7 @@ function createGlobeGalleryRuntime(
   let textureLoadGeneration = 0;
 
   function initRuntime() {
-    const canvas = q('.firefly-globe-canvas');
+    const canvas = q('.globe-canvas');
     if (!canvas) return false;
 
     // See README (Zero-box gate).
@@ -1336,7 +1329,7 @@ function createGlobeGalleryRuntime(
           if (root.offsetHeight <= 0) return;
           layoutWaitObs.disconnect();
           layoutWaitObs = null;
-          if (initRuntime() === false) root.classList.add('firefly-globe-empty');
+          if (initRuntime() === false) root.classList.add('globe-empty');
         });
         layoutWaitObs.observe(root);
       }
@@ -1344,7 +1337,7 @@ function createGlobeGalleryRuntime(
     }
 
     reducedMotion = prefersReducedMotion();
-    root.classList.toggle('firefly-globe-reduced', reducedMotion);
+    root.classList.toggle('globe-reduced', reducedMotion);
 
     W = window.innerWidth;
     H = measureViewportH();
@@ -1397,7 +1390,7 @@ function createGlobeGalleryRuntime(
       if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
         destroy(false);
-        if (initRuntime() === false) root.classList.add('firefly-globe-empty');
+        if (initRuntime() === false) root.classList.add('globe-empty');
         return;
       }
       const dpr = capDpr();
@@ -1454,7 +1447,7 @@ function createGlobeGalleryRuntime(
 
     interaction.setup(canvas);
     if (!bp.CYLINDER && !reducedMotion) cursor.setup(canvas);
-    root.classList.toggle('firefly-globe-barrel', bp.CYLINDER);
+    root.classList.toggle('globe-barrel', bp.CYLINDER);
 
     window.addEventListener('blur', armFocusGuard);
     window.addEventListener('focus', disarmFocusGuard);
@@ -1591,8 +1584,9 @@ function createGlobeGalleryRuntime(
 }
 
 export default async function init(el) {
+  const styles = loadGlobeStyles();
   if (prefersReducedMotion()) {
-    el.classList.add('firefly-globe-reduced');
+    el.classList.add('globe-reduced');
   }
 
   // Before buildGlobeDom() wipes the children.
@@ -1609,13 +1603,14 @@ export default async function init(el) {
   } else {
     window.lana?.log?.('firefly-globe: no categoryId authored', { tags: 'firefly-globe', severity: 'warn' });
   }
+  await styles;
   if (cgenId && authored) {
     authored.forEach((card) => {
       if (card.fireflyUrl) card.fireflyUrl += `&promoid=${cgenId}&mv=other`;
     });
   }
   if (!authored || authored.length === 0) {
-    el.classList.add('firefly-globe-empty');
+    el.classList.add('globe-empty');
     return el;
   }
   const runtime = createGlobeGalleryRuntime(
@@ -1626,8 +1621,8 @@ export default async function init(el) {
     gid,
     labels,
   );
-  if (!runtime) { el.classList.add('firefly-globe-empty'); return el; }
-  if (runtime.init() === false) { el.classList.add('firefly-globe-empty'); return el; }
+  if (!runtime) { el.classList.add('globe-empty'); return el; }
+  if (runtime.init() === false) { el.classList.add('globe-empty'); return el; }
   el.globeRuntime = runtime;
 
   const removalObserver = new MutationObserver(() => {

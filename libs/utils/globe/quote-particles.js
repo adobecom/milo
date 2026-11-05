@@ -4,11 +4,7 @@ import {
 } from './core.js';
 import { plainQuote } from './ui.js';
 
-const GLOBE = {
-  name: 'firefly-globe',
-  vars: 'fg',
-  easePow: 3,
-};
+const GLOBE = { easePow: 3 };
 export const configureGlobe = (cfg) => Object.assign(GLOBE, cfg);
 
 const PULL_BP = {
@@ -267,7 +263,7 @@ function textLines(el, ox, oy) {
   const cs = getComputedStyle(el);
   const style = {
     font: fontOf(cs),
-    color: cs.getPropertyValue(`--${GLOBE.vars}-pq-ink`).trim() || '#fafafa',
+    color: cs.getPropertyValue('--globe-pq-ink').trim() || '#fafafa',
     rtl: cs.direction === 'rtl',
     letterSpacing: cs.letterSpacing,
   };
@@ -336,7 +332,7 @@ function textLines(el, ox, oy) {
   }));
 }
 
-const textSel = () => ['quote', 'name', 'role'].map((k) => `.${GLOBE.name}-pullquote-${k}`).join(', ');
+const textSel = () => ['quote', 'name', 'role'].map((k) => `.globe-pullquote-${k}`).join(', ');
 
 function fontsFor(figureEl) {
   return [...figureEl.querySelectorAll(textSel())]
@@ -350,7 +346,7 @@ function measure(figureEl, railEl) {
   const cs = getComputedStyle(figureEl);
   const fx = fig.left - origin.left;
   const fy = fig.top - origin.top;
-  const rw = parseFloat(cs.getPropertyValue(`--${GLOBE.vars}-crosshair-width`)) || 1;
+  const rw = parseFloat(cs.getPropertyValue('--globe-crosshair-width')) || 1;
   const pad = (side) => parseFloat(cs[`padding${side}`]) || 0;
   const rules = [
     [fx, fy + pad('Top'), fig.width, rw],
@@ -369,7 +365,7 @@ function measure(figureEl, railEl) {
     runs: [...figureEl.querySelectorAll(textSel())]
       .flatMap((el) => textLines(el, origin.left, origin.top)),
     rules,
-    ruleColor: cs.getPropertyValue(`--${GLOBE.vars}-pq-rule-color`).trim() || '#3a3a3a',
+    ruleColor: cs.getPropertyValue('--globe-pq-rule-color').trim() || '#3a3a3a',
     rtl: cs.direction === 'rtl',
   };
 }
@@ -1058,16 +1054,16 @@ export function createCardScatter({ expand }) {
 }
 
 export function createPullQuote({
-  name, cssVars, timeline, travelVar, root, getBp, getView, getSpan, getCards,
+  timeline, root, getBp, getView, getSpan, getCards,
   getSphereGroup, isCardManaged, onHeightChange,
   getFormationVh = () => 0,
   requireOnSphere = false,
   manageCanvas = false,
 }) {
-  configureGlobe({ name, vars: cssVars, easePow: timeline.easePow });
-  const figureEl = root.querySelector(`.${GLOBE.name}-pullquote`);
-  const quoteEl = root.querySelector(`.${GLOBE.name}-pullquote-quote`);
-  const railEl = root.querySelector(`.${GLOBE.name}-pullquote-rail`);
+  configureGlobe({ easePow: timeline.easePow });
+  const figureEl = root.querySelector('.globe-pullquote');
+  const quoteEl = root.querySelector('.globe-pullquote-quote');
+  const railEl = root.querySelector('.globe-pullquote-rail');
   const forcedColors = window.matchMedia?.('(forced-colors: active)') ?? null;
   const near = [];
   let fx = null;
@@ -1099,7 +1095,7 @@ export function createPullQuote({
   const travelPx = () => (s.travelVh / 100) * getView().H;
 
   function syncHeight() {
-    const travelVh = parseFloat(getComputedStyle(root).getPropertyValue(travelVar));
+    const travelVh = parseFloat(getComputedStyle(root).getPropertyValue('--globe-travel-vh'));
     s.travelVh = fx && travelVh > 0 ? travelVh : 0;
     if (!s.travelVh) return;
     const at = (travelT, vh) => getFormationVh() + travelT * s.travelVh + vh;
@@ -1107,7 +1103,7 @@ export function createPullQuote({
     const next = Math.round((quoteDone + READ_VH * 100 + 100) * 10) / 10;
     if (next === s.heightVh) return;
     s.heightVh = next;
-    root.style.setProperty(`--${GLOBE.vars}-pq-height`, `${next}vh`);
+    root.style.setProperty('--globe-pq-height', `${next}vh`);
     onHeightChange();
   }
 
@@ -1141,7 +1137,7 @@ export function createPullQuote({
       quoteEl.style.fontSize = `${next.toFixed(1)}px`;
       if (origLh) quoteEl.style.lineHeight = `${(origLh * k).toFixed(1)}px`;
       quoteEl.style.letterSpacing = `${(origLs * k).toFixed(2)}px`;
-      plainQuote(quoteEl, GLOBE.name);
+      plainQuote(quoteEl);
     }
   }
 
@@ -1152,11 +1148,11 @@ export function createPullQuote({
     if (!force && key === s.layoutKey) return;
     s.layoutKey = key;
     quoteEl.removeAttribute('style');
-    plainQuote(quoteEl, GLOBE.name);
+    plainQuote(quoteEl);
     if (!fx) return;
     fitQuote();
     const railH = figureEl.getBoundingClientRect().bottom - railEl.getBoundingClientRect().top;
-    root.style.setProperty(`--${GLOBE.vars}-pq-rail-h`, `${railH.toFixed(1)}px`);
+    root.style.setProperty('--globe-pq-rail-h', `${railH.toFixed(1)}px`);
     clearTimeout(rasterTimer);
     rasterTimer = setTimeout(() => {
       fx?.layout({ dpr: capDpr() }).then(() => { s.viewKey = ''; });
@@ -1195,7 +1191,7 @@ export function createPullQuote({
     const str = s.swapT.toFixed(3);
     if (str !== s.swapStr) {
       s.swapStr = str;
-      figureEl.style.setProperty(`--${GLOBE.vars}-pq-dom`, str);
+      figureEl.style.setProperty('--globe-pq-dom', str);
     }
     figureEl.classList.toggle('is-dom', !s.on);
     placeCanvas();
@@ -1316,7 +1312,7 @@ export function createPullQuote({
       ctx.scene.add(fx.object);
       fx.warm(ctx.renderer, camera);
     }
-    root.classList.toggle(`${GLOBE.name}-pq-particles`, !!fx);
+    root.classList.toggle('globe-pq-particles', !!fx);
   }
 
   function teardown() {
@@ -1328,9 +1324,9 @@ export function createPullQuote({
     camera = null;
     canvas = null;
     near.length = 0;
-    root.classList.remove(`${GLOBE.name}-pq-particles`);
-    root.style.removeProperty(`--${GLOBE.vars}-pq-height`);
-    root.style.removeProperty(`--${GLOBE.vars}-pq-rail-h`);
+    root.classList.remove('globe-pq-particles');
+    root.style.removeProperty('--globe-pq-height');
+    root.style.removeProperty('--globe-pq-rail-h');
     if (figureEl) {
       figureEl.style.cssText = '';
       figureEl.classList.remove('is-live', 'is-dom');

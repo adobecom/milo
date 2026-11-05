@@ -28,10 +28,7 @@ const DN_NAV_WARP = 0.40; // peak warp
 const DT_IMG_MARGIN = 12; // gap between image and each viewport edge
 
 export default function createGlobeModal({
-  name,
-  cssVars,
   renderContent,
-  descClass,
   hoistToBody = false,
   bodyOpenClass = false,
   q,
@@ -316,7 +313,7 @@ export default function createGlobeModal({
   function revealModalChrome() {
     if (!chromeEl) return;
     if (!chromeNodes) {
-      chromeNodes = { els: [...chromeEl.querySelectorAll(['info', 'close', 'nav', 'counter'].map((k) => `.${name}-modal-${k}`).join(', '))] };
+      chromeNodes = { els: [...chromeEl.querySelectorAll(['info', 'close', 'nav', 'counter'].map((k) => `.globe-modal-${k}`).join(', '))] };
     }
     // transition:none while animating so CSS hover can't fight the per-frame write; cleared on
     // the settled frame so :hover animates again.
@@ -328,7 +325,7 @@ export default function createGlobeModal({
     chromeNodes.els.forEach((el) => {
       el.style.opacity = String(cFade);
       // The counter has no wrapper, so its CSS centring transform must survive the slide.
-      const base = el.classList.contains(`${name}-modal-counter`) ? 'translateX(-50%)' : '';
+      const base = el.classList.contains('globe-modal-counter') ? 'translateX(-50%)' : '';
       el.style.transform = settled ? '' : `${base}${shift}`.trim();
       el.style.transition = settled ? '' : 'none';
     });
@@ -347,7 +344,7 @@ export default function createGlobeModal({
   }
 
   function scheduleDescFade() {
-    const descEl = q(`.${name}-modal-${descClass}`);
+    const descEl = q('.globe-modal-description');
     if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
   }
 
@@ -357,7 +354,7 @@ export default function createGlobeModal({
   }
 
   function announce(parts = []) {
-    const el = chromeEl && chromeEl.querySelector(`.${name}-modal-announce`);
+    const el = chromeEl && chromeEl.querySelector('.globe-modal-announce');
     if (!el) return;
     el.replaceChildren(...parts.filter(([t]) => t).flatMap(([t, lang], n) => {
       const span = document.createElement('span');
@@ -372,7 +369,7 @@ export default function createGlobeModal({
     if (!targetEl) return;
     const meta = getCardMetadata(i);
     // Text alternative for the WebGL photo; there is no src, the photo is the canvas.
-    const imgEl = targetEl.querySelector(`.${name}-modal-image`);
+    const imgEl = targetEl.querySelector('.globe-modal-image');
     if (imgEl) {
       if (meta.alt) {
         imgEl.setAttribute('aria-label', meta.alt);
@@ -385,13 +382,13 @@ export default function createGlobeModal({
       }
     }
     const { descEl, speech } = renderContent(targetEl, meta);
-    const counterEl = targetEl.querySelector(`.${name}-modal-counter`);
+    const counterEl = targetEl.querySelector('.globe-modal-counter');
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
       counterEl.textContent = `${pad(authoredNo(i))} / ${pad(getCount())}`;
     }
     const position = cardLabel(authoredNo(i), getCount());
-    targetEl.querySelectorAll(`.${name}-modal-position`).forEach((el) => {
+    targetEl.querySelectorAll('.globe-modal-position').forEach((el) => {
       el.textContent = position;
     });
     announce(speak ? [...speech, [position]] : []);
@@ -548,8 +545,8 @@ export default function createGlobeModal({
     const renderer = getRenderer();
     const canvas = renderer && renderer.domElement;
     if (canvas) canvas.classList.add('is-modal-active');
-    document.documentElement.classList.add(`${name}-modal-open`);
-    if (bodyOpenClass) document.body.classList.add(`${name}-modal-open`);
+    document.documentElement.classList.add('globe-modal-open');
+    if (bodyOpenClass) document.body.classList.add('globe-modal-open');
     if (window.lenis) window.lenis.stop();
   }
 
@@ -597,8 +594,8 @@ export default function createGlobeModal({
         if (chromeEl.open) chromeEl.close();
         if (restoreFocusOnClose) restoreFocusOnClose(restoreIdx);
       }
-      document.documentElement.classList.remove(`${name}-modal-open`);
-      if (bodyOpenClass) document.body.classList.remove(`${name}-modal-open`);
+      document.documentElement.classList.remove('globe-modal-open');
+      if (bodyOpenClass) document.body.classList.remove('globe-modal-open');
       if (window.lenis) window.lenis.start();
       closeTimeoutId = null;
     }, modalAnimMs);
@@ -613,7 +610,7 @@ export default function createGlobeModal({
     if (closeBtn) closeBtn.click(); else close();
   }
 
-  const TAP_KEEP_SEL = `button, a, .${name}-modal-info, .${name}-modal-counter`;
+  const TAP_KEEP_SEL = 'button, a, .globe-modal-info, .globe-modal-counter';
   function backdropTap(touch) {
     const rect = photoRectPx();
     if (!rect) return;
@@ -789,42 +786,42 @@ export default function createGlobeModal({
   }
 
   function setup() {
-    if (!modalCanvasEl) modalCanvasEl = q(`.${name}-modal-canvas`);
+    if (!modalCanvasEl) modalCanvasEl = q('.globe-modal-canvas');
     if (hoistToBody && modalCanvasEl && modalCanvasEl.parentNode !== document.body) {
       document.body.appendChild(modalCanvasEl);
     }
 
-    if (!modalEl) modalEl = q(`.${name}-modal`);
+    if (!modalEl) modalEl = q('.globe-modal');
     if (!modalEl) return;
     const declaredMs = parseFloat(
-      getComputedStyle(modalEl).getPropertyValue(`--${cssVars}-modal-anim-ms`),
+      getComputedStyle(modalEl).getPropertyValue('--globe-modal-anim-ms'),
     );
     modalAnimMs = Number.isFinite(declaredMs) && declaredMs > 0 ? declaredMs : MODAL_ANIM_FALLBACK;
     if (hoistToBody && modalEl.parentNode !== document.body) document.body.appendChild(modalEl);
-    modalEl.style.setProperty(`--${cssVars}-modal-anim-ms`, modalAnimMs);
+    modalEl.style.setProperty('--globe-modal-anim-ms', modalAnimMs);
     modalStartPos = new THREE.Vector3();
     modalStartQuat = new THREE.Quaternion();
     modalStartScale = new THREE.Vector3();
     modalCloseStartPos = new THREE.Vector3();
     modalCloseStartQuat = new THREE.Quaternion();
     modalCloseStartScale = new THREE.Vector3();
-    if (!chromeEl) chromeEl = q(`.${name}-modal-chrome`);
+    if (!chromeEl) chromeEl = q('.globe-modal-chrome');
     chromeNodes = null;
     const evtRoot = chromeEl || modalEl;
     const alreadyWired = listenersWired;
     listenersWired = true;
     if (!alreadyWired) {
-      closeBtn = evtRoot.querySelector(`.${name}-modal-close`);
+      closeBtn = evtRoot.querySelector('.globe-modal-close');
       // isTrusted is exactly viaPointer: the guard swallows the browser's synthetic click after
       // a touch pointerup; ours from clickClose() are not trusted.
       closeBtn.addEventListener('click', (e) => close(e.isTrusted));
-      prevBtn = evtRoot.querySelector(`.${name}-modal-nav-prev`);
-      nextBtn = evtRoot.querySelector(`.${name}-modal-nav-next`);
+      prevBtn = evtRoot.querySelector('.globe-modal-nav-prev');
+      nextBtn = evtRoot.querySelector('.globe-modal-nav-next');
       prevBtn.addEventListener('click', () => { navigate(-1); });
       nextBtn.addEventListener('click', () => { navigate(1); });
       // Single-card gallery: nav is a no-op, so hide the arrows.
       if (getCount() <= 1) { prevBtn.hidden = true; nextBtn.hidden = true; }
-      const descEl = evtRoot.querySelector(`.${name}-modal-${descClass}`);
+      const descEl = evtRoot.querySelector('.globe-modal-description');
       if (descEl) descEl.addEventListener('scroll', () => updateDescFade(descEl), { passive: true });
       // preventDefault so the close animation plays instead of an instant close.
       if (chromeEl) {
@@ -880,7 +877,7 @@ export default function createGlobeModal({
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
       // Description owns its own touch scroll.
-      if (e.target?.closest?.(`.${name}-modal-${descClass}`)) return;
+      if (e.target?.closest?.('.globe-modal-description')) return;
       swStartX = e.touches[0].clientX; swLastX = swStartX;
       swStartY = e.touches[0].clientY; swLastY = swStartY;
       swLastT = Date.now();
@@ -1001,10 +998,10 @@ export default function createGlobeModal({
       modalCanvasEl.style.transition = 'none';
       modalCanvasEl.style.transform = '';
     }
-    const mainCanvas = q(`.${name}-canvas`);
+    const mainCanvas = q('.globe-canvas');
     if (mainCanvas) mainCanvas.classList.remove('is-modal-active');
-    document.documentElement.classList.remove(`${name}-modal-open`);
-    if (bodyOpenClass) document.body.classList.remove(`${name}-modal-open`);
+    document.documentElement.classList.remove('globe-modal-open');
+    if (bodyOpenClass) document.body.classList.remove('globe-modal-open');
     if (window.lenis) window.lenis.start();
     resetChromeReveal();
   }

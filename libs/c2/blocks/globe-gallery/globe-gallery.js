@@ -13,7 +13,7 @@ import {
 } from '../../../utils/globe/core.js';
 import createGlobeModal from '../../../utils/globe/modal.js';
 import createInteraction from '../../../utils/globe/interaction.js';
-import { scatterCards, createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/ui.js';
+import { loadGlobeStyles, scatterCards, createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/ui.js';
 import { createPullQuote } from '../../../utils/globe/quote-particles.js';
 import * as TL from './src/timeline.js';
 import {
@@ -239,12 +239,12 @@ function createGlobeGalleryRuntime(
   let blockHeight = 0; // its full scroll length
   // zoomT the last card leaves the screen at; see publishPqAppearZoomT.
   let pqAppearZoomT = 0.5;
-  let formationVh = 0; // from --gg-formation-vh (see readCssVars)
+  let formationVh = 0; // from --globe-formation-vh (see readCssVars)
   let W = 0;
   let H = 0;
-  let navH = 0; // --gg-nav-h; see README (The nav band)
+  let navH = 0; // --globe-nav-h; see README (The nav band)
 
-  const worldEl = q('.globe-gallery-world');
+  const worldEl = q('.globe-world');
 
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
@@ -726,9 +726,6 @@ function createGlobeGalleryRuntime(
   }
 
   modal = createGlobeModal({
-    name: 'globe-gallery',
-    cssVars: 'gg',
-    descClass: 'description',
     bodyOpenClass: true,
     renderContent: renderModalContent,
     q,
@@ -774,9 +771,6 @@ function createGlobeGalleryRuntime(
   }
 
   const pullQuote = createPullQuote({
-    name: 'globe-gallery',
-    cssVars: 'gg',
-    travelVar: '--gg-zoom-vh',
     timeline: {
       easePow: TL.ZOOM_EASE_POW,
       spanPx: TL.zoomSpanPx,
@@ -801,9 +795,9 @@ function createGlobeGalleryRuntime(
       const n = parseFloat(rootStyle.getPropertyValue(prop));
       return Number.isFinite(n) ? n : null;
     };
-    const vh = cssNum('--gg-formation-vh');
+    const vh = cssNum('--globe-formation-vh');
     if (vh !== null) formationVh = vh;
-    const nav = cssNum('--gg-nav-h');
+    const nav = cssNum('--globe-nav-h');
     if (nav !== null) navH = nav;
   }
 
@@ -893,7 +887,6 @@ function createGlobeGalleryRuntime(
   });
 
   cursor = createCursor({
-    name: 'globe-gallery',
     getGlobeLive: globeFormed,
     getCursorRetired: () => hintRetired || frameState.zoomT >= pullQuote.liveUntil(),
     labelText: hintText,
@@ -1588,7 +1581,7 @@ function createGlobeGalleryRuntime(
     destroy();
     // eslint-disable-next-line no-use-before-define -- same hoisted mutual ref
     if (collapsed || initRuntime() === false) {
-      root.classList.add('globe-gallery-empty');
+      root.classList.add('globe-empty');
       return;
     }
     ctxLoss.stableTimer = window.setTimeout(() => {
@@ -1602,7 +1595,7 @@ function createGlobeGalleryRuntime(
   }
   function bindContextListeners(add) {
     const fn = add ? 'addEventListener' : 'removeEventListener';
-    [q('.globe-gallery-canvas'), q('.globe-gallery-modal-canvas')].forEach((c) => {
+    [q('.globe-canvas'), q('.globe-modal-canvas')].forEach((c) => {
       if (!c) return;
       c[fn]('webglcontextlost', onContextLost, false);
       c[fn]('webglcontextrestored', onContextRestored, false);
@@ -1633,7 +1626,7 @@ function createGlobeGalleryRuntime(
   let textureLoadGeneration = 0;
 
   function initRuntime() {
-    const canvas = q('.globe-gallery-canvas');
+    const canvas = q('.globe-canvas');
     if (!canvas) return false;
 
     // See README (Zero-box gate).
@@ -1643,7 +1636,7 @@ function createGlobeGalleryRuntime(
           if (root.offsetHeight <= 0) return;
           layoutWaitObs.disconnect();
           layoutWaitObs = null;
-          if (initRuntime() === false) root.classList.add('globe-gallery-empty');
+          if (initRuntime() === false) root.classList.add('globe-empty');
         });
         layoutWaitObs.observe(root);
       }
@@ -1651,8 +1644,8 @@ function createGlobeGalleryRuntime(
     }
 
     reducedMotion = prefersReducedMotion();
-    root.classList.toggle('globe-gallery-reduced', reducedMotion);
-    arcCopy.el = q('.globe-gallery-arc-copy');
+    root.classList.toggle('globe-reduced', reducedMotion);
+    arcCopy.el = q('.globe-arc-copy');
     if (reducedMotion) worldEl.before(arcCopy.el);
     else worldEl.after(arcCopy.el);
 
@@ -1715,7 +1708,7 @@ function createGlobeGalleryRuntime(
       if (nextBand.name !== bp.name || nextReducedMotion !== reducedMotion) {
         // eslint-disable-next-line no-use-before-define -- hoisted destroy/initRuntime mutual ref
         destroy();
-        if (initRuntime() === false) root.classList.add('globe-gallery-empty');
+        if (initRuntime() === false) root.classList.add('globe-empty');
         return;
       }
       const dpr = capDpr();
@@ -1783,7 +1776,7 @@ function createGlobeGalleryRuntime(
 
     interaction.setup(canvas);
     if (!bp.CYLINDER && !reducedMotion) cursor.setup(canvas);
-    root.classList.toggle('globe-gallery-barrel', bp.CYLINDER);
+    root.classList.toggle('globe-barrel', bp.CYLINDER);
 
     window.addEventListener('blur', armFocusGuard);
     window.addEventListener('focus', disarmFocusGuard);
@@ -1916,8 +1909,9 @@ function createGlobeGalleryRuntime(
 }
 
 export default async function init(el) {
+  const styles = loadGlobeStyles();
   if (prefersReducedMotion()) {
-    el.classList.add('globe-gallery-reduced');
+    el.classList.add('globe-reduced');
   }
 
   // Before buildGlobeDom() wipes the children.
@@ -1928,8 +1922,9 @@ export default async function init(el) {
   const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint });
 
   const authored = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
+  await styles;
   if (!authored || authored.length === 0) {
-    el.classList.add('globe-gallery-empty');
+    el.classList.add('globe-empty');
     return el;
   }
   const runtime = createGlobeGalleryRuntime(
@@ -1940,8 +1935,8 @@ export default async function init(el) {
     gid,
     labels,
   );
-  if (!runtime) { el.classList.add('globe-gallery-empty'); return el; }
-  if (runtime.init() === false) { el.classList.add('globe-gallery-empty'); return el; }
+  if (!runtime) { el.classList.add('globe-empty'); return el; }
+  if (runtime.init() === false) { el.classList.add('globe-empty'); return el; }
   el.globeRuntime = runtime;
 
   const removalObserver = new MutationObserver(() => {

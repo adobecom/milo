@@ -34,10 +34,10 @@ describe('firefly-globe controls', () => {
 
   beforeEach(() => {
     root = document.createElement('div');
-    root.innerHTML = `<div class="firefly-globe-controls">
-      <button class="firefly-globe-spin-toggle"></button><div class="firefly-globe-hint"></div>
-      <button class="firefly-globe-rotate" data-dir="-1"></button>
-      <button class="firefly-globe-rotate" data-dir="1"></button></div><div class="after"></div>`;
+    root.innerHTML = `<div class="globe-controls">
+      <button class="globe-spin-toggle"></button><div class="globe-hint"></div>
+      <button class="globe-rotate" data-dir="-1"></button>
+      <button class="globe-rotate" data-dir="1"></button></div><div class="after"></div>`;
     document.body.append(root);
     rotate = sinon.spy();
     visible = true;
@@ -55,8 +55,8 @@ describe('firefly-globe controls', () => {
 
   it('reorders tab stops, tracks visibility/hint and toggles the spin state', () => {
     controls.setup();
-    const layer = root.querySelector('.firefly-globe-controls');
-    const spin = layer.querySelector('.firefly-globe-spin-toggle');
+    const layer = root.querySelector('.globe-controls');
+    const spin = layer.querySelector('.globe-spin-toggle');
     expect(root.lastElementChild).to.equal(layer);
     controls.update();
     expect(layer.classList.contains('is-visible')).to.equal(true);
@@ -68,7 +68,7 @@ describe('firefly-globe controls', () => {
     visible = false;
     controls.update();
     expect(layer.classList.contains('is-visible')).to.equal(false);
-    expect(layer.querySelector('.firefly-globe-hint').classList.contains('is-dismissed')).to.equal(true);
+    expect(layer.querySelector('.globe-hint').classList.contains('is-dismissed')).to.equal(true);
     layer.querySelector('[data-dir="-1"]').click();
     layer.querySelector('[data-dir="1"]').click();
     expect(rotate.args).to.deep.equal([[-1], [1]]);
@@ -76,15 +76,15 @@ describe('firefly-globe controls', () => {
 
   it('removes listeners/classes on teardown and preserves pause across setup', () => {
     controls.setup();
-    const spin = root.querySelector('.firefly-globe-spin-toggle');
+    const spin = root.querySelector('.globe-spin-toggle');
     spin.click();
     controls.update();
     controls.teardown();
     spin.click();
-    root.querySelector('.firefly-globe-rotate').click();
+    root.querySelector('.globe-rotate').click();
     expect(rotate.called).to.equal(false);
     expect(controls.isSpinPaused()).to.equal(true);
-    expect(root.querySelector('.firefly-globe-controls').classList.contains('is-visible')).to.equal(false);
+    expect(root.querySelector('.globe-controls').classList.contains('is-visible')).to.equal(false);
     controls.setup();
     expect(spin.getAttribute('aria-label')).to.equal('Resume');
   });
@@ -101,7 +101,7 @@ describe('firefly-globe accessibility gallery', () => {
 
   beforeEach(() => {
     root = document.createElement('div');
-    root.innerHTML = '<div class="firefly-globe-canvas"></div>';
+    root.innerHTML = '<div class="globe-canvas"></div>';
     document.body.append(root);
     modalIdx = -1;
     formed = true;
@@ -129,11 +129,11 @@ describe('firefly-globe accessibility gallery', () => {
   it('builds one entry stop and ordered inert browse buttons without duplicating on setup', () => {
     gallery.setup();
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
-    expect(root.querySelectorAll('.firefly-globe-a11y')).to.have.length(1);
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
+    expect(root.querySelectorAll('.globe-a11y')).to.have.length(1);
     expect(widget.tabIndex).to.equal(0);
-    expect(widget.getAttribute('aria-labelledby')).to.equal('firefly-globe-a11y-desc-test');
+    expect(widget.getAttribute('aria-labelledby')).to.equal('globe-a11y-desc-test');
     expect(cards.inert).to.equal(true);
     expect([...cards.children].map((el) => el.dataset.idx)).to.deep.equal(['2', '0', '1']);
     expect(cards.firstElementChild.getAttribute('aria-label')).to.equal('Image 2');
@@ -142,8 +142,8 @@ describe('firefly-globe accessibility gallery', () => {
 
   it('enters only when formed, centers focused cards, and Escape collapses', () => {
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     formed = false;
     widget.click();
     expect(gallery.isBrowsing()).to.equal(false);
@@ -170,7 +170,7 @@ describe('firefly-globe accessibility gallery', () => {
 
   it('moves Tab/Shift+Tab between cards itself, without native focus scrolling', () => {
     gallery.setup();
-    root.querySelector('.firefly-globe-a11y').click();
+    root.querySelector('.globe-a11y').click();
     const tab = (shiftKey) => {
       const e = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
       document.activeElement.dispatchEvent(e);
@@ -195,8 +195,8 @@ describe('firefly-globe accessibility gallery', () => {
 
   it('gates tab stops during modal, tracks canvas opens without opening, and tears down', () => {
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     widget.click();
     gallery.trackCardOpen(0);
     expect(open.called).to.equal(false);
@@ -210,15 +210,15 @@ describe('firefly-globe accessibility gallery', () => {
     expect(cards.inert).to.equal(false);
     gallery.teardown();
     expect(gallery.getFocusedIdx()).to.equal(-1);
-    expect(root.querySelector('.firefly-globe-a11y')).to.equal(null);
+    expect(root.querySelector('.globe-a11y')).to.equal(null);
     widget.click();
     expect(gallery.isBrowsing()).to.equal(false);
   });
 
   it('collapses when focus leaves browsing, except while the modal is open', () => {
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     widget.click();
     modalIdx = 0;
     cards.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: widget }));
@@ -399,7 +399,6 @@ describe('firefly-globe custom cursor', () => {
     window.matchMedia = () => ({ matches: fine });
     clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
     cursor = createCursor({
-      name: 'firefly-globe',
       getGlobeLive: () => live,
       getCursorRetired: () => retired,
       labelText: 'Drag globe',
@@ -416,17 +415,17 @@ describe('firefly-globe custom cursor', () => {
   it('only mounts for fine pointers and positions label in LTR and RTL', () => {
     fine = false;
     cursor.setup(canvas);
-    expect(document.querySelector('.firefly-globe-cursor')).to.equal(null);
+    expect(document.querySelector('.globe-cursor')).to.equal(null);
     fine = true;
     cursor.setup(canvas);
     cursor.setup(canvas);
-    expect(document.querySelectorAll('.firefly-globe-cursor')).to.have.length(1);
-    const node = document.querySelector('.firefly-globe-cursor');
-    const text = node.querySelector('.firefly-globe-cursor-text-wrap');
+    expect(document.querySelectorAll('.globe-cursor')).to.have.length(1);
+    const node = document.querySelector('.globe-cursor');
+    const text = node.querySelector('.globe-cursor-text-wrap');
     expect(node.querySelector('span').textContent).to.equal('Drag globe');
     canvas.dispatchEvent(new MouseEvent('mouseenter', { clientX: 100, clientY: 50 }));
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(true);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(true);
     expect(text.style.transform).to.equal('translate(132px, 39px)');
     document.dir = 'rtl';
     canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, clientY: 60 }));
@@ -436,28 +435,28 @@ describe('firefly-globe custom cursor', () => {
 
   it('suppresses on focus/blur, retires after fade, and resets on teardown', () => {
     cursor.setup(canvas);
-    const node = document.querySelector('.firefly-globe-cursor');
+    const node = document.querySelector('.globe-cursor');
     canvas.dispatchEvent(new MouseEvent('mouseenter', { clientX: 10, clientY: 20 }));
     cursor.update();
     document.dispatchEvent(new Event('focusin'));
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(false);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(false);
     canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: 20, clientY: 20 }));
     retired = true;
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-retiring')).to.equal(true);
+    expect(node.classList.contains('globe-cursor-retiring')).to.equal(true);
     clock.tick(420);
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(false);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(false);
     retired = false;
     live = false;
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(false);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(false);
     cursor.teardown();
     expect(node.isConnected).to.equal(false);
     canvas.dispatchEvent(new MouseEvent('mouseenter', { clientX: 1, clientY: 1 }));
     cursor.update();
-    expect(document.querySelector('.firefly-globe-cursor')).to.equal(null);
+    expect(document.querySelector('.globe-cursor')).to.equal(null);
   });
 });
 
@@ -611,20 +610,20 @@ describe('firefly-globe modal without a WebGL canvas', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     root = document.createElement('div');
-    root.innerHTML = `<div class="firefly-globe-modal" aria-hidden="true">
-      <div class="firefly-globe-modal-chrome">
-        <button class="firefly-globe-modal-close"></button>
-        <button class="firefly-globe-modal-nav-prev"></button>
-        <button class="firefly-globe-modal-nav-next"></button>
-        <div class="firefly-globe-modal-image"></div>
-        <div class="firefly-globe-modal-name">
-          <img class="firefly-globe-modal-model-icon"><span class="firefly-globe-modal-model-label"></span>
+    root.innerHTML = `<div class="globe-modal" aria-hidden="true">
+      <div class="globe-modal-chrome">
+        <button class="globe-modal-close"></button>
+        <button class="globe-modal-nav-prev"></button>
+        <button class="globe-modal-nav-next"></button>
+        <div class="globe-modal-image"></div>
+        <div class="globe-modal-name">
+          <img class="globe-modal-model-icon"><span class="globe-modal-model-label"></span>
         </div>
-        <div class="firefly-globe-modal-prompt"></div>
-        <div class="firefly-globe-modal-counter"></div>
-        <div class="firefly-globe-modal-position"></div>
-        <div class="firefly-globe-modal-announce"></div>
-        <a class="firefly-globe-modal-cta"></a>
+        <div class="globe-modal-description"></div>
+        <div class="globe-modal-counter"></div>
+        <div class="globe-modal-position"></div>
+        <div class="globe-modal-announce"></div>
+        <a class="globe-modal-cta"></a>
       </div></div>`;
     document.body.append(root);
     const modalNode = root.firstElementChild;
@@ -652,9 +651,6 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100);
     camera.position.z = 30;
     modal = createGlobeModal({
-      name: 'firefly-globe',
-      cssVars: 'fg',
-      descClass: 'prompt',
       hoistToBody: true,
       renderContent: (el, meta) => renderModalContent(el, meta, '/libs/c2/blocks/firefly-globe/icons/'),
       q: (sel) => root.querySelector(sel) || modalNode.querySelector(sel),
@@ -705,22 +701,22 @@ describe('firefly-globe modal without a WebGL canvas', () => {
   });
 
   it('moves DOM to body and populates metadata, then restores the card after close', () => {
-    const el = document.querySelector('.firefly-globe-modal');
+    const el = document.querySelector('.globe-modal');
     expect(el.parentNode).to.equal(document.body);
     modal.open(0);
     expect(modal.getModalIdx()).to.equal(0);
-    expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-label')).to.equal('Photo');
-    expect(el.querySelector('.firefly-globe-modal-image').lang).to.equal('en-US');
-    expect(el.querySelector('.firefly-globe-modal-prompt').lang).to.equal('en-US');
-    expect(el.querySelector('.firefly-globe-modal-model-icon').getAttribute('src'))
+    expect(el.querySelector('.globe-modal-image').getAttribute('aria-label')).to.equal('Photo');
+    expect(el.querySelector('.globe-modal-image').lang).to.equal('en-US');
+    expect(el.querySelector('.globe-modal-description').lang).to.equal('en-US');
+    expect(el.querySelector('.globe-modal-model-icon').getAttribute('src'))
       .to.equal('/libs/c2/blocks/firefly-globe/icons/firefly.svg');
-    expect(el.querySelector('.firefly-globe-modal-model-label').textContent).to.equal('Firefly 3');
-    expect(el.querySelector('.firefly-globe-modal-counter').textContent).to.equal('01 / 02');
-    expect(el.querySelector('.firefly-globe-modal-cta').getAttribute('href')).to.equal('/try');
+    expect(el.querySelector('.globe-modal-model-label').textContent).to.equal('Firefly 3');
+    expect(el.querySelector('.globe-modal-counter').textContent).to.equal('01 / 02');
+    expect(el.querySelector('.globe-modal-cta').getAttribute('href')).to.equal('/try');
     expect(modal.isCardManaged(cards[0])).to.equal(true);
     expect(upgrade.calledOnce).to.equal(true);
     modal.updateAnimation(false);
-    el.querySelector('.firefly-globe-modal-close').click();
+    el.querySelector('.globe-modal-close').click();
     modal.updateAnimation(false);
     clock.tick(350);
     expect(modal.getModalIdx()).to.equal(-1);
@@ -734,15 +730,15 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     expect(modal.getModalIdx()).to.equal(-1);
     modal.open(0);
     modal.setup();
-    document.querySelector('.firefly-globe-modal-nav-next').click();
+    document.querySelector('.globe-modal-nav-next').click();
     expect(step.calledOnceWithExactly(0, 1)).to.equal(true);
     modal.navigate(-1);
     expect(step.callCount).to.equal(2);
     expect(modal.getModalIdx()).to.equal(0);
     modal.destroy(true);
     expect(modal.getModalIdx()).to.equal(-1);
-    expect(document.querySelector('.firefly-globe-modal')).to.equal(null);
-    expect(document.documentElement.classList.contains('firefly-globe-modal-open')).to.equal(false);
+    expect(document.querySelector('.globe-modal')).to.equal(null);
+    expect(document.documentElement.classList.contains('globe-modal-open')).to.equal(false);
   });
 
   it('clears absent metadata and cancels a pending upgrade when opening another card', () => {
@@ -750,16 +746,16 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     const pending = upgrade.firstCall.returnValue;
     const ready = upgrade.firstCall.args[1];
     modal.open(1);
-    const el = document.querySelector('.firefly-globe-modal');
+    const el = document.querySelector('.globe-modal');
     expect(pending.onload).to.equal(null);
     expect(pending.onerror).to.equal(null);
     expect(pending.src).to.equal('');
-    expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-hidden')).to.equal('true');
-    expect(el.querySelector('.firefly-globe-modal-image').hasAttribute('lang')).to.equal(false);
-    expect(el.querySelector('.firefly-globe-modal-prompt').hasAttribute('lang')).to.equal(false);
-    expect(el.querySelector('.firefly-globe-modal-model-icon').hasAttribute('hidden')).to.equal(true);
-    expect(el.querySelector('.firefly-globe-modal-cta').hasAttribute('href')).to.equal(false);
-    expect(el.querySelector('.firefly-globe-modal-counter').textContent).to.equal('02 / 02');
+    expect(el.querySelector('.globe-modal-image').getAttribute('aria-hidden')).to.equal('true');
+    expect(el.querySelector('.globe-modal-image').hasAttribute('lang')).to.equal(false);
+    expect(el.querySelector('.globe-modal-description').hasAttribute('lang')).to.equal(false);
+    expect(el.querySelector('.globe-modal-model-icon').hasAttribute('hidden')).to.equal(true);
+    expect(el.querySelector('.globe-modal-cta').hasAttribute('href')).to.equal(false);
+    expect(el.querySelector('.globe-modal-counter').textContent).to.equal('02 / 02');
     const stale = { dispose: sinon.spy() };
     ready(stale);
     expect(stale.dispose.calledOnce).to.equal(true);
@@ -782,10 +778,10 @@ describe('firefly-globe modal without a WebGL canvas', () => {
 
   it('uses model id fallback text, hides unknown icons, and closes through dialog cancel', () => {
     modal.open(1);
-    const el = document.querySelector('.firefly-globe-modal');
-    const chrome = el.querySelector('.firefly-globe-modal-chrome');
-    expect(el.querySelector('.firefly-globe-modal-model-label').textContent).to.equal('');
-    expect(el.querySelector('.firefly-globe-modal-model-icon').hidden).to.equal(true);
+    const el = document.querySelector('.globe-modal');
+    const chrome = el.querySelector('.globe-modal-chrome');
+    expect(el.querySelector('.globe-modal-model-label').textContent).to.equal('');
+    expect(el.querySelector('.globe-modal-model-icon').hidden).to.equal(true);
     const cancel = new Event('cancel', { cancelable: true });
     chrome.dispatchEvent(cancel);
     expect(cancel.defaultPrevented).to.equal(true);
@@ -796,7 +792,7 @@ describe('firefly-globe modal without a WebGL canvas', () => {
 
   it('makes overflowing prompt copy keyboard-scrollable and removes the fade at the bottom', () => {
     modal.open(0);
-    const prompt = document.querySelector('.firefly-globe-modal-prompt');
+    const prompt = document.querySelector('.globe-modal-description');
     Object.defineProperties(prompt, {
       scrollHeight: { configurable: true, value: 300 },
       clientHeight: { configurable: true, value: 100 },
