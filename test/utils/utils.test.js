@@ -446,6 +446,15 @@ describe('Utils', () => {
         expect(merch.initService.promise).to.exist;
       });
 
+      it('modulepreloads commerce.js and the merch.js static imports with first-section commerce content', async () => {
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        ['commerce.js', '/utils/decorate.js', '/features/placeholders.js', '/blocks/merch/autoblock.js'].forEach((path) => {
+          expect(document.head.querySelector(`link[rel="modulepreload"][href$="${path}"]`), path).to.exist;
+        });
+      });
+
       ['preview-token', ''].forEach((token) => {
         [
           ['authored merch block', '<div class="merch-card"></div>'],

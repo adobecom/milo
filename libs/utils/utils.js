@@ -2470,6 +2470,10 @@ export function preloadLcpCodeFiles(area = document) {
     && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...data.autoNames].some(isCommerceBlock)));
   if (hasCommerceContent) {
+    // Flatten the merch.js -> static imports -> commerce.js waterfall.
+    loadLink(getMasDepUrl('commerce.js'), { rel: 'modulepreload', crossorigin: 'anonymous' });
+    ['utils/decorate.js', 'features/placeholders.js', 'blocks/merch/autoblock.js']
+      .forEach((path) => loadLink(`${base}/${path}`, { rel: 'modulepreload', crossorigin: 'anonymous' }));
     // Target previews must apply their AUP config before the service initializes.
     const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
     import(`${base}/blocks/merch/merch.js`)
