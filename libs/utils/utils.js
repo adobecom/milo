@@ -2224,8 +2224,6 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          enableGuestBotDetection: true,
-          guestBotDetectionProvider: 'bfp',
         }),
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
