@@ -1,3 +1,5 @@
+// Spectrum and the cards need Lit whatever the fragment holds, so it joins this module's graph.
+import '../../deps/lit-all.min.js';
 import { createTag, getConfig, getFedsPlaceholderConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { debounce } from '../../utils/action.js';
@@ -133,7 +135,6 @@ function preloadSpectrumForKnownPages() {
   if (!SPECTRUM_PAGES.test(window.location.pathname)) return;
   const { base } = getConfig();
   const dist = `${base}/features/spectrum-web-components/dist`;
-  preloadModule(`${base}/deps/lit-all.min.js`);
   [
     ...SPECTRUM_COMMON_DEPS,
     ...SPECTRUM_COLLECTION_DEPS,
