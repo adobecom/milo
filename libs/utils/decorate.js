@@ -38,7 +38,8 @@ const C2_PLAY_PAUSE_ICONS = `
   </svg>
 </div>
 `;
-const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const startsPlaying = (videoAttrs) => videoAttrs.includes('autoplay') && !prefersReducedMotion();
 let videoCounter = 0;
 
 export function getButtonType(buttonParent) {
@@ -369,7 +370,9 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   }
 
   const fedRoot = getFederatedContentRoot();
-  const labels = `title='${videoLabels.pauseMotion}' aria-label='${videoLabels.pauseMotion}' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}`;
+  const playing = startsPlaying(videoAttrs);
+  const label = playing ? videoLabels.pauseMotion : videoLabels.playMotion;
+  const labels = `title='${label}' aria-label='${label}' tabindex=${tabIndex} aria-pressed=${playing} video-index=${indexOfVideo}`;
   const icons = `
     <div class='offset-filler'>
       <img class='accessibility-control pause-icon' alt='${videoLabels.pauseIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
@@ -435,7 +438,7 @@ export function applyAccessibilityEvents(videoEl) {
   if (videoEl.hasAttribute('autoplay')) {
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
-    if (isReducedMotion) {
+    if (prefersReducedMotion()) {
       videoEl.pause();
       return;
     }
@@ -589,7 +592,7 @@ function updateAriaLabel(videoEl, videoAttrs) {
     const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
     const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
-    let ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion}`;
+    let ariaLabel = `${startsPlaying(videoAttrs) ? videoLabels.pauseMotion : videoLabels.playMotion}`;
     ariaLabel = ariaLabel.concat(` ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`);
     pausePlayWrapper.setAttribute('aria-label', ariaLabel);
     pauseIcon.setAttribute('alt', videoLabels.pauseMotion);
