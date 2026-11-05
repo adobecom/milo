@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { getAdminUrl, getPageStatus } from '../../../../libs/blocks/preflight/checks/adminStatus.js';
+import { getAdminUrl, getPageStatus, clearPageStatusCache } from '../../../../libs/blocks/preflight/checks/adminStatus.js';
 
 describe('preflight adminStatus getAdminUrl', () => {
   it('resolves localhost to main--milo--adobecom', () => {
@@ -20,7 +20,45 @@ describe('preflight adminStatus getAdminUrl', () => {
 });
 
 describe('preflight adminStatus getPageStatus', () => {
-  afterEach(() => sinon.restore());
+  const ok = { ok: true, json: async () => ({ preview: { lastModified: 'a' }, live: {} }) };
+  const page = (path) => new URL(`https://main--cc--adobecom.aem.page${path}`);
+
+  afterEach(() => {
+    sinon.restore();
+    clearPageStatusCache();
+  });
+
+  it('asks the Admin API once per URL until the cache is cleared', async () => {
+    const fetchStub = sinon.stub(window, 'fetch').resolves(ok);
+    await Promise.all([getPageStatus(page('/a')), getPageStatus(page('/a'))]);
+    await getPageStatus(page('/a'));
+    expect(fetchStub.callCount).to.equal(1);
+    clearPageStatusCache();
+    await getPageStatus(page('/a'));
+    expect(fetchStub.callCount).to.equal(2);
+  });
+
+  it('does not cache a failed call, so a 401 or 429 is retried', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: false, status: 429 });
+    fetchStub.onSecondCall().resolves(ok);
+    expect(await getPageStatus(page('/b'))).to.be.null;
+    expect(await getPageStatus(page('/b'))).to.not.be.null;
+  });
+
+  it('runs at most three Admin API calls at a time', async () => {
+    let inFlight = 0;
+    let peak = 0;
+    sinon.stub(window, 'fetch').callsFake(async () => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      await new Promise((resolve) => { setTimeout(resolve, 5); });
+      inFlight -= 1;
+      return ok;
+    });
+    await Promise.all(['/1', '/2', '/3', '/4', '/5', '/6', '/7'].map((p) => getPageStatus(page(p))));
+    expect(peak).to.equal(3);
+  });
 
   it('sends the Sidekick login cookie, since protected sites reject anonymous calls', async () => {
     const fetchStub = sinon.stub(window, 'fetch').resolves({

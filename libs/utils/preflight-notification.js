@@ -1,6 +1,7 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import { CHECK_PRIORITIES, PRIORITY, PRIORITY_ORDER, SEVERITY, STATUS } from '../blocks/preflight/checks/constants.js';
 import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
+import { clearPageStatusCache } from '../blocks/preflight/checks/adminStatus.js';
 import { createTag, loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
@@ -14,6 +15,7 @@ function openPreflightPanel() {
 
 ['previewed', 'published'].forEach((event) => {
   sidekick?.addEventListener(event, async () => {
+    clearPageStatusCache();
     const results = await getPreflightResults({
       url: window.location.href,
       area: document,

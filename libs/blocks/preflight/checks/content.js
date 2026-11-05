@@ -74,7 +74,7 @@ export async function checkUnpublishedFragments(area) {
     return result('fragments', STATUS.FAIL, `${description}${uncheckedText}`, details);
   }
   if (unchecked.length) {
-    return result('fragments', STATUS.LIMBO, `${uncheckedText.trim()} Sign in to Sidekick, then run Preflight again.`, details);
+    return result('fragments', STATUS.LIMBO, `${uncheckedText.trim()} You may not be signed in to Sidekick, or the server is busy. Run Preflight again.`, details);
   }
   return result('fragments', STATUS.PASS, `Every fragment is published (${fragments.length} checked).`, details);
 }

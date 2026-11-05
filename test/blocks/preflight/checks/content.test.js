@@ -2,6 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../../libs/utils/utils.js';
+import { clearPageStatusCache } from '../../../../libs/blocks/preflight/checks/adminStatus.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/content.html' });
 const {
@@ -58,7 +59,10 @@ describe('Preflight content checks', () => {
     fetchStub = stubFetch();
   });
 
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clearPageStatusCache();
+  });
 
   describe('findFragments', () => {
     it('finds loaded, inline, nested and modal fragments once each, and the ones that failed to load', () => {
