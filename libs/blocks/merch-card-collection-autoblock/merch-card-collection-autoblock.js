@@ -125,6 +125,23 @@ function loadSpectrumDependencies() {
   return Promise.all(deps.map((dep) => import(`${dist}/${dep}.js`)));
 }
 
+// Whether a collection renders a sidenav is only known once its fragment has loaded. These pages
+// always do, so Spectrum is fetched alongside the fragment instead of after it.
+const SPECTRUM_PAGES = /\/(creativecloud\/plans|products\/catalog)(\.html)?\/?$/;
+
+function preloadSpectrumForKnownPages() {
+  if (!SPECTRUM_PAGES.test(window.location.pathname)) return;
+  const { base } = getConfig();
+  const dist = `${base}/features/spectrum-web-components/dist`;
+  preloadModule(`${base}/deps/lit-all.min.js`);
+  [
+    ...SPECTRUM_COMMON_DEPS,
+    ...SPECTRUM_COLLECTION_DEPS,
+    ...SPECTRUM_SIDENAV_DEPS,
+    ...SPECTRUM_TRANSITIVE_DEPS,
+  ].forEach((dep) => preloadModule(`${dist}/${dep}.js`));
+}
+
 function localizeIconPath(iconPath) {
   if (window.location.hostname.endsWith('.adobe.com') && iconPath?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
     try {
@@ -1059,8 +1076,7 @@ export default async function init(el) {
   options = overrideOptions(options.fragment, options);
   // The cards always need their Lit, which merch-card.js only requests once it has been fetched.
   preloadModule(getMasComponentUrl('lit-all.min', getMasLibs(), window.location.hostname));
-  // Spectrum waits for the fragment to say whether a sidenav renders; its lit dependency does not.
-  if (options.sidenav) preloadModule(`${getConfig().base}/deps/lit-all.min.js`);
+  if (options.sidenav) preloadSpectrumForKnownPages();
   await loadDependencies(options);
   await createCollection(el, options);
 }
