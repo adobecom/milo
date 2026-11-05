@@ -214,7 +214,9 @@ class Footer {
     };
     window.addEventListener('scroll', this.logoScrollHandler, { passive: true });
     window.addEventListener('resize', this.logoResizeHandler);
-    updateLogoProgress();
+    // The footer was just appended, so measuring here forces a full style/layout flush. Run the
+    // first measurement in the next frame, ahead of that frame's own style/layout and paint.
+    this.logoScrollHandler();
   };
 
   initContainerResponsiveness = () => {
