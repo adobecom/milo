@@ -271,6 +271,7 @@
   content: '';
   position: absolute;
   pointer-events: none;
+  z-index: -1;
 
   /* Longhands, not the `border` shorthand: an unresolvable var() colour inside a shorthand is
      invalid at computed-value time and resets border-style to none, erasing every rule. */
@@ -396,6 +397,7 @@
   background: transparent;
   color: inherit;
   touch-action: none;
+  overflow: clip;
   opacity: 0;
   transition: opacity calc(var(--globe-modal-anim-ms) * 1ms) ease;
 }
@@ -573,7 +575,7 @@ html[dir="rtl"] .globe-hint {
   flex-direction: row-reverse;
 }
 
-html:has(.firefly-globe) { scrollbar-gutter: stable; }
+html:has(.globe) { scrollbar-gutter: stable; }
 
 .globe-modal-description {
   font-family: var(--body-font-family);
@@ -620,6 +622,10 @@ html:has(.firefly-globe) { scrollbar-gutter: stable; }
 
 html.globe-modal-open,
 body.globe-modal-open { overflow: hidden; }
+
+html.globe-modal-open {
+  background-color: color-mix(in srgb, var(--s2a-color-gray-900) 36%, black);
+}
 
 @media (width >= 768px) {
   .globe {

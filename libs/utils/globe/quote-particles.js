@@ -279,27 +279,42 @@ function textLines(el, ox, oy) {
   nodes.forEach((node) => {
     const { data } = node;
     let line = null;
+    let word = null;
+    let gap = false;
     let i = 0;
     [...data].forEach((ch) => {
       const start = i;
       i += ch.length;
-      if (/\s/.test(ch)) return;
+      if (/\s/.test(ch)) {
+        gap = true;
+        return;
+      }
       range.setStart(node, start);
       range.setEnd(node, i);
       const r = range.getBoundingClientRect();
       if (!r.width || !r.height) return;
       ascent ??= baseY - r.top;
-      if (!line || Math.abs(r.top - line.top) > r.height * 0.5) {
+      const newLine = !line || Math.abs(r.top - line.top) > r.height * 0.5;
+      if (newLine) {
         line = {
-          ...style, node, start, end: i, top: r.top, left: r.left, right: r.right,
+          ...style, node, start, end: i, top: r.top, left: r.left, right: r.right, words: [],
         };
         lines.push(line);
-        return;
+      } else {
+        line.end = i;
+        line.top = Math.min(line.top, r.top);
+        line.left = Math.min(line.left, r.left);
+        line.right = Math.max(line.right, r.right);
       }
-      line.end = i;
-      line.top = Math.min(line.top, r.top);
-      line.left = Math.min(line.left, r.left);
-      line.right = Math.max(line.right, r.right);
+      if (newLine || gap) {
+        word = { start, end: i, left: r.left, right: r.right };
+        line.words.push(word);
+        gap = false;
+      } else {
+        word.end = i;
+        word.left = Math.min(word.left, r.left);
+        word.right = Math.max(word.right, r.right);
+      }
     });
   });
   return lines.map((l) => ({
@@ -310,6 +325,11 @@ function textLines(el, ox, oy) {
     top: l.top - oy,
     left: l.left - ox,
     right: l.right - ox,
+    words: l.words.map((w) => ({
+      text: l.node.data.slice(w.start, w.end),
+      left: w.left - ox,
+      right: w.right - ox,
+    })),
   }));
 }
 
@@ -372,19 +392,35 @@ function rasterize(m, dpr) {
     ctx.direction = run.rtl ? 'rtl' : 'ltr';
     ctx.textAlign = run.rtl ? 'right' : 'left';
     ctx.textBaseline = 'alphabetic';
-    if ('letterSpacing' in ctx) {
-      ctx.letterSpacing = run.letterSpacing === 'normal' ? '0px' : run.letterSpacing;
-    }
-    const tm = ctx.measureText(run.text);
-    const ascent = run.ascent ?? tm.fontBoundingBoxAscent ?? tm.actualBoundingBoxAscent;
-    const domW = run.right - run.left;
-    const sx = tm.width > 0 ? clamp(domW / tm.width, 0.9, 1.1) : 1;
-    ctx.save();
-    const base = snap(m.figTop) + snap(run.top + ascent - m.figTop);
-    ctx.translate(run.rtl ? run.right : run.left, base);
-    if (Math.abs(sx - 1) > 0.004) ctx.scale(sx, 1);
-    ctx.fillText(run.text, 0, 0);
-    ctx.restore();
+    const spacings = run.letterSpacing === 'normal' ? ['0px'] : [run.letterSpacing, '0px'];
+    const fit = (text, domW) => {
+      let best = null;
+      spacings.forEach((spacing) => {
+        if ('letterSpacing' in ctx) ctx.letterSpacing = spacing;
+        const metrics = ctx.measureText(text);
+        if (!best || Math.abs(metrics.width - domW) < Math.abs(best.metrics.width - domW)) {
+          best = { metrics, spacing };
+        }
+      });
+      return { ...best, ratio: best.metrics.width > 0 ? domW / best.metrics.width : 1 };
+    };
+    const whole = fit(run.text, run.right - run.left);
+    const split = Math.abs(whole.ratio - 1) > 0.004 && run.words.length > 1;
+    const parts = split
+      ? run.words.map((word) => ({ ...word, fit: fit(word.text, word.right - word.left) }))
+      : [{ text: run.text, left: run.left, right: run.right, fit: whole }];
+    parts.forEach((part) => {
+      const { metrics, spacing, ratio } = part.fit;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = spacing;
+      const ascent = run.ascent ?? metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent;
+      const sx = clamp(ratio, 0.9, 1.1);
+      ctx.save();
+      const base = snap(m.figTop) + snap(run.top + ascent - m.figTop);
+      ctx.translate(run.rtl ? part.right : part.left, base);
+      if (Math.abs(sx - 1) > 0.004) ctx.scale(sx, 1);
+      ctx.fillText(part.text, 0, 0);
+      ctx.restore();
+    });
   });
   return {
     canvas, ctx, x0, y0, w, h,

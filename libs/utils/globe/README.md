@@ -403,7 +403,7 @@ The modal has its own WebGL canvas and scene; its renderer is created on the fir
   warp preview, cross-warp on commit) from pull-down (dismiss, flies back from where it was released). A swipe commit
   zeroes `modalWarp`. A drag starting inside the description doesn't start a gesture.
 - **Scroll lock**: `html.globe-modal-open { overflow: hidden }` plus `lenis.stop()`; `bodyOpenClass` also locks
-  `<body>`. `html:has(.firefly-globe)` keeps `scrollbar-gutter: stable`.
+  `<body>`. `html:has(.globe)` keeps `scrollbar-gutter: stable`, painted dark while locked.
 - **Stacking**: the `<dialog>` is in the top layer. The backdrop (`.globe-modal`, `z-index` in `globe.css`) and the
   modal canvas (inline `z-index`, one above) are fixed siblings that must cover the gnav (`header.global-navigation`,
   and `header.new-nav:has(.feds-dropdown--active)`) but stay under caas, market-selector, Milo modals and OneTrust.
@@ -416,7 +416,8 @@ The block claims nothing at page level: world, arc copy, pull quote and a11y lay
 carries a `z-index` that only scopes `.globe-controls` above the a11y layers appended after it. Don't use
 `isolation: isolate` there (it would stop the modal backdrop sampling the canvas), and don't put `isolation` or a
 `z-index` on the block root (it would trap the modal under the gnav). Any section with a `z-index` (rounded corners,
-C2 parallax) covers the block. The cursor label sits above the modal band.
+C2 parallax) covers the block. `.globe-pullquote` isolates so the crosshair's `z-index: -1` stays above the block
+background. The cursor label sits above the modal band.
 
 ## Pull quote
 
@@ -458,7 +459,9 @@ CSS height.
 **Layout.** The DOM figure is the layout engine. `layout` restores the plain quote (`plainQuote`, which hangs the
 opening mark) and shrinks the font if the box is taller than the band. After fonts and an idle period it measures one
 Range per character, rasterizes each line at DPR with the computed font and `--globe-pq-ink`, adds the crosshair, and
-samples targets (alpha ≥ `INK_ALPHA`). The figure drops `-webkit-font-smoothing`, the raster uses the DOM-measured ascent, and positions snap to device pixels. Inputs must hold for `DEBOUNCE_MS` before a
+samples targets (alpha ≥ `INK_ALPHA`). Each line is drawn with whichever `letter-spacing` (the element's, or none)
+matches the DOM width; a line matching neither is drawn word by word. The figure drops `-webkit-font-smoothing`, the
+raster uses the DOM-measured ascent, and positions snap to device pixels. Inputs must hold for `DEBOUNCE_MS` before a
 re-raster or re-pair; the old draws stay until the new ones swap in.
 
 **Swap and pinning.** From `QUOTE_LIVE_P` the crisp plane shows without waiting for a pairing, so landing mid-page never
