@@ -2875,12 +2875,24 @@ export const norm = normCountryCode;
 export async function getMarketConfig() {
   try {
     const config = getConfig();
-    if (!config.marketsConfig) {
-      const resp = await fetch(getMarketsUrl());
-      if (!resp.ok) throw new Error('Failed to load market config');
-      config.marketsConfig = await resp.json();
+    let { marketsConfig } = config;
+    if (!marketsConfig) {
+      config.marketsConfigPromise ||= fetch(getMarketsUrl())
+        .then((resp) => {
+          if (!resp.ok) throw new Error('Failed to load market config');
+          return resp.json();
+        });
+      const request = config.marketsConfigPromise;
+      try {
+        marketsConfig = await request;
+        if (config.marketsConfigPromise === request && !config.marketsConfig) {
+          config.marketsConfig = marketsConfig;
+        }
+      } finally {
+        if (config.marketsConfigPromise === request) delete config.marketsConfigPromise;
+      }
     }
-    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    const languages = marketsConfig.languages?.data ?? marketsConfig.data ?? [];
     return { languages };
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
@@ -2985,14 +2997,11 @@ export async function decorateLanguageBanner() {
 
   const [geoIpCode, marketsConfig] = await Promise.all([
     getCountry(),
-    fetch(getMarketsUrl())
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
+    getMarketConfig(),
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
-  getConfig().marketsConfig = marketsConfig;
-  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  const rawEntries = marketsConfig.languages;
   if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
   const languageEntries = rawEntries.map((entry) => ({
