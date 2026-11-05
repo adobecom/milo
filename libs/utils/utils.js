@@ -119,6 +119,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'aside-c2',
   'base-card',
   'brand-concierge',
   'brand-concierge-global',
