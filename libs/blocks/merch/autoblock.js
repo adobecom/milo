@@ -172,31 +172,57 @@ function applyPreservedStyles(headings) {
   }
 }
 
-// Cards finish at different async points, and a read in a rAF lands on a tree the swap just
-// dirtied, forcing a style recalc. A ResizeObserver callback runs after the frame's layout and
-// before paint, so the swapped headings are measured together with no frame painted unstyled.
-const pendingHeadings = new Set();
-let headingObserver;
-function onHeadingsLaidOut(entries) {
-  const batch = [];
-  entries.forEach(({ target }) => {
-    headingObserver.unobserve(target);
-    if (pendingHeadings.delete(target)) batch.push(target);
-  });
-  applyPreservedStyles(batch);
+function swapHeadingTag(heading, newLevel) {
+  const next = createTag(`h${newLevel}`);
+  [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
+  next.append(...heading.childNodes);
+  heading.replaceWith(next);
+  return next;
 }
 
-function queuePreservedStyles(headings) {
-  if (!headings.length) return;
+// Cards finish at different async points, and reading style right after a swap forces a recalc.
+// Batch mode keeps the original headings in place and swaps them from a ResizeObserver callback,
+// which runs after the frame's layout and before paint: the original headings' computed style is
+// read for free, and no frame is painted without the preserved styles. Headings that are never
+// laid out (display:none) are swapped by the fallback timer.
+const pendingSwaps = new Map();
+let headingObserver;
+let fallbackTimer;
+function flushPendingSwaps(targets) {
+  const items = targets.filter((heading) => pendingSwaps.has(heading))
+    .map((heading) => ({ heading, newLevel: pendingSwaps.get(heading) }));
+  items.forEach(({ heading }) => {
+    pendingSwaps.delete(heading);
+    headingObserver?.unobserve(heading);
+  });
+  const measured = items.map(({ heading }) => {
+    if (!heading.isConnected) return null;
+    const computed = getComputedStyle(heading);
+    return PRESERVED_STYLE_PROPS.map((prop) => computed[prop]);
+  });
+  items.forEach(({ heading, newLevel }, i) => {
+    const next = swapHeadingTag(heading, newLevel);
+    if (!measured[i]) return;
+    PRESERVED_STYLE_PROPS.forEach((prop, j) => { next.style[prop] = measured[i][j]; });
+  });
+}
+
+function queueHeadingSwaps(items) {
+  if (!items.length) return;
   if (typeof ResizeObserver === 'undefined') {
-    applyPreservedStyles(headings);
+    items.forEach(({ heading, newLevel }) => pendingSwaps.set(heading, newLevel));
+    flushPendingSwaps(items.map(({ heading }) => heading));
     return;
   }
-  headingObserver ||= new ResizeObserver(onHeadingsLaidOut);
-  headings.forEach((heading) => {
-    pendingHeadings.add(heading);
+  headingObserver ||= new ResizeObserver((entries) => {
+    flushPendingSwaps(entries.map(({ target }) => target));
+  });
+  items.forEach(({ heading, newLevel }) => {
+    pendingSwaps.set(heading, newLevel);
     headingObserver.observe(heading);
   });
+  clearTimeout(fallbackTimer);
+  fallbackTimer = setTimeout(() => flushPendingSwaps([...pendingSwaps.keys()]), 3000);
 }
 
 let responsiveSyncAdded = false;
@@ -223,16 +249,14 @@ export function overrideCardHeadingLevel(card, targetLevel, { batch = false } = 
   const base = Math.min(...origLevels);
   const delta = targetLevel - base;
   const swapped = [];
+  const queued = [];
   headings.forEach((heading, i) => {
     const newLevel = Math.min(6, Math.max(1, origLevels[i] + delta));
     if (newLevel === Number(heading.tagName[1])) return;
-    const next = createTag(`h${newLevel}`);
-    [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
-    next.append(...heading.childNodes);
-    heading.replaceWith(next);
-    swapped.push(next);
+    if (batch) queued.push({ heading, newLevel });
+    else swapped.push(swapHeadingTag(heading, newLevel));
   });
-  if (batch) queuePreservedStyles(swapped);
+  if (batch) queueHeadingSwaps(queued);
   else applyPreservedStyles(swapped);
   ensureResponsiveHeadingSync();
 }
