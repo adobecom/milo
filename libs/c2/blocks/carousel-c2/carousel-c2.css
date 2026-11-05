@@ -258,10 +258,14 @@
       margin: 0;
       padding: 0;
 
+      /* black border + white ring keeps 3:1 against any slide image */
       li.slide-indicator {
+        box-sizing: content-box;
         width: var(--s2a-spacing-8);
         height: var(--s2a-spacing-8);
+        border: 1px solid var(--s2a-color-gray-1000);
         border-radius: var(--s2a-border-radius-round);
+        box-shadow: 0 0 0 1px var(--s2a-color-gray-25);
         background: var(--s2a-color-gray-500);
 
         &.active {
