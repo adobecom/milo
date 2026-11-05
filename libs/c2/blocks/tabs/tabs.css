@@ -261,8 +261,9 @@
       border-bottom-right-radius: 0;
     }
 
-    &:hover {
-      border-color: var(--s2a-color-border-subtle);
+    /* Hover: strong border for 3:1 non-text contrast; skipped while open so the trigger and list borders stay joined */
+    &:hover:not([aria-expanded='true']) {
+      border-color: var(--s2a-color-border-strong);
     }
 
     &:focus-visible {
