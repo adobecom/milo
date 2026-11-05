@@ -62,8 +62,8 @@ describe('groupByPriority', () => {
         fail({ checkId: 'static-prices', title: 'Static prices', details: { prices: [{}] } }),
       ],
     })).to.deep.equal([
-      { level: 'Blocker', items: ['Lorem Ipsum', 'M@S Unpublished Fragments (2)'] },
-      { level: 'Critical', items: ['Static prices (1)', 'Accessibility (5)'] },
+      { level: 'Blocker', items: ['Lorem Ipsum', 'M@S Unpublished Fragments (2)', 'Static prices (1)'] },
+      { level: 'Critical', items: ['Accessibility (5)'] },
       { level: 'Major', items: ['LCP'] },
       { level: 'Normal', items: ['Footer', 'Icons'] },
     ]);
@@ -96,7 +96,8 @@ describe('groupByPriority', () => {
       ],
     })).to.deep.equal([
       { level: 'Blocker', items: ['Links'] },
-      { level: 'Critical', items: ['New A', 'Title size'] },
+      { level: 'Critical', items: ['New A'] },
+      { level: 'Major', items: ['Title size'] },
       { level: 'Normal', items: ['New B'] },
     ]);
   });

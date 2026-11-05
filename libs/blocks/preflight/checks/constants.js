@@ -29,6 +29,7 @@ export const PRIORITY_ORDER = Object.values(PRIORITY);
 
 // Display-only ranking for the preview pop-up, keyed by check id (or name when a
 // check has no id). It never changes `severity`, which metrics and scoring use.
+// Levels follow the Adobe.com QA Priority Definitions (wiki page 1201009817).
 // Asset dimensions rank per fold via the -above-fold / -below-fold keys.
 // Unlisted checks rank from severity: critical → Critical, anything else → Normal.
 export const CHECK_PRIORITIES = {
@@ -39,17 +40,17 @@ export const CHECK_PRIORITIES = {
   links: PRIORITY.BLOCKER,
   'broken-links': PRIORITY.BLOCKER,
   'lorem-ipsum': PRIORITY.BLOCKER,
-  title: PRIORITY.CRITICAL,
-  'title-size': PRIORITY.CRITICAL,
-  description: PRIORITY.CRITICAL,
-  'meta-description': PRIORITY.CRITICAL,
-  'h1-count': PRIORITY.CRITICAL,
+  'static-prices': PRIORITY.BLOCKER,
   'region-selector': PRIORITY.CRITICAL,
   breadcrumbs: PRIORITY.CRITICAL,
   accessibility: PRIORITY.CRITICAL,
   'image-dimensions-above-fold': PRIORITY.CRITICAL,
-  'static-prices': PRIORITY.CRITICAL,
   'unresolved-placeholders': PRIORITY.CRITICAL,
+  title: PRIORITY.MAJOR,
+  'title-size': PRIORITY.MAJOR,
+  description: PRIORITY.MAJOR,
+  'meta-description': PRIORITY.MAJOR,
+  'h1-count': PRIORITY.MAJOR,
   'body-size': PRIORITY.MAJOR,
   'lcp-element': PRIORITY.MAJOR,
   'single-block': PRIORITY.MAJOR,
