@@ -55,16 +55,6 @@
     },
     {
       "containerId": "tools",
-      "id": "floodgate",
-      "title": "Floodgate",
-      "environments": [ "edit" ],
-      "url": "/tools/floodgate/index.html?project=milo--adobecom",
-      "passReferrer": true,
-      "excludePaths": [ "/**" ],
-      "includePaths": [ "**/:x**" ]
-    },
-    {
-      "containerId": "tools",
       "title": "Send to CaaS",
       "id": "sendtocaas",
       "environments": ["dev", "preview", "live", "prod"],
