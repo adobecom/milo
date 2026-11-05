@@ -1,0 +1,241 @@
+:host {
+  --font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
+}
+
+:host > svg {
+  display: none;
+}
+
+.tag-browser .icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.tag-browser {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100vh;
+}
+
+.tag-browser .tag-search .search-details {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+}
+
+.tag-browser .tag-search input[type="text"] {
+  flex: 1;
+  padding: 0 0 0 32px;
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  line-height: 44px;
+  border: none;
+  box-sizing: border-box;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Ccircle cx='7.5' cy='7.5' r='5' fill='none' stroke='%234b4b4b' stroke-width='1.5'/%3E%3Cpath d='m11 11 5 5' stroke='%234b4b4b' stroke-width='1.5'/%3E%3C/svg%3E") 4px 14px / 18px no-repeat;
+}
+
+.tag-browser .tag-search input:focus-visible {
+  outline: none;
+  border-bottom: 1px solid #167AF3;
+  margin-bottom: -1px;
+}
+
+.tag-browser .tag-search input::placeholder {
+  font-style: italic;
+  color: #a8a8a8;
+}
+
+.tag-browser .tag-search input:focus-visible::placeholder {
+  color: #167AF3;
+}
+
+.tag-browser .tag-search::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: #D1D1D1;
+}
+
+.tag-browser .tag-groups {
+  display: flex;
+  overflow: auto;
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 44px);
+}
+
+.tag-browser ul {
+  margin: 1px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag-browser .tag-group-column {
+  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  max-width: 280px;
+  box-sizing: border-box;
+}
+
+.tag-browser .tag-info-column {
+  border-left: 1px solid #D1D1D1;
+}
+
+.tag-browser .tag-info {
+  padding: 16px;
+  font-family: var(--font-family);
+}
+
+.tag-browser .tag-info dl {
+  margin: 0;
+}
+
+.tag-browser .tag-info dt {
+  color: #4B4B4B;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tag-browser .tag-info dd {
+  margin: 4px 0 20px;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.tag-browser .tag-info-insert {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #e9e9e9;
+  color: #000;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tag-browser .tag-info-insert:hover {
+  background-color: #dadada;
+}
+
+.tag-browser .tag-info-insert:focus-visible {
+  outline: 2px solid #e9e9e9;
+  outline-offset: 2px;
+}
+
+.tag-browser .tag-group {
+  margin: -1px 0;
+}
+
+.tag-browser .tag-group .tag-details {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  flex-wrap: wrap;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.tag-browser .tag-group .tag-details:hover {
+  padding: 0;
+  background-color: #E4F0FF;
+  z-index: 5;
+}
+
+.tag-browser .tag-group .tag-details::before,
+.tag-browser .tag-group .tag-details::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: #D1D1D1;
+  width: 100%;
+}
+
+.tag-browser .tag-group .tag-title {
+  flex: 1;
+  margin-left: 4px;
+  line-height: 36px;
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0 0 0 4px;
+  cursor: default;
+}
+
+.tag-browser .tag-group .tag-title.has-children {
+  cursor: pointer;
+}
+
+.tag-browser .tag-search button,
+.tag-browser .tag-details button {
+  cursor: pointer;
+}
+
+.tag-browser .tag-group:hover .tag-details {
+  background-color: #E4F0FF;
+  padding: 0;
+}
+
+.tag-group:hover .tag-title {
+  margin-left: 18px;
+  color: #167AF3;
+}
+
+.tag-group:hover .tag-details > button:last-child {
+  margin-right: 14px;
+}
+
+.tag-group:hover .tag-details::before,
+.tag-group:hover .tag-details::after {
+  background: #167AF3;
+}
+
+.tag-navigate,
+.tag-insert,
+.tag-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: #4B4B4B;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.tag-navigate {
+  transform: rotate(-90deg);
+}
+
+.tag-back {
+  transform: rotate(90deg);
+}
+
+.tag-navigate:hover,
+.tag-insert:hover,
+.tag-back:hover {
+  background-color: #E4F0FF;
+  color: #167AF3;
+}

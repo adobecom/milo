@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>DA Tag Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="./tag-manager.css">
+    <script type="module" src="./tag-manager.js"></script>
+  </head>
+  <body>
+    <main class="tag-manager">
+      <header>
+        <h1>Tag Manager</h1>
+        <p>Keep your tags up to date from Adobe's tag library.</p>
+        <p>Updates go to the <a id="sheet-link" target="_blank" rel="noopener noreferrer">tag sheet</a>. Other groups and sheets stay unchanged.</p>
+      </header>
+      <form id="controls" class="card">
+        <label for="tag-group">Which tags would you like to update?</label>
+        <div class="group-controls">
+          <select id="tag-group" disabled>
+            <option>Loading tag groups...</option>
+          </select>
+          <button id="check-updates" type="submit" disabled>Check for updates</button>
+        </div>
+      </form>
+      <p id="status" role="status" aria-live="polite">Connecting to Document Authoring...</p>
+      <button id="retry-connection" type="button" class="secondary" hidden>Try again</button>
+      <section id="review" class="card" aria-labelledby="review-heading" hidden>
+        <h2 id="review-heading">Review your changes</h2>
+        <p id="review-summary"></p>
+        <label class="removal-choice">
+          <input id="remove-missing" type="checkbox">
+          Remove tags no longer in Chimera
+        </label>
+        <p id="missing-note" class="hint"></p>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tag changes">
+          <table>
+            <thead>
+              <tr><th scope="col">Change</th><th scope="col">Tag</th><th scope="col">Title</th></tr>
+            </thead>
+            <tbody id="change-rows"></tbody>
+          </table>
+        </div>
+        <p class="hint">Close the tag sheet in other tabs before saving. A backup version is created automatically.</p>
+        <p class="hint">Saving also refreshes the tag browser's preview. Nothing is published live.</p>
+        <button id="save-changes" type="button" disabled>Save changes</button>
+      </section>
+      <button id="retry-preview" type="button" class="secondary" hidden>Refresh browser preview</button>
+    </main>
+  </body>
+</html>

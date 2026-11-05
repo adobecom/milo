@@ -1,0 +1,172 @@
+body {
+  margin: 0;
+  background-color: #f6f7f8;
+  color: #242424;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+}
+
+.tag-manager {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.tag-manager h1 {
+  margin-bottom: 8px;
+  font-size: 30px;
+}
+
+.tag-manager h2 {
+  margin-top: 0;
+  font-size: 22px;
+}
+
+.tag-manager a {
+  color: #0d66d0;
+  text-decoration: underline;
+}
+
+.tag-manager .card {
+  margin: 24px 0;
+  padding: 24px;
+  border: 1px solid #d5d9de;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.tag-manager label {
+  font-weight: 700;
+}
+
+.tag-manager .group-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.tag-manager select,
+.tag-manager button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #b4bac2;
+  border-radius: 4px;
+  font: inherit;
+}
+
+.tag-manager select {
+  flex: 1;
+  min-width: 0;
+  background-color: #fff;
+}
+
+.tag-manager button {
+  border-color: #1473e6;
+  background-color: #1473e6;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tag-manager button.secondary {
+  background-color: #fff;
+  color: #0d66d0;
+}
+
+.tag-manager button:disabled {
+  border-color: #d5d9de;
+  background-color: #e8ebee;
+  color: #666;
+  cursor: default;
+}
+
+.tag-manager button:hover:not(:disabled) {
+  background-color: #0d66d0;
+  color: #fff;
+}
+
+.tag-manager :focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 3px;
+}
+
+.tag-manager .removal-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.tag-manager input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 2px 0 0;
+}
+
+.tag-manager .hint,
+.tag-manager .previous-title {
+  color: #595959;
+  font-size: 14px;
+}
+
+.tag-manager .previous-title {
+  display: block;
+  text-decoration: line-through;
+}
+
+.tag-manager .table-wrap {
+  max-height: 400px;
+  overflow: auto;
+  margin: 20px 0;
+}
+
+.tag-manager table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tag-manager th,
+.tag-manager td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #d5d9de;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.tag-manager th:first-child {
+  width: 90px;
+}
+
+.tag-manager tr[data-kind="remove"],
+.tag-manager [data-kind="error"] {
+  color: #b42318;
+}
+
+.tag-manager [data-kind="success"] {
+  color: #176b3a;
+}
+
+.tag-manager [data-kind="warning"] {
+  color: #795300;
+}
+
+@media (width <= 600px) {
+  .tag-manager {
+    margin: 20px auto;
+    padding: 0 16px;
+  }
+
+  .tag-manager .card {
+    padding: 16px;
+  }
+
+  .tag-manager .group-controls {
+    flex-direction: column;
+  }
+
+  .tag-manager th:first-child {
+    width: 72px;
+  }
+}
