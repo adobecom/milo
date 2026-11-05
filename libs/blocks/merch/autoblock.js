@@ -172,20 +172,30 @@ function applyPreservedStyles(headings) {
   }
 }
 
-// Cards finish at different async points, so measuring per card forces one style recalc per card.
-// Queue the swapped headings and measure them together right before the next frame: rAF callbacks
-// run ahead of that frame's style/layout/paint, so no frame is painted without the styles.
-let queuedHeadings = [];
-let flushQueued = false;
+// Cards finish at different async points, and a read in a rAF lands on a tree the swap just
+// dirtied, forcing a style recalc. A ResizeObserver callback runs after the frame's layout and
+// before paint, so the swapped headings are measured together with no frame painted unstyled.
+const pendingHeadings = new Set();
+let headingObserver;
+function onHeadingsLaidOut(entries) {
+  const batch = [];
+  entries.forEach(({ target }) => {
+    headingObserver.unobserve(target);
+    if (pendingHeadings.delete(target)) batch.push(target);
+  });
+  applyPreservedStyles(batch);
+}
+
 function queuePreservedStyles(headings) {
-  queuedHeadings.push(...headings);
-  if (flushQueued) return;
-  flushQueued = true;
-  requestAnimationFrame(() => {
-    flushQueued = false;
-    const batch = queuedHeadings;
-    queuedHeadings = [];
-    applyPreservedStyles(batch);
+  if (!headings.length) return;
+  if (typeof ResizeObserver === 'undefined') {
+    applyPreservedStyles(headings);
+    return;
+  }
+  headingObserver ||= new ResizeObserver(onHeadingsLaidOut);
+  headings.forEach((heading) => {
+    pendingHeadings.add(heading);
+    headingObserver.observe(heading);
   });
 }
 
