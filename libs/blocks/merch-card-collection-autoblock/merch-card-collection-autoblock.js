@@ -87,10 +87,41 @@ const SPECTRUM_SIDENAV_DEPS = [
   'link',
 ];
 
+// Modules the entries above import. The browser only finds each import level after fetching and
+// parsing the previous one (~2 s of waterfall on a throttled connection), so they are requested in
+// the same wave as the entries. A stale path only fails its preload, never the import.
+const SPECTRUM_TRANSITIVE_DEPS = [
+  'icons-workflow',
+  'icons-ui',
+  'picker',
+  'reactive-controllers',
+  'textfield',
+  'underlay',
+  'alert-dialog',
+  'button-group',
+  'divider',
+  'icon',
+  'progress-circle',
+  'help-text',
+  'icons/checkmark',
+  'icons/chevron',
+  'icons/corner-triangle',
+  'icons/cross',
+  'icons/dash',
+];
+
+function preloadModule(href) {
+  if (document.head.querySelector(`link[rel="modulepreload"][href="${href}"]`)) return;
+  document.head.append(createTag('link', { rel: 'modulepreload', href }));
+}
+
 function loadSpectrumDependencies() {
   const { base } = getConfig();
+  const dist = `${base}/features/spectrum-web-components/dist`;
   const deps = [...SPECTRUM_COMMON_DEPS, ...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS];
-  return Promise.all(deps.map((dep) => import(`${base}/features/spectrum-web-components/dist/${dep}.js`)));
+  preloadModule(`${base}/deps/lit-all.min.js`);
+  SPECTRUM_TRANSITIVE_DEPS.forEach((dep) => preloadModule(`${dist}/${dep}.js`));
+  return Promise.all(deps.map((dep) => import(`${dist}/${dep}.js`)));
 }
 
 function localizeIconPath(iconPath) {
