@@ -1,3 +1,5 @@
+// Spectrum and the cards need Lit whatever the fragment holds, so it joins this module's graph.
+import '../../deps/lit-all.min.js';
 import { createTag, getConfig, getFedsPlaceholderConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { debounce } from '../../utils/action.js';
@@ -12,6 +14,8 @@ import {
   overrideOptions,
   updateModalState,
   loadMasComponent,
+  getMasComponentUrl,
+  getMasLibs,
   createFragmentErrorEl,
   isMasErrorEnv,
   MAS_MERCH_CARD,
@@ -87,10 +91,56 @@ const SPECTRUM_SIDENAV_DEPS = [
   'link',
 ];
 
+// Modules the entries above import. The browser only finds each import level after fetching and
+// parsing the previous one (~2 s of waterfall on a throttled connection), so they are requested in
+// the same wave as the entries. A stale path only fails its preload, never the import.
+const SPECTRUM_TRANSITIVE_DEPS = [
+  'icons-workflow',
+  'icons-ui',
+  'picker',
+  'reactive-controllers',
+  'textfield',
+  'underlay',
+  'alert-dialog',
+  'button-group',
+  'divider',
+  'icon',
+  'progress-circle',
+  'help-text',
+  'icons/checkmark',
+  'icons/chevron',
+  'icons/corner-triangle',
+  'icons/cross',
+  'icons/dash',
+];
+
+function preloadModule(href) {
+  if (document.head.querySelector(`link[rel="modulepreload"][href="${href}"]`)) return;
+  document.head.append(createTag('link', { rel: 'modulepreload', href }));
+}
+
 function loadSpectrumDependencies() {
   const { base } = getConfig();
+  const dist = `${base}/features/spectrum-web-components/dist`;
   const deps = [...SPECTRUM_COMMON_DEPS, ...SPECTRUM_COLLECTION_DEPS, ...SPECTRUM_SIDENAV_DEPS];
-  return Promise.all(deps.map((dep) => import(`${base}/features/spectrum-web-components/dist/${dep}.js`)));
+  SPECTRUM_TRANSITIVE_DEPS.forEach((dep) => preloadModule(`${dist}/${dep}.js`));
+  return Promise.all(deps.map((dep) => import(`${dist}/${dep}.js`)));
+}
+
+// Whether a collection renders a sidenav is only known once its fragment has loaded. These pages
+// always do, so Spectrum is fetched alongside the fragment instead of after it.
+const SPECTRUM_PAGES = /\/(creativecloud\/plans|products\/catalog)(\.html)?\/?$/;
+
+function preloadSpectrumForKnownPages() {
+  if (!SPECTRUM_PAGES.test(window.location.pathname)) return;
+  const { base } = getConfig();
+  const dist = `${base}/features/spectrum-web-components/dist`;
+  [
+    ...SPECTRUM_COMMON_DEPS,
+    ...SPECTRUM_COLLECTION_DEPS,
+    ...SPECTRUM_SIDENAV_DEPS,
+    ...SPECTRUM_TRANSITIVE_DEPS,
+  ].forEach((dep) => preloadModule(`${dist}/${dep}.js`));
 }
 
 function localizeIconPath(iconPath) {
@@ -1025,6 +1075,9 @@ export default async function init(el) {
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
+  // The cards always need their Lit, which merch-card.js only requests once it has been fetched.
+  preloadModule(getMasComponentUrl('lit-all.min', getMasLibs(), window.location.hostname));
+  if (options.sidenav) preloadSpectrumForKnownPages();
   await loadDependencies(options);
   await createCollection(el, options);
 }
