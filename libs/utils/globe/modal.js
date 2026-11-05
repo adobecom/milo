@@ -27,15 +27,13 @@ const DN_NAV_WARP = 0.40; // peak warp
 // Desktop/tablet image fit; chrome placement is CSS.
 const DT_IMG_MARGIN = 12; // gap between image and each viewport edge
 
-// renderContent(targetEl, meta) fills the block's own fields and returns { descEl, speech },
-// speech being the [text, lang?] parts announced to screen readers ahead of the position.
 export default function createGlobeModal({
   name,
   cssVars,
   renderContent,
-  descClass, // 'prompt' | 'description': the scrollable text block's class suffix
-  hoistToBody = false, // firefly: modal + canvas live on <body>, so destroy(true) must remove them
-  bodyOpenClass = false, // gallery: also flag <body> while open
+  descClass,
+  hoistToBody = false,
+  bodyOpenClass = false,
   q,
   getScene,
   getCamera,

@@ -192,7 +192,6 @@ function setLang(el, lang) {
   else el.removeAttribute('lang');
 }
 
-// The modal's model, prompt and CTA fields; see utils/globe/modal.js.
 export function renderModalContent(targetEl, meta, iconBaseUrl) {
   const nameEl = targetEl.querySelector('.firefly-globe-modal-name');
   const modelLabel = meta.modelVersionName || meta.modelId || '';

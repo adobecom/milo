@@ -412,8 +412,6 @@ export function createGalleryA11y({
   };
 }
 
-// ---- Authoring helpers shared by the blocks' authoring.js ----
-
 export function escapeHtml(s) {
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
@@ -496,7 +494,6 @@ export function scatterCards(cards) {
   return out;
 }
 
-// The first visible character's text node and offset, or null for empty content.
 function firstChar(el) {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -506,8 +503,6 @@ function firstChar(el) {
   return null;
 }
 
-// Rendered advance of the mark (lang, fallback fonts, text-transform and kerning included), or 0
-// when the element isn't laid out yet (e.g. a closed dialog).
 function liveAdvance({ node, at, ch }) {
   const range = document.createRange();
   range.setStart(node, at);
@@ -515,7 +510,6 @@ function liveAdvance({ node, at, ch }) {
   return range.getBoundingClientRect().width;
 }
 
-// Fallback that needs no layout. Canvas ignores letter-spacing, so it is added by hand.
 function canvasAdvance(el, ch) {
   const cs = getComputedStyle(el);
   const ctx = document.createElement('canvas').getContext('2d');
@@ -524,13 +518,11 @@ function canvasAdvance(el, ch) {
   return ctx.measureText(ch).width + (parseFloat(cs.letterSpacing) || 0);
 }
 
-// Text-indent only hangs a start-aligned, horizontal line; else it would mis-place the mark.
 function canHang(el) {
   const cs = getComputedStyle(el);
   return cs.writingMode.startsWith('horizontal') && cs.textAlign !== 'center';
 }
 
-// el -> the latest gutter asked for, so a late re-hang can't go stale.
 const hangRoom = new WeakMap();
 const hangPending = new WeakSet();
 
@@ -544,10 +536,6 @@ function hangLater(el, when) {
   });
 }
 
-// Hangs an opening quote mark into the start gutter with a negative text-indent, so the DOM (and
-// any inline markup) is left alone. Idempotent: the indent is cleared before measuring. What it
-// measured can still change if the element wasn't laid out (canvas fallback) or a web font is
-// still loading, so it hangs once more in those cases.
 export function hangOpeningMark(el, room, isRetry = false) {
   hangRoom.set(el, room);
   el.style.textIndent = '';
@@ -581,8 +569,6 @@ export function plainQuote(quoteEl, name) {
   hangOpeningMark(quoteEl, gutterOf(quoteEl.closest(`.${name}-pullquote`)));
   return text;
 }
-
-// ---- Shared DOM skeleton + common authored rows ----
 
 const buildMarkup = ({ name, labels, canvasStyle, arcCopyHtml, modalInfoHtml }) => {
   const daaName = name.replace(/-/g, '_');
@@ -647,8 +633,6 @@ ${arcCopyHtml}  <div class="${name}-pullquote-pin">
 
 let globeInstanceSeq = 0;
 
-// Builds the block's DOM from the shared skeleton. `modalInfoHtml(gid)` supplies the block's own
-// modal body; `arcCopyHtml` is optional extra markup (gallery) placed before the pull quote.
 export function buildGlobeSkeleton(el, name, labels, opts) {
   const { touchHint, pullQuote, canvasStyle } = opts;
   globeInstanceSeq += 1;
@@ -671,7 +655,6 @@ export function buildGlobeSkeleton(el, name, labels, opts) {
 
 export const DEFAULT_HINT = 'Click & Drag';
 
-// The quote is the <blockquote> (or a heading); the <p>s outside it are the name and role.
 function parsePullQuote(row) {
   const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
@@ -685,7 +668,6 @@ function parsePullQuote(row) {
   };
 }
 
-// Rows both blocks share: the hint/cursor cell(s), the a11y labels, and the pull quote.
 export function parseCommonRows(hintTextRow, a11yRow, pullQuoteRow) {
   const cells = hintTextRow ? [...hintTextRow.querySelectorAll(':scope > div')] : [];
   const parts = (a11yRow?.textContent ?? '').split(LABEL_DIVIDER).map((s) => s.trim());

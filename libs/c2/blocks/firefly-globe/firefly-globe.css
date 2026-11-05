@@ -291,6 +291,7 @@
   content: '';
   position: absolute;
   pointer-events: none;
+  z-index: -1;
 
   /* Longhands, not the `border` shorthand: an unresolvable var() colour inside a shorthand is
      invalid at computed-value time and resets border-style to none, erasing every rule. */
@@ -431,6 +432,7 @@
   background: transparent;
   color: inherit;
   touch-action: none;
+  overflow: clip;
   opacity: 0;
   transition: opacity calc(var(--fg-modal-anim-ms) * 1ms) ease;
 }
@@ -575,7 +577,6 @@
   &.is-faded-bottom { --fg-desc-fade-bottom: var(--fg-desc-fade-len); }
 }
 
-
 /* Counter ("1/N"). Base (sm) = plain text; min-width:768 = frosted pill. Centres on physical
    `left`, not an inset-inline, because the translateX(-50%) it pairs with is physical. */
 .firefly-globe-modal-counter {
@@ -596,7 +597,10 @@
 html:has(.firefly-globe) { scrollbar-gutter: stable; }
 
 /* html only: locking body too makes body a scroll container and un-sticks the world. */
-html.firefly-globe-modal-open { overflow: hidden; }
+html.firefly-globe-modal-open {
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--s2a-color-gray-900) 36%, black);
+}
 
 /* Never intercepts canvas drag; tabbable only while interactive. */
 .firefly-globe-a11y {
@@ -719,7 +723,6 @@ html.firefly-globe-modal-open { overflow: hidden; }
     backdrop-filter: blur(var(--fg-chrome-blur));
   }
 }
-
 
 .firefly-globe-reduced {
   --fg-nav-h: 0;

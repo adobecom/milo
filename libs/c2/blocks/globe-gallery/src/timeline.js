@@ -1,5 +1,5 @@
-// Every phase constant, threshold, the per-frame clock derivation, and the arc-phase geometry.
-// Pure — no THREE, no DOM, no closure state. The runtime owns the per-frame arcCtx.
+// Every phase constant, threshold, and the per-frame clock derivation.
+// Pure — no THREE, no DOM, no closure state.
 import { clamp01, camZAtT, tAtCamZ, dtScaleOf, TAN_HALF_FOV } from '../../../../utils/globe/core.js';
 
 export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';
@@ -172,8 +172,6 @@ export function cardFoldStartProgress(gpDelay) {
   const foldStartArcT = PROGRESS_GRID_ARC_START + Math.min(1, foldStartFormT) * GRID_ARC_RANGE;
   return Math.max(0, (foldStartArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
 }
-
-// ---- Arc-phase geometry ----
 
 export function easeInOutQuint(t) { return t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2; }
 

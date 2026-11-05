@@ -1,5 +1,3 @@
-// Firefly's scroll-to-camera mapping and per-frame clocks (gallery's counterpart is a longer
-// timeline.js). Pure — no THREE, no DOM, no closure state.
 import { clamp01, camZAtT, tAtCamZ, dtScaleOf } from '../../../../utils/globe/core.js';
 
 export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';

@@ -465,7 +465,7 @@ element's `padding-inline-start`. `plainQuote` passes the pull-quote's; the **mo
 goes through `hangParagraphs(container)`, which hangs **every** paragraph that opens with a mark,
 not just the first, and runs from `populateModal` after `renderParagraphs`. `hangOpeningMark` clears
 `text-indent` before measuring, so it is idempotent over the authored `<p>`s, which
-`renderParagraphs` moves rather than clones. It hangs a second time when what it measured can still change — the element wasn't laid out yet (a closed dialog: it falls back to canvas, then re-measures next frame) or a web font is still loading — using the *latest* gutter it was given, so a resize in between can't be undone. It skips centered and non-horizontal text, where a negative indent would mis-place the mark. It needs **no resize or breakpoint hook** — the outdent
+`renderParagraphs` moves rather than clones. It hangs a second time when what it measured can still change — the element wasn't laid out yet (a closed dialog: it falls back to canvas, then re-measures next frame) or a web font is still loading — using the latest gutter it was given. It skips centered and non-horizontal text, where a negative indent would mis-place the mark. It needs **no resize or breakpoint hook** — the outdent
 is the first glyph's advance and does not depend on where lines wrap.
 
 **The description clips, so it reserves a gutter.** `--gg-hang-max` is `0.8em` — the ceiling
@@ -582,7 +582,7 @@ document-wide id references): the modal heading/role-label/position — the head
 `aria-describedby` IDREFs. `el` itself is the scroll runway
 (height is `--gg-runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
-time) is the `.globe-gallery-modal-open` scroll lock.
+time) is the `.globe-gallery-modal-open` scroll lock. `html:has(.globe-gallery)` keeps `scrollbar-gutter: stable`, so the lock (`overflow: hidden`, Lenis' `lenis-stopped`) does not change the page width; the gutter is painted dark while locked.
 
 **Scroll model.** (For *what happens at each point* on that scroll, see **Lifecycle timeline**
 below — charts + an event table. This subsection is the mechanism that gets you there.) The block
@@ -2110,6 +2110,7 @@ shader compile. The costliest frames are the hand-off (`setSources`) and the sor
 - A card running off screen still converts whole, so some particles fly in from just off screen.
 - Ligatures and kerning come from canvas shaping, so an individual glyph in the raster can differ by
   a pixel from the DOM's (most of the swap's residual difference).
+- Each line is drawn as one run with whichever `letter-spacing` (the element's, or 0) matches the DOM line width; a line that matches neither is drawn word by word from the words' DOM rects. The crosshair rules paint under the DOM text (`z-index: -1`), as under the raster.
 - The reading beat after the quote is crisp is a fixed `READ_VH`, whatever the quote's length.
 - A reload partway through the flight shows plain cards until the raster is ready, then the
   particles take over at the current `p`.

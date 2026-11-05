@@ -204,8 +204,6 @@ export const TEXT_FRAG = [
   '}',
 ].join('\n');
 
-// ---- Shared math / camera / clock ----
-
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
 
@@ -238,7 +236,6 @@ export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
 
 export const FRAME_MS = 1000 / 60;
 
-// frame.dtScale rescales per-60fps-frame rates; clamped. prevNow 0 = no previous frame → 1.
 export const DT_SCALE_MIN = 0.25;
 export const DT_SCALE_MAX = 3;
 export function dtScaleOf(now, prevNow) {
@@ -246,8 +243,6 @@ export function dtScaleOf(now, prevNow) {
   return Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
 }
 
-// The dolly camera's world z at travel t (eased by `pow`), and its inverse. An inverse pair:
-// edit together, or the pull quote's appear/hand-off timing drifts silently.
 export function camZAtT(t, camZSphere, camZEnd, pow) {
   return lerpN(camZSphere, camZEnd, 1 - (1 - clamp01(t)) ** pow);
 }
@@ -259,7 +254,6 @@ export function tAtCamZ(z, camZSphere, camZEnd, pow) {
   return 1 - ((1 - eased) ** (1 / pow));
 }
 
-// ---- GPU-asset factories ----
 // GPU-asset factories: the ShaderMaterials + the texture loaders.
 
 // Property proxies let the tick loop drive this via MeshBasicMaterial's opacity/map API.
@@ -525,8 +519,6 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   releaseCanvasAfterUpload(tex, canvas); // sphere-only, single renderer — see README
   return tex;
 }
-
-// ---- Layout helpers shared by the block runtimes ----
 
 export function resolveBP(breakpoints, w) {
   if (w >= breakpoints.md.minWidth) return { name: 'md', cfg: breakpoints.md };

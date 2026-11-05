@@ -216,7 +216,6 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint }) {
   return gid;
 }
 
-// The modal's role, name, description and badge fields; see utils/globe/modal.js.
 export function renderModalContent(targetEl, meta) {
   const roleLabelEl = targetEl.querySelector('.globe-gallery-modal-role-label');
   if (roleLabelEl) roleLabelEl.textContent = meta.role;
