@@ -1736,9 +1736,11 @@ span.hang-opening-quote {
   }
 
   .container {
-    --grid-width-6: calc(var(--grid-max-width) * 6 / var(--grid-columns));
-    --grid-width-8: calc(var(--grid-max-width) * 8 / var(--grid-columns));
-    --grid-width-10: calc(var(--grid-max-width) * 10 / var(--grid-columns));
+    --grid-total-width: min(100% - 2 * var(--grid-margin-width), var(--grid-max-width));
+    --grid-column-width: calc((var(--grid-total-width) - (var(--grid-columns) - 1) * var(--grid-gutter)) / var(--grid-columns));
+    --grid-width-6: calc(6 * var(--grid-column-width) + 5 * var(--grid-gutter));
+    --grid-width-8: calc(8 * var(--grid-column-width) + 7 * var(--grid-gutter));
+    --grid-width-10: calc(10 * var(--grid-column-width) + 9 * var(--grid-gutter));
   }
 
   [class*="up"] {

@@ -684,7 +684,7 @@
 
     .media-cell {
       padding-inline: unset;
-      max-width: var(--grid-width-10);
+      max-width: calc(var(--grid-max-width) * 10 / var(--grid-columns));
 
       .video-container,
       picture {
