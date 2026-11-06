@@ -4,7 +4,14 @@ import sinon from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
-import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, overrideCardHeadingLevel } from '../../../libs/blocks/merch/autoblock.js';
+import {
+  handleCustomAnalyticsEvent,
+  cleanupTabsAnalytics,
+  enableAnalytics,
+  localizePreviewLinks,
+  postProcessAutoblock,
+  overrideCardHeadingLevel,
+} from '../../../libs/blocks/merch/autoblock.js';
 import { getMerchCardHeadingLevel } from '../../../libs/blocks/merch/merch.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -31,12 +38,32 @@ describe('autoblock', () => {
       setConfig({ locales, miloLibs: '/libs' });
     });
 
+    ['aemxpage', 'hlxxlive'].forEach((hostSuffix) => {
+      it(`does not localize a non-preview hostname ending in ${hostSuffix}`, async () => {
+        setConfig({
+          locales: { ...locales, de: { ietf: 'de-DE' } },
+          pathname: '/de/test-page.html',
+          miloLibs: '/libs',
+        });
+        const card = document.createElement('merch-card');
+        const link = document.createElement('a');
+        const href = `https://main--test--adobecom.${hostSuffix}${modalPath}${modalHash}`;
+        link.href = href;
+        card.append(link);
+
+        await localizePreviewLinks(card);
+
+        expect(link.href).to.equal(href);
+      });
+    });
+
     [
       { locale: 'de', origin: previewOrigin },
       { locale: 'br', origin: previewOrigin },
       { locale: '', origin: previewOrigin },
       { locale: 'de', origin: '' },
       { locale: 'br', origin: '' },
+      { locale: 'de', origin: '', dnt: true },
       { locale: 'de', origin: previewOrigin, authoredPrefix: '/de' },
       { locale: 'de', origin: previewOrigin, dnt: true },
       { locale: 'br', origin: previewOrigin, dnt: true },
@@ -67,6 +94,31 @@ describe('autoblock', () => {
       });
     });
 
+    it('preserves the localized modal link when mas:ready fires twice for the same card', async () => {
+      setConfig({
+        locales: { ...locales, de: { ietf: 'de-DE' } },
+        pathname: '/de/test-page.html',
+        codeRoot: '/libs',
+        miloLibs: '/libs',
+      });
+      const card = document.createElement('merch-card');
+      const link = document.createElement('a');
+      link.href = `${previewOrigin}${modalPath}${modalHash}`;
+      link.textContent = 'Test modal';
+      card.append(link);
+      card.checkReady = sinon.stub().resolves(false);
+      await postProcessAutoblock(card, true);
+
+      for (let i = 0; i < 2; i += 1) {
+        card.removeAttribute('data-analytics-id');
+        card.dispatchEvent(new CustomEvent('mas:ready'));
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.dataset.blockStatus === 'loaded');
+
+        expect(link.dataset.modalPath).to.equal(`/de${modalPath}`);
+        expect(link.getAttribute('href')).to.equal(modalHash);
+      }
+    });
+
     [
       { marker: '#_mep-lingo', flag: 'mepLingo' },
       { marker: '#_mep-lingo-insert', flag: 'mepLingoInsert' },
@@ -94,6 +146,53 @@ describe('autoblock', () => {
         expect(link.dataset.modalPath).to.equal(`/de${modalPath}`);
         expect(link.getAttribute('href')).to.equal(modalHash);
       });
+    });
+  });
+
+  describe('Lingo preview link localization', () => {
+    it('uses the regional locale for a non-modal preview link on a Lingo regional page', async () => {
+      const meta = document.createElement('meta');
+      meta.name = 'langfirst';
+      meta.content = 'on';
+      document.head.append(meta);
+      setConfig({
+        locales: { ...locales, ca: { ietf: 'en-CA', base: '' } },
+        pathname: '/ca/test-page.html',
+        uniqueSiteId: 'merch-lingo',
+        codeRoot: '/libs',
+        miloLibs: '/libs',
+        useDotHtml: false,
+      });
+      const fetchStub = sinon.stub(window, 'fetch');
+      fetchStub.withArgs(sinon.match('query-index')).callsFake(async (url) => new Response(JSON.stringify({ data: [{ path: `${url.includes('/ca/') ? '/ca' : ''}/products/photoshop` }] })));
+      fetchStub.withArgs(sinon.match('lingo-site-mapping')).callsFake(async () => new Response(JSON.stringify({
+        'site-query-index-map': {
+          data: [{
+            uniqueSiteId: 'merch-lingo',
+            queryIndexWebPath: 'main--test--adobecom.aem.page/*/assets/lingo/query-index.json',
+          }],
+        },
+      })));
+      const card = document.createElement('merch-card');
+      const link = document.createElement('a');
+      link.href = 'https://main--test--adobecom.aem.page/products/photoshop?promoid=test#features';
+      link.textContent = 'Photoshop features';
+      card.append(link);
+      card.checkReady = sinon.stub().resolves(true);
+      document.body.append(card);
+
+      try {
+        await postProcessAutoblock(card, true);
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.pathname === '/ca/products/photoshop');
+
+        expect(link.href).to.equal(`${window.location.origin}/ca/products/photoshop?promoid=test#features`);
+        expect(link.dataset.modalPath).to.be.undefined;
+        expect(fetchStub.calledWithMatch('/ca/assets/lingo/query-index')).to.be.true;
+      } finally {
+        card.remove();
+        meta.remove();
+        setConfig({ locales, miloLibs: '/libs' });
+      }
     });
   });
 

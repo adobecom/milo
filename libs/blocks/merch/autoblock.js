@@ -18,7 +18,7 @@ export async function localizePreviewLinks(el) {
     const { href } = a;
     if (!a.dataset.hasDnt
       && !href?.includes('#_dnt')
-      && href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
+      && href?.match(/http[s]?:\/\/\S*\.(hlx|aem)\.(page|live)\//)) {
       try {
         const url = new URL(href);
         a.href = await localizeLinkAsync(href, url.hostname, false, a);
