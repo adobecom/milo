@@ -304,6 +304,47 @@ describe('Utils', () => {
     const originalHref = window.location.href;
     const NON_PROD = 'https://main--mas--adobecom.aem.live/web-components/dist';
 
+    describe('isMerchSidenavPage', () => {
+      it('matches products/catalog and creativecloud/plans in every locale, .html optional', () => {
+        expect(utils.isMerchSidenavPage('/products/catalog.html', '')).to.be.true;
+        expect(utils.isMerchSidenavPage('/fr/products/catalog', '/fr')).to.be.true;
+        expect(utils.isMerchSidenavPage('/creativecloud/plans', '')).to.be.true;
+        expect(utils.isMerchSidenavPage('/de/creativecloud/plans.html', '/de')).to.be.true;
+      });
+
+      it('matches only those exact pages', () => {
+        expect(utils.isMerchSidenavPage('/products/catalog/extra.html', '')).to.be.false;
+        expect(utils.isMerchSidenavPage('/creativecloud/plans/business.html', '')).to.be.false;
+        expect(utils.isMerchSidenavPage('/acrobat/plans.html', '')).to.be.false;
+        expect(utils.isMerchSidenavPage('/products/photoshop.html', '')).to.be.false;
+      });
+    });
+
+    describe('preloads', () => {
+      afterEach(() => window.history.pushState({}, '', originalHref));
+
+      const loadCollection = async (pathname) => {
+        window.history.pushState({}, '', pathname);
+        document.head.innerHTML = head;
+        document.body.innerHTML = '<main><div><div class="merch-card-collection-autoblock"></div></div></main>';
+        await utils.loadArea();
+        return document.head.querySelector('link[rel="preload"][href$="/merch-sidenav.js"]');
+      };
+
+      it('preloads merch-sidenav.js eagerly on the sidenav pages, with the import URL', async () => {
+        const link = await loadCollection('/products/catalog.html');
+        expect(link).to.exist;
+        expect(link.href).to.equal(`${NON_PROD}/merch-sidenav.js`);
+        expect(link.as).to.equal('script');
+        expect(link.crossOrigin).to.equal('anonymous');
+        expect(document.head.querySelector(`link[rel="preload"][href="${NON_PROD}/templates/catalog.js"]`)).to.exist;
+      });
+
+      it('does not preload merch-sidenav.js on other pages', async () => {
+        expect(await loadCollection('/acrobat/plans.html')).to.not.exist;
+      });
+    });
+
     afterEach(() => {
       window.history.pushState({}, '', originalHref);
     });

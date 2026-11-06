@@ -2379,9 +2379,32 @@ export const MERCH_CARD_TEMPLATE_RULES = {
   'express/': 'express',
 };
 
+// Collection pages whose sidenav is on by default, so merch-sidenav.js loads eagerly.
+// Same rule syntax as MERCH_CARD_TEMPLATE_RULES.
+export const MERCH_SIDENAV_PAGES = ['products/catalog', 'creativecloud/plans'];
+
 /**
- * Selects the merch-card template bundles for a page, most specific rule wins:
- * a locale specific rule beats an all-locale one, a longer path beats a shorter one.
+ * Returns the most specific path rule matching a page: a locale specific rule beats
+ * an all-locale one, a longer path beats a shorter one.
+ * @param {string} pathname - page pathname, e.g. '/fr/acrobat/plans.html'
+ * @param {string} [localePrefix] - Milo locale prefix, e.g. '/fr'
+ * @param {string[]} rules - path rules, see MERCH_CARD_TEMPLATE_RULES
+ * @returns {string|undefined} the matching rule
+ */
+export function matchPathRule(pathname, localePrefix = '', rules = []) {
+  const path = pathname.replace(/\.html$/, '');
+  const hasPrefix = localePrefix && (path === localePrefix || path.startsWith(`${localePrefix}/`));
+  const localPath = (hasPrefix ? path.slice(localePrefix.length) : path).replace(/^\//, '');
+  return rules
+    .filter((rule) => {
+      const target = rule.startsWith('/') ? path : localPath;
+      return rule.endsWith('/') ? target.startsWith(rule) : target === rule;
+    })
+    .sort((a, b) => (Number(b.startsWith('/')) - Number(a.startsWith('/'))) || b.length - a.length)[0];
+}
+
+/**
+ * Selects the merch-card template bundles for a page, most specific rule wins.
  * @param {string} pathname - page pathname, e.g. '/fr/acrobat/plans.html'
  * @param {string} [localePrefix] - Milo locale prefix, e.g. '/fr'
  * @param {Object} [rules] - path rule -> bundle name
@@ -2392,17 +2415,14 @@ export function getMerchCardTemplateBundles(
   localePrefix = '',
   rules = MERCH_CARD_TEMPLATE_RULES,
 ) {
-  const path = pathname.replace(/\.html$/, '');
-  const hasPrefix = localePrefix && (path === localePrefix || path.startsWith(`${localePrefix}/`));
-  const localPath = (hasPrefix ? path.slice(localePrefix.length) : path).replace(/^\//, '');
-  const [match] = Object.keys(rules)
-    .filter((rule) => {
-      const target = rule.startsWith('/') ? path : localPath;
-      return rule.endsWith('/') ? target.startsWith(rule) : target === rule;
-    })
-    .sort((a, b) => (Number(b.startsWith('/')) - Number(a.startsWith('/'))) || b.length - a.length);
+  const match = matchPathRule(pathname, localePrefix, Object.keys(rules));
   return match ? [rules[match]] : MERCH_CARD_TEMPLATE_BUNDLES;
 }
+
+export const isMerchSidenavPage = (
+  pathname = window.location.pathname,
+  localePrefix = getConfig().locale?.prefix,
+) => !!matchPathRule(pathname, localePrefix, MERCH_SIDENAV_PAGES);
 
 export const getMerchCardTemplateUrls = (
   pathname = window.location.pathname,
@@ -2422,6 +2442,7 @@ const STATIC_BLOCK_DEPS = {
   'merch-card-collection-autoblock': [
     getMasDepUrl('merch-card.js'),
     () => getMerchCardTemplateUrls(),
+    () => (isMerchSidenavPage() ? getMasDepUrl('merch-sidenav.js') : null),
     getMasDepUrl('merch-quantity-select.js'),
     getMasDepUrl('merch-card-collection.js'),
   ],

@@ -1,4 +1,6 @@
-import { createTag, getConfig, getFedsPlaceholderConfig, loadStyle, localizeLinkAsync } from '../../utils/utils.js';
+import {
+  createTag, getConfig, getFedsPlaceholderConfig, isMerchSidenavPage, loadStyle, localizeLinkAsync,
+} from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
@@ -21,8 +23,9 @@ import {
 } from '../merch/merch.js';
 
 const DEPS_TIMEOUT = 10000;
-// The sidenav turns on only when the collection has categories. An authored
-// #sidenav=true also starts merch-sidenav.js up front, #sidenav=false keeps it off.
+// The sidenav turns on only when the collection has categories. On MERCH_SIDENAV_PAGES,
+// or with an authored #sidenav=true, merch-sidenav.js also starts up front.
+// An authored #sidenav=false keeps it off.
 const DEFAULT_OPTIONS = { sidenav: false };
 
 // Map of single_app values to their corresponding filter values
@@ -1033,7 +1036,12 @@ export async function createCollection(el, options) {
 
 export default async function init(el) {
   const authored = getOptions(el);
-  let options = { ...DEFAULT_OPTIONS, ...authored, sidenavOff: authored.sidenav === false };
+  let options = {
+    ...DEFAULT_OPTIONS,
+    sidenav: isMerchSidenavPage(),
+    ...authored,
+    sidenavOff: authored.sidenav === false,
+  };
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
