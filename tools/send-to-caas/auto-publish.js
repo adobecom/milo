@@ -35,6 +35,7 @@
 
 import {
   buildCaasXdmPayload,
+  createIdentityLogger,
   getProdUrl,
   hasCardMetadata,
   hasContentTypeTag,
@@ -43,7 +44,7 @@ import {
 } from './send-utils.js';
 import { getCustomConfig } from '../utils/utils.js';
 import {
-  getCaasIdentityUrl,
+  toIdentityUrl,
   isFlagDisabled,
   isFlagEnabled,
   isFlagUnrecognized,
@@ -51,13 +52,10 @@ import {
 } from '../../libs/utils/caasIdentity.js';
 
 // Nothing on the identity path used to emit a single log line, so a site whose
-// cards silently stopped matching had no signal to go on. `window` is guarded
-// because this module is also loaded outside a browser (tests, and any host
-// that imports it directly).
-const logIdentity = (message, severity = 'error') => {
-  if (typeof window === 'undefined') return;
-  window.lana?.log(`caas-auto-publish: ${message}`, { tags: 'caas', severity });
-};
+// cards silently stopped matching had no signal to go on. The shared logger
+// falls back to console because none of this module's runtimes install
+// window.lana -- see createIdentityLogger in caas-payload-core.js.
+const logIdentity = createIdentityLogger('caas-auto-publish');
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
 // from this module (used by tests and any host that already depends on it).
@@ -132,13 +130,29 @@ export const resolveRule = (rules, path) => {
 // column. An unvalidated caasEnv would interpolate straight into the lookup
 // key, so a typo'd or caller-injected value would read an arbitrary rule
 // property as if it were a `.html` policy.
-export const HTML_EXT_ENVS = ['prod', 'stage'];
+// Derived from DEFAULT_TARGETS rather than restated, so the two cannot drift:
+// adding an environment there automatically allows its override column.
+export const HTML_EXT_ENVS = [
+  ...new Set(Object.values(DEFAULT_TARGETS).flat().map((t) => t.caasEnv)),
+];
+
+// A rule may declare its own targets, so its environments are legitimate
+// override columns too even when they are not in DEFAULT_TARGETS. They come
+// from the same authored config as the override itself, so this widens the
+// allowlist without widening the trust domain.
+const allowedHtmlExtEnvs = (rule) => {
+  if (!Array.isArray(rule?.targets)) return HTML_EXT_ENVS;
+  const declared = rule.targets
+    .map((t) => t?.caasEnv)
+    .filter((env) => typeof env === 'string' && env);
+  return [...new Set([...HTML_EXT_ENVS, ...declared])];
+};
 
 export const resolveHtmlExt = (rule, caasEnv) => {
-  const known = HTML_EXT_ENVS.includes(caasEnv);
+  const known = allowedHtmlExtEnvs(rule).includes(caasEnv);
   const envKey = known ? `htmlExt${caasEnv.charAt(0).toUpperCase()}${caasEnv.slice(1)}` : '';
   if (caasEnv && !known) {
-    logIdentity(`unknown caasEnv '${caasEnv}', falling back to rule-wide htmlExt`, 'warn');
+    logIdentity(`unknown caasEnv '${caasEnv}', falling back to rule-wide htmlExt`, 'warning');
   }
   const override = envKey ? rule?.[envKey] : undefined;
   const useDefault = override === undefined || override === null || override === '';
@@ -199,14 +213,40 @@ export const caasAutoPublish = async ({
     // `enabled` arrives from a spreadsheet, which can only ever produce the
     // STRING 'false'. The previous strict `=== false` check therefore ignored
     // it, and a site that had explicitly turned autopublish off kept publishing.
-    if (isFlagDisabled(rule.enabled)) return { skipped: true, reason: 'rule-disabled' };
+    // The kill switch is the highest-stakes column in the file, so an authored
+    // value that means neither true nor false ('no', '0', 'disabled') must not
+    // resolve silently to "keep publishing".
+    if (isFlagUnrecognized(rule.enabled)) {
+      logIdentity(
+        `unrecognized enabled value '${rule.enabled}' on rule '${rule.url}', treating as ENABLED`,
+        'warning',
+      );
+    }
+    if (isFlagDisabled(rule.enabled)) {
+      // Logged because this is the one condition whose meaning changed: a
+      // spreadsheet can only author the STRING 'false', which the old strict
+      // `=== false` check missed, so sites that had asked for auto-publish to be
+      // off were still publishing. Those sites stop here, and an undifferentiated
+      // skip count would not explain why.
+      logIdentity(
+        `rule '${rule.url}' is disabled by its enabled column ('${rule.enabled}'), `
+        + `not publishing '${path}'`,
+        'warning',
+      );
+      return { skipped: true, reason: 'rule-disabled' };
+    }
 
     // Card identity is the PRODUCTION url, not the aem.page/aem.live url the job
     // fires from. The site declares its prod host and .html rule in config, so
     // this path produces the same contentId/entityId as the milo-caas poller --
-    // except for `htmlIdentity`, which the poller ignores until the committed
-    // caas-payload-builder.js bundle it runs is rebuilt. Do not enable the flag
-    // for a site before that lands, or the two publishers will disagree.
+    // except where this branch and the committed caas-payload-builder.js bundle
+    // the poller runs have diverged, which is until that bundle is rebuilt:
+    //   - `htmlIdentity` is ignored entirely by the bundle.
+    //   - `htmlExt` parsing is stricter in the bundle (`=== 'true'`), so a cell
+    //     authored 'TRUE'/' true '/'on' resolves differently here than there,
+    //     which changes the PUBLIC url and therefore the id.
+    // Do not enable htmlIdentity, or author a non-lowercase htmlExt, for a site
+    // before that bundle lands, or the two publishers will disagree.
     // `repo` (the CaaS source) likewise comes from config when set — e.g. the
     // bacom blog files under `bacom`, which the aem hostname can't tell us.
     // Falls back to the caller-supplied url/host/repo when config omits them.
@@ -221,6 +261,15 @@ export const caasAutoPublish = async ({
 
     // Keeps a site's existing `.html`-derived card identities stable while its
     // public urls go extensionless. Declared per rule alongside htmlExt.
+    // A typo here is the worst authoring mistake available on this path -- it
+    // resolves to off and orphans every card on the site -- so it is surfaced
+    // rather than defaulted silently.
+    if (isFlagUnrecognized(rule.htmlIdentity)) {
+      logIdentity(
+        `unrecognized htmlIdentity value '${rule.htmlIdentity}' on rule '${rule.url}', `
+        + 'treating as OFF -- card ids will NOT be normalized',
+      );
+    }
     const htmlIdentity = isHtmlIdentityEnabled(rule.htmlIdentity);
 
     const targets = resolveTargets(rule, action);
@@ -250,7 +299,7 @@ export const caasAutoPublish = async ({
     // flag being on does NOT prove the ids converge. On any other host
     // getCaasIdentityUrl is a no-op and the ids fork regardless.
     const identityUrls = new Set([...byHtmlExt.keys()].map((htmlExt) => (
-      getCaasIdentityUrl(variantProdUrl(htmlExt).replace(/^https?:\/\//, ''), htmlIdentity)
+      toIdentityUrl(variantProdUrl(htmlExt), htmlIdentity)
     )));
     if (identityUrls.size > 1) {
       // Deliberately NOT the `skipped: true` shape. Five routine conditions

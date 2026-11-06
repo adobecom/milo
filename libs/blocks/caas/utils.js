@@ -11,13 +11,29 @@ import {
 import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
-import { getCaasIdentityUrl, isHtmlIdentityEnabled } from '../../utils/caasIdentity.js';
+import { isHtmlIdentityEnabled, isIdentityPolicyMiss, toIdentityUrl } from '../../utils/caasIdentity.js';
 
 // A site whose cards are published under forced-`.html` identities must resolve
 // authored uuid references the same way, or a collection's featured/excluded
 // lookups would hash the extensionless url and miss every card. Opt in once per
 // site via the `caas-identity-html` metadata property.
 const htmlIdentityEnabled = () => isHtmlIdentityEnabled(getMetadata('caas-identity-html'));
+
+// A missing opt-in produces no error: the lookup just silently returns a card
+// that is not in the collection, which authors experience as "my featured card
+// vanished" with nothing to correlate it to. Unlike the publishers, this runs
+// on a real Milo page, so lana is actually loaded here. Logged once per page
+// because a collection can reference many in-scope links and they would all
+// report the same single root cause.
+let identityPolicyMissLogged = false;
+const warnOnIdentityPolicyMiss = (link) => {
+  if (identityPolicyMissLogged || !isIdentityPolicyMiss(link, htmlIdentityEnabled())) return;
+  identityPolicyMissLogged = true;
+  window.lana?.log(
+    `CaaS: extensionless in-scope card link resolved without the .html identity policy; set the 'caas-identity-html' metadata to 'true' or these cards will not resolve. Example: ${link}`,
+    { tags: 'caas,htmlIdentity', errorType: 'warning', sampleRate: 100 },
+  );
+};
 
 // CaaS deep-link URL per wrapper element, keyed off-DOM for MEP preview (URL too large for data-*).
 export const mepCaasConfigUrls = new WeakMap();
@@ -991,8 +1007,11 @@ const fetchUuidForCard = async (card) => {
   }
   try {
     const localizedLink = await localizeLinkAsync(card.contentId, null, true);
-    const substr = String(localizedLink).split('https://').pop();
-    return await getUuid(getCaasIdentityUrl(substr, htmlIdentityEnabled()));
+    warnOnIdentityPolicyMiss(String(localizedLink));
+    // toIdentityUrl strips the scheme the same way the publishers do. The old
+    // split('https://') missed http:// entirely, leaving the scheme on the hash
+    // input so the id could never match the published card.
+    return await getUuid(toIdentityUrl(String(localizedLink), htmlIdentityEnabled()));
   } catch (error) {
     return null;
   }
@@ -1143,7 +1162,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const currentPage = `${window.location.hostname}${window.location.pathname}`;
   let currentPageUuid = null;
   try {
-    currentPageUuid = await getUuid(getCaasIdentityUrl(currentPage, htmlIdentityEnabled()));
+    currentPageUuid = await getUuid(toIdentityUrl(currentPage, htmlIdentityEnabled()));
   } catch (error) {
     window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
   }

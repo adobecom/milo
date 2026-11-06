@@ -1,3 +1,21 @@
+// ESLint `overrides[].rules` replace a rule's options rather than merging them,
+// so any override that re-declares `no-restricted-syntax` must spread these back
+// in or it silently repeals them for the files it targets.
+const RESTRICTED_SYNTAX = [
+  {
+    selector: 'ForInStatement',
+    message: 'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
+  },
+  {
+    selector: 'LabeledStatement',
+    message: 'Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.',
+  },
+  {
+    selector: 'WithStatement',
+    message: '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
+  },
+];
+
 module.exports = {
   root: true,
   extends: ['airbnb-base', 'plugin:react-hooks/recommended', 'plugin:compat/recommended', 'plugin:ecmalist/recommended'],
@@ -16,21 +34,7 @@ module.exports = {
     'linebreak-style': ['error', 'unix'],
     'no-await-in-loop': 0,
     'no-param-reassign': [2, { props: false }],
-    'no-restricted-syntax': [
-      'error',
-      {
-        selector: 'ForInStatement',
-        message: 'for..in loops iterate over the entire prototype chain, which is virtually never what you want. Use Object.{keys,values,entries}, and iterate over the resulting array.',
-      },
-      {
-        selector: 'LabeledStatement',
-        message: 'Labels are a form of GOTO; using them makes code confusing and hard to maintain and understand.',
-      },
-      {
-        selector: 'WithStatement',
-        message: '`with` is disallowed in strict mode because it makes code impossible to predict and optimize.',
-      },
-    ],
+    'no-restricted-syntax': ['error', ...RESTRICTED_SYNTAX],
     'no-return-assign': ['error', 'except-parens'],
     'no-unused-expressions': 0,
     'object-curly-newline': ['error', {
@@ -52,6 +56,7 @@ module.exports = {
       rules: {
         'no-restricted-syntax': [
           'error',
+          ...RESTRICTED_SYNTAX,
           {
             selector: 'ImportDeclaration',
             message: 'caasIdentity.js must stay dependency-free: it is bundled for the milo-caas poller. Keep it pure string logic.',

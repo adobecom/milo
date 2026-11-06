@@ -8,6 +8,7 @@
 
 import {
   buildCaasXdmPayload,
+  createIdentityLogger,
   checkUrl,
   getBulkPublishLangAttr,
   getCaasIds,
@@ -107,6 +108,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
 export {
   buildCaasXdmPayload,
   checkUrl,
+  createIdentityLogger,
   getBulkPublishLangAttr,
   getCaasIds,
   getCardMetadata,

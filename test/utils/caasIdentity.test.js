@@ -6,6 +6,8 @@ import {
   isFlagUnrecognized,
   isForcedHtmlIdentityUrl,
   isHtmlIdentityEnabled,
+  isIdentityPolicyMiss,
+  toIdentityUrl,
 } from '../../libs/utils/caasIdentity.js';
 
 describe('caasIdentity', () => {
@@ -184,6 +186,93 @@ describe('caasIdentity', () => {
         expect(isHtmlIdentityEnabled(val), JSON.stringify(val)).to.equal(isFlagEnabled(val));
         expect(isHtmlIdentityEnabled(val), JSON.stringify(val)).to.be.true;
       });
+    });
+  });
+
+  describe('toIdentityUrl', () => {
+    const PATH = '/resources/articles/some-article';
+    const BARE = `business.adobe.com${PATH}`;
+
+    it('strips the scheme, because ids are a hash of the scheme-less url', () => {
+      // Hashing 'https://host/path' and 'host/path' yields two different ids,
+      // so this strip is load-bearing, not cosmetic.
+      expect(toIdentityUrl(`https://${BARE}`, 'true')).to.equal(`${BARE}.html`);
+    });
+
+    it('strips an http:// scheme too', () => {
+      // Regression: the consumer hand-rolled this as `.split('https://')`,
+      // which left 'http://' attached and hashed it into the id -- a silent
+      // miss on every plain-http authored link.
+      expect(toIdentityUrl(`http://${BARE}`, 'true')).to.equal(`${BARE}.html`);
+    });
+
+    it('accepts an already scheme-less url unchanged', () => {
+      expect(toIdentityUrl(BARE, 'true')).to.equal(`${BARE}.html`);
+    });
+
+    it('does not add a second .html', () => {
+      expect(toIdentityUrl(`https://${BARE}.html`, 'true')).to.equal(`${BARE}.html`);
+    });
+
+    it('strips the scheme but applies no policy when the flag is off', () => {
+      // The strip is unconditional; only the `.html` policy is flag-gated.
+      expect(toIdentityUrl(`https://${BARE}`, 'false')).to.equal(BARE);
+      expect(toIdentityUrl(`https://${BARE}`)).to.equal(BARE);
+    });
+
+    it('leaves an out-of-scope host extensionless', () => {
+      expect(toIdentityUrl(`https://www.adobe.com${PATH}`, 'true'))
+        .to.equal(`www.adobe.com${PATH}`);
+    });
+
+    it('preserves query and fragment, appending .html to the path only', () => {
+      expect(toIdentityUrl(`https://${BARE}?a=1#frag`, 'true'))
+        .to.equal(`${BARE}.html?a=1#frag`);
+    });
+
+    it('passes a non-string through rather than throwing', () => {
+      // Authored config can hand us anything; a publisher crash is worse than
+      // an unchanged value the caller can still reject.
+      expect(toIdentityUrl(undefined, 'true')).to.equal(undefined);
+      expect(toIdentityUrl(null, 'true')).to.equal(null);
+    });
+
+    it('agrees with getCaasIdentityUrl once the scheme is removed', () => {
+      expect(toIdentityUrl(`https://${BARE}`, 'true'))
+        .to.equal(getCaasIdentityUrl(BARE, 'true'));
+    });
+  });
+
+  describe('isIdentityPolicyMiss', () => {
+    const IN_SCOPE = 'https://business.adobe.com/resources/articles/x';
+
+    it('flags an in-scope extensionless link while the policy is off', () => {
+      expect(isIdentityPolicyMiss(IN_SCOPE, 'false')).to.be.true;
+      expect(isIdentityPolicyMiss(IN_SCOPE)).to.be.true;
+    });
+
+    it('stays quiet for an in-scope .html link', () => {
+      // Pre-migration authored links still carry .html and resolve correctly
+      // with the flag off; warning here would fire on every bacom page today.
+      expect(isIdentityPolicyMiss(`${IN_SCOPE}.html`, 'false')).to.be.false;
+    });
+
+    it('stays quiet once the policy is enabled', () => {
+      expect(isIdentityPolicyMiss(IN_SCOPE, 'true')).to.be.false;
+    });
+
+    it('stays quiet for a host outside the policy', () => {
+      expect(isIdentityPolicyMiss('https://www.adobe.com/resources/x', 'false')).to.be.false;
+    });
+
+    it('ignores a query/fragment when deciding if the path is extensionless', () => {
+      expect(isIdentityPolicyMiss(`${IN_SCOPE}.html?a=1`, 'false')).to.be.false;
+      expect(isIdentityPolicyMiss(`${IN_SCOPE}?a=1`, 'false')).to.be.true;
+    });
+
+    it('does not throw on a non-string', () => {
+      expect(isIdentityPolicyMiss(undefined, 'false')).to.be.false;
+      expect(isIdentityPolicyMiss(null, 'false')).to.be.false;
     });
   });
 });

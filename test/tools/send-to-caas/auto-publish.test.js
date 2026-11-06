@@ -99,6 +99,9 @@ afterEach(() => {
     fetchStub.restore();
     fetchStub = null;
   }
+  // Tests that capture identity diagnostics install a fake lana; leaving it in
+  // place would silently redirect every later test's logging.
+  delete window.lana;
 });
 
 describe('auto-publish: matchesUrl', () => {
@@ -352,6 +355,27 @@ describe('auto-publish: caasAutoPublish gating', () => {
     expect(result.reason).to.equal('rule-disabled');
   });
 
+  it('warns when enabled holds a value that means neither true nor false', async () => {
+    // 'yes' is not a recognized flag, so it falls through to ENABLED -- the
+    // opposite of what an author typing it almost certainly intended. Silence
+    // here is how a typo becomes a site that keeps publishing forever.
+    const logged = [];
+    const origin = uniqueOrigin();
+    window.lana = { log: (msg) => logged.push(msg) };
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'yes' }] } }));
+    await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/old`,
+      path: '/products/old',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(logged.some((m) => m.includes("unrecognized enabled value 'yes'"))).to.be.true;
+  });
+
   it('treats a non-false enabled value as enabled', async () => {
     // Absent/true/empty must keep publishing; only an explicit opt-out stops it.
     const origin = uniqueOrigin();
@@ -508,6 +532,25 @@ describe('auto-publish: caasAutoPublish posting', () => {
     });
     return postCalls;
   };
+
+  it('warns when htmlIdentity holds an unrecognized value', async () => {
+    // 'yes' is not a recognized flag so it falls through to OFF, meaning ids
+    // are NOT normalized -- the silent card-orphaning this feature prevents.
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    const origin = uniqueOrigin();
+    setupHappyPath(origin, { htmlIdentity: 'yes' });
+    await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'bacom',
+    });
+    expect(logged.some((m) => m.includes("unrecognized htmlIdentity value 'yes'"))).to.be.true;
+  });
 
   it('posts once with prod/live headers on publish action', async () => {
     const origin = uniqueOrigin();

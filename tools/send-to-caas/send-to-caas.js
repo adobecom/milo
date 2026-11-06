@@ -233,6 +233,17 @@ const validateProps = async (prodHost, publishingModal) => {
   // metadata is the flag source. Without this the single-page tool would mint a
   // legacy id for a page the bulk/auto publishers give a forced-`.html` id,
   // creating a duplicate card for one page.
+  //
+  // KNOWN DIVERGENCE (MWPW-213846 follow-up): this reads page metadata, while
+  // auto-publish resolves the same flag from the path-scoped rules in
+  // `/.milo/caas/config.json`. The two agree only while a site keeps them in
+  // sync by hand, and a disagreement is silent -- the page publishes fine, just
+  // under a second contentId, so the duplicate surfaces later as a stray card
+  // rather than as an error here. Reconciling them properly means teaching this
+  // tool the auto-publish rule-matching engine (path globs, per-env overrides),
+  // which is a larger change than this ticket should carry. Operational rule
+  // until then: a site enabling the policy must set BOTH the
+  // `caas-identity-html` metadata and the `htmlIdentity` config.json column.
   const htmlIdentity = isHtmlIdentityEnabled(
     document.head.querySelector('meta[name="caas-identity-html"]')?.content,
   );

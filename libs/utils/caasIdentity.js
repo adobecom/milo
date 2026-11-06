@@ -5,6 +5,14 @@
 // bundle-able) as well as from libs/blocks/caas/utils.js. Keep it dependency
 // free.
 //
+// That constraint is also why the generic flag parsers (isFlagEnabled and
+// friends) live here rather than in a shared libs/utils/flags.js. A review
+// reasonably asked for that split, but the leaf rule is enforced by eslint:
+// this module may not import, so extracting them would leave this file
+// re-declaring its own copies and create exactly the duplicate-parser drift
+// they were centralized to kill. If another module needs them, import them
+// from here.
+//
 // BACOM is moving its public pages on business.adobe.com to extensionless
 // URLs. Card identity (contentId/entityId) is a hash of the page URL, so
 // dropping `.html` from the published URL would mint new ids and orphan every
@@ -23,6 +31,10 @@
 // Only the identity hash input is affected. The public url, uci and CTA urls
 // continue to use prodUrl untouched.
 
+// TODO(MWPW-213846): single-tenant by design. The migration this unblocks is
+// bacom-only, and a tenant list that nobody is yet asking for would be
+// unexercised configuration surface. Generalize to a configured allowlist when
+// a second tenant actually migrates -- not before.
 const BACOM_PROD_HOST = 'business.adobe.com';
 const HTML_EXT = '.html';
 
@@ -147,8 +159,14 @@ export const isFlagUnrecognized = (flag) => {
  * @param {string|boolean} flag authored flag value ('true'/'on' enables)
  * @returns {boolean}
  */
+// Currently a pure alias of isFlagEnabled, kept as a named entry point rather
+// than inlined: it marks the call sites that specifically gate CARD IDENTITY,
+// which is the one flag here whose misreading is unrecoverable (ids cannot be
+// rehashed back once cards are published). Keeping the name means a future
+// identity-only change -- an extra scope check, a kill switch -- lands in one
+// place instead of needing those call sites to be rediscovered among every
+// other isFlagEnabled caller.
 export const isHtmlIdentityEnabled = (flag) => isFlagEnabled(flag);
-
 /**
  * The url to hash into contentId/entityId. Returns prodUrl unchanged unless the
  * policy is enabled and the url is in scope, so an out-of-scope or flag-off
@@ -166,4 +184,44 @@ export const getCaasIdentityUrl = (prodUrl, enabled = false) => {
   if (!isHtmlIdentityEnabled(enabled) || !isForcedHtmlIdentityUrl(prodUrl)) return prodUrl;
   const { scheme, host, pathname, suffix } = splitUrl(prodUrl);
   return `${scheme}${host}${forceSingleHtml(pathname)}${suffix}`;
+};
+
+/**
+ * The exact string the publishers hash into contentId/entityId.
+ *
+ * Card ids are a uuid v5 of the SCHEME-LESS production url, so producing one
+ * is two steps: strip the scheme, then apply the forced-`.html` policy. Both
+ * live here because every caller that does only the second step by hand has to
+ * reproduce the first, and the auto-publish convergence guard has to reproduce
+ * BOTH to predict what the builder will hash. A guard that predicts the hash
+ * input by convention degrades silently into a no-op the moment either step
+ * changes, so guard and builder call one function instead.
+ *
+ * @param {string} prodUrl schemed or scheme-less production url
+ * @param {string|boolean} enabled authored or resolved feature-flag state
+ * @returns {string} the string to hash
+ */
+export const toIdentityUrl = (prodUrl, enabled = false) => {
+  const bare = typeof prodUrl === 'string' ? prodUrl.replace(/^https?:\/\//, '') : prodUrl;
+  return getCaasIdentityUrl(bare, enabled);
+};
+
+/**
+ * True when a url is in policy scope, authored WITHOUT the `.html` extension,
+ * and the policy is off -- the one combination that silently resolves to an id
+ * no published card holds.
+ *
+ * Deliberately narrower than "in scope and flag off": before a site completes
+ * its extensionless migration its authored links still carry `.html`, and those
+ * resolve correctly with the flag off. Warning on those too would fire on every
+ * bacom page today and train readers to ignore the signal.
+ *
+ * @param {string} url authored link, schemed or scheme-less
+ * @param {string|boolean} enabled authored or resolved feature-flag state
+ * @returns {boolean}
+ */
+export const isIdentityPolicyMiss = (url, enabled = false) => {
+  if (isHtmlIdentityEnabled(enabled) || !isForcedHtmlIdentityUrl(url)) return false;
+  const { pathname } = splitUrl(typeof url === 'string' ? url : '');
+  return !pathname.endsWith(HTML_EXT);
 };

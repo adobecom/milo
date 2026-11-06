@@ -20,6 +20,7 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import {
   getCaasIdentityUrl,
+  toIdentityUrl,
   isFlagEnabled,
   isForcedHtmlIdentityUrl,
 } from '../../libs/utils/caasIdentity.js';
@@ -1329,6 +1330,14 @@ const isDisabledOnPage = (dom) => {
 // posting, so non-browser hosts (e.g. the milo-caas scheduled service) can reuse
 // the exact business logic. The caller supplies the parsed DOM and decides what
 // to do with the result (post, skip on errors, skip when there are no tags, etc.).
+//
+// PRECONDITION -- NOT REENTRANT. This mutates module-global state (notably the
+// resolved `tags` accumulator and getConfig()-backed values), so concurrent
+// invocations interleave and can attribute one page's tags to another. This
+// matters because the function is bundled and handed to batch callers, for whom
+// `await Promise.all(pages.map(buildCaasXdmPayload))` is the obvious shape and
+// fails silently -- wrong tags on a valid-looking payload, not an exception.
+// Await each call in sequence; see the `for`-loop in auto-publish.js.
 const buildCaasXdmPayload = async ({
   dom,
   pageUrl,
@@ -1410,13 +1419,26 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
 // IMPORTANT: callers MUST pass the same `htmlIdentity` the page was published
 // under. Removal is matched by id, so a mismatch does not error — it computes
 // ids that match no card and leaves the real one live in CaaS forever.
-// `window` is guarded: this module is bundled into caas-payload-builder.js and
-// run by the milo-caas poller outside a browser, where an unguarded reference
-// would throw rather than log.
-const logIdentity = (message, severity = 'error') => {
-  if (typeof window === 'undefined') return;
-  window.lana?.log(`caas-identity: ${message}`, { tags: 'caas', severity });
+// `window.lana` only exists on pages that ran the Milo bootstrap (loadLana()).
+// None of the three runtimes on this path do: the bulk publisher page loads a
+// single module and no Milo scripts, the da-live/bulk-publish-v2 host is not a
+// Milo page, and the poller has no `window` at all. A bare `window.lana?.log`
+// is therefore a no-op in every runtime that can actually hit these branches,
+// so fall back to console -- which is also the poller's only channel, and the
+// poller is where removal mismatches happen.
+// sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
+// calls; these are rare per-page diagnostics, not volume telemetry.
+export const createIdentityLogger = (prefix) => (message, severity = 'error') => {
+  const msg = `${prefix}: ${message}`;
+  if (typeof window !== 'undefined' && window.lana?.log) {
+    window.lana.log(msg, { tags: 'caas', severity, sampleRate: 100 });
+    return;
+  }
+  // eslint-disable-next-line no-console
+  console[severity === 'warning' ? 'warn' : 'error'](msg);
 };
+
+const logIdentity = createIdentityLogger('caas-identity');
 
 // Sentinel so an omitted htmlIdentity stays distinguishable from an explicit
 // `false` while keeping the parameter positional and last (eslint
@@ -1431,10 +1453,10 @@ const getCaasIds = async (
   htmlIdentity = HTML_IDENTITY_UNSET,
 ) => {
   const omitted = htmlIdentity === HTML_IDENTITY_UNSET;
-  // Strip the scheme the same way buildCaasXdmPayload does before hashing, so a
-  // schemed prodUrl (e.g. from getProdUrl()) hashes to the same contentId/entityId
-  // as the one computed at publish time, instead of a different, unmatched id.
-  const bareProdUrl = prodUrl?.replace(/^https?:\/\//, '') ?? prodUrl;
+  // toIdentityUrl strips the scheme the same way buildCaasXdmPayload does before
+  // hashing, so a schemed prodUrl (e.g. from getProdUrl()) hashes to the same
+  // contentId/entityId as the one computed at publish time.
+  const bareProdUrl = typeof prodUrl === 'string' ? prodUrl.replace(/^https?:\/\//, '') : prodUrl;
   // A caller that omits htmlIdentity gets no error, just ids that match no
   // card -- so the only symptom is a card nobody can delete. Warn precisely:
   // the omission only changes the answer for urls the policy actually covers.
@@ -1447,7 +1469,7 @@ const getCaasIds = async (
   }
   // Removal has to reproduce the identity the page was published under, so it
   // applies the same forced-`.html` policy as publish.
-  const identityUrl = getCaasIdentityUrl(bareProdUrl, omitted ? false : htmlIdentity);
+  const identityUrl = toIdentityUrl(prodUrl, omitted ? false : htmlIdentity);
   const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
   const [contentId, entityId] = await Promise.all([
     getUuid(identityUrl),

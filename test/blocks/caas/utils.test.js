@@ -1824,6 +1824,13 @@ describe('caas consumer: htmlIdentity', () => {
   const ARTICLE = '/resources/articles/4-pieces-of-social-media-real-estate-you-shouldnt-ignore';
   // Same id the existing `.html` fixture above resolves to.
   const HTML_ID = 'c94ec235-50c2-595e-9fa8-0b4602c08712';
+  // The id the SAME bacom article hashes to without the terminal `.html` --
+  // i.e. the miss the flag exists to prevent. Pinned exactly so that a
+  // regression which stops applying the policy fails loudly here instead of
+  // merely resolving to "something that isn't HTML_ID".
+  const EXTENSIONLESS_ID = 'b9630808-7828-5767-9dab-d02dda39e475';
+  // Same path under a host the policy does not cover.
+  const OTHER_HOST_ID = 'd54536b8-c7c4-5799-a890-0b441f0dd8a3';
 
   let meta;
   const setFlag = (content) => {
@@ -1857,11 +1864,11 @@ describe('caas consumer: htmlIdentity', () => {
   it('is a no-op for a host the policy does not cover', async () => {
     setFlag('true');
     const ids = await featuredIds(`https://www.adobe.com${ARTICLE}`);
-    expect(ids).to.not.eql([HTML_ID]);
+    expect(ids).to.eql([OTHER_HOST_ID]);
   });
 
   it('leaves resolution unchanged when the flag is off', async () => {
     const ids = await featuredIds(`${BACOM}${ARTICLE}`);
-    expect(ids).to.not.eql([HTML_ID]);
+    expect(ids).to.eql([EXTENSIONLESS_ID]);
   });
 });
