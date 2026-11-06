@@ -153,8 +153,9 @@ export default async function init(el) {
   // original promise so UNAV can wait for readiness and recover from a timeout.
   imsReady.catch((error) => {
     if (error?.message === 'IMS timeout') return;
-    window.lana?.log?.('Failed to initialize IMS for federal global navigation', {
-      error,
+    lanaLog({
+      message: 'Failed to initialize IMS for federal global navigation',
+      e: error,
       tags: 'global-navigation',
       errorType: 'i',
     });
@@ -255,8 +256,9 @@ export default async function init(el) {
       convertStageLinks({ anchors, config, hostname, href });
     },
   }).catch((error) => {
-    window.lana?.log?.('Failed to initialize federal global navigation', {
-      error,
+    lanaLog({
+      message: 'Failed to initialize federal global navigation',
+      e: error,
       tags: 'global-navigation',
       errorType: 'e',
     });
@@ -276,7 +278,12 @@ export default async function init(el) {
         const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
         decorateAcomAssistantGnav(el);
       } catch (error) {
-        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+        lanaLog({
+          message: 'AcomAssistant: failed to load GNav module',
+          e: error,
+          tags: 'acom-assistant',
+          severity: 'error',
+        });
       }
     }
   });

@@ -144,7 +144,7 @@
   .rcc-item {
     font-weight: var(--s2a-font-weight-body);
     color: var(--s2a-color-content-knockout);
-    opacity: 0.12;
+    opacity: 0.48;
     transition: opacity 0.3s ease;
     cursor: default;
     user-select: none;
@@ -398,4 +398,3 @@ body:has(header.local-nav) .roller-carousel {
   margin-bottom: calc(-1 * var(--rcc-rounded-corners-gap));
   padding-bottom: var(--rcc-rounded-corners-gap);
 }
-
