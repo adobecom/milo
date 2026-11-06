@@ -367,15 +367,6 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
   display: block;
 }
 
-.mep-drawer .mep-card.center {
-  align-items: center;
-}
-
-.mep-drawer .mep-card.center p {
-  margin: 0;
-  color: var(--mep-white-60);
-}
-
 .mep-drawer .mep-body h1 svg {
   fill: var(--mep-white-100);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -671,19 +662,6 @@ body.mep-align-left .mep-drawer:not(:popover-open) {
 }
 
 .mep-drawer .mep-footer .con-button:hover {
-  background: var(--mep-primary-60);
-  border: 2px solid var(--mep-primary-60);
-}
-
-.mep-drawer .mep-card.center .con-button {
-  cursor: pointer;
-  text-align: center;
-  color: var(--mep-white-100);
-  background: var(--mep-primary-100);
-  border-color: var(--mep-primary-100);
-}
-
-.mep-drawer .mep-card.center .con-button:hover {
   background: var(--mep-primary-60);
   border: 2px solid var(--mep-primary-60);
 }

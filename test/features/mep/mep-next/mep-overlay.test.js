@@ -1488,13 +1488,6 @@ describe('setMasObserver: refreshSpoofGeoMas with akamaiLocale and MAS regions',
   });
 });
 
-// =====================================================================
-// PROD ENV BLOCK 1: auth changes from true → false
-// GROUP 16: Prod env → unauthenticated path
-// Covers: buildLoginCard, footer removal, buildToggle isProd=true
-// (buildDrawer runs with authenticated=true so real content is built first,
-//  then checkAuthAndBuild replaces with login card)
-// =====================================================================
 describe('init: prod env → overlay authorization', () => {
   let bodyEl;
   let headerEl;
@@ -1514,21 +1507,6 @@ describe('init: prod env → overlay authorization', () => {
     sidekick?.remove();
     cleanup(bodyEl, headerEl);
     setConfig(BASE_CONFIG);
-  });
-
-  it('Actions tab shows login card when not authenticated', () => {
-    const content = bodyEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.querySelector('.mep-card.center')).to.exist;
-  });
-
-  it('login card text contains "Content Unavailable"', () => {
-    const content = bodyEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.textContent).to.include('Content Unavailable');
-  });
-
-  it('login card text contains "Sign into AEM Sidekick"', () => {
-    const content = bodyEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.textContent).to.include('Sign into AEM Sidekick');
   });
 
   it('footer is absent after becoming unauthenticated', () => {
@@ -1569,6 +1547,20 @@ describe('init: prod env → overlay authorization', () => {
     expect(drawer.hidden).to.be.true;
     expect(bodyEl.querySelector('.mep-fab').hidden).to.be.true;
     expect(getComputedStyle(drawer).display).to.equal('none');
+    expect(drawer.querySelector('.mep-footer')).to.not.exist;
+  });
+
+  it('handles authorization changes when the overlay button has been removed', async () => {
+    bodyEl.querySelector('.mep-fab').remove();
+    sidekick.dispatchEvent(new Event('logged-in'));
+    await wait(100);
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    expect(drawer.hidden).to.be.false;
+    expect(drawer.querySelector('.mep-footer')).to.exist;
+    sidekick.dispatchEvent(new Event('logged-out'));
+    await wait();
+    expect(drawer.hidden).to.be.true;
+    expect(drawer.querySelector('.mep-footer')).to.not.exist;
   });
 });
 
