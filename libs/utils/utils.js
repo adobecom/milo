@@ -2638,6 +2638,15 @@ async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
+  try {
+    if (sessionStorage.getItem('milo:marketo-consent-reminder')) {
+      import('../features/marketo-consent-banner/marketo-consent-banner.js')
+        .then(({ default: init }) => init())
+        .catch(() => window.lana?.log('Could not load Marketo consent banner', { tags: 'marketo', severity: 'w' }));
+    }
+  } catch {
+    window.lana?.log('Could not check Marketo consent reminder', { tags: 'marketo', severity: 'w' });
+  }
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');

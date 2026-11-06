@@ -33,6 +33,7 @@ const sanitizeFormHtml = (value) => (typeof value === 'string' ? sanitizeHtmlBod
 
 const ROOT_MARGIN = 50;
 const FAILURE_TIMEOUT = 10000;
+const CONSENT_REMINDER_KEY = 'milo:marketo-consent-reminder';
 export const LANA_MESSAGE = {
   RENDER_FAILED: 'Marketo form did not render',
   HANDSHAKE_FAILED: 'Marketo form handshake failed',
@@ -303,20 +304,46 @@ const toggleSuccessSection = (formData) => {
   hideSuccessSection(formData);
 };
 
+const updateConsentReminder = (values, destination) => {
+  try {
+    sessionStorage.removeItem(CONSENT_REMINDER_KEY);
+    // Germany's cs3P;ve1 notice uses this legacy checkbox name.
+    if (values?.Country !== 'DE' || values.mktoKoreaPrivacyThirdParty !== 'yes' || !destination) return;
+
+    const url = new URL(destination, window.location.href);
+    if (url.origin !== window.location.origin || url.pathname === window.location.pathname) {
+      window.lana?.log('Marketo consent reminder requires a separate same-origin thank-you page', { tags: 'marketo', severity: 'w' });
+      return;
+    }
+
+    sessionStorage.setItem(CONSENT_REMINDER_KEY, JSON.stringify({
+      version: 1,
+      destination: `${url.origin}${url.pathname}`,
+      createdAt: Date.now(),
+    }));
+  } catch {
+    window.lana?.log('Could not update Marketo consent reminder', { tags: 'marketo', severity: 'w' });
+  }
+};
+
 export const formSubmit = (formEl) => {
+  updateConsentReminder();
   const el = formEl.closest('.marketo');
   const testRecord = window.mkto_isTestRecord?.();
   if (testRecord && testRecord !== 'not_test') return;
   el.dataset.submitTimeoutId = formTimeout(el, () => !el.classList.contains('success'), LANA_MESSAGE.SUBMIT_FAILED);
 };
 
-export const formSuccess = (formEl, formData) => {
+export const formSuccess = (formEl, formData, values, followUpUrl) => {
   const el = formEl.closest('.marketo');
   const parentModal = formEl?.closest('.dialog-modal');
   const mktoSubmit = new Event('mktoSubmit');
+  const destination = formData?.[SUCCESS_TYPE] === 'redirect'
+    ? formData[SUCCESS_CONTENT] || followUpUrl : null;
 
   clearTimeout(el.dataset.submitTimeoutId);
   clearTimeout(el.dataset.renderTimeoutId);
+  updateConsentReminder(values, destination);
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
@@ -392,7 +419,7 @@ const readyForm = (form, formData) => {
   }, true);
   form.onValidate(() => formValidate(formEl));
   form.onSubmit(() => formSubmit(formEl));
-  form.onSuccess(() => formSuccess(formEl, formData));
+  form.onSuccess((values, followUpUrl) => formSuccess(formEl, formData, values, followUpUrl));
 };
 
 export const loadMarketo = (el, formData) => {
@@ -409,7 +436,9 @@ export const loadMarketo = (el, formData) => {
 
       el.dataset.renderTimeoutId = formTimeout(el, () => !isVisible(el.querySelector('form')), LANA_MESSAGE.RENDER_FAILED);
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID, () => { setDataLayer(FORM_STATUS, 'loaded'); });
-      MktoForms2.whenReady((form) => { readyForm(form, formData); });
+      MktoForms2.whenReady((form) => {
+        if (form.getFormElem().get(0) === el.querySelector('form')) readyForm(form, formData);
+      });
 
       /* c8 ignore next 3 */
       if (el.classList.contains('multi-step')) {

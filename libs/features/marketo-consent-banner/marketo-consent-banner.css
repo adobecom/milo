@@ -1,0 +1,41 @@
+.marketo-consent-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  width: calc(100% - 32px);
+  max-width: 1200px;
+  margin: 16px auto;
+  padding: 16px 24px;
+  border: 1px solid #1473e6;
+  border-radius: 4px;
+  background: #e8f3ff;
+  color: #2c2c2c;
+  font-family: var(--body-font-family);
+}
+
+.marketo-consent-banner p {
+  flex: 1;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.marketo-consent-banner-close {
+  flex-shrink: 0;
+  align-self: flex-start;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.marketo-consent-banner-close:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 2px;
+}
