@@ -64,6 +64,38 @@ describe('action scrollers', () => {
     });
   });
 
+  describe('action scroller authored rows', () => {
+    let section;
+    afterEach(() => section?.remove());
+
+    it('lowercases the authored style into scroller classes', () => {
+      section = document.createElement('div');
+      section.innerHTML = `<div class="action-scroller">
+        <div><div>Style</div><div>Grid Align Center</div></div>
+      </div><div class="action-item"></div>`;
+      document.body.append(section);
+      const el = section.querySelector('.action-scroller');
+      init(el);
+      expect(el.querySelector('.scroller').classList.contains('grid-align-center')).to.be.true;
+    });
+
+    it('uses authored labels and keeps the default for missing rows', () => {
+      section = document.createElement('div');
+      section.innerHTML = `<div class="action-scroller navigation">
+        <div><div>Item width</div><div>100</div></div>
+        <div><div>Previous Button Label</div><div>Previous company logos</div></div>
+      </div><div class="action-item"></div>`;
+      document.body.append(section);
+      const el = section.querySelector('.action-scroller');
+      init(el);
+      const [prevBtn, nextBtn] = ['.previous-button', '.next-button'].map((s) => el.querySelector(s));
+      expect(prevBtn.getAttribute('aria-label')).to.equal('Previous company logos');
+      expect(prevBtn.querySelector('img').getAttribute('alt')).to.equal('');
+      expect(nextBtn.hasAttribute('aria-label')).to.be.false;
+      expect(nextBtn.querySelector('img').getAttribute('alt')).to.equal('Next icon');
+    });
+  });
+
   describe('action scroller no-links', () => {
     it('hides scroller from accessibility tree when there are no links', () => {
       const el = document.querySelector('.action-scroller.no-links');
