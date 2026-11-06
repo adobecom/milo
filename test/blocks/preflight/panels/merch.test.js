@@ -10,6 +10,7 @@ import Merch, {
   checkUrl,
   checkMasFieldsMultipleFragments,
   checkWcsElements,
+  checkStaticPricesForPanel,
 } from '../../../../libs/blocks/preflight/panels/merch.js';
 
 const waitFor = async (fn, tries = 80) => {
@@ -351,6 +352,45 @@ describe('preflight panels merch', () => {
       // mas-fields multiple-fragment section rendered
       expect(container.querySelector('.mas-fields-warning-item')).to.exist;
       expect(text).to.contain('multiple M@S fragment IDs');
+    });
+  });
+
+  describe('Merch component - static prices', () => {
+    let container;
+    let main;
+
+    beforeEach(() => {
+      main = document.createElement('main');
+      main.innerHTML = `
+        <p>Only $9.99/mo for <b>students</b></p>
+        <div hidden><p>Others pay ¥1,078/月</p></div>`;
+      document.body.append(main);
+      checkStaticPricesForPanel();
+      container = document.createElement('div');
+      document.body.append(container);
+    });
+
+    afterEach(() => {
+      render(null, container);
+      container.remove();
+      main.remove();
+      checkStaticPricesForPanel();
+    });
+
+    it('lists each static price with its snippet and marks hidden ones', async () => {
+      const scrollStub = sinon.stub(window, 'scrollTo');
+      render(html`<${Merch} />`, container);
+      await waitFor(() => container.querySelector('.merch-section'));
+      const section = [...container.querySelectorAll('.merch-section')]
+        .find((el) => el.querySelector('.merch-section-title').textContent === 'Static prices');
+      const items = [...section.querySelectorAll('.merch-item')];
+      expect(items.map((item) => item.querySelector('.preflight-item-title').textContent.trim()))
+        .to.deep.equal(['$9.99/mo', '¥1,078/月 (hidden)']);
+      expect(items[0].querySelector('.preflight-item-description').textContent).to.equal('Only $9.99/mo for');
+      expect(items[1].querySelector('.merch-scroll-btn')).to.not.exist;
+      items[0].querySelector('.merch-scroll-btn').click();
+      expect(scrollStub.calledOnce).to.be.true;
+      scrollStub.restore();
     });
   });
 });
