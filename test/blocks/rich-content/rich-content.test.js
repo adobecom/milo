@@ -268,10 +268,11 @@ describe('Rich Content', () => {
       return check();
     };
 
-    it('sets the nav height variable on merch-moment sections', async () => {
+    it('keeps focused links clear of the sticky header on merch-moment sections', async () => {
+      await new Promise((resolve) => { loadStyle('/libs/c2/blocks/rich-content/rich-content.css', resolve); });
       document.body.innerHTML = `<header style="display:block;height:64px"></header>
-        <div class="section"><div class="rich-content merch-moment">
-          <div><div><h2>Heading</h2><p>Body</p></div></div>
+        <div class="section" style="--s2a-spacing-lg: 16px"><div class="rich-content merch-moment">
+          <div><div><h2>Heading</h2><p>Body <a href="#x">Link</a></p></div></div>
         </div></div>`;
       const block = document.querySelector('.rich-content');
       init(block);
@@ -279,6 +280,8 @@ describe('Rich Content', () => {
       const section = block.closest('.section');
       const isSet = await waitFor(() => section.style.getPropertyValue('--rc-nav-height') === '64px');
       expect(isSet).to.be.true;
+      // The CSS consumer of the variable: focused links scroll to below the header.
+      expect(getComputedStyle(block.querySelector('.foreground a')).scrollMarginTop).to.equal('80px');
     });
 
     it('re-applies media spacing on resize', async () => {
