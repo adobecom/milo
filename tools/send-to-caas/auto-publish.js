@@ -42,7 +42,22 @@ import {
   postDataToCaaS,
 } from './send-utils.js';
 import { getCustomConfig } from '../utils/utils.js';
-import { getCaasIdentityUrl, isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
+import {
+  getCaasIdentityUrl,
+  isFlagDisabled,
+  isFlagEnabled,
+  isFlagUnrecognized,
+  isHtmlIdentityEnabled,
+} from '../../libs/utils/caasIdentity.js';
+
+// Nothing on the identity path used to emit a single log line, so a site whose
+// cards silently stopped matching had no signal to go on. `window` is guarded
+// because this module is also loaded outside a browser (tests, and any host
+// that imports it directly).
+const logIdentity = (message, severity = 'error') => {
+  if (typeof window === 'undefined') return;
+  window.lana?.log(`caas-auto-publish: ${message}`, { tags: 'caas', severity });
+};
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
 // from this module (used by tests and any host that already depends on it).
@@ -113,12 +128,27 @@ export const resolveRule = (rules, path) => {
 // unchanged, so an id that differed per environment would resolve in only one.
 // `htmlIdentity` is therefore rule-wide, and is a no-op in any environment
 // still serving `.html` (forceSingleHtml collapses `/x.html` to `/x.html`).
+// Only environments this module actually targets may contribute an override
+// column. An unvalidated caasEnv would interpolate straight into the lookup
+// key, so a typo'd or caller-injected value would read an arbitrary rule
+// property as if it were a `.html` policy.
+export const HTML_EXT_ENVS = ['prod', 'stage'];
+
 export const resolveHtmlExt = (rule, caasEnv) => {
-  const envKey = caasEnv ? `htmlExt${caasEnv.charAt(0).toUpperCase()}${caasEnv.slice(1)}` : '';
+  const known = HTML_EXT_ENVS.includes(caasEnv);
+  const envKey = known ? `htmlExt${caasEnv.charAt(0).toUpperCase()}${caasEnv.slice(1)}` : '';
+  if (caasEnv && !known) {
+    logIdentity(`unknown caasEnv '${caasEnv}', falling back to rule-wide htmlExt`, 'warn');
+  }
   const override = envKey ? rule?.[envKey] : undefined;
   const useDefault = override === undefined || override === null || override === '';
   const value = useDefault ? rule?.htmlExt : override;
-  return value === true || value === 'true';
+  // An authored value that is neither true nor false (e.g. 'yes', '1') would
+  // otherwise resolve silently to false and flip every public url on the rule.
+  if (isFlagUnrecognized(value)) {
+    logIdentity(`unrecognized htmlExt value '${value}' on rule '${rule?.url}', treating as false`);
+  }
+  return isFlagEnabled(value);
 };
 
 export const resolveTargets = (rule, action) => {
@@ -166,7 +196,10 @@ export const caasAutoPublish = async ({
 
     const rule = resolveRule(rules, path);
     if (!rule) return { skipped: true, reason: 'no-matching-rule' };
-    if (rule.enabled === false) return { skipped: true, reason: 'rule-disabled' };
+    // `enabled` arrives from a spreadsheet, which can only ever produce the
+    // STRING 'false'. The previous strict `=== false` check therefore ignored
+    // it, and a site that had explicitly turned autopublish off kept publishing.
+    if (isFlagDisabled(rule.enabled)) return { skipped: true, reason: 'rule-disabled' };
 
     // Card identity is the PRODUCTION url, not the aem.page/aem.live url the job
     // fires from. The site declares its prod host and .html rule in config, so
@@ -220,7 +253,17 @@ export const caasAutoPublish = async ({
       getCaasIdentityUrl(variantProdUrl(htmlExt).replace(/^https?:\/\//, ''), htmlIdentity)
     )));
     if (identityUrls.size > 1) {
-      return { skipped: true, reason: 'env-split-requires-html-identity' };
+      // Deliberately NOT the `skipped: true` shape. Five routine conditions
+      // already return that (no rule, no card metadata, no content-type tag,
+      // ...), so an operator watching skip counts cannot tell a page that was
+      // never eligible from a misconfiguration that has stopped an entire site
+      // from publishing. This is a refusal that needs a human, so it surfaces
+      // as an error and logs.
+      logIdentity(
+        `refusing to publish '${path}': htmlExt differs per environment but identity does not `
+        + 'converge, which would mint two contentIds for one page. Set htmlIdentity on the rule.',
+      );
+      return { skipped: false, error: 'env-split-requires-html-identity' };
     }
 
     const buildVariant = async ([htmlExt, variantTargets]) => {
@@ -245,7 +288,16 @@ export const caasAutoPublish = async ({
       return { htmlExt, caasProps, errors, tags, targets: variantTargets };
     };
 
-    const variants = await Promise.all([...byHtmlExt.entries()].map(buildVariant));
+    // Built one at a time, NOT with Promise.all. buildCaasXdmPayload writes to
+    // a module-global config (setConfig) and then awaits, so two in-flight
+    // calls interleave and the second one's pageUrl overwrites the first's
+    // before it has finished reading it. Nothing else in the repo called it
+    // concurrently, so this code introduced that hazard; serializing keeps the
+    // fix local instead of reworking the shared config for a <=2 item loop.
+    const variants = [];
+    for (const entry of [...byHtmlExt.entries()]) {
+      variants.push(await buildVariant(entry));
+    }
 
     const failed = variants.find((variant) => variant.errors?.length);
     if (failed) return { skipped: false, error: 'metadata-errors', errors: failed.errors };
@@ -274,10 +326,13 @@ export const caasAutoPublish = async ({
       )),
     ))).flat();
 
-    // Echoed so a caller can tell after the fact which policy produced a card:
-    // the live module and the frozen bundle can disagree, and htmlExt is now
-    // resolved per target while htmlIdentity stays rule-wide.
-    return { skipped: false, htmlIdentity, results };
+    // Echoed so a caller can tell after the fact which policy produced a card.
+    // `htmlIdentity` alone reports intent, not effect: the policy is host-gated,
+    // so the flag can be on while the ids were never normalized. The identity
+    // url is the actual hash input, which is what an operator comparing a live
+    // card against a republish needs.
+    const [identityUrl] = [...identityUrls];
+    return { skipped: false, htmlIdentity, identityUrl, results };
   } catch (e) {
     return { skipped: false, error: e?.message || String(e) };
   }

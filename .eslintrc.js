@@ -42,6 +42,28 @@ module.exports = {
   },
   overrides: [
     {
+      // caasIdentity.js is imported by tools/send-to-caas/caas-payload-core.js,
+      // which microbundle compiles into the caas-payload-builder.js artifact the
+      // milo-caas poller runs. Any import this leaf gains is silently pulled into
+      // that bundle (or breaks it, for anything browser-only), so the
+      // dependency-free rule is enforced here rather than left to a header
+      // comment that a future edit can read past.
+      files: ['libs/utils/caasIdentity.js'],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: 'ImportDeclaration',
+            message: 'caasIdentity.js must stay dependency-free: it is bundled for the milo-caas poller. Keep it pure string logic.',
+          },
+          {
+            selector: 'ImportExpression',
+            message: 'caasIdentity.js must stay dependency-free: it is bundled for the milo-caas poller. Keep it pure string logic.',
+          },
+        ],
+      },
+    },
+    {
       files: ['test/**/*.js'],
       rules: { 'no-console': 0 },
     },

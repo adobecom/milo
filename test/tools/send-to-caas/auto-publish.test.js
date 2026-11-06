@@ -332,6 +332,43 @@ describe('auto-publish: caasAutoPublish gating', () => {
     expect(result.reason).to.equal('rule-disabled');
   });
 
+  it('honors enabled:"false", the only form a config sheet can author', async () => {
+    // The check was a strict `=== false`, but this config is spreadsheet-backed
+    // and every cell is a string. A site that had explicitly turned autopublish
+    // off therefore kept publishing, with no error anywhere to say so.
+    const origin = uniqueOrigin();
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'false' }] } }));
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/old`,
+      path: '/products/old',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(result.skipped).to.be.true;
+    expect(result.reason).to.equal('rule-disabled');
+  });
+
+  it('treats a non-false enabled value as enabled', async () => {
+    // Absent/true/empty must keep publishing; only an explicit opt-out stops it.
+    const origin = uniqueOrigin();
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'true' }] } }));
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/old`,
+      path: '/products/old',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(result.reason).to.not.equal('rule-disabled');
+  });
+
   it('returns fetch error when page fetch fails', async () => {
     const origin = uniqueOrigin();
     fetchStub = sinon.stub(window, 'fetch');
@@ -899,6 +936,25 @@ describe('auto-publish: resolveHtmlExt', () => {
     expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'stage')).to.be.false;
     expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'prod')).to.be.true;
   });
+
+  it('accepts the casing and whitespace a spreadsheet can produce', () => {
+    // This used to accept only the exact lowercase 'true', so a cell reading
+    // TRUE stripped .html from every url on the rule.
+    expect(resolveHtmlExt({ htmlExt: 'TRUE' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: ' true ' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'on' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'true', htmlExtStage: 'FALSE' }, 'stage')).to.be.false;
+  });
+
+  it('ignores an unknown env rather than reading an arbitrary rule property', () => {
+    // caasEnv is interpolated into the lookup key, so an unvalidated value
+    // would let a typo (or a caller-injected string) pull an unrelated field
+    // in as if it were a .html policy.
+    const rule = { htmlExt: 'true', htmlExtHost: 'false', host: 'false' };
+    expect(resolveHtmlExt(rule, 'host')).to.be.true;
+    expect(resolveHtmlExt(rule, 'Prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'false', htmlExtBogus: 'true' }, 'bogus')).to.be.false;
+  });
 });
 
 describe('auto-publish: per-environment htmlExt', () => {
@@ -966,7 +1022,7 @@ describe('auto-publish: per-environment htmlExt', () => {
     const origin = uniqueOrigin();
     const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
     const result = await run(origin);
-    expect(result).to.deep.equal({ skipped: true, reason: 'env-split-requires-html-identity' });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
     expect(posts).to.have.lengthOf(0);
   });
 
@@ -984,7 +1040,7 @@ describe('auto-publish: per-environment htmlExt', () => {
       htmlIdentity: 'true',
     });
     const result = await run(origin);
-    expect(result).to.deep.equal({ skipped: true, reason: 'env-split-requires-html-identity' });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
     expect(posts).to.have.lengthOf(0);
   });
 

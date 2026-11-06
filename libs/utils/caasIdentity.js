@@ -75,12 +75,69 @@ export const isForcedHtmlIdentityUrl = (url) => {
   return !!pathname;
 };
 
+// Authored flags reach the publishers from three places that each store values
+// differently: a spreadsheet-backed config.json (every cell a string), bulk
+// publisher presets (also strings) and page metadata (strings). Before this was
+// centralized the codebase carried several near-miss variants -- some accepted
+// only the exact lowercase `'true'`, so a sheet reading `TRUE` (what a
+// spreadsheet produces when a user types an uppercase literal, or autocorrects)
+// silently resolved to false. For a flag that governs card identity that is not
+// a cosmetic inconsistency: it is the difference between preserving ids and
+// orphaning every card on a site.
+//
+// One parser, used by every authored boolean on the identity path. Trimmed and
+// lowercased so stray whitespace and casing cannot change meaning.
+const TRUE_VALUES = new Set(['true', 'on']);
+const FALSE_VALUES = new Set(['false', 'off']);
+
+const normalize = (flag) => (typeof flag === 'string' ? flag.trim().toLowerCase() : null);
+
+/**
+ * Canonical parser for an authored boolean flag that defaults to OFF.
+ * @param {string|boolean} flag authored value ('true'/'on' enable)
+ * @returns {boolean}
+ */
+export const isFlagEnabled = (flag) => {
+  if (flag === true) return true;
+  const val = normalize(flag);
+  // 'on' is the dominant convention for boolean page-metadata toggles in libs/.
+  return val !== null && TRUE_VALUES.has(val);
+};
+
+/**
+ * Canonical parser for an authored boolean flag that defaults to ON, where only
+ * an explicit falsey value turns it off. Needed because `rule.enabled === false`
+ * is a strict boolean check, and a spreadsheet can only ever produce the STRING
+ * `'false'` -- so a site asking for autopublish to be off was kept on.
+ * @param {string|boolean} flag authored value ('false'/'off' disable)
+ * @returns {boolean} true when the flag is explicitly turned off
+ */
+export const isFlagDisabled = (flag) => {
+  if (flag === false) return true;
+  const val = normalize(flag);
+  return val !== null && FALSE_VALUES.has(val);
+};
+
+/**
+ * Whether an authored value is present but means neither true nor false, e.g.
+ * `'yes'` or `'1'`. Such a value is an authoring mistake that would otherwise
+ * resolve silently to the default, so callers surface it rather than guess.
+ * @param {string|boolean} flag authored value
+ * @returns {boolean}
+ */
+export const isFlagUnrecognized = (flag) => {
+  if (flag === undefined || flag === null || flag === true || flag === false) return false;
+  const val = normalize(flag);
+  if (val === null) return true;
+  if (val === '') return false;
+  return !TRUE_VALUES.has(val) && !FALSE_VALUES.has(val);
+};
+
 /**
  * Resolve the `htmlIdentity` feature flag. Authored by publishing teams in the
  * bulk publisher presets sheet, in each site's /.milo/caas/config.json and in
  * the `caas-identity-html` page metadata, so it can be turned on per site
- * without a code change. Config sheets store booleans as strings, so both the
- * boolean and the string form are accepted, mirroring `getProdUrl`'s `htmlExt`.
+ * without a code change.
  *
  * Deliberately not environment-scoped. A card's identity must not depend on
  * which CaaS environment it lands in: auto-publish builds one payload and posts
@@ -90,13 +147,7 @@ export const isForcedHtmlIdentityUrl = (url) => {
  * @param {string|boolean} flag authored flag value ('true'/'on' enables)
  * @returns {boolean}
  */
-export const isHtmlIdentityEnabled = (flag) => {
-  if (flag === true) return true;
-  if (typeof flag !== 'string') return false;
-  const val = flag.trim().toLowerCase();
-  // 'on' is the dominant convention for boolean page-metadata toggles in libs/.
-  return val === 'true' || val === 'on';
-};
+export const isHtmlIdentityEnabled = (flag) => isFlagEnabled(flag);
 
 /**
  * The url to hash into contentId/entityId. Returns prodUrl unchanged unless the

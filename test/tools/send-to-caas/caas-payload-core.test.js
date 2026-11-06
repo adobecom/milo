@@ -250,4 +250,34 @@ describe('caas-payload-core: forced-.html card identity', () => {
     const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default');
     expect(ids.contentId).to.equal(await getUuid(`${BACOM}/resources/x`));
   });
+
+  it('warns when removal omits htmlIdentity for an in-scope url', async () => {
+    // Removal is matched by id, so an omitted flag does not throw -- it just
+    // computes ids that match no card and leaves the real one live in CaaS
+    // forever. A log is the only way that surfaces.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default');
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('without htmlIdentity');
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('does not warn when htmlIdentity is passed, or when the url is out of scope', async () => {
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false);
+      // Another host is not covered by the policy, so the flag cannot change
+      // the answer and the warning would be pure noise.
+      await getCaasIds('https://www.adobe.com/resources/x', 'default');
+      expect(log.called).to.be.false;
+    } finally {
+      delete window.lana;
+    }
+  });
 });

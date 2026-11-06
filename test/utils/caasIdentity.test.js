@@ -1,6 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import {
   getCaasIdentityUrl,
+  isFlagDisabled,
+  isFlagEnabled,
+  isFlagUnrecognized,
   isForcedHtmlIdentityUrl,
   isHtmlIdentityEnabled,
 } from '../../libs/utils/caasIdentity.js';
@@ -134,6 +137,53 @@ describe('caasIdentity', () => {
       // hashing the same string the .html url did.
       expect(getCaasIdentityUrl('business.adobe.com/blog/post.html', true))
         .to.equal(getCaasIdentityUrl('business.adobe.com/blog/post', true));
+    });
+  });
+
+  describe('shared flag parsing', () => {
+    it('accepts casing and whitespace a spreadsheet can produce', () => {
+      // A sheet cell holding an uppercase literal used to resolve to false,
+      // which for an identity flag means orphaning every card on the site
+      // rather than a cosmetic miss.
+      ['true', 'TRUE', 'True', ' true ', '\ttrue\n', 'on', 'ON'].forEach((val) => {
+        expect(isFlagEnabled(val), JSON.stringify(val)).to.be.true;
+      });
+      expect(isFlagEnabled(true)).to.be.true;
+    });
+
+    it('is off for anything that does not clearly mean true', () => {
+      [undefined, null, false, '', 'false', 'off', 'yes', '1', 0, 1, {}].forEach((val) => {
+        expect(isFlagEnabled(val), JSON.stringify(val)).to.be.false;
+      });
+    });
+
+    it('detects an explicit opt-out, including the string a sheet produces', () => {
+      [false, 'false', 'FALSE', ' false ', 'off', 'OFF'].forEach((val) => {
+        expect(isFlagDisabled(val), JSON.stringify(val)).to.be.true;
+      });
+      // Absent means "use the default", never "disabled".
+      [undefined, null, '', true, 'true', 'on', 'yes'].forEach((val) => {
+        expect(isFlagDisabled(val), JSON.stringify(val)).to.be.false;
+      });
+    });
+
+    it('flags an authored value that means neither true nor false', () => {
+      ['yes', 'no', '1', '0', 'enabled', 42].forEach((val) => {
+        expect(isFlagUnrecognized(val), JSON.stringify(val)).to.be.true;
+      });
+      // Absent/empty is a legitimate "fall back to the default", not a typo.
+      [undefined, null, '', '  ', true, false, 'true', 'false', 'on', 'off'].forEach((val) => {
+        expect(isFlagUnrecognized(val), JSON.stringify(val)).to.be.false;
+      });
+    });
+
+    it('resolves htmlIdentity through the one shared parser', () => {
+      // Regression: isHtmlIdentityEnabled and the htmlExt parser used to
+      // disagree on 'TRUE' and ' true '.
+      ['TRUE', ' true ', 'on'].forEach((val) => {
+        expect(isHtmlIdentityEnabled(val), JSON.stringify(val)).to.equal(isFlagEnabled(val));
+        expect(isHtmlIdentityEnabled(val), JSON.stringify(val)).to.be.true;
+      });
     });
   });
 });

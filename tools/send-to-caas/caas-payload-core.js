@@ -18,7 +18,11 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
 import getUuid from '../../libs/utils/getUuid.js';
-import { getCaasIdentityUrl } from '../../libs/utils/caasIdentity.js';
+import {
+  getCaasIdentityUrl,
+  isFlagEnabled,
+  isForcedHtmlIdentityUrl,
+} from '../../libs/utils/caasIdentity.js';
 // The 706KB caas-tags.js taxonomy is NOT imported here. It is only needed as a
 // fallback when the network tag fetch fails, so the host injects it lazily via
 // setConfig({ getCaasTagsFallback }). Keeping it out of the leaf means: (a) the
@@ -1385,12 +1389,14 @@ const hasContentTypeTag = (tags) => Array.isArray(tags)
 // NOTE: this is no longer necessarily the string that gets hashed. When the
 // htmlIdentity policy is on, libs/utils/caasIdentity.js derives the identity URL
 // from this one so the public URL can go extensionless without changing ids.
-// `htmlExt` accepts a boolean or the string 'true' (config sheets store strings).
+// `htmlExt` accepts a boolean or an authored string, parsed by the one shared
+// flag parser so `TRUE` or a space-padded value cannot silently mean false and
+// flip every public url on a site.
 const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   if (!host || !path) return '';
   const bareHost = host.replace(/^https?:\/\//, '').replace(/\/$/, '');
   let cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const wantHtml = htmlExt === true || htmlExt === 'true';
+  const wantHtml = isFlagEnabled(htmlExt);
   if (wantHtml && !cleanPath.endsWith('.html')) cleanPath = `${cleanPath}.html`;
   if (!wantHtml && cleanPath.endsWith('.html')) cleanPath = cleanPath.slice(0, -'.html'.length);
   return `https://${bareHost}${cleanPath}`;
@@ -1404,14 +1410,44 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
 // IMPORTANT: callers MUST pass the same `htmlIdentity` the page was published
 // under. Removal is matched by id, so a mismatch does not error — it computes
 // ids that match no card and leaves the real one live in CaaS forever.
-const getCaasIds = async (prodUrl, floodgatecolor = 'default', htmlIdentity = false) => {
+// `window` is guarded: this module is bundled into caas-payload-builder.js and
+// run by the milo-caas poller outside a browser, where an unguarded reference
+// would throw rather than log.
+const logIdentity = (message, severity = 'error') => {
+  if (typeof window === 'undefined') return;
+  window.lana?.log(`caas-identity: ${message}`, { tags: 'caas', severity });
+};
+
+// Sentinel so an omitted htmlIdentity stays distinguishable from an explicit
+// `false` while keeping the parameter positional and last (eslint
+// default-param-last). An explicitly passed `undefined` resolves to the
+// sentinel too, which is what we want: a caller forwarding an unset variable
+// has also, in effect, omitted it.
+const HTML_IDENTITY_UNSET = Symbol('htmlIdentity-unset');
+
+const getCaasIds = async (
+  prodUrl,
+  floodgatecolor = 'default',
+  htmlIdentity = HTML_IDENTITY_UNSET,
+) => {
+  const omitted = htmlIdentity === HTML_IDENTITY_UNSET;
   // Strip the scheme the same way buildCaasXdmPayload does before hashing, so a
   // schemed prodUrl (e.g. from getProdUrl()) hashes to the same contentId/entityId
   // as the one computed at publish time, instead of a different, unmatched id.
   const bareProdUrl = prodUrl?.replace(/^https?:\/\//, '') ?? prodUrl;
+  // A caller that omits htmlIdentity gets no error, just ids that match no
+  // card -- so the only symptom is a card nobody can delete. Warn precisely:
+  // the omission only changes the answer for urls the policy actually covers.
+  if (omitted && isForcedHtmlIdentityUrl(bareProdUrl)) {
+    logIdentity(
+      `getCaasIds called without htmlIdentity for in-scope url '${bareProdUrl}'. `
+      + 'If the page was published with htmlIdentity on, these ids will not match '
+      + 'its card and removal will silently leave it live.',
+    );
+  }
   // Removal has to reproduce the identity the page was published under, so it
   // applies the same forced-`.html` policy as publish.
-  const identityUrl = getCaasIdentityUrl(bareProdUrl, htmlIdentity);
+  const identityUrl = getCaasIdentityUrl(bareProdUrl, omitted ? false : htmlIdentity);
   const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
   const [contentId, entityId] = await Promise.all([
     getUuid(identityUrl),

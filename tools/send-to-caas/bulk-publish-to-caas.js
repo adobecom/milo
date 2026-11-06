@@ -386,6 +386,26 @@ const checkCaasEnv = () => {
 // presets options
 const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
 let presetsData = {};
+
+// loadFromLS restores the WHOLE saved config object, htmlIdentity included, so
+// the stored value outlived the sheet it came from: un-authoring the column --
+// the only rollback available to a publishing team -- left anyone who had
+// already selected that preset still publishing with the policy on, silently
+// and indefinitely. The sheet is the source of truth, so the stored value is
+// reconciled against it as soon as the presets arrive.
+export const reconcileHtmlIdentity = (presets) => {
+  const stored = getConfig();
+  const selected = stored?.presetSelector;
+  if (!selected || selected === 'advanced' || selected === 'default') return;
+  const live = Array.isArray(presets)
+    ? presets.find((preset) => preset.id === selected)
+    : undefined;
+  const liveValue = live?.htmlIdentity || '';
+  if (liveValue === (stored.htmlIdentity || '')) return;
+  setConfig({ htmlIdentity: liveValue });
+  window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+};
+
 const getPresetsData = async () => {
   fetchExcelJson(presetsJsonPath).then((presets) => {
     const separator = document.querySelector('.separator');
@@ -397,6 +417,7 @@ const getPresetsData = async () => {
       option.text = `${preset.name} (${preset.id})`;
       parent.insertBefore(option, separator);
     });
+    reconcileHtmlIdentity(presets);
   });
 };
 
