@@ -221,7 +221,7 @@ function initStagger() {
 function initElasticCarousel() {
   if (window.innerWidth < 768) return;
 
-  const startMargin = isRtl ? -200 : 200;
+  const startMargin = 200;
   const initialized = new WeakSet();
   let cssDisabled = false;
 
@@ -236,9 +236,9 @@ function initElasticCarousel() {
         + '.elastic-carousel-item { flex-shrink: 0; }');
     }
 
-    container.style.willChange = 'margin-left, opacity';
+    container.style.willChange = 'margin-inline-start, opacity';
     container.style.opacity = '0';
-    container.style.marginLeft = `${startMargin}px`;
+    container.style.marginInlineStart = `${startMargin}px`;
     let top = null;
     let itemData = null;
 
@@ -265,14 +265,14 @@ function initElasticCarousel() {
       // gap animates from startGap → endGap, starting 10% before slideT begins
       const gapT = Math.max(0, Math.min(1, (slideT + 0.4)));
 
-      container.style.marginLeft = `${startMargin * (1 - slideT)}px`;
+      container.style.marginInlineStart = `${startMargin * (1 - slideT)}px`;
       container.style.opacity = opacT;
       itemData.forEach(({ item, startGap, endGap }) => {
         item.style.marginInline = `${lerp(startGap, endGap, gapT)}px`;
       });
     });
     cleanupTasks.push(() => {
-      container.style.marginLeft = '';
+      container.style.marginInlineStart = '';
       container.style.opacity = '';
       container.style.willChange = '';
       top = null;

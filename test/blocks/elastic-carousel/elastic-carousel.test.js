@@ -216,6 +216,7 @@ describe('Elastic Carousel responsive geometry', () => {
   afterEach(async () => {
     sinon.restore();
     document.getElementById('text-spacing')?.remove();
+    document.body.style.paddingInlineEnd = '';
     document.body.replaceChildren();
     document.documentElement.removeAttribute('dir');
     window.scrollTo(0, 0);
@@ -228,6 +229,93 @@ describe('Elastic Carousel responsive geometry', () => {
   });
 
   ['ltr', 'rtl'].forEach((direction) => {
+    it(`centers the ${direction} row and keeps edge cards visible with a reserved inline gutter`, async () => {
+      await setViewport({ width: 1280, height: 720 });
+      document.documentElement.setAttribute('dir', direction);
+      document.body.style.paddingInlineEnd = '15px';
+      const block = await loadCarousel();
+      const row = block.querySelector('.elastic-carousel-container');
+      const bounds = block.getBoundingClientRect();
+      expect(bounds.width, 'gutter reduces the available carousel width')
+        .to.be.closeTo(window.innerWidth - 15, 1);
+      const rowBounds = row.getBoundingClientRect();
+      expect((rowBounds.left + rowBounds.right) / 2)
+        .to.be.closeTo((bounds.left + bounds.right) / 2, 1);
+      const cards = [...row.querySelectorAll('.elastic-carousel-item')];
+      for (const card of [cards[0], cards.at(-1)]) {
+        card.focus();
+        await settleLayout();
+        finishTransitions(block);
+        await settleLayout();
+        const rect = card.getBoundingClientRect();
+        expect(rect.left).to.be.at.least(bounds.left - 1);
+        expect(rect.right).to.be.at.most(bounds.right + 1);
+        expectFullText(card);
+        card.blur();
+        card.classList.remove('hovered');
+      }
+    });
+
+    it(`mirrors the CSS entrance animation in ${direction}`, async () => {
+      await setViewport({ width: 1280, height: 720 });
+      document.documentElement.setAttribute('dir', direction);
+      const block = await loadCarousel();
+      const row = block.querySelector('.elastic-carousel-container');
+      row.querySelectorAll('.elastic-carousel-item').forEach((card) => {
+        card.style.animation = 'none';
+      });
+      row.style.animation = 'elasticCarouselSlideIn 1s linear both';
+      row.style.animationTimeline = 'auto';
+      row.style.animationRange = 'normal';
+      await settleLayout();
+      const animation = row.getAnimations().find((entry) => entry.animationName === 'elasticCarouselSlideIn');
+      expect(animation).to.exist;
+      animation.pause();
+      animation.currentTime = 0;
+      await settleLayout();
+      const start = row.getBoundingClientRect().left;
+      animation.currentTime = 1000;
+      await settleLayout();
+      const end = row.getBoundingClientRect().left;
+      expect(start - end).to.be.closeTo(direction === 'rtl' ? -200 : 200, 1);
+    });
+
+    it(`mirrors the JS entrance fallback in ${direction}`, async () => {
+      await setViewport({ width: 1280, height: 720 });
+      const frame = document.createElement('iframe');
+      frame.style.cssText = 'width: 100%; height: 720px; border: 0';
+      const loaded = new Promise((resolve) => { frame.onload = resolve; });
+      frame.srcdoc = `<!doctype html><html dir="${direction}"><head><style>
+        ${styles.textContent}
+        html { overflow-y: scroll; } body { margin: 0; } .spacer { height: 1400px; }
+      </style></head><body><div class="spacer"></div>
+        <div class="elastic-carousel"><div class="elastic-carousel-container">
+          ${'<div class="elastic-carousel-item" style="height: 590px; --start-gap: .25rem; --end-gap: .25rem"></div>'.repeat(5)}
+        </div></div><div class="spacer"></div>
+        <script type="module">
+          import init from '/libs/c2/scroll-animations.js';
+          window.initScrollAnimations = init;
+        </script>
+      </body></html>`;
+      document.body.append(frame);
+      await loaded;
+      await settleLayout();
+      const row = frame.contentDocument.querySelector('.elastic-carousel-container');
+      row.style.transition = 'none';
+      frame.contentWindow.initScrollAnimations();
+      await settleLayout();
+      const top = row.getBoundingClientRect().top + frame.contentWindow.scrollY;
+      frame.contentWindow.scrollTo(0, top - frame.contentWindow.innerHeight);
+      await settleLayout();
+      expect(row.style.marginInlineStart).to.equal('200px');
+      const start = row.getBoundingClientRect().left;
+      frame.contentWindow.scrollTo(0, top);
+      await settleLayout();
+      expect(row.style.marginInlineStart).to.equal('0px');
+      const end = row.getBoundingClientRect().left;
+      expect(start - end).to.be.closeTo(direction === 'rtl' ? -200 : 200, 1);
+    });
+
     [1024, 1280, 1366, 1920].forEach((width) => {
       [false, true].forEach((textSpacing) => {
         it(`keeps expanded ${direction} edge cards visible with hover enabled at ${width}px and text spacing ${textSpacing}`, async () => {
@@ -282,6 +370,7 @@ describe('Elastic Carousel responsive geometry', () => {
           await settleLayout();
           expectFullText(card);
           const footer = card.querySelector('.elastic-carousel-item-footer');
+          expect(getComputedStyle(footer).maxWidth).to.equal('270px');
           const footerBounds = footer.getBoundingClientRect();
           const textBounds = description.getBoundingClientRect();
           const arrow = getComputedStyle(footer, '::after');
@@ -338,12 +427,20 @@ describe('Elastic Carousel responsive geometry', () => {
       resized = callback;
       return { observe, disconnect };
     });
-    await setViewport({ width: 1366, height: 768 });
+    await setViewport({ width: 375, height: 800 });
     const block = await loadCarousel();
     const card = block.querySelector('.elastic-carousel-item');
     expect(observe.callCount).to.equal(5);
     resized([{ target: card, borderBoxSize: [{ blockSize: 900 }] }]);
     expect(card.style.getPropertyValue('--elastic-carousel-item-height')).to.equal('900px');
+    const write = sinon.spy(card.style, 'setProperty');
+    resized([{ target: card, borderBoxSize: [{ blockSize: 900 }] }]);
+    expect(write.called).to.be.false;
+    resized([{ target: card, borderBoxSize: [{ blockSize: 901 }] }]);
+    expect(write.calledOnce).to.be.true;
+    await setViewport({ width: 768, height: 800 });
+    resized([{ target: card, borderBoxSize: [{ blockSize: 902 }] }]);
+    expect(write.calledOnce, 'tablet resize does not write the phone-only property').to.be.true;
     block.remove();
     await settleLayout();
     expect(disconnect.calledOnce).to.be.true;
@@ -360,12 +457,29 @@ describe('Elastic Carousel responsive geometry', () => {
     beforeEach(() => {
       const nativeMatchMedia = window.matchMedia.bind(window);
       sinon.stub(window, 'matchMedia').callsFake((query) => nativeMatchMedia(
-        query === '(hover: none) and (min-width: 768px)' ? '(min-width: 768px)' : query,
+        query === '(hover: none) and (width >= 768px)' ? '(width >= 768px)' : query,
       ));
     });
 
     after(() => {
       styles.textContent = originalStyles;
+    });
+
+    it('treats exactly 768px as tablet and preserves video playback without hover expansion', async () => {
+      await setViewport({ width: 768, height: 900 });
+      const block = await loadCarousel();
+      const card = block.querySelector('.elastic-carousel-item');
+      const video = card.querySelector('video');
+      const play = sinon.stub(video, 'play').resolves();
+      expect(card.hasAttribute('aria-roledescription')).to.be.false;
+      expect(card.style.getPropertyValue('--elastic-carousel-item-height')).to.equal('');
+      card.dispatchEvent(new MouseEvent('mouseenter'));
+      expect(play.calledOnce).to.be.true;
+      card.focus();
+      expect(play.calledTwice).to.be.true;
+      expect(card.classList.contains('hovered')).to.be.false;
+      expect(block.querySelector('.elastic-carousel-container').classList.contains('stick-left')).to.be.false;
+      expect(block.querySelector('.elastic-carousel-container').classList.contains('stick-right')).to.be.false;
     });
 
     ['ltr', 'rtl'].forEach((direction) => {
