@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/timeline.js';
-import { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../libs/utils/globe/core.js';
+import { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX, scrollYAtTravelT } from '../../../../libs/utils/globe/core.js';
 import {
   DEFAULT_MACHINE_TAG,
   fireflyRenditionUrl,
@@ -495,12 +495,16 @@ describe('firefly-globe: frame state', () => {
       scrollY: 0,
       scrollVel: 0,
       dtScale: 1,
-      entryT: 0,
+      sphereFormT: 0,
       scrollT: 0,
-      sphereFormed: false,
       interactive: false,
+      orientReset: true,
+      hintEntryT: 0,
+      hintRetirable: true,
+      beforeEntry: false,
       activeCamera: null,
       sphereRotActive: false,
+      sphGroupZ: 0,
     };
     expect(frame).to.deep.equal(expected);
   });
@@ -514,20 +518,20 @@ describe('firefly-globe: frame state', () => {
     ...extra,
   });
 
-  it('entryT runs over the viewport before the block top and reaches 1 at the pin', () => {
-    expect(derive(200).entryT).to.equal(0);
-    expect(derive(600).entryT).to.be.closeTo(0.5, 1e-9);
-    expect(derive(1000).entryT).to.equal(1);
-    expect(derive(999).sphereFormed).to.equal(false);
-    expect(derive(1000).sphereFormed).to.equal(true);
+  it('sphereFormT runs over the viewport before the block top and reaches 1 at the pin', () => {
+    expect(derive(200).sphereFormT).to.equal(0);
+    expect(derive(600).sphereFormT).to.be.closeTo(0.5, 1e-9);
+    expect(derive(1000).sphereFormT).to.equal(1);
+    expect(derive(999).hintRetirable).to.equal(false);
+    expect(derive(1000).hintRetirable).to.equal(true);
   });
 
   it('interactive opens at SPHERE_INTERACTIVE_T of the entry, before the pin', () => {
-    const at = (entryT) => derive(1000 - 800 * (1 - entryT));
+    const at = (sphereFormT) => derive(1000 - 800 * (1 - sphereFormT));
     expect(at(0).interactive).to.equal(false);
     expect(at(TL.SPHERE_INTERACTIVE_T).interactive).to.equal(true);
     expect(at(0.5).interactive).to.equal(true);
-    expect(at(0.5).sphereFormed).to.equal(false);
+    expect(at(0.5).hintRetirable).to.equal(false);
   });
 
   it('scrollT is 0 at the pin and 1 when the block bottom passes the viewport top', () => {
@@ -542,9 +546,9 @@ describe('firefly-globe: frame state', () => {
     const span = { blockDocTop: 1000, blockHeight: 2000, travelPx: 1600 };
     expect(derive(1800, { travelPx: 1600 }).scrollT).to.be.closeTo(0.5, 1e-9);
     expect(derive(2600, { travelPx: 1600 }).scrollT).to.equal(1);
-    expect(TL.scrollYAtTravelT(0.5, span)).to.equal(1800);
-    expect(TL.scrollYAtTravelT(1, { ...span, travelPx: 0 })).to.equal(3000);
-    expect(derive(TL.scrollYAtTravelT(0.3, span), { travelPx: 1600 }).scrollT)
+    expect(scrollYAtTravelT(0.5, span)).to.equal(1800);
+    expect(scrollYAtTravelT(1, { ...span, travelPx: 0 })).to.equal(3000);
+    expect(derive(scrollYAtTravelT(0.3, span), { travelPx: 1600 }).scrollT)
       .to.be.closeTo(0.3, 1e-9);
   });
 
@@ -560,9 +564,9 @@ describe('firefly-globe: frame state', () => {
   it('reduced motion pins the input to the formed position', () => {
     const f = derive(200, { reducedMotion: true, prevScrollY: 5000 });
     expect(f.scrollY).to.equal(1000);
-    expect(f.entryT).to.equal(1);
+    expect(f.sphereFormT).to.equal(1);
     expect(f.scrollT).to.equal(0);
-    expect(f.sphereFormed).to.equal(true);
+    expect(f.hintRetirable).to.equal(true);
     expect(f.scrollVel).to.equal(0);
   });
 

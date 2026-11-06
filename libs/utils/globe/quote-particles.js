@@ -1,5 +1,7 @@
 import * as THREE from '../../deps/three.js';
-import { FRAME_MS, clamp01, capDpr, camZAtT, tAtCamZ } from './core.js';
+import {
+  FRAME_MS, clamp01, capDpr, camZAtT, tAtCamZ, seededRandom,
+} from './core.js';
 import { RR_SDF, HASH21, glf } from './gl.js';
 import { plainQuote } from './authoring.js';
 
@@ -18,7 +20,7 @@ const INK_ALPHA = 128;
 const PROBE = 24;
 const TILE_MAX_K = 1.5;
 const OFF_VIEW_K = 0.25;
-const SEED = 20240611;
+const PARTICLE_SEED = "You talkin' to me?";
 const RULE_WEIGHT = 3;
 const RASTER_PAD = 6;
 const DST_SPACING = 1.25;
@@ -527,14 +529,6 @@ function setCardUniforms(u, card) {
   u.uAxisV.value.copy(card.axisV);
 }
 
-function seededRandom(seed) {
-  let a = (Math.abs(Math.floor(seed)) % 2147483646) + 1;
-  return () => {
-    a = (a * 16807) % 2147483647;
-    return (a - 1) / 2147483646;
-  };
-}
-
 const camZAt = (zoom, p, easePow) => camZAtT(
   zoom[0] + p * zoom[1],
   zoom[2],
@@ -656,7 +650,7 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
     let c = 0;
     eachCell((i) => { for (let k = repsAt(i); k > 0; k -= 1) { pick[c] = i; c += 1; } });
     const take = Math.min(n, pick.length);
-    const rnd = seededRandom(SEED);
+    const rnd = seededRandom(PARTICLE_SEED);
     for (let i = 0; i < take; i += 1) {
       const j = i + Math.floor(rnd() * (pick.length - i));
       [pick[i], pick[j]] = [pick[j], pick[i]];
@@ -797,7 +791,7 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
       return Promise.resolve(false);
     }
     const { W, H, zoom, proj: [P00, P11, P02, P12] } = view;
-    const rnd = seededRandom(SEED);
+    const rnd = seededRandom(PARTICLE_SEED);
     const z0 = camZAt(zoom, 0, easePow);
     const zPair = camZAt(zoom, FLIGHT.depart[0] + 0.5 * FLIGHT.depart[1], easePow);
     const pxX = (x, D) => ((P00 * x) / D - P02 + 1) * 0.5 * W;

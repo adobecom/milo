@@ -7,14 +7,14 @@ Delete this file before the branch merges.
 
 - **No build step.** Every `.js` file is a runtime ES module request. Keep the module count per
   page low: each block loads its entry, `src/authoring.js`,
-  `src/timeline.js` and the six shared modules (`core`, `gl`, `interaction`, `authoring`, `modal`,
-  `quote-particles`) plus `globe.css`. Merge small things into an existing shared file rather than adding files.
+  `src/timeline.js` and the seven shared modules (`core`, `gl`, `interaction`, `authoring`, `modal`,
+  `quote-particles`, `runtime`) plus `globe.css`. Merge small things into an existing shared file rather than adding files.
 - **One globe per page is the normal case; two must not interfere.** Shared modules keep no
   per-instance state (the skeleton's `globeInstanceSeq` is the only module-level counter); `easePow` is injected
   per instance. Block-only CSS is scoped under the block root (`.root .globe-*`).
 - **No behaviour change by default.** When the two blocks differ only for historical reasons,
   consolidate into one function (a branch or option is fine; it can be cleaned up later). When a
-  difference is real, keep it and say why. Behaviour changes are called out below.
+  difference is real, keep it and say why.
 - **Review each pattern before applying it.** Patterns must remove a measured duplication or a
   measured risk. No pattern for its own sake.
 - **Changes stay uncommitted and unstaged** so they can be reviewed before staging.
@@ -27,31 +27,6 @@ Delete this file before the branch merges.
   out-specify it (stylesheet load order is not guaranteed). First-paint rules (root height, the
   root background) stay in the block CSS. Within `globe.css`, min-width media queries for the same
   property stay in ascending order.
-
-## Behaviour changes adopted
-
-Everything else was kept identical.
-
-- Firefly: opening-quote hang is a `text-indent`, not a `span.hang-opening-quote`.
-- Gallery: a11y uses firefly's version (Tab handling, `preventScroll`, per-card `lang`), including hiding the
-  focus ring when its card is gone.
-- Gallery: `parsePullQuote` ignores `<p>` inside the quote element.
-- Gallery: `.globe-empty` is `display: none`. It used to leave a blank viewport-tall block with the pull quote in it.
-- Gallery: failures that were silent now log to lana (fragment request, no usable cards, no fragment link,
-  WebGL renderer creation).
-- Gallery: `rafLoop` schedules the next frame before `tick`, as firefly does, so a one-off error in `tick`
-  costs one frame instead of freezing the globe.
-- Gallery: `destroy` resets `cameraInsideSphere`, and both blocks reset the whole frame state, so a rebuild starts
-  like a first load (gallery's hint plane is now created after a rebuild deep in the scroll, as on first load).
-- Firefly: logs how many assets it skipped for having no rendition.
-- Firefly: removing an ancestor of the block now destroys the runtime (`onRemoved`, Milo's body-subtree pattern).
-- Firefly: the description gets the hang gutter (padding offset by an equal negative margin).
-- Firefly: a11y card buttons no longer use `pointer-events: auto`.
-- Both: crosshair rules paint under the DOM text, as under the raster, so nothing changes at the swap.
-  A hung mark stays whole in front of the rule instead of being cut by it, as it is on stage.
-- Both: modal dialog is `overflow: clip`; the page scrollbar gutter stays reserved and is painted
-  dark while the modal is open (gallery gained the gutter).
-- Both: pull-quote raster picks the letter-spacing that matches the DOM line width.
 
 ## Still to verify
 
@@ -66,120 +41,119 @@ Everything else was kept identical.
 - Tab into the globe from above the block (`suppressFocusSnap` in the block entry) and the first
   pull-quote frame after a rebuild (`jumped` in `quote-particles.js`).
 
-## Backlog: mistakes and inconsistencies
-
-Tackle one at a time, before the pattern work unless marked otherwise. Items marked *(extraction)*
-can wait for the pattern step that moves that code, since one implementation has to be chosen then
-anyway.
-
-### Docs
-
-18. Shared files say "see README" for content only the gallery README has: `core.js` (yaw-only geometry),
-    `gl.js` (`releaseCanvasAfterUpload`), `modal.js` (`MODAL_RADIUS_PX`), `globe.css` (`hanging-punctuation`,
-    Modal chrome). Move the shared behaviour into `README.md` here, or name the README they mean.
-19. Shared `README.md` is wrong on two points: `name` isn't only for `daa-ll` (it also tags lana logs in
-    `gl.js`), and `loadGlobeStyles()` isn't awaited at the top of `init` (it starts there and is awaited
-    after the content fetch).
-20. "The core" in comments and the gallery README means the block runtime, not `core.js`
-    (for example `isBrowsing` in `interaction.js`). Pick one word for the runtime.
-
-### Guards
-
-21. Nothing in the test suite would catch the CSS and raster regressions found in review (cascade order in
-    `globe.css`, rule paint order). Add a test that the raster and DOM paint rules under the text. Decide whether a
-    computed-style check earns a place in the suite.
-
-### Raster
-
-22. **Bidi in the raster.** `rasterize` draws each line on its own, so on an RTL page Latin text reorders its
-    line-edge punctuation (`,I love` in the raster against `I love…,` on the DOM) and visibly jumps at the
-    swap. Seen with forced `dir="rtl"` on Latin content; check real RTL content before deciding.
-
 ## Pattern plan
 
-Ordered by value and risk, from the measured duplication between the two entry files:
+Consolidation comes first: move everything that is not a real difference into the shared runtime, then apply patterns to
+what remains. Apply one step at a time, with the temporary goldens matching and a visual check between steps.
 
-- 243 of firefly's 1,637 lines and 557 of gallery's 1,951 have no counterpart in the other block.
-- About 41 runtime functions (about 314 lines) are identical apart from comments, and 46 top-level constants are identical.
-- 22 functions share a name but really differ. Only 10 functions have no counterpart at all, all in gallery
-  (arc, grid, fold, arc copy), plus `retireHint` in firefly.
+**Extensibility test.** A pattern earns its place if it makes one of these cheaper: a third block with its own
+scroll choreography and content source, a new card layout, a new per-frame effect, or a bug fixed once.
 
-So most of the job is moving identical code, which needs no pattern. What remains after that is the actual
-variation point. Apply one step at a time, with tests green and a visual check between steps.
+**Where a difference goes,** in order of preference:
 
-### 1. Characterization tests - **do first**
+1. Remove it, if it is historical and behaviour does not change.
+2. Make it data: a field on the frame or the spec.
+3. Make it a named hook on the spec.
 
-*Problem:* the runtimes have the thinnest test coverage and everything below moves their code.
-*Proposal:* card positions, camera and clocks per frame for fixed scroll inputs, plus lifecycle checks
-(rebuild, destroy leaves no listeners). `buildCards` calls `Math.random` for roll jitter, peel jitter and grid
-tilts, so stub it.
+Never a behaviour flag checked inside shared code.
 
-### 2. Extract the identical subsystems (Extract Module, Parameter Object) - **do second**
+### 1. Safety net for the refactor - **in use**
 
-*Problem:* the duplication above. *Proposal:* factories in a new shared `runtime.js`, moved in slices:
+Temporary golden values, never committed: capture from the code before a step, compare after. Committed goldens were
+tried and removed because they fail on any visual tuning. The harness lives outside the repo and pins cards, camera and
+clocks across both blocks. It does not compare pixels, so each step still needs a visual check. Delete it with this file.
 
-1. Shared constants and the scroll reader (`deQuantize`, `readScrollY`).
-2. Sphere orientation: `sphereOrient`, `navNudge`, `rotateStep`, `centerCardOnScreen`, `centerModalCard`, the
-   shared part of `updateSphereRotation`.
-3. Card field: `resolveMasonryLayout`, `recomputeDragFlip`, `applyMotionCA`, `applyCardFit`, facing, hint mesh.
-4. Lifecycle: ticker, context loss, observers (with step 3 below).
+### 2. Consolidate (Extract Module, Functional Core, Template Method by composition) - **done, awaiting visual check**
 
-*Cost:* a 7th shared module, breaking the file budget above. It is worth one request if it removes this much
-per block; re-check the count after slice 1 before committing to it.
+Entry files went from firefly 1,631 and gallery 1,964 lines to about 100 and 430. `runtime.js` is about 1,750 lines.
 
-### 3. Disposer (Resource-cleanup / RAII-style) - **with the lifecycle slice**
+What is left per block:
 
-*Problem:* `destroy()` is about 70 lines in each block, plus per-module `teardown()`s, each hand-pairing
-every `addEventListener`/observer/timer with its removal.
-*Proposal:* a tiny `createDisposer()`: `disposer.listen(target, evt, fn, opts)`, `disposer.add(fn)`,
-`disposer.dispose()`. Setup registers cleanup at the point of creation.
-*Why:* removes a class of leak bugs that are hard to test and shrinks destroy paths.
-*Watch:* runtimes rebuild in place, and `destroy(false)` must keep the hoisted modal.
+- **Firefly:** breakpoints, content, the camera's entry distance, the JS entry lift and its browse target.
+- **Gallery:** the same, plus what firefly does not have: arc, grid and fold placement, the ortho camera, arc copy.
+- **Timelines:** the scroll-to-clock mapping.
 
-### 4. Block spec (Strategy, Parameter Object) - **after 2**
+Differences removed as historical, with goldens unchanged:
 
-*Problem:* what's left differs per block. *Proposal:* one frozen per-block `spec`, not separate variant,
-content-source and entry objects. There are exactly two blocks, so three interfaces would be speculative.
-Sections, to be confirmed by what step 2 leaves behind:
+- Timeline names (`zoom*` and `entryT` to `travel*` and `sphereFormT`), the frame base, travel span math (firefly's
+  `formPx` is 0).
+- `updateActiveCamera` is one formula: the lerp into the sphere and the travel match at the seam in both blocks.
+- The inside-sphere flip gate (`sphereFormed` in firefly, `scrollT > 0` in gallery): a formed camera at `scrollT` 0 is
+  outside the sphere.
+- `crossOrigin` and `lang` branches (gallery's cards have neither), `readCssVars` order, `fonts.ready` wiring.
 
-- **Identity:** `name`, `breakpoints`, and flags (`hoistToBody`, `bodyOpenClass`, `requireOnSphere`, `manageCanvas`).
-- **Content:** where cards come from, card and modal image URLs, `crossOrigin`, per-card `lang`,
-  `renderModalContent`, `modalInfoHtml`, `canvasStyle`.
-- **Entry:** `createFrame`/`deriveFrame` (already in `timeline.js`), `placeCard`, `updateCamera`, cue timing,
-  `snapToBrowseView`, canvas visibility, extra per-frame stages (`updateArcCopy`,
-  `updateSphereGroupDepth`). Firefly's is "formed from the start"; gallery's carries arc, grid and fold.
-  Hint retirement stays a per-block rule: firefly is interactive long before it forms, so its `retireHint` is
-  gated on `sphereFormed`; gallery's callers can't run before its hint has finished appearing.
+Kept as data: `frame.orientReset`, `hintEntryT`, `hintRetirable`, `beforeEntry`, `sphGroupZ`; `pullQuote` and `modal`
+options. One accepted golden change: firefly's `uWarp` on cards behind the camera, which are not drawn.
 
-This replaces the earlier separate items for a variant descriptor, a content provider and a placement strategy.
+### 3. Two lifetimes: Disposer + Build scope - **next, after the visual check**
 
-### 5. Shared runtime factory (Template Method by composition, Factory) - **last**
+*Problem:* `destroy()` is about 65 lines in each block, hand-pairing every listener, observer and timer with its
+removal, and hand-resetting about 28 pieces of state. Six of those resets (`fadeRefH`, `drag.isDragging`, `onScreen`, `masonryMorph`,
+`wasBrowsing`, `cameraInsideSphere`) had no observable effect in the scenarios tried, and the `fadeRefH` comment records a past bug from a missed one. The list can only grow.
 
-*Proposal:* `createGlobeRuntime(spec)` runs the lifecycle (build DOM -> init renderer/scene -> build cards ->
-layout -> tick -> destroy) and calls the spec where it differs. After steps 2 and 4 this should be mostly wiring.
-*Composition, not inheritance:* the codebase is closure-based and the blocks differ by
-a few functions, not by an "is-a" relationship; classes would fight the style and the injected
-getters.
+*Proposal:* two pieces, because they solve different failures.
 
-### 6. Context object for module dependencies (Parameter Object) - **optional, with 5**
+- **Disposer:** `disposer.listen(target, evt, fn, opts)`, `disposer.add(fn)`, `disposer.dispose()`. Cleanup is
+  registered where the resource is created and runs in reverse order.
+- **Build scope:** split what lives for the block from what lives for one build. A rebuild drops the build object
+  rather than resetting its fields, so a forgotten reset can no longer happen.
+  - *Instance:* content, DOM, modal/a11y/controls/cursor/interaction closures, context-loss count, spin pause,
+    `suppressFocusSnap`, `smoothY`, the texture generation.
+  - *Build:* renderer, scene, cameras, cards, textures, frame state, hint state, the disposer.
 
-`createGlobeModal` and the other factories take many injected getters. After 5, replace the
-getter soup with a small read-only `ctx` (`ctx.scene`, `ctx.camera`, `ctx.cards`, `ctx.bp`, ...)
-built by the runtime. Do this only if it makes the modal readable; otherwise leave it.
+*Watch:*
+
+- `drag` and `sphereRotQuat` are shared by reference into instance-level closures. They stay on `createOrientation`, with
+  its own `reset()`, not on the build.
+- `destroy(false)` must keep the hoisted modal.
+- `doLayout` compares against the previous `bp`.
+
+A band-crossing rebuild must end in the same state as a fresh mount.
+
+### 4. Card layout (Strategy) - **after 3**
+
+*Problem:* sphere versus barrel is the one variation both blocks share, and it is spread out: 10 `CYLINDER` references
+per block and the same `cylinderMasonryLayout({...})` call twice per file, so four copies. A third layout means editing
+all of them in both blocks.
+
+*Proposal:* `sphereLayout` and `barrelLayout`, each with `solve(aspects, bp)` returning per-card slots (position,
+quaternion, scale, world height) and `onTexture` / `onAllLoaded` for what happens as images land: resize in place, or
+re-solve and morph. The remaining `CYLINDER` checks (hint mesh, cursor, root class) become properties of the layout.
+
+Two real implementations exist today, so this is not speculative, and it is the cheapest route to a new layout.
+
+### 5. Context object for module dependencies (Parameter Object) - **optional**
+
+`createGlobeModal` takes 29 options, and each block passes about 30 `get*` getters in all. They exist because the modal outlives a build while
+`scene` and `camera` do not, which step 3 makes explicit. A small read-only `ctx` pointing at the current build could
+replace most of them. Do this only if it makes the modal readable; otherwise leave it.
 
 ## Patterns considered and rejected (for now)
 
-- **Standalone variant descriptor.** The earlier "six factory calls" claim was overstated: `name` goes to five
-  calls, `timeline` and each flag to one. Too little to justify a step of its own; folded into the block spec.
-- **Clock renames as a lead-in (`zoomT` to `scrollT`, `lenisY` to `scrollY`).** Makes only about 4 more functions
-  identical. Rename when moving code if it helps, not as its own step.
-- **Inheritance / classes.** Closure style plus tiny differences; a base class would add `this`
-  plumbing and fragile overrides.
-- **Mediator (formal).** The runtime closure already mediates modal, interaction, controls, a11y
-  and cursor through getters. A separate mediator object would be indirection without a second
-  implementation to justify it. Revisit only if step 5 leaves a hub that is hard to read.
-- **Facade (`createGlobeKit(variant)` returning bound factories).** Subsumed by the block spec. Add only
-  if call sites stay noisy afterwards.
-- **Observer / event bus.** Callbacks are 1:1 and explicit; a bus would hide data flow.
-- **Singleton / DI container / Visitor / Decorator.** No need identified.
+Revisited with the measurements above.
+
+- **A library of factories, each block owning its lifecycle (including Facade `createGlobeKit`).** Leaves `initRuntime`,
+  `destroy` and `tick` duplicated per block, where the bugs have been.
+- **One runtime with feature flags (`if (spec.hasArc)`).** Gallery's arc, grid and fold are about 335 lines of real
+  behaviour. Flags would ship them to firefly and scatter the checks. Boolean flags stay only for small DOM choices
+  like `hoistToBody`.
+- **Pipeline / open stage list for `tick`.** Tempting, since `tick` is a list of stages, but it differs by 3 lines and its
+  order is load-bearing. An open array lets a block reorder it by accident; named slots keep the order in the runtime.
+- **State pattern for card phases.** A card's arc, grid, fold or sphere phase is derived each frame from pure clocks,
+  with no stored state or transitions, which is why scrolling backwards just works. A state object would add the
+  transitions this design avoids.
+- **Inheritance / classes.** Closure style plus tiny differences; a base class would add `this` plumbing and fragile overrides.
+- **Mediator (formal).** The runtime closure already mediates modal, interaction, controls, a11y and cursor. Revisit only
+  if `createGlobeRuntime` becomes a hub that is hard to read.
+- **Observer / event bus.** Callbacks are 1:1 and explicit, and frame order matters; a bus would hide both. The repeated
+  `hintRetired = true` needs one function, not a bus.
+- **Command for navigation tweens.** There is one pending tween, with no undo or history. `navNudge.kind` is enough.
+- **Builder for the breakpoint profile.** It is one function with about 11 block-specific keys.
+- **Entity-Component-System for cards.** There is one entity type, and all its behaviour runs in one loop.
+- **Standalone variant descriptor, separate content-source object.** Three interfaces for two blocks; folded into the spec.
+- **Clock renames as their own step.** Still only 4 more identical functions (47 vs 43), so not a step on its own. The
+  rename had to happen, because shared code reads one name; it was done in step 2.
+- **Null Object.** `createPullQuote` already behaves as one when no quote is authored. Nothing further to apply.
 - **Explicit state-machine library.** The modal already has `MODAL_PHASE`; other states are small.
+- **Singleton / DI container / Visitor / Decorator / Object Pool.** No need identified; scratch vectors already cover
+  per-frame allocation.

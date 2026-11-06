@@ -1,22 +1,26 @@
 # Shared globe layer
 
 Code shared by `libs/c2/blocks/firefly-globe` and `libs/c2/blocks/globe-gallery`. One globe per
-page. Each block keeps its entry file, `src/authoring.js` and `src/timeline.js`.
+page. Each block keeps its entry file (its `spec`), `src/authoring.js` and `src/timeline.js`.
+
+This file covers how the layer is organised. The globe-gallery README is the spec for how these
+modules behave, including the sections code comments here point to.
 
 | File | Holds |
 | --- | --- |
-| `core.js` | Easings, camera/clock math, layout helpers |
+| `core.js` | Easings, `seededRandom`, camera/clock math, layout helpers |
+| `runtime.js` | The shared runtime: `initGlobeBlock`, `createGlobeRuntime` (lifecycle, frame order) and its parts: scroll reader, orientation, card field, hint text |
 | `gl.js` | Shaders, card/modal/text materials, texture and hint-font loaders |
 | `interaction.js` | Pointer drag, click-vs-drag, raycast hover, a11y gallery, spin controls, cursor label |
-| `authoring.js` | Authored-content parsing, hang-opening-mark, DOM skeleton, `loadGlobeStyles` |
+| `authoring.js` | Authored-content parsing, hang-opening-mark, DOM skeleton, `loadGlobeStyles`, `onRemoved` |
 | `globe.css` | Styles shared by both blocks |
 | `modal.js` | Card-detail modal |
 | `quote-particles.js` | Pull-quote particle transition and `createPullQuote` |
 
 ## Styles
 
-`globe.css` holds every rule both blocks share and is loaded by `loadGlobeStyles()` (awaited at the
-top of each block's `init`). Each block's own CSS keeps only what must paint before JS runs (root
+`globe.css` holds every rule both blocks share and is loaded by `loadGlobeStyles()`, which each
+block's `init` starts first and awaits after fetching its content. Each block's own CSS keeps only what must paint before JS runs (root
 height, background, `-reduced` / `-empty` states) and what is
 specific to it. Block rules are scoped under their root (`.root .globe-*`), so two
 globes on one page don't share block styling. A block rule that overrides a shared rule must
@@ -31,8 +35,16 @@ root (`--globe-runway-height`, `--globe-travel-vh`, `--globe-formation-vh`).
 ## Block hooks
 
 Shared factories take the block `name` (`'firefly-globe'` / `'globe-gallery'`) only where it feeds
-`daa-ll` labels.
+`daa-ll` labels or lana log tags.
 
+- `spec`, passed to `initGlobeBlock`: `name`, `breakpoints`, `bpExtras(cfg, nTotal)`, `rollSeed`, `timeline`, `pullQuote`
+  and `modal` options, `cardImageUrl(meta, cap)`, `modalImageUrl(meta, cap)`, `setup(el)` and `createHooks(rt)`.
+- `createHooks(rt)` returns the block's choreography. `entryCamZ`, `viewOffsetY` and `browseScrollTop` are required.
+  Optional: `activeCamera`, `fillFrameInput`, `beforeBuild`, `onCameraReady`, `onResize`, `onCardsBuilt`, `onDestroy`,
+  `beforeFrame`, `beforeCards`, `afterFrame`, `hintSphereDist`, `cardProgress` and `placeCard`. Without `placeCard`, a
+  card is placed on the sphere and ordered by depth.
+- `timeline`: `createFrame`, `createFrameInput`, `deriveFrame`, `TRAVEL_EASE_POW`, `camZAtTravelT` and `travelTAtCamZ`.
+  `createBaseFrame` in `core.js` lists the frame fields the runtime reads. Anything else on the frame is the block's own.
 - `createPullQuote`: `timeline` `{ easePow, spanPx(span), scrollYAt(t, span) }`; `easePow` is
   passed per instance. Options `getFormationVh`, `requireOnSphere`, `manageCanvas` are gallery's.
   The travel length is read from `--globe-travel-vh`.

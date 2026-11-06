@@ -466,6 +466,6 @@ export function createClickDragTexture(aspect, hintText) {
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  releaseCanvasAfterUpload(tex, canvas); // sphere-only, single renderer — see README
+  releaseCanvasAfterUpload(tex, canvas); // see the globe-gallery README (Texture memory budget)
   return tex;
 }

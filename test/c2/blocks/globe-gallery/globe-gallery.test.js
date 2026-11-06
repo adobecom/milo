@@ -12,6 +12,7 @@ import {
 import { createGalleryA11y, createGlobeControls } from '../../../../libs/utils/globe/interaction.js';
 import {
   capDpr, clamp01, coverFit, easeInOutCubic, easeOutCubic, pxPerWorldAt, FRAME_MS, DT_SCALE_MAX,
+  scrollYAtTravelT,
 } from '../../../../libs/utils/globe/core.js';
 import {
   arcCamZ,
@@ -561,7 +562,7 @@ describe('globe-gallery: timeline', () => {
     const input = {
       ...TL.createFrameInput(),
       scrollY,
-      prevLenisY: 0,
+      prevScrollY: 0,
       now: FRAME_MS,
       blockDocTop: 1000,
       blockHeight: 3000,
@@ -576,7 +577,7 @@ describe('globe-gallery: timeline', () => {
 
   it('initializes frame and input with complete stable defaults', () => {
     expect(TL.createFrame()).to.deep.equal({
-      lenisY: 0,
+      scrollY: 0,
       scrollVel: 0,
       dtScale: 1,
       progress: 0,
@@ -585,7 +586,12 @@ describe('globe-gallery: timeline', () => {
       gridFormT: 0,
       gpWin: TL.GRID_PEEL_WINDOW,
       sphereFormT: 0,
-      zoomT: 0,
+      scrollT: 0,
+      interactive: false,
+      orientReset: true,
+      hintEntryT: 0,
+      hintRetirable: true,
+      beforeEntry: false,
       arcScale: 1,
       activeCamera: null,
       sphereRotActive: false,
@@ -594,14 +600,14 @@ describe('globe-gallery: timeline', () => {
     });
     expect(TL.createFrameInput()).to.have.keys(
       'scrollY',
-      'prevLenisY',
+      'prevScrollY',
       'now',
       'prevNow',
       'reducedMotion',
       'blockDocTop',
       'blockHeight',
       'formPx',
-      'zoomPx',
+      'travelPx',
       'viewportH',
       'arcScale',
       'entryLeadVh',
@@ -617,20 +623,21 @@ describe('globe-gallery: timeline', () => {
     );
     expect(derive(4000).progress).to.equal(1);
     expect(derive(2000).sphereFormT).to.equal(1);
-    expect(derive(2000).zoomT).to.equal(0);
-    expect(derive(3000).zoomT).to.be.closeTo(0.5, 1e-12);
-    expect(derive(4000).zoomT).to.equal(1);
+    expect(derive(2000).scrollT).to.equal(0);
+    expect(derive(3000).scrollT).to.be.closeTo(0.5, 1e-12);
+    expect(derive(4000).scrollT).to.equal(1);
   });
 
   it('paces the zoom by its own span when given one, and inverts that mapping', () => {
-    const span = { blockDocTop: 1000, blockHeight: 3000, formPx: 1000, zoomPx: 1200 };
-    expect(derive(2600, { zoomPx: 1200 }).zoomT).to.be.closeTo(0.5, 1e-12);
-    expect(derive(3200, { zoomPx: 1200 }).zoomT).to.equal(1);
-    expect(derive(4000, { zoomPx: 1200 }).zoomT).to.equal(1);
-    expect(TL.scrollYAtZoomT(0, span)).to.equal(2000);
-    expect(TL.scrollYAtZoomT(0.5, span)).to.equal(2600);
-    expect(TL.scrollYAtZoomT(1, { ...span, zoomPx: 0 })).to.equal(4000);
-    expect(derive(TL.scrollYAtZoomT(0.3, span), { zoomPx: 1200 }).zoomT).to.be.closeTo(0.3, 1e-12);
+    const span = { blockDocTop: 1000, blockHeight: 3000, formPx: 1000, travelPx: 1200 };
+    expect(derive(2600, { travelPx: 1200 }).scrollT).to.be.closeTo(0.5, 1e-12);
+    expect(derive(3200, { travelPx: 1200 }).scrollT).to.equal(1);
+    expect(derive(4000, { travelPx: 1200 }).scrollT).to.equal(1);
+    expect(scrollYAtTravelT(0, span)).to.equal(2000);
+    expect(scrollYAtTravelT(0.5, span)).to.equal(2600);
+    expect(scrollYAtTravelT(1, { ...span, travelPx: 0 })).to.equal(4000);
+    expect(derive(scrollYAtTravelT(0.3, span), { travelPx: 1200 }).scrollT)
+      .to.be.closeTo(0.3, 1e-12);
   });
 
   it('derives entry progress before the block reaches its pin', () => {
@@ -640,9 +647,9 @@ describe('globe-gallery: timeline', () => {
   });
 
   it('scales scroll velocity by elapsed frames and clamps extreme frame gaps', () => {
-    const normal = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 10 + FRAME_MS });
-    const slow = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 10 + 2 * FRAME_MS });
-    const stalled = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 1010 });
+    const normal = derive(1100, { prevScrollY: 1000, prevNow: 10, now: 10 + FRAME_MS });
+    const slow = derive(1100, { prevScrollY: 1000, prevNow: 10, now: 10 + 2 * FRAME_MS });
+    const stalled = derive(1100, { prevScrollY: 1000, prevNow: 10, now: 1010 });
 
     expect(normal.scrollVel).to.be.closeTo(100, 1e-9);
     expect(slow.scrollVel).to.be.closeTo(50, 1e-9);
@@ -650,22 +657,22 @@ describe('globe-gallery: timeline', () => {
   });
 
   it('pins reduced motion to the fully formed globe and removes scroll velocity', () => {
-    const frame = derive(0, { reducedMotion: true, prevLenisY: 200 });
-    expect(frame.lenisY).to.equal(2000);
+    const frame = derive(0, { reducedMotion: true, prevScrollY: 200 });
+    expect(frame.scrollY).to.equal(2000);
     expect(frame.progress).to.equal(TL.SPHERE_FORMED_PROGRESS);
     expect(frame.sphereFormT).to.equal(1);
-    expect(frame.zoomT).to.equal(0);
+    expect(frame.scrollT).to.equal(0);
     expect(frame.scrollVel).to.equal(0);
   });
 
   it('keeps camera zoom conversion functions inverse and clamped', () => {
     [0, 0.1, 0.5, 0.9, 1].forEach((t) => {
-      const z = TL.camZAtZoomT(t, 70, -60);
-      expect(TL.zoomTAtCamZ(z, 70, -60)).to.be.closeTo(t, 1e-9);
+      const z = TL.camZAtTravelT(t, 70, -60);
+      expect(TL.travelTAtCamZ(z, 70, -60)).to.be.closeTo(t, 1e-9);
     });
-    expect(TL.zoomTAtCamZ(100, 70, -60)).to.equal(0);
-    expect(TL.zoomTAtCamZ(-100, 70, -60)).to.equal(1);
-    expect(TL.zoomTAtCamZ(0, 10, 10)).to.equal(0);
+    expect(TL.travelTAtCamZ(100, 70, -60)).to.equal(0);
+    expect(TL.travelTAtCamZ(-100, 70, -60)).to.equal(1);
+    expect(TL.travelTAtCamZ(0, 10, 10)).to.equal(0);
   });
 
   it('stagers card folding monotonically and within the form phase', () => {

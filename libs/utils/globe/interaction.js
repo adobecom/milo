@@ -607,7 +607,7 @@ export function createGalleryA11y({
     setBrowseActive(!modalOpen && entered);
   }
 
-  // The core reads this to pause auto-spin so the globe holds the centred image.
+  // The runtime reads this to pause auto-spin so the globe holds the centred image.
   function isBrowsing() {
     return entered;
   }

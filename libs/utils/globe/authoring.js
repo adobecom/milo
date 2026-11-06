@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-relative-packages
 import { getConfig, loadStyle } from '../utils.js';
+import { seededRandom } from './core.js';
 
 let globeStyles;
 
@@ -86,22 +87,13 @@ function gutterOf(el) {
   return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
 }
 
-const SCATTER_KEY = 'One day I will return to your side';
-
-const SCATTER_MOD = 2147483647;
-
-function seedFrom(key) {
-  let h = 0;
-  for (let i = 0; i < key.length; i += 1) h = (h * 31 + key.charCodeAt(i)) % SCATTER_MOD;
-  return h || 1;
-}
+const CARD_ORDER_SEED = 'One day I will return to your side';
 
 export function scatterCards(cards) {
   const out = cards.map((card, i) => ({ ...card, authoredIndex: i }));
-  let rand = seedFrom(SCATTER_KEY);
+  const random = seededRandom(CARD_ORDER_SEED);
   for (let i = out.length - 1; i > 0; i -= 1) {
-    rand = (rand * 48271) % SCATTER_MOD;
-    const j = Math.floor((rand / SCATTER_MOD) * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [out[i], out[j]] = [out[j], out[i]];
   }
   return out;

@@ -1,11 +1,11 @@
 # firefly-globe — C2 block
 
-A simplified fork of `libs/c2/blocks/globe-gallery`. The sphere, drag/inertia, hover, near-camera
-fade, modal, on-canvas controls, keyboard/a11y path, pull-quote and reduced-motion handling are the
-same code with the class prefix renamed. **Everything not listed under "What is different" is
-documented in the globe-gallery README, and that document is the spec for this block too.** Keep the
-two in sync when a shared fix lands in either. (`libs/mep/ace1209/globe-gallery` is a separate,
-diverged copy of the same block and is **not** the spec.)
+A simplified sibling of `libs/c2/blocks/globe-gallery`. The modal, on-canvas controls, keyboard/a11y
+path and pull quote are the shared modules in `libs/utils/globe`; the sphere, drag/inertia, hover,
+near-camera fade and reduced-motion handling are still in each block's entry file. **Everything not
+listed under "What is different" is documented in the globe-gallery README, and that document is the
+spec for this block too.** Keep the two entry files in sync when a fix lands in either.
+(`libs/mep/ace1209/globe-gallery` is a separate, diverged copy of the same block and is **not** the spec.)
 
 Editing conventions are the globe-gallery ones: prose in the README, code comments only as contract or
 as a hazard at the exact line an edit would break. Files ship unminified.
@@ -14,12 +14,12 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 
 | Area | globe-gallery | firefly-globe |
 |---|---|---|
-| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, ortho camera) | Sphere already formed; camera eases in (cubic ease on `entryT`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
-| Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/timeline.js`, from the pin; its own ease power (see Camera ease). |
-| Scroll clock | The clocks `deriveFrame` derives in `timeline.js` (`arcCopyEntryT`, `progress`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`) | `entryT` and `scrollT`, from `src/timeline.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches its end value at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, at its start at the pin and its end at the end of the travel (`--globe-travel-vh`; the block height with the quote particles off). |
+| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, ortho camera) | Sphere already formed; camera eases in (cubic ease on `sphereFormT`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
+| Camera | `camZAtTravelT(scrollT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/timeline.js`, from the pin; its own ease power (see Camera ease). |
+| Scroll clock | The clocks `deriveFrame` derives in `timeline.js` (`arcCopyEntryT`, `progress`, `arcPanT`, `gridFormT`, `sphereFormT`, `scrollT`) | `sphereFormT` and `scrollT`, from `src/timeline.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `sphereFormT = 1 + (scrollY − blockDocTop) / H` reaches its end value at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `scrollT`, at its start at the pin and its end at the end of the travel (`--globe-travel-vh`; the block height with the quote particles off). |
 | Arc copy pill | Authoring row 1 | None |
-| "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `scrollT` (see below). |
-| Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.globe-world`, so it travels with the block: at the start of `entryT` the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
+| "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `scrollT` | Same plane and `TEXT_FRAG`, clocked on `sphereFormT` / `scrollT` (see below). |
+| Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.globe-world`, so it travels with the block: at the start of `sphereFormT` the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
 | Cards | Authored fragment: name, role, description, badges | Firefly Community API by `categoryId` (see `FIREFLY-API.md`). Card = image, `modelId`, `modelVersionName`, `prompt`, `fireflyUrl`. |
 | Modal info | `<h2>` name, role, description paragraphs, badge list | Model icon + version label, prompt, CTA to `fireflyUrl`. |
 | Scroll budget | `--globe-formation-vh` + `--globe-travel-vh`, per breakpoint | `--globe-travel-vh` only, per breakpoint in `firefly-globe.css` (no formation: the entry happens in the viewport before the block top). With the quote particles off, `--globe-runway-height` is the block height and the travel span. |
@@ -27,7 +27,7 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 | Tuning | — | `SPHERE_R`, `CAM_Z_SPHERE` and `CAM_Z_END` are tuned per breakpoint for the scroll budget below; `CAM_Z_ENTRY` is the only extra breakpoint field. |
 | Opening quote | Shared `hangOpeningMark` (`utils/globe/authoring.js`): measured live from the rendered glyph (canvas only if the element isn't laid out), hung with a negative `text-indent` | Same: one implementation for both blocks. |
 | Modules | `src/timeline.js` (phase constants, arc geometry, the zoom camera pair, `createFrame` / `createFrameInput` / `deriveFrame`) | `src/timeline.js` (the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`); easings, `coverFit`, camera constants and the camera-pair maths live in `utils/globe/core.js`. |
-| Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`timeline.js`), passed to the pull quote as `timeline.easePow`. |
+| Camera ease | `TRAVEL_EASE_POW` | `TRAVEL_EASE_POW` (`timeline.js`), passed to the pull quote as `timeline.easePow`. |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
 | Keyboard browse | `.globe-a11y-cards` is `position: fixed` | The shared `utils/globe/interaction.js` (both blocks) moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
 
@@ -93,32 +93,31 @@ from the asset `id` and the CDN base taken from the preview href (`<base>/rendit
 `webp`/`avif` → HTTP 415) at the requested px. The CDN caps `size` at the component's native
 resolution, which the API does not report, so there is no client-side clamp. Cards request by height
 at `CARD_TEX_SM`/`CARD_TEX_MD`; the modal requests its longest side at
-`MODAL_TEX_SM`/`MODAL_TEX_MD` (all in `firefly-globe.js`), the axis chosen from `max_width`/`max_height`. Textures load
+`MODAL_TEX_SM`/`MODAL_TEX_MD` (all in `utils/globe/runtime.js`), the axis chosen from `max_width`/`max_height`. Textures load
 `crossOrigin: 'anonymous'` because the CDN is cross-origin and the cards go through WebGL. See
 `FIREFLY-API.md` for the API response the mapping reads.
 
 ## Phases
 
-`interactive` (`entryT >= SPHERE_INTERACTIVE_T`, `src/timeline.js`) is globe-gallery's gate, on the
+`interactive` (`sphereFormT >= SPHERE_INTERACTIVE_T`, `src/timeline.js`) is globe-gallery's gate, on the
 entry clock: before it there is no drag, banked drag travel is dropped, no auto-spin, no drag warp,
 no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-open
 and keyboard entry are all off. It opens while the block is still scrolling in, so the globe spins,
-drags and opens cards before the world pins. `sphereFormed` (`entryT` at its end value, the world pinned) is a
-separate gate for what must wait for the pin: the travel camera, the inside-sphere drag flip, and
-retiring the hint (`retireHint`: a drag, rotate or card opened before the pin leaves the cursor pill
+drags and opens cards before the world pins. What must wait for the pin has its own gates: the travel camera and the inside-sphere drag flip
+start with `scrollT`, and `hintRetirable` (`sphereFormT` at its end value) covers retiring the hint (`retireHint`: a drag, rotate or card opened before the pin leaves the cursor pill
 and the text plane in place, so both go out together, after the pin).
 Reduced motion is always formed and interactive.
 
 The entry lift is a CSS scroll-driven animation. `globe-entry-lift` translates the canvas and
 `.globe-a11y-cards` (so the focus ring follows) up by `--globe-entry-lift` and releases it
 by `1 − entryT²` on the block's `--globe-entry` view timeline over its `entry` range
-(the `animation-timing-function` in `firefly-globe.css` is the quadratic ease-in `t²`). At the start of `entryT` the cards sit that far above the
+(the `animation-timing-function` in `firefly-globe.css` is the quadratic ease-in `t²`). At the start of `sphereFormT` the cards sit that far above the
 world's top, clipped by its `overflow: clip`; they descend into frame and settle nav-centred as the
 world pins. With it, the view offset only nav-centres. **The lift has to move with the page's scroll, not with
 rAF:** iOS scrolls on its own thread, so anything JS positions from the scroll steps against the
 page, and near the pin the lift unwinds at close to scroll speed. Modal flights read the canvas's
 own rect (`getCanvasTop`), which includes the translate. Without `animation-timeline` (Firefox),
-`applyCentringOffset` applies the same lift through the view offset each frame from `entryT`;
+the `viewOffsetY` hook applies the same lift through the view offset each frame from `sphereFormT`;
 **`ENTRY_LIFT_H` has to match `--globe-entry-lift`.** Reduced motion has no lift.
 
 The spin toggle has two safe positions: `--globe-controls-entry-top` while the world's top edge is still
@@ -133,7 +132,7 @@ block's first radius. No z-index here escapes that: stacking is settled between 
 above this block.
 
 From the pin the camera travels through the sphere, so globe-gallery's inside-sphere rules are
-unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
+unchanged: `inside` flips the drag direction, and `yawDeltaToCenter` /
 `cardCenterYawPitch` default to it. The keyboard focus snap
 (`centerCardOnScreen(i, !suppressFocusSnap)`) solves for the outside side; `snapToBrowseView` lands
 at `Math.ceil(blockDocTop)`, the first formed scroll position. `blockDocTop` is measured layout and
@@ -157,7 +156,7 @@ still focused so browse mode survives. Blurred buttons drop their inline rect, s
 sit over the canvas and catch clicks.
 
 Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
-`LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)` (all in `firefly-globe.js`), which damps
+`LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)` (all in `utils/globe/runtime.js`), which damps
 steps smaller than `SCROLL_JUMP_PX` and passes larger ones through. Lenis is constructed in
 `utils.js` (`new window.Lenis`, `lerp` and `wheelMultiplier` options). `scrollVel` is the per-frame delta of that smoothed value and feeds
 the motion CA trail.
@@ -172,8 +171,8 @@ text's fade. The keyboard path (`globeFormed`: interactive and modal closed) is 
 DOM text at rest"** and **"Block height"** in that README; they are the spec.
 The differences:
 
-- Vocabulary and imports: `scrollT`/`travel` in place of `zoomT`/`zoom` (`--globe-travel-vh`,
-  `input.travelPx`, `travelSpanPx`, `scrollYAtTravelT`), from `timeline.js`. There is no formation
+- Vocabulary and imports: `scrollT`/`travel` in place of `scrollT`/`zoom` (`--globe-travel-vh`,
+  `input.travelPx`, and `travelSpanPx`, `scrollYAtTravelT` in `utils/globe/core.js`). There is no formation
   offset, so the travel, the hand-off and the block height all count from the block top (the pin).
 - `manageCanvas` is off: the canvas is always `position: absolute` in the sticky world, so the hand-off doesn't move it.
 - `requireOnSphere` is off: every card is on the sphere, so `cardPlanes` sources every card the modal does not hold.
@@ -190,7 +189,7 @@ block scrolls away and never covers the quote.
 The reveal stays inside the world; the block's box, margins and runway are untouched.
 
 The descent is masked by the page: pre-pin the world tracks the scroll at −1 while the lift unwinds
-at `2 · lift · entryT / viewportH`, so the globe still rises, just slower than the page. That
+at `2 · lift · sphereFormT / viewportH`, so the globe still rises, just slower than the page. That
 difference is the reveal.
 
 **The lift has to stay at or under half the viewport height.** `1 − t²` unwinds at up to twice the lift per viewport
@@ -210,14 +209,14 @@ the page rather than deriving them.
 
 ## "Click & Drag" hint text
 
-globe-gallery's WebGL plane (`buildTextMesh`, `TEXT_FRAG`), sphere geometry only: hidden until
-`entryT > TEXT_APPEAR_START`, then warps in over `[TEXT_APPEAR_START, 1]` of `entryT`, so the warp
+globe-gallery's WebGL plane (`hint.build`, `TEXT_FRAG`), sphere geometry only: hidden until
+`sphereFormT > TEXT_APPEAR_START`, then warps in over `[TEXT_APPEAR_START, 1]` of `sphereFormT`, so the warp
 reaches 0 as the world pins and the globe goes live. Scale tracks `camera.position.z` down to
 `CAM_Z_SPHERE`, holding apparent size through the entry; from the pin it stays 1 and the plane
 grows as the camera travels toward it. Opacity rests at
 `TEXT_OPACITY_RESTING` times `1 − scrollT / pqAppearT`; `uZoom` is `scrollT`. The first drag,
-rotate or tap-to-open after the pin flips `hintRetired` (`retireHint`), and `hintExitT` runs itself
-0→1 at `HINT_EXIT_RATE` regardless of the gesture. `buildTextMesh` does not create the plane when `entryT` is already past
+rotate or tap-to-open after the pin flips `retired` (`retireHint`), and `exitT` runs itself
+0→1 at `HINT_EXIT_RATE` regardless of the gesture. `hint.build` does not create the plane when `sphereFormT` is already past
 `TEXT_APPEAR_START` by the time the font loads, so it never pops in mid-entry.
 
 ## Modal and the sticky canvas

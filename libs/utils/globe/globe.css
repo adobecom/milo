@@ -254,7 +254,7 @@
 }
 
 /* Opening mark is outdented by utils/globe/authoring.js; `hanging-punctuation` deliberately unused. See
-   README. */
+   the globe-gallery README (Hanging the opening mark). */
 
 .globe-pullquote-quote {
   color: var(--globe-pq-ink);
@@ -385,7 +385,7 @@
 .globe-modal-chrome::backdrop { background: transparent; }
 
 /* Bottom row (arrows + counter): sm spreads it into the corners, md+ centres it as one group under
-   the image. All static — JS only fades the chrome in. See README (Modal chrome). */
+   the image. All static — JS only fades the chrome in. See the globe-gallery README (Modal chrome). */
 
 .globe-modal-nav,
 .globe-modal-counter {

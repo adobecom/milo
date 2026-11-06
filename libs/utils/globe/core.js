@@ -7,6 +7,22 @@ export function lerpN(a, b, t) { return a + (b - a) * t; }
 
 export function clamp01(t) { return t > 0 ? Math.min(1, t) : 0; }
 
+const RANDOM_MOD = 2147483647;
+
+function hashSeed(seed) {
+  let h = 0;
+  for (let i = 0; i < seed.length; i += 1) h = (h * 31 + seed.charCodeAt(i)) % RANDOM_MOD;
+  return h || 1;
+}
+
+export function seededRandom(seed) {
+  let state = hashSeed(seed);
+  return () => {
+    state = (state * 48271) % RANDOM_MOD;
+    return state / RANDOM_MOD;
+  };
+}
+
 // UV repeat + offset that fills `planeAspect` with `imgAspect`, centre-cropping the overflow.
 // Caller owns `out`.
 export function coverFit(imgAspect, planeAspect, out = {}) {
@@ -48,6 +64,66 @@ export function tAtCamZ(z, camZSphere, camZEnd, pow) {
   if (!(span > 0)) return 0;
   const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
   return 1 - ((1 - eased) ** (1 / pow));
+}
+
+export const TEXT_APPEAR_START = 0.10;
+
+// Scroll past the formed position over which the camera travels.
+export function travelSpanPx({ blockHeight, formPx = 0, travelPx = 0 }) {
+  return travelPx > 0 ? travelPx : Math.max(1, blockHeight - formPx);
+}
+
+export function scrollYAtTravelT(t, span) {
+  return span.blockDocTop + (span.formPx || 0) + t * travelSpanPx(span);
+}
+
+// The frame fields shared code reads. Each block's timeline adds its own clocks. Allocated once per
+// runtime, mutated in place. Every field initialized here so the shape stays monomorphic;
+// activeCamera and below are written by tick()'s producer stages.
+export function createBaseFrame() {
+  return {
+    scrollY: 0,
+    scrollVel: 0,
+    dtScale: 1,
+    sphereFormT: 0,
+    scrollT: 0,
+    interactive: false,
+    orientReset: true,
+    hintEntryT: 0,
+    hintRetirable: true,
+    beforeEntry: false,
+    activeCamera: null,
+    sphereRotActive: false,
+    sphGroupZ: 0,
+  };
+}
+
+export function createBaseFrameInput() {
+  return {
+    scrollY: 0,
+    prevScrollY: 0,
+    now: 0,
+    prevNow: 0, // 0 = no previous frame (first tick / resume) → dtScale 1
+    reducedMotion: false,
+    blockDocTop: 0,
+    blockHeight: 0,
+    formPx: 0,
+    travelPx: 0,
+    viewportH: 0,
+  };
+}
+
+// No allocation; caller carries frame.scrollY back into input.prevScrollY.
+export function deriveBaseFrame(frame, input) {
+  frame.dtScale = dtScaleOf(input.now, input.prevNow);
+  // RM pins scroll input to the formed-sphere position; the pin cancels in the clocks but canvas
+  // visibility still uses real scroll.
+  const scrollY = input.reducedMotion ? input.blockDocTop + input.formPx : input.scrollY;
+  frame.scrollY = scrollY;
+  frame.scrollVel = input.reducedMotion
+    ? 0
+    : Math.abs(scrollY - input.prevScrollY) / frame.dtScale;
+  return scrollY;
 }
 
 export function resolveBP(breakpoints, w) {
@@ -123,7 +199,7 @@ function balanceColumns(heights, gap, cols) {
 }
 
 // Cylindrical masonry layout — a WHOLE-SET solve; returns { pos, w, h } per card.
-// See README (yaw-only geometry) for the packing + column-count rules.
+// See the globe-gallery README (Yaw-only devices) for the packing + column-count rules.
 export function cylinderMasonryLayout({
   aspects, radius, frustumH, colsFit, colGapRatio, rowGapRatio = colGapRatio, aspectCap, bulge = 0,
 }) {

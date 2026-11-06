@@ -15,7 +15,7 @@ const MODAL_PHASE = Object.freeze({
   CLOSING: 'closing',
 });
 const MODAL_CAM_DIST = 16.4;
-const MODAL_RADIUS_PX = 16; // on-screen modal corner radius at md+ (0 on mobile); see README
+const MODAL_RADIUS_PX = 16; // on-screen corner at md+ (0 on mobile); see the globe-gallery README
 const MODAL_ANIM_FALLBACK = 350; // ms open/close fly time
 const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
 // Fisheye warp peaks (sin bell curve).
@@ -150,7 +150,7 @@ export default function createGlobeModal({
     return (card && (card.modalAspect || card.srcAspect)) || cardAspect;
   }
 
-  // Active modal card or a swipe-neighbour in modalScene; the core loop skips these.
+  // Active modal card or a swipe-neighbour in modalScene; the runtime loop skips these.
   function isCardManaged(card) {
     return card === modalCard || (!!modalScene && card.mesh.parent === modalScene);
   }
@@ -983,7 +983,7 @@ export default function createGlobeModal({
   }
 
   // Synchronous, so a breakpoint re-init on the same DOM can't leave it stuck open. q() because
-  // core destroy() nulls the renderer first.
+  // the runtime's destroy() nulls the renderer first.
   function resetModalDom() {
     if (modalEl) {
       modalEl.classList.remove('is-visible', 'is-open');
