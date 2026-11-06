@@ -21,7 +21,9 @@ import {
 } from '../merch/merch.js';
 
 const DEPS_TIMEOUT = 10000;
-const DEFAULT_OPTIONS = { sidenav: true };
+// The sidenav turns on only when the collection has categories. An authored
+// #sidenav=true also starts merch-sidenav.js up front, #sidenav=false keeps it off.
+const DEFAULT_OPTIONS = { sidenav: false };
 
 // Map of single_app values to their corresponding filter values
 const SINGLE_APP_FILTER_MAP = {
@@ -994,7 +996,7 @@ export async function createCollection(el, options) {
   container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
-  if (options.sidenav) {
+  if (!options.sidenavOff) {
     // Set filter based on single_app parameter if filter doesn't exist
     const urlParams = new URLSearchParams(window.location.search);
     const singleApp = urlParams.get('single_app');
@@ -1005,8 +1007,17 @@ export async function createCollection(el, options) {
     }
     if (collection.variant === 'product-pricing') {
       mountProductPricingFilter(collection, container);
-    } else {
-      const sidenav = await getSidenav(collection);
+    } else if (collection.data?.hierarchy?.length > 0) {
+      const sidenav = await Promise.all([
+        loadMasComponent(MAS_MERCH_SIDENAV),
+        loadSpectrumDependencies(),
+      ]).then(() => getSidenav(collection)).catch((e) => {
+        window.lana?.log(`Failed to load the collection sidenav: ${e?.message}`, {
+          tags: 'merch-card-collection',
+          severity: 'error',
+        });
+        return null;
+      });
       if (sidenav) {
         collection.attachSidenav(sidenav);
       }
@@ -1021,7 +1032,8 @@ export async function createCollection(el, options) {
 }
 
 export default async function init(el) {
-  let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
+  const authored = getOptions(el);
+  let options = { ...DEFAULT_OPTIONS, ...authored, sidenavOff: authored.sidenav === false };
   if (!options.fragment) return;
   enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
