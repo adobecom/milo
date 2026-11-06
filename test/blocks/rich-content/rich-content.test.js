@@ -258,4 +258,45 @@ describe('Rich Content', () => {
     const paragraph = block.querySelector('.content p');
     expect([...paragraph.classList].some((c) => c.startsWith('heading-'))).to.be.false;
   });
+
+  describe('lazily loaded dependencies', () => {
+    const waitFor = async (check, timeout = 1500) => {
+      const start = performance.now();
+      while (!check() && performance.now() - start < timeout) {
+        await new Promise((resolve) => { setTimeout(resolve, 20); });
+      }
+      return check();
+    };
+
+    it('sets the nav height variable on merch-moment sections', async () => {
+      document.body.innerHTML = `<header style="display:block;height:64px"></header>
+        <div class="section"><div class="rich-content merch-moment">
+          <div><div><h2>Heading</h2><p>Body</p></div></div>
+        </div></div>`;
+      const block = document.querySelector('.rich-content');
+      init(block);
+
+      const section = block.closest('.section');
+      const isSet = await waitFor(() => section.style.getPropertyValue('--rc-nav-height') === '64px');
+      expect(isSet).to.be.true;
+    });
+
+    it('re-applies media spacing on resize', async () => {
+      document.body.innerHTML = `<div class="section"><div class="rich-content media spacing-xl">
+          <div><div><picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt=""></picture></div>
+          <div><h2>Heading</h2><p>Body</p></div></div>
+        </div></div>`;
+      const block = document.querySelector('.rich-content');
+      init(block);
+      expect(block.style.getPropertyValue('--rc-media-spacing-top')).to.not.equal('');
+
+      block.style.removeProperty('--rc-media-spacing-top');
+      // Same module instance the block imports lazily; once resolved, its resize listener is set.
+      await import('../../../libs/utils/action.js');
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      window.dispatchEvent(new Event('resize'));
+      const isReapplied = await waitFor(() => block.style.getPropertyValue('--rc-media-spacing-top') !== '', 1500);
+      expect(isReapplied).to.be.true;
+    });
+  });
 });
