@@ -6,6 +6,7 @@ import {
   isDisabledOnPage,
   matchesUrl,
   resolveHtmlExt,
+  resolveHtmlIdentity,
   resolveRule,
   resolveTargets,
 } from '../../../tools/send-to-caas/auto-publish.js';
@@ -170,6 +171,51 @@ describe('auto-publish: resolveRule', () => {
 
   it('skips rules without a url field', () => {
     expect(resolveRule([{ enabled: true }, { url: '/foo' }], '/foo').url).to.equal('/foo');
+  });
+});
+
+describe('auto-publish: resolveHtmlIdentity', () => {
+  // Card identity is a site-level scheme. resolveRule returns only the single
+  // most-specific match, so reading the flag off that rule alone let a narrow
+  // rule that merely OMITS the column silently revert the policy for its whole
+  // subtree -- orphaning that section's cards with no error anywhere.
+  it('applies a site-wide opt-in to a matched rule that omits the column', () => {
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**' },
+    ];
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+  });
+
+  it('resolves to the matched rule when no rule opts in', () => {
+    const rules = [{ url: '/**' }, { url: '/products/**' }];
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.false;
+  });
+
+  it('resolves ON when rules disagree, because losing an id is unrecoverable', () => {
+    // A card that keeps its established `.html` id stays findable; one that
+    // loses it is orphaned with no way back, so ON is the safe direction.
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**', htmlIdentity: 'false' },
+    ];
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+  });
+
+  it('warns when it has to override a rule that disagrees', () => {
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**', htmlIdentity: 'false' },
+    ];
+    resolveHtmlIdentity(rules, rules[1]);
+    expect(logged.some((m) => m.includes('disagrees across rules'))).to.be.true;
+  });
+
+  it('tolerates a missing or non-array rule list', () => {
+    expect(resolveHtmlIdentity(undefined, { htmlIdentity: 'true' })).to.be.true;
+    expect(resolveHtmlIdentity(null, undefined)).to.be.false;
   });
 });
 
@@ -1000,6 +1046,21 @@ describe('auto-publish: resolveHtmlExt', () => {
   });
 });
 
+describe('auto-publish: resolveHtmlExt blank override cells', () => {
+  it('treats a whitespace-only override cell as unauthored', () => {
+    // An author clearing a cell by typing a space produces '  ', which is not
+    // '' and so was taken as a real override -- resolving to false WITHOUT
+    // tripping the unrecognized-value warning, silently flipping that
+    // environment's public urls with no diagnostic at all.
+    const rule = { url: '/**', htmlExt: 'true', htmlExtProd: '  ' };
+    expect(resolveHtmlExt(rule, 'prod')).to.be.true;
+  });
+
+  it('still honors a genuinely authored override', () => {
+    expect(resolveHtmlExt({ url: '/**', htmlExt: 'true', htmlExtProd: 'false' }, 'prod')).to.be.false;
+  });
+});
+
 describe('auto-publish: per-environment htmlExt', () => {
   let envFetchStub;
   afterEach(() => envFetchStub?.restore());
@@ -1065,6 +1126,25 @@ describe('auto-publish: per-environment htmlExt', () => {
     const origin = uniqueOrigin();
     const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
     const result = await run(origin);
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses the same env split on publish, not just preview', async () => {
+    // The invariant ("one page, one id") is a property of the RULE, but the two
+    // actions target different env sets: publish hits prod alone while preview
+    // hits prod and stage. Scoped to the action's own targets, this identical
+    // misconfiguration was refused on every preview and waved through on every
+    // publish -- minting prod cards and no stage ones, with no rule-level signal.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
     expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
     expect(posts).to.have.lengthOf(0);
   });

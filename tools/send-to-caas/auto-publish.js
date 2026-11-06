@@ -155,7 +155,13 @@ export const resolveHtmlExt = (rule, caasEnv) => {
     logIdentity(`unknown caasEnv '${caasEnv}', falling back to rule-wide htmlExt`, 'warning');
   }
   const override = envKey ? rule?.[envKey] : undefined;
-  const useDefault = override === undefined || override === null || override === '';
+  // Trimmed before the "unauthored" test: an author who clears a cell by typing
+  // a space produces '  ', which is not '' and so would be taken as a real
+  // override. It then resolves to false WITHOUT tripping isFlagUnrecognized
+  // (which deliberately treats blank as "fall back to default"), silently
+  // flipping that environment's public urls with no diagnostic at all.
+  const trimmedOverride = typeof override === 'string' ? override.trim() : override;
+  const useDefault = trimmedOverride === undefined || trimmedOverride === null || trimmedOverride === '';
   const value = useDefault ? rule?.htmlExt : override;
   // An authored value that is neither true nor false (e.g. 'yes', '1') would
   // otherwise resolve silently to false and flip every public url on the rule.
@@ -163,6 +169,40 @@ export const resolveHtmlExt = (rule, caasEnv) => {
     logIdentity(`unrecognized htmlExt value '${value}' on rule '${rule?.url}', treating as false`);
   }
   return isFlagEnabled(value);
+};
+
+// Card identity is a SITE-level scheme, not a per-path one: a single site must
+// hash every card the same way or its collections fracture. resolveRule returns
+// only the single most-specific match, so reading htmlIdentity off that rule
+// alone means a narrow rule that merely omits the column silently reverts the
+// policy for its whole subtree -- exactly the "section-wide orphaning with no
+// error raised anywhere" that caasIdentity.js rejects path carve-outs to avoid.
+//
+// So resolve it across the whole config: if ANY rule enables it, the site has
+// opted in. Disagreement is an authoring error, and the safe direction is ON --
+// a card that keeps its established `.html` id stays findable, whereas one that
+// loses it is orphaned with no way back.
+export const resolveHtmlIdentity = (rules, rule) => {
+  const list = Array.isArray(rules) ? rules : [];
+  const declaring = list.filter((r) => isHtmlIdentityEnabled(r?.htmlIdentity));
+  if (!declaring.length) return isHtmlIdentityEnabled(rule?.htmlIdentity);
+  const dissenting = list.filter((r) => isFlagDisabled(r?.htmlIdentity));
+  if (dissenting.length) {
+    logIdentity(
+      `htmlIdentity disagrees across rules (enabled on '${declaring[0]?.url}', `
+      + `disabled on '${dissenting[0]?.url}'); card identity is site-wide, so `
+      + 'treating it as ENABLED. Set the column consistently on every rule.',
+      'warning',
+    );
+  } else if (!isHtmlIdentityEnabled(rule?.htmlIdentity)) {
+    logIdentity(
+      `htmlIdentity is enabled on rule '${declaring[0]?.url}' but not on the `
+      + `matched rule '${rule?.url}'; applying it site-wide so this path does `
+      + 'not mint a second set of card ids.',
+      'warning',
+    );
+  }
+  return true;
 };
 
 export const resolveTargets = (rule, action) => {
@@ -238,15 +278,15 @@ export const caasAutoPublish = async ({
 
     // Card identity is the PRODUCTION url, not the aem.page/aem.live url the job
     // fires from. The site declares its prod host and .html rule in config, so
-    // this path produces the same contentId/entityId as the milo-caas poller --
-    // except where this branch and the committed caas-payload-builder.js bundle
-    // the poller runs have diverged, which is until that bundle is rebuilt:
-    //   - `htmlIdentity` is ignored entirely by the bundle.
-    //   - `htmlExt` parsing is stricter in the bundle (`=== 'true'`), so a cell
-    //     authored 'TRUE'/' true '/'on' resolves differently here than there,
-    //     which changes the PUBLIC url and therefore the id.
-    // Do not enable htmlIdentity, or author a non-lowercase htmlExt, for a site
-    // before that bundle lands, or the two publishers will disagree.
+    // this path produces the same contentId/entityId as the milo-caas poller.
+    //
+    // That equivalence holds only while the committed caas-payload-builder.js
+    // bundle the poller runs is built from this source. It is rebuilt in this
+    // change, so publish AND removal (getCaasIds) now agree across the two
+    // runtimes. Nothing enforces that automatically: `npm run
+    // build:caas-payload-builder` is a manual script with no CI drift check, so
+    // any later change to caas-payload-core.js must rebuild the bundle in the
+    // same PR or the two publishers will silently mint different ids.
     // `repo` (the CaaS source) likewise comes from config when set — e.g. the
     // bacom blog files under `bacom`, which the aem hostname can't tell us.
     // Falls back to the caller-supplied url/host/repo when config omits them.
@@ -270,7 +310,7 @@ export const caasAutoPublish = async ({
         + 'treating as OFF -- card ids will NOT be normalized',
       );
     }
-    const htmlIdentity = isHtmlIdentityEnabled(rule.htmlIdentity);
+    const htmlIdentity = resolveHtmlIdentity(rules, rule);
 
     const targets = resolveTargets(rule, action);
 
@@ -298,7 +338,17 @@ export const caasAutoPublish = async ({
     // the policy only normalizes in-scope urls (the bacom prod host), so the
     // flag being on does NOT prove the ids converge. On any other host
     // getCaasIdentityUrl is a no-op and the ids fork regardless.
-    const identityUrls = new Set([...byHtmlExt.keys()].map((htmlExt) => (
+    //
+    // Evaluated over every environment the RULE can reach, not just the ones
+    // this action happens to target. The invariant ("one page, one id") is a
+    // property of the rule, and the two actions target different env sets --
+    // publish hits prod alone while preview hits prod and stage. Scoped to the
+    // action, the identical misconfiguration was refused on every preview and
+    // waved through on every publish, so prod cards got minted and stage got
+    // none, with no rule-level signal that anything was wrong.
+    const ruleEnvs = allowedHtmlExtEnvs(rule);
+    const reachableHtmlExts = new Set(ruleEnvs.map((env) => resolveHtmlExt(rule, env)));
+    const identityUrls = new Set([...reachableHtmlExts].map((htmlExt) => (
       toIdentityUrl(variantProdUrl(htmlExt), htmlIdentity)
     )));
     if (identityUrls.size > 1) {

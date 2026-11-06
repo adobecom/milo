@@ -1464,7 +1464,14 @@ const getCaasIds = async (
     logIdentity(
       `getCaasIds called without htmlIdentity for in-scope url '${bareProdUrl}'. `
       + 'If the page was published with htmlIdentity on, these ids will not match '
-      + 'its card and removal will silently leave it live.',
+      + 'its card and removal will silently leave it live. Callers (notably the '
+      + 'milo-caas poller) should pass the rule\'s htmlIdentity explicitly.',
+      // 'warning', not the default 'error': the poller omits this argument by
+      // construction, so until it is updated EVERY in-scope removal trips this,
+      // including the majority where the policy is legitimately off and the ids
+      // are correct. Logged at error level it would be alarm fatigue on exactly
+      // the signal meant to catch an undeletable card.
+      'warning',
     );
   }
   // Removal has to reproduce the identity the page was published under, so it

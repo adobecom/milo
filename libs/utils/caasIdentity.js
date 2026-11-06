@@ -7,11 +7,15 @@
 //
 // That constraint is also why the generic flag parsers (isFlagEnabled and
 // friends) live here rather than in a shared libs/utils/flags.js. A review
-// reasonably asked for that split, but the leaf rule is enforced by eslint:
-// this module may not import, so extracting them would leave this file
-// re-declaring its own copies and create exactly the duplicate-parser drift
-// they were centralized to kill. If another module needs them, import them
-// from here.
+// reasonably asked for that split, and the honest position is that the eslint
+// import ban below is authored by this change, so citing it as the reason
+// would be circular -- the real constraint is only bundle-ability, which does
+// permit leaf-to-leaf imports (getUuid.js is precedent). The split is worth
+// doing and is deliberately deferred rather than argued away: it needs the
+// eslint selector relaxed to an allowlist of leaf specifiers, which widens the
+// blast radius of a change whose point is to not move card identity. Tracked
+// as a follow-up to MWPW-213846. Until then, import them from here rather than
+// writing a fourth variant -- the drift this centralization exists to kill.
 //
 // BACOM is moving its public pages on business.adobe.com to extensionless
 // URLs. Card identity (contentId/entityId) is a hash of the page URL, so

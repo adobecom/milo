@@ -2,7 +2,11 @@
 /* global tingle */
 /* eslint-disable no-alert */
 import { getImsToken } from '../utils/utils.js';
-import { isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
+import {
+  isFlagUnrecognized,
+  isHtmlIdentityEnabled,
+  isIdentityPolicyMiss,
+} from '../../libs/utils/caasIdentity.js';
 
 import {
   getCardMetadata,
@@ -244,9 +248,31 @@ const validateProps = async (prodHost, publishingModal) => {
   // which is a larger change than this ticket should carry. Operational rule
   // until then: a site enabling the policy must set BOTH the
   // `caas-identity-html` metadata and the `htmlIdentity` config.json column.
-  const htmlIdentity = isHtmlIdentityEnabled(
-    document.head.querySelector('meta[name="caas-identity-html"]')?.content,
-  );
+  const identityMeta = document.head.querySelector('meta[name="caas-identity-html"]')?.content;
+  if (isFlagUnrecognized(identityMeta)) {
+    // Resolves to OFF, so this page would publish under a legacy id while the
+    // bulk/auto publishers give it a forced-`.html` one -- a duplicate card
+    // rather than an error. Surfaced for parity with the other publishers.
+    window.lana?.log(
+      `send-to-caas: unrecognized caas-identity-html metadata '${identityMeta}', treating as OFF`,
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
+  }
+  const htmlIdentity = isHtmlIdentityEnabled(identityMeta);
+  // The unrecognized-value check above catches a typo, which is the rare case.
+  // This catches the common one: metadata simply absent while the site's
+  // config.json rule has htmlIdentity on. That publishes the page under a
+  // second contentId with no error at all, surfacing weeks later as a stray
+  // duplicate card. Unlike the other publishers this runs on a real Milo page,
+  // so lana is genuinely loaded here.
+  if (isIdentityPolicyMiss(`${prodHost}${window.location.pathname}`, htmlIdentity)) {
+    window.lana?.log(
+      'send-to-caas: publishing an in-scope url without caas-identity-html. If this '
+      + "site's config.json sets htmlIdentity, this mints a DUPLICATE card under a "
+      + `second contentId. Page: ${prodHost}${window.location.pathname}`,
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
+  }
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
     { prodUrl: `${prodHost}${window.location.pathname}`, htmlIdentity },
   );

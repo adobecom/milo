@@ -18,7 +18,7 @@ import {
   setConfig,
 } from './send-utils.js';
 import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
-import { isFlagEnabled, isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
+import { isFlagEnabled, isFlagUnrecognized, isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const logIdentity = createIdentityLogger('caas-bulk-publish');
@@ -435,6 +435,15 @@ const getPresetsData = async () => fetchExcelJson(presetsJsonPath)
     // The rollback path depends on this fetch, so a failure must not look like
     // "nothing to reconcile" -- it means the stored policy could not be checked.
     logIdentity(`could not load presets (${e?.message || e}); htmlIdentity could not be reconciled against the sheet`, 'warning');
+    // console alone is the wrong channel here: un-authoring the preset column is
+    // the only rollback a publishing team has, and if this fetch failed that
+    // rollback silently did not take effect. The operator is looking at this
+    // page, so tell them here, before they publish a batch under a stale policy.
+    showAlert(
+      '<p><b>Presets could not be loaded.</b></p>'
+      + '<p>The <b>Keep .html card identity</b> setting could not be checked '
+      + 'against the sheet and may be stale. Verify the checkbox before publishing.</p>',
+    );
     return null;
   });
 
@@ -497,6 +506,19 @@ presetSelector.addEventListener('change', () => {
   // Both flow into the identity hash (useHtml via prodUrl, htmlIdentity via the
   // forced-.html policy), so both go through the canonical parser rather than a
   // strict === 'true' that a 'TRUE' or ' true ' cell would silently fail.
+  // A cell that means neither true nor false resolves to OFF, which on the
+  // identity path mints a second set of card ids. auto-publish already reports
+  // this; the three publishers must not disagree on whether a typo is worth
+  // mentioning, or the one that stays quiet becomes the one that drifts.
+  ['useHtml', 'htmlIdentity'].forEach((flag) => {
+    if (isFlagUnrecognized(selectedPreset[flag])) {
+      logIdentity(
+        `unrecognized ${flag} value '${selectedPreset[flag]}' on preset `
+        + `'${selectedPreset.id}', treating as OFF`,
+        'warning',
+      );
+    }
+  });
   config.useHtml = isFlagEnabled(selectedPreset.useHtml);
   config.htmlIdentity = isFlagEnabled(selectedPreset.htmlIdentity);
   config.languageFirst = selectedPreset.languageFirst === 'false';

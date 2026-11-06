@@ -14,9 +14,12 @@ import getUuid from '../../utils/getUuid.js';
 import { isHtmlIdentityEnabled, isIdentityPolicyMiss, toIdentityUrl } from '../../utils/caasIdentity.js';
 
 // A site whose cards are published under forced-`.html` identities must resolve
-// authored uuid references the same way, or a collection's featured/excluded
-// lookups would hash the extensionless url and miss every card. Opt in once per
-// site via the `caas-identity-html` metadata property.
+// authored uuid references the same way, or a collection's FEATURED-card
+// lookups would hash the extensionless url and miss every card. Scoped to
+// featured cards (and the current-page id) deliberately: excludedCards and
+// hideCtaIds go through getContentIdStr, which passes an authored contentId
+// through verbatim and never hashes a url, so they are unaffected. Opt in once
+// per site via the `caas-identity-html` metadata property.
 const htmlIdentityEnabled = () => isHtmlIdentityEnabled(getMetadata('caas-identity-html'));
 
 // A missing opt-in produces no error: the lookup just silently returns a card
@@ -31,7 +34,11 @@ const warnOnIdentityPolicyMiss = (link) => {
   identityPolicyMissLogged = true;
   window.lana?.log(
     `CaaS: extensionless in-scope card link resolved without the .html identity policy; set the 'caas-identity-html' metadata to 'true' or these cards will not resolve. Example: ${link}`,
-    { tags: 'caas,htmlIdentity', errorType: 'warning', sampleRate: 100 },
+    // `severity` is lana's validated channel; `errorType` is an opaque code
+    // emitted verbatim, and setting it to 'i' would make lana ignore the
+    // explicit sampleRate below in favour of implicitSampleRate (1), dropping
+    // ~99% of these. Leave errorType at its default and sample at 100.
+    { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
   );
 };
 
