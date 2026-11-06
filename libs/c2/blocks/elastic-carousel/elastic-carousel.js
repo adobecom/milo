@@ -9,8 +9,8 @@ const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
-const isMobile = () => window.innerWidth <= 768;
-const TOUCH_SCROLL_QUERY = '(hover: none) and (min-width: 768px)';
+const isMobile = () => window.innerWidth < 768;
+const TOUCH_SCROLL_QUERY = '(hover: none) and (width >= 768px)';
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -126,6 +126,13 @@ const onCarouselLeave = (event) => {
 
 const onHover = (event) => {
   const slideEl = event.target;
+  const video = slideEl.querySelector('video');
+  clearTimeout(slideLeaveTimeouts.get(video));
+  slideLeaveTimeouts.delete(video);
+  if (video) {
+    stopRewind(video);
+    video.play().catch(() => { });
+  }
   if (window.matchMedia(TOUCH_SCROLL_QUERY).matches) {
     if (event.type === 'focus') {
       slideEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
@@ -135,15 +142,6 @@ const onHover = (event) => {
   const carouselContainer = slideEl.closest('.elastic-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
-
-  const video = slideEl.querySelector('video');
-  clearTimeout(slideLeaveTimeouts.get(video));
-  slideLeaveTimeouts.delete(video);
-
-  if (video) {
-    stopRewind(video);
-    video.play().catch(() => { });
-  }
 
   const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
@@ -272,8 +270,12 @@ export default async function init(el) {
   decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
   const sizeObserver = new ResizeObserver((entries) => {
+    if (!isMobile()) return;
     entries.forEach(({ target, borderBoxSize }) => {
-      target.style.setProperty('--elastic-carousel-item-height', `${borderBoxSize[0].blockSize}px`);
+      const height = `${borderBoxSize[0].blockSize}px`;
+      if (target.style.getPropertyValue('--elastic-carousel-item-height') !== height) {
+        target.style.setProperty('--elastic-carousel-item-height', height);
+      }
     });
   });
   decoratedCarousel.querySelectorAll('.elastic-carousel-item').forEach((slide) => sizeObserver.observe(slide));

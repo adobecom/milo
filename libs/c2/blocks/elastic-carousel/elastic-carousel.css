@@ -3,8 +3,8 @@
 html[dir="rtl"] {
   .elastic-carousel {
     & .elastic-carousel-container {
-      /* Normalize the right-anchored RTL row before applying its viewport transforms. */
-      --elastic-carousel-row-offset: calc(100% - 100vw);
+      /* Normalize the right-anchored RTL row against the carousel's available width. */
+      --elastic-carousel-row-offset: calc(100% - 100cqw); /* stylelint-disable-line unit-no-unknown */
 
       & .elastic-carousel-item {
         & .elastic-carousel-item-footer {
@@ -41,6 +41,8 @@ html[dir="rtl"] {
 
   min-height: var(--elastic-carousel-container-height-desktop);
   position: relative;
+  /* stylelint-disable-next-line property-no-unknown -- Current Stylelint predates container queries. */
+  container-type: inline-size;
   overflow: clip;
   margin: auto;
 
@@ -49,7 +51,7 @@ html[dir="rtl"] {
     position: relative;
     width: max-content;
     left: 0;
-    transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 50vw - 50%));
+    transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 50cqw - 50%)); /* stylelint-disable-line unit-no-unknown */
     transition: transform .5s ease;
     max-width: var(--elastic-carousel-container-width);
 
@@ -181,7 +183,7 @@ html[dir="rtl"] {
     }
 
     &.stick-right {
-      transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 100vw - 100%));
+      transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 100cqw - 100%)); /* stylelint-disable-line unit-no-unknown */
     }
   }
 }
@@ -190,7 +192,7 @@ html[dir="rtl"] {
 @media (1280px <= width) {
   .elastic-carousel-container {
     .elastic-carousel-item {
-      width: calc(100vw/calc(var(--slides) - 1));
+      width: calc(100cqw/calc(var(--slides) - 1)); /* stylelint-disable-line unit-no-unknown */
     }
   }
 }
@@ -202,7 +204,7 @@ html[dir="rtl"] {
 
     .elastic-carousel-container {
       .elastic-carousel-item {
-        width: calc(100vw / calc(var(--slides) - 1.5));
+        width: calc(100cqw / calc(var(--slides) - 1.5)); /* stylelint-disable-line unit-no-unknown */
 
         .elastic-carousel-item-header {
           padding: var(--s2a-spacing-md);
@@ -219,10 +221,6 @@ html[dir="rtl"] {
 
     &.disable-hover {
       pointer-events: none;
-    }
-
-    html[dir="rtl"] .elastic-carousel-container {
-      --start-margin: -200px;
     }
 
     .elastic-carousel-container {
@@ -263,7 +261,7 @@ html[dir="rtl"] {
 
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
-          width: calc((100vw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index));
+          width: calc((100cqw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index)); /* stylelint-disable-line unit-no-unknown */
 
           .elastic-carousel-item-footer p,
           .elastic-carousel-item-header p {
@@ -297,6 +295,12 @@ html[dir="rtl"] {
   }
 }
 
+@media (hover: hover) and (width >= 768px) {
+  .elastic-carousel .elastic-carousel-item:is(.hovered, :focus-visible) .elastic-carousel-item-footer {
+    max-width: 270px;
+  }
+}
+
 @media (hover: none), (width < 768px) {
   .elastic-carousel .elastic-carousel-container .elastic-carousel-item {
     --elastic-carousel-title-lines: none;
@@ -307,7 +311,7 @@ html[dir="rtl"] {
 
 @media (hover: none) and (width >= 768px) {
   .elastic-carousel {
-    --elastic-carousel-touch-item-width: min(var(--elastic-carousel-item-max-width), calc(100vw / (var(--slides) - 1.5)));
+    --elastic-carousel-touch-item-width: min(var(--elastic-carousel-item-max-width), calc(100cqw / (var(--slides) - 1.5))); /* stylelint-disable-line unit-no-unknown */
 
     height: auto;
     min-height: 0;
@@ -493,7 +497,7 @@ html[dir="rtl"] {
 
 @keyframes elasticCarouselSlideIn {
   0% {
-    margin-left: var(--start-margin);
+    margin-inline-start: var(--start-margin);
     opacity: 0;
   }
 
@@ -502,11 +506,11 @@ html[dir="rtl"] {
   }
 
   40% {
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 
   100% {
-    margin-left: 0;
+    margin-inline-start: 0;
     opacity: 1;
   }
 }
