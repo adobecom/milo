@@ -461,6 +461,75 @@ export function getMasComponentUrl(componentName, masLibsBase, hostname) {
     : `https://main--mas--adobecom.aem.live/web-components/dist/${componentName}.js`;
 }
 
+export const MERCH_CARD_TEMPLATE_BUNDLES = ['dc', 'catalog', 'cc', 'firefly', 'express'];
+
+/**
+ * Page path (after the locale prefix) -> merch-card template bundle.
+ * Trailing '/' matches every page under that path, otherwise only that page ('.html' optional).
+ * No leading '/' matches all locales, a leading '/' matches that exact path only.
+ */
+export const MERCH_CARD_TEMPLATE_RULES = {
+  'acrobat/plans': 'dc',
+  'products/catalog': 'catalog',
+  'products/firefly/': 'firefly',
+  'products/': 'cc',
+  'creativecloud/': 'cc',
+  'express/': 'express',
+};
+
+/**
+ * Selects the merch-card template bundles for a page, most specific rule wins:
+ * a locale specific rule beats an all-locale one, a longer path beats a shorter one.
+ * @param {string} pathname - page pathname, e.g. '/fr/acrobat/plans.html'
+ * @param {string} [localePrefix] - Milo locale prefix, e.g. '/fr'
+ * @param {Object} [rules] - path rule -> bundle name
+ * @returns {string[]} bundle names, every web bundle if no rule matches
+ */
+export function getMerchCardTemplateBundles(
+  pathname,
+  localePrefix = '',
+  rules = MERCH_CARD_TEMPLATE_RULES,
+) {
+  const path = pathname.replace(/\.html$/, '');
+  const hasPrefix = localePrefix && (path === localePrefix || path.startsWith(`${localePrefix}/`));
+  const localPath = (hasPrefix ? path.slice(localePrefix.length) : path).replace(/^\//, '');
+  const [match] = Object.keys(rules)
+    .filter((rule) => {
+      const target = rule.startsWith('/') ? path : localPath;
+      return rule.endsWith('/') ? target.startsWith(rule) : target === rule;
+    })
+    .sort((a, b) => (Number(b.startsWith('/')) - Number(a.startsWith('/'))) || b.length - a.length);
+  if (match) return [rules[match]];
+  window.lana?.log(`No merch-card template bundle rule for ${pathname}, loading all bundles`, { tags: 'merch', errorType: 'i' });
+  return MERCH_CARD_TEMPLATE_BUNDLES;
+}
+
+/**
+ * Loads merch-card.js and the page's template bundles in parallel.
+ * Bundle failures never reject: they are ignored with MAS versions that still embed
+ * the templates in merch-card.js (no MerchCard.registerTemplates), logged otherwise.
+ * @param {string} cardUrl - merch-card.js URL
+ * @param {string|null} masLibsBase - Base URL from getMasLibs() if available
+ * @param {Object} [options] - hostname, pathname and load (module loader) overrides
+ * @returns {Promise} Promise resolving to the merch-card module
+ */
+export async function loadMerchCardWithTemplates(cardUrl, masLibsBase, {
+  hostname = window.location.hostname,
+  pathname = window.location.pathname,
+  load = (url) => import(url),
+} = {}) {
+  const bundles = getMerchCardTemplateBundles(pathname, getConfig().locale?.prefix);
+  const templates = Promise.allSettled(bundles.map((bundle) => load(getMasComponentUrl(`templates/${bundle}`, masLibsBase, hostname))));
+  const [cardModule, results] = await Promise.all([load(cardUrl), templates]);
+  if (typeof customElements.get(MAS_MERCH_CARD)?.registerTemplates === 'function') {
+    results.forEach(({ status, reason }, i) => {
+      if (status !== 'rejected') return;
+      window.lana?.log(`Failed to load merch-card template bundle ${bundles[i]}: ${reason?.message}`, { tags: 'merch', errorType: 'e' });
+    });
+  }
+  return cardModule;
+}
+
 /**
  * Loads a MAS component either from external URL (if masLibs present) or from production CDN
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
@@ -487,6 +556,9 @@ export async function loadMasComponent(componentName) {
     }
 
     try {
+      if (componentName === MAS_MERCH_CARD) {
+        return await loadMerchCardWithTemplates(targetUrl, masLibsBase);
+      }
       return await import(targetUrl);
     } catch (error) {
       failedExternalLoads.add(targetUrl);
