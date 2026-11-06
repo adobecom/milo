@@ -41,6 +41,8 @@ import merch, {
   MERCH_CARD_TEMPLATE_BUNDLES,
   getMasLibsBaseUrl,
   getMasLibs,
+  getFragmentClientUrl,
+  isPreviewHost,
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
@@ -3247,6 +3249,36 @@ describe('Merch Block', () => {
       // Feature branch
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
+    });
+  });
+
+  describe('getFragmentClientUrl', () => {
+    const originalHref = window.location.href;
+    const FRAGMENT_CLIENT = 'https://feature-branch--mas--adobecom.aem.live/studio/libs/fragment-client.js';
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('loads fragment-client.js only with maslibs on a preview host', () => {
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.page')).to.equal(FRAGMENT_CLIENT);
+      expect(getFragmentClientUrl('www.stage.adobe.com')).to.equal(FRAGMENT_CLIENT);
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.live')).to.be.null;
+      expect(getFragmentClientUrl('localhost:2000')).to.be.null;
+    });
+
+    it('does not load fragment-client.js without maslibs', () => {
+      window.history.pushState({}, '', '/');
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.page')).to.be.null;
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.live')).to.be.null;
+    });
+
+    it('detects preview hosts', () => {
+      expect(isPreviewHost('main--cc--adobecom.aem.page')).to.be.true;
+      expect(isPreviewHost('www.stage.adobe.com')).to.be.true;
+      expect(isPreviewHost('main--cc--adobecom.aem.live')).to.be.false;
+      expect(isPreviewHost('www.adobe.com')).to.be.false;
     });
   });
 });
