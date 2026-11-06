@@ -134,6 +134,27 @@ export const isFlagEnabled = (flag) => {
 };
 
 /**
+ * The PRE-EXISTING `htmlExt` config column, which must NOT use the canonical
+ * parser above. It was shipped reading `=== true || === 'true'`, so a live cell
+ * authored `TRUE`, `On` or ` true ` resolves to false today. Widening it would
+ * flip those sites' public urls -- and prodUrl is the uuid v5 hash input, so it
+ * would silently rehash every card they publish, at merge, with no rollback.
+ *
+ * Deliberately shared by BOTH runtimes that read this column (resolveHtmlExt in
+ * the browser publisher, getProdUrl in the poller bundle). Pinning only one of
+ * them is worse than widening both: the two publishers then disagree about the
+ * same cell and mint two contentIds for one page, which is the precise failure
+ * the env-split guard exists to prevent and which that guard cannot see,
+ * because the fork is across runtimes rather than within one build.
+ *
+ * To opt in, author the cell as lowercase 'true'. That is an explicit action,
+ * so the rehash happens when someone chooses it rather than when this merges.
+ * @param {string|boolean} flag authored value
+ * @returns {boolean}
+ */
+export const isLegacyHtmlExtEnabled = (flag) => flag === true || flag === 'true';
+
+/**
  * Canonical parser for an authored boolean flag that defaults to ON, where only
  * an explicit falsey value turns it off. Needed because `rule.enabled === false`
  * is a strict boolean check, and a spreadsheet can only ever produce the STRING

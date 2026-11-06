@@ -20,7 +20,7 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import {
   toIdentityUrl,
-  isFlagEnabled,
+  isLegacyHtmlExtEnabled,
   isForcedHtmlIdentityUrl,
 } from '../../libs/utils/caasIdentity.js';
 // The 706KB caas-tags.js taxonomy is NOT imported here. It is only needed as a
@@ -1399,17 +1399,16 @@ const hasContentTypeTag = (tags) => Array.isArray(tags)
 // NOTE: this is no longer necessarily the string that gets hashed. When the
 // htmlIdentity policy is on, libs/utils/caasIdentity.js derives the identity URL
 // from this one so the public URL can go extensionless without changing ids.
-// `htmlExt` accepts a boolean or an authored string, parsed by the one shared
-// flag parser. On the auto-publish path the authored value never reaches here
-// raw -- resolveHtmlExt parses it and passes a boolean -- and that resolver
-// deliberately PINS the pre-existing rule-wide column to its legacy strict
-// reading, because widening it would silently rehash live cards. See the
-// compatibility guard there before assuming `TRUE` or `on` enables anything.
+// `htmlExt` accepts a boolean or an authored string. It deliberately does NOT
+// use the canonical isFlagEnabled: this is a pre-existing live config column,
+// and both runtimes that read it -- resolveHtmlExt in the browser publisher and
+// this function in the poller bundle -- must parse it identically, or the two
+// publishers mint two contentIds for one page. See isLegacyHtmlExtEnabled.
 const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   if (!host || !path) return '';
   const bareHost = host.replace(/^https?:\/\//, '').replace(/\/$/, '');
   let cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const wantHtml = isFlagEnabled(htmlExt);
+  const wantHtml = isLegacyHtmlExtEnabled(htmlExt);
   if (wantHtml && !cleanPath.endsWith('.html')) cleanPath = `${cleanPath}.html`;
   if (!wantHtml && cleanPath.endsWith('.html')) cleanPath = cleanPath.slice(0, -'.html'.length);
   return `https://${bareHost}${cleanPath}`;

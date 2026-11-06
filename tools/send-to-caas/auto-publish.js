@@ -89,6 +89,7 @@ import {
   isFlagEnabled,
   isFlagUnrecognized,
   isHtmlIdentityEnabled,
+  isLegacyHtmlExtEnabled,
 } from '../../libs/utils/caasIdentity.js';
 
 // Nothing on the identity path used to emit a single log line, so a site whose
@@ -110,6 +111,10 @@ const logAutoPublish = createIdentityLogger('caas-auto-publish', 'caas,autoPubli
 // rule pair, not a single flag, because one submission spans multiple origins.
 const siteWideNoticesLogged = new Set();
 
+// See resolveHtmlExt: the legacy-parser pin reports the cell at error severity,
+// and that resolver runs 3-4 times per url.
+const pinnedHtmlExtLogged = new Set();
+
 // Test-only. The set above is module-level by design (matching
 // warnOnIdentityPolicyMiss in libs/blocks/caas/utils.js), which makes the
 // "fires once, then suppressed" behaviour untestable from a known state: the
@@ -118,6 +123,7 @@ const siteWideNoticesLogged = new Set();
 // permanently and the whole suite would still pass.
 export const resetIdentityNoticesForTesting = () => {
   siteWideNoticesLogged.clear();
+  pinnedHtmlExtLogged.clear();
 };
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
@@ -227,26 +233,46 @@ export const resolveHtmlExt = (rule, caasEnv) => {
   const trimmedOverride = typeof override === 'string' ? override.trim() : override;
   const useDefault = trimmedOverride === undefined || trimmedOverride === null || trimmedOverride === '';
   const value = useDefault ? rule?.htmlExt : override;
-  // Compatibility guard on the PRE-EXISTING rule-wide column. Before this
-  // change the parser here was `htmlExt === true || htmlExt === 'true'`, so
-  // 'TRUE', 'On' or ' true ' resolved to FALSE in live configs. Routing it
-  // through the canonical isFlagEnabled widens that set, which would silently
-  // flip those sites' public urls -- and because prodUrl is the uuid v5 hash
-  // input, silently rehash every card they publish, with no error and no
-  // rollback, at merge rather than on an authoring action.
+  // Compatibility guard on the PRE-EXISTING htmlExt column. Before this change
+  // the parser was `htmlExt === true || htmlExt === 'true'`, so 'TRUE', 'On' or
+  // ' true ' resolved to FALSE in live configs. Routing it through the
+  // canonical isFlagEnabled widens that set, which would silently flip those
+  // sites' public urls -- and because prodUrl is the uuid v5 hash input,
+  // silently rehash every card they publish, with no error and no rollback, at
+  // merge rather than on an authoring action.
   //
-  // So the legacy reading is preserved and the cell is reported instead. The
-  // per-environment override columns are new in this change and cannot appear
-  // in live data, so they take the canonical parser directly; only the
-  // rule-wide fallback is pinned. Normalize the cell to lowercase 'true' to
-  // opt in -- deliberately an explicit authoring action, so the rehash happens
-  // when someone chooses it rather than when this merges.
-  if (useDefault && typeof value === 'string' && value !== 'true' && isFlagEnabled(value)) {
-    logIdentity(
-      `htmlExt '${value}' on rule '${rule?.url}' was read as false before the parser was widened; `
-      + 'keeping it false to avoid rehashing live cards. Author it as lowercase \'true\' to enable.',
-      'error',
-    );
+  // Applied UNIFORMLY: to the rule-wide column, to the per-environment override
+  // columns, and (via the same shared parser) to getProdUrl in the poller
+  // bundle. Two different asymmetries were tried first and both manufactured
+  // the exact fork this change exists to prevent:
+  //   - pinning the browser but not getProdUrl made the two PUBLISHERS read one
+  //     cell differently, minting two contentIds for one page across runtimes,
+  //     where the env-split guard below cannot see it;
+  //   - pinning the rule-wide column but not its per-env siblings made
+  //     `{ htmlExt: 'on', htmlExtStage: 'on' }` resolve prod=false/stage=true,
+  //     so a config the author believes is uniform splits, trips that guard and
+  //     stops the path publishing -- with a remedy message pointing at
+  //     htmlIdentity, a cell that is not the cause.
+  // The "new columns cannot exist in live data" argument justifies not NEEDING
+  // the pin on them; it does not justify one column meaning two things.
+  //
+  // Normalize the cell to lowercase 'true' to opt in -- deliberately an
+  // explicit authoring action, so the rehash happens when someone chooses it
+  // rather than when this merges.
+  if (typeof value === 'string' && !isLegacyHtmlExtEnabled(value) && isFlagEnabled(value)) {
+    // Deduped per rule+value: resolveHtmlExt runs once per target AND again per
+    // ruleEnvs entry (3 calls on publish, 4 on preview), so one pinned cell
+    // would otherwise emit 3-4 identical error-severity lana messages per url
+    // -- 20,000 on a 5,000-url job, in the one runtime where lana is loaded.
+    const pinKey = `${rule?.url}|${value}`;
+    if (!pinnedHtmlExtLogged.has(pinKey)) {
+      pinnedHtmlExtLogged.add(pinKey);
+      logIdentity(
+        `htmlExt '${value}' on rule '${rule?.url}' was read as false before the parser was widened; `
+        + 'keeping it false to avoid rehashing live cards. Author it as lowercase \'true\' to enable.',
+        'error',
+      );
+    }
     return false;
   }
   // An authored value that is neither true nor false (e.g. 'yes', '1') would
@@ -254,7 +280,7 @@ export const resolveHtmlExt = (rule, caasEnv) => {
   if (isFlagUnrecognized(value)) {
     logIdentity(`unrecognized htmlExt value '${value}' on rule '${rule?.url}', treating as false`, 'warning');
   }
-  return isFlagEnabled(value);
+  return isLegacyHtmlExtEnabled(value);
 };
 
 // Card identity is a SITE-level scheme, not a per-path one: a single site must
@@ -268,7 +294,7 @@ export const resolveHtmlExt = (rule, caasEnv) => {
 // opted in. Disagreement is an authoring error, and the safe direction is ON --
 // a card that keeps its established `.html` id stays findable, whereas one that
 // loses it is orphaned with no way back.
-export const resolveHtmlIdentity = (rules, rule) => {
+export const resolveHtmlIdentity = (rules, rule, origin = '') => {
   const list = Array.isArray(rules) ? rules : [];
   // Deliberately NOT filtered on `enabled`: a disabled row still declares the
   // site's identity scheme, and ON is the safe direction (a card that keeps its
@@ -287,16 +313,19 @@ export const resolveHtmlIdentity = (rules, rule) => {
       'warning',
     );
   } else if (!isHtmlIdentityEnabled(rule?.htmlIdentity)
-    && !siteWideNoticesLogged.has(`${declaring[0]?.url}|${rule?.url}`)) {
-    // Deduped per declaring+matched rule PAIR rather than once per module
-    // lifetime. A single bulk submission spans one job per origin
+    && !siteWideNoticesLogged.has(`${origin}|${declaring[0]?.url}|${rule?.url}`)) {
+    // Deduped per origin + declaring/matched rule PAIR rather than once per
+    // module lifetime. A single bulk submission spans one job per origin
     // (bulk-publish-v2/services.js sets origin per pasted url) and this module
     // fetches a different `${origin}/.milo/caas/config.json` per call, so a
     // global flag let the first site's notice through and silenced every other
     // site's -- including the stale-archived-row opt-in the header table calls
-    // out as the footgun. The key is built from rule url PATTERNS out of
-    // config.json, so the set is bounded by rule count (single digits per site)
-    // rather than by the thousands of urls in the job.
+    // out as the footgun. The origin is part of the key because rule `url`s are
+    // PATHS, not origins: the live main-- and stage-- da-bacom configs carry
+    // byte-identical patterns, so keying on patterns alone still collided for
+    // exactly the cross-site case this fix is for. The set is bounded by
+    // origins x rule pairs -- single digits per site -- not by the thousands of
+    // urls in the job.
     //
     // This branch is INFORMATIONAL, not a misconfiguration: a broad opt-in rule
     // plus narrower rules that omit the column is the shape the header table
@@ -305,7 +334,7 @@ export const resolveHtmlIdentity = (rules, rule) => {
     // where lana IS loaded -- burying the two messages that are genuinely
     // actionable (the disagreement warning above and the env-split refusal
     // below).
-    siteWideNoticesLogged.add(`${declaring[0]?.url}|${rule?.url}`);
+    siteWideNoticesLogged.add(`${origin}|${declaring[0]?.url}|${rule?.url}`);
     logIdentity(
       `htmlIdentity is enabled on rule '${declaring[0]?.url}' but not on the `
       + `matched rule '${rule?.url}'; applying it site-wide so this path does `
@@ -423,7 +452,7 @@ export const caasAutoPublish = async ({
         'warning',
       );
     }
-    const htmlIdentity = resolveHtmlIdentity(rules, rule);
+    const htmlIdentity = resolveHtmlIdentity(rules, rule, origin);
 
     const targets = resolveTargets(rule, action);
 

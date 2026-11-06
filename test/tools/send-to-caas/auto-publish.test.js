@@ -216,16 +216,24 @@ describe('auto-publish: resolveHtmlIdentity', () => {
     // One bulk submission spans one job per origin and this module reads a
     // different config.json per origin, so a single module-level flag let the
     // first site's notice through and silenced every other site's.
+    //
+    // Both sites deliberately use IDENTICAL rule patterns: rule urls are PATHS,
+    // not origins, and the live main-- and stage-- da-bacom configs carry
+    // byte-identical patterns. An earlier key omitted the origin and passed
+    // this test only because the two sites had been given different patterns,
+    // which proved the key was not a single global flag but not that it was
+    // per-site.
     resetIdentityNoticesForTesting();
     const siteA = [{ url: '/**', htmlIdentity: 'true' }, { url: '/products/**' }];
-    const siteB = [{ url: '/blog/**', htmlIdentity: 'true' }, { url: '/blog/posts/**' }];
+    const siteB = [{ url: '/**', htmlIdentity: 'true' }, { url: '/products/**' }];
     const logged = [];
     window.lana = { log: (msg) => logged.push(msg) };
-    expect(resolveHtmlIdentity(siteA, siteA[1])).to.be.true;
-    expect(resolveHtmlIdentity(siteB, siteB[1])).to.be.true;
-    const notices = logged.filter((m) => m.includes('applying it site-wide'));
-    expect(notices).to.have.lengthOf(2);
-    expect(notices.some((m) => m.includes('/blog/posts/**'))).to.be.true;
+    expect(resolveHtmlIdentity(siteA, siteA[1], 'https://main--da-bacom--adobecom.aem.live')).to.be.true;
+    expect(resolveHtmlIdentity(siteB, siteB[1], 'https://stage--da-bacom--adobecom.aem.live')).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(2);
+    // Same origin twice is still deduped.
+    expect(resolveHtmlIdentity(siteA, siteA[1], 'https://main--da-bacom--adobecom.aem.live')).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(2);
   });
 
   it('resolves to the matched rule when no rule opts in', () => {
@@ -440,6 +448,29 @@ describe('auto-publish: caasAutoPublish gating', () => {
     });
     expect(result.skipped).to.be.true;
     expect(result.reason).to.equal('rule-disabled');
+  });
+
+  it('tags the kill-switch diagnostic outside the htmlIdentity tag', async () => {
+    // This message says a site has STOPPED publishing. It is not an identity
+    // diagnostic, so it must not ship under the htmlIdentity tag -- otherwise
+    // muting or retiring that tag once the rollout finishes silently takes this
+    // with it. Nothing else asserts lana's tag argument, so a refactor dropping
+    // the second argument to createIdentityLogger would be invisible.
+    const origin = uniqueOrigin();
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'false' }] } }));
+    const calls = [];
+    window.lana = { log: (msg, opts) => calls.push({ msg, opts }) };
+    await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/x`,
+      path: '/products/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    const killSwitch = calls.find((c) => c.msg.includes('is disabled by its enabled column'));
+    expect(killSwitch, 'kill-switch diagnostic was not logged').to.exist;
+    expect(killSwitch.opts.tags).to.equal('caas,autoPublish');
   });
 
   it('warns when enabled holds a value that means neither true nor false', async () => {
@@ -1067,30 +1098,44 @@ describe('auto-publish: resolveHtmlExt', () => {
     expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'prod')).to.be.true;
   });
 
-  it('pins the pre-existing rule-wide htmlExt to its legacy strict reading', () => {
-    // The canonical parser accepts 'TRUE'/' true '/'on', but htmlExt is a
-    // PRE-EXISTING live config column that was previously parsed as
-    // `=== true || === 'true'`. Honouring the wider set would flip those sites'
-    // public urls -- and prodUrl is the uuid hash input, so it would silently
-    // rehash every card they publish, at merge, with no rollback. So the legacy
-    // reading is kept and the cell is reported instead.
+  it('pins every htmlExt column to its legacy strict reading', () => {
+    // htmlExt is a PRE-EXISTING live config column previously parsed as
+    // `=== true || === 'true'`. Honouring the canonical parser's wider set
+    // would flip those sites' public urls -- and prodUrl is the uuid hash
+    // input, so it would silently rehash every card they publish, at merge,
+    // with no rollback.
     expect(resolveHtmlExt({ htmlExt: 'TRUE' }, 'prod')).to.be.false;
     expect(resolveHtmlExt({ htmlExt: ' true ' }, 'prod')).to.be.false;
     expect(resolveHtmlExt({ htmlExt: 'on' }, 'prod')).to.be.false;
     // The exact lowercase value is unaffected, in both directions.
     expect(resolveHtmlExt({ htmlExt: 'true' }, 'prod')).to.be.true;
     expect(resolveHtmlExt({ htmlExt: true }, 'prod')).to.be.true;
-    // The per-environment columns are NEW in this change and cannot appear in
-    // live data, so they take the canonical parser directly.
-    expect(resolveHtmlExt({ htmlExtProd: 'TRUE' }, 'prod')).to.be.true;
     expect(resolveHtmlExt({ htmlExt: 'true', htmlExtStage: 'FALSE' }, 'stage')).to.be.false;
   });
 
-  it('reports a pinned htmlExt cell so it is not silently stuck off', () => {
+  it('pins the per-environment columns identically, so a uniform config cannot split', () => {
+    // Pinning the rule-wide column but not its siblings made these resolve to
+    // DIFFERENT values, so a config the author believes is uniform produced two
+    // htmlExt variants, two prodUrls, and tripped the env-split refusal -- which
+    // then blamed htmlIdentity, a cell that is not the cause.
+    expect(resolveHtmlExt({ htmlExt: 'on', htmlExtStage: 'on' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'on', htmlExtStage: 'on' }, 'stage')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'TRUE', htmlExtProd: 'TRUE' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'TRUE', htmlExtProd: 'TRUE' }, 'stage')).to.be.false;
+  });
+
+  it('reports a pinned htmlExt cell once, not once per resolve', () => {
+    // resolveHtmlExt runs once per target AND again per ruleEnvs entry, so an
+    // undeduped error-severity message fired 3-4x per url.
+    resetIdentityNoticesForTesting();
     const logged = [];
     window.lana = { log: (msg) => logged.push(msg) };
-    expect(resolveHtmlExt({ url: '/**', htmlExt: 'On' }, 'prod')).to.be.false;
-    expect(logged.some((m) => m.includes('was read as false before the parser was widened'))).to.be.true;
+    const rule = { url: '/**', htmlExt: 'On' };
+    expect(resolveHtmlExt(rule, 'prod')).to.be.false;
+    expect(resolveHtmlExt(rule, 'prod')).to.be.false;
+    expect(resolveHtmlExt(rule, 'stage')).to.be.false;
+    const pins = logged.filter((m) => m.includes('was read as false before the parser was widened'));
+    expect(pins).to.have.lengthOf(1);
   });
 
   it('ignores an unknown env rather than reading an arbitrary rule property', () => {
