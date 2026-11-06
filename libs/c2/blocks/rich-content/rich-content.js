@@ -5,7 +5,6 @@ const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 const NAV_HEIGHT_PROP = '--rc-nav-height';
 
 // Lets focused links clear the sticky header when tabbing back into the section.
-// Imported lazily: a static import would delay rendering of every rich-content block (often LCP).
 async function initNavHeight(el) {
   const section = el.closest('.section');
   const header = document.querySelector('header');
