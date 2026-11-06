@@ -31,8 +31,8 @@ const htmlIdentityEnabled = () => isHtmlIdentityEnabled(getMetadata('caas-identi
 
 // A missing opt-in produces no error: the lookup just silently returns a card
 // that is not in the collection, which authors experience as "my featured card
-// vanished" with nothing to correlate it to. Unlike the publishers, this runs
-// on a real Milo page, so lana is actually loaded here. Logged once per page
+// vanished" with nothing to correlate it to. This runs on a real Milo page, so
+// lana is loaded here. Logged once per page
 // because a collection can reference many in-scope links and they would all
 // report the same single root cause.
 let identityPolicyMissLogged = false;

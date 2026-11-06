@@ -309,8 +309,9 @@ const validateProps = async (prodHost, publishingModal) => {
   // This catches the common one: metadata simply absent while the site's
   // config.json rule has htmlIdentity on. That publishes the page under a
   // second contentId with no error at all, surfacing weeks later as a stray
-  // duplicate card. Unlike the other publishers this runs on a real Milo page,
-  // so lana is genuinely loaded here.
+  // duplicate card. The sidekick runs on a real Milo page, so lana is loaded
+  // here (as it also is for bulk-publish-v2, though not for the standalone
+  // bulk publisher page, da-live or the poller).
   //
   // Evaluated on the url actually being published, AFTER the modal resolves and
   // after the abort paths above. Checking `pathname` alone before `useHtml` was

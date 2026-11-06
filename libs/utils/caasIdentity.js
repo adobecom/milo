@@ -16,10 +16,15 @@
 // allowlist (negated `group` patterns are silently ignored), but the override
 // already carries a `no-restricted-syntax` block, and a selector can:
 //   ImportDeclaration[source.value!='./flags.js']
-// plus the existing ExportNamedDeclaration[source] / ExportAllDeclaration /
-// ImportExpression selectors cover all four leak vectors. So the move costs
-// roughly an hour and a bundle rebuild, not a widened blast radius. Do not let
-// this note talk you out of it.
+// plus THREE selectors that must be ADDED alongside it -- only
+// `ImportExpression` exists in the override today
+// (`ExportNamedDeclaration[source]` and `ExportAllDeclaration` appear there
+// solely in prose, because `no-restricted-imports` covers re-exports while it
+// is still in force). All four vectors have to land in the same commit that
+// drops `no-restricted-imports`, or a leaf module re-exporting
+// `export { x } from './getUuid.js'` lints clean and pulls a dependency into
+// the poller bundle silently. So the move costs roughly an hour and a bundle
+// rebuild, not a widened blast radius. Do not let this note talk you out of it.
 //
 // Until then, import them from here rather than writing a fourth variant --
 // the drift this centralization exists to kill.

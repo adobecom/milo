@@ -9,6 +9,7 @@ import {
   resolveHtmlIdentity,
   resolveRule,
   resolveTargets,
+  resetIdentityNoticesForTesting,
 } from '../../../tools/send-to-caas/auto-publish.js';
 
 const POST_XDM_URL = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
@@ -187,17 +188,18 @@ describe('auto-publish: resolveHtmlIdentity', () => {
     expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
   });
 
-  it('suppresses the site-wide notice after the first occurrence', () => {
+  it('logs the site-wide notice once, then suppresses it', () => {
     // The notice is informational: a broad opt-in plus narrower rules that omit
     // the column is the documented-correct shape, so firing per url turned a
     // 5,000-url bulk job into 5,000 lana warnings at sampleRate 100 and buried
-    // the genuinely actionable messages.
+    // the genuinely actionable messages (the disagreement warning and the
+    // env-split refusal, neither of which is suppressed).
     //
-    // Deliberately order-independent: the flag is module-level (matching
-    // warnOnIdentityPolicyMiss in libs/blocks/caas/utils.js), so an earlier test
-    // in this file may already have tripped it. Asserting "at most one new log
-    // across two calls" proves suppression either way, where asserting an exact
-    // count would depend on test order.
+    // Reset first so this asserts from a known state. Without the reset an
+    // earlier test in this file has already tripped the module-level flag, so
+    // `logged` would be empty and the test would pass even if the notice could
+    // never fire at all.
+    resetIdentityNoticesForTesting();
     const rules = [
       { url: '/**', htmlIdentity: 'true' },
       { url: '/products/**' },
@@ -205,9 +207,25 @@ describe('auto-publish: resolveHtmlIdentity', () => {
     const logged = [];
     window.lana = { log: (msg) => logged.push(msg) };
     expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(1);
     expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(1);
+  });
+
+  it('does not let one site suppress another site\'s notice', () => {
+    // One bulk submission spans one job per origin and this module reads a
+    // different config.json per origin, so a single module-level flag let the
+    // first site's notice through and silenced every other site's.
+    resetIdentityNoticesForTesting();
+    const siteA = [{ url: '/**', htmlIdentity: 'true' }, { url: '/products/**' }];
+    const siteB = [{ url: '/blog/**', htmlIdentity: 'true' }, { url: '/blog/posts/**' }];
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    expect(resolveHtmlIdentity(siteA, siteA[1])).to.be.true;
+    expect(resolveHtmlIdentity(siteB, siteB[1])).to.be.true;
     const notices = logged.filter((m) => m.includes('applying it site-wide'));
-    expect(notices.length).to.be.at.most(1);
+    expect(notices).to.have.lengthOf(2);
+    expect(notices.some((m) => m.includes('/blog/posts/**'))).to.be.true;
   });
 
   it('resolves to the matched rule when no rule opts in', () => {
@@ -1049,13 +1067,30 @@ describe('auto-publish: resolveHtmlExt', () => {
     expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'prod')).to.be.true;
   });
 
-  it('accepts the casing and whitespace a spreadsheet can produce', () => {
-    // This used to accept only the exact lowercase 'true', so a cell reading
-    // TRUE stripped .html from every url on the rule.
-    expect(resolveHtmlExt({ htmlExt: 'TRUE' }, 'prod')).to.be.true;
-    expect(resolveHtmlExt({ htmlExt: ' true ' }, 'prod')).to.be.true;
-    expect(resolveHtmlExt({ htmlExt: 'on' }, 'prod')).to.be.true;
+  it('pins the pre-existing rule-wide htmlExt to its legacy strict reading', () => {
+    // The canonical parser accepts 'TRUE'/' true '/'on', but htmlExt is a
+    // PRE-EXISTING live config column that was previously parsed as
+    // `=== true || === 'true'`. Honouring the wider set would flip those sites'
+    // public urls -- and prodUrl is the uuid hash input, so it would silently
+    // rehash every card they publish, at merge, with no rollback. So the legacy
+    // reading is kept and the cell is reported instead.
+    expect(resolveHtmlExt({ htmlExt: 'TRUE' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: ' true ' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'on' }, 'prod')).to.be.false;
+    // The exact lowercase value is unaffected, in both directions.
+    expect(resolveHtmlExt({ htmlExt: 'true' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: true }, 'prod')).to.be.true;
+    // The per-environment columns are NEW in this change and cannot appear in
+    // live data, so they take the canonical parser directly.
+    expect(resolveHtmlExt({ htmlExtProd: 'TRUE' }, 'prod')).to.be.true;
     expect(resolveHtmlExt({ htmlExt: 'true', htmlExtStage: 'FALSE' }, 'stage')).to.be.false;
+  });
+
+  it('reports a pinned htmlExt cell so it is not silently stuck off', () => {
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    expect(resolveHtmlExt({ url: '/**', htmlExt: 'On' }, 'prod')).to.be.false;
+    expect(logged.some((m) => m.includes('was read as false before the parser was widened'))).to.be.true;
   });
 
   it('ignores an unknown env rather than reading an arbitrary rule property', () => {
@@ -1161,6 +1196,33 @@ describe('auto-publish: per-environment htmlExt', () => {
     // publish -- minting prod cards and no stage ones, with no rule-level signal.
     const origin = uniqueOrigin();
     const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses a fork contributed by a target whose caasEnv is missing', async () => {
+    // A target with an absent or non-string caasEnv is filtered out of the
+    // guard's declared-env set, but the BUILD path does no such filtering:
+    // resolveHtmlExt falls back to the rule-wide htmlExt for it, so it still
+    // contributes a second variant, a second prodUrl and a second contentId.
+    // Narrowing the guard to the rule's well-formed envs therefore traded a
+    // false refusal for a false ACCEPTANCE -- two live cards for one page,
+    // which is the unrecoverable outcome this guard exists to prevent.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtProd: 'false',
+      targets: [{ caasEnv: 'prod', draftOnly: false }, { draftOnly: false }],
+    });
     const result = await caasAutoPublish({
       action: 'publish',
       url: `${origin}/x`,

@@ -60,7 +60,13 @@
  *      is bumped to a build containing htmlIdentity, the poller ignores this
  *      column entirely while the browser publisher honours it -- the same page
  *      gets two contentIds and two cards. DO NOT author htmlIdentity in any
- *      config.json before that bump lands.
+ *      config.json before that bump lands -- AND do not set the
+ *      `caas-identity-html` PAGE METADATA on a business.adobe.com page either.
+ *      send-to-caas.js reads that metadata and feeds it straight into
+ *      getCardMetadata, so on a site that is both publisher and consumer it
+ *      mints forced-.html ids on its own, with no config.json change at all.
+ *      Consumer-only sites -- those that merely FEATURE bacom cards -- can set
+ *      the metadata at any time; it is only a fork on a publishing bacom page.
  *
  * The function NEVER throws. CaaS publishing is best-effort — the underlying
  * Helix publish must not be blocked by a CaaS failure. All outcomes return
@@ -87,13 +93,32 @@ import {
 
 // Nothing on the identity path used to emit a single log line, so a site whose
 // cards silently stopped matching had no signal to go on. The shared logger
-// falls back to console because none of this module's runtimes install
-// window.lana -- see createIdentityLogger in caas-payload-core.js.
+// falls back to console because only SOME of this module's runtimes install
+// window.lana: bulk-publish-v2 is a Milo block and therefore has it, while the
+// standalone bulk publisher page, da-live and the poller do not -- see
+// createIdentityLogger in caas-payload-core.js.
 const logIdentity = createIdentityLogger('caas-auto-publish');
 
+// Separate tag for diagnostics that are NOT about card identity, so retiring
+// the `htmlIdentity` tag after the rollout cannot silence the message saying a
+// site has stopped auto-publishing. (The unknown-caasEnv and htmlExt warnings
+// stay on the identity tag: htmlExt feeds prodUrl, which is the hash input.)
+const logAutoPublish = createIdentityLogger('caas-auto-publish', 'caas,autoPublish');
+
 // See resolveHtmlIdentity: the site-wide-application notice is informational and
-// would otherwise fire once per url in a bulk job.
-let siteWideNoticeLogged = false;
+// would otherwise fire once per url in a bulk job. Keyed per declaring+matched
+// rule pair, not a single flag, because one submission spans multiple origins.
+const siteWideNoticesLogged = new Set();
+
+// Test-only. The set above is module-level by design (matching
+// warnOnIdentityPolicyMiss in libs/blocks/caas/utils.js), which makes the
+// "fires once, then suppressed" behaviour untestable from a known state: the
+// first test to use a given rule shape trips it for the rest of the file.
+// Without this, initialising it pre-populated would silence the diagnostic
+// permanently and the whole suite would still pass.
+export const resetIdentityNoticesForTesting = () => {
+  siteWideNoticesLogged.clear();
+};
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
 // from this module (used by tests and any host that already depends on it).
@@ -202,6 +227,28 @@ export const resolveHtmlExt = (rule, caasEnv) => {
   const trimmedOverride = typeof override === 'string' ? override.trim() : override;
   const useDefault = trimmedOverride === undefined || trimmedOverride === null || trimmedOverride === '';
   const value = useDefault ? rule?.htmlExt : override;
+  // Compatibility guard on the PRE-EXISTING rule-wide column. Before this
+  // change the parser here was `htmlExt === true || htmlExt === 'true'`, so
+  // 'TRUE', 'On' or ' true ' resolved to FALSE in live configs. Routing it
+  // through the canonical isFlagEnabled widens that set, which would silently
+  // flip those sites' public urls -- and because prodUrl is the uuid v5 hash
+  // input, silently rehash every card they publish, with no error and no
+  // rollback, at merge rather than on an authoring action.
+  //
+  // So the legacy reading is preserved and the cell is reported instead. The
+  // per-environment override columns are new in this change and cannot appear
+  // in live data, so they take the canonical parser directly; only the
+  // rule-wide fallback is pinned. Normalize the cell to lowercase 'true' to
+  // opt in -- deliberately an explicit authoring action, so the rehash happens
+  // when someone chooses it rather than when this merges.
+  if (useDefault && typeof value === 'string' && value !== 'true' && isFlagEnabled(value)) {
+    logIdentity(
+      `htmlExt '${value}' on rule '${rule?.url}' was read as false before the parser was widened; `
+      + 'keeping it false to avoid rehashing live cards. Author it as lowercase \'true\' to enable.',
+      'error',
+    );
+    return false;
+  }
   // An authored value that is neither true nor false (e.g. 'yes', '1') would
   // otherwise resolve silently to false and flip every public url on the rule.
   if (isFlagUnrecognized(value)) {
@@ -239,16 +286,26 @@ export const resolveHtmlIdentity = (rules, rule) => {
       + 'treating it as ENABLED. Set the column consistently on every rule.',
       'warning',
     );
-  } else if (!isHtmlIdentityEnabled(rule?.htmlIdentity) && !siteWideNoticeLogged) {
-    // Logged once per module lifetime, matching warnOnIdentityPolicyMiss in
-    // libs/blocks/caas/utils.js. This branch is INFORMATIONAL, not a
-    // misconfiguration: a broad opt-in rule plus narrower rules that omit the
-    // column is the shape the header table documents as correct. Per page it
-    // fired once for every url in a bulk job -- thousands of lana warnings at
-    // sampleRate 100 from bulk-publish-v2, where lana IS loaded -- burying the
-    // two messages that are genuinely actionable (the disagreement warning
-    // above and the env-split refusal below).
-    siteWideNoticeLogged = true;
+  } else if (!isHtmlIdentityEnabled(rule?.htmlIdentity)
+    && !siteWideNoticesLogged.has(`${declaring[0]?.url}|${rule?.url}`)) {
+    // Deduped per declaring+matched rule PAIR rather than once per module
+    // lifetime. A single bulk submission spans one job per origin
+    // (bulk-publish-v2/services.js sets origin per pasted url) and this module
+    // fetches a different `${origin}/.milo/caas/config.json` per call, so a
+    // global flag let the first site's notice through and silenced every other
+    // site's -- including the stale-archived-row opt-in the header table calls
+    // out as the footgun. The key is built from rule url PATTERNS out of
+    // config.json, so the set is bounded by rule count (single digits per site)
+    // rather than by the thousands of urls in the job.
+    //
+    // This branch is INFORMATIONAL, not a misconfiguration: a broad opt-in rule
+    // plus narrower rules that omit the column is the shape the header table
+    // documents as correct. Per page it fired once for every url in a bulk job
+    // -- thousands of lana warnings at sampleRate 100 from bulk-publish-v2,
+    // where lana IS loaded -- burying the two messages that are genuinely
+    // actionable (the disagreement warning above and the env-split refusal
+    // below).
+    siteWideNoticesLogged.add(`${declaring[0]?.url}|${rule?.url}`);
     logIdentity(
       `htmlIdentity is enabled on rule '${declaring[0]?.url}' but not on the `
       + `matched rule '${rule?.url}'; applying it site-wide so this path does `
@@ -311,7 +368,7 @@ export const caasAutoPublish = async ({
     // value that means neither true nor false ('no', '0', 'disabled') must not
     // resolve silently to "keep publishing".
     if (isFlagUnrecognized(rule.enabled)) {
-      logIdentity(
+      logAutoPublish(
         `unrecognized enabled value '${rule.enabled}' on rule '${rule.url}', treating as ENABLED`,
         'warning',
       );
@@ -322,7 +379,7 @@ export const caasAutoPublish = async ({
       // `=== false` check missed, so sites that had asked for auto-publish to be
       // off were still publishing. Those sites stop here, and an undifferentiated
       // skip count would not explain why.
-      logIdentity(
+      logAutoPublish(
         `rule '${rule.url}' is disabled by its enabled column ('${rule.enabled}'), `
         + `not publishing '${path}'`,
         'warning',
@@ -416,7 +473,18 @@ export const caasAutoPublish = async ({
       ? [...new Set(rule.targets.map((t) => t?.caasEnv).filter((env) => typeof env === 'string' && env))]
       : HTML_EXT_ENVS;
     const ruleEnvs = declaredEnvs.length ? declaredEnvs : HTML_EXT_ENVS;
-    const reachableHtmlExts = new Set(ruleEnvs.map((env) => resolveHtmlExt(rule, env)));
+    // Unioned with the htmlExt values the build ACTUALLY grouped by. A target
+    // whose caasEnv is absent or non-string is filtered out of declaredEnvs
+    // above, but the build path above does no such filtering -- resolveHtmlExt
+    // falls back to the rule-wide htmlExt for it, so it still contributes a
+    // variant. Asserting on the rule's declared envs alone therefore traded the
+    // old false refusal for a false ACCEPTANCE: two contentIds posted for one
+    // page, with no error. Guard on what is about to be written, not only on
+    // what the config says should be reachable.
+    const reachableHtmlExts = new Set([
+      ...byHtmlExt.keys(),
+      ...ruleEnvs.map((env) => resolveHtmlExt(rule, env)),
+    ]);
     const identityUrls = new Set([...reachableHtmlExts].map((htmlExt) => (
       toIdentityUrl(variantProdUrl(htmlExt), htmlIdentity)
     )));

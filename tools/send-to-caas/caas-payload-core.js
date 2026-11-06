@@ -1400,8 +1400,11 @@ const hasContentTypeTag = (tags) => Array.isArray(tags)
 // htmlIdentity policy is on, libs/utils/caasIdentity.js derives the identity URL
 // from this one so the public URL can go extensionless without changing ids.
 // `htmlExt` accepts a boolean or an authored string, parsed by the one shared
-// flag parser so `TRUE` or a space-padded value cannot silently mean false and
-// flip every public url on a site.
+// flag parser. On the auto-publish path the authored value never reaches here
+// raw -- resolveHtmlExt parses it and passes a boolean -- and that resolver
+// deliberately PINS the pre-existing rule-wide column to its legacy strict
+// reading, because widening it would silently rehash live cards. See the
+// compatibility guard there before assuming `TRUE` or `on` enables anything.
 const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   if (!host || !path) return '';
   const bareHost = host.replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -1413,22 +1416,33 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
 };
 
 // `window.lana` only exists on pages that ran the Milo bootstrap (loadLana()).
-// None of the three runtimes on this path do: the bulk publisher page loads a
-// single module and no Milo scripts, the da-live/bulk-publish-v2 host is not a
-// Milo page, and the poller has no `window` at all. A bare `window.lana?.log`
-// is therefore a no-op in every runtime that can actually hit these branches,
-// so fall back to console -- which is also the poller's only channel, and the
-// poller is where removal mismatches happen.
+// The runtimes on this path differ, so this falls back to console rather than
+// assuming either way: the standalone bulk publisher page loads a single module
+// and no Milo scripts, da-live is not a Milo page, and the poller has no
+// `window` at all. bulk-publish-v2, by contrast, IS a Milo block -- it only
+// renders inside a Milo page, where scripts.js:103 ran loadLana -- so on that
+// host these messages DO reach lana. That is why the site-wide notice in
+// auto-publish.js is deduped: on the one runtime with lana, an unsuppressed
+// per-url notice is thousands of real warnings. Console remains the poller's
+// only channel, and the poller is where removal mismatches happen.
 // sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
 // calls; these are rare per-page diagnostics, not volume telemetry.
 // Tagged `caas,htmlIdentity` to match the consumer-side diagnostics in
 // libs/blocks/caas/utils.js and send-to-caas.js. These must share a tag: the
 // whole point of this path is that one lana query retrieves every identity
 // diagnostic, and `caas` alone buries them under unrelated CaaS logging.
-export const createIdentityLogger = (prefix) => (message, severity = 'error') => {
+//
+// `tags` is overridable because this is also the only diagnostic channel the
+// auto-publish module has, and some of its messages are not about identity at
+// all (an unrecognized `enabled` value, the rule-disabled kill switch, an
+// unknown caasEnv). Shipping those under `htmlIdentity` means that when the
+// rollout finishes and someone mutes or retires that tag, they silence the
+// message telling them a site has stopped publishing. Those call sites pass
+// `caas,autoPublish` instead.
+export const createIdentityLogger = (prefix, tags = 'caas,htmlIdentity') => (message, severity = 'error') => {
   const msg = `${prefix}: ${message}`;
   if (typeof window !== 'undefined' && window.lana?.log) {
-    window.lana.log(msg, { tags: 'caas,htmlIdentity', severity, sampleRate: 100 });
+    window.lana.log(msg, { tags, severity, sampleRate: 100 });
     return;
   }
   // `console` is not guaranteed: the poller runs this bundle in a Node `vm`

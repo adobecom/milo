@@ -738,7 +738,13 @@ helpButtons.forEach((btn) => {
             site featuring them in a collection &mdash; and, where the site also auto-publishes, with the
             <b>htmlIdentity</b> column in its <b>/.milo/caas/config.json</b>.
             Enabling only some of these silently breaks featured-card lookups: the card simply
-            vanishes from the collection, with no error.</p>`);
+            vanishes from the collection, with no error.</p>
+          <p><b>Ordering matters.</b> On a site that both publishes and consumes these cards
+            (business.adobe.com itself), setting the <b>caas-identity-html</b> metadata is read by
+            the sidekick publisher too, so it mints IDs on its own. Do not set it there until the
+            poller's pinned payload-builder build includes this change &mdash; otherwise the sidekick
+            and the poller disagree and the page gets two IDs. Consumer-only sites can be set up
+            at any time.</p>`);
         break;
 
       case 'use-preview':
