@@ -33,7 +33,8 @@ export const PRICE_TEMPLATE_PROMO_STRIKETHROUGH = 'promo-strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
 export const PRICE_TEMPLATE_LEGAL = 'legal';
 
-const isPreview = window.location.host.includes('aem.page') || window.location.host === 'www.stage.adobe.com';
+export const isPreviewHost = (host) => host.includes('aem.page') || host === 'www.stage.adobe.com';
+const isPreview = isPreviewHost(window.location.host);
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
   [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
@@ -431,10 +432,13 @@ export function getMasLibs() {
 }
 
 /**
- * Gets the URL for loading fragment-client.js based on maslibs parameter
- * @returns {string|null} URL for fragment-client.js or null if maslibs not present
+ * Gets the URL for loading fragment-client.js based on maslibs parameter.
+ * MAS only uses it to render previews, so it loads only on preview hosts.
+ * @param {string} [host] host to evaluate the preview check against
+ * @returns {string|null} URL for fragment-client.js or null if maslibs not present or not preview
  */
-function getFragmentClientUrl() {
+export function getFragmentClientUrl(host = window.location.host) {
+  if (!isPreviewHost(host)) return null;
   const baseUrl = getMasLibsBaseUrl();
   if (!baseUrl) return null;
   return `${baseUrl}/studio/libs/fragment-client.js`;
