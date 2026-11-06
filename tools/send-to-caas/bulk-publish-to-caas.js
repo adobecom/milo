@@ -401,7 +401,13 @@ export const reconcileHtmlIdentity = (presets) => {
   // A failed/unusable presets fetch is NOT evidence that the column was
   // un-authored. Treating it as such would silently turn the policy off on a
   // transient network error -- rehashing every card the operator then publishes.
-  if (!Array.isArray(presets)) return;
+  //
+  // An EMPTY list is the same non-answer: fetchExcelJson returns [] for any
+  // non-ok response (404/403/500/stale cache), which never reaches the .catch.
+  // Reconciling against it would find no matching preset, read that as "the
+  // column is off", and persist the rollback to localStorage -- so the policy
+  // would stay off after the sheet recovered. No preset rows means no evidence.
+  if (!Array.isArray(presets) || !presets.length) return;
   const stored = getConfig();
   const selected = stored?.presetSelector;
   if (!selected || selected === 'advanced' || selected === 'default') return;
@@ -521,6 +527,11 @@ presetSelector.addEventListener('change', () => {
   });
   config.useHtml = isFlagEnabled(selectedPreset.useHtml);
   config.htmlIdentity = isFlagEnabled(selectedPreset.htmlIdentity);
+  // Deliberately NOT converted to isFlagDisabled with the two above. This cell
+  // has inverted semantics and does not feed the identity hash, so switching it
+  // would change language/country resolution for every existing preset -- a
+  // behaviour change unrelated to card identity. It does share their blind spot
+  // ('FALSE' and ' false ' do not match), which is worth a separate ticket.
   config.languageFirst = selectedPreset.languageFirst === 'false';
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
     config.contentType = '';
@@ -770,8 +781,11 @@ themeOptions.forEach((btn) => {
 
 const init = async () => {
   setTheme();
-  const presets = await getPresetsData();
+  // Before getPresetsData(): its failure path calls showAlert(), which needs the
+  // `tingle` global. Loading presets first made that alert throw a ReferenceError
+  // inside the .catch, rejecting init() and leaving the whole page unwired.
   await loadTingleModalFiles(loadScript, loadStyle);
+  const presets = await getPresetsData();
   await loadCaasTags();
   loadFromLS();
   // After loadFromLS, so the stored htmlIdentity exists to be reconciled.

@@ -25,8 +25,16 @@
  *   htmlExt<Env>  per-target override, e.g. htmlExtStage / htmlExtProd, for a
  *                 site rolling extensionless urls out one environment at a time
  *   htmlIdentity  hash contentId/entityId from the `.html` form regardless of
- *                 the public url, so ids survive that rollout. Rule-wide, and
- *                 REQUIRED when htmlExt<Env> splits the targets.
+ *                 the public url, so ids survive that rollout. REQUIRED when
+ *                 htmlExt<Env> splits the targets.
+ *                 SITE-WIDE AND STICKY, unlike htmlExt: enabling it on ANY rule
+ *                 enables it for EVERY rule in the file, and setting it to
+ *                 `false` on one rule does NOT opt that rule out. To turn it
+ *                 off, remove the column from every rule. Card identity must
+ *                 not vary by path or environment, so the resolver deliberately
+ *                 has no way to scope it.
+ *                 Currently applies to business.adobe.com only; on any other
+ *                 host it is a no-op (see BACOM_PROD_HOST in caasIdentity.js).
  *
  * The function NEVER throws. CaaS publishing is best-effort — the underlying
  * Helix publish must not be blocked by a CaaS failure. All outcomes return
@@ -124,8 +132,9 @@ export const resolveRule = (rules, path) => {
 // Note this scopes the PUBLIC url only. Card identity must NOT vary by
 // environment: a collection authored in DA holds one contentId and is promoted
 // unchanged, so an id that differed per environment would resolve in only one.
-// `htmlIdentity` is therefore rule-wide, and is a no-op in any environment
-// still serving `.html` (forceSingleHtml collapses `/x.html` to `/x.html`).
+// `htmlIdentity` is therefore resolved site-wide (see resolveHtmlIdentity), and
+// is a no-op in any environment still serving `.html` (forceSingleHtml
+// collapses `/x.html` to `/x.html`).
 // Only environments this module actually targets may contribute an override
 // column. An unvalidated caasEnv would interpolate straight into the lookup
 // key, so a typo'd or caller-injected value would read an arbitrary rule
@@ -166,7 +175,7 @@ export const resolveHtmlExt = (rule, caasEnv) => {
   // An authored value that is neither true nor false (e.g. 'yes', '1') would
   // otherwise resolve silently to false and flip every public url on the rule.
   if (isFlagUnrecognized(value)) {
-    logIdentity(`unrecognized htmlExt value '${value}' on rule '${rule?.url}', treating as false`);
+    logIdentity(`unrecognized htmlExt value '${value}' on rule '${rule?.url}', treating as false`, 'warning');
   }
   return isFlagEnabled(value);
 };
@@ -283,10 +292,12 @@ export const caasAutoPublish = async ({
     // That equivalence holds only while the committed caas-payload-builder.js
     // bundle the poller runs is built from this source. It is rebuilt in this
     // change, so publish AND removal (getCaasIds) now agree across the two
-    // runtimes. Nothing enforces that automatically: `npm run
-    // build:caas-payload-builder` is a manual script with no CI drift check, so
-    // any later change to caas-payload-core.js must rebuild the bundle in the
-    // same PR or the two publishers will silently mint different ids.
+    // runtimes. `npm run build:caas-payload-builder` is a manual script, but
+    // caas-payload-builder.bundle.test.js now fails when the artifact and the
+    // source disagree, so a stale bundle is caught in CI rather than shipping
+    // silently. That guard compares behaviour, not bytes (the minifier mangles
+    // names non-deterministically), so any later change to caas-payload-core.js
+    // must still be rebuilt in the same PR.
     // `repo` (the CaaS source) likewise comes from config when set — e.g. the
     // bacom blog files under `bacom`, which the aem hostname can't tell us.
     // Falls back to the caller-supplied url/host/repo when config omits them.
@@ -300,14 +311,14 @@ export const caasAutoPublish = async ({
     if (isDisabledOnPage(dom)) return { skipped: true, reason: 'page-override-disabled' };
 
     // Keeps a site's existing `.html`-derived card identities stable while its
-    // public urls go extensionless. Declared per rule alongside htmlExt.
-    // A typo here is the worst authoring mistake available on this path -- it
-    // resolves to off and orphans every card on the site -- so it is surfaced
-    // rather than defaulted silently.
+    // public urls go extensionless. Declared per rule alongside htmlExt, but
+    // resolved site-wide -- so this warns only that THIS cell was unreadable,
+    // without asserting the outcome: another rule may still enable the policy.
     if (isFlagUnrecognized(rule.htmlIdentity)) {
       logIdentity(
         `unrecognized htmlIdentity value '${rule.htmlIdentity}' on rule '${rule.url}', `
-        + 'treating as OFF -- card ids will NOT be normalized',
+        + 'ignored -- the effective value is resolved across all rules',
+        'warning',
       );
     }
     const htmlIdentity = resolveHtmlIdentity(rules, rule);
@@ -358,9 +369,19 @@ export const caasAutoPublish = async ({
       // never eligible from a misconfiguration that has stopped an entire site
       // from publishing. This is a refusal that needs a human, so it surfaces
       // as an error and logs.
+      //
+      // Two different causes reach here and they need different fixes, so the
+      // message names the real one. Telling an operator who already set
+      // htmlIdentity to "set htmlIdentity" sends them to re-check a cell that
+      // is correct, with nothing pointing at the hardcoded host scope.
+      const remedy = htmlIdentity
+        ? `htmlIdentity is set, but host '${effHost}' is not covered by the identity policy `
+          + '(it currently applies to business.adobe.com only), so the ids fork anyway. '
+          + 'Roll the environments to the same htmlExt instead of splitting them.'
+        : 'Set htmlIdentity on the rule.';
       logIdentity(
         `refusing to publish '${path}': htmlExt differs per environment but identity does not `
-        + 'converge, which would mint two contentIds for one page. Set htmlIdentity on the rule.',
+        + `converge, which would mint two contentIds for one page. ${remedy}`,
       );
       return { skipped: false, error: 'env-split-requires-html-identity' };
     }

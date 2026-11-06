@@ -19,7 +19,6 @@
 /* eslint-disable no-underscore-dangle */
 import getUuid from '../../libs/utils/getUuid.js';
 import {
-  getCaasIdentityUrl,
   toIdentityUrl,
   isFlagEnabled,
   isForcedHtmlIdentityUrl,
@@ -1084,7 +1083,7 @@ function localizeCtaUrl(val, options = {}) {
 // options.prodUrl, which continues to drive the public url, uci and CTA urls:
 // BACOM publishes extensionless public urls while keeping its existing
 // `.html`-derived card identities, so the two must not be coupled.
-const getIdentityUrl = (options = {}) => getCaasIdentityUrl(options.prodUrl, options.htmlIdentity);
+const getIdentityUrl = (options = {}) => toIdentityUrl(options.prodUrl, options.htmlIdentity);
 
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => (pair)),
@@ -1411,14 +1410,6 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   return `https://${bareHost}${cleanPath}`;
 };
 
-// Compute the CaaS identifiers for a page from its prodUrl alone (no DOM needed).
-// Used for removal: a deactivated/deleted page's HTML is gone, but its card
-// identity is fully determined by the prodUrl, exactly as on publish:
-//   identityUrl = getCaasIdentityUrl(prodUrl, htmlIdentity)
-//   contentId   = uuid(identityUrl); entityId = uuid(identityUrl + floodgate salt)
-// IMPORTANT: callers MUST pass the same `htmlIdentity` the page was published
-// under. Removal is matched by id, so a mismatch does not error — it computes
-// ids that match no card and leaves the real one live in CaaS forever.
 // `window.lana` only exists on pages that ran the Milo bootstrap (loadLana()).
 // None of the three runtimes on this path do: the bulk publisher page loads a
 // single module and no Milo scripts, the da-live/bulk-publish-v2 host is not a
@@ -1434,8 +1425,11 @@ export const createIdentityLogger = (prefix) => (message, severity = 'error') =>
     window.lana.log(msg, { tags: 'caas', severity, sampleRate: 100 });
     return;
   }
+  // `console` is not guaranteed: the poller runs this bundle in a Node `vm`
+  // whose sandbox is an explicit allowlist, so a future context that omits it
+  // would turn a diagnostic into a ReferenceError on the removal path.
   // eslint-disable-next-line no-console
-  console[severity === 'warning' ? 'warn' : 'error'](msg);
+  if (typeof console !== 'undefined') console[severity === 'warning' ? 'warn' : 'error'](msg);
 };
 
 const logIdentity = createIdentityLogger('caas-identity');
@@ -1447,22 +1441,34 @@ const logIdentity = createIdentityLogger('caas-identity');
 // has also, in effect, omitted it.
 const HTML_IDENTITY_UNSET = Symbol('htmlIdentity-unset');
 
+// Compute the CaaS identifiers for a page from its prodUrl alone (no DOM needed).
+// Used for removal: a deactivated/deleted page's HTML is gone, but its card
+// identity is fully determined by the prodUrl, exactly as on publish:
+//   identityUrl = toIdentityUrl(prodUrl, htmlIdentity)
+//   contentId   = uuid(identityUrl); entityId = uuid(identityUrl + floodgate salt)
+// IMPORTANT: callers MUST pass the same `htmlIdentity` the page was published
+// under. Removal is matched by id, so a mismatch does not error — it computes
+// ids that match no card and leaves the real one live in CaaS forever.
+
 const getCaasIds = async (
   prodUrl,
   floodgatecolor = 'default',
   htmlIdentity = HTML_IDENTITY_UNSET,
 ) => {
   const omitted = htmlIdentity === HTML_IDENTITY_UNSET;
-  // toIdentityUrl strips the scheme the same way buildCaasXdmPayload does before
-  // hashing, so a schemed prodUrl (e.g. from getProdUrl()) hashes to the same
-  // contentId/entityId as the one computed at publish time.
-  const bareProdUrl = typeof prodUrl === 'string' ? prodUrl.replace(/^https?:\/\//, '') : prodUrl;
+  // Removal has to reproduce the identity the page was published under, so it
+  // applies the same forced-`.html` policy as publish. toIdentityUrl also strips
+  // the scheme the way buildCaasXdmPayload does before hashing, so a schemed
+  // prodUrl (e.g. straight from getProdUrl()) hashes to the same ids.
+  const identityUrl = toIdentityUrl(prodUrl, omitted ? false : htmlIdentity);
   // A caller that omits htmlIdentity gets no error, just ids that match no
   // card -- so the only symptom is a card nobody can delete. Warn precisely:
   // the omission only changes the answer for urls the policy actually covers.
-  if (omitted && isForcedHtmlIdentityUrl(bareProdUrl)) {
+  // isForcedHtmlIdentityUrl accepts schemed input (it splits the url itself),
+  // so this needs no separate scheme strip.
+  if (omitted && isForcedHtmlIdentityUrl(prodUrl)) {
     logIdentity(
-      `getCaasIds called without htmlIdentity for in-scope url '${bareProdUrl}'. `
+      `getCaasIds called without htmlIdentity for in-scope url '${identityUrl}'. `
       + 'If the page was published with htmlIdentity on, these ids will not match '
       + 'its card and removal will silently leave it live. Callers (notably the '
       + 'milo-caas poller) should pass the rule\'s htmlIdentity explicitly.',
@@ -1474,9 +1480,6 @@ const getCaasIds = async (
       'warning',
     );
   }
-  // Removal has to reproduce the identity the page was published under, so it
-  // applies the same forced-`.html` policy as publish.
-  const identityUrl = toIdentityUrl(prodUrl, omitted ? false : htmlIdentity);
   const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
   const [contentId, entityId] = await Promise.all([
     getUuid(identityUrl),

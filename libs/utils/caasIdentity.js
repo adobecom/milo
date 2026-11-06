@@ -6,16 +6,12 @@
 // free.
 //
 // That constraint is also why the generic flag parsers (isFlagEnabled and
-// friends) live here rather than in a shared libs/utils/flags.js. A review
-// reasonably asked for that split, and the honest position is that the eslint
-// import ban below is authored by this change, so citing it as the reason
-// would be circular -- the real constraint is only bundle-ability, which does
-// permit leaf-to-leaf imports (getUuid.js is precedent). The split is worth
-// doing and is deliberately deferred rather than argued away: it needs the
-// eslint selector relaxed to an allowlist of leaf specifiers, which widens the
-// blast radius of a change whose point is to not move card identity. Tracked
-// as a follow-up to MWPW-213846. Until then, import them from here rather than
-// writing a fourth variant -- the drift this centralization exists to kill.
+// friends) live here rather than in a shared libs/utils/flags.js. Splitting
+// them out is worth doing but is deliberately deferred: it needs the eslint
+// import ban below relaxed to an allowlist of leaf specifiers, which widens
+// the blast radius of a change whose whole point is to not move card identity.
+// Until then, import them from here rather than writing a fourth variant --
+// the drift this centralization exists to kill.
 //
 // BACOM is moving its public pages on business.adobe.com to extensionless
 // URLs. Card identity (contentId/entityId) is a hash of the page URL, so
@@ -35,10 +31,11 @@
 // Only the identity hash input is affected. The public url, uci and CTA urls
 // continue to use prodUrl untouched.
 
-// TODO(MWPW-213846): single-tenant by design. The migration this unblocks is
+// Single-tenant by design, NOT an oversight. The migration this unblocks is
 // bacom-only, and a tenant list that nobody is yet asking for would be
 // unexercised configuration surface. Generalize to a configured allowlist when
-// a second tenant actually migrates -- not before.
+// a second tenant actually migrates -- not before. Deliberately left without a
+// tracking ticket: the trigger is a real second tenant, not a scheduled cleanup.
 const BACOM_PROD_HOST = 'business.adobe.com';
 const HTML_EXT = '.html';
 

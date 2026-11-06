@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import { stub } from 'sinon';
 import * as core from '../../../tools/send-to-caas/caas-payload-core.js';
 
 // `tools/send-to-caas/caas-payload-builder.js` is a COMMITTED build artifact.
@@ -66,6 +67,69 @@ describe('caas-payload-builder bundle is not stale', () => {
       ]);
       expect(fromBundle, `${url} / ${JSON.stringify(flag)}`).to.eql(fromCore);
     })));
+  });
+
+  it('agrees with the source on getCaasIds when htmlIdentity is OMITTED', async () => {
+    // The poller's actual call shape today: it passes no third argument at all.
+    // That is a distinct code path from an explicit `false` (an internal
+    // sentinel distinguishes them to drive a warning), so the matrix above does
+    // not cover the one form production currently uses.
+    const urls = [
+      'https://business.adobe.com/resources/x',
+      'https://business.adobe.com/resources/x.html',
+      'https://www.adobe.com/resources/x',
+    ];
+    await Promise.all(urls.map(async (url) => {
+      const [fromBundle, fromCore] = await Promise.all([
+        bundle.getCaasIds(url, 'default'),
+        core.getCaasIds(url, 'default'),
+      ]);
+      expect(fromBundle, url).to.eql(fromCore);
+    }));
+  });
+
+  it('agrees with the source on the whole payload for a fixed page', async () => {
+    // Widens the guard from two functions to the entire payload surface, so a
+    // future source change to any prop -- not just the identity inputs -- is
+    // caught. buildCaasXdmPayload is the largest surface and the one that in
+    // fact drifted while the bundle sat stale.
+    //
+    // Honest limit, verified by running this against the stale bundle: the two
+    // props that actually drifted (the `ara`->`ar` base-site language alias and
+    // cta2url locale injection) do NOT differ here, because both need the tag
+    // taxonomy / lingo mapping and those fetches are stubbed. This test does not
+    // cover them; the getProdUrl and getCaasIds assertions above are what
+    // currently catch a stale bundle.
+    //
+    // Stub the tag-taxonomy fetch so this never depends on live network, and
+    // run the two builders SEQUENTIALLY -- buildCaasXdmPayload is documented
+    // non-reentrant (it threads module-global config/tag state).
+    const fetchStub = stub(window, 'fetch').rejects(new Error('network disabled in test'));
+    try {
+      const rows = [
+        ['CardTitle', 'Bundle parity'],
+        ['CardDescription', 'Body copy for the parity fixture.'],
+        ['CardImage', 'https://example.com/img.jpg'],
+        ['primaryTag', 'caas:content-type/article'],
+        ['CTA2Text', 'Learn more'],
+        ['CTA2Url', 'https://business.adobe.com/resources/y'],
+      ];
+      const mkDom = () => {
+        const html = `<!DOCTYPE html><html><head></head><body><div class="card-metadata">${
+          rows.map(([k, v]) => `<div><div>${k}</div><div>${v}</div></div>`).join('')
+        }</div></body></html>`;
+        return new DOMParser().parseFromString(html, 'text/html');
+      };
+      const host = 'main--bacom--adobecom.aem.live';
+      const args = { host, repo: 'bacom', pageUrl: core.getProdUrl({ host, path: '/ara/resources/x' }) };
+
+      const fromBundle = await bundle.buildCaasXdmPayload({ ...args, dom: mkDom() });
+      const fromCore = await core.buildCaasXdmPayload({ ...args, dom: mkDom() });
+      expect(fromBundle.caasProps).to.eql(fromCore.caasProps);
+      expect(fromBundle.caasMetadata).to.eql(fromCore.caasMetadata);
+    } finally {
+      fetchStub.restore();
+    }
   });
 
   it('applies the forced-.html identity policy, proving the flag reached the artifact', async () => {

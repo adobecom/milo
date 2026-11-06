@@ -34,10 +34,8 @@ const warnOnIdentityPolicyMiss = (link) => {
   identityPolicyMissLogged = true;
   window.lana?.log(
     `CaaS: extensionless in-scope card link resolved without the .html identity policy; set the 'caas-identity-html' metadata to 'true' or these cards will not resolve. Example: ${link}`,
-    // `severity` is lana's validated channel; `errorType` is an opaque code
-    // emitted verbatim, and setting it to 'i' would make lana ignore the
-    // explicit sampleRate below in favour of implicitSampleRate (1), dropping
-    // ~99% of these. Leave errorType at its default and sample at 100.
+    // sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
+    // calls; this is a rare per-page diagnostic, not volume telemetry.
     { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
   );
 };

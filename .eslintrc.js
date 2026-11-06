@@ -1,6 +1,8 @@
 // ESLint `overrides[].rules` replace a rule's options rather than merging them,
 // so any override that re-declares `no-restricted-syntax` must spread these back
 // in or it silently repeals them for the files it targets.
+const BUNDLE_LEAF_MSG = 'caasIdentity.js must stay dependency-free: it is bundled for the milo-caas poller. Keep it pure string logic.';
+
 const RESTRICTED_SYNTAX = [
   {
     selector: 'ForInStatement',
@@ -52,19 +54,32 @@ module.exports = {
       // that bundle (or breaks it, for anything browser-only), so the
       // dependency-free rule is enforced here rather than left to a header
       // comment that a future edit can read past.
+      //
+      // no-restricted-imports rather than a no-restricted-syntax selector: it
+      // covers `import`, dynamic `import()` AND `export ... from` in one rule.
+      // Selectors on ImportDeclaration/ImportExpression miss re-exports, which
+      // are ExportNamedDeclaration/ExportAllDeclaration nodes with a source --
+      // and a re-export creates exactly the bundle dependency this forbids.
       files: ['libs/utils/caasIdentity.js'],
       rules: {
+        // no-restricted-imports covers `import` and `export ... from`; a
+        // selector on ImportDeclaration alone misses re-exports, which are
+        // ExportNamedDeclaration/ExportAllDeclaration nodes with a source.
+        'no-restricted-imports': ['error', {
+          patterns: [{
+            group: ['*'],
+            message: BUNDLE_LEAF_MSG,
+          }],
+        }],
+        // ...but no-restricted-imports does NOT match dynamic `import()`, which
+        // would pull a chunk into the bundle just as surely. Verified by
+        // mutation: with only the rule above, `() => import('./getUuid.js')`
+        // lints clean. RESTRICTED_SYNTAX is spread back in because listing this
+        // rule here would otherwise repeal the three repo-wide selectors.
         'no-restricted-syntax': [
           'error',
           ...RESTRICTED_SYNTAX,
-          {
-            selector: 'ImportDeclaration',
-            message: 'caasIdentity.js must stay dependency-free: it is bundled for the milo-caas poller. Keep it pure string logic.',
-          },
-          {
-            selector: 'ImportExpression',
-            message: 'caasIdentity.js must stay dependency-free: it is bundled for the milo-caas poller. Keep it pure string logic.',
-          },
+          { selector: 'ImportExpression', message: BUNDLE_LEAF_MSG },
         ],
       },
     },

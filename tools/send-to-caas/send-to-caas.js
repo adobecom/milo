@@ -238,7 +238,8 @@ const validateProps = async (prodHost, publishingModal) => {
   // legacy id for a page the bulk/auto publishers give a forced-`.html` id,
   // creating a duplicate card for one page.
   //
-  // KNOWN DIVERGENCE (MWPW-213846 follow-up): this reads page metadata, while
+  // KNOWN DIVERGENCE (needs a follow-up ticket -- see PR #7106 description):
+  // this reads page metadata, while
   // auto-publish resolves the same flag from the path-scoped rules in
   // `/.milo/caas/config.json`. The two agree only while a site keeps them in
   // sync by hand, and a disagreement is silent -- the page publishes fine, just

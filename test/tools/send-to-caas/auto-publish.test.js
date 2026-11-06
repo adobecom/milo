@@ -1167,6 +1167,44 @@ describe('auto-publish: per-environment htmlExt', () => {
     expect(posts).to.have.lengthOf(0);
   });
 
+  it('names the real cause when htmlIdentity is set but the host is out of scope', async () => {
+    // The refusal fires for two different causes needing two different fixes.
+    // Telling an operator who already set htmlIdentity to "set htmlIdentity"
+    // sends them to re-check a correct cell, with nothing pointing at the
+    // hardcoded host scope that is the actual blocker.
+    const logs = [];
+    window.lana = { log: (msg) => logs.push(msg) };
+    const origin = uniqueOrigin();
+    setup(origin, {
+      host: 'www.adobe.com',
+      repo: 'milo',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    await run(origin);
+    const refusal = logs.find((m) => m.includes('refusing to publish'));
+    expect(refusal, 'no refusal was logged').to.exist;
+    expect(refusal).to.include('www.adobe.com');
+    expect(refusal).to.not.include('Set htmlIdentity on the rule');
+  });
+
+  it('still says to set htmlIdentity when the flag is genuinely absent', async () => {
+    const logs = [];
+    window.lana = { log: (msg) => logs.push(msg) };
+    const origin = uniqueOrigin();
+    setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+    });
+    await run(origin);
+    const refusal = logs.find((m) => m.includes('refusing to publish'));
+    expect(refusal, 'no refusal was logged').to.exist;
+    expect(refusal).to.include('Set htmlIdentity on the rule');
+  });
+
   it('covers a blog path rather than exempting it, so its ids survive', async () => {
     // The blog is scoped out by its own repo's config, never by path here. If
     // the blog repo turns the flag on, an env split must behave like any other

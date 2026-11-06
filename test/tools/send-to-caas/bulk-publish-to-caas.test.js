@@ -212,6 +212,25 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     expect(getConfig().htmlIdentity).to.equal(true);
   });
 
+  it('does nothing for an EMPTY sheet, which is what an HTTP error actually returns', () => {
+    // fetchExcelJson returns [] for any non-ok response (404/403/500/stale
+    // cache) and never rejects, so this never reaches the .catch. Treating an
+    // empty list as authoritative would find no matching preset, read that as
+    // "the column is off", and persist the rollback to localStorage -- leaving
+    // the policy off even after the sheet recovered.
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity([]);
+    expect(getConfig().htmlIdentity).to.equal(true);
+  });
+
+  it('still clears the flag when the sheet is populated but omits the preset', () => {
+    // The empty-sheet guard must not swallow the real rollback signal: a sheet
+    // that loaded fine and no longer carries the preset IS evidence.
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity([{ id: 'other', htmlIdentity: 'true' }]);
+    expect(getConfig().htmlIdentity).to.equal(false);
+  });
+
   describe('htmlIdentity advanced option', () => {
     it('exposes the checkbox inside the advanced options panel', () => {
       // The flag used to be reachable only by authoring a preset column, so an
