@@ -156,3 +156,98 @@ describe('getBulkPublishLangAttr — auto-detect Lingo matrix', () => {
     expect(caught.message).to.equal('HTTP 404');
   });
 });
+
+describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
+  let reconcileHtmlIdentity;
+  let getConfig;
+  let setConfig;
+
+  before(async () => {
+    // Use the real bulkpublisher markup as the fixture: the module binds
+    // handlers to a dozen elements at import time, so a hand-rolled fixture
+    // would drift the moment the page changes. Scripts parsed via DOMParser
+    // are inert, so nothing self-initializes.
+    const pageHtml = await readFile({ path: '../../../tools/send-to-caas/bulkpublisher.html' });
+    const parsed = new DOMParser().parseFromString(pageHtml, 'text/html');
+    document.body.append(...parsed.body.children);
+    ({ reconcileHtmlIdentity } = await import('../../../tools/send-to-caas/bulk-publish-to-caas.js'));
+    ({ getConfig, setConfig } = await import('../../../tools/send-to-caas/send-utils.js'));
+  });
+
+  const sheet = (htmlIdentity) => [{ id: 'bacom', htmlIdentity }];
+
+  it('clears a stored flag once the column is un-authored (the rollback path)', () => {
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity(sheet(undefined));
+    expect(getConfig().htmlIdentity).to.equal(false);
+  });
+
+  it('adopts the sheet when it turns the flag on', () => {
+    setConfig({ presetSelector: 'bacom', htmlIdentity: false });
+    reconcileHtmlIdentity(sheet('true'));
+    expect(getConfig().htmlIdentity).to.equal(true);
+  });
+
+  it('treats a non-lowercase sheet value as on, so casing cannot cause a false rollback', () => {
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity(sheet(' TRUE '));
+    expect(getConfig().htmlIdentity).to.equal(true);
+  });
+
+  it('clears the flag when the preset no longer exists in the sheet', () => {
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity([{ id: 'other', htmlIdentity: 'true' }]);
+    expect(getConfig().htmlIdentity).to.equal(false);
+  });
+
+  it('leaves advanced mode alone, since the operator sets the checkbox directly', () => {
+    setConfig({ presetSelector: 'advanced', htmlIdentity: true });
+    reconcileHtmlIdentity(sheet(undefined));
+    expect(getConfig().htmlIdentity).to.equal(true);
+  });
+
+  it('does nothing when the presets fetch failed, rather than reading a failure as "off"', () => {
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity(null);
+    expect(getConfig().htmlIdentity).to.equal(true);
+  });
+
+  it('does nothing for an EMPTY sheet, which is what an HTTP error actually returns', () => {
+    // fetchExcelJson returns [] for any non-ok response (404/403/500/stale
+    // cache) and never rejects, so this never reaches the .catch. Treating an
+    // empty list as authoritative would find no matching preset, read that as
+    // "the column is off", and persist the rollback to localStorage -- leaving
+    // the policy off even after the sheet recovered.
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity([]);
+    expect(getConfig().htmlIdentity).to.equal(true);
+  });
+
+  it('still clears the flag when the sheet is populated but omits the preset', () => {
+    // The empty-sheet guard must not swallow the real rollback signal: a sheet
+    // that loaded fine and no longer carries the preset IS evidence.
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true });
+    reconcileHtmlIdentity([{ id: 'other', htmlIdentity: 'true' }]);
+    expect(getConfig().htmlIdentity).to.equal(false);
+  });
+
+  describe('htmlIdentity advanced option', () => {
+    it('exposes the checkbox inside the advanced options panel', () => {
+      // The flag used to be reachable only by authoring a preset column, so an
+      // operator could not test or roll it back without a sheet edit. It also
+      // has to sit INSIDE .advanced-options or it inherits none of the panel's
+      // show/hide behaviour and leaks into the simple view.
+      const cb = document.getElementById('htmlIdentity');
+      expect(cb, 'htmlIdentity checkbox is missing from bulkpublisher.html').to.exist;
+      expect(cb.type).to.equal('checkbox');
+      expect(cb.closest('.advanced-options'), 'checkbox escaped the advanced panel').to.exist;
+    });
+
+    it('syncs the checkbox to the reconciled value', () => {
+      setConfig({ presetSelector: 'bacom', htmlIdentity: 'false' });
+      document.getElementById('htmlIdentity').checked = false;
+      reconcileHtmlIdentity([{ id: 'bacom', htmlIdentity: 'true' }]);
+      expect(document.getElementById('htmlIdentity').checked).to.be.true;
+    });
+  });
+});

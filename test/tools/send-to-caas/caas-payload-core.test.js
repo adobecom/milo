@@ -5,6 +5,7 @@ import getUuid from '../../../libs/utils/getUuid.js';
 const {
   buildCaasXdmPayload,
   getBulkPublishLangAttr,
+  getCaasIds,
   getProdUrl,
   initBulkPublisherLingoMapping,
 } = await import('../../../tools/send-to-caas/caas-payload-core.js');
@@ -151,5 +152,140 @@ describe('caas-payload-core: getBulkPublishLangAttr with a BACOM /ara base-site 
     });
 
     expect(result).to.equal('ar-xx');
+  });
+});
+
+describe('caas-payload-core: forced-.html card identity', () => {
+  const BACOM = 'business.adobe.com';
+  let fetchStub;
+
+  beforeEach(() => {
+    // Same reason as the sibling describe above: never depend on live internet.
+    fetchStub = stub(window, 'fetch').rejects(new Error('network disabled in test'));
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+  });
+
+  const dom = () => buildDom([['CardTitle', 'Test card'], ['CardImage', 'https://example.com/img.jpg']]);
+
+  const build = async ({ path, htmlIdentity, floodgatecolor }) => {
+    const { caasMetadata } = await buildCaasXdmPayload({
+      dom: dom(),
+      pageUrl: getProdUrl({ host: BACOM, path }),
+      host: BACOM,
+      repo: 'bacom',
+      htmlIdentity,
+      floodgatecolor,
+    });
+    return caasMetadata;
+  };
+
+  it('hashes the .html form while publishing the extensionless url', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: true });
+    expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x.html`));
+    // The public url and uci must stay extensionless: only identity is forced.
+    expect(md.url).to.equal(`https://${BACOM}/resources/x`);
+    expect(md.uci).to.equal(`${BACOM}/resources/x`);
+  });
+
+  it('produces the same ids whether or not the source path carried .html', async () => {
+    const withExt = await build({ path: '/resources/x.html', htmlIdentity: true });
+    const withoutExt = await build({ path: '/resources/x', htmlIdentity: true });
+    expect(withoutExt.contentid).to.equal(withExt.contentid);
+    expect(withoutExt.entityid).to.equal(withExt.entityid);
+  });
+
+  it('keeps the legacy ids when the flag is off', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: false });
+    expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('applies to every path, with no section carved out', async () => {
+    // Sections are scoped out by their own repo's config not setting the flag,
+    // never by path here -- otherwise the flag silently does nothing for a
+    // section that migrates later and orphans all of its cards.
+    const cases = ['/blog/post', '/fr/blog/post', '/blog', '/products/y'];
+    // Sequential, not Promise.all: buildCaasXdmPayload is NOT reentrant (it
+    // threads module-global config/tag state), as documented at its definition.
+    // The concurrent form passes here only incidentally, because contentid is
+    // computed from the per-call prodUrl closure and so happens to survive the
+    // interleaving -- every other resolved prop would not. This is also the
+    // place a future reader looks for the house style on calling it.
+    for (const path of cases) {
+      // eslint-disable-next-line no-await-in-loop
+      const md = await build({ path, htmlIdentity: true });
+      // eslint-disable-next-line no-await-in-loop
+      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}.html`));
+    }
+  });
+
+  it('accepts the string flag form config sheets store', async () => {
+    const enabled = await build({ path: '/resources/x', htmlIdentity: 'true' });
+    expect(enabled.contentid).to.equal(await getUuid(`${BACOM}/resources/x.html`));
+    // A sheet cell reading 'false' must not enable the policy.
+    const disabled = await build({ path: '/resources/x', htmlIdentity: 'false' });
+    expect(disabled.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('leaves other production hostnames unchanged', async () => {
+    const host = 'www.adobe.com';
+    const { caasMetadata } = await buildCaasXdmPayload({
+      dom: dom(),
+      pageUrl: getProdUrl({ host, path: '/resources/x' }),
+      host,
+      repo: 'milo',
+      htmlIdentity: true,
+    });
+    expect(caasMetadata.contentid).to.equal(await getUuid(`${host}/resources/x`));
+  });
+
+  it('applies the forced .html before the floodgate salt', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: true, floodgatecolor: 'pink' });
+    expect(md.entityid).to.equal(await getUuid(`${BACOM}/resources/x.htmlpink`));
+    expect(md.entityid).to.not.equal(md.contentid);
+  });
+
+  it('getCaasIds reproduces the published identity so removal matches', async () => {
+    const published = await build({ path: '/resources/x', htmlIdentity: true });
+    const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+    expect(ids.contentId).to.equal(published.contentid);
+    expect(ids.entityId).to.equal(published.entityid);
+  });
+
+  it('getCaasIds leaves the legacy ids alone when the flag is off', async () => {
+    const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default');
+    expect(ids.contentId).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('warns when removal omits htmlIdentity for an in-scope url', async () => {
+    // Removal is matched by id, so an omitted flag does not throw -- it just
+    // computes ids that match no card and leaves the real one live in CaaS
+    // forever. A log is the only way that surfaces.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default');
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('without htmlIdentity');
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('does not warn when htmlIdentity is passed, or when the url is out of scope', async () => {
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false);
+      // Another host is not covered by the policy, so the flag cannot change
+      // the answer and the warning would be pure noise.
+      await getCaasIds('https://www.adobe.com/resources/x', 'default');
+      expect(log.called).to.be.false;
+    } finally {
+      delete window.lana;
+    }
   });
 });

@@ -9,6 +9,7 @@ import {
 import {
   getCardMetadata,
   getCaasProps,
+  createIdentityLogger,
   getFloodgateColorFromHost,
   initBulkPublisherLingoMapping,
   loadCaasTags,
@@ -17,7 +18,10 @@ import {
   setConfig,
 } from './send-utils.js';
 import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { isFlagEnabled, isFlagUnrecognized, isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
+
+const logIdentity = createIdentityLogger('caas-bulk-publish');
 
 const BODY = document.body;
 const STATUS_EL = BODY.querySelector('.status');
@@ -40,7 +44,7 @@ STATUS_EL.addEventListener('click', (e) => {
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'usePreview', 'languageFirst'];
+const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'htmlIdentity', 'usePreview', 'languageFirst'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -57,6 +61,7 @@ const DEFAULT_VALUES_CB = {
   dryRun: false,
   usePreview: false,
   useHtml: false,
+  htmlIdentity: false,
   languageFirst: false,
 };
 
@@ -205,6 +210,7 @@ const processData = async (data, accessToken) => {
     publishToFloodgate,
     languageFirst,
     autoDetectLingo,
+    htmlIdentity,
   } = getConfig();
 
   if (!repo) {
@@ -215,6 +221,9 @@ const processData = async (data, accessToken) => {
 
   const hostFgColor = getFloodgateColorFromHost(host);
   const floodgateColor = hostFgColor || publishToFloodgate;
+  // Authored per preset in the bulk publisher presets sheet, so teams can turn
+  // the forced-`.html` identity policy on per site without a code change.
+  const htmlIdentityEnabled = isHtmlIdentityEnabled(htmlIdentity);
 
   let domain = `https://${host}`;
 
@@ -248,6 +257,7 @@ const processData = async (data, accessToken) => {
       setConfig({ bulkPublish: true, doc: dom, pageUrl, lastModified });
       const { caasMetadata, errors } = await getCardMetadata({
         prodUrl,
+        htmlIdentity: htmlIdentityEnabled,
         host,
         repo,
         floodgatecolor: floodgateColor,
@@ -380,8 +390,42 @@ const checkCaasEnv = () => {
 // presets options
 const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
 let presetsData = {};
-const getPresetsData = async () => {
-  fetchExcelJson(presetsJsonPath).then((presets) => {
+
+// loadFromLS restores the WHOLE saved config object, htmlIdentity included, so
+// the stored value outlived the sheet it came from: un-authoring the column --
+// the only rollback available to a publishing team -- left anyone who had
+// already selected that preset still publishing with the policy on, silently
+// and indefinitely. The sheet is the source of truth, so the stored value is
+// reconciled against it as soon as the presets arrive.
+export const reconcileHtmlIdentity = (presets) => {
+  // A failed/unusable presets fetch is NOT evidence that the column was
+  // un-authored. Treating it as such would silently turn the policy off on a
+  // transient network error -- rehashing every card the operator then publishes.
+  //
+  // An EMPTY list is the same non-answer: fetchExcelJson returns [] for any
+  // non-ok response (404/403/500/stale cache), which never reaches the .catch.
+  // Reconciling against it would find no matching preset, read that as "the
+  // column is off", and persist the rollback to localStorage -- so the policy
+  // would stay off after the sheet recovered. No preset rows means no evidence.
+  if (!Array.isArray(presets) || !presets.length) return;
+  const stored = getConfig();
+  const selected = stored?.presetSelector;
+  if (!selected || selected === 'advanced' || selected === 'default') return;
+  const live = presets.find((preset) => preset.id === selected);
+  const liveValue = isFlagEnabled(live?.htmlIdentity);
+  if (liveValue === isFlagEnabled(stored.htmlIdentity)) return;
+  setConfig({ htmlIdentity: liveValue });
+  const el = document.getElementById('htmlIdentity');
+  if (el) el.checked = liveValue;
+  window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
+};
+
+// Returns the presets so callers can order work after they land. This used to
+// drop the promise, which made `await getPresetsData()` resolve immediately and
+// let reconcileHtmlIdentity race loadFromLS() -- it usually ran first, saw an
+// empty config, and returned without reconciling anything.
+const getPresetsData = async () => fetchExcelJson(presetsJsonPath)
+  .then((presets) => {
     const separator = document.querySelector('.separator');
     const parent = separator.parentElement;
     presetsData = presets;
@@ -391,8 +435,23 @@ const getPresetsData = async () => {
       option.text = `${preset.name} (${preset.id})`;
       parent.insertBefore(option, separator);
     });
+    return presets;
+  })
+  .catch((e) => {
+    // The rollback path depends on this fetch, so a failure must not look like
+    // "nothing to reconcile" -- it means the stored policy could not be checked.
+    logIdentity(`could not load presets (${e?.message || e}); htmlIdentity could not be reconciled against the sheet`, 'warning');
+    // console alone is the wrong channel here: un-authoring the preset column is
+    // the only rollback a publishing team has, and if this fetch failed that
+    // rollback silently did not take effect. The operator is looking at this
+    // page, so tell them here, before they publish a batch under a stale policy.
+    showAlert(
+      '<p><b>Presets could not be loaded.</b></p>'
+      + '<p>The <b>Keep .html card identity</b> setting could not be checked '
+      + 'against the sheet and may be stale. Verify the checkbox before publishing.</p>',
+    );
+    return null;
   });
-};
 
 const resetAdvancedOptions = () => {
   /* eslint-disable no-undef */
@@ -401,6 +460,7 @@ const resetAdvancedOptions = () => {
   draftOnly.checked = false;
   dryRun.checked = false;
   useHtml.checked = false;
+  htmlIdentity.checked = false;
   usePreview.checked = false;
   languageFirst.checked = false;
   autoDetectLingo.checked = false;
@@ -430,6 +490,8 @@ presetSelector.addEventListener('change', () => {
 
   if (value === 'advanced') {
     BODY.classList.add('advanced');
+    // Advanced mode now exposes an htmlIdentity checkbox, so whatever is
+    // currently set stays set and visible rather than being silently cleared.
     return;
   }
   if (value === 'default') {
@@ -447,7 +509,38 @@ presetSelector.addEventListener('change', () => {
   config.host = selectedPreset.host || '';
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
-  config.useHtml = selectedPreset.useHtml === 'true';
+  // Both flow into the identity hash (useHtml via prodUrl, htmlIdentity via the
+  // forced-.html policy), so both go through the canonical parser rather than a
+  // strict === 'true' that a 'TRUE' or ' true ' cell would silently fail.
+  // A cell that means neither true nor false resolves to OFF, which on the
+  // identity path mints a second set of card ids. auto-publish already reports
+  // this; the three publishers must not disagree on whether a typo is worth
+  // mentioning, or the one that stays quiet becomes the one that drifts.
+  ['useHtml', 'htmlIdentity'].forEach((flag) => {
+    if (isFlagUnrecognized(selectedPreset[flag])) {
+      logIdentity(
+        `unrecognized ${flag} value '${selectedPreset[flag]}' on preset `
+        + `'${selectedPreset.id}', treating as OFF`,
+        'warning',
+      );
+    }
+  });
+  config.useHtml = isFlagEnabled(selectedPreset.useHtml);
+  config.htmlIdentity = isFlagEnabled(selectedPreset.htmlIdentity);
+  // Deliberately NOT converted to isFlagDisabled with the two above. This cell
+  // has inverted semantics and does not feed the identity hash, so switching it
+  // would change language/country resolution for every existing preset -- a
+  // behaviour change unrelated to card identity, and not one this ticket should
+  // smuggle in.
+  //
+  // KNOWN LATENT DEFECT, pre-existing and unchanged here: this is a strict
+  // `=== 'false'` compare, so the authored cells 'FALSE', 'False' and ' false '
+  // all resolve to `languageFirst = false` -- the opposite of what the author
+  // wrote. It is the same bug class the two lines above fix, left in place only
+  // because the blast radius is language resolution rather than identity. Fixing
+  // it needs an audit of which presets currently author a non-exact 'false',
+  // since those sites are silently getting the wrong resolution today and the
+  // fix would flip them.
   config.languageFirst = selectedPreset.languageFirst === 'false';
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
     config.contentType = '';
@@ -621,8 +714,37 @@ helpButtons.forEach((btn) => {
         break;
 
       case 'use-html':
-        showAlert(`<p><b>Add HTML to Links</b></p>
-          <p>When this option is checked, the bulkpublisher will add the <b>.html</b> extension to the CTA links.</p>`);
+        showAlert(`<p><b>Use .html extension on the published URL</b></p>
+          <p>When this option is checked, the bulkpublisher adds the <b>.html</b> extension to the page URL
+            it publishes. That URL becomes the card's link and is what the card's <b>ID</b> is derived from,
+            so changing this option changes the IDs of the cards you publish. It is also used for CTA 1 only
+            when the page does not author its own <b>CardCta1Url</b>.</p>
+          <p>Sites that serve extensionless URLs but need their existing card IDs to stay valid should leave
+            this unchecked and turn on <b>Keep .html card identity</b> instead, which keeps
+            the <b>.html</b> form for ID purposes only.</p>`);
+        break;
+
+      case 'html-identity':
+        showAlert(`<p><b>Keep .html card identity (contentId/entityId)</b></p>
+          <p>A card's <b>contentId</b> and <b>entityId</b> are a hash of its published URL. When a site drops
+            the <b>.html</b> extension from its public URLs, that hash changes, so every card gets a new ID and
+            any collection referencing the old ID is orphaned &mdash; there is no migration path.</p>
+          <p>With this option checked, the public URL still goes out extensionless (per <b>Use .html extension</b>),
+            but the ID is hashed from the <b>.html</b> form, so existing card IDs survive the change.</p>
+          <p><b>This currently applies to business.adobe.com only</b> &mdash; it is a no-op on any other host, and
+            a no-op anywhere <b>.html</b> is still served.</p>
+          <p>It must be enabled together with the <b>caas-identity-html</b> page metadata on
+            <b>every</b> site that renders these cards by URL &mdash; the publishing site and any other
+            site featuring them in a collection &mdash; and, where the site also auto-publishes, with the
+            <b>htmlIdentity</b> column in its <b>/.milo/caas/config.json</b>.
+            Enabling only some of these silently breaks featured-card lookups: the card simply
+            vanishes from the collection, with no error.</p>
+          <p><b>Ordering matters.</b> On a site that both publishes and consumes these cards
+            (business.adobe.com itself), setting the <b>caas-identity-html</b> metadata is read by
+            the sidekick publisher too, so it mints IDs on its own. Do not set it there until the
+            poller's pinned payload-builder build includes this change &mdash; otherwise the sidekick
+            and the poller disagree and the page gets two IDs. Consumer-only sites can be set up
+            at any time.</p>`);
         break;
 
       case 'use-preview':
@@ -678,10 +800,15 @@ themeOptions.forEach((btn) => {
 
 const init = async () => {
   setTheme();
-  await getPresetsData();
+  // Before getPresetsData(): its failure path calls showAlert(), which needs the
+  // `tingle` global. Loading presets first made that alert throw a ReferenceError
+  // inside the .catch, rejecting init() and leaving the whole page unwired.
   await loadTingleModalFiles(loadScript, loadStyle);
+  const presets = await getPresetsData();
   await loadCaasTags();
   loadFromLS();
+  // After loadFromLS, so the stored htmlIdentity exists to be reconciled.
+  reconcileHtmlIdentity(presets);
   checkCaasEnv();
   checkUserStatus();
 
@@ -710,6 +837,7 @@ const init = async () => {
       draftOnly: document.getElementById('draftOnly').checked,
       dryRun: document.getElementById('dryRun').checked,
       useHtml: document.getElementById('useHtml').checked,
+      htmlIdentity: document.getElementById('htmlIdentity').checked,
       usePreview: document.getElementById('usePreview').checked,
       languageFirst: document.getElementById('languageFirst').checked,
       autoDetectLingo: document.getElementById('autoDetectLingo').checked,
