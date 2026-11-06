@@ -123,6 +123,12 @@ body.mep-align-left:has(#mep-drawer:popover-open) .mep-fab {
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
 }
 
+.mep-fab[hidden],
+.mep-drawer[hidden] {
+  display: none;
+  transition: none;
+}
+
 body.mep-align-left .mep-drawer {
   right: auto;
   left: 0;

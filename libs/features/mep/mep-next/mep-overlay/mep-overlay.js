@@ -496,6 +496,7 @@ function buildCard(card, pageId, defaultExpanded = true) {
 function buildFAB(gnavOffset) {
   const fab = createTag('button', {
     class: 'mep-fab',
+    hidden: '',
     style: `top: ${gnavOffset + 16}px`,
     popovertarget: 'mep-drawer',
   });
@@ -617,6 +618,9 @@ async function renderAuthState(pageId, isAuthed) {
   const drawerEl = document.querySelector('#mep-drawer');
   const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
   if (!contentEl) return;
+  if (!isAuthed && drawerEl.matches(':popover-open')) drawerEl.hidePopover();
+  drawerEl.hidden = !isAuthed;
+  document.querySelector('.mep-fab').hidden = !isAuthed;
   if (isAuthed === authenticated && authStateRendered) return;
   authenticated = isAuthed;
   authStateRendered = true;
@@ -669,6 +673,7 @@ function buildDrawer(gnavOffset, pageId) {
   return createTag('div', {
     id: 'mep-drawer',
     class: 'mep-drawer',
+    hidden: '',
     popover: 'manual',
     'data-lenis-prevent': '',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
@@ -843,6 +848,8 @@ function setSummaryObserver() {
 }
 
 async function buildOverlay() {
+  authenticated = false;
+  authStateRendered = false;
   const gnavOffset = await getGnavOffset();
   lastGnavOffset = gnavOffset;
 
