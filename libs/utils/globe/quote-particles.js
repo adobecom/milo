@@ -1,8 +1,7 @@
 import * as THREE from '../../deps/three.js';
-import {
-  FRAME_MS, clamp01, capDpr, camZAtT, tAtCamZ, RR_SDF, HASH21, glf,
-} from './core.js';
-import { plainQuote } from './ui.js';
+import { FRAME_MS, clamp01, capDpr, camZAtT, tAtCamZ } from './core.js';
+import { RR_SDF, HASH21, glf } from './gl.js';
+import { plainQuote } from './authoring.js';
 
 const PULL_BP = {
   sm: { startR: 0.5, expand: 0.5, count: 15000 },

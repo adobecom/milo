@@ -5,20 +5,19 @@ Working notes for refactoring `firefly-globe` and `globe-gallery` onto the share
 ## Ground rules (they shaped every decision)
 
 - **No build step.** Every `.js` file is a runtime ES module request. Keep the module count per
-  page at or below what it was: each block now loads its entry, `src/authoring.js`,
-  `src/timeline.js` and the five shared modules (`core`, `ui`, `interaction`, `modal`,
-  `quote-particles`) plus `globe.css`; it was 11 (firefly) and 12 (gallery) modules. Merge small
-  things into an existing shared file rather than adding files.
-- **One globe per page.** Module-level state is acceptable where it keeps signatures small, but
-  prefer explicit injection when it is cheap. Block-only CSS (e.g. `.globe-modal-name`) is
-  unscoped for the same reason; two globes on one page would collide.
+  page low: each block loads its entry, `src/authoring.js`,
+  `src/timeline.js` and the six shared modules (`core`, `gl`, `interaction`, `authoring`, `modal`,
+  `quote-particles`) plus `globe.css`. Merge small things into an existing shared file rather than adding files.
+- **One globe per page is the normal case; two must not interfere.** Shared modules keep no
+  per-instance state (the modal id counter is the only module-level counter); `easePow` is injected
+  per instance. Block-only CSS is scoped under the block root (`.root .globe-*`).
 - **No behaviour change by default.** When the two blocks differ only for historical reasons,
   consolidate into one function (a branch or option is fine; it can be cleaned up later). When a
   difference is real, keep it and say why. Behaviour changes are called out below.
 - **Review each pattern before applying it.** Patterns must remove a measured duplication or a
   measured risk. No pattern for its own sake.
-- Tests/lint: `npx eslint libs/utils/globe libs/c2/blocks/firefly-globe libs/c2/blocks/globe-gallery test/c2/blocks test/blocks/globe-gallery`
-  and `npx wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 "test/c2/blocks/{firefly-globe,globe-gallery}/*.test.js" "test/blocks/globe-gallery/*.test.js"`.
+- Tests/lint: `npx eslint libs/utils/globe libs/c2/blocks/firefly-globe libs/c2/blocks/globe-gallery test/c2/blocks test/utils/globe`
+  and `npx wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 "test/utils/globe/*.test.js" "test/c2/blocks/{firefly-globe,globe-gallery}/*.test.js"`.
 - `libs/mep/ace1209/*` holds legacy copies of these blocks. Do not touch them.
 - **JS/CSS ship unminified:** no new comments in code; document only tricky current behaviour in
   the READMEs (no rationale, no history).
@@ -42,11 +41,13 @@ Everything else was kept identical.
 
 ## Still to verify
 
-- A live firefly page (only unit tests and a static computed-style comparison exist for it).
-- Safari and Firefox for the hang mark, RTL pull quote and the scrollbar gutter
-  (`scrollbar-gutter` needs Safari 18.2+).
+- Firefox (headless Playwright Firefox would not launch in the dev environment) and Safari on a
+  real device for the hang mark, RTL pull quote and the scrollbar gutter. Firefly and gallery were smoke-tested in Chromium and WebKit (desktop and mobile
+  emulation) only.
 - Keyboard path on both blocks: Tab/Shift+Tab through cards, backtab into the globe from below
   the quote.
+- Tab into the globe from above the block (`suppressFocusSnap` in the block entry) and the first
+  pull-quote frame after a rebuild (`jumped` in `quote-particles.js`).
 
 
 ## Pattern plan
@@ -65,7 +66,7 @@ Not a facade; it is just data.
 
 ### 2. Disposer (Resource-cleanup / RAII-style) - **do early**
 
-*Problem:* `destroy()` is ~70 lines in each block, plus per-module `teardown()`s, each hand-pairing
+*Problem:* `destroy()` is about 70 lines in each block, plus per-module `teardown()`s, each hand-pairing
 every `addEventListener`/observer/timer with its removal.
 *Proposal:* a tiny `createDisposer()` in `core.js`: `const on = disposer.listen(target, evt, fn,
 opts)`, `disposer.add(fn)`, `disposer.dispose()`. Setup registers cleanup at the point of creation.
@@ -80,7 +81,7 @@ canvas style. Today these are scattered optional callbacks (`getCrossOrigin`, `g
 *Proposal:* each `authoring.js` exports one `contentSource` object with a fixed shape (load cards,
 `cardImageUrl(i, px)`, `modalImageUrl`, `cardLang`, `renderModalContent`, `modalInfoHtml`,
 `canvasStyle`). The runtime and shared factories take that one object. *Why:* the injected
-surface becomes a documented interface instead of ~10 loose closures.
+surface becomes a documented interface instead of loose closures.
 
 ### 4. Placement/entry strategy (Strategy) - **the big one, do after 1-3**
 
@@ -89,7 +90,7 @@ placed: gallery has arc -> grid -> fold staging; firefly is already a pinned sph
 *Proposal:* one `entry` strategy interface per block: `createFrameInput/deriveFrame` (already in
 `timeline.js`), `placeCard(card, frame)`, `updateCamera(frame)`, `pqAppearT()`, `copyLayers`
 (arc copy). Firefly's strategy is "formed from the start" (a near no-op); gallery's carries the
-~290 gallery-only lines. `timeline.js` is already the seed of this.
+gallery-only staging. `timeline.js` is already the seed of this.
 *Why it earns its place:* it is the actual variation point, it already exists informally, and it
 unlocks item 5.
 
@@ -97,18 +98,18 @@ unlocks item 5.
 
 *Proposal:* `createGlobeRuntime(variant, contentSource, entryStrategy)` in a shared file runs the
 lifecycle (build DOM -> init renderer/scene -> build cards -> layout -> tick -> destroy) and calls
-the strategy where it differs. This is where the ~340 identical and ~700 near-identical runtime
+the strategy where it differs. This is where the identical and near-identical runtime
 lines move. *Composition, not inheritance:* the codebase is closure-based and the blocks differ by
 a few functions, not by an "is-a" relationship; classes would fight the style and the injected
 getters.
 *Gate:* do not start until 1-4 are in, and move it in slices (state -> layout -> transforms ->
 input -> lifecycle), tests plus a visual diff after each. The runtime has the thinnest test
 coverage, so add characterization tests (card positions per frame for fixed inputs) before moving
-code. Needs a file-budget check: this is likely a 6th shared file, within the budget.
+code. Needs a file-budget check: this would be a 7th shared file.
 
 ### 6. Context object for module dependencies (Parameter Object) - **optional, with 5**
 
-`createGlobeModal` and the other factories take 25-35 injected getters. After 5, replace the
+`createGlobeModal` and the other factories take many injected getters. After 5, replace the
 getter soup with a small read-only `ctx` (`ctx.scene`, `ctx.camera`, `ctx.cards`, `ctx.bp`, ...)
 built by the runtime. Do this only if it makes the modal readable; otherwise leave it.
 
@@ -124,14 +125,3 @@ built by the runtime. Do this only if it makes the modal readable; otherwise lea
 - **Observer / event bus.** Callbacks are 1:1 and explicit; a bus would hide data flow.
 - **Singleton / DI container / Visitor / Decorator.** No need identified.
 - **Explicit state-machine library.** The modal already has `MODAL_PHASE`; other states are small.
-
-## Fix-first list (before the patterns)
-
-Settle these before starting item 1:
-
-1. `ui.js` is a grab-bag (a11y, controls, cursor, authoring helpers, hang, DOM skeleton). Option:
-   split the authoring/skeleton half into a shared `authoring.js` (the budget allows one more).
-2. `core.js` mixes shaders, math, materials and layout helpers. Same option, lower priority.
-3. Whether to share the ~55 identical tuning constants or keep them per block.
-4. `test/blocks/globe-gallery/` duplicates part of `test/c2/blocks/globe-gallery/`.
-5. Block READMEs: re-read after each step.

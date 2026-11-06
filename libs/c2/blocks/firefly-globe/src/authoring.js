@@ -1,4 +1,4 @@
-import { escapeHtml, LABEL_DIVIDER, cellText, buildGlobeSkeleton, parseCommonRows } from '../../../../utils/globe/ui.js';
+import { escapeHtml, LABEL_DIVIDER, cellText, buildGlobeSkeleton, parseCommonRows } from '../../../../utils/globe/authoring.js';
 
 export const DEFAULT_MACHINE_TAG = 'acom_ff_globe_assets';
 

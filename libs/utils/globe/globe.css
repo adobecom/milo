@@ -28,7 +28,7 @@
   --globe-controls-top: calc(var(--globe-nav-h) + var(--globe-controls-inset));
 }
 
-/* Custom cursor (utils/globe/ui.js). */
+/* Custom cursor (utils/globe/interaction.js). */
 
 @media (hover: hover) and (pointer: fine) {
   .globe-cursor {
@@ -254,7 +254,7 @@
   border-inline-width: var(--globe-crosshair-width);
 }
 
-/* Opening mark is outdented by utils/globe/ui.js; `hanging-punctuation` deliberately unused. See
+/* Opening mark is outdented by utils/globe/authoring.js; `hanging-punctuation` deliberately unused. See
    README. */
 
 .globe-pullquote-quote {

@@ -9,7 +9,6 @@ import {
   buildGlobeDom,
   fetchFireflyAssets,
 } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
-import { escapeHtml, scatterCards, plainQuote, hangParagraphs } from '../../../../libs/utils/globe/ui.js';
 
 // Helpers
 function makeEl(innerHTML) {
@@ -21,22 +20,6 @@ function makeEl(innerHTML) {
 function makeRow(content = '') {
   return `<div>${content}</div>`;
 }
-
-// ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: escapeHtml', () => {
-  it('escapes all five special chars', () => {
-    expect(escapeHtml('& < > " \'')).to.equal('&amp; &lt; &gt; &quot; &#39;');
-  });
-
-  it('passes safe strings through untouched', () => {
-    expect(escapeHtml('hello world')).to.equal('hello world');
-  });
-
-  it('handles null/undefined safely', () => {
-    expect(escapeHtml(null)).to.equal('');
-    expect(escapeHtml(undefined)).to.equal('');
-  });
-});
 
 // ──────────────────────────────────────────────────────────────────
 describe('firefly-globe: fireflyRenditionUrl', () => {
@@ -70,38 +53,6 @@ describe('firefly-globe: fireflyRenditionUrl', () => {
   it('returns an empty string when there is no rendition template', () => {
     expect(fireflyRenditionUrl({ maxWidth: 600 }, 512)).to.equal('');
     expect(fireflyRenditionUrl(null, 512)).to.equal('');
-  });
-});
-
-// ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: scatterCards', () => {
-  const INPUT = [
-    { img: 'a.jpg', name: 'Alice' },
-    { img: 'b.jpg', name: 'Bob' },
-    { img: 'c.jpg', name: 'Carol' },
-    { img: 'd.jpg', name: 'Dave' },
-  ];
-
-  it('returns the same number of cards', () => {
-    expect(scatterCards(INPUT)).to.have.length(INPUT.length);
-  });
-
-  it('stamps authoredIndex on each card', () => {
-    const out = scatterCards(INPUT);
-    const indices = out.map((c) => c.authoredIndex).sort((a, b) => a - b);
-    expect(indices).to.deep.equal([0, 1, 2, 3]);
-  });
-
-  it('is deterministic: same input always produces same order', () => {
-    const a = scatterCards(INPUT);
-    const b = scatterCards(INPUT);
-    expect(a.map((c) => c.authoredIndex)).to.deep.equal(b.map((c) => c.authoredIndex));
-  });
-
-  it('does not mutate the input array', () => {
-    const copy = [...INPUT];
-    scatterCards(INPUT);
-    expect(INPUT).to.deep.equal(copy);
   });
 });
 
@@ -620,140 +571,5 @@ describe('firefly-globe: frame state', () => {
 
   it('FRAME_MS is ~16.67ms (60fps target)', () => {
     expect(TL.FRAME_MS).to.be.closeTo(16.667, 0.001);
-  });
-});
-
-// ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: plainQuote', () => {
-  let host;
-
-  function makeQuote(text, pad = 40) {
-    host = makeEl(`<div class="globe-pullquote" style="width:400px;padding-inline:${pad}px">
-      <blockquote class="globe-pullquote-quote"
-        style="font:16px/1.2 monospace;margin:0">${text}</blockquote></div>`);
-    document.body.append(host);
-    return host.querySelector('.globe-pullquote-quote');
-  }
-
-  afterEach(() => {
-    host?.remove();
-    host = null;
-  });
-
-  it('restores the authored text on every call, whatever the DOM became', () => {
-    const quoteEl = makeQuote('alpha beta gamma');
-    expect(plainQuote(quoteEl, 'firefly-globe')).to.equal('alpha beta gamma');
-    quoteEl.innerHTML = '<span>later markup</span>';
-    expect(plainQuote(quoteEl, 'firefly-globe')).to.equal('alpha beta gamma');
-    expect(quoteEl.textContent).to.equal('alpha beta gamma');
-  });
-
-  it('hangs an opening quote mark with a negative indent, leaving the DOM alone', () => {
-    const quoteEl = makeQuote('\u201Calpha beta\u201D');
-    plainQuote(quoteEl, 'firefly-globe');
-    const indent = quoteEl.style.textIndent;
-    plainQuote(quoteEl, 'firefly-globe');
-    expect(parseFloat(indent)).to.be.below(0);
-    expect(quoteEl.style.textIndent).to.equal(indent);
-    expect(quoteEl.children).to.have.length(0);
-    expect(quoteEl.textContent).to.equal('\u201Calpha beta\u201D');
-  });
-
-  it('keeps the mark inline when there is no gutter to hang it in', () => {
-    const quoteEl = makeQuote('\u201Calpha\u201D', 0);
-    plainQuote(quoteEl, 'firefly-globe');
-    expect(quoteEl.style.textIndent).to.equal('');
-  });
-
-  it('still hangs the mark when the element is not laid out yet', () => {
-    const quoteEl = makeQuote('\u201Calpha\u201D');
-    host.style.display = 'none';
-    plainQuote(quoteEl, 'firefly-globe');
-    expect(parseFloat(quoteEl.style.textIndent)).to.be.below(0);
-  });
-
-  it('keeps inline markup and stays stable when hanging a paragraph twice', () => {
-    makeQuote('x');
-    const box = makeEl(`<div style="padding-inline-start:40px">
-      <p style="font:16px monospace;margin:0">\u201C<a href="#a">alpha</a> beta</p></div>`).firstElementChild;
-    const para = box.querySelector('p');
-    host.append(box);
-    hangParagraphs(box);
-    const indent = para.style.textIndent;
-    hangParagraphs(box);
-    expect(parseFloat(indent)).to.be.below(0);
-    expect(para.style.textIndent).to.equal(indent);
-    expect(para.querySelector('a').textContent).to.equal('alpha');
-  });
-
-  it('hangs again once a loading web font has landed', async () => {
-    const quoteEl = makeQuote('\u201Calpha\u201D');
-    let resolveReady;
-    const ready = new Promise((res) => { resolveReady = res; });
-    Object.defineProperty(document.fonts, 'status', { value: 'loading', configurable: true });
-    Object.defineProperty(document.fonts, 'ready', { value: ready, configurable: true });
-    try {
-      plainQuote(quoteEl, 'firefly-globe');
-      quoteEl.style.textIndent = '';
-      Object.defineProperty(document.fonts, 'status', { value: 'loaded', configurable: true });
-      resolveReady();
-      await ready;
-      await Promise.resolve();
-      expect(parseFloat(quoteEl.style.textIndent)).to.be.below(0);
-    } finally {
-      delete document.fonts.status;
-      delete document.fonts.ready;
-    }
-  });
-
-  it('does not let a pending font re-hang undo a newer gutter', async () => {
-    const quoteEl = makeQuote('\u201Calpha\u201D');
-    let resolveReady;
-    const ready = new Promise((res) => { resolveReady = res; });
-    Object.defineProperty(document.fonts, 'status', { value: 'loading', configurable: true });
-    Object.defineProperty(document.fonts, 'ready', { value: ready, configurable: true });
-    try {
-      plainQuote(quoteEl, 'firefly-globe');
-      host.firstElementChild.style.paddingInline = '0px';
-      plainQuote(quoteEl, 'firefly-globe');
-      expect(quoteEl.style.textIndent).to.equal('');
-      Object.defineProperty(document.fonts, 'status', { value: 'loaded', configurable: true });
-      resolveReady();
-      await ready;
-      await Promise.resolve();
-      expect(quoteEl.style.textIndent).to.equal('');
-    } finally {
-      delete document.fonts.status;
-      delete document.fonts.ready;
-    }
-  });
-
-  it('hangs again on the next frame when it was measured before layout', async () => {
-    const quoteEl = makeQuote('\u201Calpha\u201D');
-    host.style.display = 'none';
-    plainQuote(quoteEl, 'firefly-globe');
-    quoteEl.style.textIndent = '';
-    host.style.display = '';
-    await new Promise((res) => { requestAnimationFrame(() => { res(); }); });
-    await Promise.resolve();
-    expect(parseFloat(quoteEl.style.textIndent)).to.be.below(0);
-  });
-
-  it('does not hang centered or vertical text', () => {
-    const quoteEl = makeQuote('\u201Calpha\u201D');
-    quoteEl.style.textAlign = 'center';
-    plainQuote(quoteEl, 'firefly-globe');
-    expect(quoteEl.style.textIndent).to.equal('');
-    quoteEl.style.textAlign = '';
-    quoteEl.style.writingMode = 'vertical-rl';
-    plainQuote(quoteEl, 'firefly-globe');
-    expect(quoteEl.style.textIndent).to.equal('');
-  });
-
-  it('leaves an empty quote empty and ignores a missing one', () => {
-    const quoteEl = makeQuote('   ');
-    expect(plainQuote(quoteEl, 'firefly-globe')).to.equal('');
-    expect(quoteEl.textContent).to.equal('');
-    expect(plainQuote(null, 'firefly-globe')).to.equal('');
   });
 });

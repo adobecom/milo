@@ -2,19 +2,13 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import * as THREE from '../../../../libs/deps/three.js';
-import createInteraction from '../../../../libs/utils/globe/interaction.js';
-import { createCursor } from '../../../../libs/utils/globe/ui.js';
+import createInteraction, { createCursor } from '../../../../libs/utils/globe/interaction.js';
 import { renderModalContent, fetchFragmentCards } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 import createGlobeModal from '../../../../libs/utils/globe/modal.js';
 import {
-  createCardMaterial,
-  createModalMaterial,
-  createTextMaterial,
-  createPlaceholderTexture,
-  loadCardTextures,
-  loadModalTexture,
-  createClickDragTexture,
-} from '../../../../libs/utils/globe/core.js';
+  createCardMaterial, createModalMaterial, createTextMaterial, createPlaceholderTexture,
+  loadCardTextures, loadModalTexture, createClickDragTexture,
+} from '../../../../libs/utils/globe/gl.js';
 
 function dispatch(target, type, props = {}) {
   const event = new Event(type, { bubbles: true, cancelable: true });

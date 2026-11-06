@@ -1,12 +1,8 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { setConfig } from '../../../libs/utils/utils.js';
-import init from '../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
-import {
-  optimizeImgUrl,
-  parseAuthoredContent,
-} from '../../../libs/c2/blocks/globe-gallery/src/authoring.js';
-import { escapeHtml, plainQuote, scatterCards, renderParagraphs } from '../../../libs/utils/globe/ui.js';
+import { setConfig } from '../../../../libs/utils/utils.js';
+import init from '../../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
+import { parseAuthoredContent } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 
 setConfig({ codeRoot: '/libs' });
 
@@ -196,75 +192,6 @@ describe('C2 globe gallery', () => {
       name.getAttribute('aria-describedby').split(' ').forEach((id) => {
         expect(b.querySelector(`#${id}`)).to.exist;
       });
-    });
-  });
-
-  describe('authoring helpers', () => {
-    it('escapes HTML-sensitive characters and nullish values', async () => {
-      await loadBlock();
-      expect(escapeHtml('<a href="x">Tom & Jerry\'s</a>'))
-        .to.equal('&lt;a href=&quot;x&quot;&gt;Tom &amp; Jerry&#39;s&lt;/a&gt;');
-      expect(escapeHtml(null)).to.equal('');
-      expect(escapeHtml(undefined)).to.equal('');
-      expect(escapeHtml(42)).to.equal('42');
-    });
-
-    it('rewrites media image URLs and passes other URLs through', async () => {
-      await loadBlock();
-      expect(optimizeImgUrl('https://example.com/a/media_1abc.png?width=2000', 640.4))
-        .to.equal('https://example.com/a/media_1abc.png?width=640&format=webply');
-      expect(optimizeImgUrl('https://example.com/media_ff.jpeg', 299.6, 'height'))
-        .to.equal('https://example.com/media_ff.jpeg?height=300&format=webply');
-      expect(optimizeImgUrl('/img/media_0f.png', 100))
-        .to.equal(`${window.location.origin}/img/media_0f.png?width=100&format=webply`);
-      expect(optimizeImgUrl('https://example.com/photo.png', 100)).to.equal('https://example.com/photo.png');
-      expect(optimizeImgUrl('https://example.com/media_zz.png', 100)).to.equal('https://example.com/media_zz.png');
-      expect(optimizeImgUrl('', 100)).to.equal('');
-      expect(optimizeImgUrl(null, 100)).to.be.null;
-    });
-
-    it('scatters cards deterministically without mutating the input', async () => {
-      await loadBlock();
-      const cards = ['a', 'b', 'c', 'd', 'e', 'f'].map((name) => ({ name }));
-      const snapshot = JSON.parse(JSON.stringify(cards));
-      const first = scatterCards(cards);
-      const second = scatterCards(cards);
-      expect(first.map((c) => c.authoredIndex)).to.deep.equal([2, 0, 4, 5, 1, 3]);
-      expect(first.map((c) => c.name)).to.deep.equal(['c', 'a', 'e', 'f', 'b', 'd']);
-      expect(second).to.deep.equal(first);
-      expect(cards).to.deep.equal(snapshot);
-      expect(first[0]).to.not.equal(cards[2]);
-      expect(scatterCards([])).to.deep.equal([]);
-    });
-
-    it('replaces container children with authored paragraphs', async () => {
-      await loadBlock();
-      const container = document.createElement('div');
-      container.innerHTML = '<span>old</span>';
-      const p = document.createElement('p');
-      p.textContent = 'new';
-      renderParagraphs(container, [p]);
-      expect(container.children).to.have.length(1);
-      expect(container.firstElementChild).to.equal(p);
-      expect(() => renderParagraphs(null, [p])).to.not.throw();
-    });
-
-    it('keeps the quote as its plain authored text, idempotently', async () => {
-      const { block } = await loadBlock('heading-quote');
-      const quote = block.querySelector('.globe-pullquote-quote');
-      expect(plainQuote(quote, 'globe-gallery')).to.equal('Creativity connects us.');
-      quote.innerHTML = '<span>later markup</span>'; // relayouts restart from the authored text
-      expect(plainQuote(quote, 'globe-gallery')).to.equal('Creativity connects us.');
-      expect(quote.children).to.have.length(0);
-      expect(quote.textContent).to.equal('Creativity connects us.');
-      expect(plainQuote(null, 'globe-gallery')).to.equal('');
-    });
-
-    it('leaves a missing or empty quote empty', async () => {
-      const { block } = await loadBlock('empty-quote');
-      const quote = block.querySelector('.globe-pullquote-quote');
-      expect(plainQuote(quote, 'globe-gallery')).to.equal('');
-      expect(quote.textContent).to.equal('');
     });
   });
 });

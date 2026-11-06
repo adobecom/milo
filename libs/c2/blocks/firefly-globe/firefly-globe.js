@@ -5,16 +5,17 @@ import {
   fireflyRenditionUrl,
 } from './src/authoring.js';
 import {
-  createCardMaterial, createTextMaterial, createPlaceholderTexture,
-  loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture,
-  loadHintFont, easeInOutCubic, easeOutCubic, lerpN, clamp01, coverFit, capDpr, CAM_FOV,
-  TAN_HALF_FOV,
+  easeInOutCubic, easeOutCubic, lerpN, clamp01, coverFit, capDpr, CAM_FOV, TAN_HALF_FOV,
   CARD_ASPECT, sphereCardScale, prefersReducedMotion, usesCylinderGeometry, YAW_ONLY_GEOMETRY,
   WORLD_UP, COLUMN_EPS, cylinderMasonryLayout, fibSpherePos, resolveBP,
 } from '../../../utils/globe/core.js';
+import {
+  createCardMaterial, createTextMaterial, createPlaceholderTexture, loadCardTextures,
+  loadModalTexture as loadModalTextureRaw, createClickDragTexture, loadHintFont,
+} from '../../../utils/globe/gl.js';
 import createGlobeModal from '../../../utils/globe/modal.js';
-import createInteraction from '../../../utils/globe/interaction.js';
-import { loadGlobeStyles, scatterCards, createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/ui.js';
+import createInteraction, { createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/interaction.js';
+import { loadGlobeStyles, scatterCards } from '../../../utils/globe/authoring.js';
 import { createPullQuote } from '../../../utils/globe/quote-particles.js';
 import {
   camZAtTravelT, travelTAtCamZ, TRAVEL_EASE_POW, travelSpanPx, scrollYAtTravelT,
@@ -63,7 +64,7 @@ const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 // Every *_RATE / FRICTION / SPEED below is authored per 60fps frame and rescaled at its use site
 // by frame.dtScale: linear ones by multiply, exponential eases by ** dtScale. MAX_VEL is shared
-// with utils/globe/interaction.js (it clamps, core normalizes).
+// with utils/globe/interaction.js (it clamps; the block divides drag speed by it).
 const DRAG_FRICTION = 0.94;
 const MAX_VEL = 0.08; // rad per 60fps frame; ceiling on a flick AND a held step
 const DRAG_CATCHUP = 0.5; // share of an over-max backlog worked off per 60fps frame

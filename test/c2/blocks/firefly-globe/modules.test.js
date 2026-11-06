@@ -2,12 +2,11 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import * as THREE from '../../../../libs/deps/three.js';
 import { renderModalContent } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
-import { createGalleryA11y, createGlobeControls, createCursor } from '../../../../libs/utils/globe/ui.js';
-import createInteraction from '../../../../libs/utils/globe/interaction.js';
+import createInteraction, { createGalleryA11y, createGlobeControls, createCursor } from '../../../../libs/utils/globe/interaction.js';
 import {
   createCardMaterial, createModalMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture, loadHintFont, createClickDragTexture,
-} from '../../../../libs/utils/globe/core.js';
+} from '../../../../libs/utils/globe/gl.js';
 import createGlobeModal from '../../../../libs/utils/globe/modal.js';
 
 const tick = () => new Promise((resolve) => { setTimeout(resolve, 0); });

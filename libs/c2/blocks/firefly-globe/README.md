@@ -14,22 +14,22 @@ as a hazard at the exact line an edit would break. Files ship unminified.
 
 | Area | globe-gallery | firefly-globe |
 |---|---|---|
-| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, ortho camera) | Sphere already formed; camera eases in (`entryT³`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
+| Entry | Arc → grid → fold cascade on scroll (`timeline.js`, ortho camera) | Sphere already formed; camera eases in (cubic ease on `entryT`, gg's fold curve) from `CAM_Z_ENTRY` to `CAM_Z_SPHERE` while the block scrolls in, landing at the travel's starting speed as the world pins. |
 | Camera | `camZAtZoomT(zoomT)` from `timeline.js` | Same form, `camZAtTravelT(scrollT)` from `src/timeline.js`, from the pin; its own ease power (see Camera ease). |
-| Scroll clock | Six derived clocks (`timeline.js` `deriveFrame`) | Two, from `src/timeline.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches 1 at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, 0 at the pin and 1 at the end of the travel (`--globe-travel-vh`; the block height with the quote particles off). |
+| Scroll clock | The clocks `deriveFrame` derives in `timeline.js` (`arcCopyEntryT`, `progress`, `arcPanT`, `gridFormT`, `sphereFormT`, `zoomT`) | `entryT` and `scrollT`, from `src/timeline.js` `deriveFrame` (same producer/consumer split: `computeFrame` derives, every tick stage reads `frame.*`): `entryT = 1 + (scrollY − blockDocTop) / H` reaches its end value at the pin; `scrollT = (scrollY − blockDocTop) / travelSpanPx` is gg's `zoomT`, at its start at the pin and its end at the end of the travel (`--globe-travel-vh`; the block height with the quote particles off). |
 | Arc copy pill | Authoring row 1 | None |
 | "Click & Drag" text plane | Entrance and fade on `sphereFormT` / `zoomT` | Same plane and `TEXT_FRAG`, clocked on `entryT` / `scrollT` (see below). |
-| Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.globe-world`, so it travels with the block: at `entryT` 0 the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
+| Canvas | `position: fixed`, shown/hidden by scroll range | `position: absolute` inside the sticky `.globe-world`, so it travels with the block: at the start of `entryT` the sphere is centred in a canvas whose top is at the viewport bottom and rises in with the block, never over the section above. Controls are `absolute` with it. |
 | Cards | Authored fragment: name, role, description, badges | Firefly Community API by `categoryId` (see `FIREFLY-API.md`). Card = image, `modelId`, `modelVersionName`, `prompt`, `fireflyUrl`. |
 | Modal info | `<h2>` name, role, description paragraphs, badge list | Model icon + version label, prompt, CTA to `fireflyUrl`. |
-| Scroll budget | `--globe-formation-vh` + `--globe-travel-vh`, per breakpoint | `--globe-travel-vh` only, per breakpoint (no formation: the entry happens in the viewport before the block top). With the quote particles off, `--globe-runway-height` is the block height and the travel span. |
+| Scroll budget | `--globe-formation-vh` + `--globe-travel-vh`, per breakpoint | `--globe-travel-vh` only, per breakpoint in `firefly-globe.css` (no formation: the entry happens in the viewport before the block top). With the quote particles off, `--globe-runway-height` is the block height and the travel span. |
 | CSS custom properties | `--globe-*` | `--globe-*` (block-scoped; nothing outside the block reads them). |
 | Tuning | — | `SPHERE_R`, `CAM_Z_SPHERE` and `CAM_Z_END` are tuned per breakpoint for the scroll budget below; `CAM_Z_ENTRY` is the only extra breakpoint field. |
-| Opening quote | Shared `hangOpeningMark` (`utils/globe/ui.js`): measured live from the rendered glyph (canvas only if the element isn't laid out), hung with a negative `text-indent` | Same: one implementation for both blocks. |
+| Opening quote | Shared `hangOpeningMark` (`utils/globe/authoring.js`): measured live from the rendered glyph (canvas only if the element isn't laid out), hung with a negative `text-indent` | Same: one implementation for both blocks. |
 | Modules | `src/timeline.js` (phase constants, arc geometry, the zoom camera pair, `createFrame` / `createFrameInput` / `deriveFrame`) | `src/timeline.js` (the travel camera pair, `createFrame` / `createFrameInput` / `deriveFrame`); easings, `coverFit`, camera constants and the camera-pair maths live in `utils/globe/core.js`. |
-| Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`timeline.js`); the quote shaders bake the same value. |
+| Camera ease | `ZOOM_EASE_POW` | `TRAVEL_EASE_POW` (`timeline.js`), passed to the pull quote as `timeline.easePow`. |
 | Analytics | `--globe_gallery` | `--firefly_globe`; modal labels keep `--globe_card_modal`. |
-| Keyboard browse | `.globe-a11y-cards` is `position: fixed` | The shared `utils/globe/ui.js` (both blocks) moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
+| Keyboard browse | `.globe-a11y-cards` is `position: fixed` | The shared `utils/globe/interaction.js` (both blocks) moves Tab/Shift+Tab itself with `focus({ preventScroll: true })`, the cards layer stays `absolute` in the world, blurred buttons drop their rect, and an unprojectable focused card hides its ring. See "Phases". |
 
 ## Authoring
 
@@ -44,7 +44,7 @@ Positional rows.
 
 ### Prompt text and locale matching
 
-`apiAssetToCard` picks the card's `prompt` (also its `alt`, first 120 chars) in this order:
+`apiAssetToCard` picks the card's `prompt` (also its `alt`, truncated to `ALT_MAX_CHARS` in `src/authoring.js`) in this order:
 
 1. `custom.input['firefly#prompts']` localized to `getConfig().locale.ietf` (see below).
 2. `custom.input['firefly#originalPrompt']` — untranslated.
@@ -63,25 +63,24 @@ removed, never `lang=""`, which would mean "unknown" instead of inheriting the p
 `getLocalizedPrompt` is rule-based, with no locale table to maintain: it reads `getConfig().locale.ietf`
 at runtime, so each consumer repo (milo, da-cc, …) uses its own locale config. Both the page locale and
 each API key go through `Intl.Locale#maximize`, which fills in the likely script and region, so tags
-compare by meaning rather than spelling. Each key is scored:
+compare by meaning rather than spelling. Each key is ranked (`score` in `getLocalizedPrompt`):
 
-- 2 — same language, script and region (`es-ES` for `es-ES`)
-- 1 — same language and script (`es-ES` for `es-MX`, `zh-Hant-TW` for `zh-HK`)
-- 0 — anything else. `zh-TW`/`zh-HK`/`zh-MO` maximize to `Hant` and `zh-CN`/`zh-SG` to `Hans`, so
+- Highest: same language, script and region (`es-ES` for `es-ES`).
+- Next: same language and script (`es-ES` for `es-MX`, `zh-Hant-TW` for `zh-HK`).
+- No match: anything else. `zh-TW`/`zh-HK`/`zh-MO` maximize to `Hant` and `zh-CN`/`zh-SG` to `Hans`, so
   Traditional and Simplified Chinese never cross-match.
 
-Best score wins; otherwise `en-US`, otherwise the first available key.
+Best rank wins; otherwise `en-US`, otherwise the first available key.
 
 - `LANGUAGE_ALIASES` maps Milo's `no` (Norwegian macrolanguage) to the API's `nb`. Add entries only for
   similar macrolanguage mismatches.
 - `_` is normalized to `-` because Milo's language-based routing can produce `xx_YY` tags, which
   `Intl.Locale` rejects. Invalid tags parse to `null` and never match.
-- Parsed tags are cached in `parsedLocales`: every asset shares the same ~30 keys, and re-parsing them per
-  asset cost ~8 ms for 50 assets.
+- Parsed tags are cached in `parsedLocales`, since every asset shares the same keys.
 
 ## Image sourcing
 
-`apiAssetToCard` (`src/authoring.js`) ignores the API's `_links.rendition` (a ≤600px preview) and
+`apiAssetToCard` (`src/authoring.js`) ignores the API's `_links.rendition` (a small preview) and
 instead stores a rendition template for the full-resolution DCX `output/resource` component, built
 from the asset `id` and the CDN base taken from the preview href (`<base>/rendition/<id>/…` →
 `<base>/dcx/<id>/…`):
@@ -93,8 +92,8 @@ from the asset `id` and the CDN base taken from the preview href (`<base>/rendit
 `fireflyRenditionUrl(card, px, axis)` fills it as a `jpg` (the component serves only `jpg`/`png`;
 `webp`/`avif` → HTTP 415) at the requested px. The CDN caps `size` at the component's native
 resolution, which the API does not report, so there is no client-side clamp. Cards request by height
-at `CARD_TEX_SM`/`CARD_TEX_MD` (384/768); the modal requests its longest side at
-`MODAL_TEX_SM`/`MODAL_TEX_MD` (1024/2048), the axis chosen from `max_width`/`max_height`. Textures load
+at `CARD_TEX_SM`/`CARD_TEX_MD`; the modal requests its longest side at
+`MODAL_TEX_SM`/`MODAL_TEX_MD` (all in `firefly-globe.js`), the axis chosen from `max_width`/`max_height`. Textures load
 `crossOrigin: 'anonymous'` because the CDN is cross-origin and the cards go through WebGL. See
 `FIREFLY-API.md` for the API response the mapping reads.
 
@@ -104,16 +103,16 @@ at `CARD_TEX_SM`/`CARD_TEX_MD` (384/768); the modal requests its longest side at
 entry clock: before it there is no drag, banked drag travel is dropped, no auto-spin, no drag warp,
 no hover, and `globeFormed`/`globeLive` are false so the on-canvas controls, cursor pill, tap-to-open
 and keyboard entry are all off. It opens while the block is still scrolling in, so the globe spins,
-drags and opens cards before the world pins. `sphereFormed` (`entryT >= 1`, the world pinned) is a
+drags and opens cards before the world pins. `sphereFormed` (`entryT` at its end value, the world pinned) is a
 separate gate for what must wait for the pin: the travel camera, the inside-sphere drag flip, and
 retiring the hint (`retireHint`: a drag, rotate or card opened before the pin leaves the cursor pill
 and the text plane in place, so both go out together, after the pin).
 Reduced motion is always formed and interactive.
 
 The entry lift is a CSS scroll-driven animation. `globe-entry-lift` translates the canvas and
-`.globe-a11y-cards` (so the focus ring follows) up by `--globe-entry-lift` (45vh) and releases it
+`.globe-a11y-cards` (so the focus ring follows) up by `--globe-entry-lift` and releases it
 by `1 − entryT²` on the block's `--globe-entry` view timeline over its `entry` range
-(`cubic-bezier(0.333, 0, 0.667, 0.333)` is `t²`). At `entryT` 0 the cards sit that far above the
+(the `animation-timing-function` in `firefly-globe.css` is the quadratic ease-in `t²`). At the start of `entryT` the cards sit that far above the
 world's top, clipped by its `overflow: clip`; they descend into frame and settle nav-centred as the
 world pins. With it, the view offset only nav-centres. **The lift has to move with the page's scroll, not with
 rAF:** iOS scrolls on its own thread, so anything JS positions from the scroll steps against the
@@ -127,24 +126,25 @@ below the nav, `--globe-controls-top` once pinned and the nav is over it. It rid
 `globe-entry-lift` animation, its `--globe-entry-lift` set to the gap between the two. Without
 `animation-timeline` it stays at `--globe-controls-top`.
 
-The entry value is one `--s2a-border-radius-xl` plus the inset. A section that rounds its corners
-overlaps its neighbour by exactly one radius (`margin-block: calc(-1 * var(--s2a-border-radius-xl))`
-in `section-metadata.css`) and carries `z-index: 3`, so it paints over this block's first 32px. No
-z-index here escapes that: stacking is settled between the two sections, above this block.
+`--globe-controls-entry-top` is `--s2a-border-radius-xl` plus `--globe-controls-inset`. A section
+that rounds its corners overlaps its neighbour by one corner radius (negative `margin-block` on
+`.rounded-corners*` in `section-metadata.css`) and sets a `z-index` there, so it paints over this
+block's first radius. No z-index here escapes that: stacking is settled between the two sections,
+above this block.
 
 From the pin the camera travels through the sphere, so globe-gallery's inside-sphere rules are
 unchanged: `cameraInsideSphere` flips the drag direction, and `yawDeltaToCenter` /
 `cardCenterYawPitch` default to it. The keyboard focus snap
 (`centerCardOnScreen(i, !suppressFocusSnap)`) solves for the outside side; `snapToBrowseView` lands
 at `Math.ceil(blockDocTop)`, the first formed scroll position. `blockDocTop` is measured layout and
-usually fractional (1/64px layout units) while scroll offsets land on whole pixels, so an unrounded
-target ends ~0.2px above the block: not yet formed, world not quite stuck. Orientation and inertia
+usually fractional while scroll offsets land on whole pixels, so an unrounded target can end just
+above the block: not yet formed, world not quite stuck. Orientation and inertia
 reset only while not yet interactive.
 
 Browse mode moves focus itself: `onCardKeydown` handles Tab/Shift+Tab between cards (letting it
 through natively only past the first/last card), and every programmatic focus uses
 `focus({ preventScroll: true })`. Chrome scrolls a newly focused descendant of a sticky element into
-view even when it already is, so native Tab scrolled the page by ±300–400px and moved the
+view even when it already is, so native Tab scrolled the page and moved the
 scroll-driven globe (dropped to the bottom of the screen, or zoomed inside). Making the layer
 `position: fixed` (as globe-gallery does) is not enough: Milo section effects such as
 `parallax-video-garage-door` put `transform`/`filter`/`will-change` on the section, which makes the
@@ -152,14 +152,14 @@ section the containing block and brings the bug back. The layer stays `absolute`
 ring's canvas coordinates need no mapping.
 
 When the focused card can't be projected (behind the camera, faded, or canvas hidden),
-`updateA11yFocusRing` passes a 0×0 rect, which `setFocusRect` turns into `opacity: 0`: hidden, but
+`updateA11yFocusRing` passes an empty rect, which `setFocusRect` turns into `opacity: 0`: hidden, but
 still focused so browse mode survives. Blurred buttons drop their inline rect, so stale boxes can't
 sit over the canvas and catch clicks.
 
 Scroll input is `readScrollY()`: Lenis' `animatedScroll` when it agrees with `window.scrollY` within
-`LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)`, which damps steps smaller than
-`SCROLL_JUMP_PX` (an iOS URL-bar show/hide moves `scrollY` by the bar height without a user scroll)
-and passes larger ones through. `scrollVel` is the per-frame delta of that smoothed value and feeds
+`LENIS_TRUST_PX`, otherwise `deQuantize(window.scrollY)` (all in `firefly-globe.js`), which damps
+steps smaller than `SCROLL_JUMP_PX` and passes larger ones through. Lenis is constructed in
+`utils.js` (`new window.Lenis`, `lerp` and `wheelMultiplier` options). `scrollVel` is the per-frame delta of that smoothed value and feeds
 the motion CA trail.
 
 `pqAppearT` is the `scrollT` at which the deepest card has faded out (`−SPHERE_R + cardVanishDepth()`
@@ -169,7 +169,7 @@ text's fade. The keyboard path (`globeFormed`: interactive and modal closed) is 
 ### Pull quote
 
 `utils/globe/quote-particles.js` is shared with globe-gallery (configured through `createPullQuote`'s `timeline`): read **"Pull quote: particle transition,
-DOM text at rest"**, **"Block height"** and the near-camera dissolve in that README; they are the spec.
+DOM text at rest"** and **"Block height"** in that README; they are the spec.
 The differences:
 
 - Vocabulary and imports: `scrollT`/`travel` in place of `zoomT`/`zoom` (`--globe-travel-vh`,
@@ -180,8 +180,9 @@ The differences:
 
 The section around the block: a rounded section above overlaps the block's first radius (see Entry
 reveal), and a rounded next section overlaps its last radius, which at the block's end is the bottom of
-the crosshair's vertical lines, as on stage. A `parallax-video-garage-door` next section (≥1024px) enters
-from under this block's section, which carries the higher `z-index`, so the video is revealed as the
+the crosshair's vertical lines, as on stage. A `parallax-video-garage-door` next section (`rich-content.css`) enters
+from under this block's section, which is raised above it by the `z-index` on
+`.section:has(+ .section.parallax-video-garage-door …)`, so the video is revealed as the
 block scrolls away and never covers the quote.
 
 ### Entry reveal
@@ -192,12 +193,12 @@ The descent is masked by the page: pre-pin the world tracks the scroll at −1 w
 at `2 · lift · entryT / viewportH`, so the globe still rises, just slower than the page. That
 difference is the reveal.
 
-**The lift has to stay at or under 50vh.** `1 − t²` unwinds at up to twice the lift per viewport
+**The lift has to stay at or under half the viewport height.** `1 − t²` unwinds at up to twice the lift per viewport
 scrolled, so a larger lift outruns the page, stalls the globe and then sinks it. The leftover speed
 at the pin is `1 − 2 · lift / viewportH`, so a larger lift clips deeper and arrives softer.
 
-The lift also has to stay under what the globe can cover: a 45vh lift needs the entry globe to render
-at least 1.45 viewports tall, or empty space shows below it. That is `CAM_Z_ENTRY`'s job.
+The lift also has to stay under what the globe can cover: the entry globe has to render at least a
+viewport plus the lift tall, or empty space shows below it. That is `CAM_Z_ENTRY`'s job.
 
 ## Tuning the scroll budget
 
@@ -239,10 +240,10 @@ instead of propagating to the viewport, which makes `body` a scroll container an
 
 ### Modal stacking
 
-`utils/globe/modal.js` (with `hoistToBody: true`) reparents `.globe-modal` (the `z-index: 13` backdrop scrim) and
-`.globe-modal-canvas` (`z-index: 14`, the photo) to `<body>` in `setup()`. Their z-indexes
+`utils/globe/modal.js` (with `hoistToBody: true`) reparents `.globe-modal` (the backdrop scrim, `z-index` in `globe.css`) and
+`.globe-modal-canvas` (the photo, inline `z-index` in `buildGlobeSkeleton`, `utils/globe/authoring.js`) to `<body>` in `setup()`. Their z-indexes
 only resolve at the `<body>` root; the block sits under a section whose `rounded-corners-bottom`
-gives it a `z-index: 3` stacking context that would otherwise clamp them. The `<dialog>` chrome
+(`section-metadata.css`) sets a `z-index` stacking context that would otherwise clamp them. The `<dialog>` chrome
 stays in the block and paints above both via the top layer (`showModal()`).
 
 The reparented nodes persist across re-inits (band crossing, reduced-motion toggle, WebGL context
@@ -254,13 +255,13 @@ a node only when not already held and reparents only when not already at `<body>
 `--globe-modal-anim-ms` is set inline on `.globe-modal` right after the reparent — it is
 block-scoped and does not inherit at `<body>`, and the scrim's opacity transition reads it.
 
-`html:has(.firefly-globe)` sets `scrollbar-gutter: stable`, so the modal's `overflow: hidden` lock
+`html:has(.globe)` (`globe.css`) sets `scrollbar-gutter: stable`, so the modal's `overflow: hidden` lock
 leaves the layout width unchanged.
 
 ## Reduced motion
 
 Same contract as globe-gallery: `.globe-reduced` un-sticks `.globe-world` and leaves
-it at `height: 100vh`. `worldEl.offsetHeight` is the one viewport height every clock reads.
+it at its base viewport height (`globe.css`). `worldEl.offsetHeight` is the one viewport height every clock reads.
 
 Reduced motion builds no quote particles, so the figure is a static DOM quote after the globe.
 
@@ -272,14 +273,14 @@ README's **Tests**.
 `test/c2/blocks/firefly-globe/firefly-globe.test.js` covers the authoring parse (rows, API cell, pull
 quote), `buildGlobeDom`, API card mapping (component rendition template, model tags, locale
 fallback, alt fallback), `fireflyRenditionUrl` sizing, the frame shape, the clock endpoints
-(`deriveFrame`, including the travel span), the travel camera inverse pair and `plainQuote` (authored
-text restored on every call, the opening mark hung once).
+(`deriveFrame`, including the travel span), and the travel camera inverse pair. Shared authoring helpers
+(`plainQuote`, `scatterCards`, `escapeHtml`) are covered by `test/utils/globe/authoring.test.js`.
 
 `test/utils/globe/quote-particles.test.js` runs the shared particle suite once per block, with that
 block's `easePow`, class names and stylesheet.
 
-`test/c2/blocks/firefly-globe/modules.test.js` covers `utils/globe/ui.js`, the `utils/globe/ui.js` keyboard gallery,
-`utils/globe/interaction.js`, `utils/globe/ui.js`, `utils/globe/core.js` and `utils/globe/modal.js` DOM behavior.
+`test/c2/blocks/firefly-globe/modules.test.js` covers `utils/globe/interaction.js` (pointer, controls, cursor
+and the keyboard gallery), `utils/globe/core.js` and `utils/globe/modal.js` DOM behavior.
 
 `mocks/authored.html` is the authoring contract as a fixture.
 

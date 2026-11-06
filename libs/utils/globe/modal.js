@@ -1,7 +1,8 @@
 import * as THREE from '../../deps/three.js';
 import {
-  createModalMaterial, easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,
+  easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,
 } from './core.js';
+import { createModalMaterial } from './gl.js';
 
 const perfNow = () => performance?.now() ?? Date.now();
 

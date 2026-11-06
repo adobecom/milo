@@ -6,7 +6,7 @@ Used by `firefly-gallery` (da-cc) and planned for `firefly-globe`.
 
 ```
 GET https://community-hubs.adobe.io/api/v2/ff_community/assets
-    ?size=32
+    ?size=<page size>   # fetchFireflyAssets in src/authoring.js
     &sort=updated_desc
     &include_pending_assets=false
     &cursor=
@@ -14,7 +14,7 @@ GET https://community-hubs.adobe.io/api/v2/ff_community/assets
     &machine_tag=<machineTag>   # optional
 ```
 
-Header: `x-api-key: milo-ff-gallery-unity`
+Header: `x-api-key: <FF_API_KEY>` (`src/authoring.js`)
 
 The `categoryId` is authored into the block. Known values:
 - `text2Image` — standard Firefly image generation

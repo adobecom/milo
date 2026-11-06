@@ -3,7 +3,7 @@ import { getFederatedUrl, getConfig } from '../../../../utils/utils.js';
 // eslint-disable-next-line import/no-relative-packages
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 
-import { escapeHtml, renderParagraphs, hangParagraphs, buildGlobeSkeleton, parseCommonRows } from '../../../../utils/globe/ui.js';
+import { escapeHtml, renderParagraphs, hangParagraphs, buildGlobeSkeleton, parseCommonRows } from '../../../../utils/globe/authoring.js';
 
 function badgeSvgUrl(a) {
   const href = a.getAttribute('href') || '';

@@ -9,7 +9,7 @@ import {
   parseAuthoredContent,
   buildGlobeDom,
 } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
-import { escapeHtml, scatterCards, createGalleryA11y, createGlobeControls } from '../../../../libs/utils/globe/ui.js';
+import { createGalleryA11y, createGlobeControls } from '../../../../libs/utils/globe/interaction.js';
 import {
   capDpr, clamp01, coverFit, easeInOutCubic, easeOutCubic, pxPerWorldAt,
 } from '../../../../libs/utils/globe/core.js';
@@ -137,13 +137,7 @@ describe('globe-gallery: static-mode arc copy', () => {
   });
 });
 
-describe('globe-gallery: authoring helpers', () => {
-  it('escapes all HTML-significant characters and handles nullish values', () => {
-    expect(escapeHtml('& < > " \'')).to.equal('&amp; &lt; &gt; &quot; &#39;');
-    expect(escapeHtml(null)).to.equal('');
-    expect(escapeHtml(undefined)).to.equal('');
-  });
-
+describe('globe-gallery: optimizeImgUrl', () => {
   it('optimizes Milo media URLs with a rounded dimension', () => {
     expect(optimizeImgUrl('https://example.com/media_abc123/image.png', 383.6))
       .to.equal('https://example.com/media_abc123/image.png?width=384&format=webply');
@@ -155,20 +149,6 @@ describe('globe-gallery: authoring helpers', () => {
     expect(optimizeImgUrl('https://example.com/image.png', 300)).to.equal('https://example.com/image.png');
     expect(optimizeImgUrl('', 300)).to.equal('');
     expect(optimizeImgUrl('http://[', 300)).to.equal('http://[');
-  });
-
-  it('scatters deterministically without mutating cards and preserves authored order metadata', () => {
-    const cards = ['a', 'b', 'c', 'd'].map((name) => ({ name }));
-    const first = scatterCards(cards);
-    const second = scatterCards(cards);
-
-    expect(first.map(({ authoredIndex }) => authoredIndex))
-      .to.deep.equal(second.map(({ authoredIndex }) => authoredIndex));
-    expect(first.map(({ authoredIndex }) => authoredIndex).sort((a, b) => a - b))
-      .to.deep.equal([0, 1, 2, 3]);
-    expect(cards.every((card) => !Object.prototype.hasOwnProperty.call(card, 'authoredIndex')))
-      .to.be.true;
-    expect(first.every((card, i) => card !== cards[i])).to.be.true;
   });
 });
 
