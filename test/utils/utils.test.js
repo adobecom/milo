@@ -284,6 +284,52 @@ describe('Utils', () => {
         expect(link.crossOrigin).to.equal('anonymous');
       });
     });
+
+    it('preloads the merch-card template bundles next to merch-card.js', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = '<main><div><div class="merch-card-autoblock"></div></div></main>';
+
+      await utils.loadArea();
+      // the test page matches no rule, so every web bundle is preloaded
+      utils.MERCH_CARD_TEMPLATE_BUNDLES.forEach((bundle) => {
+        const link = document.head.querySelector(`link[rel="preload"][href="https://main--mas--adobecom.aem.live/web-components/dist/templates/${bundle}.js"]`);
+        expect(link, bundle).to.exist;
+        expect(link.as).to.equal('script');
+        expect(link.crossOrigin).to.equal('anonymous');
+      });
+    });
+  });
+
+  describe('getMerchCardTemplateUrls', () => {
+    const originalHref = window.location.href;
+    const NON_PROD = 'https://main--mas--adobecom.aem.live/web-components/dist';
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns the bundle of the matching rule', () => {
+      expect(utils.getMerchCardTemplateUrls('/acrobat/plans.html', '')).to.deep.equal([`${NON_PROD}/templates/dc.js`]);
+      expect(utils.getMerchCardTemplateUrls('/products/catalog.html', '')).to.deep.equal([`${NON_PROD}/templates/catalog.js`]);
+      expect(utils.getMerchCardTemplateUrls('/products/photoshop.html', '')).to.deep.equal([`${NON_PROD}/templates/cc.js`]);
+    });
+
+    it('strips the Milo locale prefix', () => {
+      expect(utils.getMerchCardTemplateUrls('/fr/acrobat/plans.html', '/fr')).to.deep.equal([`${NON_PROD}/templates/dc.js`]);
+    });
+
+    it('returns every web bundle when no rule matches', () => {
+      expect(utils.getMerchCardTemplateUrls('/no/rule.html', '')).to.deep.equal(
+        ['dc', 'catalog', 'cc', 'firefly', 'express'].map((bundle) => `${NON_PROD}/templates/${bundle}.js`),
+      );
+    });
+
+    it('uses the maslibs base', () => {
+      window.history.pushState({}, '', `${window.location.pathname}?maslibs=feature`);
+      expect(utils.getMerchCardTemplateUrls('/express/pricing', '')).to.deep.equal(
+        ['https://feature--mas--adobecom.aem.live/web-components/dist/templates/express.js'],
+      );
+    });
   });
 
   describe('preloadLcpCodeFiles', () => {
