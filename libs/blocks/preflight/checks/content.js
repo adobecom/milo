@@ -134,6 +134,14 @@ export async function checkUnresolvedPlaceholders(area) {
   const unloaded = sources.filter(({ failed }) => failed).length;
   const details = { items };
 
+  // Without any loaded sheet every authored key "falls back", so a failed fetch would look
+  // like N broken placeholders.
+  const config = getConfig();
+  const hasSheet = Object.keys(window.mph ?? {}).length
+    || Object.keys(config.placeholders ?? {}).length;
+  if (items.length && !hasSheet && items.every(({ where }) => where !== RENDERED_PAGE)) {
+    return result('placeholders', STATUS.LIMBO, "Couldn't load the placeholder sheet, so placeholders could not be checked. Try running Preflight again.", details);
+  }
   if (items.length) {
     return result('placeholders', STATUS.FAIL, `${count(items.length, 'placeholder')} ${items.length === 1 ? "doesn't" : "don't"} resolve, so the page shows the key text instead of a value.`, details);
   }

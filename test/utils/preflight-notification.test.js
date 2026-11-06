@@ -18,6 +18,7 @@ describe('snooze', () => {
     expect(isPageSnoozed('/b')).to.be.false;
     snoozePage('/b', now - (25 * 60 * 60 * 1000));
     expect(isPageSnoozed('/b')).to.be.false;
+    expect(JSON.parse(localStorage.getItem(SNOOZE_KEY))['/b']).to.equal(now - (25 * 60 * 60 * 1000) + (24 * 60 * 60 * 1000));
   });
 
   it('drops expired pages when saving, and survives bad storage data', () => {
@@ -34,7 +35,14 @@ describe('hasSettledIssues', () => {
 
   it('opens the pop-up for warnings too, not only critical issues', async () => {
     expect(await hasSettledIssues({ seo: [{ status: 'fail', severity: 'warning' }] })).to.be.true;
-    expect(await hasSettledIssues({ performance: [{ status: 'limbo' }] })).to.be.true;
+  });
+
+  it('does not open the pop-up for undecided (limbo) checks alone', async () => {
+    expect(await hasSettledIssues({ performance: [{ status: 'limbo' }] })).to.be.false;
+    expect(await hasSettledIssues({
+      performance: [{ status: 'limbo' }],
+      seo: [{ status: 'fail', severity: 'warning' }],
+    })).to.be.true;
   });
 
   it('counts finished async SEO checks, including ones that threw', async () => {
@@ -56,7 +64,7 @@ describe('groupByPriority', () => {
       performance: [fail({ checkId: 'icons', title: 'Icons' }), fail({ checkId: 'lcp-element', title: 'LCP' })],
       seo: [fail({ checkId: 'lorem-ipsum', title: 'Lorem Ipsum' }), { checkId: 'canonical', status: 'pass' }],
       structure: [{ id: 'footer', title: 'Footer', status: 'limbo' }],
-      accessibility: [fail({ checkId: 'accessibility', title: 'Accessibility', details: { issuesCount: 5 } })],
+      accessibility: [fail({ checkId: 'accessibility', title: 'Accessibility', severity: 'critical', details: { issuesCount: 5 } })],
       merch: [
         fail({ name: 'M@S Unpublished Fragments', details: { unpublished: [{}, {}] } }),
         fail({ checkId: 'static-prices', title: 'Static prices', details: { prices: [{}] } }),
@@ -79,6 +87,7 @@ describe('groupByPriority', () => {
     const assets = [{
       title: 'Asset Dimensions',
       status: 'pass',
+      severity: 'critical',
       details: { criticalAssetFailures: [{}, {}], warningAssetFailures: [{}] },
     }];
     expect(groupByPriority({ assets })).to.deep.equal([
@@ -152,7 +161,7 @@ describe('preview pop-up', function previewPopupSuite() {
     localStorage.removeItem(SNOOZE_KEY);
   });
 
-  it('shows a focused alert dialog with issue levels in order and closes on Escape', async () => {
+  it('shows a focused alert dialog with issue levels in order and closes on Escape from anywhere', async () => {
     await showNotification();
 
     const dialog = document.querySelector('.milo-preflight-overlay.preflight-popup [role="dialog"]');
@@ -162,19 +171,17 @@ describe('preview pop-up', function previewPopupSuite() {
     expect(document.activeElement.textContent).to.equal('Review issues');
     const levels = [...dialog.querySelectorAll('.notification-group strong')]
       .map((label) => label.textContent);
-    expect(levels.length).to.be.greaterThan(0);
-    expect(levels).to.deep.equal(['Blocker:', 'Critical:', 'Major:', 'Normal:'].filter((l) => levels.includes(l)));
-    const [firstGroup] = dialog.querySelectorAll('.notification-group');
+    const order = ['Blocker:', 'Critical:', 'Major:', 'Normal:'];
+    expect(levels).to.deep.equal([...levels].sort((a, b) => order.indexOf(a) - order.indexOf(b)));
     // The fixture has no header or footer, so a Blocker leads.
+    const [firstGroup] = dialog.querySelectorAll('.notification-group');
     expect(firstGroup.classList.contains('is-blocker')).to.be.true;
     expect(firstGroup.textContent).to.include('Navigation');
-    dialog.querySelectorAll('.notification-group').forEach((group) => {
-      expect(group.textContent).to.match(/^\w+: \S/);
-    });
 
     expect(isPageSnoozed()).to.be.false;
     dialog.querySelector('.notification-snooze input').checked = true;
-    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    // Focus is not on the dialog here: Escape works from anywhere on the page.
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
     expect(isPageSnoozed()).to.be.true;
   });

@@ -71,8 +71,8 @@ export async function checkUnpublishedFragments({ area = document, locale } = {}
 const DYNAMIC_PRICE_SELECTOR = '[data-wcs-osi], [is="inline-price"], [is="checkout-link"], [is="checkout-button"], merch-card, merch-card-collection, merch-offer, merch-offer-select, merch-quantity-select, mas-field, aem-fragment';
 const NOT_PAGE_TEXT_SELECTOR = `script, style, noscript, template, ${DYNAMIC_PRICE_SELECTOR}`;
 
-const SYM_PRE = String.raw`(?:USD\$|US\$|A\$|AU\$|C\$|CA\$|NZ\$|HK\$|S\$|SG\$|MX\$|R\$|NT\$|\$|€|£|¥|￥|₩|₹|₺|₽|₪|฿|₱|₫|₴|zł|CHF|kr|Kč|Ft|lei|RM|Rp|SAR|AED|ر\.س|د\.إ)`;
-const SYM_POST = String.raw`(?:€|£|¥|₩|₹|₺|₽|₪|₫|₴|zł|kr|Kč|Ft|lei|円|원|元|руб\.?|TL|CHF|Fr\.|DKK|SEK|NOK)`;
+const SYM_PRE = String.raw`(?:USD\$|US\$|A\$|AU\$|C\$|CA\$|NZ\$|HK\$|S\$|SG\$|MX\$|R\$|NT\$|\$|€|£|¥|￥|₩|₹|₺|₽|₪|฿|₱|₫|₴|zł|kr|Kč|Ft|lei|RM|Rp|ر\.س|د\.إ)`;
+const SYM_POST = String.raw`(?:€|£|¥|₩|₹|₺|₽|₪|₫|₴|zł|kr|Kč|Ft|lei|円|원|元|руб\.?|TL|Fr\.)`;
 const ISO = String.raw`(?:USD|EUR|GBP|JPY|KRW|INR|AUD|CAD|NZD|BRL|MXN|CHF|SEK|NOK|DKK|PLN|CZK|HUF|TRY|RUB|ILS|THB|PHP|IDR|MYR|SGD|HKD|TWD|CNY|ZAR|AED|SAR|UAH|RON)`;
 // 1,234.56 | 1.234,56 | 1 234,56 | 1'234.56 | 22.99 | 20.– | 49
 const AMT = String.raw`\d{1,3}(?:[.,\u00a0\u202f ']\d{3})+(?:[.,](?:\d{1,2}|[–-]))?|\d+(?:[.,](?:\d{1,2}|[–-]))?`;
@@ -147,7 +147,6 @@ function checkStaticPrices(area) {
   return {
     ...base,
     status: failed ? 'fail' : 'pass',
-    severity: SEVERITY.CRITICAL,
     description: failed
       ? `${prices.length} static price${prices.length === 1 ? '' : 's'} found. Replace them with OST or M@S prices.`
       : 'No static prices found.',

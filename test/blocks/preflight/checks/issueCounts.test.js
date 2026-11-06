@@ -58,7 +58,7 @@ describe('getIssueCounts', function getIssueCountsSuite() {
 
   const seoErrors = async (html) => {
     main.innerHTML = html;
-    const counts = await getIssueCounts({ useCache: false, merchDelayMs: 0 });
+    const counts = await getIssueCounts({ useCache: false });
     return counts.SEO.errors;
   };
 

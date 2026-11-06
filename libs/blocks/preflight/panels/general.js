@@ -4,7 +4,7 @@ import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
 import { runChecks as runContentChecks } from '../checks/content.js';
-import { getAdminUrl } from '../checks/adminStatus.js';
+import { clearPageStatusCache, getAdminUrl } from '../checks/adminStatus.js';
 
 const DEF_NOT_FOUND = 'Not found';
 const DEF_NEVER = 'Never';
@@ -206,6 +206,7 @@ async function handleAction(action) {
       content.value = { ...content.value };
       const adminUrl = getAdminUrl(item.url, action);
       const resp = await fetch(adminUrl, { method: 'POST' });
+      clearPageStatusCache();
       const json = resp.ok ? await resp.json() : NOT_FOUND;
       content.value[key].items[idx] = {
         ...item,

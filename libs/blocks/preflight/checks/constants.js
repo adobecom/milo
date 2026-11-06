@@ -30,8 +30,11 @@ export const PRIORITY_ORDER = Object.values(PRIORITY);
 // Display-only ranking for the preview pop-up, keyed by check id (or name when a
 // check has no id). It never changes `severity`, which metrics and scoring use.
 // Levels follow the Adobe.com QA Priority Definitions (wiki page 1201009817).
-// Asset dimensions rank per fold via the -above-fold / -below-fold keys.
-// Unlisted checks rank from severity: critical → Critical, anything else → Normal.
+// Only overrides are listed: unlisted checks rank from severity (critical → Critical,
+// anything else → Normal), e.g. region selector, breadcrumbs, accessibility, above-the-fold
+// asset dimensions and unresolved placeholders are Critical, and the Performance
+// image/video/fragment/placeholder/icon/personalization checks are Normal.
+// Asset dimensions rank per fold, hence the -below-fold key.
 export const CHECK_PRIORITIES = {
   'M@S Unpublished Fragments': PRIORITY.BLOCKER,
   'unpublished-fragments': PRIORITY.BLOCKER,
@@ -41,11 +44,6 @@ export const CHECK_PRIORITIES = {
   'broken-links': PRIORITY.BLOCKER,
   'lorem-ipsum': PRIORITY.BLOCKER,
   'static-prices': PRIORITY.BLOCKER,
-  'region-selector': PRIORITY.CRITICAL,
-  breadcrumbs: PRIORITY.CRITICAL,
-  accessibility: PRIORITY.CRITICAL,
-  'image-dimensions-above-fold': PRIORITY.CRITICAL,
-  'unresolved-placeholders': PRIORITY.CRITICAL,
   title: PRIORITY.MAJOR,
   'title-size': PRIORITY.MAJOR,
   description: PRIORITY.MAJOR,
@@ -56,12 +54,6 @@ export const CHECK_PRIORITIES = {
   'single-block': PRIORITY.MAJOR,
   canonical: PRIORITY.MAJOR,
   georouting: PRIORITY.MAJOR,
-  'image-size': PRIORITY.NORMAL,
-  'video-poster': PRIORITY.NORMAL,
-  fragments: PRIORITY.NORMAL,
-  placeholders: PRIORITY.NORMAL,
-  icons: PRIORITY.NORMAL,
-  personalization: PRIORITY.NORMAL,
   'image-dimensions-below-fold': PRIORITY.NORMAL,
 };
 

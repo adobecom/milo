@@ -177,6 +177,26 @@ describe('Preflight content checks', () => {
       const result = await checkUnresolvedPlaceholders(area('no-content'));
       expect(result).to.include({ status: 'pass', description: 'Every placeholder resolves (1 checked).' });
     });
+
+    it('is undecided, not failing, when no placeholder sheet loaded at all', async () => {
+      const loaded = window.mph;
+      window.mph = {};
+      try {
+        sources[PAGE_SOURCE] = html('<p>{{try-for-free}}</p>');
+        const result = await checkUnresolvedPlaceholders(area('no-content'));
+        expect(result.status).to.equal('limbo');
+        expect(result.description).to.include('placeholder sheet');
+      } finally {
+        window.mph = loaded;
+      }
+    });
+
+    it('does not fetch the source of cross-repo fragments', async () => {
+      const federal = document.createElement('div');
+      federal.innerHTML = '<div class="fragment" data-path="/federal/footer"></div>';
+      await checkUnresolvedPlaceholders(federal);
+      expect(fetchStub.getCalls().some(({ args }) => String(args[0]).includes('/federal/footer.plain.html'))).to.be.false;
+    });
   });
 
   describe('runChecks', () => {

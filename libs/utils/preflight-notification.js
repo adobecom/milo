@@ -54,9 +54,16 @@ export function snoozePage(path = window.location.pathname, now = Date.now()) {
   }
 }
 
+// On the document so Escape works wherever focus is; ignored once the pop-up is gone.
+function onEscape(e) {
+  // eslint-disable-next-line no-use-before-define
+  if (e.key === 'Escape' && document.querySelector('.milo-preflight-overlay')) dismissNotification();
+}
+
 function dismissNotification() {
   if (document.querySelector('.milo-preflight-overlay .notification-snooze input')?.checked) snoozePage();
   document.querySelector('.milo-preflight-overlay')?.remove();
+  document.removeEventListener('keydown', onEscape);
   wasDismissed = true;
   if (!linkCheckListener) return;
   window.removeEventListener('preflightLinksComplete', linkCheckListener);
@@ -141,9 +148,10 @@ async function resolveSeo(runChecks, now) {
   return { ...runChecks, seo: seo.filter(Boolean) };
 }
 
-// Every level counts; preflightLinksComplete reports link failures that land later.
+// Every level counts, but a check that couldn't decide (limbo) doesn't open the pop-up on its
+// own. preflightLinksComplete reports link failures that land later.
 export async function hasSettledIssues(runChecks = {}) {
-  return groupByPriority(await resolveSeo(runChecks, true)).length > 0;
+  return listIssues(await resolveSeo(runChecks, true)).some(({ status }) => status === STATUS.FAIL);
 }
 
 function renderIssueGroups(container, runChecks) {
@@ -199,9 +207,7 @@ async function createPreflightNotification(results) {
     'aria-labelledby': title.id,
     'aria-describedby': message.id,
   }, content);
-  notification.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') dismissNotification();
-  });
+  document.addEventListener('keydown', onEscape);
   // Don't pull focus away from something the author is already using.
   const isFocusFree = !document.activeElement || document.activeElement === document.body;
   document.body.append(createTag('div', { class: 'milo-preflight-overlay preflight-popup' }, notification));

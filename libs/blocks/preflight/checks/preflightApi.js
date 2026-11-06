@@ -110,9 +110,11 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
-  const merch = await Promise.all(runChecksMerch({ area }));
   // Not part of the metrics upload: captureMetrics only sends the categories above.
-  const content = await Promise.all(runChecksContent({ area }));
+  const [merch, content] = await Promise.all([
+    Promise.all(runChecksMerch({ area })),
+    Promise.all(runChecksContent({ area })),
+  ]);
   return {
     accessibility,
     assets,

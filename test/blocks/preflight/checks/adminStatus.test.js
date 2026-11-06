@@ -46,6 +46,16 @@ describe('preflight adminStatus getPageStatus', () => {
     expect(await getPageStatus(page('/b'))).to.not.be.null;
   });
 
+  it('does not cache a network error either, and frees its slot', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().rejects(new Error('offline'));
+    fetchStub.onSecondCall().resolves(ok);
+    let error;
+    await getPageStatus(page('/c')).catch((e) => { error = e; });
+    expect(error?.message).to.equal('offline');
+    expect(await getPageStatus(page('/c'))).to.not.be.null;
+  });
+
   it('runs at most three Admin API calls at a time', async () => {
     let inFlight = 0;
     let peak = 0;
@@ -61,10 +71,7 @@ describe('preflight adminStatus getPageStatus', () => {
   });
 
   it('sends the Sidekick login cookie, since protected sites reject anonymous calls', async () => {
-    const fetchStub = sinon.stub(window, 'fetch').resolves({
-      ok: true,
-      json: async () => ({ preview: { lastModified: 'a' }, live: {} }),
-    });
+    const fetchStub = sinon.stub(window, 'fetch').resolves(ok);
     const status = await getPageStatus(new URL('https://main--cc--adobecom.aem.page/x'));
     expect(fetchStub.firstCall.args[1]).to.deep.equal({ cache: 'no-store', credentials: 'include' });
     expect(status.live.lastModified).to.be.null;

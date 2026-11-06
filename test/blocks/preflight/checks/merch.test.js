@@ -102,6 +102,12 @@ describe('Preflight M@S Unpublished Fragments check', () => {
     expect(url).to.include('locale=en_US');
     expect(url).to.include(`id=${UUID_PUBLISHED}`);
   });
+
+  it('treats a failed request as unpublished, never as published', async () => {
+    fetchStub.rejects(new Error('offline'));
+    expect(await checkFragmentPublished(UUID_PUBLISHED, 'en_US'))
+      .to.deep.equal({ uuid: UUID_PUBLISHED, httpStatus: 0, published: false });
+  });
 });
 
 describe('Preflight static prices check', () => {
@@ -161,6 +167,7 @@ describe('Preflight static prices check', () => {
       <noscript>$9.99/mo</noscript>
       <template><p>$9.99/mo</p></template>
       <p>Support Mo–Fr. 9–17 Uhr, Mo-Fr. 8:00</p>
+      <p>A ratio of 1.5/mo and the code ABCUSD 5</p>
     `)).to.deep.equal([]);
   });
 
@@ -198,11 +205,18 @@ describe('Preflight static prices check', () => {
     expect(result.details.prices.map(({ text }) => text)).to.deep.equal(['$9.99/mo']);
   });
 
-  it('runChecks passes when every price is dynamic', async () => {
-    area.innerHTML = '<p>Now <span is="inline-price" data-wcs-osi="a">US$22.99/mo</span></p>';
-    const [, promise] = runChecks({ area, delayMs: 0 });
-    const result = await promise;
-    expect(result).to.include({ status: 'pass', severity: SEVERITY.CRITICAL });
-    expect(result.details.prices).to.deep.equal([]);
+  it('reports limbo, not a clean pass, when the browser cannot build the price pattern', async () => {
+    const NativeRegExp = window.RegExp;
+    window.RegExp = function noLookbehind() { throw new SyntaxError('invalid group'); };
+    try {
+      // A fresh module instance, because the pattern is built once per instance.
+      const freshPath = '../../../../libs/blocks/preflight/checks/merch.js?no-lookbehind';
+      const fresh = await import(freshPath);
+      area.innerHTML = '<p>Only $9.99/mo</p>';
+      const [, promise] = fresh.runChecks({ area, delayMs: 0 });
+      expect(await promise).to.include({ checkId: 'static-prices', status: 'limbo' });
+    } finally {
+      window.RegExp = NativeRegExp;
+    }
   });
 });
