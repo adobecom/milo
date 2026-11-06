@@ -14,7 +14,7 @@ import {
 } from '../../../utils/globe/gl.js';
 import createGlobeModal from '../../../utils/globe/modal.js';
 import createInteraction, { createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/interaction.js';
-import { loadGlobeStyles, scatterCards } from '../../../utils/globe/authoring.js';
+import { loadGlobeStyles, scatterCards, onRemoved } from '../../../utils/globe/authoring.js';
 import { createPullQuote } from '../../../utils/globe/quote-particles.js';
 import * as TL from './src/timeline.js';
 import {
@@ -1105,7 +1105,10 @@ function createGlobeGalleryRuntime(
     if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
     const { mesh } = cards[idx];
     mesh.getWorldPosition(ringWorld);
-    if (camera.position.z - ringWorld.z <= 0.01) return; // behind/at the camera
+    if (canvasHidden || !mesh.visible || camera.position.z - ringWorld.z <= 0.01) {
+      a11y.setFocusRect(0, 0, 0, 0);
+      return;
+    }
     const groupScale = sphereGroup.scale.x;
     ringEdge.set(
       ringWorld.x + 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale,
@@ -1533,7 +1536,7 @@ function createGlobeGalleryRuntime(
   }
 
   let rafId = 0;
-  function rafLoop(now) { tick(now); rafId = requestAnimationFrame(rafLoop); }
+  function rafLoop(now) { rafId = requestAnimationFrame(rafLoop); tick(now); }
   function startTicker() {
     if (rafId) return;
     // Re-baseline scroll and the frame clock; the parked interval isn't a dt.
@@ -1594,10 +1597,10 @@ function createGlobeGalleryRuntime(
     ctxLoss.recovering = true;
     ctxLoss.recoverTimer = window.setTimeout(recoverFromContextLoss, 0);
   }
+  const contextCanvases = [q('.globe-canvas'), q('.globe-modal-canvas')];
   function bindContextListeners(add) {
     const fn = add ? 'addEventListener' : 'removeEventListener';
-    [q('.globe-canvas'), q('.globe-modal-canvas')].forEach((c) => {
-      if (!c) return;
+    contextCanvases.forEach((c) => {
       c[fn]('webglcontextlost', onContextLost, false);
       c[fn]('webglcontextrestored', onContextRestored, false);
     });
@@ -1666,6 +1669,7 @@ function createGlobeGalleryRuntime(
       renderer = new THREE.WebGLRenderer({ canvas, antialias: aa, alpha: true });
     } catch (e) {
       renderer = null;
+      window.lana?.log?.(`globe-gallery: WebGL renderer creation failed: ${e?.message || e}`, { tags: 'globe-gallery', severity: 'warn' });
       return false;
     }
     appliedDpr = capDpr();
@@ -1895,7 +1899,8 @@ function createGlobeGalleryRuntime(
     a11y.teardown();
     if (arcCopy.el) arcCopy.el.style.cssText = '';
     pullQuote.teardown();
-    frameInput.prevLenisY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
+    Object.assign(frameState, TL.createFrame());
+    Object.assign(frameInput, TL.createFrameInput());
     canvasHidden = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();
@@ -1903,6 +1908,7 @@ function createGlobeGalleryRuntime(
     drag.isDragging = false;
     drag.velX = 0; drag.velY = 0; drag.pendingX = 0; drag.pendingY = 0;
     wasBrowsing = false;
+    cameraInsideSphere = false;
     // NOTE: `bp` intentionally NOT cleared — doLayout compares it, initRuntime overwrites it.
   }
 
@@ -1922,7 +1928,12 @@ export default async function init(el) {
 
   const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote, touchHint });
 
-  const authored = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
+  let authored = null;
+  if (fragmentHref) {
+    authored = await fetchFragmentCards(fragmentHref);
+  } else {
+    window.lana?.log?.('globe-gallery: no fragment link authored', { tags: 'globe-gallery', severity: 'warn' });
+  }
   await styles;
   if (!authored || authored.length === 0) {
     el.classList.add('globe-empty');
@@ -1940,12 +1951,7 @@ export default async function init(el) {
   if (runtime.init() === false) { el.classList.add('globe-empty'); return el; }
   el.globeRuntime = runtime;
 
-  const removalObserver = new MutationObserver(() => {
-    if (document.contains(el)) return;
-    runtime.destroy();
-    removalObserver.disconnect();
-  });
-  removalObserver.observe(document.body, { childList: true, subtree: true });
+  onRemoved(el, () => runtime.destroy());
 
   return el;
 }

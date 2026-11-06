@@ -11,7 +11,7 @@ import {
 } from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
 import { createGalleryA11y, createGlobeControls } from '../../../../libs/utils/globe/interaction.js';
 import {
-  capDpr, clamp01, coverFit, easeInOutCubic, easeOutCubic, pxPerWorldAt,
+  capDpr, clamp01, coverFit, easeInOutCubic, easeOutCubic, pxPerWorldAt, FRAME_MS, DT_SCALE_MAX,
 } from '../../../../libs/utils/globe/core.js';
 import {
   arcCamZ,
@@ -390,7 +390,7 @@ describe('globe-gallery: fetchFragmentCards', () => {
     });
 
     expect(await fetchFragmentCards('/fragment')).to.be.null;
-    expect(log.calledOnce).to.be.true;
+    expect(log.calledTwice).to.be.true;
     expect(log.firstCall.args[0]).to.include('Missing artwork');
     expect(log.firstCall.args[1]).to.deep.equal({
       tags: 'globe-gallery',
@@ -398,15 +398,26 @@ describe('globe-gallery: fetchFragmentCards', () => {
     });
   });
 
-  it('returns null for HTTP errors, empty fragments, and network errors', async () => {
+  it('logs and returns null for HTTP errors, empty fragments, and network errors', async () => {
+    const log = sinon.spy();
+    window.lana = { log };
     fetchStub = sinon.stub(window, 'fetch');
     fetchStub.onFirstCall().resolves({ ok: false, status: 404 });
     fetchStub.onSecondCall().resolves({ ok: true, text: async () => '<div></div>' });
     fetchStub.onThirdCall().rejects(new Error('offline'));
 
     expect(await fetchFragmentCards('/missing')).to.be.null;
+    expect(log.lastCall.args[0]).to.include('404').and.include('/missing.plain.html');
+    expect(log.lastCall.args[1]).to.deep.equal({ tags: 'globe-gallery', severity: 'error' });
+
     expect(await fetchFragmentCards('/empty')).to.be.null;
+    expect(log.lastCall.args[0]).to.include('no usable cards').and.include('/empty.plain.html');
+    expect(log.lastCall.args[1]).to.deep.equal({ tags: 'globe-gallery', severity: 'warn' });
+
     expect(await fetchFragmentCards('/offline')).to.be.null;
+    expect(log.lastCall.args[0]).to.include('offline').and.include('/offline.plain.html');
+    expect(log.lastCall.args[1]).to.deep.equal({ tags: 'globe-gallery', severity: 'error' });
+    expect(log.callCount).to.equal(3);
   });
 });
 
@@ -551,7 +562,7 @@ describe('globe-gallery: timeline', () => {
       ...TL.createFrameInput(),
       scrollY,
       prevLenisY: 0,
-      now: TL.FRAME_MS,
+      now: FRAME_MS,
       blockDocTop: 1000,
       blockHeight: 3000,
       formPx: 1000,
@@ -629,13 +640,13 @@ describe('globe-gallery: timeline', () => {
   });
 
   it('scales scroll velocity by elapsed frames and clamps extreme frame gaps', () => {
-    const normal = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 10 + TL.FRAME_MS });
-    const slow = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 10 + 2 * TL.FRAME_MS });
+    const normal = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 10 + FRAME_MS });
+    const slow = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 10 + 2 * FRAME_MS });
     const stalled = derive(1100, { prevLenisY: 1000, prevNow: 10, now: 1010 });
 
     expect(normal.scrollVel).to.be.closeTo(100, 1e-9);
     expect(slow.scrollVel).to.be.closeTo(50, 1e-9);
-    expect(stalled.dtScale).to.equal(TL.DT_SCALE_MAX);
+    expect(stalled.dtScale).to.equal(DT_SCALE_MAX);
   });
 
   it('pins reduced motion to the fully formed globe and removes scroll velocity', () => {

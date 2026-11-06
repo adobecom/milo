@@ -1,5 +1,3 @@
-
-
 /* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix */
 
 @property --globe-nav-h {
@@ -211,6 +209,7 @@
   --globe-pq-ink: var(--s2a-color-gray-25);
 
   position: absolute;
+  isolation: isolate;
   top: var(--globe-optical-center);
   inset-inline: 0;
   box-sizing: border-box;
@@ -274,10 +273,6 @@
   font-family: var(--body-font-family);
   color: var(--globe-pq-ink);
   margin: 0;
-}
-
-@media (width >= 1280px) {
-  .globe-pullquote { --globe-pq-ideal-gap: var(--s2a-layout-2xl); }
 }
 
 /* Flows normally after the globe: no pin/rail/sticky, static with a gap above. */
@@ -703,6 +698,10 @@ html.globe-modal-open {
   }
 
   .globe-pullquote { --globe-pq-ideal-gap: var(--s2a-layout-xl); }
+}
+
+@media (width >= 1280px) {
+  .globe-pullquote { --globe-pq-ideal-gap: var(--s2a-layout-2xl); }
 }
 
 @media (width >= 1440px) {

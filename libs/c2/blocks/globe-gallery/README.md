@@ -173,13 +173,13 @@ DOM. `parseAuthoredContent` strips the hash and `fetchFragmentCards(href)` fetch
 racing the parse.
 
 Cards come solely from the fetched fragment. If the fetch yields none — a failed
-request, or no fragment link authored — the block collapses to `.globe-empty`
-(`height:auto`) rather than rendering an empty scene. (Distinct from
-`.globe-reduced`, the reduced-motion render path — see Accessibility.)
+request, no usable cards, or no fragment link authored — the failure logs to `lana` and the
+whole block is hidden with `.globe-empty` (`display:none`) rather than rendering an empty
+scene. (Distinct from `.globe-reduced`, the reduced-motion render path — see Accessibility.)
 
-The same `.globe-empty` collapse is the fallback when **WebGL is unavailable**: `initRuntime`
+`.globe-empty` is also the fallback when **WebGL is unavailable**: `initRuntime`
 creates the `WebGLRenderer` in a `try/catch` (Three.js throws when `getContext` returns
-null). On failure `initRuntime` returns `false`, the caller adds `.globe-empty`, and no ticker
+null). On failure it logs to `lana` and returns `false`, the caller adds `.globe-empty`, and no ticker
 starts.
 
 **WebGL context loss while running** is handled: Three.js drops every GPU object on
@@ -188,7 +188,7 @@ starts.
 ticker and clears `renderReady`; restored rebuilds all GPU state via the same
 `destroy()`+`initRuntime()` path a breakpoint crossing uses. The two canvases' restore events are
 coalesced into ONE rebuild (`ctxLoss.recovering` guard + a macrotask defer). A rebuild cap
-(`MAX_CONTEXT_REBUILDS`) collapses to `.globe-empty` under sustained GPU pressure rather than looping;
+(`MAX_CONTEXT_REBUILDS`) falls back to `.globe-empty` under sustained GPU pressure rather than looping;
 the counter resets once a rebuild survives `CONTEXT_STABLE_MS`.
 
 **`destroy()` must not `forceContextLoss()`.** The canvas *element* is reused across rebuilds (band
@@ -508,7 +508,7 @@ per-instance unique-id suffix minted from a module-level counter in
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids are document-wide): the modal heading/role-label/position — the heading's own id plus its
 `aria-describedby` IDREFs. `el` itself is the scroll runway
-(height is `--globe-runway-height` on `.globe-gallery`, `auto` under `.globe-reduced` / `.globe-empty`);
+(height is `--globe-runway-height` on `.globe-gallery`, `auto` under `.globe-reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.globe-modal-open` scroll lock. `html:has(.globe)` keeps `scrollbar-gutter: stable`, so the lock (`overflow: hidden`, Lenis' `lenis-stopped` class from `libs/deps/lenis.min.css`) does not change the page width; the gutter is painted dark while locked.
 

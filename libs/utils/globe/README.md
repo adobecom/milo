@@ -50,7 +50,8 @@ Shared factories take the block `name` (`'firefly-globe'` / `'globe-gallery'`) o
 - **Pull-quote raster text:** each line is drawn with whichever `letter-spacing` (the element's, or
   none) matches the DOM line width. A line that matches neither is drawn word by word from the words'
   DOM rects.
-- **Crosshair rules** paint under the DOM text, as under the raster.
+- **Crosshair rules** paint under the text, on the DOM as in the raster. `.globe-pullquote` isolates
+  so their `z-index: -1` can't fall behind the block's background.
 - **Scroll lock:** `html:has(.globe)` keeps `scrollbar-gutter: stable`; the gutter is painted
   dark while the modal is open.
 - **Modal dialog** is `overflow: clip`; only the description (and, on short landscape viewports,

@@ -2,8 +2,6 @@
 // Pure — no THREE, no DOM, no closure state.
 import { clamp01, camZAtT, tAtCamZ, dtScaleOf, TAN_HALF_FOV } from '../../../../utils/globe/core.js';
 
-export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';
-
 const PROGRESS_PAN_END = 0.55;
 const PROGRESS_ARC_PREROLL = 0.30;
 const PROGRESS_GRID_ARC_START = 0.30;

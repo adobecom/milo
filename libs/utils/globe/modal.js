@@ -3,6 +3,7 @@ import {
   easeInOutCubic, easeOutCubic, clamp01, coverFit, pxPerWorldAt, capDpr,
 } from './core.js';
 import { createModalMaterial } from './gl.js';
+import { setLang } from './authoring.js';
 
 const perfNow = () => performance?.now() ?? Date.now();
 
@@ -314,7 +315,10 @@ export default function createGlobeModal({
   function revealModalChrome() {
     if (!chromeEl) return;
     if (!chromeNodes) {
-      chromeNodes = { els: [...chromeEl.querySelectorAll(['info', 'close', 'nav', 'counter'].map((k) => `.globe-modal-${k}`).join(', '))] };
+      chromeNodes = {
+        els: [...chromeEl.querySelectorAll('.globe-modal-info, .globe-modal-close,'
+          + ' .globe-modal-nav, .globe-modal-counter')],
+      };
     }
     // transition:none while animating so CSS hover can't fight the per-frame write; cleared on
     // the settled frame so :hover animates again.
@@ -347,11 +351,6 @@ export default function createGlobeModal({
   function scheduleDescFade() {
     const descEl = q('.globe-modal-description');
     if (descEl) requestAnimationFrame(() => { if (modalIdx >= 0) updateDescFade(descEl); });
-  }
-
-  function setLang(el, lang) {
-    if (lang) el.lang = lang;
-    else el.removeAttribute('lang');
   }
 
   function announce(parts = []) {

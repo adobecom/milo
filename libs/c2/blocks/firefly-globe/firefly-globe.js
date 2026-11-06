@@ -15,11 +15,11 @@ import {
 } from '../../../utils/globe/gl.js';
 import createGlobeModal from '../../../utils/globe/modal.js';
 import createInteraction, { createGalleryA11y, createGlobeControls, createCursor } from '../../../utils/globe/interaction.js';
-import { loadGlobeStyles, scatterCards } from '../../../utils/globe/authoring.js';
+import { loadGlobeStyles, scatterCards, onRemoved } from '../../../utils/globe/authoring.js';
 import { createPullQuote } from '../../../utils/globe/quote-particles.js';
 import {
   camZAtTravelT, travelTAtCamZ, TRAVEL_EASE_POW, travelSpanPx, scrollYAtTravelT,
-  createFrame, createFrameInput, deriveFrame,
+  createFrame, createFrameInput, deriveFrame, TEXT_APPEAR_START, CANVAS_HIDE_MARGIN_T,
 } from './src/timeline.js';
 
 const BREAKPOINTS = {
@@ -103,9 +103,6 @@ const TEXT_REBUILD_DEBOUNCE_MS = 150;
 
 const CSS_ENTRY_LIFT = !!window.CSS?.supports?.('animation-timeline: view()');
 const ENTRY_LIFT_H = 0.45;
-
-const TEXT_APPEAR_START = 0.10;
-const CANVAS_HIDE_MARGIN_T = 0.05;
 
 const SCROLL_VEL_MAX = 18; // px/frame scroll speed that saturates the motion trail
 const DRAG_FLIP_MAX_CAM_FRAC = 0.95; // ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE
@@ -1287,10 +1284,10 @@ function createGlobeGalleryRuntime(
     ctxLoss.recovering = true;
     ctxLoss.recoverTimer = window.setTimeout(recoverFromContextLoss, 0);
   }
+  const contextCanvases = [q('.globe-canvas'), q('.globe-modal-canvas')];
   function bindContextListeners(add) {
     const fn = add ? 'addEventListener' : 'removeEventListener';
-    [q('.globe-canvas'), q('.globe-modal-canvas')].forEach((c) => {
-      if (!c) return;
+    contextCanvases.forEach((c) => {
       c[fn]('webglcontextlost', onContextLost, false);
       c[fn]('webglcontextrestored', onContextRestored, false);
     });
@@ -1566,10 +1563,9 @@ function createGlobeGalleryRuntime(
     renderer = null; scene = null; camera = null; sphereGroup = null;
     modal.destroy(finalize);
     a11y.teardown();
-    frameInput.prevScrollY = 0; frameInput.prevNow = 0; frameState.scrollVel = 0;
-    frameState.entryT = 0; frameState.scrollT = 0; frameState.sphereFormed = false;
+    Object.assign(frameState, createFrame());
+    Object.assign(frameInput, createFrameInput());
     pullQuote.teardown();
-    pqAppearT = 1;
     canvasHidden = false;
     // The closure survives a rebuild, so a pre-rebuild tilt would carry over.
     resetSphereOrientation();
@@ -1626,12 +1622,7 @@ export default async function init(el) {
   if (runtime.init() === false) { el.classList.add('globe-empty'); return el; }
   el.globeRuntime = runtime;
 
-  const removalObserver = new MutationObserver(() => {
-    if (document.contains(el)) return;
-    runtime.destroy();
-    removalObserver.disconnect();
-  });
-  removalObserver.observe(el.parentNode || document.body, { childList: true });
+  onRemoved(el, () => runtime.destroy());
 
   return el;
 }

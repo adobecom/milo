@@ -1,5 +1,56 @@
 import { expect } from '@esm-bundle/chai';
-import { escapeHtml, scatterCards, renderParagraphs, plainQuote, hangParagraphs } from '../../../libs/utils/globe/authoring.js';
+import {
+  escapeHtml, scatterCards, renderParagraphs, plainQuote, hangParagraphs, onRemoved,
+} from '../../../libs/utils/globe/authoring.js';
+
+describe('onRemoved', () => {
+  const flush = () => new Promise((resolve) => { setTimeout(resolve); });
+  let calls;
+  let wrapper;
+  let el;
+
+  beforeEach(() => {
+    calls = 0;
+    wrapper = document.createElement('section');
+    el = document.createElement('div');
+    wrapper.append(el);
+    document.body.append(wrapper);
+    onRemoved(el, () => { calls += 1; });
+  });
+
+  afterEach(() => wrapper.remove());
+
+  it('fires when the element itself is removed', async () => {
+    el.remove();
+    await flush();
+    expect(calls).to.equal(1);
+  });
+
+  it('fires when an ancestor is removed', async () => {
+    wrapper.remove();
+    await flush();
+    expect(calls).to.equal(1);
+  });
+
+  it('ignores unrelated mutations and a move within the document', async () => {
+    const other = document.createElement('div');
+    document.body.append(other);
+    other.remove();
+    document.body.append(el);
+    await flush();
+    expect(calls).to.equal(0);
+    el.remove();
+  });
+
+  it('fires only once', async () => {
+    el.remove();
+    await flush();
+    document.body.append(el);
+    el.remove();
+    await flush();
+    expect(calls).to.equal(1);
+  });
+});
 
 function makeEl(innerHTML) {
   const el = document.createElement('div');

@@ -13,10 +13,13 @@
   overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
   -webkit-tap-highlight-color: transparent;
 
-  &.globe-reduced,
-  &.globe-empty {
+  &.globe-reduced {
     height: auto;
     min-height: 0;
+  }
+
+  &.globe-empty {
+    display: none;
   }
 }
 

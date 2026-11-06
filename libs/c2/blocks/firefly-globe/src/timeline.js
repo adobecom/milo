@@ -1,8 +1,9 @@
 import { clamp01, camZAtT, tAtCamZ, dtScaleOf } from '../../../../utils/globe/core.js';
 
-export { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../utils/globe/core.js';
-
 export const TRAVEL_EASE_POW = 3;
+
+export const TEXT_APPEAR_START = 0.10;
+export const CANVAS_HIDE_MARGIN_T = 0.05;
 
 export const camZAtTravelT = (t, camZSphere, camZEnd) => camZAtT(
   t,

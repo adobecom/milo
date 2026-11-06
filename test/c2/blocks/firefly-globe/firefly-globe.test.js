@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/timeline.js';
+import { FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX } from '../../../../libs/utils/globe/core.js';
 import {
   DEFAULT_MACHINE_TAG,
   fireflyRenditionUrl,
@@ -325,6 +326,16 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect(log.firstCall.args[0]).to.include('boom');
   });
 
+  it('keeps usable assets and logs how many it skipped', async () => {
+    stubAssets([asset(), asset({ id: 'no-rendition', _links: {} })]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat')).to.have.length(1);
+    expect(log.calledOnce).to.be.true;
+    expect(log.firstCall.args[0]).to.include('1 of 2 assets skipped');
+    expect(log.firstCall.args[1]).to.deep.equal({ tags: 'firefly-globe', severity: 'info' });
+  });
+
   it('warns with the request URL and returns null when no assets come back', async () => {
     stubAssets([]);
     const log = sinon.spy();
@@ -565,11 +576,11 @@ describe('firefly-globe: frame state', () => {
   });
 
   it('dtScale clamps are sane', () => {
-    expect(TL.DT_SCALE_MIN).to.be.below(1);
-    expect(TL.DT_SCALE_MAX).to.be.above(1);
+    expect(DT_SCALE_MIN).to.be.below(1);
+    expect(DT_SCALE_MAX).to.be.above(1);
   });
 
   it('FRAME_MS is ~16.67ms (60fps target)', () => {
-    expect(TL.FRAME_MS).to.be.closeTo(16.667, 0.001);
+    expect(FRAME_MS).to.be.closeTo(16.667, 0.001);
   });
 });

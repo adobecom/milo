@@ -1,4 +1,6 @@
-import { escapeHtml, LABEL_DIVIDER, cellText, buildGlobeSkeleton, parseCommonRows } from '../../../../utils/globe/authoring.js';
+import {
+  escapeHtml, setLang, LABEL_DIVIDER, cellText, buildGlobeSkeleton, parseCommonRows,
+} from '../../../../utils/globe/authoring.js';
 
 export const DEFAULT_MACHINE_TAG = 'acom_ff_globe_assets';
 
@@ -118,6 +120,12 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
       );
       return null;
     }
+    if (cards.length < assets.length) {
+      window.lana?.log?.(
+        `firefly-globe: ${assets.length - cards.length} of ${assets.length} assets skipped, no rendition: ${url}`,
+        { tags: 'firefly-globe', severity: 'info' },
+      );
+    }
     return cards;
   } catch (e) {
     window.lana?.log?.(
@@ -152,7 +160,7 @@ export function parseAuthoredContent(el) {
 
 const CANVAS_STYLE = 'position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;';
 
-const modalInfoHtml = (labels, ctaLabel) => (gid) => `
+const modalInfoHtml = (ctaLabel) => (gid) => `
     <div class="globe-modal-info" data-lenis-prevent>
       <p class="globe-modal-name" id="globe-modal-name-${gid}" tabindex="-1" autofocus aria-describedby="globe-modal-description-${gid} globe-modal-position-${gid}">
         <img class="globe-modal-model-icon" alt="" aria-hidden="true">
@@ -169,7 +177,7 @@ export function buildGlobeDom(el, labels, { touchHint, ctaLabel = '', pullQuote 
     touchHint,
     pullQuote,
     canvasStyle: CANVAS_STYLE,
-    modalInfoHtml: modalInfoHtml(labels, ctaLabel),
+    modalInfoHtml: modalInfoHtml(ctaLabel),
   });
 }
 
@@ -186,11 +194,6 @@ const MODEL_ICON = {
   topaz: 'topaz.svg',
   firefly: 'firefly.svg',
 };
-
-function setLang(el, lang) {
-  if (lang) el.lang = lang;
-  else el.removeAttribute('lang');
-}
 
 export function renderModalContent(targetEl, meta, iconBaseUrl) {
   const nameEl = targetEl.querySelector('.globe-modal-name');

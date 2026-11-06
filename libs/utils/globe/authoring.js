@@ -14,6 +14,22 @@ export function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => map[c]);
 }
 
+export function setLang(el, lang) {
+  if (lang) el.lang = lang;
+  else el.removeAttribute('lang');
+}
+
+export const daaBlockName = (name) => name.replace(/-/g, '_');
+
+export function onRemoved(el, callback) {
+  const observer = new MutationObserver(() => {
+    if (el.isConnected) return;
+    observer.disconnect();
+    callback();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 // Fallback only; authored inline so it stays localizable.
 const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
 
@@ -168,7 +184,7 @@ export function plainQuote(quoteEl) {
 }
 
 const buildMarkup = ({ name, labels, canvasStyle, arcCopyHtml, modalInfoHtml }) => {
-  const daaName = name.replace(/-/g, '_');
+  const daaName = daaBlockName(name);
   return `
   <div class="globe-world">
     <canvas class="globe-canvas" style="${canvasStyle}"></canvas>

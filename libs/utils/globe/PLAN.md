@@ -1,6 +1,7 @@
 # Globe consolidation plan
 
 Working notes for refactoring `firefly-globe` and `globe-gallery` onto the shared layer in this folder.
+Delete this file before the branch merges.
 
 ## Ground rules (they shaped every decision)
 
@@ -9,13 +10,14 @@ Working notes for refactoring `firefly-globe` and `globe-gallery` onto the share
   `src/timeline.js` and the six shared modules (`core`, `gl`, `interaction`, `authoring`, `modal`,
   `quote-particles`) plus `globe.css`. Merge small things into an existing shared file rather than adding files.
 - **One globe per page is the normal case; two must not interfere.** Shared modules keep no
-  per-instance state (the modal id counter is the only module-level counter); `easePow` is injected
+  per-instance state (the skeleton's `globeInstanceSeq` is the only module-level counter); `easePow` is injected
   per instance. Block-only CSS is scoped under the block root (`.root .globe-*`).
 - **No behaviour change by default.** When the two blocks differ only for historical reasons,
   consolidate into one function (a branch or option is fine; it can be cleaned up later). When a
   difference is real, keep it and say why. Behaviour changes are called out below.
 - **Review each pattern before applying it.** Patterns must remove a measured duplication or a
   measured risk. No pattern for its own sake.
+- **Changes stay uncommitted and unstaged** so they can be reviewed before staging.
 - Tests/lint: `npx eslint libs/utils/globe libs/c2/blocks/firefly-globe libs/c2/blocks/globe-gallery test/c2/blocks test/utils/globe`
   and `npx wtr --config ./web-test-runner.config.mjs --node-resolve --port=2000 "test/utils/globe/*.test.js" "test/c2/blocks/{firefly-globe,globe-gallery}/*.test.js"`.
 - `libs/mep/ace1209/*` holds legacy copies of these blocks. Do not touch them.
@@ -23,24 +25,39 @@ Working notes for refactoring `firefly-globe` and `globe-gallery` onto the share
   the READMEs (no rationale, no history).
 - **CSS:** shared rules live in `globe.css`; a block rule that overrides a shared one must
   out-specify it (stylesheet load order is not guaranteed). First-paint rules (root height, the
-  root background) stay in the block CSS.
+  root background) stay in the block CSS. Within `globe.css`, min-width media queries for the same
+  property stay in ascending order.
 
 ## Behaviour changes adopted
 
 Everything else was kept identical.
 
 - Firefly: opening-quote hang is a `text-indent`, not a `span.hang-opening-quote`.
-- Gallery: a11y uses firefly's version (Tab handling, `preventScroll`, per-card `lang`).
+- Gallery: a11y uses firefly's version (Tab handling, `preventScroll`, per-card `lang`), including hiding the
+  focus ring when its card is gone.
 - Gallery: `parsePullQuote` ignores `<p>` inside the quote element.
+- Gallery: `.globe-empty` is `display: none`. It used to leave a blank viewport-tall block with the pull quote in it.
+- Gallery: failures that were silent now log to lana (fragment request, no usable cards, no fragment link,
+  WebGL renderer creation).
+- Gallery: `rafLoop` schedules the next frame before `tick`, as firefly does, so a one-off error in `tick`
+  costs one frame instead of freezing the globe.
+- Gallery: `destroy` resets `cameraInsideSphere`, and both blocks reset the whole frame state, so a rebuild starts
+  like a first load (gallery's hint plane is now created after a rebuild deep in the scroll, as on first load).
+- Firefly: logs how many assets it skipped for having no rendition.
+- Firefly: removing an ancestor of the block now destroys the runtime (`onRemoved`, Milo's body-subtree pattern).
 - Firefly: the description gets the hang gutter (padding offset by an equal negative margin).
 - Firefly: a11y card buttons no longer use `pointer-events: auto`.
-- Both: crosshair rules paint under the DOM text; modal dialog is `overflow: clip`; the page
-  scrollbar gutter stays reserved and is painted dark while the modal is open (gallery gained
-  the gutter).
+- Both: crosshair rules paint under the DOM text, as under the raster, so nothing changes at the swap.
+  A hung mark stays whole in front of the rule instead of being cut by it, as it is on stage.
+- Both: modal dialog is `overflow: clip`; the page scrollbar gutter stays reserved and is painted
+  dark while the modal is open (gallery gained the gutter).
 - Both: pull-quote raster picks the letter-spacing that matches the DOM line width.
 
 ## Still to verify
 
+- The handoff on a real GPU: the crosshair at the hung mark and at an overhanging line should not change
+  at the raster-to-DOM swap. Checked by comparing screenshots of both states with a software renderer.
+  Reduced motion should still show the rules.
 - Firefox (headless Playwright Firefox would not launch in the dev environment) and Safari on a
   real device for the hang mark, RTL pull quote and the scrollbar gutter. Firefly and gallery were smoke-tested in Chromium and WebKit (desktop and mobile
   emulation) only.
@@ -49,63 +66,100 @@ Everything else was kept identical.
 - Tab into the globe from above the block (`suppressFocusSnap` in the block entry) and the first
   pull-quote frame after a rebuild (`jumped` in `quote-particles.js`).
 
+## Backlog: mistakes and inconsistencies
+
+Tackle one at a time, before the pattern work unless marked otherwise. Items marked *(extraction)*
+can wait for the pattern step that moves that code, since one implementation has to be chosen then
+anyway.
+
+### Docs
+
+18. Shared files say "see README" for content only the gallery README has: `core.js` (yaw-only geometry),
+    `gl.js` (`releaseCanvasAfterUpload`), `modal.js` (`MODAL_RADIUS_PX`), `globe.css` (`hanging-punctuation`,
+    Modal chrome). Move the shared behaviour into `README.md` here, or name the README they mean.
+19. Shared `README.md` is wrong on two points: `name` isn't only for `daa-ll` (it also tags lana logs in
+    `gl.js`), and `loadGlobeStyles()` isn't awaited at the top of `init` (it starts there and is awaited
+    after the content fetch).
+20. "The core" in comments and the gallery README means the block runtime, not `core.js`
+    (for example `isBrowsing` in `interaction.js`). Pick one word for the runtime.
+
+### Guards
+
+21. Nothing in the test suite would catch the CSS and raster regressions found in review (cascade order in
+    `globe.css`, rule paint order). Add a test that the raster and DOM paint rules under the text. Decide whether a
+    computed-style check earns a place in the suite.
+
+### Raster
+
+22. **Bidi in the raster.** `rasterize` draws each line on its own, so on an RTL page Latin text reorders its
+    line-edge punctuation (`,I love` in the raster against `I love…,` on the DOM) and visibly jumps at the
+    swap. Seen with forced `dir="rtl"` on Latin content; check real RTL content before deciding.
 
 ## Pattern plan
 
-Ordered by value/risk. Each item says what it fixes, the evidence, and the verdict. Apply one at
-a time, with tests green and a visual check between steps.
+Ordered by value and risk, from the measured duplication between the two entry files:
 
-### 1. Variant descriptor (Parameter Object / Configuration) - **do first**
+- 243 of firefly's 1,637 lines and 557 of gallery's 1,951 have no counterpart in the other block.
+- About 41 runtime functions (about 314 lines) are identical apart from comments, and 46 top-level constants are identical.
+- 22 functions share a name but really differ. Only 10 functions have no counterpart at all, all in gallery
+  (arc, grid, fold, arc copy), plus `retireHint` in firefly.
 
-*Problem:* `name`, `timeline`, flags are passed separately to six factory
-calls per block.
-*Proposal:* each block builds one frozen `variant` object (`name`,
-`timeline`, feature flags). Factories read from it (`easePow` is already injected per instance).
-*Why it is safe:* purely mechanical, no logic moves. *Cost:* touches call sites and tests.
-Not a facade; it is just data.
+So most of the job is moving identical code, which needs no pattern. What remains after that is the actual
+variation point. Apply one step at a time, with tests green and a visual check between steps.
 
-### 2. Disposer (Resource-cleanup / RAII-style) - **do early**
+### 1. Characterization tests - **do first**
+
+*Problem:* the runtimes have the thinnest test coverage and everything below moves their code.
+*Proposal:* card positions, camera and clocks per frame for fixed scroll inputs, plus lifecycle checks
+(rebuild, destroy leaves no listeners). `buildCards` calls `Math.random` for roll jitter, peel jitter and grid
+tilts, so stub it.
+
+### 2. Extract the identical subsystems (Extract Module, Parameter Object) - **do second**
+
+*Problem:* the duplication above. *Proposal:* factories in a new shared `runtime.js`, moved in slices:
+
+1. Shared constants and the scroll reader (`deQuantize`, `readScrollY`).
+2. Sphere orientation: `sphereOrient`, `navNudge`, `rotateStep`, `centerCardOnScreen`, `centerModalCard`, the
+   shared part of `updateSphereRotation`.
+3. Card field: `resolveMasonryLayout`, `recomputeDragFlip`, `applyMotionCA`, `applyCardFit`, facing, hint mesh.
+4. Lifecycle: ticker, context loss, observers (with step 3 below).
+
+*Cost:* a 7th shared module, breaking the file budget above. It is worth one request if it removes this much
+per block; re-check the count after slice 1 before committing to it.
+
+### 3. Disposer (Resource-cleanup / RAII-style) - **with the lifecycle slice**
 
 *Problem:* `destroy()` is about 70 lines in each block, plus per-module `teardown()`s, each hand-pairing
 every `addEventListener`/observer/timer with its removal.
-*Proposal:* a tiny `createDisposer()` in `core.js`: `const on = disposer.listen(target, evt, fn,
-opts)`, `disposer.add(fn)`, `disposer.dispose()`. Setup registers cleanup at the point of creation.
-*Why:* removes a class of leak bugs that are hard to test; shrinks destroy paths; no new files.
+*Proposal:* a tiny `createDisposer()`: `disposer.listen(target, evt, fn, opts)`, `disposer.add(fn)`,
+`disposer.dispose()`. Setup registers cleanup at the point of creation.
+*Why:* removes a class of leak bugs that are hard to test and shrinks destroy paths.
+*Watch:* runtimes rebuild in place, and `destroy(false)` must keep the hoisted modal.
 
-### 3. Content provider (Adapter / Strategy for authoring) - **do after 1**
+### 4. Block spec (Strategy, Parameter Object) - **after 2**
 
-*Problem:* the blocks differ in where cards come from and how they render: Firefly API vs fragment
-cards, image URL builders, `crossOrigin`, per-card `lang`, `renderModalContent`, `modalInfoHtml`,
-canvas style. Today these are scattered optional callbacks (`getCrossOrigin`, `getCardLang`,
-`loadModalUpgrade`, `renderContent`, `getSrc`...).
-*Proposal:* each `authoring.js` exports one `contentSource` object with a fixed shape (load cards,
-`cardImageUrl(i, px)`, `modalImageUrl`, `cardLang`, `renderModalContent`, `modalInfoHtml`,
-`canvasStyle`). The runtime and shared factories take that one object. *Why:* the injected
-surface becomes a documented interface instead of loose closures.
+*Problem:* what's left differs per block. *Proposal:* one frozen per-block `spec`, not separate variant,
+content-source and entry objects. There are exactly two blocks, so three interfaces would be speculative.
+Sections, to be confirmed by what step 2 leaves behind:
 
-### 4. Placement/entry strategy (Strategy) - **the big one, do after 1-3**
+- **Identity:** `name`, `breakpoints`, and flags (`hoistToBody`, `bodyOpenClass`, `requireOnSphere`, `manageCanvas`).
+- **Content:** where cards come from, card and modal image URLs, `crossOrigin`, per-card `lang`,
+  `renderModalContent`, `modalInfoHtml`, `canvasStyle`.
+- **Entry:** `createFrame`/`deriveFrame` (already in `timeline.js`), `placeCard`, `updateCamera`, cue timing,
+  `snapToBrowseView`, canvas visibility, extra per-frame stages (`updateArcCopy`,
+  `updateSphereGroupDepth`). Firefly's is "formed from the start"; gallery's carries arc, grid and fold.
+  Hint retirement stays a per-block rule: firefly is interactive long before it forms, so its `retireHint` is
+  gated on `sphereFormed`; gallery's callers can't run before its hint has finished appearing.
 
-*Problem:* the only structural difference between the runtimes is how cards enter and are
-placed: gallery has arc -> grid -> fold staging; firefly is already a pinned sphere.
-*Proposal:* one `entry` strategy interface per block: `createFrameInput/deriveFrame` (already in
-`timeline.js`), `placeCard(card, frame)`, `updateCamera(frame)`, `pqAppearT()`, `copyLayers`
-(arc copy). Firefly's strategy is "formed from the start" (a near no-op); gallery's carries the
-gallery-only staging. `timeline.js` is already the seed of this.
-*Why it earns its place:* it is the actual variation point, it already exists informally, and it
-unlocks item 5.
+This replaces the earlier separate items for a variant descriptor, a content provider and a placement strategy.
 
 ### 5. Shared runtime factory (Template Method by composition, Factory) - **last**
 
-*Proposal:* `createGlobeRuntime(variant, contentSource, entryStrategy)` in a shared file runs the
-lifecycle (build DOM -> init renderer/scene -> build cards -> layout -> tick -> destroy) and calls
-the strategy where it differs. This is where the identical and near-identical runtime
-lines move. *Composition, not inheritance:* the codebase is closure-based and the blocks differ by
+*Proposal:* `createGlobeRuntime(spec)` runs the lifecycle (build DOM -> init renderer/scene -> build cards ->
+layout -> tick -> destroy) and calls the spec where it differs. After steps 2 and 4 this should be mostly wiring.
+*Composition, not inheritance:* the codebase is closure-based and the blocks differ by
 a few functions, not by an "is-a" relationship; classes would fight the style and the injected
 getters.
-*Gate:* do not start until 1-4 are in, and move it in slices (state -> layout -> transforms ->
-input -> lifecycle), tests plus a visual diff after each. The runtime has the thinnest test
-coverage, so add characterization tests (card positions per frame for fixed inputs) before moving
-code. Needs a file-budget check: this would be a 7th shared file.
 
 ### 6. Context object for module dependencies (Parameter Object) - **optional, with 5**
 
@@ -115,12 +169,16 @@ built by the runtime. Do this only if it makes the modal readable; otherwise lea
 
 ## Patterns considered and rejected (for now)
 
+- **Standalone variant descriptor.** The earlier "six factory calls" claim was overstated: `name` goes to five
+  calls, `timeline` and each flag to one. Too little to justify a step of its own; folded into the block spec.
+- **Clock renames as a lead-in (`zoomT` to `scrollT`, `lenisY` to `scrollY`).** Makes only about 4 more functions
+  identical. Rename when moving code if it helps, not as its own step.
 - **Inheritance / classes.** Closure style plus tiny differences; a base class would add `this`
   plumbing and fragile overrides.
 - **Mediator (formal).** The runtime closure already mediates modal, interaction, controls, a11y
   and cursor through getters. A separate mediator object would be indirection without a second
-  implementation to justify it. Revisit only if item 5 leaves a hub that is hard to read.
-- **Facade (`createGlobeKit(variant)` returning bound factories).** Subsumed by item 1. Add only
+  implementation to justify it. Revisit only if step 5 leaves a hub that is hard to read.
+- **Facade (`createGlobeKit(variant)` returning bound factories).** Subsumed by the block spec. Add only
   if call sites stay noisy afterwards.
 - **Observer / event bus.** Callbacks are 1:1 and explicit; a bus would hide data flow.
 - **Singleton / DI container / Visitor / Decorator.** No need identified.

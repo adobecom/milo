@@ -317,7 +317,7 @@ function makeSolidTexture(w, h, color) {
   return tex;
 }
 
-async function imageToTexture(img, cap, fit = fitDims, name = 'globe') {
+async function imageToTexture(img, cap, name, fit = fitDims) {
   const { w, h } = fit(img.naturalWidth || 512, img.naturalHeight || 512, cap);
   try {
     const opts = { resizeWidth: w, resizeHeight: h, resizeQuality: 'high', imageOrientation: 'flipY' };
@@ -372,7 +372,7 @@ export function loadCardTextures({ count, getSrc, maxTexH, getCrossOrigin, name 
     const co = getCrossOrigin ? getCrossOrigin(i) : null;
     if (co) img.crossOrigin = co;
     img.onload = () => {
-      imageToTexture(img, maxTexH, fitCardDims, name).then((tex) => done(i, tex));
+      imageToTexture(img, maxTexH, name, fitCardDims).then((tex) => done(i, tex));
     };
     img.onerror = () => {
       window.lana?.log?.(`${name}: card image failed to load, rendering fallback: ${getSrc(i)}`, { tags: name, severity: 'warn' });
@@ -385,11 +385,11 @@ export function loadCardTextures({ count, getSrc, maxTexH, getCrossOrigin, name 
 }
 
 // Returns the Image so a pending load can be cancelled; caller owns disposal.
-export function loadModalTexture(src, maxTex, onReady, onError, crossOrigin, name = 'globe') {
+export function loadModalTexture(src, maxTex, onReady, onError, crossOrigin, name) {
   const img = new Image();
   if (crossOrigin) img.crossOrigin = crossOrigin;
   img.onload = () => {
-    imageToTexture(img, maxTex, undefined, name).then(onReady);
+    imageToTexture(img, maxTex, name).then(onReady);
   };
   img.onerror = () => {
     window.lana?.log?.(`${name}: modal texture upgrade failed: ${src}`, { tags: name, severity: 'warn' });
@@ -424,7 +424,7 @@ function usableFamilies(ctx) {
 }
 
 // `aspect` is the camera aspect, so texture pixels stay square. Null when no font parses.
-export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
+export function createClickDragTexture(aspect, hintText) {
   let canvasW; let canvasH;
   if (aspect >= 1) {
     canvasW = TEXT_MAX_SIDE;

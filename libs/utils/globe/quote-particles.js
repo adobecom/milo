@@ -328,10 +328,10 @@ function textLines(el, ox, oy) {
   }));
 }
 
-const textSel = () => ['quote', 'name', 'role'].map((k) => `.globe-pullquote-${k}`).join(', ');
+const TEXT_SEL = '.globe-pullquote-quote, .globe-pullquote-name, .globe-pullquote-role';
 
 function fontsFor(figureEl) {
-  return [...figureEl.querySelectorAll(textSel())]
+  return [...figureEl.querySelectorAll(TEXT_SEL)]
     .map((el) => ({ font: fontOf(getComputedStyle(el)), text: el.textContent }));
 }
 
@@ -358,7 +358,7 @@ function measure(figureEl, railEl) {
       w: fig.width + 2 * RASTER_PAD,
       h: fig.height + 2 * RASTER_PAD,
     },
-    runs: [...figureEl.querySelectorAll(textSel())]
+    runs: [...figureEl.querySelectorAll(TEXT_SEL)]
       .flatMap((el) => textLines(el, origin.left, origin.top)),
     rules,
     ruleColor: cs.getPropertyValue('--globe-pq-rule-color').trim() || '#3a3a3a',

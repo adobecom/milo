@@ -141,9 +141,16 @@ function parseFragmentCards(row) {
 }
 
 export async function fetchFragmentCards(href) {
+  const url = `${href}.plain.html`;
   try {
-    const resp = await fetch(`${href}.plain.html`);
-    if (!resp.ok) return null;
+    const resp = await fetch(url);
+    if (!resp.ok) {
+      window.lana?.log?.(
+        `globe-gallery: fragment request failed (${resp.status}): ${url}`,
+        { tags: 'globe-gallery', severity: 'error' },
+      );
+      return null;
+    }
     const html = await resp.text();
     // DOMParser yields an inert document, so card <img>/<picture> never fetch here — only the
     // right-sized texture URL is downloaded.
@@ -151,8 +158,19 @@ export async function fetchFragmentCards(href) {
     const cards = [...doc.body.querySelectorAll(':scope > div')]
       .flatMap((section) => parseFragmentCards(section))
       .filter(Boolean);
-    return cards.length ? cards : null;
+    if (!cards.length) {
+      window.lana?.log?.(
+        `globe-gallery: no usable cards in fragment: ${url}`,
+        { tags: 'globe-gallery', severity: 'warn' },
+      );
+      return null;
+    }
+    return cards;
   } catch (e) {
+    window.lana?.log?.(
+      `globe-gallery: fragment fetch error (${e.message}): ${url}`,
+      { tags: 'globe-gallery', severity: 'error' },
+    );
     return null;
   }
 }

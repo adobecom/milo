@@ -3,6 +3,7 @@ import * as THREE from '../../deps/three.js';
 // eslint-disable-next-line import/no-relative-packages
 import { createTag } from '../utils.js';
 import { FRAME_MS } from './core.js';
+import { daaBlockName } from './authoring.js';
 
 const VEL_SMOOTH_MS = 35; // EMA time constant
 const CLICK_MAX_MOVE = 10; // px
@@ -263,8 +264,9 @@ export default function createInteraction({
 export function createGlobeControls({
   name, q, labels, getVisible, getHintDismissed, rotate,
 }) {
-  const SPIN_DAA_PAUSE = `pause_spin--${name.replace(/-/g, '_')}`;
-  const SPIN_DAA_RESUME = `resume_spin--${name.replace(/-/g, '_')}`;
+  const daaName = daaBlockName(name);
+  const SPIN_DAA_PAUSE = `pause_spin--${daaName}`;
+  const SPIN_DAA_RESUME = `resume_spin--${daaName}`;
   let layerEl = null;
   let spinBtn = null;
   let hintEl = null;
@@ -380,7 +382,7 @@ export function createCursor(deps) {
       + '</div>';
     const container = createTag('div', { class: 'globe-cursor', 'aria-hidden': 'true' }, cursorInner);
     document.body.appendChild(container);
-    container.querySelector('.globe-cursor-text').textContent = labelText || 'Click & Drag';
+    container.querySelector('.globe-cursor-text').textContent = labelText;
     els = {
       container,
       text: container.querySelector('.globe-cursor-text-wrap'),
@@ -461,7 +463,7 @@ export function createGalleryA11y({
 }) {
   // Uniform, never per card. Each `-`-separated segment must stay within 20 chars or Milo
   // truncates it.
-  const daaName = name.replace(/-/g, '_');
+  const daaName = daaBlockName(name);
   const CARD_OPEN_DAA_LL = `card_open--${daaName}`;
   const ENTER_GALLERY_DAA_LL = `enter_gallery_kbd--${daaName}`;
   let widgetEl = null; // collapsed entry button (single tab stop)
