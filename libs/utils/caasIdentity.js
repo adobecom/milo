@@ -7,9 +7,20 @@
 //
 // That constraint is also why the generic flag parsers (isFlagEnabled and
 // friends) live here rather than in a shared libs/utils/flags.js. Splitting
-// them out is worth doing but is deliberately deferred: it needs the eslint
-// import ban below relaxed to an allowlist of leaf specifiers, which widens
-// the blast radius of a change whose whole point is to not move card identity.
+// them out is worth doing and is deferred only for scope: this change must not
+// also move card identity around.
+//
+// Correcting an earlier version of this note: it claimed the move was blocked
+// on relaxing the eslint import ban to a leaf allowlist. That is wrong, and was
+// disproved by probe. `no-restricted-imports` genuinely cannot express the
+// allowlist (negated `group` patterns are silently ignored), but the override
+// already carries a `no-restricted-syntax` block, and a selector can:
+//   ImportDeclaration[source.value!='./flags.js']
+// plus the existing ExportNamedDeclaration[source] / ExportAllDeclaration /
+// ImportExpression selectors cover all four leak vectors. So the move costs
+// roughly an hour and a bundle rebuild, not a widened blast radius. Do not let
+// this note talk you out of it.
+//
 // Until then, import them from here rather than writing a fourth variant --
 // the drift this centralization exists to kill.
 //
@@ -177,11 +188,18 @@ export const isHtmlIdentityEnabled = (flag) => isFlagEnabled(flag);
  * public entry point reached from config-sheet values, where the string
  * 'false' would otherwise enable the policy and silently rehash every card.
  *
- * @param {string} prodUrl schemed or scheme-less production url
+ * Module-private ON PURPOSE: it preserves whatever scheme it is given, but ids
+ * are a uuid v5 of the SCHEME-LESS url. Exporting it alongside toIdentityUrl
+ * published two near-identical normalizers where the more identity-sounding one
+ * was the trap -- a caller passing getProdUrl's schemed output would hash a
+ * schemed string, mint a different id and orphan the card, with no error and no
+ * failing test. toIdentityUrl is the only supported entry point.
+ *
+ * @param {string} prodUrl scheme-less production url
  * @param {string|boolean} enabled authored or resolved feature-flag state
  * @returns {string} identity url
  */
-export const getCaasIdentityUrl = (prodUrl, enabled = false) => {
+const getCaasIdentityUrl = (prodUrl, enabled = false) => {
   if (!isHtmlIdentityEnabled(enabled) || !isForcedHtmlIdentityUrl(prodUrl)) return prodUrl;
   const { scheme, host, pathname, suffix } = splitUrl(prodUrl);
   return `${scheme}${host}${forceSingleHtml(pathname)}${suffix}`;

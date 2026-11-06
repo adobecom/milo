@@ -530,8 +530,17 @@ presetSelector.addEventListener('change', () => {
   // Deliberately NOT converted to isFlagDisabled with the two above. This cell
   // has inverted semantics and does not feed the identity hash, so switching it
   // would change language/country resolution for every existing preset -- a
-  // behaviour change unrelated to card identity. It does share their blind spot
-  // ('FALSE' and ' false ' do not match), which is worth a separate ticket.
+  // behaviour change unrelated to card identity, and not one this ticket should
+  // smuggle in.
+  //
+  // KNOWN LATENT DEFECT, pre-existing and unchanged here: this is a strict
+  // `=== 'false'` compare, so the authored cells 'FALSE', 'False' and ' false '
+  // all resolve to `languageFirst = false` -- the opposite of what the author
+  // wrote. It is the same bug class the two lines above fix, left in place only
+  // because the blast radius is language resolution rather than identity. Fixing
+  // it needs an audit of which presets currently author a non-exact 'false',
+  // since those sites are silently getting the wrong resolution today and the
+  // fix would flip them.
   config.languageFirst = selectedPreset.languageFirst === 'false';
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
     config.contentType = '';
@@ -724,8 +733,12 @@ helpButtons.forEach((btn) => {
             but the ID is hashed from the <b>.html</b> form, so existing card IDs survive the change.</p>
           <p><b>This currently applies to business.adobe.com only</b> &mdash; it is a no-op on any other host, and
             a no-op anywhere <b>.html</b> is still served.</p>
-          <p>It must be enabled together with the <b>caas-identity-html</b> page metadata on the consuming site:
-            enabling only one of the two silently breaks featured-card lookups.</p>`);
+          <p>It must be enabled together with the <b>caas-identity-html</b> page metadata on
+            <b>every</b> site that renders these cards by URL &mdash; the publishing site and any other
+            site featuring them in a collection &mdash; and, where the site also auto-publishes, with the
+            <b>htmlIdentity</b> column in its <b>/.milo/caas/config.json</b>.
+            Enabling only some of these silently breaks featured-card lookups: the card simply
+            vanishes from the collection, with no error.</p>`);
         break;
 
       case 'use-preview':

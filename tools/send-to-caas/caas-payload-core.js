@@ -1357,7 +1357,9 @@ const buildCaasXdmPayload = async ({
     repo,
   });
   await loadCaasTags();
-  // Card identity (contentId/entityId, hashed from options.prodUrl) must be
+  // Card identity (contentId/entityId) is derived from this prodUrl via
+  // getIdentityUrl(), which applies the htmlIdentity policy before hashing --
+  // it is no longer hashed from prodUrl directly. prodUrl must still be
   // scheme-less to match the untouched legacy bulk-publish-to-caas.js tool's
   // own prodUrl convention, or the same page hashes to two different uuids
   // depending on which publisher touched it. `pageUrl` itself stays schemed
@@ -1419,10 +1421,14 @@ const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
 // poller is where removal mismatches happen.
 // sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
 // calls; these are rare per-page diagnostics, not volume telemetry.
+// Tagged `caas,htmlIdentity` to match the consumer-side diagnostics in
+// libs/blocks/caas/utils.js and send-to-caas.js. These must share a tag: the
+// whole point of this path is that one lana query retrieves every identity
+// diagnostic, and `caas` alone buries them under unrelated CaaS logging.
 export const createIdentityLogger = (prefix) => (message, severity = 'error') => {
   const msg = `${prefix}: ${message}`;
   if (typeof window !== 'undefined' && window.lana?.log) {
-    window.lana.log(msg, { tags: 'caas', severity, sampleRate: 100 });
+    window.lana.log(msg, { tags: 'caas,htmlIdentity', severity, sampleRate: 100 });
     return;
   }
   // `console` is not guaranteed: the poller runs this bundle in a Node `vm`

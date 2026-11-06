@@ -26,15 +26,41 @@
  *                 site rolling extensionless urls out one environment at a time
  *   htmlIdentity  hash contentId/entityId from the `.html` form regardless of
  *                 the public url, so ids survive that rollout. REQUIRED when
- *                 htmlExt<Env> splits the targets.
+ *                 htmlExt<Env> splits the environments a rule can reach.
  *                 SITE-WIDE AND STICKY, unlike htmlExt: enabling it on ANY rule
  *                 enables it for EVERY rule in the file, and setting it to
- *                 `false` on one rule does NOT opt that rule out. To turn it
- *                 off, remove the column from every rule. Card identity must
- *                 not vary by path or environment, so the resolver deliberately
- *                 has no way to scope it.
- *                 Currently applies to business.adobe.com only; on any other
- *                 host it is a no-op (see BACOM_PROD_HOST in caasIdentity.js).
+ *                 `false` on one rule does NOT opt that rule out. Card identity
+ *                 must not vary by path or environment, so the resolver
+ *                 deliberately has no way to scope it.
+ *                 This includes rules whose `enabled` column is false -- a
+ *                 stale column on an archived row still opts the whole file in,
+ *                 because ON is the safe direction. To turn the policy off,
+ *                 remove the column from every rule (or set it to `false` on
+ *                 every rule); both resolve to off.
+ *                 STICKY means what it says: once a site has published under
+ *                 forced-`.html` ids, turning this off re-orphans every card it
+ *                 minted. There is no migration back.
+ *                 Currently applies to business.adobe.com only. On another host
+ *                 it is a no-op for identity, but it is NOT inert: combined
+ *                 with an htmlExt<Env> split it cannot make the ids converge,
+ *                 so the rule is refused outright and that path stops
+ *                 publishing (see BACOM_PROD_HOST in caasIdentity.js).
+ *
+ * Two things outside this file must agree, or cards silently disappear:
+ *   1. PAGE METADATA. Setting htmlIdentity here is only the publisher half.
+ *      Every site that renders a business.adobe.com card BY URL -- the
+ *      publishing site AND any other site featuring its cards in a collection
+ *      -- must also set the `caas-identity-html` page metadata, which is what
+ *      libs/blocks/caas/utils.js resolves featured-card links through. Set one
+ *      without the other and the lookup misses with no error: the card just
+ *      vanishes from the collection. The sidekick tool (send-to-caas.js) reads
+ *      that metadata rather than these rules, so it diverges here too.
+ *   2. THE POLLER'S BUNDLE. wcms/milo-caas runs caas-payload-builder.js, which
+ *      it fetches against a pinned MILO_PAYLOAD_BUILDER_SHA256. Until that pin
+ *      is bumped to a build containing htmlIdentity, the poller ignores this
+ *      column entirely while the browser publisher honours it -- the same page
+ *      gets two contentIds and two cards. DO NOT author htmlIdentity in any
+ *      config.json before that bump lands.
  *
  * The function NEVER throws. CaaS publishing is best-effort — the underlying
  * Helix publish must not be blocked by a CaaS failure. All outcomes return
@@ -64,6 +90,10 @@ import {
 // falls back to console because none of this module's runtimes install
 // window.lana -- see createIdentityLogger in caas-payload-core.js.
 const logIdentity = createIdentityLogger('caas-auto-publish');
+
+// See resolveHtmlIdentity: the site-wide-application notice is informational and
+// would otherwise fire once per url in a bulk job.
+let siteWideNoticeLogged = false;
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
 // from this module (used by tests and any host that already depends on it).
@@ -141,7 +171,7 @@ export const resolveRule = (rules, path) => {
 // property as if it were a `.html` policy.
 // Derived from DEFAULT_TARGETS rather than restated, so the two cannot drift:
 // adding an environment there automatically allows its override column.
-export const HTML_EXT_ENVS = [
+const HTML_EXT_ENVS = [
   ...new Set(Object.values(DEFAULT_TARGETS).flat().map((t) => t.caasEnv)),
 ];
 
@@ -193,6 +223,12 @@ export const resolveHtmlExt = (rule, caasEnv) => {
 // loses it is orphaned with no way back.
 export const resolveHtmlIdentity = (rules, rule) => {
   const list = Array.isArray(rules) ? rules : [];
+  // Deliberately NOT filtered on `enabled`: a disabled row still declares the
+  // site's identity scheme, and ON is the safe direction (a card that keeps its
+  // established `.html` id stays findable; one that loses it is orphaned with no
+  // way back). So a stale htmlIdentity column on an archived row opts the whole
+  // file in -- documented in the header table, because archived rows are exactly
+  // where stale columns survive.
   const declaring = list.filter((r) => isHtmlIdentityEnabled(r?.htmlIdentity));
   if (!declaring.length) return isHtmlIdentityEnabled(rule?.htmlIdentity);
   const dissenting = list.filter((r) => isFlagDisabled(r?.htmlIdentity));
@@ -203,11 +239,20 @@ export const resolveHtmlIdentity = (rules, rule) => {
       + 'treating it as ENABLED. Set the column consistently on every rule.',
       'warning',
     );
-  } else if (!isHtmlIdentityEnabled(rule?.htmlIdentity)) {
+  } else if (!isHtmlIdentityEnabled(rule?.htmlIdentity) && !siteWideNoticeLogged) {
+    // Logged once per module lifetime, matching warnOnIdentityPolicyMiss in
+    // libs/blocks/caas/utils.js. This branch is INFORMATIONAL, not a
+    // misconfiguration: a broad opt-in rule plus narrower rules that omit the
+    // column is the shape the header table documents as correct. Per page it
+    // fired once for every url in a bulk job -- thousands of lana warnings at
+    // sampleRate 100 from bulk-publish-v2, where lana IS loaded -- burying the
+    // two messages that are genuinely actionable (the disagreement warning
+    // above and the env-split refusal below).
+    siteWideNoticeLogged = true;
     logIdentity(
       `htmlIdentity is enabled on rule '${declaring[0]?.url}' but not on the `
       + `matched rule '${rule?.url}'; applying it site-wide so this path does `
-      + 'not mint a second set of card ids.',
+      + 'not mint a second set of card ids. (Further occurrences suppressed.)',
       'warning',
     );
   }
@@ -348,7 +393,7 @@ export const caasAutoPublish = async ({
     // Asserted on the real hash inputs rather than on the htmlIdentity flag:
     // the policy only normalizes in-scope urls (the bacom prod host), so the
     // flag being on does NOT prove the ids converge. On any other host
-    // getCaasIdentityUrl is a no-op and the ids fork regardless.
+    // the forced-.html normalization is a no-op and the ids fork regardless.
     //
     // Evaluated over every environment the RULE can reach, not just the ones
     // this action happens to target. The invariant ("one page, one id") is a
@@ -357,7 +402,20 @@ export const caasAutoPublish = async ({
     // action, the identical misconfiguration was refused on every preview and
     // waved through on every publish, so prod cards got minted and stage got
     // none, with no rule-level signal that anything was wrong.
-    const ruleEnvs = allowedHtmlExtEnvs(rule);
+    //
+    // Derived from the rule's own declared targets, NOT from
+    // allowedHtmlExtEnvs: that is an allowlist for override COLUMN NAMES and is
+    // always a superset of {prod, stage} by construction. Reusing it here
+    // refused a rule that declares `targets: [{caasEnv:'prod'}]` and still
+    // carries a leftover `htmlExtStage` cell -- a shape this very rollout
+    // invites -- over a fork that rule can never reach. resolveTargets returns
+    // rule.targets verbatim, so a narrowed rule genuinely cannot reach the
+    // environments it omits; HTML_EXT_ENVS stays the fallback when it narrows
+    // nothing.
+    const declaredEnvs = Array.isArray(rule?.targets) && rule.targets.length
+      ? [...new Set(rule.targets.map((t) => t?.caasEnv).filter((env) => typeof env === 'string' && env))]
+      : HTML_EXT_ENVS;
+    const ruleEnvs = declaredEnvs.length ? declaredEnvs : HTML_EXT_ENVS;
     const reachableHtmlExts = new Set(ruleEnvs.map((env) => resolveHtmlExt(rule, env)));
     const identityUrls = new Set([...reachableHtmlExts].map((htmlExt) => (
       toIdentityUrl(variantProdUrl(htmlExt), htmlIdentity)

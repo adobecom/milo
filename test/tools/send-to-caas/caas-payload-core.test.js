@@ -207,10 +207,18 @@ describe('caas-payload-core: forced-.html card identity', () => {
     // never by path here -- otherwise the flag silently does nothing for a
     // section that migrates later and orphans all of its cards.
     const cases = ['/blog/post', '/fr/blog/post', '/blog', '/products/y'];
-    await Promise.all(cases.map(async (path) => {
+    // Sequential, not Promise.all: buildCaasXdmPayload is NOT reentrant (it
+    // threads module-global config/tag state), as documented at its definition.
+    // The concurrent form passes here only incidentally, because contentid is
+    // computed from the per-call prodUrl closure and so happens to survive the
+    // interleaving -- every other resolved prop would not. This is also the
+    // place a future reader looks for the house style on calling it.
+    for (const path of cases) {
+      // eslint-disable-next-line no-await-in-loop
       const md = await build({ path, htmlIdentity: true });
+      // eslint-disable-next-line no-await-in-loop
       expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}.html`));
-    }));
+    }
   });
 
   it('accepts the string flag form config sheets store', async () => {

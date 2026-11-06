@@ -89,9 +89,9 @@ describe('caas-payload-builder bundle is not stale', () => {
   });
 
   it('agrees with the source on the whole payload for a fixed page', async () => {
-    // Widens the guard from two functions to the entire payload surface, so a
-    // future source change to any prop -- not just the identity inputs -- is
-    // caught. buildCaasXdmPayload is the largest surface and the one that in
+    // Widens the guard to every prop the fixture can resolve offline, so a
+    // future source change to one of those -- not just the identity inputs --
+    // is caught. buildCaasXdmPayload is the largest surface and the one that in
     // fact drifted while the bundle sat stale.
     //
     // Honest limit, verified by running this against the stale bundle: the two

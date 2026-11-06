@@ -187,6 +187,29 @@ describe('auto-publish: resolveHtmlIdentity', () => {
     expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
   });
 
+  it('suppresses the site-wide notice after the first occurrence', () => {
+    // The notice is informational: a broad opt-in plus narrower rules that omit
+    // the column is the documented-correct shape, so firing per url turned a
+    // 5,000-url bulk job into 5,000 lana warnings at sampleRate 100 and buried
+    // the genuinely actionable messages.
+    //
+    // Deliberately order-independent: the flag is module-level (matching
+    // warnOnIdentityPolicyMiss in libs/blocks/caas/utils.js), so an earlier test
+    // in this file may already have tripped it. Asserting "at most one new log
+    // across two calls" proves suppression either way, where asserting an exact
+    // count would depend on test order.
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**' },
+    ];
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+    const notices = logged.filter((m) => m.includes('applying it site-wide'));
+    expect(notices.length).to.be.at.most(1);
+  });
+
   it('resolves to the matched rule when no rule opts in', () => {
     const rules = [{ url: '/**' }, { url: '/products/**' }];
     expect(resolveHtmlIdentity(rules, rules[1])).to.be.false;
@@ -1138,6 +1161,55 @@ describe('auto-publish: per-environment htmlExt', () => {
     // publish -- minting prod cards and no stage ones, with no rule-level signal.
     const origin = uniqueOrigin();
     const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('does NOT refuse a rule whose declared targets cannot reach the split environment', async () => {
+    // The guard asks which environments the RULE can reach. `resolveTargets`
+    // returns `rule.targets` verbatim when the rule declares them, so a rule
+    // targeting prod alone never touches stage -- a leftover `htmlExtStage`
+    // cell on it describes no reachable fork and must not stop publishing.
+    // Deriving the guard set from `allowedHtmlExtEnvs` was wrong here: that is
+    // an allowlist for override COLUMN NAMES and is always a superset of
+    // {prod, stage} by construction, so it refused this normal rollout shape.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      targets: [{ caasEnv: 'prod', draftOnly: false }],
+    });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result.error).to.equal(undefined);
+    expect(posts).to.have.lengthOf(1);
+  });
+
+  it('still refuses when the rule declares targets that DO span the split', async () => {
+    // Converse of the above: narrowing the guard to the rule's declared targets
+    // must not let a genuine fork through.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      targets: [{ caasEnv: 'prod', draftOnly: false }, { caasEnv: 'stage', draftOnly: false }],
+    });
     const result = await caasAutoPublish({
       action: 'publish',
       url: `${origin}/x`,

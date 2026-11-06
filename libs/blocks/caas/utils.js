@@ -18,8 +18,15 @@ import { isHtmlIdentityEnabled, isIdentityPolicyMiss, toIdentityUrl } from '../.
 // lookups would hash the extensionless url and miss every card. Scoped to
 // featured cards (and the current-page id) deliberately: excludedCards and
 // hideCtaIds go through getContentIdStr, which passes an authored contentId
-// through verbatim and never hashes a url, so they are unaffected. Opt in once
-// per site via the `caas-identity-html` metadata property.
+// through verbatim and never hashes a url, so they are unaffected.
+//
+// Opt in via the `caas-identity-html` metadata property. This is the CONSUMER
+// side only, and it is NOT a single site-wide switch: the publishers carry
+// their own flag (the `htmlIdentity` column in /.milo/caas/config.json and the
+// bulk-publisher preset column), and every site that renders these cards by url
+// needs this metadata -- including a site that merely features another site's
+// cards in a collection. Believing it is one switch is what causes the silent
+// miss described below.
 const htmlIdentityEnabled = () => isHtmlIdentityEnabled(getMetadata('caas-identity-html'));
 
 // A missing opt-in produces no error: the lookup just silently returns a card

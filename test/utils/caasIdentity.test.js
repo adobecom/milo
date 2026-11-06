@@ -1,6 +1,5 @@
 import { expect } from '@esm-bundle/chai';
 import {
-  getCaasIdentityUrl,
   isFlagDisabled,
   isFlagEnabled,
   isFlagUnrecognized,
@@ -52,7 +51,7 @@ describe('caasIdentity', () => {
     it('reproduces the degenerate form getProdUrl emits for a trailing slash', () => {
       // getProdUrl appends `.html` unconditionally, so a card published from
       // `/fr/` hashed `/fr/.html`. Matching that exactly is what preserves it.
-      expect(getCaasIdentityUrl('business.adobe.com/fr/', true))
+      expect(toIdentityUrl('business.adobe.com/fr/', true))
         .to.equal('business.adobe.com/fr/.html');
     });
 
@@ -74,62 +73,69 @@ describe('caasIdentity', () => {
     });
   });
 
-  describe('getCaasIdentityUrl', () => {
+  describe('toIdentityUrl: html identity normalization', () => {
     it('returns the url untouched when the flag is off', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x', false))
+      expect(toIdentityUrl('business.adobe.com/resources/x', false))
         .to.equal('business.adobe.com/resources/x');
     });
 
     it('resolves the flag itself, so the string \'false\' cannot enable it', () => {
       // Flag values arrive from config sheets as strings; a truthy check here
       // would silently rehash every card on the site.
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x', 'false'))
+      expect(toIdentityUrl('business.adobe.com/resources/x', 'false'))
         .to.equal('business.adobe.com/resources/x');
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x', 'true'))
+      expect(toIdentityUrl('business.adobe.com/resources/x', 'true'))
         .to.equal('business.adobe.com/resources/x.html');
     });
 
     it('adds .html for an in-scope extensionless url', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x', true))
         .to.equal('business.adobe.com/resources/x.html');
     });
 
     it('is idempotent for a url that already ends in .html', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x.html', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x.html', true))
         .to.equal('business.adobe.com/resources/x.html');
     });
 
     it('collapses repeated .html to exactly one', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x.html.html', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x.html.html', true))
         .to.equal('business.adobe.com/resources/x.html');
     });
 
-    it('preserves the scheme when one is present', () => {
-      expect(getCaasIdentityUrl('https://business.adobe.com/resources/x', true))
-        .to.equal('https://business.adobe.com/resources/x.html');
+    it('strips the scheme when one is present', () => {
+      // This is the whole reason toIdentityUrl is the only exported entry point.
+      // Ids are a uuid v5 of the SCHEME-LESS url, and getProdUrl returns a
+      // schemed one, so a caller reaching for a raw normalizer and passing
+      // prodUrl straight in would hash a schemed string and silently orphan the
+      // card. toIdentityUrl strips first, so that mistake is unreachable.
+      expect(toIdentityUrl('https://business.adobe.com/resources/x', true))
+        .to.equal('business.adobe.com/resources/x.html');
+      expect(toIdentityUrl('http://business.adobe.com/resources/x', true))
+        .to.equal('business.adobe.com/resources/x.html');
     });
 
     it('only appends to the pathname, never the query or fragment', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x?a=1', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x?a=1', true))
         .to.equal('business.adobe.com/resources/x.html?a=1');
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x#frag', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x#frag', true))
         .to.equal('business.adobe.com/resources/x.html#frag');
     });
 
     it('appends to the pathname even when the query string ends in .html', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x?ref=/y.html', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x?ref=/y.html', true))
         .to.equal('business.adobe.com/resources/x.html?ref=/y.html');
     });
 
     it('is case-sensitive, matching the legacy publishers\' .html check', () => {
-      expect(getCaasIdentityUrl('business.adobe.com/resources/x.HTML', true))
+      expect(toIdentityUrl('business.adobe.com/resources/x.HTML', true))
         .to.equal('business.adobe.com/resources/x.HTML.html');
     });
 
     it('leaves out-of-scope urls alone even when enabled', () => {
-      expect(getCaasIdentityUrl('www.adobe.com/resources/x', true))
+      expect(toIdentityUrl('www.adobe.com/resources/x', true))
         .to.equal('www.adobe.com/resources/x');
-      expect(getCaasIdentityUrl('business.adobe.com', true))
+      expect(toIdentityUrl('business.adobe.com', true))
         .to.equal('business.adobe.com');
     });
 
@@ -137,8 +143,8 @@ describe('caasIdentity', () => {
       // The blog still serves .html, so its ids were minted with it. Once the
       // flag is on for the blog repo, the extensionless public url must keep
       // hashing the same string the .html url did.
-      expect(getCaasIdentityUrl('business.adobe.com/blog/post.html', true))
-        .to.equal(getCaasIdentityUrl('business.adobe.com/blog/post', true));
+      expect(toIdentityUrl('business.adobe.com/blog/post.html', true))
+        .to.equal(toIdentityUrl('business.adobe.com/blog/post', true));
     });
   });
 
@@ -237,9 +243,9 @@ describe('caasIdentity', () => {
       expect(toIdentityUrl(null, 'true')).to.equal(null);
     });
 
-    it('agrees with getCaasIdentityUrl once the scheme is removed', () => {
+    it('gives a schemed url the same identity as its scheme-less form', () => {
       expect(toIdentityUrl(`https://${BARE}`, 'true'))
-        .to.equal(getCaasIdentityUrl(BARE, 'true'));
+        .to.equal(toIdentityUrl(BARE, 'true'));
     });
   });
 

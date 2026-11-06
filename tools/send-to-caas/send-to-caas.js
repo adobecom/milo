@@ -260,20 +260,6 @@ const validateProps = async (prodHost, publishingModal) => {
     );
   }
   const htmlIdentity = isHtmlIdentityEnabled(identityMeta);
-  // The unrecognized-value check above catches a typo, which is the rare case.
-  // This catches the common one: metadata simply absent while the site's
-  // config.json rule has htmlIdentity on. That publishes the page under a
-  // second contentId with no error at all, surfacing weeks later as a stray
-  // duplicate card. Unlike the other publishers this runs on a real Milo page,
-  // so lana is genuinely loaded here.
-  if (isIdentityPolicyMiss(`${prodHost}${window.location.pathname}`, htmlIdentity)) {
-    window.lana?.log(
-      'send-to-caas: publishing an in-scope url without caas-identity-html. If this '
-      + "site's config.json sets htmlIdentity, this mints a DUPLICATE card under a "
-      + `second contentId. Page: ${prodHost}${window.location.pathname}`,
-      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
-    );
-  }
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
     { prodUrl: `${prodHost}${window.location.pathname}`, htmlIdentity },
   );
@@ -317,6 +303,29 @@ const validateProps = async (prodHost, publishingModal) => {
     ({ caasMetadata: metaWithUseHtml } = await getCardMetadata(
       { prodUrl: `${prodHost}${window.location.pathname}.html`, htmlIdentity },
     ));
+  }
+
+  // The unrecognized-value check above catches a typo, which is the rare case.
+  // This catches the common one: metadata simply absent while the site's
+  // config.json rule has htmlIdentity on. That publishes the page under a
+  // second contentId with no error at all, surfacing weeks later as a stray
+  // duplicate card. Unlike the other publishers this runs on a real Milo page,
+  // so lana is genuinely loaded here.
+  //
+  // Evaluated on the url actually being published, AFTER the modal resolves and
+  // after the abort paths above. Checking `pathname` alone before `useHtml` was
+  // known reported a duplicate for the operator who DID tick "use .html" -- that
+  // publish ends in `.html` and mints exactly the legacy id, so there is no
+  // duplicate. On a post-migration BACOM page with the metadata absent that
+  // false positive would have fired on every correct sidekick publish.
+  const publishedProdUrl = `${prodHost}${window.location.pathname}${useHtml ? '.html' : ''}`;
+  if (isIdentityPolicyMiss(publishedProdUrl, htmlIdentity)) {
+    window.lana?.log(
+      'send-to-caas: publishing an in-scope url without caas-identity-html. If this '
+      + "site's config.json sets htmlIdentity, this mints a DUPLICATE card under a "
+      + `second contentId. Page: ${publishedProdUrl}`,
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
   }
 
   return {
