@@ -3015,12 +3015,10 @@ describe('Merch Block', () => {
       expect(getMerchCardTemplateBundles('/fresh/acrobat/plans.html', '/fr')).to.deep.equal(MERCH_CARD_TEMPLATE_BUNDLES);
     });
 
-    it('returns every web bundle and logs to LANA when no rule matches', () => {
+    it('returns every web bundle when no rule matches, without logging (the loader logs)', () => {
       expect(getMerchCardTemplateBundles('/unknown/page.html', ''))
         .to.deep.equal(['dc', 'catalog', 'cc', 'firefly', 'express']);
-      expect(lanaLog.calledOnce).to.be.true;
-      expect(lanaLog.firstCall.args[0]).to.include('/unknown/page.html');
-      expect(lanaLog.firstCall.args[1]).to.deep.include({ tags: 'merch' });
+      expect(lanaLog.called).to.be.false;
     });
   });
 
@@ -3085,6 +3083,8 @@ describe('Merch Block', () => {
         ...MERCH_CARD_TEMPLATE_BUNDLES.map((bundle) => `https://main--mas--adobecom.aem.live/web-components/dist/templates/${bundle}.js`),
       ]);
       expect(lanaLog.calledOnce).to.be.true;
+      expect(lanaLog.firstCall.args[0]).to.include('/no/rule.html');
+      expect(lanaLog.firstCall.args[1]).to.deep.include({ tags: 'merch' });
     });
 
     it('starts merch-card.js and the bundle in parallel and resolves when both are done', async () => {
