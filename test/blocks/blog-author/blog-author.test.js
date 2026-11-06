@@ -37,6 +37,7 @@ describe('Blog Author', () => {
 
   afterEach(() => {
     document.head.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());
+    document.head.querySelectorAll('.blog-author-test-canonical').forEach((s) => s.remove());
     sinon.restore();
   });
 
@@ -97,7 +98,7 @@ describe('Blog Author', () => {
     expect(schema.jobTitle).to.equal('Senior Director, Marketing');
     expect(schema.url).to.be.a('string');
     expect(schema['@id']).to.equal(`${window.location.origin}${window.location.pathname}#person`);
-    expect(schema.worksFor).to.be.undefined;
+    expect(schema.worksFor).to.deep.equal({ '@type': 'Organization', name: 'Adobe' });
   });
 
   it('includes image and sameAs in schema', async () => {
@@ -123,10 +124,36 @@ describe('Blog Author', () => {
     expect(document.querySelector('.blog-author').textContent).to.not.include('Adobe');
   });
 
-  it('omits worksFor from schema when no company row is authored', async () => {
+  it('identifies Adobe when no company row is authored', async () => {
     await init(document.querySelector('.blog-author'));
     const schema = getPersonSchema();
-    expect(schema.worksFor).to.be.undefined;
+    expect(schema.worksFor).to.deep.equal({ '@type': 'Organization', name: 'Adobe' });
+  });
+
+  it('outputs one Person with the production canonical identity and no preview parameters', async () => {
+    const canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    canonical.href = 'https://business.adobe.com/blog/authors/jane-doe?preview=true#bio';
+    canonical.className = 'blog-author-test-canonical';
+    document.head.append(canonical);
+    await init(document.querySelector('.blog-author'));
+    const schema = getPersonSchema();
+    expect(schema['@context']).to.equal('https://schema.org');
+    expect(schema.url).to.equal('https://business.adobe.com/blog/authors/jane-doe');
+    expect(schema['@id']).to.equal('https://business.adobe.com/blog/authors/jane-doe#person');
+    expect(document.head.querySelectorAll('script[data-blog-schema="person"]').length).to.equal(1);
+    expect(document.head.querySelector('script[data-blog-schema="posting"]')).not.to.exist;
+  });
+
+  it('includes only authored social profile URLs on recognized domains', async () => {
+    document.querySelector('.blog-author > div:last-child > div').insertAdjacentHTML(
+      'beforeend',
+      '<a href="https://linkedin.com.evil.test/in/jane">Not LinkedIn</a>',
+    );
+    await init(document.querySelector('.blog-author'));
+    expect(getPersonSchema().sameAs).to.deep.equal([
+      'https://linkedin.com/in/janedoe', 'https://twitter.com/janedoe',
+    ]);
   });
 
   it('omits schema fields when content is absent', async () => {
