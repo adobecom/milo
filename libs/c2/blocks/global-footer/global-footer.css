@@ -635,8 +635,21 @@ span.feds-footer-privacyLink-divider {
 }
 
 @media (max-width: 1023px) {
+  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection {
+    flex-flow: row wrap;
+  }
+
+  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem {
+    flex: 0 0 100%;
+  }
+
   .global-footer:has(.market-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
     position: static;
+  }
+
+  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]),
+  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]) + .feds-footer-privacy-listitem:has(a:is([href*="site-map" i], [href*="sitemap" i])) {
+    flex: 0 1 auto;
   }
 }
 

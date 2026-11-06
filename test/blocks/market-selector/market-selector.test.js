@@ -405,6 +405,7 @@ describe('Market selector block', () => {
             <li class="feds-footer-privacy-listitem"><a class="feds-footer-privacyLink" href="#interest-based-ads">AdChoices</a></li>
             <li class="feds-footer-privacy-listitem"><a class="feds-footer-privacyLink" href="/site-map">Site Map</a></li>
           </ul>
+          <p class="feds-footer-privacySection"><span>Additional notice</span><span>Additional link</span></p>
         </div>
         <a class="footer-logo" href="/">Adobe</a>
       </div>
@@ -455,16 +456,33 @@ describe('Market selector block', () => {
       expect(gap(optOut, adChoicesLink)).to.be.closeTo(40, 1);
       adChoices.after(siteMap);
 
-      for (const width of [412, 767, 884, 1023]) {
+      for (const width of [320, 393, 412, 767, 884, 1023]) {
         await setViewport({ width, height: 900 });
         footer.style.width = `${Math.min(720, width - 32)}px`;
-        expect(getComputedStyle(siteMap).position).to.equal('absolute');
+        expect(getComputedStyle(siteMap).position).to.equal(width >= 380 ? 'absolute' : 'static');
         selector.classList.add('market-selector-c2');
         expect(getComputedStyle(siteMap).position).to.equal('static');
-        expect(siteMap.getBoundingClientRect().left)
-          .to.be.closeTo(adChoices.getBoundingClientRect().left, 1);
+        expect(siteMap.getBoundingClientRect().top)
+          .to.be.closeTo(adChoices.getBoundingClientRect().top, 1);
+        expect(gap(adChoices, siteMap)).to.be.closeTo(8, 1);
+        expect(adChoices.getBoundingClientRect().top)
+          .to.be.at.least(optOut.getBoundingClientRect().bottom);
+        expect(getComputedStyle(legalWrapper.querySelector('p.feds-footer-privacySection')).flexDirection)
+          .to.equal('column');
         selector.classList.remove('market-selector-c2');
       }
+      selector.classList.add('market-selector-c2');
+      footer.dir = 'rtl';
+      expect(siteMap.getBoundingClientRect().top)
+        .to.be.closeTo(adChoices.getBoundingClientRect().top, 1);
+      expect(gap(siteMap, adChoices)).to.be.closeTo(8, 1);
+      footer.dir = 'ltr';
+      siteMapLink.href = '/another-legal-link';
+      expect(siteMap.getBoundingClientRect().top)
+        .to.be.greaterThan(adChoices.getBoundingClientRect().top);
+      siteMapLink.href = '/sitemap.html';
+      expect(siteMap.getBoundingClientRect().top)
+        .to.be.closeTo(adChoices.getBoundingClientRect().top, 1);
     } finally {
       style.remove();
       footer.remove();
