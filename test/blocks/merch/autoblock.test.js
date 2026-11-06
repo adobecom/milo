@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { waitFor } from '../../helpers/waitfor.js';
 import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, overrideCardHeadingLevel } from '../../../libs/blocks/merch/autoblock.js';
 import { getMerchCardHeadingLevel } from '../../../libs/blocks/merch/merch.js';
 
@@ -19,6 +20,81 @@ describe('autoblock', () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  describe('modal link localization', () => {
+    const modalPath = '/test/fragments/modals/test-modal';
+    const modalHash = '#test-modal';
+    const previewOrigin = 'https://main--test--adobecom.aem.page';
+
+    afterEach(() => {
+      setConfig({ locales, miloLibs: '/libs' });
+    });
+
+    [
+      { locale: 'de', origin: previewOrigin },
+      { locale: 'br', origin: previewOrigin },
+      { locale: '', origin: previewOrigin },
+      { locale: 'de', origin: '' },
+      { locale: 'br', origin: '' },
+      { locale: 'de', origin: previewOrigin, authoredPrefix: '/de' },
+      { locale: 'de', origin: previewOrigin, dnt: true },
+      { locale: 'br', origin: previewOrigin, dnt: true },
+      { locale: 'de', origin: previewOrigin, storedDnt: true },
+    ].forEach(({ locale, origin, authoredPrefix = '', dnt = false, storedDnt = false }) => {
+      it(`${dnt || storedDnt ? 'does not localize' : 'localizes'} ${origin ? 'absolute' : 'relative'} modal links for ${locale || 'US'}${authoredPrefix ? ' without duplicating the locale' : ''}${dnt ? ' with #_dnt' : ''}${storedDnt ? ' with data-has-dnt' : ''}`, async () => {
+        setConfig({
+          locales: { ...locales, de: { ietf: 'de-DE' }, br: { ietf: 'pt-BR' } },
+          pathname: locale ? `/${locale}/test-page.html` : '/test-page.html',
+          codeRoot: '/libs',
+          miloLibs: '/libs',
+        });
+        const card = document.createElement('merch-card');
+        const link = document.createElement('a');
+        link.href = `${origin}${authoredPrefix}${modalPath}${modalHash}${dnt ? '#_dnt' : ''}`;
+        if (storedDnt) link.dataset.hasDnt = 'true';
+        link.textContent = 'Test modal';
+        card.append(link);
+        card.checkReady = sinon.stub().resolves(true);
+
+        await postProcessAutoblock(card, true);
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.dataset.blockStatus === 'loaded');
+
+        const expectedPrefix = locale && !dnt && !storedDnt ? `/${locale}` : '';
+        expect(link.dataset.modalPath).to.equal(`${expectedPrefix}${modalPath}`);
+        expect(link.getAttribute('href')).to.equal(modalHash);
+        if (dnt || storedDnt) expect(link.dataset.hasDnt).to.equal('true');
+      });
+    });
+
+    [
+      { marker: '#_mep-lingo', flag: 'mepLingo' },
+      { marker: '#_mep-lingo-insert', flag: 'mepLingoInsert' },
+      { marker: '#_mep-lingo-remove', flag: 'mepLingoRemove' },
+    ].forEach(({ marker, flag }) => {
+      it(`preserves ${marker} metadata when localizing a preview modal link`, async () => {
+        setConfig({
+          locales: { ...locales, de: { ietf: 'de-DE' } },
+          pathname: '/de/test-page.html',
+          codeRoot: '/libs',
+          miloLibs: '/libs',
+        });
+        const card = document.createElement('merch-card');
+        const link = document.createElement('a');
+        const originalHref = `${previewOrigin}${modalPath}${modalHash}`;
+        link.href = `${originalHref}${marker}`;
+        link.textContent = 'Test modal';
+        card.append(link);
+        card.checkReady = sinon.stub().resolves(true);
+
+        await postProcessAutoblock(card, true);
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.dataset.blockStatus === 'loaded');
+
+        expect({ ...link.dataset }).to.include({ mepLingo: 'true', originalHref, [flag]: 'true' });
+        expect(link.dataset.modalPath).to.equal(`/de${modalPath}`);
+        expect(link.getAttribute('href')).to.equal(modalHash);
+      });
+    });
   });
 
   describe('handleCustomAnalyticsEvent', () => {

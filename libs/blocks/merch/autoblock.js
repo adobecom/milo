@@ -16,10 +16,12 @@ export async function localizePreviewLinks(el) {
   const anchors = el.getElementsByTagName('a');
   for (const a of anchors) {
     const { href } = a;
-    if (href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
+    if (!a.dataset.hasDnt
+      && !href?.includes('#_dnt')
+      && href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
       try {
         const url = new URL(href);
-        a.href = await localizeLinkAsync(href, url.hostname);
+        a.href = await localizeLinkAsync(href, url.hostname, false, a);
       } catch (e) {
         window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`, {
           tags: 'merch-autoblock',
@@ -262,8 +264,8 @@ export function overrideCardHeadingLevel(card, targetLevel, { batch = false } = 
 }
 
 async function postProcessCard(card) {
-  await decorateContentLinks(card);
   await localizePreviewLinks(card);
+  await decorateContentLinks(card);
   await localizeMerchIcons(card);
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);
