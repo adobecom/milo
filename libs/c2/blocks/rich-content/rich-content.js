@@ -71,6 +71,30 @@ function getSectionHash(anchor) {
   return id ? `#${id}` : '';
 }
 
+function getJumpTarget(hash) {
+  if (!hash) return null;
+  let id;
+  try {
+    id = decodeURIComponent(hash.slice(1));
+  } catch {
+    return null;
+  }
+  const target = document.getElementById(id);
+  return target && !target.classList.contains('dialog-modal') ? target : null;
+}
+
+// Focus the first visible heading so screen readers announce only the title;
+// headings in hidden viewport variants can't take focus.
+function focusJumpTarget(target) {
+  const el = [...target.querySelectorAll('h1, h2, h3, h4, h5, h6')]
+    .find((heading) => heading.getClientRects().length) ?? target;
+  if (!el.hasAttribute('tabindex')) {
+    el.setAttribute('tabindex', '-1');
+    el.addEventListener('blur', () => el.removeAttribute('tabindex'), { once: true });
+  }
+  el.focus({ preventScroll: true });
+}
+
 function decorateJumpLinks(content, foreground) {
   const jumpRow = [...content?.querySelectorAll(':is(p, div):has(a)') ?? []].find(isJumpLinkRow);
   if (!jumpRow) return;
@@ -88,14 +112,15 @@ function decorateJumpLinks(content, foreground) {
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
       const hash = getSectionHash(anchor);
+      const target = getJumpTarget(hash);
+      if (!target) return;
       if (window.lenis?.scrollTo) {
-        const target = document.querySelector(`#${hash.slice(1)}:not(.dialog-modal)`);
-        if (!target) return;
         const offset = -(document.querySelector('.global-navigation')?.offsetHeight || 0);
         window.lenis.scrollTo(target, { offset, force: true });
-        return;
+      } else {
+        scrollToHashedElement(hash);
       }
-      scrollToHashedElement(hash);
+      focusJumpTarget(target);
     });
     list.append(createTag('li', {}, anchor));
   });
