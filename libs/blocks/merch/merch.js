@@ -2232,6 +2232,7 @@ function watchMasFieldCtas() {
     if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
     if (!content?.querySelector('a')) return;
+    await localizePreviewLinks(content);
     if (isCtaFieldContent(content) && mf.closest('em, strong')) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
