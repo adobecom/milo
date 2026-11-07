@@ -26,8 +26,6 @@
   --globe-controls-top: calc(var(--globe-nav-h) + var(--globe-controls-inset));
 }
 
-/* Custom cursor (utils/globe/interaction.js). */
-
 @media (hover: hover) and (pointer: fine) {
   .globe-cursor {
     pointer-events: none;
@@ -93,7 +91,6 @@
 }
 
 /* Scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
-
 .globe-reduced .globe-world {
   position: relative;
 }
@@ -143,8 +140,6 @@
 .globe-spin-toggle.is-paused .globe-icon-play { display: block; }
 
 .globe-hint { display: none; }
-
-/* barrel only */
 
 .globe-barrel .globe-hint {
   position: absolute;
@@ -253,8 +248,7 @@
   border-inline-width: var(--globe-crosshair-width);
 }
 
-/* Opening mark is outdented by utils/globe/authoring.js; `hanging-punctuation` deliberately unused. See
-   the globe-gallery README (Hanging the opening mark). */
+/* `hanging-punctuation` is unused: authoring.js outdents the opening mark. */
 
 .globe-pullquote-quote {
   color: var(--globe-pq-ink);
@@ -276,7 +270,6 @@
 }
 
 /* Flows normally after the globe: no pin/rail/sticky, static with a gap above. */
-
 .globe-reduced .globe-pullquote-pin,
 .globe-reduced .globe-pullquote-rail {
   position: static;
@@ -348,14 +341,13 @@
 }
 
 /* Native <dialog> via showModal(): full-viewport top layer, siblings inert. */
-
 .globe-modal-chrome {
   --globe-modal-edge: var(--s2a-spacing-md);
   --globe-control-size: 48px;
   --globe-control-radius: 6px;
   --globe-counter-w: auto; /* md+ pill is a fixed width; the md offsets below need the number */
-  --globe-nav-gap: 12px; /* counter pill edge → each arrow */
-  --globe-scrim-w: 316px; /* md+ info scrim (sm is full-width) */
+  --globe-nav-gap: 12px;
+  --globe-scrim-w: 316px;
 
   position: fixed;
   inset: 0;
@@ -386,7 +378,6 @@
 
 /* Bottom row (arrows + counter): sm spreads it into the corners, md+ centres it as one group under
    the image. All static — JS only fades the chrome in. See the globe-gallery README (Modal chrome). */
-
 .globe-modal-nav,
 .globe-modal-counter {
   position: absolute;
@@ -423,7 +414,6 @@
 
 /* Close button — top inline-end corner of the viewport at every breakpoint; same frosted
    treatment as the nav arrows. */
-
 .globe-modal-close {
   position: absolute;
   top: var(--globe-modal-edge);
@@ -447,7 +437,6 @@
 
 /* sm = full-width chunk on the viewport's bottom edge, content-sized. Badges margin-top:auto pins
    them to bottom; padding-bottom reserves the sm nav row (edge + control + edge). */
-
 .globe-modal-info {
   position: absolute;
   inset: auto 0 0;
@@ -469,7 +458,6 @@
 
 /* Counter ("1/N"). Base (sm) = plain text; min-width:768 = frosted pill. Centres on physical
    `left`, not an inset-inline, because the translateX(-50%) it pairs with is physical. */
-
 .globe-modal-counter {
   left: 50%;
   transform: translateX(-50%);
@@ -497,7 +485,7 @@
   border: 0;
   background: transparent;
   border-radius: 50%;
-  pointer-events: none; /* never intercept canvas drag */
+  pointer-events: none;
 }
 
 .globe-a11y:focus { outline: none; }
@@ -518,8 +506,6 @@
 }
 
 .globe-a11y-card:focus { outline: none; }
-
-/* aria-labelledby target + visible instructions pill on focus. */
 
 .globe-a11y-tip {
   position: absolute;
@@ -549,8 +535,6 @@
   visibility: visible;
   transform: translate(-50%, -50%) scale(1);
 }
-
-/* Keyboard focus indicators (2px S2A focus ring, 2px offset). */
 
 .globe-a11y:focus-visible,
 .globe-a11y-card:focus-visible,
@@ -594,7 +578,7 @@ html[dir="rtl"] .globe-hint {
 
 .globe-controls {
   inset: 0;
-  pointer-events: none; /* not intercepting canvas drag */
+  pointer-events: none;
   z-index: 1;
   opacity: 0;
   transition: opacity 0.35s ease;

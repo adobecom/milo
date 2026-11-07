@@ -136,6 +136,30 @@ describe('globe-gallery: static-mode arc copy', () => {
       });
     });
   });
+
+  it('frees the previous build\'s GPU objects on a rebuild', async () => {
+    const fetch = window.fetch.bind(window);
+    sinon.stub(window, 'fetch').callsFake((url, options) => (
+      url.endsWith('/rebuild-test.plain.html')
+        ? Promise.resolve(new Response(
+          '<div><img src="/libs/img/favicons/favicon.ico"><h2>Test artist</h2></div>',
+        ))
+        : fetch(url, options)
+    ));
+    document.body.innerHTML = `
+      <div class="globe-gallery">
+        <div><h2>Heading</h2></div>
+        <div><a href="/rebuild-test">Cards</a></div>
+        <div></div><div></div>
+      </div>`;
+    block = document.querySelector('.globe-gallery');
+    await init(block);
+    const gl = WebGL2RenderingContext.prototype;
+    const deleteProgram = sinon.spy(gl, 'deleteProgram');
+    block.globeRuntime.destroy(false);
+    expect(deleteProgram.callCount).to.be.greaterThan(0);
+    expect(block.globeRuntime.init()).to.be.true;
+  });
 });
 
 describe('globe-gallery: optimizeImgUrl', () => {

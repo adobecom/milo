@@ -15,19 +15,17 @@ const MODAL_PHASE = Object.freeze({
   CLOSING: 'closing',
 });
 const MODAL_CAM_DIST = 16.4;
-const MODAL_RADIUS_PX = 16; // on-screen corner at md+ (0 on mobile); see the globe-gallery README
-const MODAL_ANIM_FALLBACK = 350; // ms open/close fly time
-const CHROME_REVEAL_DUR = 300; // ms chrome fade-in after card 90% settled
-// Fisheye warp peaks (sin bell curve).
+const MODAL_RADIUS_PX = 16;
+const MODAL_ANIM_FALLBACK = 350;
+const CHROME_REVEAL_DUR = 300;
 const MODAL_WARP_OPEN = 0.30;
 const MODAL_WARP_CLOSE = 0.30;
 const MODAL_WARP_PULL = 0.40;
 const MODAL_WARP_SWIPE = 0.25;
 const MODAL_WARP_DECAY = 0.85;
-const DN_NAV_DUR = 500; // ms
-const DN_NAV_WARP = 0.40; // peak warp
-// Desktop/tablet image fit; chrome placement is CSS.
-const DT_IMG_MARGIN = 12; // gap between image and each viewport edge
+const DN_NAV_DUR = 500;
+const DN_NAV_WARP = 0.40;
+const DT_IMG_MARGIN = 12;
 
 export default function createGlobeModal({
   renderContent,
@@ -50,12 +48,10 @@ export default function createGlobeModal({
   getCardDims,
   cardAspect,
   getAntialias,
-  caEnabled,
   cardLabel,
   getReducedMotion,
   sphereRotQuat,
   snapToSphereSlot,
-  // Applies the sphere's camera-facing tilt to a quat IN PLACE.
   applySphereFacing,
   requestNavNudge,
   applyMotionCA,
@@ -68,14 +64,14 @@ export default function createGlobeModal({
   let modalEl = null;
   let chromeEl = null;
 
-  let modalIdx = -1; // currently open card index, -1 if closed
-  let modalCard = null; // card whose mesh is animating
+  let modalIdx = -1;
+  let modalCard = null;
   let modalPhase = MODAL_PHASE.CLOSED;
   // Pending Image + owned CanvasTexture; 1 resident at a time.
   let modalTexImg = null;
   let modalTexOwned = null;
   let modalTexCard = null;
-  let modalAnimT0 = 0; // animation start timestamp
+  let modalAnimT0 = 0;
   let modalAnimMs = MODAL_ANIM_FALLBACK;
   let modalStartPos = null;
   let modalStartQuat = null;
@@ -86,11 +82,11 @@ export default function createGlobeModal({
   const scratchPos = new THREE.Vector3();
   const scratchQuat = new THREE.Quaternion();
   const scratchScale = new THREE.Vector3();
-  const coverScratch = {}; // coverFit output (see pushModalCoverUV)
-  let chromeNodes = null; // { els, settled } — see revealModalChrome
+  const coverScratch = {};
+  let chromeNodes = null;
 
-  let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
-  let modalChromeFadeT = 0; // 0→1 fade progress for chrome elements
+  let modalChromeRevealT0 = -1;
+  let modalChromeFadeT = 0;
 
   // Suppresses the synthetic click after touch pointerup, which would self-close.
   let modalOpenedAt = 0;
@@ -99,8 +95,7 @@ export default function createGlobeModal({
   let closeTimeoutId = null;
   // Wired once — the DOM persists across re-inits, so re-adding would stack them.
   let listenersWired = false;
-  // Held so Escape + touch gestures can click them rather than call navigate()/close(), which
-  // is what makes those paths report.
+  // Escape and touch gestures click these so those paths report.
   let prevBtn = null;
   let nextBtn = null;
   let closeBtn = null;
@@ -167,7 +162,7 @@ export default function createGlobeModal({
       if (modalTexCard && modalTexCard.modalMat) {
         const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
         if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
-        modalTexCard.modalAspect = 0; // back to the base texture, so back to the barrel's aspect
+        modalTexCard.modalAspect = 0;
       }
       modalTexOwned.dispose();
       modalTexOwned = null;
@@ -216,7 +211,7 @@ export default function createGlobeModal({
     if (u.uMotionDir) u.uMotionDir.value.set(0, 0);
     if (u.uRepeat) u.uRepeat.value.set(1, 1);
     if (u.uOffset) u.uOffset.value.set(0, 0);
-    // uWarpCenter intentionally NOT reset — callers set it right after.
+  // uWarpCenter intentionally NOT reset — callers set it right after.
   }
 
   // Crop to the aspect the plane is drawn at THIS frame. Call after the frame's scale write.
@@ -258,7 +253,6 @@ export default function createGlobeModal({
 
   // Visible photo contain-fit to the viewport, native aspect kept. Recomputed per-frame.
   function computeModalTarget(outPos, outQuat, outScale, cardOverride) {
-    // cardOverride targets a swipe-neighbour; defaults to modalCard.
     const card = cardOverride || modalCard;
     const camera = getCamera();
     const { W, H } = getViewport();
@@ -275,13 +269,11 @@ export default function createGlobeModal({
       scaleX;
 
     if (isMobile) {
-      // Width-first fit, capped by height so tall portraits never overflow the viewport.
       const cardHPx = Math.min(W / uAspect, H);
       scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
       scaleX = scaleY * sScaleX;
       outPos.set(0, (H / 2 - cardHPx / 2 + skewOffsetPx()) / pxPerWorld, camZ - dist);
     } else {
-      // Contain-fit to the viewport minus DT_IMG_MARGIN, aspect kept.
       const { cardHPx } = modalDesktopFit(uAspect);
       scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
       scaleX = scaleY * sScaleX;
@@ -307,7 +299,7 @@ export default function createGlobeModal({
     const halfW = 0.5 * cardW * scale.x * pxPerWorld;
     const halfH = 0.5 * cardH * scale.y * pxPerWorld;
     const cx = W / 2 + position.x * pxPerWorld;
-    const cy = H / 2 - position.y * pxPerWorld; // world +Y is screen-up
+    const cy = H / 2 - position.y * pxPerWorld;
     return { left: cx - halfW, right: cx + halfW, top: cy - halfH, bottom: cy + halfH };
   }
 
@@ -434,11 +426,10 @@ export default function createGlobeModal({
     newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
     requestModalUpgrade(newCard, newIdx);
-    // Also clears stale warp/motion.
     resetModalMaterialUniforms(newCard.mesh.material, 0);
     newCard.mesh.material.uniforms.uWarpCenter.value.set(0.5, 0.5);
     newCard.mesh.material.depthTest = true;
-    newCard.mesh.renderOrder = 1; // above oldCard during blend
+    newCard.mesh.renderOrder = 1;
 
     const tgtPos = new THREE.Vector3();
     const tgtQuat = new THREE.Quaternion();
@@ -447,9 +438,8 @@ export default function createGlobeModal({
     newCard.mesh.position.copy(tgtPos);
     newCard.mesh.quaternion.copy(tgtQuat);
     newCard.mesh.scale.copy(tgtScale);
-    pushModalCoverUV(newCard); // at its modal size already → identity
+    pushModalCoverUV(newCard);
 
-    // So the bell curve emanates from centre.
     if (oldCard.mesh.material && oldCard.mesh.material.uniforms
       && oldCard.mesh.material.uniforms.uWarpCenter) {
       oldCard.mesh.material.uniforms.uWarpCenter.value.set(0.5, 0.5);
@@ -498,17 +488,15 @@ export default function createGlobeModal({
     } else {
       modalWarpCenter.set(0.5, 0.5);
     }
-    modalWarp = 0; // bell curve in updateAnimation ramps it up from 0
+    modalWarp = 0;
     populateModal(i);
 
-    // Snapshot the card's current WORLD transform
     modalCard.mesh.updateWorldMatrix(true, false);
     modalCard.mesh.getWorldPosition(modalStartPos);
     modalCard.mesh.getWorldQuaternion(modalStartQuat);
     modalCard.mesh.getWorldScale(modalStartScale);
     shiftForCanvasOffset(modalStartPos);
 
-    // attach() preserves the world transform.
     if (modalScene) modalScene.attach(modalCard.mesh);
     else getScene().attach(modalCard.mesh);
 
@@ -558,16 +546,12 @@ export default function createGlobeModal({
       if (now - modalOpenedAt < 200) return;
     }
     if (!modalEl || modalIdx < 0 || !modalCard) return;
-    // Ignore extra close requests while already CLOSING.
     if (modalPhase === MODAL_PHASE.CLOSING) return;
 
-    // modalIdx resets to -1 when the close animation completes.
     const restoreIdx = modalIdx;
 
-    // So the old card returns to its slot cleanly.
     if (dnNavActive) completeDesktopNavTransition();
 
-    // The START for the closing animation.
     modalCard.mesh.updateWorldMatrix(true, false);
     modalCard.mesh.getWorldPosition(modalCloseStartPos);
     modalCard.mesh.getWorldQuaternion(modalCloseStartQuat);
@@ -666,7 +650,7 @@ export default function createGlobeModal({
         // Start the fade once the card is 90% to target; skip at 1, navigate snaps.
         if (modalChromeFadeT < 1) {
           if (getReducedMotion()) {
-            modalChromeFadeT = 1; // chrome appears instantly
+            modalChromeFadeT = 1;
           } else {
             if (aT >= 0.90 && modalChromeRevealT0 < 0) modalChromeRevealT0 = now;
             modalChromeFadeT = modalChromeRevealT0 >= 0
@@ -686,15 +670,14 @@ export default function createGlobeModal({
         }
         tgtPos.add(sphereGroup.position);
         shiftForCanvasOffset(tgtPos);
-        // Must match sphere-phase scale + facing tilt exactly, or the card jumps on the last
-        // frame when snapToSphereSlot runs.
+        // Must match placeSphereCard's scale and tilt, or the card jumps on snapToSphereSlot.
         tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);
         applySphereFacing(tgtQuat);
 
         modalCard.mesh.position.lerpVectors(modalCloseStartPos, tgtPos, aE);
         modalCard.mesh.quaternion.copy(modalCloseStartQuat).slerp(tgtQuat, aE);
         modalCard.mesh.scale.lerpVectors(modalCloseStartScale, tgtScale, aE);
-        pushModalCoverUV(modalCard); // closes back down to the slot's crop, tracking the scale
+        pushModalCoverUV(modalCard);
 
         if (aT >= 1) {
           // Before restoring the basic material, else it ghosts later.
@@ -715,7 +698,7 @@ export default function createGlobeModal({
       }
 
       // The position delta encodes velocity. Cleared to 0 once OPEN.
-      if (caEnabled && modalCard && modalCard.mesh.material.uniforms
+      if (modalCard && modalCard.mesh.material.uniforms
         && modalCard.mesh.material.uniforms.uMotionDir) {
         if (modalPhase === MODAL_PHASE.OPEN) {
           modalCard.mesh.material.uniforms.uMotionDir.value.set(0, 0);
@@ -738,7 +721,6 @@ export default function createGlobeModal({
       // updateDesktopNav drives both cards' uWarp directly.
       if (!dnNavActive) pushModalWarpUniforms();
 
-      // Keep chrome locked to the card's projected position each frame.
       if (modalPhase === MODAL_PHASE.OPENING || modalPhase === MODAL_PHASE.OPEN) {
         revealModalChrome();
       }
@@ -749,7 +731,6 @@ export default function createGlobeModal({
   function updateDesktopNav() {
     if (dnNavActive) {
       const dnNow = perfNow();
-      // RM: force completion.
       const dnT = getReducedMotion() ? 1 : clamp01((dnNow - dnNavT0) / DN_NAV_DUR);
       if (dnT >= 1) {
         completeDesktopNavTransition();
@@ -812,8 +793,7 @@ export default function createGlobeModal({
     listenersWired = true;
     if (!alreadyWired) {
       closeBtn = evtRoot.querySelector('.globe-modal-close');
-      // isTrusted is exactly viaPointer: the guard swallows the browser's synthetic click after
-      // a touch pointerup; ours from clickClose() are not trusted.
+      // viaPointer: the guard swallows the browser's synthetic click; clickClose()'s is untrusted.
       closeBtn.addEventListener('click', (e) => close(e.isTrusted));
       prevBtn = evtRoot.querySelector('.globe-modal-nav-prev');
       nextBtn = evtRoot.querySelector('.globe-modal-nav-next');
@@ -837,16 +817,16 @@ export default function createGlobeModal({
       swStartY = 0;
     let swLastX = 0; let swLastY = 0; let
       swLastT = 0;
-    let swAxis = null; // 'x' | 'y' | null (locks after first significant move)
+    let swAxis = null;
     let swActive = false;
     let swVelX = 0; let
       swVelY = 0;
     const AXIS_LOCK_PX = 10;
-    const COMMIT_DIST_X_FRAC = 0.25; // 25% of viewport width
-    const COMMIT_DIST_Y_FRAC = 0.18; // 18% of viewport height
-    const COMMIT_VEL_X = 0.4; // px/ms
+    const COMMIT_DIST_X_FRAC = 0.25;
+    const COMMIT_DIST_Y_FRAC = 0.18;
+    const COMMIT_VEL_X = 0.4;
     const COMMIT_VEL_Y = 0.6;
-    const PULL_SCALE_DAMPING = 1600; // larger → less scale change per px pulled
+    const PULL_SCALE_DAMPING = 1600;
     const PULL_SCALE_MIN = 0.80;
 
     // Follows POINTER type, not the width band, mirroring usesCylinderGeometry.

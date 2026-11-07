@@ -29,10 +29,10 @@ export function coverFit(imgAspect, planeAspect, out = {}) {
   out.rx = 1; out.ry = 1; out.ox = 0; out.oy = 0;
   if (!(imgAspect > 0) || !(planeAspect > 0)) return out;
   if (imgAspect > planeAspect) {
-    out.rx = planeAspect / imgAspect; // wider than the plane → crop left/right
+    out.rx = planeAspect / imgAspect;
     out.ox = (1 - out.rx) / 2;
   } else if (imgAspect < planeAspect) {
-    out.ry = imgAspect / planeAspect; // taller than the plane → crop top/bottom
+    out.ry = imgAspect / planeAspect;
     out.oy = (1 - out.ry) / 2;
   }
   return out;
@@ -77,9 +77,7 @@ export function scrollYAtTravelT(t, span) {
   return span.blockDocTop + (span.formPx || 0) + t * travelSpanPx(span);
 }
 
-// The frame fields shared code reads. Each block's timeline adds its own clocks. Allocated once per
-// runtime, mutated in place. Every field initialized here so the shape stays monomorphic;
-// activeCamera and below are written by tick()'s producer stages.
+// All fields are initialized here so the shape stays monomorphic.
 export function createBaseFrame() {
   return {
     scrollY: 0,
@@ -229,7 +227,6 @@ export function cylinderMasonryLayout({
     return { placed, totals, wallH: Math.max(...totals) };
   };
 
-  // Fewest columns that fit.
   let packed = null;
   for (let cols = Math.min(4, n); cols <= Math.max(4, n); cols += 1) {
     packed = pack(cols);
@@ -275,4 +272,18 @@ export function fibSpherePos(i, total, radius) {
     radius * Math.cos(polarAngle),
     radius * Math.sin(polarAngle) * Math.sin(azimuth),
   );
+}
+
+export function createDisposer() {
+  const cleanups = [];
+  return {
+    add(fn) { cleanups.push(fn); },
+    listen(target, type, fn, opts) {
+      target.addEventListener(type, fn, opts);
+      cleanups.push(() => target.removeEventListener(type, fn, opts));
+    },
+    dispose() {
+      while (cleanups.length) cleanups.pop()();
+    },
+  };
 }

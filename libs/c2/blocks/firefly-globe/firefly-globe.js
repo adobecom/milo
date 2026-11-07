@@ -41,14 +41,14 @@ const ROLL_SEED = 'One day I will return to your side';
 const CSS_ENTRY_LIFT = !!window.CSS?.supports?.('animation-timeline: view()');
 const ENTRY_LIFT_H = 0.45;
 
-function createHooks(rt) {
+function createHooks(ctx) {
   return {
-    entryCamZ: () => rt.bp.CAM_Z_ENTRY,
+    entryCamZ: () => ctx.bp.CAM_Z_ENTRY,
     viewOffsetY({ sphereFormT }) {
       const release = CSS_ENTRY_LIFT || sphereFormT >= 1 ? 0 : 1 - sphereFormT ** 2;
-      return rt.navH / 2 - ENTRY_LIFT_H * rt.H * release;
+      return ctx.navH / 2 - ENTRY_LIFT_H * ctx.H * release;
     },
-    browseScrollTop: () => Math.ceil(rt.blockDocTop),
+    browseScrollTop: () => Math.ceil(ctx.blockDocTop),
   };
 }
 

@@ -1,19 +1,18 @@
-// Pointer, keyboard and on-canvas interaction for the globe: drag/pick, controls, cursor, a11y.
 import * as THREE from '../../deps/three.js';
 // eslint-disable-next-line import/no-relative-packages
 import { createTag } from '../utils.js';
 import { FRAME_MS } from './core.js';
 import { daaBlockName } from './authoring.js';
 
-const VEL_SMOOTH_MS = 35; // EMA time constant
-const CLICK_MAX_MOVE = 10; // px
-const CLICK_MAX_TIME = 500; // ms
+const VEL_SMOOTH_MS = 35;
+const CLICK_MAX_MOVE = 10;
+const CLICK_MAX_TIME = 500;
 const PICK_MIN_OPACITY = 0.1;
 // Touch axis lock: touch gets yaw only; a vertical drag is page scroll.
-const AXIS_LOCK_THRESHOLD = 8; // px of travel before the axis is decided
+const AXIS_LOCK_THRESHOLD = 8;
 const AXIS_UNDECIDED = 0;
-const AXIS_HORIZONTAL = 1; // spinning the globe — we consume the deltas
-const AXIS_VERTICAL = 2; // page scroll — we ignore the gesture entirely
+const AXIS_HORIZONTAL = 1;
+const AXIS_VERTICAL = 2;
 
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -41,7 +40,7 @@ export default function createInteraction({
   let axisLock = AXIS_UNDECIDED;
   let dragMoved = false;
   let hoveringCard = false;
-  let appliedCursor = null; // last value written to canvas.style.cursor
+  let appliedCursor = null;
 
   // Sole writer of the canvas cursor. Also called per-frame: the gate flips on scroll alone.
   function applyCursor() {
@@ -104,7 +103,7 @@ export default function createInteraction({
     if (!drag.isDragging) return false;
     drag.isDragging = false;
     activePointerId = -1;
-    axisLock = AXIS_UNDECIDED; // cleared for the next gesture; the tap test doesn't read it
+    axisLock = AXIS_UNDECIDED;
     flushVel(now());
     applyCursor();
     return true;
@@ -167,7 +166,7 @@ export default function createInteraction({
       onDrag();
     }
     const t = now();
-    const sens = getDragSensitivity(); // rad/px, live off the viewport + band
+    const sens = getDragSensitivity();
     const dx = (e.clientX - lastMX) * sens;
     // Pitch only for a mouse on the sphere.
     const dy = !isTouchDrag && !getYawOnly() ? (e.clientY - lastMY) * sens : 0;
@@ -260,7 +259,6 @@ export default function createInteraction({
   return { setup, teardown, applyCursor };
 }
 
-// On-canvas globe chrome: auto-spin play/pause + the barrel's rotate row.
 export function createGlobeControls({
   name, q, labels, getVisible, getHintDismissed, rotate,
 }) {
@@ -272,7 +270,7 @@ export function createGlobeControls({
   let hintEl = null;
   let rotateBtns = [];
   let paused = false; // survives breakpoint rebuilds — the closure outlives them
-  let appliedVisible = null; // last-written class state; update() only writes on a flip
+  let appliedVisible = null;
   let appliedDismissed = null;
 
   function renderSpinState() {
@@ -444,8 +442,6 @@ export function createCursor(deps) {
   return { setup, update, teardown };
 }
 
-// Keyboard + screen-reader gallery for the globe.
-
 export function createGalleryA11y({
   name,
   q,
@@ -461,17 +457,15 @@ export function createGalleryA11y({
   galleryInstructions,
   gid,
 }) {
-  // Uniform, never per card. Each `-`-separated segment must stay within 20 chars or Milo
-  // truncates it.
+  // Each `-`-separated segment must stay within 20 chars or Milo truncates it.
   const daaName = daaBlockName(name);
   const CARD_OPEN_DAA_LL = `card_open--${daaName}`;
   const ENTER_GALLERY_DAA_LL = `enter_gallery_kbd--${daaName}`;
-  let widgetEl = null; // collapsed entry button (single tab stop)
-  let cardsEl = null; // container for the per-image browse buttons
-  let cardButtons = []; // per-image buttons (tab order only while entered)
-  let entered = false; // true while in BROWSE mode
-  let focusedIdx = -1; // currently-focused browse image, -1 if none
-  // Last-applied tab state; updateTabStops() only writes on a real change.
+  let widgetEl = null;
+  let cardsEl = null;
+  let cardButtons = [];
+  let entered = false;
+  let focusedIdx = -1;
   let appliedModalOpen = null;
   let appliedEntered = null;
 
@@ -491,7 +485,6 @@ export function createGalleryA11y({
     if (widgetEl) widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
   }
 
-  // Shared, not per-button closures; each reads its index from dataset.idx.
   function onCardFocus(e) {
     focusedIdx = Number(e.currentTarget.dataset.idx);
     centerCard(focusedIdx);
@@ -535,7 +528,6 @@ export function createGalleryA11y({
     if (!canvas || !canvas.parentNode) return;
     const parent = canvas.parentNode;
 
-    // Remove existing nodes on re-init so we don't double up.
     ['.globe-a11y', '.globe-a11y-cards'].forEach((sel) => {
       const existing = q(sel);
       if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
@@ -596,7 +588,6 @@ export function createGalleryA11y({
     resetAppliedTabState();
   }
 
-  // Only writes the DOM when (modalOpen, entered) flips.
   function updateTabStops() {
     if (!widgetEl) return;
     const modalOpen = getModalIdx() >= 0;
@@ -607,7 +598,6 @@ export function createGalleryA11y({
     setBrowseActive(!modalOpen && entered);
   }
 
-  // The runtime reads this to pause auto-spin so the globe holds the centred image.
   function isBrowsing() {
     return entered;
   }
@@ -634,7 +624,6 @@ export function createGalleryA11y({
     return focusedIdx;
   }
 
-  // Size the focused button to a screen-space rect so the ring tracks the image.
   function setFocusRect(cx, cy, w, h) {
     const btn = cardButtons[focusedIdx];
     if (!btn) return;

@@ -162,7 +162,7 @@ steps smaller than `SCROLL_JUMP_PX` and passes larger ones through. Lenis is con
 the motion CA trail.
 
 `pqAppearT` is the `scrollT` at which the deepest card has faded out (`−SPHERE_R + cardVanishDepth()`
-through `travelTAtCamZ`, gg's `pqAppearZoomT`). It feeds the pull quote's cue (`setCue`) and the hint
+through `travelTAtCamZ`). It feeds the pull quote's cue (`setCue`) and the hint
 text's fade. The keyboard path (`globeFormed`: interactive and modal closed) is not gated on it.
 
 ### Pull quote

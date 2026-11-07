@@ -156,8 +156,6 @@ export function parseAuthoredContent(el) {
   };
 }
 
-// `gid` makes the modal's document-wide aria-labelledby/describedby id refs unique per instance.
-
 const CANVAS_STYLE = 'position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:auto;touch-action:pan-y;';
 
 const modalInfoHtml = (ctaLabel) => (gid) => `

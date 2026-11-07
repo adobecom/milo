@@ -16,7 +16,6 @@ function isSvgAnchor(a) {
   return !!badgeSvgUrl(a);
 }
 
-// Inline <picture> markup for a badge logo URL, or null.
 function badgeIconHtml(url) {
   if (!url) return null;
   const src = getFederatedUrl(url);
@@ -34,7 +33,6 @@ function parseArcCopy(row) {
   };
 }
 
-// The <em>/<strong> text, but only when it IS the whole paragraph.
 function wholeParaChild(p, selector) {
   const child = p.querySelector(selector);
   const text = child?.textContent.trim();
@@ -54,7 +52,7 @@ function parseFragmentCardSegment(nodes) {
     if (/^H[1-6]$/.test(tag)) {
       if (!name) name = node.textContent.trim();
     } else if (tag === 'P') {
-      const inlineImg = node.querySelector('img'); // <picture> or bare <img>; first wins
+      const inlineImg = node.querySelector('img');
       if (inlineImg) {
         if (!img) img = inlineImg;
         return;
@@ -67,13 +65,12 @@ function parseFragmentCardSegment(nodes) {
         const strong = wholeParaChild(node, 'strong');
         if (strong) { name = strong; return; }
       }
-      if (node.textContent.trim()) description.push(node); // everything else is description
+      if (node.textContent.trim()) description.push(node);
     } else if (tag === 'PICTURE' || tag === 'IMG') {
       const bare = tag === 'IMG' ? node : node.querySelector('img');
       if (!img && bare) img = bare;
     } else if (tag === 'UL') {
       node.querySelectorAll(':scope > li').forEach((li) => {
-        // Cloned, so the authored DOM is untouched.
         const row = li.cloneNode(true);
         const featureLi = row.querySelector(':scope > ul > li');
         row.querySelector(':scope > ul')?.remove();
@@ -84,7 +81,7 @@ function parseFragmentCardSegment(nodes) {
         const icon = badgeIconHtml(
           svgAnchor ? badgeSvgUrl(svgAnchor) : row.querySelector('img')?.getAttribute('src'),
         );
-        svgAnchor?.remove(); // its URL text is markup, never part of the name
+        svgAnchor?.remove();
 
         const badgeName = (linkAnchor ? linkAnchor.textContent : row.textContent).trim();
         if (badgeName) {
@@ -175,7 +172,6 @@ export async function fetchFragmentCards(href) {
   }
 }
 
-// Cards ask by height, the modal by width; non-media URLs pass through.
 export function optimizeImgUrl(src, px, axis = 'width') {
   if (!src) return src;
   try {
@@ -199,8 +195,6 @@ export function parseAuthoredContent(el) {
     ...parseCommonRows(hintTextRow, a11yRow, pullQuoteRow),
   };
 }
-
-// `gid` makes the modal's document-wide aria-labelledby/describedby id refs unique per instance.
 
 const CANVAS_STYLE = 'position:fixed;top:0;left:0;width:100%;height:100vh;display:none;pointer-events:auto;touch-action:pan-y;';
 
@@ -247,12 +241,10 @@ export function renderModalContent(targetEl, meta) {
   meta.badges.forEach((b) => {
     const row = document.createElement('li');
     row.className = 'globe-modal-badge';
-    // Labelled by product, not by card, and unindexed.
     const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
     const nameHtml = b.href
       ? `<a class="globe-modal-badge-app globe-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
       : `<span class="globe-modal-badge-app">${escapeHtml(b.name)}</span>`;
-    // Rows without a logo just render the name — no empty chip.
     row.innerHTML = `<div class="globe-modal-badge-left">${b.icon || ''}${nameHtml}</div><span class="globe-modal-badge-role">${escapeHtml(b.role)}</span>`;
     badgesEl.appendChild(row);
   });

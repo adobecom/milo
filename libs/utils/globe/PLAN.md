@@ -38,7 +38,7 @@ Delete this file before the branch merges.
   emulation) only.
 - Keyboard path on both blocks: Tab/Shift+Tab through cards, backtab into the globe from below
   the quote.
-- Tab into the globe from above the block (`suppressFocusSnap` in the block entry) and the first
+- Tab into the globe from above the block (`suppressFocusSnap` in `runtime.js`) and the first
   pull-quote frame after a rebuild (`jumped` in `quote-particles.js`).
 
 ## Pattern plan
@@ -63,7 +63,7 @@ Temporary golden values, never committed: capture from the code before a step, c
 tried and removed because they fail on any visual tuning. The harness lives outside the repo and pins cards, camera and
 clocks across both blocks. It does not compare pixels, so each step still needs a visual check. Delete it with this file.
 
-### 2. Consolidate (Extract Module, Functional Core, Template Method by composition) - **done, awaiting visual check**
+### 2. Consolidate (Extract Module, Functional Core, Template Method by composition) - **done, visual check passed**
 
 Entry files went from firefly 1,631 and gallery 1,964 lines to about 100 and 430. `runtime.js` is about 1,750 lines.
 
@@ -85,7 +85,7 @@ Differences removed as historical, with goldens unchanged:
 Kept as data: `frame.orientReset`, `hintEntryT`, `hintRetirable`, `beforeEntry`, `sphGroupZ`; `pullQuote` and `modal`
 options. One accepted golden change: firefly's `uWarp` on cards behind the camera, which are not drawn.
 
-### 3. Two lifetimes: Disposer + Build scope - **next, after the visual check**
+### 3. Two lifetimes: Disposer + Build scope - **done, awaiting visual check**
 
 *Problem:* `destroy()` is about 65 lines in each block, hand-pairing every listener, observer and timer with its
 removal, and hand-resetting about 28 pieces of state. Six of those resets (`fadeRefH`, `drag.isDragging`, `onScreen`, `masonryMorph`,
@@ -109,6 +109,23 @@ removal, and hand-resetting about 28 pieces of state. Six of those resets (`fade
 - `doLayout` compares against the previous `bp`.
 
 A band-crossing rebuild must end in the same state as a fresh mount.
+
+*Result:* `createDisposer` is in `core.js`, `createBuild` in `runtime.js`. `destroy()` went from about 60 lines to about
+10. The field and the hint are built per build, so their `reset()` methods are gone, and so are the generation counter
+and `hooks.onDestroy` (`ctx.disposer.add` replaces it). Hooks are created per build too.
+
+Measured with a temporary benchmark, draw calls stubbed, 6 cards, against the code before this step:
+
+- Frame cost and rebuild cost: no change beyond run-to-run noise.
+- Old builds stay collectable; the number of live scene objects did not change.
+- GPU leak fixed: the old `destroy()` disposed the renderer first, so later disposals freed nothing. After a mount and 8
+  rebuilds, live programs went from 36 to 4 and live textures from 99 to 43. Of those 43, 36 are Three's 4 internal
+  textures per renderer, which it never frees, and 7 belong to the live build. Shader objects did not change.
+
+Cleanup pass after this step, goldens unchanged: the field, hint and orientation read `ctx` instead of about 40 getter
+calls, the always-true `CA_ENABLED` is gone, dead guards are gone, and `initRuntime` is split into `doLayout`,
+`loadTextures`, `rebuild` and `collapse`. Older comments stay where they help a future reader; ones the code already explains are gone. JS and CSS went from
+241 KB to 226 KB. `ctx` already covers part of step 5.
 
 ### 4. Card layout (Strategy) - **after 3**
 

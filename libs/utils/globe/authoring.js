@@ -76,7 +76,6 @@ function cellParas(cell) {
   return cell ? [...cell.querySelectorAll('p')].filter((x) => x.textContent.trim()) : [];
 }
 
-// Move the authored <p>s into a container.
 export function renderParagraphs(container, paras) {
   if (container) container.replaceChildren(...paras);
 }

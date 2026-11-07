@@ -1,5 +1,3 @@
-// Every phase constant, threshold, and the per-frame clock derivation.
-// Pure — no THREE, no DOM, no closure state.
 import {
   clamp01, camZAtT, tAtCamZ, TAN_HALF_FOV, TEXT_APPEAR_START, createBaseFrame,
   createBaseFrameInput, deriveBaseFrame, travelSpanPx,
@@ -35,7 +33,6 @@ export const SPHERE_FORMED_PROGRESS = Math.max(
 const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
 // Entry: raw-scroll space, before `progress` exists.
-
 const ENTRY_RAMP_VH = 1.05;
 export const ENTRY_ROT_MAX = 0.9;
 export const ARC_ENTRY_STAGGER = 0.45;
@@ -59,10 +56,7 @@ export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
 export const TRAVEL_EASE_POW = 2;
 
-// The zoom camera's world z at scrollT, and its inverse. An inverse pair: neither is derivable
-// from the other at runtime, so they must be edited together — hence they live side by side.
-// Break the pairing and pqAppearT drifts silently, taking the controls, the canvas cursor,
-// the canvas hide and the pull-quote reveal with it.
+// Inverse pair: edit them together.
 export const camZAtTravelT = (t, camZSphere, camZEnd) => camZAtT(
   t,
   camZSphere,
@@ -148,7 +142,6 @@ export function arcRotationEase(t, k) {
   return t <= k ? a * t * t : v0 + s * (t - k);
 }
 
-// The fan circle (centre + radius) plus rotation offset / effective span, driven by arcPanT.
 export function buildArcCtx(arcPanT, W, H, arcSpan, rampT) {
   const arcRot0 = arcRotationEase(arcPanT, rampT);
   const R = Math.max(W, H) * 1.5; // smaller radius = more visible arc curvature

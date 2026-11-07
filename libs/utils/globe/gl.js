@@ -30,9 +30,9 @@ const MODAL_VERT = [
 const MODAL_FRAG = [
   'uniform sampler2D map;',
   'uniform float uAspect;',
-  'uniform float uRadius;', // corner radius (fraction of card height); 0 = square (mobile full-bleed)
+  'uniform float uRadius;',
   'uniform float uOpacity;',
-  'uniform vec2 uMotionDir;', // card velocity in UV space — drives motion-trail CA; (0,0) = off
+  'uniform vec2 uMotionDir;',
   'uniform float uWarp;', // fisheye intensity (0 = none, ~0.4 = strong bulge); used in open/close/drag
   'uniform vec2 uWarpCenter;', // UV anchor for fisheye (0.5, 0.5 default; touch UV during drag)
   'uniform vec2 uRepeat;', // cover-crop carried from the barrel; eases to (1,1) over the fly-out
@@ -80,12 +80,12 @@ const CARD_FRAG = [
   'uniform float uOpacity;',
   'uniform float uCA;',
   'uniform float uWarp;', // barrel-distortion amount (0 = none, ~0.07 = subtle bulge); used for hover
-  'uniform vec2 uHoverPos;', // anchor point for the warp in UV space; cursor position on card during hover
+  'uniform vec2 uHoverPos;',
   'uniform vec2 uRepeat;',
   'uniform vec2 uOffset;',
-  'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
-  'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
-  'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
+  'uniform vec2 uMotionDir;',
+  'uniform float uAspect;',
+  'uniform float uRadius;',
   'uniform float uDissolve;',
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
@@ -100,9 +100,8 @@ const CARD_FRAG = [
   '  vec2 pos = (fUv - 0.5) * vec2(uAspect, 1.0);',
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
-  '  float shapeA = 1.0 - smoothstep(-px, px, dsd);', // solid box alpha, for the contour
+  '  float shapeA = 1.0 - smoothstep(-px, px, dsd);',
   '  float a = shapeA;',
-  // Particle grain, eaten edge-first.
   '  float dR = 1.0; float dG = 1.0; float dB = 1.0;',
   '  if (uDissolve > 0.0) {',
   `    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * ${glf(GRAIN_CELLS)});`,
@@ -117,7 +116,6 @@ const CARD_FRAG = [
   '    dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
   '    a *= (dR + dG + dB) * 0.3333;',
   '  }',
-  // Faint fill + ~1px edge stroke, shown before the photo un-dissolves in.
   '  float stroke = 1.0 - smoothstep(0.0, px * 1.5, abs(dsd));',
   '  float contourA = (shapeA * 0.06 + stroke * 0.5) * uContourFade;',
   // The photo alpha is already dispersing when uDissolve > 0, so the reveal reads as the same
@@ -135,7 +133,6 @@ const CARD_FRAG = [
   '    meltUv = (warpedUv - 0.5) / (1.0 + melt * 1.8) + 0.5;',
   '  }',
   '  vec2 baseUv = meltUv * uRepeat + uOffset;',
-  // R trails behind, B ghosts ahead; smear scales with dissolve.
   '  vec2 meltRad = mdir * uDissolve * 0.22;',
   '  vec2 radial = mdir * uCA + meltRad;',
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r * dR;',
@@ -147,7 +144,6 @@ const CARD_FRAG = [
   '}',
 ].join('\n');
 
-// A CARD_FRAG variant over a text canvas, no corner SDF.
 const TEXT_FRAG = [
   'uniform sampler2D uMap;',
   'uniform float uOpacity;',
@@ -164,8 +160,8 @@ const TEXT_FRAG = [
   '  vec2 d = vUv - 0.5;',
   '  d.x *= 1.0 + uExitP * 1.6;',
   '  d    += d * uExitP * 0.7;',
-  '  vec2 dA = vec2(d.x * uAspect, d.y);', // scale x to world-proportional space
-  '  float r2 = dot(dA, dA);', // isotropic radius in world space
+  '  vec2 dA = vec2(d.x * uAspect, d.y);',
+  '  float r2 = dot(dA, dA);',
   '  float exitWarp = uWarp + uExitP * 3.0;',
   '  vec2 warpedVUv = d / (1.0 + exitWarp * r2 * 4.0) + 0.5;',
   '  vec2 finalUv = (warpedVUv - 0.5) / uUVScale + 0.5;',
@@ -180,7 +176,7 @@ const TEXT_FRAG = [
   '              + texture2D(uMap, finalUv + vec2(-_bl, 0.0)).a',
   '              + texture2D(uMap, finalUv + vec2(0.0,  _bl)).a',
   '              + texture2D(uMap, finalUv + vec2(0.0, -_bl)).a;',
-  '  float edgeProx = 1.0 - _a4 * 0.25;', // 0=deep interior, 1=at/near edge
+  '  float edgeProx = 1.0 - _a4 * 0.25;',
   // 2px screen-space grain, per-channel seeds → RGB split.
   '  vec2  cell    = floor(gl_FragCoord.xy * 0.5);',
   '  float nR      = hash21(cell + vec2(0.00,  0.00));',
@@ -204,8 +200,6 @@ const TEXT_FRAG = [
   '}',
 ].join('\n');
 
-// GPU-asset factories: the ShaderMaterials + the texture loaders.
-
 // Property proxies let the tick loop drive this via MeshBasicMaterial's opacity/map API.
 export function createCardMaterial({ texture, aspect }) {
   const mat = new THREE.ShaderMaterial({
@@ -221,8 +215,8 @@ export function createCardMaterial({ texture, aspect }) {
       uAspect: { value: aspect },
       uRadius: { value: 22.0 / 631.0 },
       uDissolve: { value: 0 },
-      uReveal: { value: 0 }, // texture-ready reveal (0 = contour only, 1 = full photo)
-      uContourFade: { value: 1 }, // near-camera gate for the contour (mirrors proxFade)
+      uReveal: { value: 0 },
+      uContourFade: { value: 1 },
     },
     vertexShader: CARD_VERT,
     fragmentShader: CARD_FRAG,
@@ -263,7 +257,6 @@ export function createModalMaterial(texture, aspect) {
   });
 }
 
-// `aspect` is the camera aspect (x-axis warp); `resolution` is the device-pixel canvas size.
 export function createTextMaterial({ texture, aspect, resolution }) {
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -285,7 +278,6 @@ export function createTextMaterial({ texture, aspect, resolution }) {
   });
 }
 
-// Clamp the longest side to `maxTex` px, preserving aspect.
 function fitDims(w, h, maxTex) {
   const longest = Math.max(w, h);
   if (longest <= maxTex) return { w, h };
@@ -401,7 +393,6 @@ export function loadModalTexture(src, maxTex, onReady, onError, crossOrigin, nam
 
 const TEXT_MAX_SIDE = 2048;
 
-// Fraction of canvas width the text fills; the font auto-scales to hit it for any string.
 const HINT_FILL = 0.9;
 
 const HINT_FALLBACK = 'adobe-clean-display, sans-serif';

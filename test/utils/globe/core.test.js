@@ -1,5 +1,36 @@
 import { expect } from '@esm-bundle/chai';
-import { seededRandom } from '../../../libs/utils/globe/core.js';
+import { createDisposer, seededRandom } from '../../../libs/utils/globe/core.js';
+
+describe('createDisposer', () => {
+  it('runs cleanups in reverse order of registration', () => {
+    const disposer = createDisposer();
+    const order = [];
+    disposer.add(() => order.push('first'));
+    disposer.add(() => order.push('second'));
+    disposer.dispose();
+    expect(order).to.deep.equal(['second', 'first']);
+  });
+
+  it('removes a listener it added, with the same options', () => {
+    const disposer = createDisposer();
+    const target = new EventTarget();
+    let calls = 0;
+    disposer.listen(target, 'ping', () => { calls += 1; }, { capture: true });
+    target.dispatchEvent(new Event('ping'));
+    disposer.dispose();
+    target.dispatchEvent(new Event('ping'));
+    expect(calls).to.equal(1);
+  });
+
+  it('runs each cleanup once', () => {
+    const disposer = createDisposer();
+    let calls = 0;
+    disposer.add(() => { calls += 1; });
+    disposer.dispose();
+    disposer.dispose();
+    expect(calls).to.equal(1);
+  });
+});
 
 describe('seededRandom', () => {
   const draw = (random, n) => Array.from({ length: n }, () => random());

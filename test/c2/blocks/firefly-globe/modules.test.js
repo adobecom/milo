@@ -676,7 +676,6 @@ describe('firefly-globe modal without a WebGL canvas', () => {
       getCardDims: () => ({ w: 1, h: 1 }),
       cardAspect: 1,
       getAntialias: () => false,
-      caEnabled: false,
       cardLabel: (i, count) => `${i} of ${count}`,
       getReducedMotion: () => true,
       sphereRotQuat: new THREE.Quaternion(),

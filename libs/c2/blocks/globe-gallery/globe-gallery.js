@@ -6,7 +6,7 @@ import {
 import {
   easeOutCubic, easeInOutCubic, lerpN, clamp01, TAN_HALF_FOV, CARD_ASPECT, seededRandom,
 } from '../../../utils/globe/core.js';
-import { CARD_ORDER_BASE, CA_ENABLED, HOVER_SCALE, initGlobeBlock } from '../../../utils/globe/runtime.js';
+import { CARD_ORDER_BASE, HOVER_SCALE, initGlobeBlock } from '../../../utils/globe/runtime.js';
 import * as TL from './src/timeline.js';
 import {
   easeInOutQuint, buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ,
@@ -61,14 +61,14 @@ const TILT_SEED = 'Git Gud!';
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
 const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
 
-const CA_STRENGTH = 0.01; // radial UV shift per channel
+const CA_STRENGTH = 0.01;
 
 const CARD_ORDER_HANDOVER_T = 0.5;
 
-function createHooks(rt) {
+function createHooks(ctx) {
   let cameraOrtho;
   let gridTilts = [];
-  let arcCtx = null; // current arc context, rebuilt per frame in tick() via buildArcCtx
+  let arcCtx = null;
 
   const arcCopy = { el: null, opStr: '', transformStr: '' };
 
@@ -83,21 +83,21 @@ function createHooks(rt) {
   const phase = { gpE: 0, fdE: 0 };
 
   function computeGridLayout() {
-    if (rt.cards.length === 0) return;
-    const { GRID_WINDOW_COLS, GRID_ROWS, CARD_W_SPHERE } = rt.bp;
-    const gridCardW = (rt.bp.name === 'sm')
-      ? rt.W / (GRID_WINDOW_COLS + (GRID_WINDOW_COLS - 1) * GRID_GAP_RATIO)
-      : rt.W / GRID_WINDOW_COLS;
+    if (ctx.cards.length === 0) return;
+    const { GRID_WINDOW_COLS, GRID_ROWS, CARD_W_SPHERE } = ctx.bp;
+    const gridCardW = (ctx.bp.name === 'sm')
+      ? ctx.W / (GRID_WINDOW_COLS + (GRID_WINDOW_COLS - 1) * GRID_GAP_RATIO)
+      : ctx.W / GRID_WINDOW_COLS;
     const gridGap = gridCardW * GRID_GAP_RATIO;
     const gridCardH = gridCardW / CARD_ASPECT;
-    const gridCols = Math.max(GRID_WINDOW_COLS, Math.ceil(rt.cards.length / GRID_ROWS));
+    const gridCols = Math.max(GRID_WINDOW_COLS, Math.ceil(ctx.cards.length / GRID_ROWS));
     const colShift = Math.round((gridCols - GRID_WINDOW_COLS) / 2);
     const totalW = GRID_WINDOW_COLS * gridCardW + (GRID_WINDOW_COLS - 1) * gridGap;
     const totalH = GRID_ROWS * gridCardH + (GRID_ROWS - 1) * gridGap;
     const tiltEuler = new THREE.Euler(0, 0, 0);
     // Column-major: i=0 → lower-right, sweeping bottom-to-top then right-to-left.
-    for (let i = 0; i < rt.cards.length; i += 1) {
-      const card = rt.cards[i];
+    for (let i = 0; i < ctx.cards.length; i += 1) {
+      const card = ctx.cards[i];
       const col = GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS) + colShift;
       const row = GRID_ROWS - 1 - (i % GRID_ROWS);
       const gx = -totalW / 2 + col * (gridCardW + gridGap) + gridCardW / 2;
@@ -114,18 +114,18 @@ function createHooks(rt) {
   // Cards not yet on the sphere subtract sphGroupZ. Must run at sphereFormT===0 too.
   function updateSphereGroupDepth(frame) {
     const { sphereFormT, scrollT } = frame;
-    const { FOLD_SPHERE_DIST, CAM_Z_SPHERE } = rt.bp;
+    const { FOLD_SPHERE_DIST, CAM_Z_SPHERE } = ctx.bp;
     const sphereFormT3 = sphereFormT * sphereFormT * sphereFormT;
     const foldSphDist = lerpN(FOLD_SPHERE_DIST, CAM_Z_SPHERE, sphereFormT3);
     // For the hint-text stage: its plane scale tracks the live camera↔sphere distance.
     frame.foldSphDist = foldSphDist;
-    const sphGroupZ = scrollT === 0 ? (rt.camera.position.z - foldSphDist) : 0;
-    rt.sphereGroup.position.z = sphGroupZ;
+    const sphGroupZ = scrollT === 0 ? (ctx.camera.position.z - foldSphDist) : 0;
+    ctx.sphereGroup.position.z = sphGroupZ;
     return sphGroupZ;
   }
 
   function updateArcCopy(frame) {
-    if (rt.reducedMotion || !arcCopy.el) return;
+    if (ctx.reducedMotion || !arcCopy.el) return;
     const arcCopyInE = easeOutCubic(Math.min(1, frame.arcCopyEntryT / TL.ARC_COPY_IN_ENTRY_T));
     const arcCopyOutT = Math.max(0, Math.min(
       1,
@@ -150,7 +150,7 @@ function createHooks(rt) {
     // Sphere endpoint is fully rotated; the lerp itself unwinds it.
     let sX; let sY; let sZ;
     if (sphereRotActive) {
-      tmpVec3.copy(card.spherePos).applyQuaternion(rt.rotQuat);
+      tmpVec3.copy(card.spherePos).applyQuaternion(ctx.rotQuat);
       sX = tmpVec3.x; sY = tmpVec3.y; sZ = tmpVec3.z;
     } else {
       sX = card.spherePos.x; sY = card.spherePos.y; sZ = card.spherePos.z;
@@ -168,11 +168,10 @@ function createHooks(rt) {
       lerpN(stage.scale, card.sphereScaleSY, fdE) * hs,
       1,
     );
-    rt.field.applyCardFit(mesh, card); // reads the scale set just above: fold framing stays exact
-    // Slerp to the UPRIGHT grid quat, not the live peel spin, then reapply the residual peel
-    // spin about local Z. Both are load-bearing.
+    ctx.field.applyCardFit(mesh, card); // reads the scale set just above: fold framing stays exact
+    // Slerp to the upright grid quat, not the peel spin, then reapply the residual spin.
     if (sphereRotActive) {
-      foldRotQuat.copy(rt.rotQuat).multiply(card.sphereQuat);
+      foldRotQuat.copy(ctx.rotQuat).multiply(card.sphereQuat);
       mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
     } else {
       mesh.quaternion.slerpQuaternions(card.gridQuat, card.sphereQuat, fdE);
@@ -180,12 +179,12 @@ function createHooks(rt) {
     const residualZ = stage.rotZ - card.gridTilt;
     if (residualZ !== 0) {
       stageQuat.setFromEuler(stageEuler.set(0, 0, residualZ));
-      mesh.quaternion.multiply(stageQuat); // local-Z (in-plane) spin, post-multiply
+      mesh.quaternion.multiply(stageQuat);
     }
     // Blend by fdE so it lands continuous with placeSphereCard.
-    rt.field.applyCardFacing(mesh, fdE);
+    ctx.field.applyCardFacing(mesh, fdE);
     mesh.material.opacity = 1;
-    rt.field.applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+    ctx.field.applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
   }
 
   function placeGridCard(card, mesh, prevMeshX, prevMeshY, frame) {
@@ -193,16 +192,16 @@ function createHooks(rt) {
     mesh.visible = true;
     mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
     mesh.scale.setScalar(card.gridScale);
-    rt.field.applyCardFit(mesh, card, CARD_ASPECT);
+    ctx.field.applyCardFit(mesh, card, CARD_ASPECT);
     mesh.quaternion.copy(card.gridQuat);
     mesh.material.opacity = 1;
-    rt.field.applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+    ctx.field.applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
   }
 
   // Transform on the arc→grid continuum at peel ease gpE (0 = arc, 1 = grid). Serves the
   // arc/peel render AND the origin of the fold lerp.
   function computeCardEntry(i, frame, out) {
-    const { N_TOTAL, ARC_DENSE_COUNT } = rt.bp;
+    const { N_TOTAL, ARC_DENSE_COUNT } = ctx.bp;
     const rawT = clamp01(i / Math.max(1, N_TOTAL - 1));
     const splitR = ARC_DENSE_COUNT / Math.max(1, N_TOTAL - 1);
     out.fanT = rawT < splitR
@@ -221,12 +220,11 @@ function createHooks(rt) {
     const { fanT, rot: entryRot } = entry;
     const fan = getFanData(fanT, arcCtx, fanScratch);
     const wp = entryRot > 0.001
-      ? rotateArcPoint(fan.px, fan.py, entryRot, arcCtx, rt.W, rt.H, wpScratch)
-      : cssToWorld(fan.px, fan.py, rt.W, rt.H, wpScratch);
+      ? rotateArcPoint(fan.px, fan.py, entryRot, arcCtx, ctx.W, ctx.H, wpScratch)
+      : cssToWorld(fan.px, fan.py, ctx.W, ctx.H, wpScratch);
     const webglRot = -fan.cssRot - entryRot;
 
-    // First peel frame's rotation, normalized within ±π of gridTilt. Direct z-angle lerp,
-    // NOT slerp.
+    // Direct z-angle lerp, not slerp.
     if (gpE <= 0) {
       card.peelStartRot = null;
     } else if (card.peelStartRot == null) {
@@ -248,51 +246,49 @@ function createHooks(rt) {
 
   function placeArcCard(card, mesh, gpE, stage, prevMeshX, prevMeshY) {
     mesh.visible = true;
-    rt.field.applyCardFit(mesh, card, CARD_ASPECT); // first phase a card renders in: must fit here
+    ctx.field.applyCardFit(mesh, card, CARD_ASPECT); // first phase a card renders in: must fit here
     mesh.position.set(stage.x, stage.y, stage.z);
     mesh.scale.setScalar(stage.scale);
     mesh.rotation.set(0, 0, stage.rotZ);
     mesh.material.opacity = 1;
-    rt.field.applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+    ctx.field.applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
   }
 
   function applyCardOrder(card, mesh, i, frame) {
     if (frame.sphereFormT <= CARD_ORDER_HANDOVER_T) mesh.renderOrder = CARD_ORDER_BASE + i;
-    else rt.field.applyDepthOrder(card, mesh, frame);
+    else ctx.field.applyDepthOrder(card, mesh, frame);
   }
 
   return {
-    entryCamZ: () => arcCamZ(rt.H),
-    viewOffsetY: ({ sphereFormT }) => (rt.navH / 2) * sphereFormT,
-    browseScrollTop: () => (rt.reducedMotion
-      ? rt.worldEl.getBoundingClientRect().top + window.scrollY
-      : rt.blockDocTop + rt.formedScrollPx() * TL.BROWSE_VIEW_SCROLL_FRAC),
+    entryCamZ: () => arcCamZ(ctx.H),
+    viewOffsetY: ({ sphereFormT }) => (ctx.navH / 2) * sphereFormT,
+    browseScrollTop: () => (ctx.reducedMotion
+      ? ctx.worldEl.getBoundingClientRect().top + window.scrollY
+      : ctx.blockDocTop + ctx.formedScrollPx() * TL.BROWSE_VIEW_SCROLL_FRAC),
     // Ortho on the arc, perspective from the fold on.
-    activeCamera: ({ sphereFormT }) => (sphereFormT === 0 ? cameraOrtho : rt.camera),
+    activeCamera: ({ sphereFormT }) => (sphereFormT === 0 ? cameraOrtho : ctx.camera),
     fillFrameInput(input) {
-      input.arcScale = rt.bp.CARD_W_ARC / rt.bp.CARD_W_SPHERE;
-      input.entryLeadVh = rt.bp.ENTRY_LEAD_VH;
+      input.arcScale = ctx.bp.CARD_W_ARC / ctx.bp.CARD_W_SPHERE;
+      input.entryLeadVh = ctx.bp.ENTRY_LEAD_VH;
     },
     beforeBuild(canvas) {
-      arcCopy.el = rt.q('.globe-arc-copy');
-      if (rt.reducedMotion) rt.worldEl.before(arcCopy.el);
-      else rt.worldEl.after(arcCopy.el);
-      arcCopy.opStr = '';
-      arcCopy.transformStr = '';
+      arcCopy.el = ctx.q('.globe-arc-copy');
+      if (ctx.reducedMotion) ctx.worldEl.before(arcCopy.el);
+      else ctx.worldEl.after(arcCopy.el);
+      ctx.disposer.add(() => { if (arcCopy.el) arcCopy.el.style.cssText = ''; });
 
-      // RM: canvas into normal flow so the globe scrolls away. Non-RM must restate `fixed` — the
-      // only other place it is set is the inline style this would otherwise clear.
-      canvas.style.position = rt.reducedMotion ? 'absolute' : 'fixed';
+      // Non-RM restates `fixed`: otherwise it is only set by the inline style this overwrites.
+      canvas.style.position = ctx.reducedMotion ? 'absolute' : 'fixed';
     },
     onCameraReady() {
-      const { W, H } = rt;
+      const { W, H } = ctx;
       // Arc phase: flat 2D, 1 world unit = 1 CSS pixel.
       cameraOrtho = new THREE.OrthographicCamera(-W / 2, W / 2, H / 2, -H / 2, 1, 5000);
       cameraOrtho.position.set(0, 0, 100);
       cameraOrtho.lookAt(0, 0, 0);
     },
     onResize() {
-      const { W, H } = rt;
+      const { W, H } = ctx;
       cameraOrtho.left = -W / 2;
       cameraOrtho.right = W / 2;
       cameraOrtho.top = H / 2;
@@ -301,29 +297,25 @@ function createHooks(rt) {
       computeGridLayout();
     },
     onCardsBuilt() {
-      const { N_TOTAL } = rt.bp;
+      const { N_TOTAL } = ctx.bp;
       const peelRandom = seededRandom(PEEL_SEED);
-      rt.cards.forEach((card) => {
+      ctx.cards.forEach((card) => {
         card.gridPos = new THREE.Vector3();
         card.gridScale = 1;
         card.gridTilt = 0;
         card.gridQuat = new THREE.Quaternion();
         card.peelJitter = peelRandom();
-        card.peelStartRot = null; // set on the first peel frame, cleared back at gpE 0
+        card.peelStartRot = null;
       });
       const tiltRandom = seededRandom(TILT_SEED);
       gridTilts = Array.from(
         { length: N_TOTAL },
-        () => (tiltRandom() - 0.5) * 0.175, // ±5° in radians
+        () => (tiltRandom() - 0.5) * 0.175,
       );
       computeGridLayout();
     },
-    onDestroy() {
-      cameraOrtho = null;
-      if (arcCopy.el) arcCopy.el.style.cssText = '';
-    },
     beforeFrame(frame) {
-      arcCtx = buildArcCtx(frame.arcPanT, rt.W, rt.H, rt.bp.ARC_SPAN, rt.bp.ARC_RAMP_T);
+      arcCtx = buildArcCtx(frame.arcPanT, ctx.W, ctx.H, ctx.bp.ARC_SPAN, ctx.bp.ARC_RAMP_T);
     },
     beforeCards(frame) {
       frame.sphGroupZ = updateSphereGroupDepth(frame);
@@ -332,7 +324,7 @@ function createHooks(rt) {
     hintSphereDist: (frame) => frame.foldSphDist,
     cardProgress(card, i, frame) {
       const { progress, gridFormT, gpWin } = frame;
-      const { N_TOTAL } = rt.bp;
+      const { N_TOTAL } = ctx.bp;
 
       const baseDelay = (i / Math.max(1, N_TOTAL - 1)) * TL.GRID_PEEL_STAGGER;
       const jitter = (card.peelJitter - 0.5) * TL.GRID_PEEL_JITTER;
@@ -349,7 +341,6 @@ function createHooks(rt) {
       phase.gpE = gpE;
       phase.fdE = fdE;
 
-      if (!CA_ENABLED) return 0;
       return Math.max(
         entryScratch.rot / TL.ENTRY_ROT_MAX,
         gpE * (1 - gpE) * 4,
@@ -369,7 +360,7 @@ function createHooks(rt) {
       // Latest phase first. Sphere + settled-grid skip the stage compute.
       card.onSphere = fdE >= 1;
       if (fdE >= 1) {
-        rt.field.placeSphereCard(card, mesh, frame);
+        ctx.field.placeSphereCard(card, mesh, frame);
       } else if (gpE >= 1 && fdE === 0) {
         placeGridCard(card, mesh, prevMeshX, prevMeshY, frame);
       } else {
