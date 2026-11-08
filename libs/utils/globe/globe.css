@@ -1,0 +1,693 @@
+/* stylelint-disable property-no-vendor-prefix, value-no-vendor-prefix */
+
+@property --globe-nav-h {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 124px;
+}
+
+.globe,
+.globe-cursor {
+  --globe-chrome-blur: 12px;
+}
+
+.globe {
+  --globe-hang-max: 0.8em;
+  --globe-copy-max: 1920px;
+  --globe-copy-pad: var(--s2a-spacing-lg);
+  --globe-crosshair-width: 1px;
+  --globe-controls-size: 48px;
+  --globe-controls-radius: 6px;
+  --globe-controls-inset: var(--s2a-spacing-md);
+  --globe-modal-anim-ms: 350;
+  --globe-nav-h: calc(var(--gnav-height-nav, 72px) + var(--feds-breadcrumbs-height, 52px));
+  --globe-band-h: calc(100vh - var(--globe-nav-h));
+  --globe-optical-center: calc(var(--globe-nav-h) + var(--globe-band-h) / 2);
+  --globe-controls-top: calc(var(--globe-nav-h) + var(--globe-controls-inset));
+
+  height: var(--globe-pq-height, var(--globe-runway-height));
+  position: relative;
+  background: var(--s2a-color-gray-900);
+  margin-top: 0;
+  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
+  -webkit-tap-highlight-color: transparent;
+
+  &.globe-reduced {
+    --globe-nav-h: 0;
+
+    height: auto;
+    min-height: 0;
+  }
+
+  &.globe-empty { display: none; }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .globe-cursor {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 17;
+  }
+
+  .globe-cursor-text-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs);
+    border-radius: var(--s2a-border-radius-xs);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.42s ease;
+  }
+
+  .globe-cursor-text {
+    display: block;
+    font-family: var(--heading-font-family);
+    font-size: var(--s2a-font-size-xs);
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    line-height: 1;
+    color: var(--s2a-color-gray-25);
+  }
+
+  .globe-cursor-active .globe-cursor-text-wrap {
+    opacity: 0.9;
+    visibility: visible;
+    transition-delay: 0.15s;
+  }
+
+  .globe-cursor-retiring .globe-cursor-text-wrap {
+    opacity: 0;
+    transition: opacity 0.42s ease;
+  }
+}
+
+.globe-canvas,
+.globe-modal-canvas {
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.globe-canvas {
+  position: absolute;
+  height: 100%;
+  pointer-events: auto;
+  touch-action: pan-y;
+}
+
+.globe-modal-canvas {
+  position: fixed;
+  height: 100vh;
+  z-index: 14;
+  pointer-events: none;
+}
+
+.globe-world {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Scrolls away and anchors the absolute canvas. Keeps the base 100vh. */
+.globe-reduced .globe-world {
+  position: relative;
+}
+
+.globe-controls {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.35s;
+}
+
+.globe-controls.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0s;
+}
+
+.globe-control,
+.globe-modal-nav,
+.globe-modal-close,
+.globe-hint-text,
+.globe-modal-info,
+.globe-a11y-tip,
+.globe-cursor-text-wrap {
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(var(--globe-chrome-blur));
+  backdrop-filter: blur(var(--globe-chrome-blur));
+}
+
+.globe-control,
+.globe-modal-nav,
+.globe-modal-close {
+  width: var(--globe-controls-size);
+  height: var(--globe-controls-size);
+  border-radius: var(--globe-controls-radius);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  color: var(--s2a-color-gray-25);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.globe-control {
+  flex: none;
+  box-sizing: border-box;
+  padding: 0;
+  pointer-events: auto;
+}
+
+.globe-spin-toggle {
+  position: absolute;
+  top: var(--globe-controls-top);
+  inset-inline-end: var(--globe-controls-inset);
+}
+
+.globe-spin-toggle .globe-icon-play { display: none; }
+
+.globe-spin-toggle.is-paused .globe-icon-pause { display: none; }
+
+.globe-spin-toggle.is-paused .globe-icon-play { display: block; }
+
+.globe-hint { display: none; }
+
+.globe-barrel .globe-hint {
+  position: absolute;
+  inset-inline: var(--globe-controls-inset);
+  bottom: var(--globe-controls-inset);
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-md);
+}
+
+.globe-hint-text {
+  flex: 1;
+  margin: 0;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-body);
+  line-height: 1.35;
+  text-align: center;
+  text-wrap: balance;
+  user-select: none;
+  box-sizing: border-box;
+  padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  border-radius: var(--globe-controls-radius);
+
+  & > p { margin: 0; }
+}
+
+.globe-barrel .globe-hint-text {
+  transition: opacity 0.5s ease, visibility 0s;
+}
+
+.globe-barrel .globe-hint.is-dismissed .globe-hint-text {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+.globe-pullquote-pin {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.globe-pullquote-rail {
+  position: sticky;
+  top: 0;
+  height: min(var(--globe-pq-rail-h, 100vh), 100vh);
+}
+
+.globe-pullquote {
+  --globe-pq-ideal-gap: var(--s2a-layout-lg);
+
+  /* Yields on short viewports so a long quote can't outgrow the band. */
+  --globe-pq-gap: min(var(--globe-pq-ideal-gap), calc(var(--globe-band-h) * 0.2));
+  --globe-pq-pad-block: var(--globe-copy-pad);
+  --globe-pq-rule-color: var(--s2a-color-gray-800);
+  --globe-pq-ink: var(--s2a-color-gray-25);
+
+  position: absolute;
+  isolation: isolate;
+  top: var(--globe-optical-center);
+  inset-inline: 0;
+  box-sizing: border-box;
+  max-width: var(--globe-copy-max);
+  margin: 0 auto;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: var(--globe-pq-gap);
+  padding-block: var(--globe-pq-pad-block);
+  padding-inline: var(--globe-copy-pad);
+
+  /* Centred on the optical centre until the box is taller than the band, then top-anchored: a
+     long quote overflows downward only, never under the nav. */
+  transform: translateY(max(-50%, calc(var(--globe-band-h) * -0.5)));
+}
+
+.globe-pullquote::before,
+.globe-pullquote::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+
+  /* Longhands, not the `border` shorthand: an unresolvable var() colour inside a shorthand is
+     invalid at computed-value time and resets border-style to none, erasing every rule. */
+  border-style: solid;
+  border-width: 0;
+  border-color: var(--globe-pq-rule-color, currentcolor);
+}
+
+.globe-pullquote::before {
+  inset-block: var(--globe-pq-pad-block);
+  inset-inline: 0;
+  border-block-width: var(--globe-crosshair-width);
+}
+
+.globe-pullquote::after {
+  inset-block: 0;
+  inset-inline: var(--globe-copy-pad);
+  border-inline-width: var(--globe-crosshair-width);
+}
+
+/* `hanging-punctuation` is unused: authoring.js outdents the opening mark. */
+
+.globe-pullquote-quote,
+.globe-pullquote-name,
+.globe-pullquote-role {
+  color: var(--globe-pq-ink);
+  margin: 0;
+}
+
+.globe-pullquote-name,
+.globe-pullquote-role { font-family: var(--body-font-family); }
+
+.globe-pullquote-role { --globe-pq-ink: var(--s2a-color-gray-400); }
+
+/* Flows normally after the globe: no pin/rail/sticky, static with a gap above. */
+.globe-reduced .globe-pullquote-pin,
+.globe-reduced .globe-pullquote-rail {
+  position: static;
+  height: auto;
+  pointer-events: auto;
+}
+
+.globe-reduced .globe-pullquote {
+  --globe-pq-pad-block: 10vh 8vh;
+
+  position: relative;
+  top: auto;
+  transform: none;
+}
+
+.globe-pq-particles .globe-pullquote:not(.is-dom) {
+  --globe-pq-dom-pct: calc(var(--globe-pq-dom, 0) * 100%);
+
+  -webkit-font-smoothing: auto;
+
+  :is(.globe-pullquote-quote, .globe-pullquote-name, .globe-pullquote-role) {
+    color: color-mix(in srgb, var(--globe-pq-ink) var(--globe-pq-dom-pct), transparent);
+  }
+
+  &::before,
+  &::after {
+    border-color: color-mix(in srgb, var(--globe-pq-rule-color) var(--globe-pq-dom-pct), transparent);
+  }
+
+  ::selection {
+    color: color-mix(in srgb, currentcolor var(--globe-pq-dom-pct), transparent);
+    background: rgb(255 255 255 / 25%);
+  }
+}
+
+.globe-pq-particles .globe-pullquote.is-dom {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+
+.globe-pq-particles .globe-pullquote.is-dom.is-live {
+  opacity: 1;
+}
+
+.globe-pq-particles .globe-pullquote.is-live {
+  pointer-events: auto;
+}
+
+.globe-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 13;
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity calc(var(--globe-modal-anim-ms) * 1ms) linear;
+}
+
+.globe-modal.is-visible { display: block; }
+
+.globe-modal.is-open { opacity: 1; }
+
+.globe-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+}
+
+/* Native <dialog> via showModal(): full-viewport top layer, siblings inert. */
+.globe-modal-chrome {
+  --globe-modal-edge: var(--s2a-spacing-md);
+  --globe-counter-w: auto; /* md+ pill is a fixed width; the md offsets below need the number */
+  --globe-nav-gap: 12px;
+  --globe-scrim-w: 316px;
+
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  touch-action: none;
+  opacity: 0;
+  transition: opacity calc(var(--globe-modal-anim-ms) * 1ms) ease;
+}
+
+.globe-modal-chrome.is-open { opacity: 1; }
+
+.globe-modal-chrome:focus,
+.globe-modal-chrome:focus-visible { outline: none; }
+
+/* Transparent ::backdrop — a styled one would sit ABOVE the photo canvas and hide it. */
+
+.globe-modal-chrome::backdrop { background: transparent; }
+
+/* Bottom row (arrows + counter): sm spreads it into the corners, md+ centres it as one group under
+   the image. All static — JS only fades the chrome in. See README (Modal). */
+.globe-modal-nav,
+.globe-modal-counter {
+  position: absolute;
+  bottom: var(--globe-modal-edge);
+}
+
+.globe-modal-nav-prev { inset-inline-start: var(--globe-modal-edge); }
+
+.globe-modal-nav-next { inset-inline-end: var(--globe-modal-edge); }
+
+/* Close button — top inline-end corner of the viewport at every breakpoint. */
+.globe-modal-close {
+  position: absolute;
+  top: var(--globe-modal-edge);
+  inset-inline-end: var(--globe-modal-edge);
+}
+
+.globe-control:hover,
+.globe-modal-nav:hover,
+.globe-modal-close:hover { background: var(--s2a-color-transparent-black-80); }
+
+.globe-control:hover,
+.globe-modal-nav:hover { transform: scale(1.05); }
+
+.globe-control:active,
+.globe-modal-nav:active { transform: scale(0.98); }
+
+/* sm = full-width chunk on the viewport's bottom edge, content-sized. Badges margin-top:auto pins
+   them to bottom; padding-bottom reserves the sm nav row (edge + control + edge). */
+.globe-modal-info {
+  position: absolute;
+  inset: auto 0 0;
+  max-height: 45dvh;
+  margin: 0;
+  padding: var(--globe-modal-edge) var(--globe-modal-edge) calc(var(--globe-modal-edge) * 2 + var(--globe-controls-size));
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-00);
+  border-radius: var(--s2a-border-radius-md);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+
+  /* padding must count toward width — no global border-box reset in Milo */
+  box-sizing: border-box;
+}
+
+/* Counter ("1/N"). Base (sm) = plain text; min-width:768 = frosted pill. Centres on physical
+   `left`, not an inset-inline, because the translateX(-50%) it pairs with is physical. */
+.globe-modal-counter {
+  left: 50%;
+  transform: translateX(-50%);
+  height: var(--globe-controls-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-body);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.globe-a11y,
+.globe-a11y-card {
+  position: absolute;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+}
+
+/* Never intercepts canvas drag; tabbable only while interactive. */
+.globe-a11y {
+  top: var(--globe-optical-center);
+  left: 50%;
+  width: min(80%, 80vh);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.globe-a11y-cards {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Default to viewport centre so the frame before the first setFocusRect() lands the ring near the
+   image, not the top-left. JS overwrites left/top/width/height each frame while focused. */
+.globe-a11y-card {
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.globe-a11y:focus,
+.globe-a11y-card:focus { outline: none; }
+
+.globe-a11y-tip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  max-width: min(78%, 320px);
+  padding: var(--s2a-spacing-sm) var(--s2a-spacing-20);
+  border-radius: var(--s2a-border-radius-sm);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  color: var(--s2a-color-gray-25);
+  font-size: var(--s2a-font-size-md);
+  font-weight: var(--s2a-font-weight-adobe-clean-medium);
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.globe-a11y:focus-visible .globe-a11y-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.globe-a11y:focus-visible,
+.globe-a11y-card:focus-visible,
+.globe-control:focus-visible,
+.globe-modal-close:focus-visible,
+.globe-modal-nav:focus-visible {
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
+}
+
+html .globe-reduced .globe-spin-toggle {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-modal-nav:hover,
+  .globe-modal-nav:active,
+  .globe-control:hover,
+  .globe-control:active {
+    transform: none;
+  }
+
+  /* Hint retires instantly, no 0.5s fade (drag, rotate and modal-open all reach is-dismissed). */
+  .globe-barrel .globe-hint-text,
+  .globe-barrel .globe-hint.is-dismissed .globe-hint-text {
+    transition: none;
+  }
+}
+
+html[dir="rtl"] .globe-modal-nav svg {
+  transform: scaleX(-1);
+}
+
+html[dir="rtl"] .globe-hint {
+  flex-direction: row-reverse;
+}
+
+html:has(.firefly-globe) { scrollbar-gutter: stable; }
+
+.globe-modal-description {
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  line-height: var(--s2a-font-line-height-sm);
+  color: var(--s2a-color-gray-400);
+  padding-inline-start: var(--globe-hang-max);
+  margin-block: 0 var(--s2a-spacing-sm);
+  margin-inline-start: calc(var(--globe-hang-max) * -1);
+  min-height: 0; /* let this flex item shrink below its content so it scrolls, not overflows */
+  overflow-y: auto;
+  touch-action: pan-y; /* dialog is touch-action:none — re-enable vertical touch scroll here */
+  scrollbar-width: thin;
+  scrollbar-color: var(--s2a-color-transparent-white-24) transparent;
+
+  /* Scroll-shadow fade cue; JS (updateDescFade) toggles .is-faded-top/-bottom. */
+  --globe-desc-fade-len: 20px;
+  --globe-desc-fade-top: 0;
+  --globe-desc-fade-bottom: 0;
+
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--globe-desc-fade-top), #000 calc(100% - var(--globe-desc-fade-bottom)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--globe-desc-fade-top), #000 calc(100% - var(--globe-desc-fade-bottom)), transparent 100%);
+
+  &.is-faded-top { --globe-desc-fade-top: var(--globe-desc-fade-len); }
+  &.is-faded-bottom { --globe-desc-fade-bottom: var(--globe-desc-fade-len); }
+}
+
+.globe-modal-description p {
+  margin: 0;
+}
+
+.globe-modal-description p + p {
+  margin-top: var(--s2a-spacing-xs);
+}
+
+.globe-modal-description a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.globe-modal-description a:hover {
+  color: var(--s2a-color-gray-25);
+}
+
+html.globe-modal-open,
+body.globe-modal-open { overflow: hidden; }
+
+@media (width >= 768px) {
+  .globe {
+    --globe-copy-pad: var(--s2a-spacing-3xl);
+    --globe-controls-inset: var(--s2a-spacing-lg);
+  }
+
+  .globe-modal-chrome {
+    --globe-modal-edge: var(--s2a-spacing-lg);
+    --globe-counter-w: 138px;
+  }
+
+  .globe-modal-info {
+    inset: 0 auto 0;
+    inset-inline-start: 0;
+    width: var(--globe-scrim-w);
+    height: auto;
+    max-height: none;
+    border-radius: 0;
+    padding: var(--globe-modal-edge);
+  }
+
+  .globe-modal-nav-prev {
+    inset-inline-start: calc(50% - var(--globe-counter-w) / 2 - var(--globe-nav-gap) - var(--globe-controls-size));
+  }
+
+  .globe-modal-nav-next {
+    inset-inline-start: calc(50% + var(--globe-counter-w) / 2 + var(--globe-nav-gap));
+  }
+
+  .globe-modal-description { margin-block: 0; }
+
+  .globe-modal-counter {
+    width: var(--globe-counter-w);
+    box-sizing: border-box;
+    border-radius: var(--globe-controls-radius);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(var(--globe-chrome-blur));
+    backdrop-filter: blur(var(--globe-chrome-blur));
+  }
+
+  .globe-pullquote { --globe-pq-ideal-gap: var(--s2a-layout-xl); }
+}
+
+@media (width >= 1280px) {
+  .globe-pullquote { --globe-pq-ideal-gap: var(--s2a-layout-2xl); }
+}
+
+@media (width >= 1440px) {
+  .globe { --globe-copy-pad: var(--s2a-spacing-4xl); }
+}
+
+@media (height <= 460px) {
+  .globe-modal-chrome {
+    --globe-modal-edge: 8px;
+    --globe-controls-size: 44px;
+  }
+
+  .globe-modal-info {
+    max-height: 70dvh;
+    overflow-y: auto;
+  }
+
+  .globe-modal-description {
+    flex-shrink: 0;
+  }
+}

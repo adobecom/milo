@@ -1,9 +1,10 @@
 import { expect } from '@esm-bundle/chai';
-import * as THREE from '../../../../libs/deps/three.js';
+import * as THREE from '../../../libs/deps/three.js';
+import * as mod from '../../../libs/utils/globe/quote-particles.js';
 
-// Shared by globe-gallery and firefly-globe: `block` is the class prefix, `pre` the CSS var prefix,
-// `mod` the block's quote-particles.js.
-export default function quoteParticlesSuite({ block, pre, mod }) {
+const BLOCKS = [{ block: 'firefly-globe', easePow: 3 }, { block: 'globe-gallery', easePow: 2 }];
+
+BLOCKS.forEach(({ block, easePow }) => {
   const { default: createQuoteParticles, QUOTE_LIVE_P, coherentOrder, createCardScatter } = mod;
 
   // A static camera at z 0 (zoom span 0), fov 60 over an 800 × 600 view.
@@ -32,9 +33,9 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
     document.body.innerHTML = `
       <div class="rail" style="position:relative;height:600px;width:800px">
         <figure class="fig" style="position:absolute;top:100px;left:50px;width:600px;margin:0;padding:24px;
-          --${pre}-crosshair-width:1px;--${pre}-pq-rule-color:#444">
-          <blockquote class="${block}-pullquote-quote" style="--${pre}-pq-ink:#fafafa;font:40px/48px sans-serif;margin:0">${quote}</blockquote>
-          <p class="${block}-pullquote-name" style="--${pre}-pq-ink:#fafafa;font:16px sans-serif;margin:0">Alex</p>
+          --globe-crosshair-width:1px;--globe-pq-rule-color:#444">
+          <blockquote class="globe-pullquote-quote" style="--globe-pq-ink:#fafafa;font:40px/48px sans-serif;margin:0">${quote}</blockquote>
+          <p class="globe-pullquote-name" style="--globe-pq-ink:#fafafa;font:16px sans-serif;margin:0">Alex</p>
         </figure>
       </div>`;
     return {
@@ -53,7 +54,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('samples every target from the drawn quote inside the figure box', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 2000 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 2000, easePow });
       expect(await fx.layout({ dpr: 1 })).to.be.true;
       expect(fx.isReady()).to.be.true;
       await fx.setSources([], VIEW);
@@ -72,7 +73,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('tiles each card with a draw over its real texture, or spreads over the view', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 500 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 500, easePow });
       await fx.layout({ dpr: 1 });
       // A 100 × 200 px card at (100, 100), seen straight on; a second one fully off screen.
       const card = (x0) => cardAt(x0, 100, 100, 200);
@@ -103,7 +104,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('keeps the current pairing on screen until a re-pair is ready, and drops it on release', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 500 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 500, easePow });
       await fx.layout({ dpr: 1 });
       const pointsOf = () => fx.object.children.filter((o) => o instanceof THREE.Points);
       await fx.setSources([cardAt(100, 100, 100, 200)], VIEW);
@@ -124,7 +125,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('shows the finished quote before any pairing, but not the flight', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 500 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 500, easePow });
       await fx.layout({ dpr: 1 });
       const view = { W: 800, H: 600, dpr: 1 };
       fx.update(0.3, view);
@@ -135,7 +136,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('crosses from points to the text plane', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 500 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 500, easePow });
       await fx.layout({ dpr: 1 });
       await fx.setSources([], VIEW);
       const points = fx.object.children.find((o) => o instanceof THREE.Points);
@@ -161,7 +162,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('lands each glyph by reading order', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 800 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 800, easePow });
       await fx.layout({ dpr: 1 });
       await fx.setSources([], VIEW);
       const points = fx.object.children.find((o) => o instanceof THREE.Points);
@@ -233,7 +234,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
     it('stays unready for an empty figure', async () => {
       const { figureEl, railEl } = mount('');
       figureEl.querySelector('p').textContent = '';
-      fx = createQuoteParticles({ figureEl, railEl, count: 100 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 100, easePow });
       expect(await fx.layout({ dpr: 1 })).to.be.false;
       expect(fx.isReady()).to.be.false;
     });
@@ -254,7 +255,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('pairs card pixels with nearby targets', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 3000, easePow });
       await fx.layout({ dpr: 1 });
       // Cards spread around the quote, as on the page: pixels should go to the nearer glyphs,
       // not across the figure.
@@ -285,7 +286,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
 
     it('lays sources out from the runway, not the frame: whole cards, budget by area in view', async () => {
       const { figureEl, railEl } = mount();
-      fx = createQuoteParticles({ figureEl, railEl, count: 3000 });
+      fx = createQuoteParticles({ figureEl, railEl, count: 3000, easePow });
       await fx.layout({ dpr: 1 });
       // The camera dollies from z 0 to −25 over the flight: a card near the right edge runs off
       // screen early, one in the middle stays.
@@ -311,22 +312,25 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
   });
 
   describe(`${block}: DOM swap at rest`, () => {
-    afterEach(() => { document.body.innerHTML = ''; document.head.querySelector(`#${pre}-css`)?.remove(); });
+    afterEach(() => { document.body.innerHTML = ''; document.head.querySelectorAll('.globe-test-css').forEach((l) => l.remove()); });
 
     it('keeps the DOM quote transparent while the canvas draws it, and inks it on the swap', async () => {
-      const link = document.createElement('link');
-      link.id = `${pre}-css`;
-      link.rel = 'stylesheet';
-      link.href = `/libs/c2/blocks/${block}/${block}.css`;
-      await new Promise((r) => { link.onload = r; document.head.append(link); });
+      await Promise.all(['/libs/utils/globe/globe.css', `/libs/c2/blocks/${block}/${block}.css`].map((href) => new Promise((r) => {
+        const link = document.createElement('link');
+        link.className = 'globe-test-css';
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = r;
+        document.head.append(link);
+      })));
       document.body.innerHTML = `
-        <div class="${block} ${block}-pq-particles">
-          <figure class="${block}-pullquote">
-            <blockquote class="${block}-pullquote-quote" style="--${pre}-pq-ink:rgb(250, 250, 250)">Q</blockquote>
+        <div class="${block} globe globe-pq-particles">
+          <figure class="globe-pullquote">
+            <blockquote class="globe-pullquote-quote" style="--globe-pq-ink:rgb(250, 250, 250)">Q</blockquote>
           </figure>
         </div>`;
-      const fig = document.querySelector(`.${block}-pullquote`);
-      const quote = document.querySelector(`.${block}-pullquote-quote`);
+      const fig = document.querySelector('.globe-pullquote');
+      const quote = document.querySelector('.globe-pullquote-quote');
       const alpha = () => {
         const c = getComputedStyle(quote).color;
         const m = c.match(/[\d.]+/g).map(Number);
@@ -336,12 +340,12 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
       // Still positioned and in the a11y tree: only the ink is gone.
       expect(getComputedStyle(fig).display).to.not.equal('none');
       expect(getComputedStyle(fig).visibility).to.equal('visible');
-      fig.style.setProperty(`--${pre}-pq-dom`, '1');
+      fig.style.setProperty('--globe-pq-dom', '1');
       expect(alpha()).to.equal(1);
-      fig.style.setProperty(`--${pre}-pq-dom`, '0.5');
+      fig.style.setProperty('--globe-pq-dom', '0.5');
       expect(alpha()).to.be.closeTo(0.5, 0.01);
       // Forced colours / failed raster: the DOM keeps its own ink regardless.
-      fig.style.removeProperty(`--${pre}-pq-dom`);
+      fig.style.removeProperty('--globe-pq-dom');
       fig.classList.add('is-dom');
       expect(alpha()).to.equal(1);
     });
@@ -367,7 +371,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
     afterEach(() => { fx?.dispose(); fx = null; });
 
     it('tiles every card with one shared grid', () => {
-      fx = createCardScatter({ expand: 1.5 });
+      fx = createCardScatter({ expand: 1.5, easePow });
       fx.setGrid(40, 60);
       fx.update([nearCard(0.2), nearCard(0.6)], { W: 800, H: 600, dpr: 1 });
       const draws = fx.object.children.filter((o) => o instanceof THREE.Points);
@@ -379,7 +383,7 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
     });
 
     it('pools its draws and keeps the grid until it changes', () => {
-      fx = createCardScatter({ expand: 1.5 });
+      fx = createCardScatter({ expand: 1.5, easePow });
       fx.setGrid(10, 10);
       const view = { W: 800, H: 600, dpr: 1 };
       fx.update([nearCard(0.1), nearCard(0.2), nearCard(0.3)], view);
@@ -397,4 +401,4 @@ export default function quoteParticlesSuite({ block, pre, mod }) {
       expect(points.filter((o) => o.visible)).to.have.length(0);
     });
   });
-}
+});

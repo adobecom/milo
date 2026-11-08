@@ -1,15 +1,16 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import * as THREE from '../../../../libs/deps/three.js';
-import createGlobeControls from '../../../../libs/c2/blocks/firefly-globe/src/controls.js';
-import createGalleryA11y from '../../../../libs/c2/blocks/firefly-globe/src/a11y.js';
-import createInteraction from '../../../../libs/c2/blocks/firefly-globe/src/interaction.js';
-import createCursor from '../../../../libs/c2/blocks/firefly-globe/src/cursor.js';
+import { renderModalContent } from '../../../../libs/c2/blocks/firefly-globe/firefly-globe.js';
+import createInteraction, { createGalleryA11y, createGlobeControls, createCursor } from '../../../../libs/utils/globe/interaction.js';
 import {
   createCardMaterial, createModalMaterial, createTextMaterial, createPlaceholderTexture,
   loadCardTextures, loadModalTexture, loadHintFont, createClickDragTexture,
-} from '../../../../libs/c2/blocks/firefly-globe/src/materials.js';
-import createGlobeModal from '../../../../libs/c2/blocks/firefly-globe/src/modal.js';
+} from '../../../../libs/utils/globe/gl.js';
+import createGlobeModal from '../../../../libs/utils/globe/modal.js';
+import { createDisposer } from '../../../../libs/utils/globe/core.js';
+
+let disposer;
 
 const tick = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
@@ -35,28 +36,29 @@ describe('firefly-globe controls', () => {
 
   beforeEach(() => {
     root = document.createElement('div');
-    root.innerHTML = `<div class="firefly-globe-controls">
-      <button class="firefly-globe-spin-toggle"></button><div class="firefly-globe-hint"></div>
-      <button class="firefly-globe-rotate" data-dir="-1"></button>
-      <button class="firefly-globe-rotate" data-dir="1"></button></div><div class="after"></div>`;
+    root.innerHTML = `<div class="globe-controls">
+      <button class="globe-spin-toggle"></button><div class="globe-hint"></div>
+      <button class="globe-rotate" data-dir="-1"></button>
+      <button class="globe-rotate" data-dir="1"></button></div><div class="after"></div>`;
     document.body.append(root);
     rotate = sinon.spy();
     visible = true;
     dismissed = false;
-    controls = createGlobeControls({
-      q: (sel) => root.querySelector(sel),
+    disposer = createDisposer();
+    controls = createGlobeControls({ q: (sel) => root.querySelector(sel), disposer }, {
+      name: 'firefly-globe',
       labels: { pauseSpin: 'Pause', resumeSpin: 'Resume' },
       getVisible: () => visible,
       getHintDismissed: () => dismissed,
       rotate,
     });
   });
-  afterEach(() => { controls.teardown(); root.remove(); });
+  afterEach(() => { disposer.dispose(); root.remove(); });
 
   it('reorders tab stops, tracks visibility/hint and toggles the spin state', () => {
     controls.setup();
-    const layer = root.querySelector('.firefly-globe-controls');
-    const spin = layer.querySelector('.firefly-globe-spin-toggle');
+    const layer = root.querySelector('.globe-controls');
+    const spin = layer.querySelector('.globe-spin-toggle');
     expect(root.lastElementChild).to.equal(layer);
     controls.update();
     expect(layer.classList.contains('is-visible')).to.equal(true);
@@ -68,7 +70,7 @@ describe('firefly-globe controls', () => {
     visible = false;
     controls.update();
     expect(layer.classList.contains('is-visible')).to.equal(false);
-    expect(layer.querySelector('.firefly-globe-hint').classList.contains('is-dismissed')).to.equal(true);
+    expect(layer.querySelector('.globe-hint').classList.contains('is-dismissed')).to.equal(true);
     layer.querySelector('[data-dir="-1"]').click();
     layer.querySelector('[data-dir="1"]').click();
     expect(rotate.args).to.deep.equal([[-1], [1]]);
@@ -76,15 +78,15 @@ describe('firefly-globe controls', () => {
 
   it('removes listeners/classes on teardown and preserves pause across setup', () => {
     controls.setup();
-    const spin = root.querySelector('.firefly-globe-spin-toggle');
+    const spin = root.querySelector('.globe-spin-toggle');
     spin.click();
     controls.update();
-    controls.teardown();
+    disposer.dispose();
     spin.click();
-    root.querySelector('.firefly-globe-rotate').click();
+    root.querySelector('.globe-rotate').click();
     expect(rotate.called).to.equal(false);
     expect(controls.isSpinPaused()).to.equal(true);
-    expect(root.querySelector('.firefly-globe-controls').classList.contains('is-visible')).to.equal(false);
+    expect(root.querySelector('.globe-controls').classList.contains('is-visible')).to.equal(false);
     controls.setup();
     expect(spin.getAttribute('aria-label')).to.equal('Resume');
   });
@@ -101,21 +103,25 @@ describe('firefly-globe accessibility gallery', () => {
 
   beforeEach(() => {
     root = document.createElement('div');
-    root.innerHTML = '<div class="firefly-globe-canvas"></div>';
+    root.innerHTML = '<div class="globe-canvas"></div>';
     document.body.append(root);
     modalIdx = -1;
     formed = true;
     center = sinon.spy();
     open = sinon.spy();
     focus = sinon.spy();
+    disposer = createDisposer();
     gallery = createGalleryA11y({
       q: (sel) => root.querySelector(sel),
-      getCount: () => 3,
+      disposer,
+      count: 3,
       cardOrder: [2, 0, 1],
+      cardMeta: (i) => ({ alt: `Image ${i}`, lang: i === 2 ? 'ja-JP' : '' }),
+      authoredNo: (i) => i + 1,
+    }, {
+      name: 'firefly-globe',
       getModalIdx: () => modalIdx,
       isGlobeFormed: () => formed,
-      getCardLabel: (i) => `Image ${i}`,
-      getCardLang: (i) => (i === 2 ? 'ja-JP' : ''),
       centerCard: center,
       openCard: open,
       onFocus: focus,
@@ -123,16 +129,15 @@ describe('firefly-globe accessibility gallery', () => {
       gid: 'test',
     });
   });
-  afterEach(() => { gallery.teardown(); root.remove(); });
+  afterEach(() => { disposer.dispose(); root.remove(); });
 
-  it('builds one entry stop and ordered inert browse buttons without duplicating on setup', () => {
+  it('builds one entry stop and ordered inert browse buttons', () => {
     gallery.setup();
-    gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
-    expect(root.querySelectorAll('.firefly-globe-a11y')).to.have.length(1);
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
+    expect(root.querySelectorAll('.globe-a11y')).to.have.length(1);
     expect(widget.tabIndex).to.equal(0);
-    expect(widget.getAttribute('aria-labelledby')).to.equal('firefly-globe-a11y-desc-test');
+    expect(widget.getAttribute('aria-labelledby')).to.equal('globe-a11y-desc-test');
     expect(cards.inert).to.equal(true);
     expect([...cards.children].map((el) => el.dataset.idx)).to.deep.equal(['2', '0', '1']);
     expect(cards.firstElementChild.getAttribute('aria-label')).to.equal('Image 2');
@@ -141,8 +146,8 @@ describe('firefly-globe accessibility gallery', () => {
 
   it('enters only when formed, centers focused cards, and Escape collapses', () => {
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     formed = false;
     widget.click();
     expect(gallery.isBrowsing()).to.equal(false);
@@ -169,7 +174,7 @@ describe('firefly-globe accessibility gallery', () => {
 
   it('moves Tab/Shift+Tab between cards itself, without native focus scrolling', () => {
     gallery.setup();
-    root.querySelector('.firefly-globe-a11y').click();
+    root.querySelector('.globe-a11y').click();
     const tab = (shiftKey) => {
       const e = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
       document.activeElement.dispatchEvent(e);
@@ -194,8 +199,8 @@ describe('firefly-globe accessibility gallery', () => {
 
   it('gates tab stops during modal, tracks canvas opens without opening, and tears down', () => {
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     widget.click();
     gallery.trackCardOpen(0);
     expect(open.called).to.equal(false);
@@ -207,17 +212,18 @@ describe('firefly-globe accessibility gallery', () => {
     modalIdx = -1;
     gallery.updateTabStops();
     expect(cards.inert).to.equal(false);
-    gallery.teardown();
+    disposer.dispose();
     expect(gallery.getFocusedIdx()).to.equal(-1);
-    expect(root.querySelector('.firefly-globe-a11y')).to.equal(null);
+    expect(root.querySelector('.globe-a11y')).to.equal(null);
+    expect(root.querySelector('.globe-a11y-cards')).to.equal(null);
     widget.click();
     expect(gallery.isBrowsing()).to.equal(false);
   });
 
   it('collapses when focus leaves browsing, except while the modal is open', () => {
     gallery.setup();
-    const widget = root.querySelector('.firefly-globe-a11y');
-    const cards = root.querySelector('.firefly-globe-a11y-cards');
+    const widget = root.querySelector('.globe-a11y');
+    const cards = root.querySelector('.globe-a11y-cards');
     widget.click();
     modalIdx = 0;
     cards.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: widget }));
@@ -260,22 +266,20 @@ describe('firefly-globe pointer interaction', () => {
     mesh.material.opacity = 1;
     mesh.updateMatrixWorld();
     card = { mesh, hoverTarget: 0, hoverUV: new THREE.Vector2() };
+    disposer = createDisposer();
     interaction = createInteraction({
-      getRenderer: () => ({ domElement: canvas }),
-      getCamera: () => camera,
-      getCards: () => [card],
-      openModal: open,
-      getDragSensitivity: () => 1,
-      isGlobeLive: () => live,
-      maxVel: 0.5,
+      renderer: { domElement: canvas },
+      camera,
+      cards: [card],
       drag,
-      getYawOnly: () => yawOnly,
-      onDrag,
-    });
+      disposer,
+      dragSensitivity: 1,
+      bp: { get CYLINDER() { return yawOnly; } },
+    }, { openModal: open, isGlobeLive: () => live, onDrag });
     interaction.setup(canvas);
   });
   afterEach(() => {
-    interaction.teardown();
+    disposer.dispose();
     canvas.remove();
     card.mesh.geometry.dispose();
     card.mesh.material.dispose();
@@ -344,7 +348,7 @@ describe('firefly-globe pointer interaction', () => {
     send(canvas, 'pointermove', 2, 70, 80);
     send(canvas, 'pointercancel', 2, 70, 80);
     expect([drag.velX, drag.velY, drag.pendingX, drag.pendingY]).to.deep.equal([0, 0, 0, 0]);
-    interaction.teardown();
+    disposer.dispose();
     send(canvas, 'pointerdown', 3, 50, 50);
     expect(drag.isDragging).to.equal(false);
     expect(canvas.style.cursor).to.equal('');
@@ -397,14 +401,15 @@ describe('firefly-globe custom cursor', () => {
     originalMatchMedia = window.matchMedia;
     window.matchMedia = () => ({ matches: fine });
     clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
-    cursor = createCursor({
+    disposer = createDisposer();
+    cursor = createCursor({ disposer }, {
       getGlobeLive: () => live,
       getCursorRetired: () => retired,
       labelText: 'Drag globe',
     });
   });
   afterEach(() => {
-    cursor.teardown();
+    disposer.dispose();
     canvas.remove();
     document.dir = '';
     window.matchMedia = originalMatchMedia;
@@ -414,17 +419,17 @@ describe('firefly-globe custom cursor', () => {
   it('only mounts for fine pointers and positions label in LTR and RTL', () => {
     fine = false;
     cursor.setup(canvas);
-    expect(document.querySelector('.firefly-globe-cursor')).to.equal(null);
+    expect(document.querySelector('.globe-cursor')).to.equal(null);
     fine = true;
     cursor.setup(canvas);
     cursor.setup(canvas);
-    expect(document.querySelectorAll('.firefly-globe-cursor')).to.have.length(1);
-    const node = document.querySelector('.firefly-globe-cursor');
-    const text = node.querySelector('.firefly-globe-cursor-text-wrap');
+    expect(document.querySelectorAll('.globe-cursor')).to.have.length(1);
+    const node = document.querySelector('.globe-cursor');
+    const text = node.querySelector('.globe-cursor-text-wrap');
     expect(node.querySelector('span').textContent).to.equal('Drag globe');
     canvas.dispatchEvent(new MouseEvent('mouseenter', { clientX: 100, clientY: 50 }));
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(true);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(true);
     expect(text.style.transform).to.equal('translate(132px, 39px)');
     document.dir = 'rtl';
     canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: 120, clientY: 60 }));
@@ -434,28 +439,28 @@ describe('firefly-globe custom cursor', () => {
 
   it('suppresses on focus/blur, retires after fade, and resets on teardown', () => {
     cursor.setup(canvas);
-    const node = document.querySelector('.firefly-globe-cursor');
+    const node = document.querySelector('.globe-cursor');
     canvas.dispatchEvent(new MouseEvent('mouseenter', { clientX: 10, clientY: 20 }));
     cursor.update();
     document.dispatchEvent(new Event('focusin'));
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(false);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(false);
     canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: 20, clientY: 20 }));
     retired = true;
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-retiring')).to.equal(true);
+    expect(node.classList.contains('globe-cursor-retiring')).to.equal(true);
     clock.tick(420);
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(false);
+    expect(node.classList.contains('globe-cursor-active')).to.equal(false);
     retired = false;
     live = false;
     cursor.update();
-    expect(node.classList.contains('firefly-globe-cursor-active')).to.equal(false);
-    cursor.teardown();
+    expect(node.classList.contains('globe-cursor-active')).to.equal(false);
+    disposer.dispose();
     expect(node.isConnected).to.equal(false);
     canvas.dispatchEvent(new MouseEvent('mouseenter', { clientX: 1, clientY: 1 }));
     cursor.update();
-    expect(document.querySelector('.firefly-globe-cursor')).to.equal(null);
+    expect(document.querySelector('.globe-cursor')).to.equal(null);
   });
 });
 
@@ -500,7 +505,7 @@ describe('firefly-globe materials and texture loaders', () => {
     expect(card.uniforms.uOpacity.value).to.equal(0.7);
     expect(card.uniforms.uMap.value).to.equal(null);
     expect(card.needsUpdate).to.equal(false);
-    const modal = createModalMaterial(texture, 2);
+    const modal = createModalMaterial({ texture, aspect: 2 });
     expect(modal.uniforms.map.value).to.equal(texture);
     expect(modal.uniforms.uRadius.value).to.be.closeTo(22 / 631, 0.00001);
     const text = createTextMaterial({ texture, aspect: 1.2, resolution: { x: 800, y: 600 } });
@@ -532,13 +537,14 @@ describe('firefly-globe materials and texture loaders', () => {
     await tick();
     expect(each.args.map(([i]) => i)).to.deep.equal([1, 0]);
     expect(done.calledOnce).to.equal(true);
-    expect(done.firstCall.args[1]).to.deep.equal([2, 2]);
-    done.firstCall.args[0].forEach((tex) => tex.dispose());
+    expect(each.args.map(([, , aspect]) => aspect)).to.deep.equal([2, 2]);
+    each.args.forEach(([, tex]) => tex.dispose());
   });
 
   it('falls back on card network/decode failures and invokes completion once', async () => {
+    const each = sinon.spy();
     const done = sinon.spy();
-    loadCardTextures({ count: 2, getSrc: (i) => `/bad-${i}`, maxTexH: 32 }, null, done);
+    loadCardTextures({ count: 2, getSrc: (i) => `/bad-${i}`, maxTexH: 32, getCrossOrigin: () => null }, each, done);
     images[0].onerror();
     bitmapStub.rejects(new Error('decode'));
     images[1].naturalWidth = 40;
@@ -546,15 +552,15 @@ describe('firefly-globe materials and texture loaders', () => {
     images[1].onload();
     await tick();
     expect(done.calledOnce).to.equal(true);
-    expect(done.firstCall.args[1]).to.deep.equal([4 / 6, 2]);
+    expect(each.args.map(([i, , aspect]) => [i, aspect])).to.deep.equal([[0, 4 / 6], [1, 2]]);
     expect(log.callCount).to.equal(2);
-    done.firstCall.args[0].forEach((tex) => tex.dispose());
+    each.args.forEach(([, tex]) => tex.dispose());
   });
 
   it('returns a cancellable modal Image and calls ready/error as appropriate', async () => {
     const ready = sinon.spy();
     const error = sinon.spy();
-    const image = loadModalTexture('/large.jpg', 128, ready, error, 'use-credentials');
+    const image = loadModalTexture({ src: '/large.jpg', maxTex: 128, crossOrigin: 'use-credentials' }, ready, error);
     expect(image).to.equal(images[0]);
     expect(image.crossOrigin).to.equal('use-credentials');
     image.naturalWidth = 400;
@@ -564,7 +570,7 @@ describe('firefly-globe materials and texture loaders', () => {
     expect(bitmapStub.firstCall.args[1]).to.include({ resizeWidth: 128, resizeHeight: 64 });
     expect(ready.calledOnce).to.equal(true);
     ready.firstCall.args[0].dispose();
-    loadModalTexture('/missing.jpg', 128, ready, error);
+    loadModalTexture({ src: '/missing.jpg', maxTex: 128 }, ready, error);
     images[1].onerror();
     expect(error.calledOnce).to.equal(true);
     expect(log.calledOnce).to.equal(true);
@@ -609,20 +615,20 @@ describe('firefly-globe modal without a WebGL canvas', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     root = document.createElement('div');
-    root.innerHTML = `<div class="firefly-globe-modal" aria-hidden="true">
-      <div class="firefly-globe-modal-chrome">
-        <button class="firefly-globe-modal-close"></button>
-        <button class="firefly-globe-modal-nav-prev"></button>
-        <button class="firefly-globe-modal-nav-next"></button>
-        <div class="firefly-globe-modal-image"></div>
-        <div class="firefly-globe-modal-name">
-          <img class="firefly-globe-modal-model-icon"><span class="firefly-globe-modal-model-label"></span>
+    root.innerHTML = `<div class="globe-modal" aria-hidden="true">
+      <div class="globe-modal-chrome">
+        <button class="globe-modal-close"></button>
+        <button class="globe-modal-nav-prev"></button>
+        <button class="globe-modal-nav-next"></button>
+        <div class="globe-modal-image"></div>
+        <div class="globe-modal-name">
+          <img class="globe-modal-model-icon"><span class="globe-modal-model-label"></span>
         </div>
-        <div class="firefly-globe-modal-prompt"></div>
-        <div class="firefly-globe-modal-counter"></div>
-        <div class="firefly-globe-modal-position"></div>
-        <div class="firefly-globe-modal-announce"></div>
-        <a class="firefly-globe-modal-cta"></a>
+        <div class="globe-modal-description"></div>
+        <div class="globe-modal-counter"></div>
+        <div class="globe-modal-position"></div>
+        <div class="globe-modal-announce"></div>
+        <a class="globe-modal-cta"></a>
       </div></div>`;
     document.body.append(root);
     const modalNode = root.firstElementChild;
@@ -651,13 +657,13 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     camera.position.z = 30;
     modal = createGlobeModal({
       q: (sel) => root.querySelector(sel) || modalNode.querySelector(sel),
-      getScene: () => scene,
-      getCamera: () => camera,
-      getSphereGroup: () => sphere,
-      getRenderer: () => null,
-      getCards: () => cards,
-      getCount: () => cards.length,
-      getCardMetadata: (i) => (i ? {} : {
+      scene,
+      camera,
+      sphereGroup: sphere,
+      renderer: null,
+      cards,
+      count: cards.length,
+      cardMeta: (i) => (i ? {} : {
         alt: 'Photo',
         modelId: 'firefly',
         modelVersionName: 'Firefly 3',
@@ -667,23 +673,26 @@ describe('firefly-globe modal without a WebGL canvas', () => {
       }),
       authoredNo: (i) => i + 1,
       stepCard: step,
+      W: 1000,
+      H: 800,
+      bp: { name: 'md', CARD_W_SPHERE: 1, CARD_H_SPHERE: 1, ANTIALIAS: false },
+      reducedMotion: true,
+      field: {
+        slotPose: (card, rotated, pos, quat) => {
+          pos.copy(card.spherePos);
+          quat.copy(card.sphereQuat);
+        },
+        snapCardToSphereSlot: sinon.spy(),
+        applySphereFacing: sinon.spy(),
+        applyMotionCA: sinon.spy(),
+      },
+    }, {
+      hoistToBody: true,
+      renderContent: (el, meta) => renderModalContent(el, meta, '/libs/c2/blocks/firefly-globe/icons/'),
       loadModalUpgrade: upgrade,
-      getViewport: () => ({ W: 1000, H: 800 }),
-      getCanvasTop: () => 0,
-      getBP: () => 'md',
-      getCardDims: () => ({ w: 1, h: 1 }),
-      cardAspect: 1,
-      getAntialias: () => false,
-      caEnabled: false,
       cardLabel: (i, count) => `${i} of ${count}`,
-      getReducedMotion: () => true,
-      sphereRotQuat: new THREE.Quaternion(),
-      snapToSphereSlot: sinon.spy(),
-      applySphereFacing: sinon.spy(),
       requestNavNudge: sinon.spy(),
-      applyMotionCA: sinon.spy(),
       restoreFocusOnClose: restore,
-      iconBaseUrl: '/libs/c2/blocks/firefly-globe/icons/',
     });
     modal.setup();
   });
@@ -699,22 +708,22 @@ describe('firefly-globe modal without a WebGL canvas', () => {
   });
 
   it('moves DOM to body and populates metadata, then restores the card after close', () => {
-    const el = document.querySelector('.firefly-globe-modal');
+    const el = document.querySelector('.globe-modal');
     expect(el.parentNode).to.equal(document.body);
     modal.open(0);
     expect(modal.getModalIdx()).to.equal(0);
-    expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-label')).to.equal('Photo');
-    expect(el.querySelector('.firefly-globe-modal-image').lang).to.equal('en-US');
-    expect(el.querySelector('.firefly-globe-modal-prompt').lang).to.equal('en-US');
-    expect(el.querySelector('.firefly-globe-modal-model-icon').getAttribute('src'))
+    expect(el.querySelector('.globe-modal-image').getAttribute('aria-label')).to.equal('Photo');
+    expect(el.querySelector('.globe-modal-image').lang).to.equal('en-US');
+    expect(el.querySelector('.globe-modal-description').lang).to.equal('en-US');
+    expect(el.querySelector('.globe-modal-model-icon').getAttribute('src'))
       .to.equal('/libs/c2/blocks/firefly-globe/icons/firefly.svg');
-    expect(el.querySelector('.firefly-globe-modal-model-label').textContent).to.equal('Firefly 3');
-    expect(el.querySelector('.firefly-globe-modal-counter').textContent).to.equal('01 / 02');
-    expect(el.querySelector('.firefly-globe-modal-cta').getAttribute('href')).to.equal('/try');
+    expect(el.querySelector('.globe-modal-model-label').textContent).to.equal('Firefly 3');
+    expect(el.querySelector('.globe-modal-counter').textContent).to.equal('01 / 02');
+    expect(el.querySelector('.globe-modal-cta').getAttribute('href')).to.equal('/try');
     expect(modal.isCardManaged(cards[0])).to.equal(true);
     expect(upgrade.calledOnce).to.equal(true);
     modal.updateAnimation(false);
-    el.querySelector('.firefly-globe-modal-close').click();
+    el.querySelector('.globe-modal-close').click();
     modal.updateAnimation(false);
     clock.tick(350);
     expect(modal.getModalIdx()).to.equal(-1);
@@ -728,15 +737,15 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     expect(modal.getModalIdx()).to.equal(-1);
     modal.open(0);
     modal.setup();
-    document.querySelector('.firefly-globe-modal-nav-next').click();
+    document.querySelector('.globe-modal-nav-next').click();
     expect(step.calledOnceWithExactly(0, 1)).to.equal(true);
     modal.navigate(-1);
     expect(step.callCount).to.equal(2);
     expect(modal.getModalIdx()).to.equal(0);
     modal.destroy(true);
     expect(modal.getModalIdx()).to.equal(-1);
-    expect(document.querySelector('.firefly-globe-modal')).to.equal(null);
-    expect(document.documentElement.classList.contains('firefly-globe-modal-open')).to.equal(false);
+    expect(document.querySelector('.globe-modal')).to.equal(null);
+    expect(document.documentElement.classList.contains('globe-modal-open')).to.equal(false);
   });
 
   it('clears absent metadata and cancels a pending upgrade when opening another card', () => {
@@ -744,16 +753,16 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     const pending = upgrade.firstCall.returnValue;
     const ready = upgrade.firstCall.args[1];
     modal.open(1);
-    const el = document.querySelector('.firefly-globe-modal');
+    const el = document.querySelector('.globe-modal');
     expect(pending.onload).to.equal(null);
     expect(pending.onerror).to.equal(null);
     expect(pending.src).to.equal('');
-    expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-hidden')).to.equal('true');
-    expect(el.querySelector('.firefly-globe-modal-image').hasAttribute('lang')).to.equal(false);
-    expect(el.querySelector('.firefly-globe-modal-prompt').hasAttribute('lang')).to.equal(false);
-    expect(el.querySelector('.firefly-globe-modal-model-icon').hasAttribute('hidden')).to.equal(true);
-    expect(el.querySelector('.firefly-globe-modal-cta').hasAttribute('href')).to.equal(false);
-    expect(el.querySelector('.firefly-globe-modal-counter').textContent).to.equal('02 / 02');
+    expect(el.querySelector('.globe-modal-image').getAttribute('aria-hidden')).to.equal('true');
+    expect(el.querySelector('.globe-modal-image').hasAttribute('lang')).to.equal(false);
+    expect(el.querySelector('.globe-modal-description').hasAttribute('lang')).to.equal(false);
+    expect(el.querySelector('.globe-modal-model-icon').hasAttribute('hidden')).to.equal(true);
+    expect(el.querySelector('.globe-modal-cta').hasAttribute('href')).to.equal(false);
+    expect(el.querySelector('.globe-modal-counter').textContent).to.equal('02 / 02');
     const stale = { dispose: sinon.spy() };
     ready(stale);
     expect(stale.dispose.calledOnce).to.equal(true);
@@ -774,12 +783,28 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     expect(cards[0].modalAspect).to.equal(0);
   });
 
+  it('disposes a stale upgrade that lands after the same card is reopened', () => {
+    modal.open(0);
+    const staleReady = upgrade.firstCall.args[1];
+    modal.open(1);
+    modal.open(0);
+    const freshReady = upgrade.thirdCall.args[1];
+    const stale = new THREE.Texture({ width: 800, height: 400 });
+    const fresh = new THREE.Texture({ width: 400, height: 800 });
+    const staleDispose = sinon.spy(stale, 'dispose');
+    staleReady(stale);
+    freshReady(fresh);
+    expect(staleDispose.calledOnce).to.equal(true);
+    expect(cards[0].modalMat.uniforms.map.value).to.equal(fresh);
+    expect(cards[0].modalAspect).to.equal(0.5);
+  });
+
   it('uses model id fallback text, hides unknown icons, and closes through dialog cancel', () => {
     modal.open(1);
-    const el = document.querySelector('.firefly-globe-modal');
-    const chrome = el.querySelector('.firefly-globe-modal-chrome');
-    expect(el.querySelector('.firefly-globe-modal-model-label').textContent).to.equal('');
-    expect(el.querySelector('.firefly-globe-modal-model-icon').hidden).to.equal(true);
+    const el = document.querySelector('.globe-modal');
+    const chrome = el.querySelector('.globe-modal-chrome');
+    expect(el.querySelector('.globe-modal-model-label').textContent).to.equal('');
+    expect(el.querySelector('.globe-modal-model-icon').hidden).to.equal(true);
     const cancel = new Event('cancel', { cancelable: true });
     chrome.dispatchEvent(cancel);
     expect(cancel.defaultPrevented).to.equal(true);
@@ -790,7 +815,7 @@ describe('firefly-globe modal without a WebGL canvas', () => {
 
   it('makes overflowing prompt copy keyboard-scrollable and removes the fade at the bottom', () => {
     modal.open(0);
-    const prompt = document.querySelector('.firefly-globe-modal-prompt');
+    const prompt = document.querySelector('.globe-modal-description');
     Object.defineProperties(prompt, {
       scrollHeight: { configurable: true, value: 300 },
       clientHeight: { configurable: true, value: 100 },
