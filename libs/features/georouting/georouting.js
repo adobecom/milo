@@ -34,6 +34,17 @@ const getAkamaiCode = () => new Promise((resolve) => {
   }
 });
 
+export const toSafeHref = (url) => {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    const isHttp = parsed.protocol === 'https:' || parsed.protocol === 'http:';
+    if (!isHttp || parsed.origin !== window.location.origin) return '#';
+    return parsed.href;
+  } catch {
+    return '#';
+  }
+};
+
 // Determine if any of the locales can be linked to.
 async function getAvailableLocales(locales, config, getMetadata) {
   const fallback = getMetadata('fallbackrouting') || config.fallbackRouting;
@@ -50,10 +61,10 @@ async function getAvailableLocales(locales, config, getMetadata) {
 
     const pageExistsRequest = fetch(localePath, { method: 'HEAD' }).then((resp) => {
       if (resp.ok) {
-        locale.url = localePath;
+        locale.url = toSafeHref(localePath);
         availableLocales[index] = locale;
       } else if (fallback !== 'off') {
-        locale.url = `${localeRoot}/`;
+        locale.url = toSafeHref(`${localeRoot}/`);
         availableLocales[index] = locale;
       }
     });
@@ -112,7 +123,7 @@ async function getDetails(currentPage, localeMatches, config, createTag, getMeta
   const availableLocales = await getAvailableLocales(localeMatches, config, getMetadata);
 
   if (availableLocales && availableLocales.length > 0) {
-    currentPage.url = window.location.hash ? document.location.href : '#';
+    currentPage.url = window.location.hash ? toSafeHref(document.location.href) : '#';
     const imgUrl = `${config.miloLibs || config.codeRoot}/img/icons/Smock_GlobeOutline_18_N.svg`;
     const worldIcon = createTag('img', { src: imgUrl, class: 'world-icon' });
     const text = buildText([...availableLocales, currentPage], config, createTag);
