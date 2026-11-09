@@ -240,6 +240,24 @@ describe('mmm-2', () => {
     expect(block.querySelector('#mmm2-filter-lastseen').value).to.equal('threeMonths');
   });
 
+  it('owns authored tab tables in a later section during parallel preloading', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'parallel-sections';
+    meta.content = '2';
+    document.head.append(meta);
+    document.querySelector('main').prepend(document.createElement('div'));
+    try {
+      preloadLcpCodeFiles();
+      const block = document.querySelector('.mmm-2');
+      ['manifest-manager', 'inactivity-report', 'metadata-lookup'].forEach((name) => {
+        expect(block.querySelector(`:scope > .${name}`)).to.exist;
+        expect(document.head.querySelector(`link[href*="/blocks/${name}/"]`)).to.not.exist;
+      });
+    } finally {
+      meta.remove();
+    }
+  });
+
   it('uses authored instructions and menu edits rather than hardcoded content', async () => {
     const content = document.querySelector('.section > .manifest-manager:not(.mmm-2)');
     content.firstElementChild.children[0].textContent = 'Authored manager instructions';

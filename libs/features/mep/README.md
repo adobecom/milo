@@ -17,6 +17,9 @@ requirements remain unchanged.
 
 The legacy `personalization/preview.js`, its stylesheet and subcollection helper
 have been removed. Both manifest managers use the shared MEP Next implementation.
+Their popup renderer builds data-derived text and attributes with DOM APIs,
+using the same normalized manifest entries as the overlay. Missing metadata keeps
+its explicit labels rather than becoming an empty field.
 Activity details map the API's `manifestConsentType` and
 `manifestCountryRestriction` to the shared consent/country fields. Expanded cards
 show the source, consent, countries, schedule and last-seen time, variants, analytics
