@@ -9,6 +9,7 @@ import {
   parseAuthoredContent,
   buildGlobeDom,
   fetchFireflyAssets,
+  appendFireflyParams,
 } from '../../../../libs/c2/blocks/firefly-globe/firefly-globe.js';
 
 // Helpers
@@ -93,16 +94,16 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
     expect(labels.rotateLeft).to.equal('Rotate left');
   });
 
-  it('parses "categoryId || machineTag || cgenId || ctaLabel" from the cards cell', () => {
+  it('parses "categoryId || machineTag || campaignId || ctaLabel" from the cards cell', () => {
     const el = makeEl(`
       ${makeRow('<div><p>cat-123 || custom_tag || promo-9 || Open in Firefly</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
+    const { categoryId, machineTag, campaignId, ctaLabel } = parseAuthoredContent(el);
     expect(categoryId).to.equal('cat-123');
     expect(machineTag).to.equal('custom_tag');
-    expect(cgenId).to.equal('promo-9');
+    expect(campaignId).to.equal('promo-9');
     expect(ctaLabel).to.equal('Open in Firefly');
   });
 
@@ -116,7 +117,7 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
   });
 
   // Authors can skip the machineTag slot with an empty field and keep the
-  // later slots in place: "cat || || cgen || cta" or "cat |||| cgen || cta".
+  // later slots in place: "cat || || campaign || cta" or "cat |||| campaign || cta".
   ['cat-123 || || promo-9 || Open in Firefly', 'cat-123 |||| promo-9 || Open in Firefly']
     .forEach((cards) => {
       it(`treats an empty machineTag slot as the default: "${cards}"`, () => {
@@ -125,10 +126,10 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
           ${makeRow('<div></div><div><p>Drag</p></div>')}
           ${makeRow('')}
         `);
-        const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
+        const { categoryId, machineTag, campaignId, ctaLabel } = parseAuthoredContent(el);
         expect(categoryId).to.equal('cat-123');
         expect(machineTag).to.equal(DEFAULT_MACHINE_TAG);
-        expect(cgenId).to.equal('promo-9');
+        expect(campaignId).to.equal('promo-9');
         expect(ctaLabel).to.equal('Open in Firefly');
       });
     });
@@ -173,7 +174,7 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
 
     expect(content.categoryId).to.equal('featured-category');
     expect(content.machineTag).to.equal('acom_firefly_globe');
-    expect(content.cgenId).to.equal('campaign-123');
+    expect(content.campaignId).to.equal('campaign-123');
     expect(content.ctaLabel).to.equal('Open in Firefly');
     expect(content.touchHint.paras.map((p) => p.textContent)).to.deep.equal([
       'Drag to explore Firefly creations.',
@@ -578,5 +579,26 @@ describe('firefly-globe: frame state', () => {
 
   it('FRAME_MS is ~16.67ms (60fps target)', () => {
     expect(FRAME_MS).to.be.closeTo(16.667, 0.001);
+  });
+});
+
+describe('firefly-globe: appendFireflyParams', () => {
+  const run = (campaignId, fireflyUrl = 'https://firefly.adobe.com/open?id=1') => {
+    const cards = [{ fireflyUrl }, { fireflyUrl: null }];
+    appendFireflyParams(cards, campaignId);
+    return cards;
+  };
+
+  it('adds ff_source and the authored ff_campaign, without promoid/mv', () => {
+    const [card, noUrl] = run('spring-promo');
+    expect(card.fireflyUrl).to.equal('https://firefly.adobe.com/open?id=1&ff_source=adobe-com&ff_campaign=spring-promo');
+    expect(card.fireflyUrl).to.not.match(/promoid|mv=/);
+    expect(noUrl.fireflyUrl).to.be.null;
+  });
+
+  it('falls back to marketing-page when empty or the legacy NQCJQWSV', () => {
+    ['', undefined, 'NQCJQWSV'].forEach((id) => {
+      expect(run(id)[0].fireflyUrl).to.include('ff_campaign=marketing-page');
+    });
   });
 });

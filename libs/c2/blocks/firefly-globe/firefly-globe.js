@@ -114,6 +114,19 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
   });
 }
 
+const FF_SOURCE = 'adobe-com';
+const DEFAULT_FF_CAMPAIGN = 'marketing-page';
+const LEGACY_CAMPAIGN_ID = 'NQCJQWSV';
+
+export function appendFireflyParams(cards, campaignId) {
+  const campaign = !campaignId || campaignId === LEGACY_CAMPAIGN_ID
+    ? DEFAULT_FF_CAMPAIGN : campaignId;
+  const params = new URLSearchParams({ ff_source: FF_SOURCE, ff_campaign: campaign });
+  cards.forEach((card) => {
+    if (card.fireflyUrl) card.fireflyUrl += `&${params}`;
+  });
+}
+
 export function fireflyRenditionUrl(card, px, axis = 'width') {
   if (!card?.renditionHref) return '';
   return card.renditionHref
@@ -125,13 +138,13 @@ export function fireflyRenditionUrl(card, px, axis = 'width') {
 export function parseAuthoredContent(el) {
   const [cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const firstCell = cardsRow?.querySelector(':scope > div');
-  const [categoryId = '', machineTag = '', cgenId = '', ctaLabel = ''] = cellText(firstCell)
+  const [categoryId = '', machineTag = '', campaignId = '', ctaLabel = ''] = cellText(firstCell)
     .split(LABEL_DIVIDER)
     .map((s) => s.trim());
   return {
     categoryId: categoryId || null,
     machineTag: machineTag || DEFAULT_MACHINE_TAG,
-    cgenId,
+    campaignId,
     ctaLabel,
     ...parseCommonRows(hintTextRow, a11yRow, pullQuoteRow),
   };
@@ -273,17 +286,13 @@ const SPEC = {
   createHooks,
   parseContent: parseAuthoredContent,
   buildDom: buildGlobeDom,
-  async loadCards({ categoryId, machineTag, cgenId }) {
+  async loadCards({ categoryId, machineTag, campaignId }) {
     if (!categoryId) {
       logGlobe(NAME, 'no categoryId authored');
       return null;
     }
     const cards = await fetchFireflyAssets(categoryId, getConfig().locale?.ietf, machineTag);
-    if (cgenId) {
-      cards?.forEach((card) => {
-        if (card.fireflyUrl) card.fireflyUrl += `&promoid=${cgenId}&mv=other`;
-      });
-    }
+    if (cards) appendFireflyParams(cards, campaignId);
     return cards;
   },
 };

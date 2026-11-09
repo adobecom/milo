@@ -34,6 +34,7 @@
 }
 
 .dialog-modal > .fragment {
+  isolation: isolate;
   overflow-y: auto;
   max-height: var(--modal-max-height);
 }

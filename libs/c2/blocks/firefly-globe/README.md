@@ -27,7 +27,7 @@ The runtime, sphere, drag, modal, a11y, controls and pull quote are shared with 
 
 | Row | Content |
 | --- | --- |
-| 1 | `categoryId \|\| machineTag \|\| cgenId \|\| ctaLabel` |
+| 1 | `categoryId \|\| machineTag \|\| campaignId \|\| ctaLabel` |
 | 2 | Hint row (see the shared README) |
 | 3 | A11y row (see the shared README) |
 | 4 | Optional pull quote |
@@ -36,7 +36,8 @@ The runtime, sphere, drag, modal, a11y, controls and pull quote are shared with 
   failures, `warn` otherwise).
 - `machineTag` restricts the query to assets with that tag; empty uses `DEFAULT_MACHINE_TAG`. Quotes and backslashes in
   it are backslash-escaped for the API.
-- `cgenId` appends `&promoid=<id>&mv=other` to every `fireflyUrl`.
+- `campaignId` (optional) is the `ff_campaign` value; empty or the legacy `NQCJQWSV` uses `marketing-page`. Every
+  `fireflyUrl` gets `&ff_source=adobe-com&ff_campaign=<value>`.
 - `ctaLabel` is the modal CTA text; the CTA is hidden for cards without a `fireflyUrl`.
 
 ## Firefly Community API

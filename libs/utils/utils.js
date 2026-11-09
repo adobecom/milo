@@ -157,6 +157,7 @@ const C2_BLOCKS = [
   'side-by-side',
   'social-proof',
   'split-aside-grid',
+  'split-hero',
   'tabs',
   'tour',
   'visually-hidden',
@@ -1936,6 +1937,15 @@ export function isLocalNav() {
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
 }
 
+export function isC2GnavOnC1Host() {
+  return getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+}
+
+function syncC2GnavHost(header) {
+  const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
+  header.classList.toggle('c2-gnav-c1-host', isHost);
+}
+
 async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
@@ -1948,6 +1958,7 @@ async function decorateHeader() {
     return;
   }
   header.className = headerMeta || 'global-navigation';
+  syncC2GnavHost(header);
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
     || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
@@ -2223,8 +2234,6 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          enableGuestBotDetection: true,
-          guestBotDetectionProvider: 'bfp',
         }),
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
@@ -2668,6 +2677,7 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
+    syncC2GnavHost(header);
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
 
@@ -2875,12 +2885,24 @@ export const norm = normCountryCode;
 export async function getMarketConfig() {
   try {
     const config = getConfig();
-    if (!config.marketsConfig) {
-      const resp = await fetch(getMarketsUrl());
-      if (!resp.ok) throw new Error('Failed to load market config');
-      config.marketsConfig = await resp.json();
+    let { marketsConfig } = config;
+    if (!marketsConfig) {
+      config.marketsConfigPromise ||= fetch(getMarketsUrl())
+        .then((resp) => {
+          if (!resp.ok) throw new Error('Failed to load market config');
+          return resp.json();
+        });
+      const request = config.marketsConfigPromise;
+      try {
+        marketsConfig = await request;
+        if (config.marketsConfigPromise === request && !config.marketsConfig) {
+          config.marketsConfig = marketsConfig;
+        }
+      } finally {
+        if (config.marketsConfigPromise === request) delete config.marketsConfigPromise;
+      }
     }
-    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    const languages = marketsConfig.languages?.data ?? marketsConfig.data ?? [];
     return { languages };
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
@@ -2985,14 +3007,11 @@ export async function decorateLanguageBanner() {
 
   const [geoIpCode, marketsConfig] = await Promise.all([
     getCountry(),
-    fetch(getMarketsUrl())
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
+    getMarketConfig(),
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
-  getConfig().marketsConfig = marketsConfig;
-  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  const rawEntries = marketsConfig.languages;
   if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
   const languageEntries = rawEntries.map((entry) => ({

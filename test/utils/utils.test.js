@@ -1693,6 +1693,66 @@ describe('Utils', () => {
     });
   });
 
+  describe('C2 gnav on a C1 page', () => {
+    const setHead = (meta) => {
+      document.head.innerHTML = head + Object.entries(meta)
+        .map(([name, content]) => `<meta name="${name}" content="${content}">`).join('');
+    };
+    const decorateHeaderWith = async (meta) => {
+      setHead(meta);
+      document.body.innerHTML = '<header></header><main></main>';
+      await utils.loadArea();
+      return document.querySelector('header').classList;
+    };
+
+    after(() => { document.head.innerHTML = head; });
+
+    it('detects the C2-gnav-on-C1 combination from metadata', () => {
+      setHead({ 'gnav-foundation': 'c2' });
+      expect(utils.isC2GnavOnC1Host()).to.be.true;
+      setHead({ 'gnav-foundation': 'c2', foundation: 'c2' });
+      expect(utils.isC2GnavOnC1Host()).to.be.false;
+      setHead({});
+      expect(utils.isC2GnavOnC1Host()).to.be.false;
+    });
+
+    it('tags the header when it is decorated, before the nav block loads', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', localnav: 'true' });
+      expect(classes.contains('c2-gnav-c1-host')).to.be.true;
+    });
+
+    it('does not tag C1 headers', async () => {
+      const classes = await decorateHeaderWith({ localnav: 'true' });
+      expect(classes.contains('global-navigation')).to.be.true;
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('does not tag a header authored as another block', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', header: 'custom-header' });
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('does not tag a header whose block is not global-navigation', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', header: 'custom-header global-navigation' });
+      expect(classes.contains('global-navigation')).to.be.true;
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('re-syncs the tag if gnav metadata changes before the nav loads (post-LCP MEP)', async () => {
+      setHead({ 'gnav-foundation': 'c2' });
+      document.body.innerHTML = '<header></header><main><div><p>Content</p></div></main>';
+      const header = document.querySelector('header');
+      const observer = new MutationObserver(() => {
+        if (!header.classList.contains('c2-gnav-c1-host')) return;
+        observer.disconnect();
+        document.head.querySelector('meta[name="gnav-foundation"]').content = 'c1';
+      });
+      observer.observe(header, { attributeFilter: ['class'] });
+      await utils.loadArea();
+      expect(header.classList.contains('c2-gnav-c1-host')).to.be.false;
+    });
+  });
+
   describe('loadFooter', async () => {
     it('Should load if footer meta is not off', async () => {
       const footer = document.createElement('footer');
@@ -4446,44 +4506,104 @@ describe('utils.js market — getMarketConfig()', () => {
 
   it('fetches and caches marketsConfig when not present', async () => {
     const mockData = { languages: { data: [{ prefix: '', langName: 'English' }] } };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    const jsonStub = sinon.stub().returns(dataPromise);
     setConfig({ locale: { prefix: '' } });
-    sinon.stub(window, 'fetch').resolves({
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
-      json: () => Promise.resolve(mockData),
+      json: jsonStub,
     });
 
-    const result = await getMarketConfig();
+    const first = getMarketConfig();
+    await Promise.resolve();
+    const second = getMarketConfig();
+    resolveData(mockData);
+    const [result, concurrentResult] = await Promise.all([first, second]);
     expect(result).to.not.be.null;
     expect(result.languages).to.be.an('array');
     expect(result.languages[0].langName).to.equal('English');
+    expect(concurrentResult).to.deep.equal(result);
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
+    expect(await getMarketConfig()).to.deep.equal(result);
+    expect(fetchStub.calledOnce).to.be.true;
+    expect(jsonStub.calledOnce).to.be.true;
   });
 
   it('returns cached config on subsequent calls', async () => {
     const mockData = { languages: { data: [{ prefix: 'de', langName: 'German' }] } };
     setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    const fetchStub = sinon.stub(window, 'fetch');
 
     const result = await getMarketConfig();
     expect(result.languages[0].langName).to.equal('German');
+    expect(fetchStub.called).to.be.false;
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
   });
 
-  it('returns null on fetch failure', async () => {
+  it('keeps a replacement configuration request separate until it resolves', async () => {
+    const oldData = { data: [{ prefix: 'de' }] };
+    const newData = { data: [{ prefix: 'fr' }] };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    let resolveNewData;
+    const newDataPromise = new Promise((resolve) => { resolveNewData = resolve; });
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: true, json: () => dataPromise });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => newDataPromise });
+    setConfig({});
+    const first = getMarketConfig();
+
+    setConfig({});
+    const second = getMarketConfig();
+    resolveData(oldData);
+    expect(await first).to.deep.equal({ languages: oldData.data });
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+
+    const third = getMarketConfig();
+    resolveNewData(newData);
+    const results = await Promise.all([second, third]);
+    expect(results).to.deep.equal([{ languages: newData.data }, { languages: newData.data }]);
+    expect(fetchStub.calledTwice).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.equal(newData);
+  });
+
+  it('logs network failures and retries a shared failed request', async () => {
+    const mockData = { data: [{ prefix: '', langName: 'English' }] };
     setConfig({ locale: { prefix: '' } });
-    sinon.stub(window, 'fetch').rejects(new Error('Network error'));
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().rejects(new Error('Network error'));
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
     window.lana = { log: sinon.stub() };
 
-    const result = await getMarketConfig();
-    expect(result).to.be.null;
+    const results = await Promise.all([getMarketConfig(), getMarketConfig()]);
+    expect(results).to.deep.equal([null, null]);
+    expect(window.lana.log.calledWithExactly('Market Utils Error: Network error')).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+    expect(fetchStub.calledTwice).to.be.true;
     delete window.lana;
   });
 
-  it('returns null when fetch response is not ok', async () => {
-    setConfig({ locale: { prefix: '' } });
-    sinon.stub(window, 'fetch').resolves({ ok: false, status: 500 });
-    window.lana = { log: sinon.stub() };
+  [
+    ['non-OK response', { ok: false, status: 500 }, 'Failed to load market config'],
+    ['invalid JSON', { ok: true, json: () => Promise.reject(new Error('Invalid JSON')) }, 'Invalid JSON'],
+  ].forEach(([failure, response, error]) => {
+    it(`logs ${failure} and retries without caching the failure`, async () => {
+      const mockData = { data: [{ prefix: '', langName: 'English' }] };
+      setConfig({});
+      const fetchStub = sinon.stub(window, 'fetch');
+      fetchStub.onFirstCall().resolves(response);
+      fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
+      window.lana = { log: sinon.stub() };
 
-    const result = await getMarketConfig();
-    expect(result).to.be.null;
-    delete window.lana;
+      expect(await getMarketConfig()).to.be.null;
+      expect(window.lana.log.calledWithExactly(`Market Utils Error: ${error}`)).to.be.true;
+      expect(utils.getConfig().marketsConfig).to.be.undefined;
+      expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+      expect(fetchStub.calledTwice).to.be.true;
+      delete window.lana;
+    });
   });
 
   it('handles marketsConfig with flat data array', async () => {
