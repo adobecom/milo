@@ -4,6 +4,17 @@ import {
 } from '../../utils/utils.js';
 
 const fragMap = {};
+// HTML of multi-section #_inline fragments, reused when the link reloads as a plain fragment.
+const deferredFragments = new WeakMap();
+
+const isContentSection = (section) => [...section.children]
+  .some((child) => !child.matches('.metadata, .section-metadata'));
+
+const isSectionLevelLink = (a) => {
+  const parent = a.parentElement;
+  return parent?.nodeName === 'DIV' && !parent.attributes.length
+    && !!parent.parentElement?.classList.contains('section');
+};
 
 const removeHash = (url) => {
   const urlNoHash = url.split('#')[0];
@@ -55,7 +66,8 @@ const updateFragMap = async (fragment, a, href) => {
 };
 
 const insertInlineFrag = async (sections, a, relHref) => {
-  // Inline fragments only support one section, other sections are ignored
+  // Inline fragments keep only the first section. init() renders multi-section fragments
+  // linked from a section as regular fragments and warns when sections get dropped.
   const rowOrCellInsertContainer = a.closest('[data-mep-replace-type]');
   const rowOrCellInsertValue = rowOrCellInsertContainer?.getAttribute('data-mep-replace-type');
   const section = sections[0];
@@ -292,6 +304,9 @@ export default async function init(a) {
       const { fallbackPath } = result;
       try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
     }
+  } else if (deferredFragments.has(a)) {
+    resp = new Response(deferredFragments.get(a));
+    deferredFragments.delete(a);
   } else {
     resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
       .catch(() => ({}));
@@ -409,6 +424,23 @@ export default async function init(a) {
     const hasText = [...sections].some((section) => section.textContent.trim());
     if (!hasText) {
       lingoModule.removeMepLingoElement(a, isMepLingoBlock, originalBlock);
+      return;
+    }
+  }
+
+  const contentSectionCount = [...sections].filter(isContentSection).length;
+  if (inline && contentSectionCount > 1) {
+    // Only a standalone link in a section can hold whole sections; blocks and MEP inserts can't.
+    const renderAll = isSectionLevelLink(a) && !mepFrag && !isMepLingoLink
+      && !a.dataset.manifestId && !a.dataset.adobeTargetTestid;
+    const result = renderAll ? 'rendering all sections as a regular fragment' : 'only the first section is rendered';
+    window.lana?.log(`Inline fragment ${relHref} has ${contentSectionCount} content sections; ${result}`, {
+      tags: 'fragment',
+      severity: 'warning',
+    });
+    if (renderAll) {
+      // #_inline is stripped, so the redecorated section reloads this as a plain fragment.
+      deferredFragments.set(a, html);
       return;
     }
   }

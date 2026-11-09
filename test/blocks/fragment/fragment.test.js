@@ -196,6 +196,57 @@ describe('Fragments', () => {
     expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
   });
 
+  describe('Multi-section inline fragments', () => {
+    const fragPath = '/test/blocks/fragment/mocks/fragments';
+    const createArea = (html) => {
+      const area = createTag('div', null, `<div>${html}</div>`);
+      document.body.append(area);
+      return area;
+    };
+
+    afterEach(() => window.lana.log.resetHistory());
+
+    it('renders every section of a section-level #_inline link and warns once', async () => {
+      const fetchSpy = stub(window, 'fetch').callThrough();
+      const area = createArea(`<p><a href="${fragPath}/inline-multi-section#_inline">${fragPath}/inline-multi-section#_inline</a></p>`);
+      await loadArea(area);
+      const multiSectionFetches = fetchSpy.getCalls()
+        .filter((call) => String(call.args[0]).includes('inline-multi-section'));
+      fetchSpy.restore();
+
+      expect(area.querySelector('.fragment #multi-first')).to.exist;
+      expect(area.querySelector('.fragment #multi-second')).to.exist;
+      expect(area.querySelector('.fragment #multi-third')).to.exist;
+      expect(multiSectionFetches.length).to.equal(1);
+      const warnings = window.lana.log.getCalls()
+        .filter((call) => String(call.args[0]).startsWith('Inline fragment'));
+      expect(warnings.length).to.equal(1);
+      expect(warnings[0].args[0]).to.equal(`Inline fragment ${fragPath}/inline-multi-section has 3 content sections; rendering all sections as a regular fragment`);
+      expect(warnings[0].args[1]).to.deep.equal({ tags: 'fragment', severity: 'warning' });
+      area.remove();
+    });
+
+    it('keeps inlining when the extra sections only hold metadata', async () => {
+      const area = createArea(`<p><a href="${fragPath}/inline-metadata-section#_inline">${fragPath}/inline-metadata-section#_inline</a></p>`);
+      await loadArea(area);
+      expect(area.querySelector('#meta-only-first')).to.exist;
+      expect(area.querySelector('.fragment')).to.not.exist;
+      expect(window.lana.log.getCalls()
+        .some((call) => String(call.args[0]).startsWith('Inline fragment'))).to.be.false;
+      area.remove();
+    });
+
+    it('keeps only the first section inside a block and warns', async () => {
+      const area = createArea(`<div class="marquee"><div><div><a href="${fragPath}/inline-multi-section#_inline">link</a></div></div></div>`);
+      const a = area.querySelector('a');
+      await getFragment(a);
+      expect(area.querySelector('#multi-first')).to.exist;
+      expect(area.querySelector('#multi-second')).to.not.exist;
+      expect(window.lana.log.lastCall.args[0]).to.equal(`Inline fragment ${fragPath}/inline-multi-section has 3 content sections; only the first section is rendered`);
+      area.remove();
+    });
+  });
+
   describe('Fragment media dedupe', () => {
     const query = '?width=750&format=webply&optimize=medium';
     const fragPath = '/cc-shared/fragments/some/frag';
