@@ -4163,12 +4163,9 @@ describe('Utils', () => {
       expect(utils.isAcomAssistantEnabled()).to.be.false;
     });
 
-    it('honors ?acom-assistant-panel=on, local, and off on stage', () => {
+    it('honors ?acom-assistant-panel=on and off on stage', () => {
       utils.getConfig().env.name = 'stage';
       window.history.replaceState({}, '', '?acom-assistant-panel=on');
-      expect(utils.isAcomAssistantPanelEnabled()).to.be.true;
-
-      window.history.replaceState({}, '', '?acom-assistant-panel=local');
       expect(utils.isAcomAssistantPanelEnabled()).to.be.true;
 
       document.head.append(utils.createTag('meta', { name: 'acom-assistant-panel', content: 'on' }));

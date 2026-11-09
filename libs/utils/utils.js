@@ -482,7 +482,7 @@ export function isAcomAssistantPanelEnabled() {
   const param = new URLSearchParams(window.location.search).get('acom-assistant-panel')
     || PAGE_URL.searchParams.get('acom-assistant-panel');
   if (isStage && param === 'off') return false;
-  if (isStage && ['on', 'local'].includes(param)) return true;
+  if (isStage && param === 'on') return true;
   return getMetadata('acom-assistant-panel') === 'on';
 }
 

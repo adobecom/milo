@@ -207,7 +207,7 @@ const openChat = (event) => {
 };
 
 const startInitialization = async (config, event, onDemand, options = {}) => {
-  const asset = options.asset || `https://${config.env.name !== 'prod' ? 'stage-' : ''}client.messaging.adobe.com/latest/AdobeMessagingClient`;
+  const asset = `https://${config.env.name !== 'prod' ? 'stage-' : ''}client.messaging.adobe.com/latest/AdobeMessagingClient`;
   await Promise.all([
     loadStyle(`${asset}.css`),
     loadScript(`${asset}.js`),
@@ -224,10 +224,8 @@ const startInitialization = async (config, event, onDemand, options = {}) => {
   return window.AdobeMessagingExperienceClient.initialize({
     appid: getMetadata('jarvis-surface-id') || config.jarvis.id || jarvisSecMeta?.['jarvis-surface-id'],
     appver: getMetadata('jarvis-surface-version') || config.jarvis.version || jarvisSecMeta?.['jarvis-surface-version'],
-    env: options.env || (config.env.name !== 'prod' ? 'stage' : 'prod'),
+    env: config.env.name !== 'prod' ? 'stage' : 'prod',
     ...(options.mountSelector && { mountSelector: options.mountSelector }),
-    ...(options.initConfigUrl && { initConfigUrl: options.initConfigUrl }),
-    ...(options.assistantUiURL && { assistantUiURL: options.assistantUiURL }),
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,

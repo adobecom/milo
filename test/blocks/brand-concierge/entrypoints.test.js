@@ -266,15 +266,6 @@ describe('acom-assistant-panel persistent chat panel', () => {
     expect(client.sendUserMessage.secondCall.args[0]).to.deep.equal({ label: 'Second prompt' });
   });
 
-  it('uses integration services with local frontend assets instead of a local backend', async () => {
-    window.history.replaceState({}, '', '?acom-assistant-panel=local');
-    await openChatPanel();
-    expect(options.env).to.equal('integration');
-    expect(new URL(options.initConfigUrl).hostname).to.equal('integration-client.messaging.adobe.com');
-    expect(new URL(options.assistantUiURL).port).to.equal('3443');
-    expect(options.mountSelector).to.equal('#brand-concierge-mount');
-  });
-
   it('routes Jarvis chat links into the host panel before native window handlers', async () => {
     await initPanel();
     const link = document.createElement('a');

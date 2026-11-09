@@ -8,10 +8,6 @@ export default function initJarvisPanel(mountIdentifier, onWindowState) {
     id: getMetadata('jarvis-surface-id') || config.jarvis?.id,
     version: getMetadata('jarvis-surface-version') || config.jarvis?.version,
   };
-  const local = new URLSearchParams(window.location.search).get('acom-assistant-panel') === 'local';
-  const asset = config.env.name === 'prod'
-    ? 'https://client.messaging.adobe.com/latest/AdobeMessagingClient'
-    : 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient';
 
   return new Promise((resolve, reject) => {
     let finished = false;
@@ -38,12 +34,6 @@ export default function initJarvisPanel(mountIdentifier, onWindowState) {
       });
     });
     initJarvisChat({ ...config, jarvis }, loadScript, loadPanelStyle, getMetadata, {
-      asset: local ? 'https://localhost.corp.adobe.com:4443/AdobeMessagingClient' : asset,
-      ...(local && {
-        env: 'integration',
-        initConfigUrl: 'https://integration-client.messaging.adobe.com/latest/initConfig.json',
-        assistantUiURL: 'https://localhost.corp.adobe.com:3443',
-      }),
       mountSelector: `#${mountIdentifier}`,
       initCallback: (data) => {
         if (!data?.releaseControl?.showAdobeMessaging) {
