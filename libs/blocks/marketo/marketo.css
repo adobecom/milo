@@ -237,6 +237,10 @@
   box-shadow: none;
 }
 
+.marketo .mktoForm input[type="date"].mktoInvalid {
+  padding-right: 40px;
+}
+
 .marketo .mktoForm .mktoField.mktoInvalid {
   border: 1px solid var(--marketo-form-border);
 }
@@ -762,4 +766,8 @@
   .resource-form .columns > .row {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
+
+  .marketo .mktoForm input[type="date"].mktoInvalid {
+    padding-right: 32px;
+  } 
 }
