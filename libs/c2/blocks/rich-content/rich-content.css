@@ -22,6 +22,11 @@
     height: 640px;
   }
 
+  .eyebrow {
+    font-size: 34px;
+    line-height: 1.2;
+  }
+
   &:has(+ .split-aside-grid) .foreground .content .eyebrow,
   &:has(+ .split-aside-grid) .foreground .content .eyebrow:has(picture),
   &.jump-link:has(+ .split-aside-grid) .foreground .content .eyebrow,
