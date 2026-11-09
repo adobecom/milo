@@ -81,7 +81,7 @@ html[dir="rtl"] .globe-gallery .globe-arc-copy {
   padding: 0;
 }
 
-/* Push badges to the bottom of the content area; 0,2,0 beats the 0,1,0 rule above. */
+/* Push badges to the bottom of the content area. */
 .globe-gallery .globe-modal-info > .globe-modal-badges {
   margin-top: auto;
 }
@@ -179,7 +179,7 @@ html[dir="rtl"] .globe-gallery .globe-arc-copy {
 .globe-gallery .globe-a11y-cards { height: 100vh; }
 
 @media (width >= 768px) {
-  /* md+: no pill background, so the copy's own left edge must sit on --globe-content-inset. */
+  /* Align the copy's left edge with --globe-content-inset. */
   .globe-gallery .globe-arc-copy {
     width: 382px;
     max-width: none;

@@ -1,7 +1,9 @@
 import * as THREE from '../../deps/three.js';
 // eslint-disable-next-line import/no-relative-packages
 import { createTag } from '../utils.js';
-import { FRAME_MS, MAX_VEL, clamp, isRtl, mediaMatches } from './core.js';
+import {
+  FRAME_MS, MAX_VEL, clamp, dropTravel, isRtl, mediaMatches,
+} from './core.js';
 import { daaBlockName } from './authoring.js';
 
 const VEL_SMOOTH_MS = 35;
@@ -10,6 +12,10 @@ const CLICK_MAX_MS = 500;
 const PICK_MIN_OPACITY = 0.1;
 // Touch axis lock: touch gets yaw only; a vertical drag is page scroll.
 const AXIS_LOCK_THRESHOLD = 8;
+
+const RETIRE_FADE_MS = 420;
+const CURSOR_GAP_PX = 32;
+const CURSOR_HALF_H_PX = 11;
 
 export default function createInteraction(ctx, { openModal, isGlobeLive, onDrag }) {
   const { drag } = ctx;
@@ -59,11 +65,8 @@ export default function createInteraction(ctx, { openModal, isGlobeLive, onDrag 
 
   const ownsDrag = (e) => activePointerId === e.pointerId;
 
-  function dropTravel() {
-    drag.velX = 0;
-    drag.velY = 0;
-    drag.pendingX = 0;
-    drag.pendingY = 0;
+  function resetTravel() {
+    dropTravel(drag);
     sampX = 0;
     sampY = 0;
   }
@@ -77,7 +80,7 @@ export default function createInteraction(ctx, { openModal, isGlobeLive, onDrag 
   // NOT called on pointerup — release keeps velX/velY as inertia.
   function resetDrag() {
     releaseGesture();
-    dropTravel();
+    resetTravel();
     applyCursor();
   }
 
@@ -134,7 +137,7 @@ export default function createInteraction(ctx, { openModal, isGlobeLive, onDrag 
     canvasEl.setPointerCapture(e.pointerId);
     activePointerId = e.pointerId;
     drag.isDragging = true;
-    dropTravel();
+    resetTravel();
     pointerDownX = e.clientX;
     pointerDownY = e.clientY;
     lastMX = pointerDownX;
@@ -299,10 +302,6 @@ export function createGlobeControls(ctx, { name, labels, getVisible, getHintDism
   return { setup, update, isSpinPaused: () => paused };
 }
 
-const RETIRE_FADE_MS = 420;
-const CURSOR_GAP_PX = 32;
-const CURSOR_HALF_H_PX = 11;
-
 const initialState = () => ({
   onCanvas: false,
   suppressed: false,
@@ -412,11 +411,6 @@ export function createGalleryA11y(ctx, {
   let appliedModalOpen = null;
   let appliedEntered = null;
 
-  function resetAppliedTabState() {
-    appliedModalOpen = null;
-    appliedEntered = null;
-  }
-
   function setBrowseActive(active) {
     if (cardsEl) cardsEl.inert = !active;
   }
@@ -484,7 +478,6 @@ export function createGalleryA11y(ctx, {
     cardButtons = [];
     entered = false;
     focusedIdx = -1;
-    resetAppliedTabState();
   }
 
   function setup() {
@@ -532,7 +525,8 @@ export function createGalleryA11y(ctx, {
 
     parent.append(widgetEl, cardsEl);
     entered = false;
-    resetAppliedTabState();
+    appliedModalOpen = null;
+    appliedEntered = null;
   }
 
   function updateTabStops() {

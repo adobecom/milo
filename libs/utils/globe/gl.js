@@ -1,6 +1,12 @@
 import * as THREE from '../../deps/three.js';
 import { CARD_RADIUS, logGlobe } from './core.js';
 
+const GRAIN_CELLS = 160;
+const WIDE_TEX_RATIO = 2.5;
+const TEXT_MAX_SIDE = 2048;
+const HINT_FILL = 0.9;
+const HINT_FALLBACK = 'adobe-clean-display, sans-serif';
+
 // Signed-distance rounded rect (the corner mask). `b` is the FULL half-extent, radius included.
 export const RR_SDF = [
   'float rrSDF(vec2 p, vec2 b, float r) {',
@@ -72,7 +78,6 @@ const MODAL_FRAG = [
   '}',
 ].join('\n');
 
-const GRAIN_CELLS = 160;
 export const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
 
 // uRepeat/uOffset apply the cover-crop by hand — ShaderMaterial does not auto-apply
@@ -130,9 +135,8 @@ const CARD_FRAG = [
   '  vec2 warpedUv = barrelWarp(fUv, uHoverPos, uWarp);',
   '  vec2 mdir = fUv - 0.5;',
   '  vec2 meltUv = warpedUv;',
-  '  float melt = uDissolve;',
-  '  if (melt > 0.0) {',
-  '    meltUv = (warpedUv - 0.5) / (1.0 + melt * 1.8) + 0.5;',
+  '  if (uDissolve > 0.0) {',
+  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.8) + 0.5;',
   '  }',
   '  vec2 baseUv = meltUv * uRepeat + uOffset;',
   '  vec2 meltRad = mdir * uDissolve * 0.22;',
@@ -152,7 +156,6 @@ const TEXT_FRAG = [
   'uniform float uCA;',
   'uniform float uWarp;',
   'uniform float uZoom;',
-  'uniform float uUVScale;',
   'uniform float uAspect;',
   'uniform float uExitP;',
   'uniform vec2  uResolution;',
@@ -166,13 +169,13 @@ const TEXT_FRAG = [
   '  vec2 dA = vec2(d.x * uAspect, d.y);',
   '  float r2 = dot(dA, dA);',
   '  float exitWarp = uWarp + uExitP * 3.0;',
-  '  vec2 warpedVUv = d / (1.0 + exitWarp * r2 * 4.0) + 0.5;',
-  '  vec2 finalUv = (warpedVUv - 0.5) / uUVScale + 0.5;',
+  '  vec2 finalUv = d / (1.0 + exitWarp * r2 * 4.0) + 0.5;',
   '  vec2 radial = (vUv - 0.5) * uCA;',
   '  float r = texture2D(uMap, finalUv + radial).r;',
-  '  float g = texture2D(uMap, finalUv).g;',
+  '  vec4 c = texture2D(uMap, finalUv);',
+  '  float g = c.g;',
   '  float b = texture2D(uMap, finalUv - radial).b;',
-  '  float a = texture2D(uMap, finalUv).a;',
+  '  float a = c.a;',
   // Sample alpha at 4 offsets so dissolve fires at glyph edges first.
   '  float _bl  = 0.020;',
   '  float _a4  = texture2D(uMap, finalUv + vec2( _bl, 0.0)).a',
@@ -270,7 +273,6 @@ export function createTextMaterial({ texture, aspect, resolution }) {
       uCA: { value: 0 },
       uWarp: { value: 0 },
       uZoom: { value: 0 },
-      uUVScale: { value: 1.0 },
       uAspect: { value: aspect },
       uExitP: { value: 0 },
       uResolution: { value: new THREE.Vector2(resolution.x, resolution.y) },
@@ -290,9 +292,6 @@ function scaleDims(w, h, s) {
 
 const fitDims = (w, h, maxTex) => scaleDims(w, h, maxTex / Math.max(w, h));
 
-// Capped on HEIGHT (the axis a portrait-ish slot keeps), with WIDE_TEX_RATIO bounding a
-// panorama's width.
-const WIDE_TEX_RATIO = 2.5;
 const fitCardDims = (w, h, maxH) => scaleDims(
   w,
   h,
@@ -378,17 +377,12 @@ export function loadModalTexture({ src, maxTex, crossOrigin, name }, onReady, on
   });
 }
 
-const TEXT_MAX_SIDE = 2048;
-
-const HINT_FILL = 0.9;
-
-const HINT_FALLBACK = 'adobe-clean-display, sans-serif';
 function hintFamilies() {
   return getComputedStyle(document.documentElement)
     .getPropertyValue('--heading-font-family') || HINT_FALLBACK;
 }
 
-export async function loadHintFont(text) {
+export function loadHintFont(text) {
   return document.fonts.load(`900 100px ${hintFamilies()}`, text);
 }
 

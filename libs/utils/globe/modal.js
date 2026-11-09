@@ -92,9 +92,7 @@ export default function createGlobeModal(ctx, {
   let closeTimeoutId = null;
   // Wired once — the DOM persists across re-inits, so re-adding would stack them.
   let listenersWired = false;
-  // Escape and touch gestures click these so those paths report.
-  let prevBtn = null;
-  let nextBtn = null;
+  // Escape and touch gestures click this so those paths report.
   let closeBtn = null;
 
   let modalWarp = 0;
@@ -132,7 +130,7 @@ export default function createGlobeModal(ctx, {
 
   function blendPose(mesh, from, to, t) {
     mesh.position.lerpVectors(from.pos, to.pos, t);
-    mesh.quaternion.copy(from.quat).slerp(to.quat, t);
+    mesh.quaternion.slerpQuaternions(from.quat, to.quat, t);
     mesh.scale.lerpVectors(from.scale, to.scale, t);
   }
 
@@ -427,8 +425,8 @@ export default function createGlobeModal(ctx, {
   function ensureModalRenderer() {
     if (modalRenderer || !modalCanvasEl) return;
     const { W, H } = ctx;
-    const modalGlOpts = { canvas: modalCanvasEl, antialias: ctx.bp.ANTIALIAS, alpha: true };
-    modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
+    const glOpts = { canvas: modalCanvasEl, antialias: ctx.bp.ANTIALIAS, alpha: true };
+    modalRenderer = new THREE.WebGLRenderer(glOpts);
     appliedModalDpr = capDpr();
     modalRenderer.setPixelRatio(appliedModalDpr);
     modalRenderer.setSize(W, H);
@@ -671,8 +669,8 @@ export default function createGlobeModal(ctx, {
     closeBtn = chromeEl.querySelector('.globe-modal-close');
     // viaPointer: the guard swallows the browser's synthetic click; clickClose()'s is untrusted.
     closeBtn.addEventListener('click', (e) => close(e.isTrusted));
-    prevBtn = chromeEl.querySelector('.globe-modal-nav-prev');
-    nextBtn = chromeEl.querySelector('.globe-modal-nav-next');
+    const prevBtn = chromeEl.querySelector('.globe-modal-nav-prev');
+    const nextBtn = chromeEl.querySelector('.globe-modal-nav-next');
     prevBtn.addEventListener('click', () => { navigate(-1); });
     nextBtn.addEventListener('click', () => { navigate(1); });
     // Single-card gallery: nav is a no-op, so hide the arrows.

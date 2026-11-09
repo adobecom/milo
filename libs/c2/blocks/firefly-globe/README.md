@@ -8,7 +8,7 @@ The runtime, sphere, drag, modal, a11y, controls and pull quote are shared with 
 
 | File | Holds |
 | --- | --- |
-| `firefly-globe.js` | In order: authoring (`parseAuthoredContent`, `fetchFireflyAssets`, `buildGlobeDom`, `renderModalContent`, `fireflyRenditionUrl`); the timeline (`deriveFrame` for `sphereFormT` and `scrollT`, and the travel camera pair); then the `spec`: `BREAKPOINTS`, content loading, and hooks for the entry camera, the entry lift and the browse target |
+| `firefly-globe.js` | In order: authoring (`parseAuthoredContent`, `fetchFireflyAssets`, `appendFireflyParams`, `buildGlobeDom`, `renderModalContent`, `fireflyRenditionUrl`); the timeline (`deriveFrame` for `sphereFormT` and `scrollT`, and the travel camera pair); then the `spec`: `BREAKPOINTS`, content loading, and hooks for the entry camera, the entry lift and the browse target |
 
 ## Differences from globe-gallery
 

@@ -116,6 +116,14 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
     expect(parseAuthoredContent(el).machineTag).to.equal(DEFAULT_MACHINE_TAG);
   });
 
+  ['cat-123 || || || Open in Firefly', 'cat-123 || || NQCJQWSV || Open in Firefly', 'cat-123']
+    .forEach((cards) => {
+      it(`falls back to the marketing-page campaign: "${cards}"`, () => {
+        const el = makeEl(`${makeRow(`<div><p>${cards}</p></div>`)}${makeRow('')}${makeRow('')}`);
+        expect(parseAuthoredContent(el).campaignId).to.equal('marketing-page');
+      });
+    });
+
   // Authors can skip the machineTag slot with an empty field and keep the
   // later slots in place: "cat || || campaign || cta" or "cat |||| campaign || cta".
   ['cat-123 || || promo-9 || Open in Firefly', 'cat-123 |||| promo-9 || Open in Firefly']
@@ -594,11 +602,5 @@ describe('firefly-globe: appendFireflyParams', () => {
     expect(card.fireflyUrl).to.equal('https://firefly.adobe.com/open?id=1&ff_source=adobe-com&ff_campaign=spring-promo');
     expect(card.fireflyUrl).to.not.match(/promoid|mv=/);
     expect(noUrl.fireflyUrl).to.be.null;
-  });
-
-  it('falls back to marketing-page when empty or the legacy NQCJQWSV', () => {
-    ['', undefined, 'NQCJQWSV'].forEach((id) => {
-      expect(run(id)[0].fireflyUrl).to.include('ff_campaign=marketing-page');
-    });
   });
 });

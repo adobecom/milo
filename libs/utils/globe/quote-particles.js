@@ -55,6 +55,9 @@ const TILE_CAP = 256;
 const DETACH_P = 0.01;
 const EDGE_LEAD = 0.2;
 const SCATTER_SPAN = 0.08;
+const SLOT = 2 ** 20;
+
+const TEXT_SEL = '.globe-pullquote-quote, .globe-pullquote-name, .globe-pullquote-role';
 
 const CURL_NOISE = [
   'float vnoise(vec2 p) {',
@@ -297,7 +300,7 @@ function textLines(el, ox, oy) {
       const newLine = !line || Math.abs(r.top - line.top) > r.height * 0.5;
       if (newLine) {
         line = {
-          ...style, node, start, end: i, top: r.top, left: r.left, right: r.right, words: [],
+          node, start, end: i, top: r.top, left: r.left, right: r.right, words: [],
         };
         lines.push(line);
       } else {
@@ -318,10 +321,9 @@ function textLines(el, ox, oy) {
     });
   });
   return lines.map((l) => ({
-    ...l,
+    ...style,
     ascent,
     text: l.node.data.slice(l.start, l.end),
-    node: null,
     top: l.top - oy,
     left: l.left - ox,
     right: l.right - ox,
@@ -333,10 +335,10 @@ function textLines(el, ox, oy) {
   }));
 }
 
-const TEXT_SEL = '.globe-pullquote-quote, .globe-pullquote-name, .globe-pullquote-role';
+const textEls = (figureEl) => [...figureEl.querySelectorAll(TEXT_SEL)];
 
 function fontsFor(figureEl) {
-  return [...figureEl.querySelectorAll(TEXT_SEL)]
+  return textEls(figureEl)
     .map((el) => ({ font: cssFont(getComputedStyle(el)), text: el.textContent }));
 }
 
@@ -363,7 +365,7 @@ function measure(figureEl, railEl) {
       w: fig.width + 2 * RASTER_PAD,
       h: fig.height + 2 * RASTER_PAD,
     },
-    runs: [...figureEl.querySelectorAll(TEXT_SEL)]
+    runs: textEls(figureEl)
       .flatMap((el) => textLines(el, origin.left, origin.top)),
     rules,
     ruleColor: cs.getPropertyValue('--globe-pq-rule-color').trim() || '#3a3a3a',
@@ -480,7 +482,7 @@ function compileShown(renderer, camera, root, shown) {
   shown.forEach((o, i) => { o.visible = was[i]; });
 }
 
-function createCardPointsMaterial(shared, scatterP = -1) {
+function createCardPointsMaterial(shared, easePow, scatterP = -1) {
   return new THREE.ShaderMaterial({
     uniforms: {
       ...shared,
@@ -497,7 +499,7 @@ function createCardPointsMaterial(shared, scatterP = -1) {
       uScreenSrc: { value: 0 },
       uScatterP: { value: scatterP },
     },
-    vertexShader: pointsVert(shared.easePow),
+    vertexShader: pointsVert(easePow),
     fragmentShader: POINTS_FRAG,
     transparent: true,
     depthTest: false,
@@ -553,8 +555,6 @@ function bounds(n, at) {
   return [lo, Math.max(1e-6, hi - lo)];
 }
 
-const SLOT = 2 ** 20;
-
 function sortBy(key, idx) {
   const m = idx.length;
   const [lo, span] = bounds(m, (j) => key[idx[j]]);
@@ -578,8 +578,7 @@ export function coherentOrder(xs, ys, count = xs.length) {
   return out;
 }
 
-export default function createQuoteParticles({ figureEl, railEl, count, easePow }) {
-  const n = count;
+export default function createQuoteParticles({ figureEl, railEl, count: n, easePow }) {
   const group = new THREE.Group();
   group.visible = false;
 
@@ -590,7 +589,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
   let pairing = null;
 
   const shared = {
-    easePow,
     uP: { value: 0 },
     uView: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },
@@ -730,7 +728,7 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
     const rand = new Float32Array(k * 4);
     for (let j = 0; j < k; j += 1) rand[j * 4 + 1] = release[j];
     const geo = pointsGeometry(uvs, cells, rand);
-    const mat = createCardPointsMaterial(shared);
+    const mat = createCardPointsMaterial(shared, easePow);
     if (card) setCardUniforms(mat.uniforms, card);
     else mat.uniforms.uScreenSrc.value = 1;
     const points = new THREE.Points(geo, mat);
@@ -787,13 +785,13 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
   }
 
   function setSources(cards, view) {
-    pairing = null;
-    disposeDraws(pending);
-    pending = [];
     if (!ready) {
       clearSources();
       return Promise.resolve(false);
     }
+    pairing = null;
+    disposeDraws(pending);
+    pending = [];
     const { W, H, zoom, proj: [P00, P11, P02, P12] } = view;
     const rnd = seededRandom(PARTICLE_SEED);
     const z0 = camZAt(zoom, 0, easePow);
@@ -821,7 +819,8 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
         const [nx, ny] = pts[(k + 1) % 4];
         return sum + x * ny - nx * y;
       }, 0);
-      return [Math.abs(a2) / 2, (Math.abs(a2) / 2) * (hits / PROBE ** 2)];
+      const area = Math.abs(a2) / 2;
+      return [area, area * (hits / PROBE ** 2)];
     };
     const plans = [];
     cards.forEach((card) => {
@@ -893,9 +892,9 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
       addDraw(g.card, g);
       sx.set(g.sx, o);
       sy.set(g.sy, o);
-      const slice = [o, o + g.edge.length];
-      [, o] = slice;
-      return slice;
+      const start = o;
+      o += g.edge.length;
+      return [start, o];
     });
     const token = {};
     pairing = token;
@@ -976,7 +975,6 @@ export default function createQuoteParticles({ figureEl, railEl, count, easePow 
 export function createCardScatter({ expand, easePow }) {
   const group = new THREE.Group();
   const shared = {
-    easePow,
     uScatterExpand: { value: expand },
     uView: { value: new THREE.Vector2(1, 1) },
     uDpr: { value: 1 },
@@ -1009,7 +1007,7 @@ export function createCardScatter({ expand, easePow }) {
 
   function slot(i) {
     if (slots[i]) return slots[i];
-    const mat = createCardPointsMaterial(shared, 0);
+    const mat = createCardPointsMaterial(shared, easePow, 0);
     const points = new THREE.Points(geo, mat);
     points.frustumCulled = false;
     points.visible = false;

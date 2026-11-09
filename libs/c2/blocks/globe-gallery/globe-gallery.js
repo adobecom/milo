@@ -11,6 +11,84 @@ import { CARD_ORDER_BASE, HOVER_SCALE, initGlobeBlock } from '../../../utils/glo
 
 const NAME = 'globe-gallery';
 
+const CARD_CONTENT_TAGS = /^(P|UL|PICTURE|IMG|H[1-6])$/;
+
+const ARC_COPY_HTML = `
+  <div class="globe-arc-copy">
+    <h2 class="globe-arc-copy-title"></h2>
+    <div class="globe-arc-copy-body body-md"></div>
+  </div>`;
+
+const PROGRESS_PAN_END = 0.55;
+const PROGRESS_ARC_PREROLL = 0.30;
+const PROGRESS_GRID_ARC_START = 0.30;
+const PROGRESS_GRID_ARC_END = 0.60;
+export const PROGRESS_FOLD_DUR = 0.25;
+const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
+
+const GRID_PEEL_STAGGER = 0.20;
+const GRID_PEEL_JITTER = 2 * GRID_PEEL_STAGGER;
+const GRID_PEEL_WINDOW = 1.0 - GRID_PEEL_STAGGER;
+
+const FOLD_PEEL_OVERLAP = 0.35;
+const FOLD_START_LOCAL_T = 1 - (FOLD_PEEL_OVERLAP ** (1 / 3));
+
+// Entry: raw-scroll space, before `progress` exists.
+const ENTRY_RAMP_VH = 1.05;
+const ENTRY_ROT_MAX = 0.9;
+const ARC_ENTRY_STAGGER = 0.45;
+
+// sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
+// auto-rotate, desktop cursor, hint-plane entrance
+export const SPHERE_INTERACTIVE_T = 0.94;
+const BROWSE_VIEW_T = 0.96;
+const SPHERE_ORIENT_RESET_T = 0.01;
+
+const ARC_COPY_IN_ENTRY_T = 0.336;
+const ARC_COPY_OUT_FORM_START = 0.20;
+const ARC_COPY_OUT_FORM_END = 0.90;
+
+export const TRAVEL_EASE_POW = 2;
+
+const PEEL_SEED = 'You Shall Not pass!';
+const TILT_SEED = 'Git Gud!';
+
+const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
+const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
+const CA_STRENGTH = 0.01;
+const CARD_ORDER_HANDOVER_T = 0.5;
+
+const BREAKPOINTS = {
+  sm: {
+    minWidth: 0,
+    ARC_SPAN: 3.6,
+    SPHERE_R: 18,
+    CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
+    CARD_W_ARC: 220,
+    CAM_Z_SPHERE: 70,
+    CAM_Z_END: -60,
+    GRID_WINDOW_COLS: 3,
+    GRID_ROWS: 8,
+    ARC_DENSE_FRACTION: 0.5,
+    ENTRY_LEAD_VH: 0.55,
+    ARC_RAMP_T: 0.20,
+  },
+  md: {
+    minWidth: 768,
+    ARC_SPAN: 4.50,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 10.5,
+    CARD_W_ARC: 456,
+    CAM_Z_SPHERE: 57,
+    CAM_Z_END: -60,
+    GRID_WINDOW_COLS: 9,
+    GRID_ROWS: 5,
+    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
+    ENTRY_LEAD_VH: 0.5,
+    ARC_RAMP_T: 0.1,
+  },
+};
+
 function badgeSvgUrl(a) {
   return [a.getAttribute('href'), a.textContent.trim()].find((s) => s?.includes('.svg')) ?? '';
 }
@@ -104,8 +182,6 @@ function parseFragmentCardSegment(nodes) {
   };
 }
 
-const CARD_CONTENT_TAGS = /^(P|UL|PICTURE|IMG|H[1-6])$/;
-
 function parseFragmentCards(row) {
   const hasDirectContent = [...row.children].some((n) => CARD_CONTENT_TAGS.test(n.nodeName));
 
@@ -155,20 +231,12 @@ export function optimizeImgUrl(src, px, axis = 'width') {
 export function parseAuthoredContent(el) {
   const [arcCopyRow, cardsRow, hintTextRow, a11yRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
-  // Row 2 is two cells: the barrel's bottom-row copy, then the hint plane / cursor label.
   return {
     arcCopy: parseArcCopy(arcCopyRow),
     fragmentHref: fragmentLink?.href.replace(/#.*$/, '') ?? null,
     ...parseCommonRows(hintTextRow, a11yRow, pullQuoteRow),
   };
 }
-
-const ARC_COPY_HTML = `  <div class="globe-arc-copy">
-    <h2 class="globe-arc-copy-title"></h2>
-    <div class="globe-arc-copy-body body-md"></div>
-  </div>
-
-`;
 
 const modalInfoHtml = (gid) => `
     <div class="globe-modal-info" data-lenis-prevent>
@@ -211,21 +279,6 @@ export function renderModalContent(targetEl, meta) {
   return { descEl, speech: [[meta.name], [meta.role]] };
 }
 
-const PROGRESS_PAN_END = 0.55;
-const PROGRESS_ARC_PREROLL = 0.30;
-const PROGRESS_GRID_ARC_START = 0.30;
-const PROGRESS_GRID_ARC_END = 0.60;
-export const PROGRESS_FOLD_DUR = 0.25;
-const PROGRESS_ZOOM_END = 1.00;
-const GRID_ARC_RANGE = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
-
-const GRID_PEEL_STAGGER = 0.20;
-const GRID_PEEL_JITTER = 2 * GRID_PEEL_STAGGER;
-const GRID_PEEL_WINDOW = 1.0 - GRID_PEEL_STAGGER;
-
-const FOLD_PEEL_OVERLAP = 0.35;
-const FOLD_START_LOCAL_T = 1 - (FOLD_PEEL_OVERLAP ** (1 / 3));
-
 export function cardFoldStartProgress(gpDelay) {
   const foldStartFormT = gpDelay + FOLD_START_LOCAL_T * GRID_PEEL_WINDOW;
   const foldStartArcT = PROGRESS_GRID_ARC_START + Math.min(1, foldStartFormT) * GRID_ARC_RANGE;
@@ -236,29 +289,12 @@ const FOLD_FIRST_PROGRESS = cardFoldStartProgress(0);
 export const SPHERE_FORMED_PROGRESS = cardFoldStartProgress(GRID_PEEL_STAGGER) + PROGRESS_FOLD_DUR;
 const FOLD_WINDOW = SPHERE_FORMED_PROGRESS - FOLD_FIRST_PROGRESS;
 
-// Entry: raw-scroll space, before `progress` exists.
-const ENTRY_RAMP_VH = 1.05;
-const ENTRY_ROT_MAX = 0.9;
-const ARC_ENTRY_STAGGER = 0.45;
-
-// sphereFormT. One gate for everything that says "the globe is live": hover, click, drag,
-// auto-rotate, desktop cursor, hint-plane entrance
-export const SPHERE_INTERACTIVE_T = 0.94;
-const BROWSE_VIEW_T = 0.96;
-const SPHERE_ORIENT_RESET_T = 0.01;
-
-const ARC_COPY_IN_ENTRY_T = 0.336;
-const ARC_COPY_OUT_FORM_START = 0.20;
-const ARC_COPY_OUT_FORM_END = 0.90;
-
 const progressAtFormT = (t) => FOLD_FIRST_PROGRESS + t * FOLD_WINDOW;
 
 const BROWSE_VIEW_SCROLL_FRAC = progressAtFormT(BROWSE_VIEW_T) / SPHERE_FORMED_PROGRESS;
 
-export const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
-export const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
-
-export const TRAVEL_EASE_POW = 2;
+const ARC_COPY_OUT_START = progressAtFormT(ARC_COPY_OUT_FORM_START);
+const ARC_COPY_OUT_END = progressAtFormT(ARC_COPY_OUT_FORM_END);
 
 export function createFrame() {
   return {
@@ -304,7 +340,7 @@ export function deriveFrame(frame, input) {
     (sphereFormT - TEXT_APPEAR_START) / (SPHERE_INTERACTIVE_T - TEXT_APPEAR_START),
   );
   frame.scrollT = clamp01(
-    (progress - SPHERE_FORMED_PROGRESS) / (PROGRESS_ZOOM_END - SPHERE_FORMED_PROGRESS),
+    (progress - SPHERE_FORMED_PROGRESS) / (1 - SPHERE_FORMED_PROGRESS),
   );
 
   return frame;
@@ -368,58 +404,6 @@ export function arcCamZ(H) {
   return H / (2 * TAN_HALF_FOV);
 }
 
-const BREAKPOINTS = {
-  sm: {
-    minWidth: 0,
-    ARC_SPAN: 3.6,
-    SPHERE_R: 18,
-    CARD_H_SPHERE: 11.0, // PlaneGeometry base only; masonry sets the visible size
-    CARD_W_ARC: 220,
-    CAM_Z_SPHERE: 70,
-    CAM_Z_END: -60,
-    NEAR_FADE_START: 2.0,
-    NEAR_FADE_END: 1.5,
-    GRID_WINDOW_COLS: 3,
-    GRID_ROWS: 8,
-    CARD_FACE_CAMERA: 0,
-    CARD_ROLL_JITTER: 0.18,
-    ARC_DENSE_FRACTION: 0.5,
-    CYL_COLS_FIT: 0.65,
-    DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.55,
-    ARC_RAMP_T: 0.20,
-  },
-  md: {
-    minWidth: 768,
-    ARC_SPAN: 4.50,
-    SPHERE_R: 35,
-    CARD_H_SPHERE: 10.5,
-    CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 57,
-    CAM_Z_END: -60,
-    NEAR_FADE_START: 2.0,
-    NEAR_FADE_END: 1.6,
-    GRID_WINDOW_COLS: 9,
-    GRID_ROWS: 5,
-    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
-    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    ARC_DENSE_FRACTION: 0.4, // share clustered into the off-screen arc flank
-    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
-    ENTRY_LEAD_VH: 0.5,
-    ARC_RAMP_T: 0.1,
-  },
-};
-
-const PEEL_SEED = 'You Shall Not pass!';
-const TILT_SEED = 'Git Gud!';
-
-const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width
-const ARC_DENSE_SPLIT = 0.50; // fanT boundary: low-i cards below it peel first
-
-const CA_STRENGTH = 0.01;
-
-const CARD_ORDER_HANDOVER_T = 0.5;
-
 function createHooks(ctx) {
   let cameraOrtho;
   let arcCtx = null;
@@ -427,8 +411,6 @@ function createHooks(ctx) {
   const arcCopy = { el: null, applied: {} };
 
   const foldRotQuat = new THREE.Quaternion();
-  const stageQuat = new THREE.Quaternion();
-  const stageEuler = new THREE.Euler();
   const tmpVec3 = new THREE.Vector3();
   const fanScratch = {};
   const wpScratch = {};
@@ -446,6 +428,7 @@ function createHooks(ctx) {
     const colShift = Math.round((gridCols - GRID_WINDOW_COLS) / 2);
     const totalW = GRID_WINDOW_COLS * gridCardW + (GRID_WINDOW_COLS - 1) * gridGap;
     const totalH = GRID_ROWS * gridCardH + (GRID_ROWS - 1) * gridGap;
+    const gridScale = gridCardW / CARD_W_SPHERE;
     // Column-major: i=0 → lower-right, sweeping bottom-to-top then right-to-left.
     ctx.cards.forEach((card, i) => {
       const col = GRID_WINDOW_COLS - 1 - Math.floor(i / GRID_ROWS) + colShift;
@@ -453,8 +436,8 @@ function createHooks(ctx) {
       const gx = -totalW / 2 + col * (gridCardW + gridGap) + gridCardW / 2;
       const gy = totalH / 2 - row * (gridCardH + gridGap) - gridCardH / 2;
       // Written through, not replaced — this reruns on every resize.
-      card.gridPos.set(gx, gy, 0);
-      card.gridScale = gridCardW / CARD_W_SPHERE;
+      card.gridPos.set(gx, gy);
+      card.gridScale = gridScale;
     });
   }
 
@@ -493,11 +476,7 @@ function createHooks(ctx) {
     const { sphereRotActive } = frame;
     // Sphere endpoint is fully rotated; the lerp itself unwinds it.
     ctx.field.slotPose(card, sphereRotActive, tmpVec3, foldRotQuat);
-    mesh.position.set(
-      lerpN(stage.x, tmpVec3.x, fdE),
-      lerpN(stage.y, tmpVec3.y, fdE),
-      lerpN(stage.z, tmpVec3.z, fdE),
-    );
+    mesh.position.lerpVectors(stage, tmpVec3, fdE);
     // Hover lands before the fold ends, so scale for it here too or the card pops at fdE 1.
     // Both axes, so applyCardFit's aspect is unchanged.
     const hs = 1 + card.hoverT * HOVER_SCALE;
@@ -510,16 +489,13 @@ function createHooks(ctx) {
     // Slerp to the upright grid quat, not the peel spin, then reapply the residual spin.
     mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
     const residualZ = stage.rotZ - card.gridTilt;
-    if (residualZ !== 0) {
-      stageQuat.setFromEuler(stageEuler.set(0, 0, residualZ));
-      mesh.quaternion.multiply(stageQuat);
-    }
+    if (residualZ !== 0) mesh.rotateZ(residualZ);
     // Blend by fdE so it lands continuous with placeSphereCard.
     ctx.field.applyCardFacing(mesh, fdE);
   }
 
   function placeGridCard(card, mesh, frame) {
-    mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - frame.sphGroupZ);
+    mesh.position.set(card.gridPos.x, card.gridPos.y, -frame.sphGroupZ);
     mesh.scale.setScalar(card.gridScale);
     ctx.field.applyCardFit(mesh, card, CARD_ASPECT);
     mesh.quaternion.copy(card.gridQuat);
@@ -529,16 +505,14 @@ function createHooks(ctx) {
   // arc/peel render AND the origin of the fold lerp.
   function computeCardEntry(i, frame, out) {
     const last = Math.max(1, ctx.count - 1);
-    const rawT = clamp01(i / last);
+    const rawT = i / last;
     const splitR = ctx.bp.ARC_DENSE_COUNT / last;
     out.fanT = rawT < splitR
       ? (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT
       : ARC_DENSE_SPLIT + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
     const delay = ARC_ENTRY_STAGGER * Math.min(1, (1 - out.fanT) / (1 - ARC_DENSE_SPLIT));
-    const span = Math.max(0.01, 1 - ARC_ENTRY_STAGGER);
-    const rotT = clamp01((frame.arcCopyEntryT - delay) / span);
+    const rotT = clamp01((frame.arcCopyEntryT - delay) / (1 - ARC_ENTRY_STAGGER));
     out.rot = (1 - easeInOutQuint(rotT)) * ENTRY_ROT_MAX;
-    return out;
   }
 
   function computeCardStage(card, gpE, frame, entry) {
@@ -560,11 +534,11 @@ function createHooks(ctx) {
 
     stageScratch.x = lerpN(wp.x, card.gridPos.x, gpE);
     stageScratch.y = lerpN(wp.y, card.gridPos.y, gpE);
-    stageScratch.z = lerpN(-sphGroupZ, card.gridPos.z - sphGroupZ, gpE);
+    stageScratch.z = -sphGroupZ;
     stageScratch.scale = lerpN(arcScale, card.gridScale, gpE);
     stageScratch.rotZ = card.peelStartRot === null
       ? webglRot
-      : card.peelStartRot + (card.gridTilt - card.peelStartRot) * gpE;
+      : lerpN(card.peelStartRot, card.gridTilt, gpE);
     return stageScratch;
   }
 
@@ -616,8 +590,7 @@ function createHooks(ctx) {
       const tiltRandom = seededRandom(TILT_SEED);
       const tiltEuler = new THREE.Euler();
       ctx.cards.forEach((card) => {
-        card.gridPos = new THREE.Vector3();
-        card.gridScale = 1;
+        card.gridPos = new THREE.Vector2();
         card.gridTilt = (tiltRandom() - 0.5) * 0.175;
         card.gridQuat = new THREE.Quaternion().setFromEuler(tiltEuler.set(0, 0, card.gridTilt));
         card.peelJitter = peelRandom();

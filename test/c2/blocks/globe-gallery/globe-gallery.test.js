@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { readFile, setViewport } from '@web/test-runner-commands';
+import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
+import * as THREE from '../../../../libs/deps/three.js';
 import { setConfig } from '../../../../libs/utils/utils.js';
 import init, {
   fetchFragmentCards,
@@ -137,7 +138,7 @@ describe('globe-gallery: static-mode arc copy', () => {
     });
   });
 
-  it('frees the previous build\'s GPU objects on a rebuild', async () => {
+  [false, true].forEach((modalOpen) => it(`frees each GPU object once on a rebuild with the modal ${modalOpen ? 'open' : 'closed'}`, async () => {
     const fetch = window.fetch.bind(window);
     sinon.stub(window, 'fetch').callsFake((url, options) => (
       url.endsWith('/rebuild-test.plain.html')
@@ -154,12 +155,25 @@ describe('globe-gallery: static-mode arc copy', () => {
       </div>`;
     block = document.querySelector('.globe-gallery');
     await init(block);
+    if (modalOpen) {
+      const widget = block.querySelector('.globe-a11y');
+      widget.focus();
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      widget.click();
+      await sendKeys({ press: 'Enter' });
+      expect(block.querySelector('.globe-modal-chrome').open).to.be.true;
+    }
     const gl = WebGL2RenderingContext.prototype;
     const deleteProgram = sinon.spy(gl, 'deleteProgram');
+    const disposeMaterial = sinon.spy(THREE.ShaderMaterial.prototype, 'dispose');
     block.globeRuntime.destroy(false);
     expect(deleteProgram.callCount).to.be.greaterThan(0);
+    const materials = disposeMaterial.getCalls().map((call) => call.thisValue);
+    expect(new Set(materials).size).to.equal(materials.length);
     expect(block.globeRuntime.init()).to.be.true;
-  });
+  }));
 });
 
 describe('globe-gallery: optimizeImgUrl', () => {

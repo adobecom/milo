@@ -2,9 +2,9 @@ import * as THREE from '../../deps/three.js';
 import {
   CAM_FOV, CARD_ASPECT, COLUMN_EPS, GLOBE_SEED, MAX_VEL, TAN_HALF_FOV, WORLD_UP, YAW_ONLY_GEOMETRY,
   camZAtT, capDpr, clamp, clamp01, coverFit, cssNumber, createDisposer, cylinderMasonryLayout,
-  decayToZero, easeInOutCubic, easeOutCubic, fibSpherePos, lerpN, logGlobe, planeAspect,
-  prefersReducedMotion, resolveBP, seededRandom, smoothstep01, sphereCardScale, tAtCamZ,
-  usesCylinderGeometry, wrapAngle,
+  decayToZero, dropTravel, easeInOutCubic, easeOutCubic, fibSpherePos, lerpN, logGlobe, planeAspect,
+  prefersReducedMotion, resolveBP, seededRandom, smoothstep01, sphereCardScale, stopInertia,
+  tAtCamZ, usesCylinderGeometry, wrapAngle,
 } from './core.js';
 import {
   createCardMaterial, createClickDragTexture, createPlaceholderTexture, createTextMaterial,
@@ -20,6 +20,81 @@ const Z_UNIT = new THREE.Vector3(0, 0, 1);
 const LENIS_TRUST_PX = 2;
 const SCROLL_LAG_PX = 8;
 const SCROLL_JUMP_PX = 100;
+
+// Rates are per 60fps frame; scale them by frame.dtScale at the use site.
+const DRAG_FRICTION = 0.94;
+const DRAG_CATCHUP = 0.5;
+const AUTO_ROT_SPEED = 0.0005;
+const KEY_PITCH_CAP = (85 * Math.PI) / 180;
+const RESTING_PITCH = Math.PI / 3;
+const PITCH_RELAX = 0.85;
+const KEY_BROWSE_FRAMES = 90;
+const KEY_MODAL_FRAMES = 20;
+const ROTATE_STEP_FRAMES = 34;
+const ROTATE_DEADZONE = 0.15;
+
+const SPHERE_DRAG_WARP_BASELINE = 0.05;
+const SPHERE_DRAG_WARP_VEL = 3.5;
+const SPHERE_DRAG_WARP_MAX = 0.25;
+const SPHERE_DRAG_WARP_EASE = 0.20;
+
+const SCROLL_VEL_MAX = 18;
+const HOVER_CA = 0.0125;
+const SPHERE_DRAG_CA_MUL = 0.2;
+
+const HOVER_WARP = 0.4;
+export const HOVER_SCALE = 0.25;
+const HOVER_RATE = 0.15;
+
+const REVEAL_RATE = 0.06;
+const MASONRY_MORPH_RATE = 0.05;
+
+const FACING_EDGE_ON_BAND = 0.25;
+const DRAG_FLIP_MAX_CAM_FRAC = 0.95;
+
+const CARD_ORDER_STEPS = 1000;
+export const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
+const HOVER_ORDER_STEPS = 7;
+const TEXT_ORDER = CARD_ORDER_BASE - CARD_ORDER_STEPS - 8;
+
+const TEXT_REBUILD_DEBOUNCE_MS = 150;
+const TEXT_BEHIND_GAP = 15;
+const TEXT_WARP_ENTER_MAX = 4.50;
+const TEXT_OPACITY_PEAK = 0.15;
+const TEXT_OPACITY_RESTING = 0.06;
+const TEXT_WARP_OVERFLOW = 0.6;
+const TEXT_CA_WARP_MUL = 0.75;
+const HINT_EXIT_RATE = 0.007;
+
+// Card caps are on texture HEIGHT; modal caps are on the longest side.
+const BAND_RENDER = {
+  sm: { CARD_TEX: 384, MODAL_TEX: 1024, ANTIALIAS: false, CA_MOTION_CAP: 0.01 },
+  md: { CARD_TEX: 768, MODAL_TEX: 2048, ANTIALIAS: true, CA_MOTION_CAP: 0.03 },
+};
+
+// Shared by every globe block; a block's own breakpoint config overrides them.
+const BAND_DEFAULTS = {
+  sm: {
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.5,
+    CARD_ROLL_JITTER: 0.18,
+    CYL_COLS_FIT: 0.65,
+    DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
+  },
+  md: {
+    NEAR_FADE_START: 2.0,
+    NEAR_FADE_END: 1.6,
+    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
+    DRAG_GEARING: 0.6,
+  },
+};
+
+const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
+
+const CANVAS_HIDE_MARGIN_T = 0.05;
+
+const MAX_CONTEXT_REBUILDS = 4;
+const CONTEXT_STABLE_MS = 10000;
 
 export function createScrollReader() {
   let smoothY = window.scrollY;
@@ -41,23 +116,6 @@ export function createScrollReader() {
     return lenisY;
   };
 }
-
-// Rates are per 60fps frame; scale them by frame.dtScale at the use site.
-const DRAG_FRICTION = 0.94;
-const DRAG_CATCHUP = 0.5;
-const AUTO_ROT_SPEED = 0.0005;
-const KEY_PITCH_CAP = (85 * Math.PI) / 180;
-const RESTING_PITCH = Math.PI / 3;
-const PITCH_RELAX = 0.85;
-const KEY_BROWSE_FRAMES = 90;
-const KEY_MODAL_FRAMES = 20;
-const ROTATE_STEP_FRAMES = 34;
-const ROTATE_DEADZONE = 0.15;
-
-const SPHERE_DRAG_WARP_BASELINE = 0.05;
-const SPHERE_DRAG_WARP_VEL = 3.5;
-const SPHERE_DRAG_WARP_MAX = 0.25;
-const SPHERE_DRAG_WARP_EASE = 0.20;
 
 export function createOrientationState() {
   return {
@@ -85,17 +143,6 @@ export function createOrientationState() {
 }
 
 const isRotated = ({ x, y, z }) => x !== 0 || y !== 0 || z !== 0;
-
-function stopInertia(drag) {
-  drag.velX = 0;
-  drag.velY = 0;
-}
-
-function dropTravel(drag) {
-  stopInertia(drag);
-  drag.pendingX = 0;
-  drag.pendingY = 0;
-}
 
 // Does NOT touch drag velocity or warp.
 function resetOrient(state) {
@@ -298,7 +345,6 @@ function createOrientation(ctx) {
     rotQuat,
     isRotated: () => isRotated(orient),
     refreshQuat,
-    isInside: () => state.inside,
     setInside(inside) { state.inside = inside; },
     warp: () => state.warp,
     centerModalCard,
@@ -321,32 +367,12 @@ function createOrientation(ctx) {
   };
 }
 
-const SCROLL_VEL_MAX = 18;
-const HOVER_CA = 0.0125;
-const SPHERE_DRAG_CA_MUL = 0.2;
-
-const HOVER_WARP = 0.4;
-export const HOVER_SCALE = 0.25;
-const HOVER_RATE = 0.15;
-
-const REVEAL_RATE = 0.06;
-const MASONRY_MORPH_RATE = 0.05;
-
-const FACING_EDGE_ON_BAND = 0.25;
-const DRAG_FLIP_MAX_CAM_FRAC = 0.95;
-
-const CARD_ORDER_STEPS = 1000;
-export const CARD_ORDER_BASE = -(CARD_ORDER_STEPS + 8);
-const HOVER_ORDER_STEPS = 7;
-const TEXT_ORDER = CARD_ORDER_BASE - CARD_ORDER_STEPS - 8;
-
 // lookAt target is INSIDE the surface so local +Z points out.
 const facingOut = (pos, inward) => new THREE.Quaternion()
   .setFromRotationMatrix(new THREE.Matrix4().lookAt(pos, inward, WORLD_UP));
 
 function sphereSlots(bp, count) {
   const rollRandom = seededRandom(GLOBE_SEED);
-  const { sX, sY } = sphereCardScale(CARD_ASPECT);
   const center = new THREE.Vector3();
   const { SPHERE_R, CARD_ROLL_JITTER, CARD_H_SPHERE } = bp;
   return Array.from({ length: count }, (unused, k) => fibSpherePos(k, count, SPHERE_R))
@@ -355,7 +381,7 @@ function sphereSlots(bp, count) {
       const roll = new THREE.Quaternion()
         .setFromAxisAngle(Z_UNIT, (rollRandom() - 0.5) * CARD_ROLL_JITTER);
       const quat = facingOut(pos, center).multiply(roll);
-      return { pos, quat, sX, sY, worldH: CARD_H_SPHERE * sY };
+      return { pos, quat, sX: 1, sY: 1, worldH: CARD_H_SPHERE };
     });
 }
 
@@ -427,7 +453,6 @@ function createCardField({ ctx, frame, orientation, pullQuote, easePow }) {
 
   function updateCardSphereSizing(card, srcAspect) {
     const { sX, sY } = sphereCardScale(srcAspect);
-    card.srcAspect = srcAspect;
     card.sphereScaleSX = sX;
     card.sphereScaleSY = sY;
     card.sphereWorldH = ctx.bp.CARD_H_SPHERE * sY;
@@ -626,15 +651,6 @@ function createCardField({ ctx, frame, orientation, pullQuote, easePow }) {
   };
 }
 
-const TEXT_REBUILD_DEBOUNCE_MS = 150;
-const TEXT_BEHIND_GAP = 15;
-const TEXT_WARP_ENTER_MAX = 4.50;
-const TEXT_OPACITY_PEAK = 0.15;
-const TEXT_OPACITY_RESTING = 0.06;
-const TEXT_WARP_OVERFLOW = 0.6;
-const TEXT_CA_WARP_MUL = 0.75;
-const HINT_EXIT_RATE = 0.007;
-
 function createHintText({ ctx, frame, text, getCueT }) {
   let mesh = null;
   let retired = false;
@@ -706,12 +722,7 @@ function createHintText({ ctx, frame, text, getCueT }) {
 
     if (ctx.reducedMotion) {
       mesh.visible = true;
-      mesh.scale.setScalar(1);
       uniforms.uOpacity.value = TEXT_OPACITY_RESTING;
-      uniforms.uWarp.value = 0;
-      uniforms.uZoom.value = 0;
-      uniforms.uCA.value = 0;
-      uniforms.uExitP.value = 0;
       return;
     }
     if (hintEntryT <= 0) {
@@ -756,19 +767,6 @@ function createHintText({ ctx, frame, text, getCueT }) {
   };
 }
 
-// Card caps are on texture HEIGHT; modal caps are on the longest side.
-const BAND_RENDER = {
-  sm: { CARD_TEX: 384, MODAL_TEX: 1024, ANTIALIAS: false, CA_MOTION_CAP: 0.01 },
-  md: { CARD_TEX: 768, MODAL_TEX: 2048, ANTIALIAS: true, CA_MOTION_CAP: 0.03 },
-};
-
-const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
-
-const CANVAS_HIDE_MARGIN_T = 0.05;
-
-const MAX_CONTEXT_REBUILDS = 4;
-const CONTEXT_STABLE_MS = 10000;
-
 function createGlobeRuntime(spec, {
   cards: CARD_CONTENT, hintText, instructions, root, gid, labels,
 }) {
@@ -798,12 +796,14 @@ function createGlobeRuntime(spec, {
   function resolveBpProfile(bandName, cfg, cylinder) {
     return Object.freeze({
       ...YAW_ONLY_GEOMETRY,
+      ...BAND_DEFAULTS[bandName],
       ...cfg,
       name: bandName,
       CYLINDER: cylinder,
       ...BAND_RENDER[bandName],
       CARD_W_SPHERE: cfg.CARD_H_SPHERE * CARD_ASPECT,
-      CARD_FACE_CAMERA: (cylinder ? YAW_ONLY_GEOMETRY : cfg).CARD_FACE_CAMERA,
+      // 0 = radially outward (true sphere)
+      CARD_FACE_CAMERA: cylinder ? YAW_ONLY_GEOMETRY.CARD_FACE_CAMERA : cfg.CARD_FACE_CAMERA ?? 0,
       // Frustum height at the cylinder's centre plane — the column solve's vertical budget.
       CYL_FRUSTUM_H: 2 * TAN_HALF_FOV * cfg.CAM_Z_SPHERE,
       ...spec.bpExtras?.(cfg, CARD_CONTENT.length),
@@ -910,7 +910,7 @@ function createGlobeRuntime(spec, {
     disposer.add(() => {
       cards.forEach(({ mesh, modalMat }) => {
         mesh.geometry.dispose();
-        [mesh.material, mesh.origMaterial, modalMat].forEach((m) => m?.dispose());
+        [mesh.origMaterial || mesh.material, modalMat].forEach((m) => m?.dispose());
       });
       textures.forEach((t) => t.dispose());
       placeholderTex.dispose();
@@ -1017,7 +1017,7 @@ function createGlobeRuntime(spec, {
 
   a11y = createGalleryA11y(ctx, {
     name,
-    getModalIdx: () => modal.getModalIdx(),
+    getModalIdx: modal.getModalIdx,
     isGlobeFormed: globeFormed,
     // A focus snap follows unless it is suppressed (tab-return): solve for where the camera lands.
     centerCard: (i) => orientation.centerCardOnScreen(i, !suppressFocusSnap),

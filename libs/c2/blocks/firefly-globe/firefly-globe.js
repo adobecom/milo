@@ -15,6 +15,50 @@ export const DEFAULT_MACHINE_TAG = 'acom_ff_globe_assets';
 const ALT_MAX_CHARS = 120;
 const FF_API_URL = 'https://community-hubs.adobe.io/api/v2/ff_community/assets';
 const FF_API_KEY = 'milo-ff-gallery-unity';
+const FF_SOURCE = 'adobe-com';
+const DEFAULT_FF_CAMPAIGN = 'marketing-page';
+const LEGACY_CAMPAIGN_ID = 'NQCJQWSV';
+
+const LANGUAGE_ALIASES = { no: 'nb' };
+
+const ICON_BASE_URL = new URL('./icons/', import.meta.url).href;
+const MODEL_ICON = {
+  google: 'google.svg',
+  openai: 'gpt.svg',
+  flux: 'flux.svg',
+  ideogram: 'ideogram.svg',
+  kling: 'kling.svg',
+  luma: 'luma.svg',
+  pika: 'pika.svg',
+  runway: 'runway.svg',
+  seedance: 'seedance.svg',
+  topaz: 'topaz.svg',
+  firefly: 'firefly.svg',
+};
+
+export const TRAVEL_EASE_POW = 3;
+export const SPHERE_INTERACTIVE_T = 0.02;
+const ENTRY_LIFT_H = 0.45;
+const CSS_ENTRY_LIFT = !!window.CSS?.supports?.('animation-timeline: view()');
+
+const BREAKPOINTS = {
+  sm: {
+    minWidth: 0,
+    SPHERE_R: 16,
+    CARD_H_SPHERE: 11.0,
+    CAM_Z_ENTRY: 100,
+    CAM_Z_SPHERE: 70,
+    CAM_Z_END: -18,
+  },
+  md: {
+    minWidth: 768,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 10,
+    CAM_Z_ENTRY: 140,
+    CAM_Z_SPHERE: 80,
+    CAM_Z_END: -30,
+  },
+};
 
 function componentRenditionHref(previewHref, id) {
   const base = previewHref.split('/rendition/')[0];
@@ -22,7 +66,6 @@ function componentRenditionHref(previewHref, id) {
   return `${base}/dcx/${id}/rendition/output/resource/version/0/${tmpl}`;
 }
 
-const LANGUAGE_ALIASES = { no: 'nb' };
 const parsedLocales = new Map();
 
 const text = (v) => (typeof v === 'string' ? v.trim() : '');
@@ -87,7 +130,6 @@ function apiAssetToCard(asset, locale) {
 }
 
 export async function fetchFireflyAssets(categoryId, locale, machineTag) {
-  const loc = locale || 'en-US';
   const params = new URLSearchParams({
     size: '50',
     sort: 'updated_desc',
@@ -102,7 +144,7 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
     const data = await resp.json();
     // eslint-disable-next-line no-underscore-dangle
     const assets = data._embedded?.assets ?? [];
-    const cards = assets.map((a) => apiAssetToCard(a, loc)).filter(Boolean);
+    const cards = assets.map((a) => apiAssetToCard(a, locale || 'en-US')).filter(Boolean);
     if (!cards.length) {
       logGlobe(NAME, `no usable assets (${assets.length} returned): ${url}`);
       return null;
@@ -114,14 +156,8 @@ export async function fetchFireflyAssets(categoryId, locale, machineTag) {
   });
 }
 
-const FF_SOURCE = 'adobe-com';
-const DEFAULT_FF_CAMPAIGN = 'marketing-page';
-const LEGACY_CAMPAIGN_ID = 'NQCJQWSV';
-
 export function appendFireflyParams(cards, campaignId) {
-  const campaign = !campaignId || campaignId === LEGACY_CAMPAIGN_ID
-    ? DEFAULT_FF_CAMPAIGN : campaignId;
-  const params = new URLSearchParams({ ff_source: FF_SOURCE, ff_campaign: campaign });
+  const params = new URLSearchParams({ ff_source: FF_SOURCE, ff_campaign: campaignId });
   cards.forEach((card) => {
     if (card.fireflyUrl) card.fireflyUrl += `&${params}`;
   });
@@ -144,7 +180,7 @@ export function parseAuthoredContent(el) {
   return {
     categoryId: categoryId || null,
     machineTag: machineTag || DEFAULT_MACHINE_TAG,
-    campaignId,
+    campaignId: campaignId && campaignId !== LEGACY_CAMPAIGN_ID ? campaignId : DEFAULT_FF_CAMPAIGN,
     ctaLabel,
     ...parseCommonRows(hintTextRow, a11yRow, pullQuoteRow),
   };
@@ -171,20 +207,6 @@ export function buildGlobeDom(el, { labels, touchHint, ctaLabel = '', pullQuote 
   });
 }
 
-const MODEL_ICON = {
-  google: 'google.svg',
-  openai: 'gpt.svg',
-  flux: 'flux.svg',
-  ideogram: 'ideogram.svg',
-  kling: 'kling.svg',
-  luma: 'luma.svg',
-  pika: 'pika.svg',
-  runway: 'runway.svg',
-  seedance: 'seedance.svg',
-  topaz: 'topaz.svg',
-  firefly: 'firefly.svg',
-};
-
 export function renderModalContent(targetEl, meta, iconBaseUrl) {
   const modelLabel = meta.modelVersionName || meta.modelId || '';
   const iconEl = targetEl.querySelector('.globe-modal-model-icon');
@@ -201,10 +223,6 @@ export function renderModalContent(targetEl, meta, iconBaseUrl) {
   else ctaEl.removeAttribute('href');
   return { descEl, speech: [[modelLabel], [meta.prompt, meta.lang]] };
 }
-
-export const TRAVEL_EASE_POW = 3;
-
-export const SPHERE_INTERACTIVE_T = 0.02;
 
 export const createFrame = createBaseFrame;
 export const createFrameInput = createBaseFrameInput;
@@ -223,40 +241,6 @@ export function deriveFrame(frame, input) {
   return frame;
 }
 
-const BREAKPOINTS = {
-  sm: {
-    minWidth: 0,
-    SPHERE_R: 16,
-    CARD_H_SPHERE: 11.0,
-    CAM_Z_ENTRY: 100,
-    CAM_Z_SPHERE: 70,
-    CAM_Z_END: -18,
-    NEAR_FADE_START: 2.0,
-    NEAR_FADE_END: 1.5,
-    CARD_FACE_CAMERA: 0,
-    CARD_ROLL_JITTER: 0.18,
-    CYL_COLS_FIT: 0.65,
-    DRAG_GEARING: 0.53, // fraction of 1:1 surface tracking
-  },
-  md: {
-    minWidth: 768,
-    SPHERE_R: 35,
-    CARD_H_SPHERE: 10,
-    CAM_Z_ENTRY: 140,
-    CAM_Z_SPHERE: 80,
-    CAM_Z_END: -30,
-    NEAR_FADE_START: 2.0,
-    NEAR_FADE_END: 1.6,
-    CARD_FACE_CAMERA: 0, // 0 = radially outward (true sphere)
-    CARD_ROLL_JITTER: 0.5, // per-card random roll: ±half this, in radians
-    DRAG_GEARING: 0.6, // fraction of 1:1 surface tracking
-  },
-};
-
-const CSS_ENTRY_LIFT = !!window.CSS?.supports?.('animation-timeline: view()');
-const ICON_BASE_URL = new URL('./icons/', import.meta.url).href;
-const ENTRY_LIFT_H = 0.45;
-
 function createHooks(ctx) {
   return {
     entryCamZ: () => ctx.bp.CAM_Z_ENTRY,
@@ -272,7 +256,6 @@ const SPEC = {
   name: NAME,
   breakpoints: BREAKPOINTS,
   timeline: { createFrame, createFrameInput, deriveFrame, TRAVEL_EASE_POW },
-  pullQuote: {},
   modal: {
     hoistToBody: true,
     tracksCanvasTop: true,

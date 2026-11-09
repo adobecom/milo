@@ -1,5 +1,34 @@
 import * as THREE from '../../deps/three.js';
 
+export const GLOBE_SEED = 'One day I will return to your side';
+const RANDOM_MOD = 2147483647;
+
+export const CAM_FOV = 60;
+export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
+const MAX_DPR = 2;
+
+export const FRAME_MS = 1000 / 60;
+export const MAX_VEL = 0.08;
+export const DT_SCALE_MIN = 0.25;
+export const DT_SCALE_MAX = 3;
+export const TEXT_APPEAR_START = 0.10;
+
+export const CARD_ASPECT = 456 / 631;
+export const CARD_RADIUS = 22 / 631;
+export const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
+const BALANCE_PASSES = 20;
+export const COLUMN_EPS = 1e-6;
+
+export const YAW_ONLY_GEOMETRY = {
+  CYL_COLS_FIT: 0.80,
+  CYL_COL_GAP_RATIO: 0.20,
+  CYL_ROW_GAP_RATIO: 0.10,
+  CYL_ASPECT_CAP: 1.9,
+  CYL_BULGE: 0.18,
+  CARD_FACE_CAMERA: 0.1,
+};
+
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
 
@@ -23,10 +52,6 @@ export const nextFrame = () => new Promise((res) => { requestAnimationFrame(res)
 export function logGlobe(name, msg, severity = 'warn') {
   window.lana?.log?.(`${name}: ${msg}`, { tags: name, severity });
 }
-
-export const GLOBE_SEED = 'One day I will return to your side';
-
-const RANDOM_MOD = 2147483647;
 
 function hashSeed(seed) {
   let h = 0;
@@ -57,19 +82,10 @@ export function coverFit(imgAspect, planeAspect, out = {}) {
   return out;
 }
 
-const MAX_DPR = 2;
 export const capDpr = () => Math.min(window.devicePixelRatio, MAX_DPR);
-
-export const CAM_FOV = 60;
-export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
 
 export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
 
-export const FRAME_MS = 1000 / 60;
-export const MAX_VEL = 0.08;
-
-export const DT_SCALE_MIN = 0.25;
-export const DT_SCALE_MAX = 3;
 function dtScaleOf(now, prevNow) {
   const dtMs = prevNow ? now - prevNow : FRAME_MS;
   return clamp(dtMs / FRAME_MS, DT_SCALE_MIN, DT_SCALE_MAX);
@@ -85,8 +101,6 @@ export function tAtCamZ(z, camZSphere, camZEnd, pow) {
   const eased = clamp01((camZSphere - z) / span);
   return 1 - ((1 - eased) ** (1 / pow));
 }
-
-export const TEXT_APPEAR_START = 0.10;
 
 // Scroll past the formed position over which the camera travels.
 export function travelSpanPx({ blockHeight, formPx = 0, travelPx = 0 }) {
@@ -147,9 +161,6 @@ export function resolveBP(breakpoints, w) {
   return { name, cfg: breakpoints[name] };
 }
 
-export const CARD_ASPECT = 456 / 631;
-export const CARD_RADIUS = 22 / 631;
-
 export const planeAspect = ({ x, y }) => CARD_ASPECT * (x / (y || 1));
 
 export function sphereCardScale(srcAspect) {
@@ -175,24 +186,6 @@ export function cssNumber(el, prop, fallback) {
 export function usesCylinderGeometry(bandName) {
   return bandName === 'sm' || isCoarsePointer();
 }
-
-// Yaw-only drags (touch / narrow): a cylindrical masonry wall replaces the Fibonacci sphere.
-export const YAW_ONLY_GEOMETRY = {
-  CYL_COLS_FIT: 0.80, // wall-height dial: fewest columns whose tallest fits this × frustum
-  CYL_COL_GAP_RATIO: 0.20, // column gap as a fraction of card width; also sets cardW
-  CYL_ROW_GAP_RATIO: 0.10, // row gap as a fraction of card width
-  CYL_ASPECT_CAP: 1.9, // on the LAID-OUT aspect; past it the fit crops
-  CYL_BULGE: 0.18, // r = R·(1 − bulge·t²); keep ≤~0.2 or edges overlap
-  CARD_FACE_CAMERA: 0.1, // >0 costs barrel smoothness
-};
-
-const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
-
-export const WORLD_UP = new THREE.Vector3(0, 1, 0);
-
-const BALANCE_PASSES = 20;
-
-export const COLUMN_EPS = 1e-6;
 
 function balanceColumns(heights, gap, cols) {
   const n = heights.length;
@@ -265,6 +258,8 @@ export function cylinderMasonryLayout({
     const colTotal = packed.totals[p.col];
     const y = colTotal / 2 - p.offset - p.h / 2;
     const azimuth = (2 * Math.PI * p.col) / cols;
+    const cos = Math.cos(azimuth);
+    const sin = Math.sin(azimuth);
     const t = clamp((2 * y) / wallH, -1, 1);
     const r = radius * (1 - bulge * t * t);
     // Outward normal of the surface of revolution r(y): (1, −dr/dy) normalized, at this azimuth.
@@ -272,14 +267,14 @@ export function cylinderMasonryLayout({
     const nScale = 1 / Math.hypot(1, dRdy);
     return {
       pos: new THREE.Vector3(
-        r * Math.cos(azimuth),
+        r * cos,
         y,
-        r * Math.sin(azimuth),
+        r * sin,
       ),
       normal: new THREE.Vector3(
-        nScale * Math.cos(azimuth),
+        nScale * cos,
         -dRdy * nScale,
-        nScale * Math.sin(azimuth),
+        nScale * sin,
       ),
       w: p.w,
       h: p.h,
@@ -291,11 +286,23 @@ export function fibSpherePos(i, total, radius) {
   const y = 1 - (2 * i + 1) / total;
   const polarAngle = Math.acos(clamp(y, -1, 1));
   const azimuth = GOLDEN_ANGLE * i;
+  const ringRadius = radius * Math.sin(polarAngle);
   return new THREE.Vector3(
-    radius * Math.sin(polarAngle) * Math.cos(azimuth),
+    ringRadius * Math.cos(azimuth),
     radius * Math.cos(polarAngle),
-    radius * Math.sin(polarAngle) * Math.sin(azimuth),
+    ringRadius * Math.sin(azimuth),
   );
+}
+
+export function stopInertia(drag) {
+  drag.velX = 0;
+  drag.velY = 0;
+}
+
+export function dropTravel(drag) {
+  stopInertia(drag);
+  drag.pendingX = 0;
+  drag.pendingY = 0;
 }
 
 export function createDisposer() {

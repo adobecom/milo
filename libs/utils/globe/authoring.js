@@ -2,15 +2,35 @@
 import { getConfig, loadStyle } from '../utils.js';
 import { GLOBE_SEED, logGlobe, nextFrame, seededRandom } from './core.js';
 
+export const LABEL_DIVIDER = '||';
+export const DEFAULT_HINT = 'Click & Drag';
+const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
+// Fallback only
+const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
+const DEFAULT_CARD_LABEL = '{index} of {count}';
+const A11Y_LABELS = [
+  ['instructions', DEFAULT_GALLERY_INSTRUCTIONS],
+  ['rotateLeft', 'Rotate left'],
+  ['rotateRight', 'Rotate right'],
+  ['pauseSpin', 'Pause spinning'],
+  ['resumeSpin', 'Resume spinning'],
+  ['prevCard', 'Previous card'],
+  ['cardLabel', DEFAULT_CARD_LABEL],
+  ['nextCard', 'Next card'],
+  ['closeBtn', 'Close'],
+];
+
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
+
 let globeStyles;
+const QUOTE_TEXT = new WeakMap();
 
 export function loadGlobeStyles() {
   const { base } = getConfig();
   globeStyles ||= new Promise((resolve) => { loadStyle(`${base}/utils/globe/globe.css`, resolve); });
   return globeStyles;
 }
-
-const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 export function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => HTML_ESCAPES[c]);
@@ -31,27 +51,6 @@ export function onRemoved(el, callback) {
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }
-
-// Fallback only; authored inline so it stays localizable.
-const DEFAULT_GALLERY_INSTRUCTIONS = 'Press Enter to enter the gallery, then Tab through the images.';
-
-const DEFAULT_TOUCH_HINT = 'Click and drag to rotate. Tap to dive deep into the artwork.';
-
-export const LABEL_DIVIDER = '||';
-
-const DEFAULT_CARD_LABEL = '{index} of {count}';
-
-const A11Y_LABELS = [
-  ['instructions', DEFAULT_GALLERY_INSTRUCTIONS],
-  ['rotateLeft', 'Rotate left'],
-  ['rotateRight', 'Rotate right'],
-  ['pauseSpin', 'Pause spinning'],
-  ['resumeSpin', 'Resume spinning'],
-  ['prevCard', 'Previous card'],
-  ['cardLabel', DEFAULT_CARD_LABEL],
-  ['nextCard', 'Next card'],
-  ['closeBtn', 'Close'],
-];
 
 function buildLabels(parts) {
   const labels = Object.fromEntries(
@@ -83,8 +82,6 @@ export async function fetchGlobeData(name, url, init, parse) {
   }
   return null;
 }
-
-const OPENING_MARK = /^[\p{Ps}\p{Pi}\p{Pf}"']/u;
 
 function gutterOf(el) {
   return el ? parseFloat(getComputedStyle(el).paddingInlineStart) || 0 : 0;
@@ -167,8 +164,6 @@ export function hangParagraphs(container) {
   [...container.children].forEach((p) => hangOpeningMark(p, room));
 }
 
-const QUOTE_TEXT = new WeakMap();
-
 export function plainQuote(quoteEl) {
   if (!quoteEl) return '';
   if (!QUOTE_TEXT.has(quoteEl)) QUOTE_TEXT.set(quoteEl, quoteEl.textContent);
@@ -205,7 +200,8 @@ const buildMarkup = ({ name, labels, arcCopyHtml, modalInfoHtml }) => {
     </div>
   </div>
 
-${arcCopyHtml}  <div class="globe-pullquote-pin">
+${arcCopyHtml}
+  <div class="globe-pullquote-pin">
     <div class="globe-pullquote-rail">
       <figure class="globe-pullquote">
         <blockquote class="globe-pullquote-quote heading-1"></blockquote>
@@ -264,8 +260,6 @@ export function buildGlobeSkeleton(el, name, opts) {
   }
   return gid;
 }
-
-export const DEFAULT_HINT = 'Click & Drag';
 
 function parsePullQuote(row) {
   const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
