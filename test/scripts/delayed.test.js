@@ -242,7 +242,7 @@ describe('loadJarvisChat Assistant routing', () => {
     await run();
     await new Promise((resolve) => { setTimeout(resolve, 0); });
     expect(loadScript.calledOnce).to.be.true;
-    expect(loadScript.firstCall.args[0]).to.include('stage-client.messaging.adobe.com');
+    expect(loadScript.firstCall.args[0]).to.include('dev-client.messaging.adobe.com');
   });
 
   it('uses Assistant chat links when the GNav BC placement is enabled', async () => {
