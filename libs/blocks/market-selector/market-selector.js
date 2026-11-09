@@ -8,14 +8,12 @@ import {
   setInternational,
   setMarket,
   pageExist,
-} from '../../utils/utils.js';
-import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
-import {
   getMarketConfig,
   getValidatedMarket,
   marketsLangForLocale,
   norm,
-} from '../../utils/market.js';
+} from '../../utils/utils.js';
+import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 
 // reload the page to avoid bfcache issues.
 window.addEventListener('pageshow', (event) => {

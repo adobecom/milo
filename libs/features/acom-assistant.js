@@ -148,6 +148,7 @@ async function getAutoDefaults() {
     language: language || 'en',
     region,
     clientId: window.adobeid?.client_id,
+    checkoutClientId: getMetadata('bc-checkout-client-id') || 'acom_bc',
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
     // Match BC's own consent gate (bc-utils handleConsent): functional cookies (C0002).
@@ -279,7 +280,7 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
           footerAppId = null;
           return mergedConfig.callbacks?.getContextCallback?.(...args) || {
             appid: footer?.['jarvis-surface-id'] || mergedConfig.appid,
-            appver: footer?.['jarvis-surface-version'] || mergedConfig.appver,
+            appver: footer?.['jarvis-surface-version'] || mergedConfig.appver || '1.0',
           };
         },
       },
@@ -307,7 +308,7 @@ export async function loadAcomAssistant(partialConfig = {}, { loadScript, loadSt
 export function getAcomAssistantIdentity() {
   const { jarvis } = getConfig();
   const appid = getMetadata('jarvis-surface-id') || jarvis?.id;
-  const appver = getMetadata('jarvis-surface-version') || jarvis?.version;
+  const appver = getMetadata('jarvis-surface-version') || jarvis?.version || '1.0';
   // Neither the page nor the site config has an app ID. Log it so it's easy to spot.
   if (!appid) logError(new Error('no app ID (set jarvis-surface-id metadata or config.jarvis.id)'));
   return { appid, appver };

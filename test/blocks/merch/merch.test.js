@@ -45,12 +45,13 @@ import merch, {
   addAriaLabelToCta,
   AUP_SDK_READY_EVENT,
   waitForAupSdk,
+  overrideOptions,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, getConfig, notifyTargetReady, resetTargetReady } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -281,6 +282,96 @@ describe('Merch Block', () => {
     expect(await merch(el)).to.be.undefined;
     el = document.querySelector('.merch.bad-content');
     expect(await merch(el)).to.be.null;
+  });
+
+  describe('aup-select', () => {
+    const setMeta = (content) => {
+      document.head.querySelector('meta[name="aup-select"]')?.remove();
+      if (content) document.head.append(createTag('meta', { name: 'aup-select', content }));
+    };
+    const targetReady = async () => {
+      notifyTargetReady();
+      await delay(0);
+    };
+
+    beforeEach(() => { resetTargetReady(); });
+
+    afterEach(async () => {
+      setMeta(null);
+      resetTargetReady();
+      await initService(true);
+    });
+
+    it('sets aup-select on the service when the value is already available', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('sets aup-select once target is ready', async () => {
+      const service = await initService(true);
+      expect(service.hasAttribute('aup-select')).to.be.false;
+      setMeta('on');
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('removes aup-select it set when target turns it off', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      setMeta('off');
+      await targetReady();
+      expect(service.hasAttribute('aup-select')).to.be.false;
+    });
+
+    it('keeps aup-select passed in by the caller', async () => {
+      const service = await initService(true, { 'aup-select': 'on' });
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('only updates once target is ready', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      setMeta('off');
+      await delay(0);
+      expect(service.getAttribute('aup-select')).to.equal('on');
+      await targetReady();
+      expect(service.hasAttribute('aup-select')).to.be.false;
+    });
+
+    it('stops updating a replaced service', async () => {
+      const oldService = await initService(true);
+      const newService = await initService(true);
+      setMeta('on');
+      await targetReady();
+      expect(oldService.hasAttribute('aup-select')).to.be.false;
+      expect(newService.getAttribute('aup-select')).to.equal('on');
+    });
+
+    describe('AUP SDK', () => {
+      let previousSdk;
+      let sdk;
+
+      beforeEach(() => {
+        previousSdk = window.aupsdk;
+        sdk = { getOrchestratorContext: () => {}, updateConfig: sinon.stub().resolves() };
+        window.aupsdk = sdk;
+      });
+
+      afterEach(() => { window.aupsdk = previousSdk; });
+
+      const features = () => sdk.updateConfig.lastCall?.args[0].miniAppContext.features;
+
+      it('loads the SDK when target turns aup-select on', async () => {
+        await initService(true);
+        setMeta('on');
+        expect(sdk.updateConfig.called).to.be.false;
+        await targetReady();
+        await waitFor(() => sdk.updateConfig.called);
+        expect(features()).to.include('tmp_aupsdk_ucv3_in_iframe');
+      });
+    });
   });
 
   describe('locale settings', () => {
@@ -1684,7 +1775,14 @@ describe('Merch Block', () => {
       modal = true, aup = false, legacy = false,
     }) => {
       it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
-        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
+        content,
+        query,
+        commercePreload,
+        lateContent,
+        missingSdk,
+        failure,
+        calls,
+        modal,
       })}`, async () => {
         const previousUrl = window.location.href;
         const previousDeferred = window.milo.deferredPromise;
@@ -2971,6 +3069,41 @@ describe('Merch Block', () => {
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
+  });
+});
+
+describe('overrideOptions method', () => {
+  const withRows = (rows) => setConfig({
+    ...getConfig(),
+    mep: { inBlock: { mas: { fragments: { f1: rows } } } },
+  });
+
+  it('sets pzn for card links', () => {
+    withRows({ '': { action: 'replace', content: 't1', pzn: 'pzn-cc-lapsed' } });
+    expect(overrideOptions('f1', { fragment: 'f1' })).to.deep.equal({ fragment: 't1', pzn: 'pzn-cc-lapsed' });
+  });
+
+  it('sets pzn for field links via the card-level row', () => {
+    withRows({ '': { action: 'replace', content: 't1', pzn: 'pzn-cc-lapsed' } });
+    expect(overrideOptions('f1', { fragment: 'f1', field: 'prices' }))
+      .to.deep.equal({ fragment: 't1', field: 'prices', pzn: 'pzn-cc-lapsed' });
+  });
+
+  it('does not add pzn for commands without it', () => {
+    withRows({ '': { action: 'replace', content: 't2' } });
+    expect(overrideOptions('f1', { fragment: 'f1' })).to.deep.equal({ fragment: 't2' });
+  });
+
+  it('does not apply a card-level row without pzn to field links', () => {
+    withRows({ '': { action: 'replace', content: 't2' } });
+    const options = { fragment: 'f1', field: 'prices' };
+    expect(overrideOptions('f1', options)).to.equal(options);
+  });
+
+  it('returns options unchanged when no command matches', () => {
+    withRows({});
+    const options = { fragment: 'f1' };
+    expect(overrideOptions('f1', options)).to.equal(options);
   });
 });
 

@@ -115,6 +115,7 @@ describe('firefly-globe accessibility gallery', () => {
       getModalIdx: () => modalIdx,
       isGlobeFormed: () => formed,
       getCardLabel: (i) => `Image ${i}`,
+      getCardLang: (i) => (i === 2 ? 'ja-JP' : ''),
       centerCard: center,
       openCard: open,
       onFocus: focus,
@@ -135,6 +136,7 @@ describe('firefly-globe accessibility gallery', () => {
     expect(cards.inert).to.equal(true);
     expect([...cards.children].map((el) => el.dataset.idx)).to.deep.equal(['2', '0', '1']);
     expect(cards.firstElementChild.getAttribute('aria-label')).to.equal('Image 2');
+    expect([...cards.children].map((el) => el.lang)).to.deep.equal(['ja-JP', '', '']);
   });
 
   it('enters only when formed, centers focused cards, and Escape collapses', () => {
@@ -152,13 +154,42 @@ describe('firefly-globe accessibility gallery', () => {
     expect(center.lastCall.args).to.deep.equal([2]);
     gallery.setFocusRect(20, 30, 40, 50);
     expect(cards.firstElementChild.style.borderRadius).to.equal('1.75px');
+    expect(cards.firstElementChild.style.opacity).to.equal('');
+    gallery.setFocusRect(20, 30, 0, 0);
+    expect(cards.firstElementChild.style.opacity).to.equal('0');
     gallery.focusCard(1);
     expect(gallery.getFocusedIdx()).to.equal(1);
+    expect(cards.firstElementChild.getAttribute('style')).to.equal(null);
     expect(focus.called).to.equal(true);
     document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(gallery.isBrowsing()).to.equal(false);
     expect(cards.inert).to.equal(true);
     expect(document.activeElement).to.equal(widget);
+  });
+
+  it('moves Tab/Shift+Tab between cards itself, without native focus scrolling', () => {
+    gallery.setup();
+    root.querySelector('.firefly-globe-a11y').click();
+    const tab = (shiftKey) => {
+      const e = new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true, cancelable: true });
+      document.activeElement.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+    try {
+      expect(tab(false)).to.equal(true);
+      expect(document.activeElement.dataset.idx).to.equal('0');
+      expect(focusSpy.lastCall.args).to.deep.equal([{ preventScroll: true }]);
+      expect(tab(false)).to.equal(true);
+      expect(document.activeElement.dataset.idx).to.equal('1');
+      expect(tab(false)).to.equal(false);
+      expect(tab(true)).to.equal(true);
+      expect(document.activeElement.dataset.idx).to.equal('0');
+      expect(tab(true)).to.equal(true);
+      expect(tab(true)).to.equal(false);
+    } finally {
+      focusSpy.restore();
+    }
   });
 
   it('gates tab stops during modal, tracks canvas opens without opening, and tears down', () => {
@@ -631,6 +662,7 @@ describe('firefly-globe modal without a WebGL canvas', () => {
         modelId: 'firefly',
         modelVersionName: 'Firefly 3',
         prompt: 'A prompt',
+        lang: 'en-US',
         fireflyUrl: '/try',
       }),
       authoredNo: (i) => i + 1,
@@ -672,6 +704,8 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     modal.open(0);
     expect(modal.getModalIdx()).to.equal(0);
     expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-label')).to.equal('Photo');
+    expect(el.querySelector('.firefly-globe-modal-image').lang).to.equal('en-US');
+    expect(el.querySelector('.firefly-globe-modal-prompt').lang).to.equal('en-US');
     expect(el.querySelector('.firefly-globe-modal-model-icon').getAttribute('src'))
       .to.equal('/libs/c2/blocks/firefly-globe/icons/firefly.svg');
     expect(el.querySelector('.firefly-globe-modal-model-label').textContent).to.equal('Firefly 3');
@@ -715,6 +749,8 @@ describe('firefly-globe modal without a WebGL canvas', () => {
     expect(pending.onerror).to.equal(null);
     expect(pending.src).to.equal('');
     expect(el.querySelector('.firefly-globe-modal-image').getAttribute('aria-hidden')).to.equal('true');
+    expect(el.querySelector('.firefly-globe-modal-image').hasAttribute('lang')).to.equal(false);
+    expect(el.querySelector('.firefly-globe-modal-prompt').hasAttribute('lang')).to.equal(false);
     expect(el.querySelector('.firefly-globe-modal-model-icon').hasAttribute('hidden')).to.equal(true);
     expect(el.querySelector('.firefly-globe-modal-cta').hasAttribute('href')).to.equal(false);
     expect(el.querySelector('.firefly-globe-modal-counter').textContent).to.equal('02 / 02');

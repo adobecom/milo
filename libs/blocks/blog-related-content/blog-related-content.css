@@ -1,0 +1,84 @@
+/* stylelint-disable selector-class-pattern -- CaaS owns the mixed-case class names. */
+
+.blog-related-content {
+  margin-block-start: 40px;
+}
+
+.blog-related-content[hidden] {
+  display: none;
+}
+
+.blog-related-content > h3 {
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.blog-related-content .consonant-Wrapper,
+.blog-related-content .consonant-Wrapper-inner,
+.blog-related-content .consonant-CardsGrid {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.blog-related-content .consonant-CardsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 80px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-gray-200);
+  border-radius: 4px;
+  background: var(--color-white);
+}
+
+.blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-header {
+  width: 64px;
+  min-width: 64px;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+}
+
+.blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-content {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  padding: 10px 12px;
+}
+
+.blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-title {
+  display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.blog-related-content .consonant-Card-label,
+.blog-related-content .consonant-Card-text,
+.blog-related-content .consonant-Card-footer {
+  display: none;
+}
+
+.blog-related-content a:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
+  outline-offset: -2px;
+}

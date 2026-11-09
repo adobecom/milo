@@ -1,9 +1,43 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { getFederalDomain } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { getFederalDomain, localizeGnavLinks } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
+import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
 
 const DEFAULT = 'https://main--federal--adobecom.aem.page/federal';
+
+describe('c2 global-navigation decorateBody (localizeGnavLinks)', () => {
+  let originalConfig;
+
+  before(() => {
+    originalConfig = getConfig();
+    setConfig({
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+      },
+      pathname: '/fr/education/higher-ed.html',
+      prodDomains: ['www.adobe.com'],
+    });
+  });
+
+  after(() => setConfig(originalConfig));
+
+  it('localizes regular links and leaves #_dnt links untouched', async () => {
+    const { origin } = window.location;
+    const body = document.createElement('div');
+    body.innerHTML = `
+      <a id="regular" href="${origin}/education/students.html">Students</a>
+      <a id="dnt" href="${origin}/acrobat/student-spaces.html#_dnt">Student Spaces</a>`;
+
+    await localizeGnavLinks(body);
+
+    expect(body.querySelector('#regular').getAttribute('href'))
+      .to.equal('/fr/education/students.html');
+    expect(body.querySelector('#dnt').getAttribute('href'))
+      .to.equal(`${origin}/acrobat/student-spaces.html#_dnt`);
+  });
+});
 
 describe('c2 global-navigation getFederalDomain fedsbranch validation', () => {
   let getStub;

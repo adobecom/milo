@@ -1,14 +1,18 @@
 /* eslint-disable import/no-extraneous-dependencies */
 export {
+  BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
   DoubleSide,
   Euler,
   Group,
+  LinearFilter,
   Matrix4,
   Mesh,
   OrthographicCamera,
   PerspectiveCamera,
   PlaneGeometry,
+  Points,
   Quaternion,
   Raycaster,
   Scene,
