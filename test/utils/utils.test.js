@@ -4449,12 +4449,38 @@ describe('Utils', () => {
   });
 
   describe('isAcomAssistantEnabled', () => {
-    afterEach(() => document.head.querySelector('meta[name="acom-assistant"]')?.remove());
+    let originalHref;
+    let originalEnvName;
 
-    it('follows the acom-assistant metadata', () => {
+    beforeEach(() => {
+      originalHref = window.location.href;
+      originalEnvName = utils.getConfig().env?.name;
+    });
+
+    afterEach(() => {
+      document.head.querySelector('meta[name="acom-assistant"]')?.remove();
+      document.head.querySelector('meta[name="acom-assistant-panel"]')?.remove();
+      window.history.replaceState({}, '', originalHref);
+      if (utils.getConfig().env) utils.getConfig().env.name = originalEnvName;
+    });
+
+    it('follows the acom-assistant metadata and defers to acom-assistant-panel', () => {
       expect(utils.isAcomAssistantEnabled()).to.be.false;
       document.head.append(utils.createTag('meta', { name: 'acom-assistant', content: 'on' }));
       expect(utils.isAcomAssistantEnabled()).to.be.true;
+      document.head.append(utils.createTag('meta', { name: 'acom-assistant-panel', content: 'on' }));
+      expect(utils.isAcomAssistantPanelEnabled()).to.be.true;
+      expect(utils.isAcomAssistantEnabled()).to.be.false;
+    });
+
+    it('honors ?acom-assistant-panel=on and off on stage', () => {
+      utils.getConfig().env.name = 'stage';
+      window.history.replaceState({}, '', '?acom-assistant-panel=on');
+      expect(utils.isAcomAssistantPanelEnabled()).to.be.true;
+
+      document.head.append(utils.createTag('meta', { name: 'acom-assistant-panel', content: 'on' }));
+      window.history.replaceState({}, '', '?acom-assistant-panel=off');
+      expect(utils.isAcomAssistantPanelEnabled()).to.be.false;
     });
   });
 });
