@@ -90,7 +90,7 @@ function moveIndicator(indicator, target, container) {
   indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
 }
 
-// Mirror the checked radio into the SM dropdown (radio stays the source of truth)
+// Radio stays the source of truth; the dropdown mirrors it
 function syncTabDropdown(radio) {
   const dropdown = radio.closest('.tabs-wrapper')?.querySelector('.tab-dropdown');
   if (!dropdown) return;
@@ -116,7 +116,6 @@ function initTabDropdown(dropdown) {
     options.forEach((o, i) => o.classList.toggle('highlighted', i === highlightedIndex));
     const option = options[highlightedIndex];
     trigger.setAttribute('aria-activedescendant', option.id);
-    // Keep the highlighted option visible when the list itself scrolls
     if (option.offsetTop < list.scrollTop) {
       list.scrollTop = option.offsetTop;
     } else if (option.offsetTop + option.offsetHeight > list.scrollTop + list.clientHeight) {
@@ -135,7 +134,6 @@ function initTabDropdown(dropdown) {
   const open = (index = getSelectedIndex()) => {
     list.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
-    // Flip above the trigger when there is no room below
     dropdown.removeAttribute('data-placement');
     const listRect = list.getBoundingClientRect();
     const roomAbove = trigger.getBoundingClientRect().top;
@@ -149,12 +147,11 @@ function initTabDropdown(dropdown) {
     const radio = document.getElementById(options[index].dataset.radioId);
     close();
     if (!radio || radio.checked) return;
-    // Check the radio and reuse changeTabs via its change listener
+    // Reuse changeTabs via the radio's change listener
     radio.checked = true;
     radio.dispatchEvent(new Event('change', { bubbles: true }));
   };
 
-  // Pointer and assistive tech activation
   trigger.addEventListener('click', () => (isOpen() ? close() : open()));
 
   trigger.addEventListener('keydown', (e) => {
@@ -182,7 +179,7 @@ function initTabDropdown(dropdown) {
         break;
       case 'Enter':
       case ' ':
-        // Suppress the native button click so the key doesn't toggle twice
+        // Prevent the native button click from toggling twice
         e.preventDefault();
         if (expanded) select(highlightedIndex);
         else open();
@@ -194,7 +191,6 @@ function initTabDropdown(dropdown) {
         }
         break;
       case 'Tab':
-        // Commit the highlighted option, let focus move on
         if (expanded) select(highlightedIndex);
         break;
       default:
@@ -224,7 +220,6 @@ function initTabDropdown(dropdown) {
   dropdown.addEventListener('focusout', (e) => {
     if (!dropdown.contains(e.relatedTarget)) close();
   });
-  // Close if the viewport crosses into the radio layout while open
   window.matchMedia('(width >= 768px)').addEventListener('change', close);
 }
 
@@ -239,7 +234,6 @@ function createTabDropdown(tabListContainer, tabId, labelEl, ariaLabel) {
     'aria-expanded': 'false',
     'aria-controls': listId,
   };
-  // Reuse the radiogroup's visible label, else fall back to the pretext config
   if (labelEl) triggerAttrs['aria-labelledby'] = labelEl.id;
   else if (ariaLabel) triggerAttrs['aria-label'] = ariaLabel;
   const trigger = createTag('button', triggerAttrs);
@@ -290,7 +284,6 @@ function changeTabs(e, config) {
         if (t !== target) t.style.backgroundColor = '';
       });
     }
-    // Keep the SM dropdown in step with deeplinks, remember, and desktop clicks
     syncTabDropdown(target);
   } else {
     parent.querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`).forEach((t) => {
@@ -533,7 +526,7 @@ const init = async (block) => {
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
-  // SM-only dropdown alternative to the radio row (WCAG 1.4.10 reflow)
+  // SM dropdown for radio (WCAG 1.4.10 reflow)
   let tabDropdown;
   if (isRadio) {
     const labelEl = tabListLabelEl?.isConnected ? tabListLabelEl : null;
@@ -585,7 +578,6 @@ const init = async (block) => {
 
   if (tabDropdown) {
     initTabDropdown(tabDropdown);
-    // Initial value; deeplinks/remember already synced via changeTabs
     const checkedRadio = tabListContainer.querySelector('input[type="radio"]:checked');
     if (checkedRadio) syncTabDropdown(checkedRadio);
   }

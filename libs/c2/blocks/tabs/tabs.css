@@ -200,7 +200,6 @@
     }
   }
 
-  /* Dark: dropdown uses default fill, same as the dark radio row container */
   &.radio.dark .tab-dropdown {
     --tab-dropdown-bg: var(--s2a-color-background-default);
   }
@@ -254,26 +253,24 @@
       transform: rotate(180deg);
     }
 
-    /* Open: join trigger and list into one container, bottom border becomes the divider */
     &[aria-expanded='true'] {
       border-color: var(--s2a-color-border-subtle);
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
     }
 
-    /* Hover: strong border for 3:1 non-text contrast; skipped while open so the trigger and list borders stay joined */
+    /* Strong border for 3:1 contrast; skipped while open */
     &:hover:not([aria-expanded='true']) {
       border-color: var(--s2a-color-border-strong);
     }
 
     &:focus-visible {
-      /* Figma focus: 1px ring offset 1px outside the trigger, the gap shows the page background */
       outline: 1px solid var(--s2a-color-border-strong);
       outline-offset: 1px;
       border-color: var(--s2a-color-border-strong);
     }
 
-    /* Open: no outer ring, the highlighted option shows focus instead */
+    /* Open: highlighted option shows focus instead */
     &[aria-expanded='true']:focus-visible {
       outline-color: transparent;
     }
@@ -306,7 +303,6 @@
     box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
   }
 
-  /* Flipped above: mirror the joined corners */
   .tab-dropdown[data-placement='top'] {
     .tab-dropdown-trigger[aria-expanded='true'] {
       border-radius: 0 0 var(--s2a-border-radius-8) var(--s2a-border-radius-8);
@@ -332,7 +328,7 @@
       background: var(--s2a-color-blue-900);
       color: var(--s2a-color-content-knockout);
 
-      /* Background is dropped in forced-colors mode, outline keeps the highlight visible */
+      /* Keeps the highlight visible in forced-colors mode */
       outline: 2px solid transparent;
       outline-offset: -2px;
     }
@@ -428,7 +424,6 @@
       }
     }
 
-    /* Radio row -> dropdown: no horizontal scroller, content-width control */
     &.radio {
       > .tabs-wrapper {
         width: 100%;
@@ -443,8 +438,6 @@
 
       .tab-dropdown {
         display: block;
-
-        /* Same gutter the radiogroup used, aligns with tabs and cards */
         margin: 0 var(--s2a-spacing-24);
       }
     }
