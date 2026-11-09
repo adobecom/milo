@@ -267,7 +267,8 @@ describe('Rich Content', () => {
         </div></div></div></div>
         <div class="section" id="get-insights"><a href="/x">First link</a></div>
         <div class="section" id="share" tabindex="0"></div>
-        <div class="section" id="titled"><h2 style="display:none">Hidden title</h2><h3>Visible title</h3></div>`;
+        <div class="section" id="titled"><h2 style="display:none">Hidden title</h2><h3>Visible title</h3></div>
+        <div class="section" id="2024-plans"><h2 style="visibility:hidden">Invisible</h2><h3>Plans</h3></div>`;
       init(document.querySelector('.rich-content'));
     });
     afterEach(() => {
@@ -309,6 +310,14 @@ describe('Rich Content', () => {
       click(0);
       expect(window.lenis.scrollTo.calledOnceWith(target)).to.be.true;
       expect(document.activeElement === target).to.be.true;
+    });
+
+    it('scrolls to non-selector ids and skips visibility:hidden headings', () => {
+      const scrollTo = sinon.stub(window, 'scrollTo');
+      document.querySelector('.jump-link-anchor').href = '#2024-plans';
+      click(0);
+      expect(scrollTo.calledOnce).to.be.true;
+      expect(document.activeElement === document.getElementById('2024-plans').querySelector('h3')).to.be.true;
     });
 
     it('leaves focus on the link when the target does not exist', () => {

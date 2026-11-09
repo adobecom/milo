@@ -1,5 +1,5 @@
 import { decorateBlockText, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
-import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
 import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -80,14 +80,30 @@ function getJumpTarget(hash) {
     return null;
   }
   const target = document.getElementById(id);
-  return target && !target.classList.contains('dialog-modal') ? target : null;
+  return target?.classList.contains('dialog-modal') ? null : target;
 }
 
+// Scroll to the resolved element, not the hash: scrollToHashedElement skips
+// IDs with `=` or ones that aren't valid selectors (e.g. `#2024-plans`).
+function scrollToJumpTarget(target) {
+  let navHeight;
+  try {
+    navHeight = getGnavHeight();
+  } catch {
+    navHeight = document.querySelector('header')?.offsetHeight || 0;
+  }
+  const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+const isVisible = (el) => (el.checkVisibility
+  ? el.checkVisibility({ visibilityProperty: true })
+  : el.getClientRects().length > 0);
+
 // Focus the first visible heading so screen readers announce only the title;
-// headings in hidden viewport variants can't take focus.
+// hidden headings (viewport variants, visibility:hidden) can't take focus.
 function focusJumpTarget(target) {
-  const el = [...target.querySelectorAll('h1, h2, h3, h4, h5, h6')]
-    .find((heading) => heading.getClientRects().length) ?? target;
+  const el = [...target.querySelectorAll('h1, h2, h3, h4, h5, h6')].find(isVisible) ?? target;
   if (!el.hasAttribute('tabindex')) {
     el.setAttribute('tabindex', '-1');
     el.addEventListener('blur', () => el.removeAttribute('tabindex'), { once: true });
@@ -118,7 +134,7 @@ function decorateJumpLinks(content, foreground) {
         const offset = -(document.querySelector('.global-navigation')?.offsetHeight || 0);
         window.lenis.scrollTo(target, { offset, force: true });
       } else {
-        scrollToHashedElement(hash);
+        scrollToJumpTarget(target);
       }
       focusJumpTarget(target);
     });
