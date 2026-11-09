@@ -45,6 +45,30 @@ describe('AcomAssistant shared client lifecycle', () => {
     await assistant.loadAcomAssistant({ appid: 'surface-one' }, deps);
   }
 
+  describe('checkout client ID', () => {
+    let meta;
+
+    afterEach(() => meta?.remove());
+
+    it('passes bc-checkout-client-id metadata to client initialization', async () => {
+      meta = Object.assign(document.createElement('meta'), {
+        name: 'bc-checkout-client-id',
+        content: 'host-checkout-client',
+      });
+      document.head.append(meta);
+
+      await start();
+
+      expect(client.initialize.firstCall.args[0].checkoutClientId).to.equal('host-checkout-client');
+    });
+
+    it('defaults to acom_bc when bc-checkout-client-id metadata is absent', async () => {
+      await start();
+
+      expect(client.initialize.firstCall.args[0].checkoutClientId).to.equal('acom_bc');
+    });
+  });
+
   it('loads integration client assets for stage', async () => {
     await start();
 
