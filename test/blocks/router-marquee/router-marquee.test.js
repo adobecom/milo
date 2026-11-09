@@ -187,6 +187,43 @@ describe('Router Marquee', () => {
     expect(cards[1].getAttribute('daa-ll')).to.equal('rm-nav-2--Slide two title');
   });
 
+  it('does not statically import late-loaded modules on the render path', async () => {
+    const src = await (await fetch('/libs/c2/blocks/router-marquee/router-marquee.js')).text();
+    expect(src).to.not.include('martech/attributes.js');
+    expect(src).to.not.match(/^import .*utils\/action\.js/m);
+  });
+
+  it('renders before analytics is ready and fires the first slide impression once', async () => {
+    /* eslint-disable no-underscore-dangle */
+    const originalSatellite = window._satellite;
+    delete window._satellite;
+    const observers = new Map();
+    sinon.stub(window, 'IntersectionObserver').callsFake((cb) => ({ observe: (t) => observers.set(t, cb) }));
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.router-marquee');
+    try {
+      init(block);
+      const title = block.querySelector('.rm-slide[daa-lh].is-active .rm-title');
+      expect(title.textContent).to.equal('Slide one title');
+
+      // slide is seen before daa-lh and Launch exist; a repeat must not duplicate the event
+      observers.get(title)([{ target: title, isIntersecting: true }]);
+      block.closest('.section').setAttribute('daa-lh', 's1');
+      await Promise.resolve();
+      window._satellite = { track: sinon.spy() };
+      window.dispatchEvent(new Event('alloy_sendEvent'));
+      observers.get(title)([{ target: title, isIntersecting: true }]);
+
+      const { track } = window._satellite;
+      const { eventInfo } = track.firstCall.args[1].data._adobe_corpnew.digitalData.primaryEvent;
+      expect(track.calledOnce).to.be.true;
+      expect(eventInfo.eventName).to.equal('auto-slideseen-1--Slide one title|s1|b1');
+    } finally {
+      sinon.restore();
+      window._satellite = originalSatellite;
+    }
+  });
+
   it('defers every slide video so none is eager-fetched', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/video.html' });
     const block = document.querySelector('.router-marquee');

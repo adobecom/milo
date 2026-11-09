@@ -106,6 +106,12 @@
           expect(args.mepMartech).to.equal('');
         });
 
+        it('passes fetchAUPSDKInstance so federal UNAV can share the Milo AUP SDK instance', async () => {
+          disableLingo();
+          const args = await runInit();
+          expect(args.fetchAUPSDKInstance).to.be.a('function');
+        });
+
         it('wires decorateBody when lingo is active', async () => {
           enableLingo();
           const args = await runInit();

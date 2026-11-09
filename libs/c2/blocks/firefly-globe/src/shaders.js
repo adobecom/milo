@@ -1,5 +1,5 @@
 // Signed-distance rounded rect (the corner mask). `b` is the FULL half-extent, radius included.
-const RR_SDF = [
+export const RR_SDF = [
   'float rrSDF(vec2 p, vec2 b, float r) {',
   '  vec2 q = abs(p) - b + r;',
   '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
@@ -7,7 +7,7 @@ const RR_SDF = [
 ];
 
 // Inputs scaled first to dodge precision loss at large coords.
-const HASH21 = [
+export const HASH21 = [
   'float hash21(vec2 p) {',
   '  p = fract(p * vec2(0.1031, 0.1030));',
   '  p += dot(p, p + 33.33);',
@@ -70,30 +70,8 @@ export const CARD_VERT = [
   '}',
 ].join('\n');
 
-// Card dissolve + near-camera dispersion dials.
 const GRAIN_CELLS = 160;
-const DISPERSE_EXPAND = 2.5;
-const DISPERSE_JITTER = 0.2;
-const DISPERSE_CHUNKS = 44;
-const DISPERSE_ERODE = 0.22;
-const DISPERSE_EDGE_LEAD = 1.4;
-const DISPERSE_MARGIN = 2 * DISPERSE_JITTER * DISPERSE_EXPAND; // derived so the stages can't drift
-const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
-
-// CARD_VERT plus the dispersion overscan.
-export const CARD_DISPERSE_VERT = [
-  'uniform float uDisperse;',
-  'uniform float uAspect;',
-  'varying vec2 vUv;',
-  'void main() {',
-  `  float s = 1.0 + uDisperse * ${glf(DISPERSE_EXPAND)};`,
-  `  float j = uDisperse * ${glf(DISPERSE_MARGIN)};`,
-  '  vec2 grow = s + j / vec2(max(uAspect, 0.0001), 1.0);',
-  '  vUv = (uv - 0.5) * grow + 0.5;',
-  '  vec3 p = vec3(position.xy * grow, position.z);',
-  '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
-  '}',
-].join('\n');
+export const glf = (n) => n.toFixed(3); // GLSL float literal (a bare `2` is an int there)
 
 export const CARD_FRAG = [
   'uniform sampler2D uMap;',
@@ -106,8 +84,7 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
-  'uniform float uDissolve;', // near-camera dissolve (0 = solid, 1 = expanded + smeared + dispersed)
-  'uniform float uDisperse;', // near-camera explosion (0 = grains stay put); see README
+  'uniform float uDissolve;',
   'uniform float uReveal;', // texture-ready reveal: 0 = contour only, 1 = full photo
   'uniform float uContourFade;', // near-camera gate for the contour (mirrors proxFade)
   'varying vec2 vUv;',
@@ -122,30 +99,7 @@ export const CARD_FRAG = [
   '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float shapeA = 1.0 - smoothstep(-px, px, dsd);', // solid box alpha, for the contour
-  // Uniform-gated, so other phases pay nothing.
-  '  vec2 sUv = fUv;',
-  '  float srcSD = dsd;',
   '  float a = shapeA;',
-  '  if (uDisperse > 0.0) {',
-  `    vec2 chunk = floor(fUv * vec2(uAspect, 1.0) * ${glf(DISPERSE_CHUNKS)});`,
-  '    float h1 = hash21(chunk + vec2(13.10, 71.90));',
-  '    float h2 = hash21(chunk + vec2(3.70, 47.10));',
-  '    float rim = 1.0 - smoothstep(0.0, 0.35, -dsd);',
-  `    float det = h1 / (1.0 + rim * ${glf(DISPERSE_EDGE_LEAD)});`,
-  `    float erode = ${glf(DISPERSE_ERODE)} * uDisperse * fract(h1 * 43.7);`,
-  '    float sg = 1.0;',
-  '    if (det < uDisperse) {',
-  '      float spd = 0.25 + 0.75 * h2;',
-  '      float t = (uDisperse - det) / max(1.0 - det, 1e-4);',
-  `      sg = 1.0 + ${glf(DISPERSE_EXPAND)} * spd * t;`,
-  '      vec2 jit = fract(vec2(h1, h2) * vec2(97.13, 61.70)) * 2.0 - 1.0;',
-  `      vec2 wSrc = (pos - jit * (${glf(DISPERSE_JITTER)} * (sg - 1.0))) / sg;`,
-  '      sUv = wSrc / vec2(uAspect, 1.0) + 0.5;',
-  '    }',
-  '    float pxs = px / sg;',
-  '    srcSD = rrSDF((sUv - 0.5) * vec2(uAspect, 1.0), vec2(uAspect * 0.5, 0.5), uRadius) + erode;',
-  '    a = 1.0 - smoothstep(-pxs, pxs, srcSD);',
-  '  }',
   // Particle grain, eaten edge-first.
   '  float dR = 1.0; float dG = 1.0; float dB = 1.0;',
   '  if (uDissolve > 0.0) {',
@@ -153,7 +107,7 @@ export const CARD_FRAG = [
   '    float nR = hash21(cell + vec2(0.00,  0.00));',
   '    float nG = hash21(cell + vec2(2.10,  1.30));',
   '    float nB = hash21(cell + vec2(1.70, -0.50));',
-  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -srcSD);',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
   '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.4, 0.0, 1.0);',
   '    float pedge = 0.10;',
   '    dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
@@ -167,16 +121,14 @@ export const CARD_FRAG = [
   // The photo alpha is already dispersing when uDissolve > 0, so the reveal reads as the same
   // edge-first un-dissolve.
   '  float outA = mix(contourA, a * uOpacity, uReveal);',
-  // Bail BEFORE the texture fetches — load-bearing for the dispersion's fill cost.
+  // Bail BEFORE the texture fetches.
   '  if (outA < 0.002) discard;',
-  '  vec2 d  = sUv - uHoverPos;',
+  '  vec2 d  = fUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  // Net of uDisperse, so the explosion owns the motion in the sphere phase and this is left to
-  // the texture-ready reveal.
-  '  vec2 mdir = sUv - 0.5;',
+  '  vec2 mdir = fUv - 0.5;',
   '  vec2 meltUv = warpedUv;',
-  '  float melt = max(uDissolve - uDisperse, 0.0);',
+  '  float melt = uDissolve;',
   '  if (melt > 0.0) {',
   '    meltUv = (warpedUv - 0.5) / (1.0 + melt * 1.8) + 0.5;',
   '  }',

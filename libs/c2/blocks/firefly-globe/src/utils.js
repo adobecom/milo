@@ -1,6 +1,5 @@
 export function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 export function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
-export function easeOutQuart(t) { return 1 - (1 - t) ** 4; }
 
 export function lerpN(a, b, t) { return a + (b - a) * t; }
 
@@ -25,15 +24,25 @@ export const TAN_HALF_FOV = Math.tan((CAM_FOV * Math.PI) / 360);
 
 export function pxPerWorldAt(dist, H) { return H / (2 * dist * TAN_HALF_FOV); }
 
+export const TRAVEL_EASE_POW = 3;
+
 export function camZAtTravelT(t, camZSphere, camZEnd) {
-  return lerpN(camZSphere, camZEnd, easeOutCubic(t));
+  return lerpN(camZSphere, camZEnd, 1 - (1 - clamp01(t)) ** TRAVEL_EASE_POW);
 }
 
 export function travelTAtCamZ(z, camZSphere, camZEnd) {
   const span = camZSphere - camZEnd;
   if (!(span > 0)) return 0;
   const eased = Math.min(1, Math.max(0, (camZSphere - z) / span));
-  return 1 - ((1 - eased) ** (1 / 3));
+  return 1 - ((1 - eased) ** (1 / TRAVEL_EASE_POW));
+}
+
+export function travelSpanPx({ blockHeight, travelPx = 0 }) {
+  return travelPx > 0 ? travelPx : Math.max(1, blockHeight);
+}
+
+export function scrollYAtTravelT(t, span) {
+  return span.blockDocTop + t * travelSpanPx(span);
 }
 
 export const SPHERE_INTERACTIVE_T = 0.02;
@@ -56,7 +65,6 @@ export function createFrame() {
     interactive: false,
     activeCamera: null,
     sphereRotActive: false,
-    sphGroupZ: 0,
   };
 }
 
@@ -69,13 +77,14 @@ export function createFrameInput() {
     reducedMotion: false,
     blockDocTop: 0,
     blockHeight: 0,
+    travelPx: 0,
     viewportH: 0,
   };
 }
 
 // No allocation; caller carries frame.scrollY back into input.prevScrollY.
 export function deriveFrame(frame, input) {
-  const { reducedMotion, blockDocTop, blockHeight, viewportH } = input;
+  const { reducedMotion, blockDocTop, blockHeight, travelPx, viewportH } = input;
 
   const dtMs = input.prevNow ? input.now - input.prevNow : FRAME_MS;
   frame.dtScale = Math.max(DT_SCALE_MIN, Math.min(DT_SCALE_MAX, dtMs / FRAME_MS));
@@ -86,7 +95,7 @@ export function deriveFrame(frame, input) {
   frame.scrollVel = reducedMotion ? 0 : Math.abs(scrollY - input.prevScrollY) / frame.dtScale;
 
   frame.entryT = clamp01(1 + (scrollY - blockDocTop) / Math.max(1, viewportH));
-  frame.scrollT = clamp01((scrollY - blockDocTop) / Math.max(1, blockHeight));
+  frame.scrollT = clamp01((scrollY - blockDocTop) / travelSpanPx({ blockHeight, travelPx }));
   frame.sphereFormed = frame.entryT >= 1;
   frame.interactive = frame.entryT >= SPHERE_INTERACTIVE_T;
   return frame;

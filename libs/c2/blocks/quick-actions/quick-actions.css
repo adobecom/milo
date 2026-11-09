@@ -4,21 +4,22 @@
 
   &.blur-background {
     --quick-actions-overlap-radius: var(--s2a-border-radius-22);
+    --quick-actions-mask-stop: calc(var(--s2a-spacing-240) + var(--s2a-spacing-64));
 
     isolation: isolate;
-    background: var(--s2a-color-background-knockout);
 
     &::before {
       content: "";
       position: absolute;
-      inset: 0;
+      inset-inline: 0;
+      inset-block-start: calc(-1 * (var(--quick-actions-mask-stop)));
       z-index: -1;
       pointer-events: none;
-      background: inherit;
+      background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-transparent-black-48) var(--quick-actions-mask-stop), var(--s2a-color-gray-1000) 100%);
     }
 
     .section:has(+ .section:is(.rounded-corners, .rounded-corners-top)) &::before {
-      inset: 0 0 calc(-1 * var(--quick-actions-overlap-radius)) 0;
+      inset-block-end: calc(-1 * var(--quick-actions-overlap-radius));
     }
   }
 }
@@ -199,18 +200,8 @@ img.quick-actions-media {
 }
 
 @media (width >= 768px) {
-  .quick-actions {
-    &.blur-background {
-      --quick-actions-overlap-radius: var(--s2a-border-radius-xl);
-
-      background: transparent;
-
-      &::before {
-        background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 100%);
-        backdrop-filter: blur(47px);
-        mask-image: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-gray-1000) 40%);
-      }
-    }
+  .quick-actions.blur-background {
+    --quick-actions-overlap-radius: var(--s2a-border-radius-xl);
   }
 }
 
