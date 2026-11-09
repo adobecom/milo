@@ -331,6 +331,140 @@ describe('autoblock', () => {
       }
     });
 
+    it('debounces the resize style sync by 150ms', async () => {
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 24px; }
+        @media (max-width: 767px) { merch-card h3 { font-size: 18px; } }
+      `;
+      const card = makeCard(['h3']);
+      document.head.appendChild(style);
+      document.body.appendChild(card);
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'], shouldClearNativeTimers: true });
+      try {
+        await setViewport({ width: 1200, height: 800 });
+        overrideCardHeadingLevel(card, 2);
+        const heading = card.querySelector('h2');
+        expect(heading.style.fontSize).to.equal('24px');
+        await setViewport({ width: 600, height: 800 });
+        window.dispatchEvent(new Event('resize'));
+        clock.tick(100);
+        window.dispatchEvent(new Event('resize'));
+        clock.tick(100);
+        expect(heading.style.fontSize).to.equal('24px');
+        clock.tick(50);
+        expect(heading.style.fontSize).to.equal('18px');
+      } finally {
+        clock.restore();
+        style.remove();
+        card.remove();
+        await setViewport(viewport);
+      }
+    });
+
+    // Records the inline style of every heading each time a probe's computed style is read, so a
+    // write landing between two reads (a forced style recalc per read) can be detected.
+    const recordProbeReads = () => {
+      const reads = [];
+      const realGetComputedStyle = window.getComputedStyle.bind(window);
+      const stub = sinon.stub(window, 'getComputedStyle').callsFake((el, ...args) => {
+        const computed = realGetComputedStyle(el, ...args);
+        if (!el.hasAttribute?.('data-mas-orig-level') || el.style.position !== 'absolute') return computed;
+        return new Proxy(computed, {
+          get(target, prop) {
+            if (typeof prop === 'string') {
+              reads.push([...document.querySelectorAll('[data-mas-orig-level]')]
+                .filter((h) => !h.style.position)
+                .map((h) => h.style.cssText));
+            }
+            const value = Reflect.get(target, prop, target);
+            return typeof value === 'function' ? value.bind(target) : value;
+          },
+        });
+      });
+      return { reads, restore: () => stub.restore() };
+    };
+
+    it('reads every heading probe before writing any heading style', () => {
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 20px; }
+        merch-card h4 { font-size: 14px; }
+        merch-card h5 { font-size: 12px; }
+      `;
+      const card = makeCard(['h3', 'h4', 'h5']);
+      document.head.appendChild(style);
+      document.body.appendChild(card);
+      const recorder = recordProbeReads();
+      try {
+        overrideCardHeadingLevel(card, 2);
+        expect(recorder.reads.length).to.be.greaterThan(0);
+        recorder.reads.forEach((inlineStyles) => {
+          expect(inlineStyles).to.deep.equal(['', '', '']);
+        });
+        const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
+        expect(headings.map((h) => h.tagName)).to.deep.equal(['H2', 'H3', 'H4']);
+        expect(headings.map((h) => h.style.fontSize)).to.deep.equal(['20px', '14px', '12px']);
+        expect(card.children.length).to.equal(3);
+      } finally {
+        recorder.restore();
+        style.remove();
+        card.remove();
+      }
+    });
+
+    it('resyncs the headings of every card in a single read-then-write pass on resize', async () => {
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 24px; }
+        @media (max-width: 767px) { merch-card h3 { font-size: 18px; } }
+      `;
+      const cards = [makeCard(['h3', 'h3']), makeCard(['h3'])];
+      document.head.appendChild(style);
+      cards.forEach((card) => document.body.appendChild(card));
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      let recorder;
+      try {
+        await setViewport({ width: 1200, height: 800 });
+        cards.forEach((card) => overrideCardHeadingLevel(card, 2));
+        const headings = cards.flatMap((card) => [...card.querySelectorAll('h2')]);
+        expect(headings.length).to.equal(3);
+        const before = headings.map((h) => h.style.cssText);
+        expect(headings.map((h) => h.style.fontSize)).to.deep.equal(['24px', '24px', '24px']);
+        await setViewport({ width: 600, height: 800 });
+        recorder = recordProbeReads();
+        window.dispatchEvent(new Event('resize'));
+        clock.tick(150);
+        expect(recorder.reads.length).to.be.greaterThan(0);
+        recorder.reads.forEach((inlineStyles) => {
+          expect(inlineStyles).to.deep.equal(before);
+        });
+        expect(headings.map((h) => h.style.fontSize)).to.deep.equal(['18px', '18px', '18px']);
+        cards.forEach((card) => expect(card.children.length).to.equal(card.querySelectorAll('h2').length));
+      } finally {
+        recorder?.restore();
+        clock.restore();
+        style.remove();
+        cards.forEach((card) => card.remove());
+        await setViewport(viewport);
+      }
+    });
+
+    it('removes every probe even when measuring fails', () => {
+      const card = makeCard(['h3', 'h4']);
+      document.body.appendChild(card);
+      const stub = sinon.stub(window, 'getComputedStyle').throws(new Error('measure failed'));
+      try {
+        expect(() => overrideCardHeadingLevel(card, 2)).to.throw('measure failed');
+        expect(card.children.length).to.equal(2);
+      } finally {
+        stub.restore();
+        card.remove();
+      }
+    });
+
     it('swaps the tag of a heading wrapping a customized built-in (inline-price), preserving content', () => {
       const card = makeCard(['h3']);
       const priceHeading = document.createElement('h3');

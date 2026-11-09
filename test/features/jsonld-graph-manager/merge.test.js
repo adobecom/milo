@@ -156,11 +156,11 @@ describe('SoftwareApplication subtype preservation', () => {
     // Producer-only fields preserved from both contributions.
     expect(app.browserRequirements).to.equal('HTML5');
     expect(app.applicationCategory).to.equal('BusinessApplication');
-    // AggregateRating hoisted to top-level node, referenced by @id.
-    expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
-    const rating = graph.find((n) => n['@type'] === 'AggregateRating');
+    const rating = app.aggregateRating;
     expect(rating).to.exist;
-    expect(rating['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    expect(rating['@type']).to.equal('AggregateRating');
+    expect(rating).to.not.have.property('@id');
+    expect(graph.find((n) => n['@type'] === 'AggregateRating')).to.not.exist;
     expect(rating.ratingValue).to.equal('4.61');
     expect(rating.ratingCount).to.equal('269519');
   });

@@ -138,6 +138,8 @@
   --body-font-family: adobe-clean-arabic, 'Adobe Clean', adobe-clean, adobe-arabic, myriad-arabic, 'Trebuchet MS', sans-serif;
   --font-size-multiplier: 1.25;
   --type-heading-xxxl-lh: calc(var(--type-heading-xxxl-size) * 1.1);
+  --type-heading-xxl-lh: calc(var(--type-heading-xxl-size) * 1.2);
+  --type-heading-xl-lh: calc(var(--type-heading-xl-size) * 1.2);
 }
 
 :root:lang(he) {
@@ -186,8 +188,15 @@
 }
 
 @media (max-width: 1023px) {
-  :root header.c2-gnav-c1-host:has(.feds-localnav-bar) {
+  :root header.c2-gnav-c1-host:has(.feds-localnav-bar),
+  :root:has(> head > meta[name="localnav"][content="true"]) header.c2-gnav-c1-host {
     --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+  }
+}
+
+@media (min-width: 1024px) {
+  :root:has(> head > meta[name="localnav"][content="true"]) header.c2-gnav-c1-host:not(.is-compact):has(> .breadcrumbs, > nav > .feds-breadcrumbs) {
+    padding-bottom: var(--global-height-breadcrumbs);
   }
 }
 

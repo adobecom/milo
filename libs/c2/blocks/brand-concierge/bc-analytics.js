@@ -1,6 +1,20 @@
 import { getConfig } from '../../../utils/utils.js';
 import { getChatSessionId } from './bc-utils.js';
 
+const getCardProductName = (element) => (
+  element?.entity_info?.productName ?? element?.productName
+);
+const getCardProductPageURL = (element) => (
+  element?.entity_info?.productPageURL ?? element?.productPageURL
+);
+const FIREFLY_CARD_TYPES = ['firefly-community-gallery', 'heroMediaCard'];
+const getFireflyLoginStatusSuffix = (element) => {
+  const isFireflyCard = FIREFLY_CARD_TYPES.includes(element?.type)
+    || FIREFLY_CARD_TYPES.includes(element?.cardType);
+  if (!isFireflyCard || !element?.loginStatus) return '';
+  return `|loginStatus:${element.loginStatus}`;
+};
+
 export function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
@@ -79,7 +93,7 @@ export const bcAnalytics = (event) => {
         // eslint-disable-next-line no-case-declarations
         let cardimpression = '';
         // eslint-disable-next-line no-return-assign
-        event.data?.element.forEach((element) => cardimpression += `BC-card|${element.cardType}|${element.productName}|${element.productPageURL},`);
+        event.data?.element.forEach((element) => cardimpression += `BC-card|${element.cardType}|${getCardProductName(element)}|${getCardProductPageURL(element)},`);
         _satellite.track('event', {
           data: {
             web: { webInteraction: { name: `BC-card_rendered|${event.data?.displayMode}` } },
@@ -88,16 +102,18 @@ export const bcAnalytics = (event) => {
           },
         });
         break;
-      case 'card:clicked':
+      case 'card:clicked': {
+        const element = event.data?.element;
+        const loginStatusSuffix = getFireflyLoginStatusSuffix(element);
         _satellite.track('event', {
           data: {
-            web: { webInteraction: { name: `BC-card_clicked|${event.data?.element?.cardType}|${event.data?.element?.productName}|loginStatus:${event.data?.element?.loginStatus}` } },
+            web: { webInteraction: { name: `BC-card_clicked|${element?.cardType}|${getCardProductName(element)}${loginStatusSuffix}` } },
             _adobe_corpnew: {
               digitalData: {
                 primaryEvent: {
                   eventInfo: {
                     interaction: {
-                      click: `BC-card|${event.data?.element?.cardType}|${event.data?.element?.productName}|${event.data?.element?.productPageURL}|loginStatus:${event.data?.element?.loginStatus}`,
+                      click: `BC-card|${element?.cardType}|${getCardProductName(element)}|${event.data?.destinationUrl ?? ''}${loginStatusSuffix}`,
                       iclick: true,
                     },
                   },
@@ -107,6 +123,7 @@ export const bcAnalytics = (event) => {
           },
         });
         break;
+      }
       case 'cta:clicked':
         _satellite.track('event', {
           data: {

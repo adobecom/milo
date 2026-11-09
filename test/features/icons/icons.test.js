@@ -105,6 +105,32 @@ describe('Icon Support', () => {
     expect(svgs.length).to.equal(1);
   });
 
+  it('Fetches an icon only once when multiple instances load concurrently', async () => {
+    const dupeIcons = [...Array(5)].map(() => {
+      const icon = createTag('span', { class: 'icon icon-concurrent-dupe' });
+      document.body.appendChild(icon);
+      return icon;
+    });
+
+    await loadIcons(dupeIcons, config);
+
+    const dupeFetches = fetchStub.getCalls().filter(({ args }) => args[0].includes('concurrent-dupe'));
+    expect(dupeFetches.length).to.equal(1);
+    dupeIcons.forEach((icon) => expect(icon.querySelector('svg')).to.exist);
+  });
+
+  it('Retries a failed icon when a later fragment loads it', async () => {
+    fetchStub.withArgs(sinon.match('retry-after-fail')).onFirstCall().resolves({ ok: false });
+
+    const sectionIcon = createTag('span', { class: 'icon icon-retry-after-fail' });
+    await loadIcons([sectionIcon], config);
+    expect(sectionIcon.querySelector('svg')).to.not.exist;
+
+    const fragmentIcon = createTag('span', { class: 'icon icon-retry-after-fail' });
+    await loadIcons([fragmentIcon], config);
+    expect(fragmentIcon.querySelector('svg')).to.exist;
+  });
+
   it('Creates default tooltip (right-aligned)', async () => {
     await loadIcons(icons, config);
     const tooltip = document.querySelector('.milo-tooltip.right');

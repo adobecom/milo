@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { DEBOUNCE_TIME, getLocalStorageFilter } from '../../../libs/blocks/mmm/mmm.js';
+import { DEBOUNCE_TIME, MMM_METADATA_LOCAL_STORAGE_KEY, getLocalStorageFilter } from '../../../libs/blocks/mmm/mmm.js';
 import { getConfig } from '../../../libs/utils/utils.js';
 
 const config = getConfig();
@@ -45,6 +45,7 @@ describe('MMM - Target Cleanup Report', () => {
     expect(document.querySelector('#mmm-pagination')).to.exist;
     expect(document.querySelector('#mmm-search-filter')).to.exist;
     expect(document.querySelector('#mmm-lastSeenManifest')).to.exist;
+    expect(document.querySelector('.mmm-pagination-summary span').textContent).to.equal('1 - 25 of 356');
   });
 });
 
@@ -211,5 +212,96 @@ describe('MMM', () => {
     expect(filterData.pageNum).to.not.be.null;
     expect(filterData.subdomain).to.not.be.null;
     expect(filterData.lastSeenManifest).to.not.be.null;
+  });
+});
+
+describe('MMM - stored data is rendered as text', () => {
+  const PAYLOAD = '<img class="xss" src="x" onerror="window.mmmXss=true">';
+
+  async function initMmm(bodyPath, jsonPath) {
+    await loadJsonAndSetResponse(jsonPath);
+    document.body.innerHTML = await readFile({ path: bodyPath });
+    const module = await import('../../../libs/blocks/mmm/mmm.js');
+    await module.default(document.querySelector('.mmm'));
+  }
+
+  beforeEach(() => {
+    delete window.mmmXss;
+    localStorage.clear();
+  });
+
+  after(() => {
+    delete window.mmmXss;
+    localStorage.clear();
+  });
+
+  it('escapes report rows and drops unsafe hrefs', async () => {
+    await initMmm('./mocks/bodyReport.html', './mocks/get-report-xss.json');
+    await delay(50);
+    const report = document.querySelector('.mmm-report');
+    expect(report.querySelectorAll('.xss').length).to.equal(0);
+    expect(window.mmmXss).to.be.undefined;
+
+    const [first, second] = report.querySelectorAll('.mmm-report-row');
+    expect(first.querySelector('a').getAttribute('href')).to.equal('https://www.adobe.com/products/photoshop.html?mep');
+    expect(first.children[2].textContent).to.equal(PAYLOAD);
+    const manifestLink = first.querySelector('a.small');
+    expect(manifestLink.textContent).to.equal(PAYLOAD);
+    expect(manifestLink.hasAttribute('href')).to.be.false;
+    expect(second.querySelector('a').hasAttribute('href')).to.be.false;
+    report.querySelectorAll('.mmm-report-header .sortable').forEach((header) => {
+      expect(header.dataset.order).to.be.oneOf(['asc', 'desc']);
+    });
+  });
+
+  it('copies only rows with a safe page URL', async () => {
+    await initMmm('./mocks/bodyReport.html', './mocks/get-report-xss.json');
+    await delay(50);
+    const writeText = stub(navigator.clipboard, 'writeText').resolves();
+    try {
+      document.querySelectorAll('.mmm-report-add').forEach((checkbox) => { checkbox.checked = true; });
+      document.querySelector('.mmm-report-copy').click();
+      expect(writeText.calledOnce).to.be.true;
+      expect(writeText.firstCall.args[0]).to.equal('Please turn off Target integration from the following page:\nhttps://www.adobe.com/products/photoshop.html');
+    } finally {
+      writeText.restore();
+    }
+  });
+
+  it('escapes the page list', async () => {
+    await initMmm('./mocks/body.html', './mocks/get-pages-xss.json');
+    await delay(50);
+    const dt = document.querySelector('dl.mmm dt');
+    expect(dt.querySelectorAll('.xss').length).to.equal(0);
+    expect(window.mmmXss).to.be.undefined;
+    const anchor = dt.querySelector('h5 a');
+    expect(anchor.hasAttribute('href')).to.be.false;
+    expect(anchor.textContent).to.include(PAYLOAD);
+    expect(dt.querySelector('.mmm-page_item-subtext').textContent).to.equal(`${PAYLOAD} Manifest(s) found`);
+    const pagination = document.querySelector('#mmm-pagination');
+    expect(pagination.querySelectorAll('.xss').length).to.equal(0);
+    expect(pagination.querySelector('#mmm-pagination-no-results')).to.exist;
+  });
+
+  it('escapes metadata lookup results', async () => {
+    const match = `https://www.adobe.com/${PAYLOAD}.html`;
+    const notFound = `https://www.adobe.com/${PAYLOAD}-missing.html`;
+    localStorage.setItem(MMM_METADATA_LOCAL_STORAGE_KEY, JSON.stringify({
+      selectedRepo: 'cc',
+      metadataFilter: `${match}\n${notFound}`,
+    }));
+    await initMmm('./mocks/bodyMetadataLookup.html', './mocks/get-metadata-xss.json');
+    await delay(DEBOUNCE_TIME + 50);
+    const results = document.querySelector('.mmm-metadata-lookup__results');
+    expect(results.querySelectorAll('.xss').length).to.equal(0);
+    expect(window.mmmXss).to.be.undefined;
+    const items = [...results.querySelectorAll('.mmm-metadata-url-pod__item span')];
+    expect(items.map((item) => item.textContent)).to.have.members([
+      `/${PAYLOAD}`,
+      `/${PAYLOAD}-missing`,
+    ]);
+    const copyButtons = results.querySelectorAll('button.mmm-metadata-lookup__button');
+    expect(copyButtons.length).to.equal(2);
+    copyButtons.forEach((button) => expect(() => JSON.parse(button.dataset.result)).to.not.throw());
   });
 });

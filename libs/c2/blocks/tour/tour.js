@@ -49,6 +49,23 @@ function addCloseAnimation(el) {
   };
 }
 
+function addCurtainCloseAnimation(modal) {
+  const curtain = modal.nextElementSibling;
+  if (!curtain?.matches('.modal-curtain') || curtain.classList.contains('tour-curtain')) return;
+  curtain.classList.add('tour-curtain');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const originalRemove = curtain.remove.bind(curtain);
+  curtain.remove = () => {
+    curtain.classList.remove('modal-curtain', 'is-open');
+    curtain.classList.add('is-closing');
+    const fallback = setTimeout(originalRemove, 600);
+    curtain.addEventListener('animationend', () => {
+      clearTimeout(fallback);
+      originalRemove();
+    }, { once: true });
+  };
+}
+
 function addGrabHandle(el) {
   if (!window.matchMedia('(pointer: coarse)').matches) return;
   const modal = el.closest('.dialog-modal');
@@ -190,6 +207,7 @@ export default function init(el) {
   window.addEventListener('milo:modal:loaded', () => {
     const dialog = el.closest('.dialog-modal');
     if (!dialog) return;
+    addCurtainCloseAnimation(dialog);
     const labelIds = [
       el.querySelector('.tour-header .eyebrow'),
       el.querySelector('.tour-header h3'),

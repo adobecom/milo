@@ -1,14 +1,17 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { readFile } from '@web/test-runner-commands';
 import * as TL from '../../../../libs/c2/blocks/firefly-globe/src/utils.js';
 import {
+  DEFAULT_MACHINE_TAG,
   escapeHtml,
   fireflyRenditionUrl,
   scatterCards,
   parseAuthoredContent,
   buildGlobeDom,
   fetchFireflyAssets,
-  layoutQuote,
+  plainQuote,
+  appendFireflyParams,
 } from '../../../../libs/c2/blocks/firefly-globe/src/authoring.js';
 
 // Helpers
@@ -141,42 +144,42 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
     expect(labels.rotateLeft).to.equal('Rotate left');
   });
 
-  it('parses "categoryId || machineTag || cgenId || ctaLabel" from the cards cell', () => {
+  it('parses "categoryId || machineTag || campaignId || ctaLabel" from the cards cell', () => {
     const el = makeEl(`
-      ${makeRow('<div><p>cat-123 || acom_ff_globe_assets || promo-9 || Open in Firefly</p></div>')}
+      ${makeRow('<div><p>cat-123 || custom_tag || promo-9 || Open in Firefly</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
+    const { categoryId, machineTag, campaignId, ctaLabel } = parseAuthoredContent(el);
     expect(categoryId).to.equal('cat-123');
-    expect(machineTag).to.equal('acom_ff_globe_assets');
-    expect(cgenId).to.equal('promo-9');
+    expect(machineTag).to.equal('custom_tag');
+    expect(campaignId).to.equal('promo-9');
     expect(ctaLabel).to.equal('Open in Firefly');
   });
 
-  it('machineTag is null when omitted', () => {
+  it('machineTag defaults to DEFAULT_MACHINE_TAG when omitted', () => {
     const el = makeEl(`
       ${makeRow('<div><p>cat-123</p></div>')}
       ${makeRow('<div></div><div><p>Drag</p></div>')}
       ${makeRow('')}
     `);
-    expect(parseAuthoredContent(el).machineTag).to.be.null;
+    expect(parseAuthoredContent(el).machineTag).to.equal(DEFAULT_MACHINE_TAG);
   });
 
   // Authors can skip the machineTag slot with an empty field and keep the
-  // later slots in place: "cat || || cgen || cta" or "cat |||| cgen || cta".
+  // later slots in place: "cat || || campaign || cta" or "cat |||| campaign || cta".
   ['cat-123 || || promo-9 || Open in Firefly', 'cat-123 |||| promo-9 || Open in Firefly']
     .forEach((cards) => {
-      it(`treats an empty machineTag slot as none: "${cards}"`, () => {
+      it(`treats an empty machineTag slot as the default: "${cards}"`, () => {
         const el = makeEl(`
           ${makeRow(`<div><p>${cards}</p></div>`)}
           ${makeRow('<div></div><div><p>Drag</p></div>')}
           ${makeRow('')}
         `);
-        const { categoryId, machineTag, cgenId, ctaLabel } = parseAuthoredContent(el);
+        const { categoryId, machineTag, campaignId, ctaLabel } = parseAuthoredContent(el);
         expect(categoryId).to.equal('cat-123');
-        expect(machineTag).to.be.null;
-        expect(cgenId).to.equal('promo-9');
+        expect(machineTag).to.equal(DEFAULT_MACHINE_TAG);
+        expect(campaignId).to.equal('promo-9');
         expect(ctaLabel).to.equal('Open in Firefly');
       });
     });
@@ -212,6 +215,29 @@ describe('firefly-globe: parseAuthoredContent — positional rows', () => {
       ${makeRow('<blockquote>A quote</blockquote>')}
     `);
     expect(() => parseAuthoredContent(el)).not.to.throw();
+  });
+
+  it('parses a representative authored DA block fixture end to end', async () => {
+    const content = parseAuthoredContent(makeEl(
+      await readFile({ path: './mocks/authored.html' }),
+    ));
+
+    expect(content.categoryId).to.equal('featured-category');
+    expect(content.machineTag).to.equal('acom_firefly_globe');
+    expect(content.campaignId).to.equal('campaign-123');
+    expect(content.ctaLabel).to.equal('Open in Firefly');
+    expect(content.touchHint.paras.map((p) => p.textContent)).to.deep.equal([
+      'Drag to explore Firefly creations.',
+      'Select an image to see how it was made.',
+    ]);
+    expect(content.hintText).to.equal('Click and Drag');
+    expect(content.instructions).to.equal('Enter Firefly gallery');
+    expect(content.labels.cardLabel(3, 12)).to.equal('Creation 3 of 12');
+    expect(content.pullQuote).to.deep.equal({
+      quote: 'Imagine it, then create it.',
+      name: 'Firefly Community',
+      role: 'Creative AI artists',
+    });
   });
 });
 
@@ -333,12 +359,12 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     fetchStub = sinon.stub(window, 'fetch').resolves({ ok: false, status: 503 });
     const log = sinon.spy();
     window.lana = { log };
-    expect(await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets')).to.be.null;
+    expect(await fetchFireflyAssets('cat', 'en-US', 'custom_tag')).to.be.null;
     expect(log.calledOnce).to.be.true;
     const [msg, opts] = log.firstCall.args;
     expect(msg).to.include('503');
     expect(msg).to.include('category_id=cat');
-    expect(msg).to.include('machine_tag=acom_ff_globe_assets');
+    expect(msg).to.include('machine_tag=custom_tag');
     expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'error' });
   });
 
@@ -349,6 +375,27 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect(await fetchFireflyAssets('cat')).to.be.null;
     expect(log.calledOnce).to.be.true;
     expect(log.firstCall.args[0]).to.include('boom');
+  });
+
+  it('warns with the request URL and returns null when no assets come back', async () => {
+    stubAssets([]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat', 'en-US', 'custom_tag')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    const [msg, opts] = log.firstCall.args;
+    expect(msg).to.include('0 returned');
+    expect(msg).to.include('category_id=cat');
+    expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'warn' });
+  });
+
+  it('warns and returns null when every asset is unusable', async () => {
+    stubAssets([asset({ _links: {} })]);
+    const log = sinon.spy();
+    window.lana = { log };
+    expect(await fetchFireflyAssets('cat')).to.be.null;
+    expect(log.calledOnce).to.be.true;
+    expect(log.firstCall.args[0]).to.include('1 returned');
   });
 
   it('maps an asset to a card with the high-res component-rendition template and model tags', async () => {
@@ -397,6 +444,64 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     expect((await fetchFireflyAssets('cat'))[0].prompt).to.equal('English');
   });
 
+  const promptFor = async (prompts, loc) => {
+    fetchStub?.restore();
+    stubAssets([asset({ custom: { input: { 'firefly#prompts': prompts } } })]);
+    return (await fetchFireflyAssets('cat', loc))[0].prompt;
+  };
+
+  it('matches Chinese prompts by script, not just language', async () => {
+    const zh = { 'en-US': 'English', 'zh-Hans-CN': '简体', 'zh-Hant-TW': '繁體' };
+    expect(await promptFor(zh, 'zh-CN')).to.equal('简体');
+    expect(await promptFor(zh, 'zh-TW')).to.equal('繁體');
+    expect(await promptFor(zh, 'zh-HK')).to.equal('繁體');
+    expect(await promptFor(zh, 'zh_TW')).to.equal('繁體');
+    expect(await promptFor({ 'en-US': 'English', 'zh-Hant-TW': '繁體' }, 'zh-CN')).to.equal('English');
+  });
+
+  it('prefers a same-region key among same language and script', async () => {
+    const zh = { 'zh-Hant-TW': 'TW', 'zh-Hant-HK': 'HK' };
+    expect(await promptFor(zh, 'zh-HK')).to.equal('HK');
+    expect(await promptFor({ 'es-ES': 'España', 'en-US': 'English' }, 'es-MX')).to.equal('España');
+  });
+
+  it('maps Milo no-NO to the API nb-NO key', async () => {
+    expect(await promptFor({ 'en-US': 'English', 'nb-NO': 'Norsk' }, 'no-NO')).to.equal('Norsk');
+  });
+
+  it('skips blank localized prompts and ignores invalid page locales', async () => {
+    expect(await promptFor({ 'fr-FR': '  ', 'en-US': 'English' }, 'fr-FR')).to.equal('English');
+    expect(await promptFor({ 'fr-FR': 'Français', 'en-US': 'English' }, 'not a locale')).to.equal('English');
+  });
+
+  it('falls back to originalPrompt, then title, when localized prompts are missing', async () => {
+    stubAssets([
+      asset({ title: 'Title', custom: { input: { 'firefly#originalPrompt': 'Original' } } }),
+      asset({ title: 'Prompt: Title only', custom: { input: {} } }),
+      asset({ title: 'Title', custom: { input: { 'firefly#prompts': { 'en-US': ' ' }, 'firefly#originalPrompt': '' } } }),
+      asset({ title: undefined, custom: undefined }),
+    ]);
+    const cards = await fetchFireflyAssets('cat', 'es-MX');
+    expect(cards.map((c) => c.prompt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
+    expect(cards.map((c) => c.alt)).to.deep.equal(['Original', 'Prompt: Title only', 'Title', '']);
+  });
+
+  it('tags the prompt with its source locale, or none when unknown', async () => {
+    stubAssets([
+      asset(),
+      asset({ custom: { input: { 'firefly#prompts': { zh_TW: '繁體' } } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'pt-BR' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'fr_CA' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O', 'firefly#locale': 'not a locale' } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#prompts': { bogus_key_x: 'B' } } } }),
+      asset({ title: 'T', custom: { input: { 'firefly#originalPrompt': 'O' } } }),
+      asset({ title: 'T', custom: { input: {} } }),
+    ]);
+    const cards = await fetchFireflyAssets('cat', 'ja-JP');
+    expect(cards.map((c) => c.lang)).to.deep.equal(['en-US', 'zh-TW', 'pt-BR', 'fr-CA', '', '', '', '']);
+    expect(cards[5].prompt).to.equal('B');
+  });
+
   it('uses the prompt as the alt fallback', async () => {
     stubAssets([asset()]);
     expect((await fetchFireflyAssets('cat', 'en-US'))[0].alt).to.equal('English');
@@ -409,10 +514,10 @@ describe('firefly-globe: fetchFireflyAssets', () => {
 
   it('adds machine_tag to the query when authored', async () => {
     stubAssets([asset()]);
-    await fetchFireflyAssets('cat', 'en-US', 'acom_ff_globe_assets');
+    await fetchFireflyAssets('cat', 'en-US', 'custom_tag');
     const url = new URL(fetchStub.firstCall.args[0]);
     expect(url.searchParams.get('category_id')).to.equal('cat');
-    expect(url.searchParams.get('machine_tag')).to.equal('acom_ff_globe_assets');
+    expect(url.searchParams.get('machine_tag')).to.equal('custom_tag');
   });
 
   it('omits machine_tag when not authored', async () => {
@@ -437,7 +542,6 @@ describe('firefly-globe: frame state', () => {
       interactive: false,
       activeCamera: null,
       sphereRotActive: false,
-      sphGroupZ: 0,
     };
     expect(frame).to.deep.equal(expected);
   });
@@ -473,6 +577,16 @@ describe('firefly-globe: frame state', () => {
     expect(derive(2000).scrollT).to.be.closeTo(0.5, 1e-9);
     expect(derive(3000).scrollT).to.equal(1);
     expect(derive(4000).scrollT).to.equal(1);
+  });
+
+  it('paces scrollT by its own travel span when given one, and inverts that mapping', () => {
+    const span = { blockDocTop: 1000, blockHeight: 2000, travelPx: 1600 };
+    expect(derive(1800, { travelPx: 1600 }).scrollT).to.be.closeTo(0.5, 1e-9);
+    expect(derive(2600, { travelPx: 1600 }).scrollT).to.equal(1);
+    expect(TL.scrollYAtTravelT(0.5, span)).to.equal(1800);
+    expect(TL.scrollYAtTravelT(1, { ...span, travelPx: 0 })).to.equal(3000);
+    expect(derive(TL.scrollYAtTravelT(0.3, span), { travelPx: 1600 }).scrollT)
+      .to.be.closeTo(0.3, 1e-9);
   });
 
   it('scrollVel is the per-frame delta scaled by dtScale', () => {
@@ -513,105 +627,71 @@ describe('firefly-globe: frame state', () => {
 });
 
 // ──────────────────────────────────────────────────────────────────
-describe('firefly-globe: layoutQuote', () => {
+describe('firefly-globe: plainQuote', () => {
   let host;
 
-  // Real layout: the split reads offsetTop per word, so the node must be in the document
-  // and narrow enough to wrap.
-  function makeQuote(text, width = 220) {
-    host = makeEl(`<div class="firefly-globe-pullquote" style="width:${width}px;padding-inline:0">
+  function makeQuote(text, pad = 40) {
+    host = makeEl(`<div class="firefly-globe-pullquote" style="width:400px;padding-inline:${pad}px">
       <blockquote class="firefly-globe-pullquote-quote"
         style="font:16px/1.2 monospace;margin:0">${text}</blockquote></div>`);
     document.body.append(host);
     return host.querySelector('.firefly-globe-pullquote-quote');
   }
 
-  const lineTexts = (el) => [...el.querySelectorAll('.firefly-globe-pullquote-line-inner')]
-    .map((n) => n.textContent);
-
   afterEach(() => {
     host?.remove();
     host = null;
   });
 
-  it('wraps a long quote into more than one masked line', () => {
-    const quoteEl = makeQuote('one two three four five six seven eight nine ten eleven twelve');
-    const lines = layoutQuote(quoteEl);
-    expect(lines.length).to.be.above(1);
-    lines.forEach((line) => {
-      expect(line.classList.contains('firefly-globe-pullquote-line')).to.be.true;
-      expect(line.querySelector('.firefly-globe-pullquote-line-inner')).to.exist;
-    });
+  it('restores the authored text on every call, whatever the DOM became', () => {
+    const quoteEl = makeQuote('alpha beta gamma');
+    expect(plainQuote(quoteEl)).to.equal('alpha beta gamma');
+    quoteEl.innerHTML = '<span>later markup</span>';
+    expect(plainQuote(quoteEl)).to.equal('alpha beta gamma');
+    expect(quoteEl.textContent).to.equal('alpha beta gamma');
   });
 
-  it('returns the rendered lines and marks the quote as split', () => {
-    const quoteEl = makeQuote('alpha beta gamma delta epsilon zeta eta theta');
-    const lines = layoutQuote(quoteEl);
-    expect(quoteEl.classList.contains('firefly-globe-pullquote-lines')).to.be.true;
-    expect(lines).to.have.length(quoteEl.querySelectorAll('.firefly-globe-pullquote-line').length);
+  it('hangs an opening quote mark once, in its own span', () => {
+    const quoteEl = makeQuote('\u201Calpha beta\u201D');
+    plainQuote(quoteEl);
+    plainQuote(quoteEl);
+    const marks = quoteEl.querySelectorAll('.hang-opening-quote');
+    expect(marks).to.have.length(1);
+    expect(marks[0].textContent).to.equal('\u201C');
+    expect(quoteEl.textContent).to.equal('\u201Calpha beta\u201D');
   });
 
-  it('preserves every word, in order, across the split', () => {
-    const text = 'alpha beta gamma delta epsilon zeta eta theta iota kappa';
-    const quoteEl = makeQuote(text);
-    layoutQuote(quoteEl);
-    expect(lineTexts(quoteEl).join(' ')).to.equal(text);
+  it('keeps the mark inline when there is no gutter to hang it in', () => {
+    const quoteEl = makeQuote('\u201Calpha\u201D', 0);
+    plainQuote(quoteEl);
+    expect(quoteEl.querySelector('.hang-opening-quote')).to.be.null;
   });
 
-  it('keeps a space between lines so textContent does not run words together', () => {
-    const quoteEl = makeQuote('alpha beta gamma delta epsilon zeta eta theta iota kappa');
-    layoutQuote(quoteEl);
-    const visible = [...quoteEl.querySelectorAll('.firefly-globe-pullquote-line')]
-      .map((n) => n.textContent).join('');
-    expect(quoteEl.textContent).to.not.equal(`${visible}${visible}`);
-    expect(quoteEl.textContent).to.include('alpha beta');
-  });
-
-  it('re-splits from the authored text, not from the already-split DOM', () => {
-    const text = 'alpha beta gamma delta epsilon zeta eta theta iota kappa';
-    const quoteEl = makeQuote(text);
-    layoutQuote(quoteEl);
-    const wide = layoutQuote(quoteEl); // same width: same typesetting, no nesting
-    expect(lineTexts(quoteEl).join(' ')).to.equal(text);
-    expect(quoteEl.querySelectorAll('.firefly-globe-pullquote-line-inner .firefly-globe-pullquote-line')).to.have.length(0);
-    expect(wide.length).to.be.above(0);
-  });
-
-  it('re-typesets to fewer lines when the box gets wider', () => {
-    const text = 'alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu';
-    const quoteEl = makeQuote(text, 160);
-    const narrow = layoutQuote(quoteEl).length;
-    quoteEl.closest('.firefly-globe-pullquote').style.width = '900px';
-    const wide = layoutQuote(quoteEl).length;
-    expect(wide).to.be.below(narrow);
-    expect(lineTexts(quoteEl).join(' ')).to.equal(text);
-  });
-
-  it('carries the full text in one sr-only node and hides the visual lines', () => {
-    const text = 'alpha beta gamma delta epsilon zeta eta theta';
-    const quoteEl = makeQuote(text);
-    const lines = layoutQuote(quoteEl);
-    const sr = quoteEl.querySelector('.firefly-globe-pullquote-sr');
-    expect(sr).to.exist;
-    expect(sr.textContent).to.equal(text);
-    lines.forEach((line) => expect(line.getAttribute('aria-hidden')).to.equal('true'));
-  });
-
-  it('hangs an opening quote mark off the first line only', () => {
-    const quoteEl = makeQuote('\u201Calpha beta gamma delta epsilon zeta eta theta\u201D');
-    quoteEl.closest('.firefly-globe-pullquote').style.paddingInline = '40px';
-    const lines = layoutQuote(quoteEl);
-    expect(lines[0].querySelectorAll('.hang-opening-quote')).to.have.length(1);
-    lines.slice(1).forEach((l) => expect(l.querySelector('.hang-opening-quote')).to.be.null);
-  });
-
-  it('returns [] and leaves the quote unsplit when there is no text', () => {
+  it('leaves an empty quote empty and ignores a missing one', () => {
     const quoteEl = makeQuote('   ');
-    expect(layoutQuote(quoteEl)).to.deep.equal([]);
-    expect(quoteEl.classList.contains('firefly-globe-pullquote-lines')).to.be.false;
+    expect(plainQuote(quoteEl)).to.equal('');
+    expect(quoteEl.textContent).to.equal('');
+    expect(plainQuote(null)).to.equal('');
+  });
+});
+
+describe('firefly-globe: appendFireflyParams', () => {
+  const run = (campaignId, fireflyUrl = 'https://firefly.adobe.com/open?id=1') => {
+    const cards = [{ fireflyUrl }, { fireflyUrl: null }];
+    appendFireflyParams(cards, campaignId);
+    return cards;
+  };
+
+  it('adds ff_source and the authored ff_campaign, without promoid/mv', () => {
+    const [card, noUrl] = run('spring-promo');
+    expect(card.fireflyUrl).to.equal('https://firefly.adobe.com/open?id=1&ff_source=adobe-com&ff_campaign=spring-promo');
+    expect(card.fireflyUrl).to.not.match(/promoid|mv=/);
+    expect(noUrl.fireflyUrl).to.be.null;
   });
 
-  it('returns [] for a missing element', () => {
-    expect(layoutQuote(null)).to.deep.equal([]);
+  it('falls back to marketing-page when empty or the legacy NQCJQWSV', () => {
+    ['', undefined, 'NQCJQWSV'].forEach((id) => {
+      expect(run(id)[0].fireflyUrl).to.include('ff_campaign=marketing-page');
+    });
   });
 });

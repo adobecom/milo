@@ -112,6 +112,7 @@ describe('init: DOM structure — stage env first call', () => {
 
   it('appends .mep-fab button to body', () => {
     expect(bodyEl.querySelector('.mep-fab')).to.exist;
+    expect(bodyEl.querySelector('.mep-fab').hidden).to.be.false;
   });
 
   it('FAB has popovertarget="mep-drawer"', () => {
@@ -216,6 +217,13 @@ describe('init: DOM structure — stage env first call', () => {
 
   it('Preview Link toggle exists (string description in buildToggleRow)', () => {
     expect(bodyEl.querySelector('#toggle-preview-link')).to.exist;
+  });
+
+  it('LCP Img Check is the last toggle and is off without ?meplcp', () => {
+    const last = [...bodyEl.querySelectorAll('[data-card-key="Toggle"] .mep-toggle-row')].pop();
+    expect(last?.querySelector('h2')?.textContent).to.equal('LCP Img Check');
+    expect(last?.querySelector('.mep-row-value')?.textContent).to.equal('Add meplcp');
+    expect(last?.querySelector('#toggle-lcp-img-check')?.checked).to.be.false;
   });
 
   it('persists the Manifest Parameters toggle to sessionStorage on change', () => {
@@ -1538,55 +1546,79 @@ describe('setMasObserver: refreshSpoofGeoMas with akamaiLocale and MAS regions',
   });
 });
 
-// =====================================================================
-// PROD ENV BLOCK 1: auth changes from true → false
-// GROUP 16: Prod env → unauthenticated path
-// Covers: buildLoginCard, footer removal, buildToggle isProd=true
-// (buildDrawer runs with authenticated=true so real content is built first,
-//  then checkAuthAndBuild replaces with login card)
-// =====================================================================
-describe('init: prod env → unauthenticated (login card + footer removal)', () => {
+describe('init: prod env → overlay authorization', () => {
   let bodyEl;
   let headerEl;
+  let sidekick;
 
   before(async () => {
     setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
     bodyEl = makeBody();
     headerEl = makeHeader();
     await init();
+    expect(bodyEl.querySelector('.mep-fab').hidden).to.be.true;
+    expect(bodyEl.querySelector('#mep-drawer').hidden).to.be.true;
     await wait(100);
-    setConfig(BASE_CONFIG);
   });
 
   after(() => {
+    sidekick?.remove();
     cleanup(bodyEl, headerEl);
     setConfig(BASE_CONFIG);
-  });
-
-  it('Actions tab shows login card when not authenticated', () => {
-    const content = bodyEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.querySelector('.mep-card.center')).to.exist;
-  });
-
-  it('login card text contains "Content Unavailable"', () => {
-    const content = bodyEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.textContent).to.include('Content Unavailable');
-  });
-
-  it('login card text contains "Sign into AEM Sidekick"', () => {
-    const content = bodyEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.textContent).to.include('Sign into AEM Sidekick');
   });
 
   it('footer is absent after becoming unauthenticated', () => {
     expect(bodyEl.querySelector('#mep-drawer .mep-footer')).to.not.exist;
   });
 
-  it('buildToggle isProd=true was exercised (Manifest Manager included in initial build)', () => {
-    // The initial buildDrawer call happened with authenticated=true + env=prod,
-    // so buildToggle ran with isProd=true (Manifest Manager included) before the
-    // content was replaced by login card. No assertion needed beyond init completing.
-    expect(bodyEl.querySelector('#mep-drawer')).to.exist;
+  it('hides the button and entire drawer, including Summary, without authorization', () => {
+    const fab = bodyEl.querySelector('.mep-fab');
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    expect(fab.hidden).to.be.true;
+    expect(drawer.hidden).to.be.true;
+    expect(getComputedStyle(fab).display).to.equal('none');
+    expect(getComputedStyle(drawer).display).to.equal('none');
+    expect(drawer.querySelector('.mep-tab-content[data-tab="1"]').getClientRects()).to.have.lengthOf(0);
+  });
+
+  it('reveals the overlay when Sidekick signs in after initialization', async () => {
+    sidekick = document.createElement('aem-sidekick');
+    sidekick.attachShadow({ mode: 'open' });
+    bodyEl.append(sidekick);
+    await wait();
+    sidekick.dispatchEvent(new Event('logged-in'));
+    await wait(100);
+    expect(bodyEl.querySelector('.mep-fab').hidden).to.be.false;
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    expect(drawer.hidden).to.be.false;
+    expect(drawer.querySelector('#toggle-manifest-manager')).to.exist;
+    expect(drawer.querySelector('.mep-footer')).to.exist;
+  });
+
+  it('closes and hides the entire overlay on logout while Summary is open', async () => {
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    drawer.showPopover();
+    drawer.querySelector('.mep-tab[data-tab="1"]').click();
+    sidekick.dispatchEvent(new Event('logged-out'));
+    await wait();
+    expect(drawer.matches(':popover-open')).to.be.false;
+    expect(drawer.hidden).to.be.true;
+    expect(bodyEl.querySelector('.mep-fab').hidden).to.be.true;
+    expect(getComputedStyle(drawer).display).to.equal('none');
+    expect(drawer.querySelector('.mep-footer')).to.not.exist;
+  });
+
+  it('handles authorization changes when the overlay button has been removed', async () => {
+    bodyEl.querySelector('.mep-fab').remove();
+    sidekick.dispatchEvent(new Event('logged-in'));
+    await wait(100);
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    expect(drawer.hidden).to.be.false;
+    expect(drawer.querySelector('.mep-footer')).to.exist;
+    sidekick.dispatchEvent(new Event('logged-out'));
+    await wait();
+    expect(drawer.hidden).to.be.true;
+    expect(drawer.querySelector('.mep-footer')).to.not.exist;
   });
 });
 
@@ -1600,8 +1632,8 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   let headerEl;
 
   before(async () => {
-    window.history.replaceState({}, '', '/?mepHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true');
-    setConfig(BASE_CONFIG);
+    window.history.replaceState({}, '', '/?mepHighlight=true&mepCaasHighlight=true&mepMasHighlight=true&otherHighlight=true&meplcp');
+    setConfig({ ...BASE_CONFIG, mep: { ...BASE_CONFIG.mep, lcpCheck: true } });
     bodyEl = makeBody();
     headerEl = makeHeader();
     await init();
@@ -1629,6 +1661,13 @@ describe('setDefaultValues: highlight URL params set body dataset', () => {
   it('#toggle-mep checkbox gets "checked" attribute set', () => {
     const cb = bodyEl.querySelector('#toggle-mep');
     expect(cb?.hasAttribute('checked')).to.be.true;
+  });
+
+  it('?meplcp checks the LCP Img Check toggle and keeps a bare meplcp in the preview link', () => {
+    const cb = bodyEl.querySelector('#toggle-lcp-img-check');
+    expect(cb?.checked).to.be.true;
+    const href = bodyEl.querySelector('#mep-drawer .mep-footer a.con-button')?.getAttribute('href');
+    expect(href).to.match(/[?&]meplcp(&|#|$)/);
   });
 });
 
@@ -1867,5 +1906,31 @@ describe('buildCardContent: unknown header → safety fallback', () => {
     const result = __buildCardContent({ header: 'Custom Unknown Type' }, '');
     expect(result.tagName.toLowerCase()).to.equal('div');
     expect(result.textContent).to.equal('No content available');
+  });
+});
+
+describe('init: prod env with firewall access', () => {
+  let bodyEl;
+  let headerEl;
+
+  after(() => {
+    fetchOverride = null;
+    cleanup(bodyEl, headerEl);
+    setConfig(BASE_CONFIG);
+  });
+
+  it('reveals the entire overlay without Sidekick when the firewall check succeeds', async () => {
+    setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
+    bodyEl = makeBody();
+    headerEl = makeHeader();
+    fetchOverride = () => Promise.resolve({ ok: false, status: 404 });
+    await init();
+    await wait(100);
+    expect(bodyEl.querySelector('.mep-fab').hidden).to.be.false;
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    expect(drawer.hidden).to.be.false;
+    expect(drawer.querySelector('[data-card-key="Highlight"]')).to.exist;
+    expect(drawer.querySelector('.mep-tab-content[data-tab="1"] .mep-card')).to.exist;
+    expect(drawer.querySelector('.mep-footer')).to.exist;
   });
 });

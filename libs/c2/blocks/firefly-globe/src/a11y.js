@@ -12,6 +12,7 @@ export default function createGalleryA11y({
   getModalIdx,
   isGlobeFormed,
   getCardLabel,
+  getCardLang = () => '',
   centerCard,
   openCard,
   onFocus,
@@ -51,6 +52,7 @@ export default function createGalleryA11y({
   }
   function onCardBlur(e) {
     if (focusedIdx === Number(e.currentTarget.dataset.idx)) focusedIdx = -1;
+    e.currentTarget.removeAttribute('style');
   }
   function onCardClick(e) {
     // Untrusted = synthesized by trackCardOpen(), report-only.
@@ -58,10 +60,18 @@ export default function createGalleryA11y({
     if (isGlobeFormed()) openCard(Number(e.currentTarget.dataset.idx));
   }
   function onCardKeydown(e) {
-    if (e.key !== 'Escape') return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      collapse();
+      if (widgetEl) widgetEl.focus({ preventScroll: true });
+      return;
+    }
+    if (e.key !== 'Tab' || e.altKey || e.ctrlKey || e.metaKey) return;
+    const n = cardOrder.indexOf(Number(e.currentTarget.dataset.idx));
+    const next = cardButtons[cardOrder[n + (e.shiftKey ? -1 : 1)]];
+    if (!next) return;
     e.preventDefault();
-    collapse();
-    if (widgetEl) widgetEl.focus();
+    next.focus({ preventScroll: true });
   }
 
   function enterBrowse() {
@@ -69,7 +79,7 @@ export default function createGalleryA11y({
     entered = true;
     if (widgetEl) widgetEl.tabIndex = -1;
     setBrowseActive(true);
-    cardButtons[cardOrder[0]].focus();
+    cardButtons[cardOrder[0]].focus({ preventScroll: true });
   }
 
   // Call after buildCards() so getCount() is final.
@@ -117,6 +127,7 @@ export default function createGalleryA11y({
       btn.dataset.idx = String(i);
       btn.setAttribute('daa-ll', CARD_OPEN_DAA_LL);
       btn.setAttribute('aria-label', getCardLabel(i));
+      if (getCardLang(i)) btn.lang = getCardLang(i);
       btn.addEventListener('focus', onCardFocus);
       btn.addEventListener('blur', onCardBlur);
       btn.addEventListener('click', onCardClick);
@@ -159,7 +170,7 @@ export default function createGalleryA11y({
     const btn = cardButtons[idx];
     if (!btn) return;
     setBrowseActive(true);
-    btn.focus();
+    btn.focus({ preventScroll: true });
   }
 
   // Report a canvas card open by clicking that card's button.
@@ -185,6 +196,7 @@ export default function createGalleryA11y({
     btn.style.width = `${w}px`;
     btn.style.height = `${h}px`;
     btn.style.borderRadius = `${h * 0.035}px`;
+    btn.style.opacity = w && h ? '' : '0';
   }
 
   function teardown() {

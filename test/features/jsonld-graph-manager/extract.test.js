@@ -185,15 +185,14 @@ describe('AggregateRating singleton', () => {
     manager.rebuild();
 
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
-    const ratings = graph.filter((n) => n['@type'] === 'AggregateRating');
-    expect(ratings).to.have.length(1);
-    const rating = ratings[0];
-    expect(rating['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    expect(graph.filter((n) => n['@type'] === 'AggregateRating')).to.have.length(0);
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    const rating = app.aggregateRating;
+    expect(rating['@type']).to.equal('AggregateRating');
+    expect(rating).to.not.have.property('@id');
     // Runtime wins over bootDom on scalar conflicts (source-priority).
     expect(rating.ratingValue).to.equal('4.61');
     expect(rating.ratingCount).to.equal('269519');
-    // The SA reference points at the canonical aggregateRating @id.
-    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
-    expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
+    expect(manager.graph.has(`${PAGE_URL}#aggregaterating`)).to.be.true;
   });
 });

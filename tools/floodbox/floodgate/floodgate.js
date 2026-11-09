@@ -15,6 +15,8 @@ import {
   runFindStep,
   executeCopy,
   readPromoteIgnorePaths,
+  getPromoteIgnorePaths,
+  isPromoteIgnored,
   applyPromoteIgnore,
   executePromote,
   executePreview,
@@ -669,6 +671,20 @@ export default class MiloFloodgate extends LitElement {
   }
 
   // --- Promote ---
+
+  handlePromoteReport() {
+    const ignorePaths = getPromoteIgnorePaths(this);
+    const paths = this._filesToProcess.filter((path) => !isPromoteIgnored(path, ignorePaths));
+    const blob = new Blob([paths.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'promote-paths.txt';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
 
   handlePromote(event) {
     event.preventDefault();

@@ -34,7 +34,8 @@
 }
 
 .dialog-modal.upgrade-flow-modal,
-.dialog-modal.three-in-one {
+.dialog-modal.three-in-one,
+.dialog-modal.aup-modal {
   height: 100%;
   width: 100%;
   max-height: 100%;
@@ -48,7 +49,8 @@
 }
 
 .upgrade-flow-modal .upgrade-flow-iframe,
-.three-in-one .milo-iframe {
+.three-in-one .milo-iframe,
+.aup-modal .aup-workflow-content {
   overflow: hidden;
   height: 100%;
   width: 100%;
@@ -57,6 +59,23 @@
 
 .three-in-one iframe {
   width: 100%;
+}
+
+/* AUP workflow dialog: sized like the 3-in-1 modal; the SDK spinner overlays the iframe until app_loaded. */
+.aup-modal .aup-workflow-content {
+  position: relative;
+}
+
+.aup-modal .aup-workflow-content.loading > iframe {
+  visibility: hidden;
+}
+
+.aup-modal .aup-loading-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #locale-modal-v2 .dialog-close,
@@ -343,7 +362,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
     border-radius: 0;
   }
 
-  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame, .upgrade-flow-modal) {
+  .dialog-modal:not(.tall-video, .three-in-one, .aup-modal, .commerce-frame, .upgrade-flow-modal) {
     max-height: var(--modal-max-height-mobile);
   }
 
@@ -430,7 +449,8 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
     overflow: hidden;
   }
 
-  .dialog-modal.three-in-one {
+  .dialog-modal.three-in-one,
+  .dialog-modal.aup-modal {
     height: 820px;
     max-width: 1280px;
     overflow: hidden;

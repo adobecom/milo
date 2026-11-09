@@ -1,5 +1,4 @@
 import { createTag, decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
-import { debounce } from '../../utils/action.js';
 import { addAriaLabelToCta, getMerchCardHeadingLevel } from './merch.js';
 
 let iconsLoaded;
@@ -143,31 +142,103 @@ const PRESERVED_STYLE_PROPS = [
   'display', 'alignItems', 'gap',
 ];
 
-function applyPreservedStyles(heading) {
-  const origLevel = Number(heading.dataset.masOrigLevel);
-  if (!origLevel || !heading.isConnected) return;
-  const probe = createTag(`h${origLevel}`);
+function createStyleProbe(heading) {
+  const probe = createTag(`h${Number(heading.dataset.masOrigLevel)}`);
   [...heading.attributes].forEach(({ name, value }) => probe.setAttribute(name, value));
   // Content-dependent selectors such as h4:has(> svg) control icon alignment.
   probe.append(...[...heading.childNodes].map((node) => node.cloneNode(true)));
   probe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;';
-  heading.after(probe);
-  const computed = getComputedStyle(probe);
-  PRESERVED_STYLE_PROPS.forEach((prop) => { heading.style[prop] = computed[prop]; });
-  probe.remove();
+  return probe;
+}
+
+// Measures and reapplies in three phases (insert all probes, read all values, write all values)
+// so a whole batch costs a single forced style recalc instead of one per property read.
+function applyPreservedStyles(headings) {
+  const targets = headings
+    .filter((heading) => Number(heading.dataset.masOrigLevel) && heading.isConnected)
+    .map((heading) => ({ heading, probe: createStyleProbe(heading) }));
+  if (!targets.length) return;
+  try {
+    targets.forEach(({ heading, probe }) => heading.after(probe));
+    const measured = targets.map(({ probe }) => {
+      const computed = getComputedStyle(probe);
+      return PRESERVED_STYLE_PROPS.map((prop) => computed[prop]);
+    });
+    targets.forEach(({ heading }, i) => {
+      PRESERVED_STYLE_PROPS.forEach((prop, j) => { heading.style[prop] = measured[i][j]; });
+    });
+  } finally {
+    targets.forEach(({ probe }) => probe.remove());
+  }
+}
+
+function swapHeadingTag(heading, newLevel) {
+  const next = createTag(`h${newLevel}`);
+  [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
+  next.append(...heading.childNodes);
+  heading.replaceWith(next);
+  return next;
+}
+
+// Cards finish at different async points, and reading style right after a swap forces a recalc.
+// Batch mode keeps the original headings in place and swaps them from a ResizeObserver callback,
+// which runs after the frame's layout and before paint: the original headings' computed style is
+// read for free, and no frame is painted without the preserved styles. Headings that are never
+// laid out (display:none) are swapped by the fallback timer.
+const pendingSwaps = new Map();
+let headingObserver;
+let fallbackTimer;
+function flushPendingSwaps(targets) {
+  const items = targets.filter((heading) => pendingSwaps.has(heading))
+    .map((heading) => ({ heading, newLevel: pendingSwaps.get(heading) }));
+  items.forEach(({ heading }) => {
+    pendingSwaps.delete(heading);
+    headingObserver?.unobserve(heading);
+  });
+  const measured = items.map(({ heading }) => {
+    if (!heading.isConnected) return null;
+    const computed = getComputedStyle(heading);
+    return PRESERVED_STYLE_PROPS.map((prop) => computed[prop]);
+  });
+  items.forEach(({ heading, newLevel }, i) => {
+    const next = swapHeadingTag(heading, newLevel);
+    if (!measured[i]) return;
+    PRESERVED_STYLE_PROPS.forEach((prop, j) => { next.style[prop] = measured[i][j]; });
+  });
+}
+
+function queueHeadingSwaps(items) {
+  if (!items.length) return;
+  if (typeof ResizeObserver === 'undefined') {
+    items.forEach(({ heading, newLevel }) => pendingSwaps.set(heading, newLevel));
+    flushPendingSwaps(items.map(({ heading }) => heading));
+    return;
+  }
+  headingObserver ||= new ResizeObserver((entries) => {
+    flushPendingSwaps(entries.map(({ target }) => target));
+  });
+  items.forEach(({ heading, newLevel }) => {
+    pendingSwaps.set(heading, newLevel);
+    headingObserver.observe(heading);
+  });
+  clearTimeout(fallbackTimer);
+  fallbackTimer = setTimeout(() => flushPendingSwaps([...pendingSwaps.keys()]), 3000);
 }
 
 let responsiveSyncAdded = false;
 function ensureResponsiveHeadingSync() {
   if (responsiveSyncAdded) return;
   responsiveSyncAdded = true;
-  const sync = debounce(() => {
-    document.querySelectorAll('[data-mas-orig-level]').forEach(applyPreservedStyles);
-  }, 150);
-  window.addEventListener('resize', sync);
+  let timer;
+  window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      applyPreservedStyles([...document.querySelectorAll('[data-mas-orig-level]')]);
+    }, 150);
+  });
 }
 
-export function overrideCardHeadingLevel(card, targetLevel) {
+export function overrideCardHeadingLevel(card, targetLevel, { batch = false } = {}) {
   const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
   if (!headings.length) return;
   const origLevels = headings.map((h) => {
@@ -177,15 +248,16 @@ export function overrideCardHeadingLevel(card, targetLevel) {
   });
   const base = Math.min(...origLevels);
   const delta = targetLevel - base;
+  const swapped = [];
+  const queued = [];
   headings.forEach((heading, i) => {
     const newLevel = Math.min(6, Math.max(1, origLevels[i] + delta));
     if (newLevel === Number(heading.tagName[1])) return;
-    const next = createTag(`h${newLevel}`);
-    [...heading.attributes].forEach(({ name, value }) => next.setAttribute(name, value));
-    next.append(...heading.childNodes);
-    heading.replaceWith(next);
-    applyPreservedStyles(next);
+    if (batch) queued.push({ heading, newLevel });
+    else swapped.push(swapHeadingTag(heading, newLevel));
   });
+  if (batch) queueHeadingSwaps(queued);
+  else applyPreservedStyles(swapped);
   ensureResponsiveHeadingSync();
 }
 
@@ -196,7 +268,7 @@ async function postProcessCard(card) {
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);
   const headingLevel = getMerchCardHeadingLevel();
-  if (headingLevel) overrideCardHeadingLevel(card, headingLevel);
+  if (headingLevel) overrideCardHeadingLevel(card, headingLevel, { batch: true });
 }
 
 export async function postProcessAutoblock(autoblockEl, isCard = false) {

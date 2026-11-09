@@ -1,5 +1,5 @@
-import { createTag, getConfig, getMetadata } from '../../utils/utils.js';
-import { foundDisableValues } from './dynamic-navigation.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
+import { foundDisableValues, getDynamicNavState } from './dynamic-navigation.js';
 
 export const ACTIVE = 'active';
 export const ENABLED = 'enabled';
@@ -12,24 +12,30 @@ export const tooltipInfo = {
   reset: 'Displayed in grey, this status indicates that this page resets the Dynamic Nav.',
 };
 
-const getCurrentSource = (status, storageSource, authoredSource) => {
-  if (status === 'on') {
-    return storageSource || authoredSource;
-  }
-  return authoredSource;
+const COOKIE_SCOPE_LABEL = {
+  prod: 'Shared across adobe.com',
+  stage: 'Shared across stage.adobe.com',
+  preview: 'Host-only (EDS preview/live)',
+  local: 'Host-only (local)',
 };
 
-const getStatus = (status, disabled, storageSource) => {
-  if (status === 'entry') return ACTIVE;
+const getCurrentSource = (state, authoredSource) => (
+  state.active ? state.stored.source : authoredSource
+);
 
-  if (status === 'reset') return RESET;
+const getStatus = (state) => {
+  const { setting, disabled, active, stored, groupMatched } = state;
 
+  if (!stored.consent) return INACTIVE;
+  if (setting === 'entry') return ACTIVE;
+  if (setting === 'reset') return RESET;
   if (disabled) return INACTIVE;
-
-  if (status === 'on' && storageSource) return ACTIVE;
-
-  if (status === 'on' && !storageSource) return ENABLED;
-
+  if (setting === 'on') {
+    if (active) return ACTIVE;
+    // Stored nav exists but this page's group does not match: nav will not follow.
+    if (stored.source && !groupMatched) return INACTIVE;
+    return ENABLED;
+  }
   return INACTIVE;
 };
 
@@ -72,25 +78,27 @@ const processDisableValues = (valueStr, elem, foundValues = false) => {
 };
 
 const returnPath = (url) => {
-  if (!url.startsWith('https://')) return '';
-  const sourceUrl = new URL(url);
-  return sourceUrl.pathname;
+  try {
+    return new URL(url).pathname;
+  } catch (e) {
+    return '';
+  }
 };
 
-const createStatusWidget = (dynamicNavKey) => {
-  const storedSource = window.sessionStorage.getItem('gnavSource');
+const createStatusWidget = () => {
+  const state = getDynamicNavState();
+  const { setting, stored, groupMatched } = state;
   const authoredSource = getMetadata('gnav-source') || 'Metadata not found: site gnav source';
-  const dynamicNavSetting = getMetadata('dynamic-nav');
-  const currentSource = getCurrentSource(dynamicNavSetting, storedSource, authoredSource);
+  const dynamicNavSetting = setting || '';
+  const currentSource = getCurrentSource(state, authoredSource);
   const dynamicNavDisableValues = getMetadata('dynamic-nav-disable');
   const foundValues = foundDisableValues();
   const groupMetaSetting = getMetadata('dynamic-nav-group') || 'Group not set';
-  const storedDyanmicNavGroup = window.sessionStorage.getItem('dynamicNavGroup');
-  const groupsMatch = storedDyanmicNavGroup
-    && groupMetaSetting.toLowerCase() === storedDyanmicNavGroup.toLowerCase();
-  const groupsMatchMessage = groupsMatch ? 'Yes' : 'No';
-  const isDisabled = foundValues.length >= 1 || (!groupsMatch && groupMetaSetting !== 'Group not set');
-  const status = getStatus(dynamicNavSetting, isDisabled, storedSource);
+  const hasStoredGroupContext = !!stored.source;
+  const groupsMatchMessage = hasStoredGroupContext && groupMatched ? 'Yes' : 'No';
+  const status = getStatus(state);
+  const cookieMessage = stored.available ? 'Yes' : 'No (using authored navigation)';
+  const cookieScope = COOKIE_SCOPE_LABEL[state.environment?.name] || 'Host-only';
   const statusWidget = createTag('div', { class: 'dynamic-nav-status' });
 
   statusWidget.innerHTML = `
@@ -106,7 +114,9 @@ const createStatusWidget = (dynamicNavKey) => {
       <p class="setting">Setting: <span>${dynamicNavSetting}</span></p>
       <p class="group">Group: <span>${groupMetaSetting}</span></p>
       <p class="group-match">Group matches stored group: <span>${groupsMatchMessage}</span></p>
-      <p class="consumer-key">Consumer key: <span>${dynamicNavKey}</span></p>
+      <p class="cookies-available">Cookies available: <span>${cookieMessage}</span></p>
+      <p class="functional-consent">Functional cookie consent (C0003): <span>${stored.consent ? 'Yes' : 'No (using authored navigation)'}</span></p>
+      <p class="cookie-scope">Cookie scope: <span>${cookieScope}</span></p>
       <div class="nav-source-info">
         <p>Authored and stored source match: <span>${authoredSource === currentSource}</span></p>
         <p>Authored Nav Source:
@@ -131,8 +141,7 @@ const createStatusWidget = (dynamicNavKey) => {
 };
 
 export default async function main() {
-  const { dynamicNavKey } = getConfig();
-  const statusWidget = createStatusWidget(dynamicNavKey);
+  const statusWidget = createStatusWidget();
   const topNav = document.querySelector('.global-navigation');
   const dnsClose = statusWidget.querySelector('.dns-close');
 

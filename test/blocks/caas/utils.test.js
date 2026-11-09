@@ -15,6 +15,7 @@ import {
   initBulkPublisherLingoMapping,
   isLingoLangFirstPath,
   getLanguageFirstCountryAndLang,
+  getRequestSize,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -1089,6 +1090,99 @@ describe('getCountryAndLang', () => {
   });
 });
 
+describe('getCountryAndLang with a BACOM /ara base-site (autodetect lingo)', () => {
+  // Mirrors the real-world scenario: BACOM onboards '/ara' as a base site in
+  // lingo-site-mapping.json (same convention as '/fr'), and a BACOM author
+  // publishes a page at /ara/... with "Auto detect country & lang" enabled
+  // (autoCountryLang) on a langFirst-active site. The resolved country must
+  // be 'xx' (base-site convention) and the resolved language must be the
+  // 'ar' CaaS language tag id — NOT the raw 3-letter 'ara' path segment,
+  // which has no corresponding caas:language tag in the taxonomy.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/ca, /au' },
+        // regionalSites carries a GEO-IP-promotable Arabic regional ('/ae_ar') so
+        // the alias-normalization change can be exercised against a real country
+        // promotion, not just the base '/ara' -> 'xx'/'ar' case.
+        { uniqueSiteId: 'bacom-site', baseSite: '/ara', regionalSites: '/ae_ar' },
+      ],
+    },
+  };
+  let metaLangFirst;
+  let ogFetch;
+
+  beforeEach(() => {
+    metaLangFirst = document.createElement('meta');
+    metaLangFirst.setAttribute('name', 'langfirst');
+    metaLangFirst.setAttribute('content', 'true');
+    document.head.appendChild(metaLangFirst);
+
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    if (metaLangFirst?.parentNode) document.head.removeChild(metaLangFirst);
+    if (ogFetch) window.fetch = ogFetch;
+  });
+
+  it('resolves to country: xx, language: ar (not the raw "ara" path segment)', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      // Short-circuits the GEO IP fallback with a non-regional country so the
+      // test doesn't attempt a real network/Akamai lookup via getCountry().
+      mep: { countryIP: 'us' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('ar');
+  });
+
+  // Catches regressions in Arabic GEO-IP promotion that the base-case test above
+  // can't: it uses GEO country 'us' with no matching regional, so it produces
+  // the same result before and after the alias-normalization changes.
+  it('promotes to country: ae when GEO IP matches the /ara regional site', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      mep: { countryIP: 'ae' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('ae');
+    expect(expected.language).to.eq('ar');
+  });
+
+  it('does NOT promote to country: ar for GEO IP Argentina (must not collide with the "ara" alias)', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      mep: { countryIP: 'ar' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('ar');
+  });
+});
+
 describe('getFloodgateCaasConfig', () => {
   const caasFgState = defaultState;
   caasFgState.fetchCardsFromFloodgateTree = true;
@@ -1648,5 +1742,73 @@ describe('initBulkPublisherLingoMapping', () => {
 
     expect(fetchedUrls).to.have.length(1);
     expect(fetchedUrls[0]).to.equal(`${LINGO_MAPPING_URL}?bulkpublisher`);
+  });
+});
+
+describe('getRequestSize', () => {
+  const pinnedOnly = {
+    collectionSize: '150',
+    totalCardsToShow: '3',
+    sortDefault: 'featured',
+    sortEnablePopup: false,
+    showFilters: false,
+    showSearch: false,
+    showBookmarksFilter: false,
+    onlyShowBookmarkedCards: false,
+    partialLoadEnabled: false,
+    filterEvent: [],
+    container: 'carousel',
+  };
+
+  it('uses totalCardsToShow when collectionSize is empty', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '', totalCardsToShow: 10 })).to.equal(10);
+  });
+
+  it('requests only totalCardsToShow when cards are shown in server order', () => {
+    expect(getRequestSize(pinnedOnly)).to.equal(3);
+  });
+
+  it('keeps collectionSize when it is not larger than totalCardsToShow', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '3' })).to.equal('3');
+    expect(getRequestSize({ ...pinnedOnly, totalCardsToShow: '' })).to.equal('150');
+  });
+
+  [
+    ['a non-featured default sort', { sortDefault: 'dateDesc' }],
+    ['the sort popup', { sortEnablePopup: true }],
+    ['filters', { showFilters: true }],
+    ['search', { showSearch: true }],
+    ['the bookmarks filter', { showBookmarksFilter: true }],
+    ['bookmark-only collections', { onlyShowBookmarkedCards: true }],
+    ['partial load', { partialLoadEnabled: true }],
+    ['event filters', { filterEvent: ['live'] }],
+    ['the categories container', { container: 'categories' }],
+  ].forEach(([name, override]) => {
+    it(`keeps collectionSize with ${name}`, () => {
+      expect(getRequestSize({ ...pinnedOnly, ...override })).to.equal('150');
+    });
+  });
+
+  describe('when featured cards fill every shown slot', () => {
+    const threeFeatured = {
+      ...pinnedOnly,
+      featuredCards: [{ contentId: 'a' }, { contentId: 'b' }, { contentId: 'c' }],
+    };
+
+    it('requests only the shown cards with the featured sort', () => {
+      expect(getRequestSize(threeFeatured)).to.equal(3);
+    });
+
+    // An unavailable featured card is backfilled by the default sort or event filter,
+    // which needs the full set of cards.
+    [
+      ['a non-featured default sort', { sortDefault: 'titleAsc' }],
+      ['the random sort', { sortDefault: 'random', sortReservoirSample: '2' }],
+      ['event filters', { filterEvent: ['live'] }],
+    ].forEach(([name, override]) => {
+      it(`keeps collectionSize with ${name}`, () => {
+        expect(getRequestSize({ ...threeFeatured, ...override })).to.equal('150');
+      });
+    });
   });
 });

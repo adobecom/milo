@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+import { isAcomAssistantEnabled } from '../utils/utils.js';
+
 export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadStyle) => {
   const config = getConfig();
   const jarvis = getMetadata('jarvis-chat')?.toLowerCase();
@@ -19,6 +21,14 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   const desktopViewport = window.matchMedia('(min-width: 900px)').matches;
   if (jarvis === 'mobile' && desktopViewport) return;
   if (jarvis === 'desktop' && !desktopViewport) return;
+
+  const hasBrandConcierge = getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on'
+    || !!document.querySelector('.brand-concierge');
+  if (isAcomAssistantEnabled() && hasBrandConcierge) {
+    const { default: initChatLinks } = await import('../features/acom-assistant-gnav-link.js');
+    await initChatLinks(config, loadScript, loadStyle, getMetadata);
+    return;
+  }
 
   const { initJarvisChat } = await import('../features/jarvis-chat.js');
   initJarvisChat(config, loadScript, loadStyle, getMetadata);
@@ -108,17 +118,24 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
+export const shouldAutoHighlight = ({ isLocal, isPreview, params }) => {
+  const isDaPreview = params.has('dapreview') || params.has('quick-edit');
+  const mode = params.get('autoHighlight');
+  return !isDaPreview && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
+};
+
 export const loadPreflightResults = async () => {
-  const { hostname } = window.location;
+  const { hostname, search } = window.location;
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
+  const params = new URLSearchParams(search);
 
   const run = async () => {
-    if (isLocal || isPreview) {
+    if (shouldAutoHighlight({ isLocal, isPreview, params })) {
       const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
-      await autoHighlightUnpublished();
+      await autoHighlightUnpublished(params.get('autoHighlight') === 'on');
     }
     if (!isLocal) {
       const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');

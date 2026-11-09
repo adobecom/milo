@@ -99,14 +99,36 @@ const insertInlineFrag = async (sections, a, relHref) => {
   await Promise.all(promises);
 };
 
-function replaceDotMedia(path, doc) {
-  const resetAttributeBase = (tag, attr) => {
-    doc.querySelectorAll(`${tag}[${attr}^="./media_"]`).forEach((el) => {
-      el[attr] = new URL(el.getAttribute(attr), new URL(path, window.location)).href;
-    });
-  };
-  resetAttributeBase('img', 'src');
-  resetAttributeBase('source', 'srcset');
+const getMediaKey = (ref, base) => {
+  if (typeof ref !== 'string' || /[\s,]/.test(ref.trim())) return null;
+  try {
+    const { origin, pathname, search } = new URL(ref, base);
+    const idx = pathname.lastIndexOf('/media_');
+    return idx === -1 ? null : `${origin}${pathname.slice(idx)}${search}`;
+  } catch {
+    return null;
+  }
+};
+
+const getRemovedMedia = (removedMedia) => {
+  const media = new Map();
+  removedMedia?.forEach((ref) => {
+    const key = getMediaKey(ref, window.location.href);
+    if (key && !media.has(key)) media.set(key, new URL(ref, window.location.href).href);
+  });
+  return media;
+};
+
+export function replaceDotMedia(path, doc, removedMedia) {
+  const els = doc.querySelectorAll('img[src^="./media_"], source[srcset^="./media_"]');
+  if (!els.length) return;
+  const docBase = new URL(path, window.location);
+  const removed = getRemovedMedia(removedMedia);
+  els.forEach((el) => {
+    const attr = el.tagName === 'IMG' ? 'src' : 'srcset';
+    const authored = el.getAttribute(attr);
+    el[attr] = removed.get(getMediaKey(authored, docBase)) || new URL(authored, docBase).href;
+  });
 }
 
 export const removeMepLingoRow = (container) => {
@@ -370,7 +392,7 @@ export default async function init(a) {
 
   const html = await resp.text();
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  replaceDotMedia(a.href, doc);
+  replaceDotMedia(a.href, doc, mep?.removedMedia);
   if (decorateArea) decorateArea(doc, { fragmentLink: a });
 
   const sections = doc.querySelectorAll('body > div');

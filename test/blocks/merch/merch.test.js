@@ -2,7 +2,7 @@ import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-
 
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { delay } from '../../helpers/waitfor.js';
+import { delay, waitFor } from '../../helpers/waitfor.js';
 
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import merch, {
@@ -13,6 +13,7 @@ import merch, {
   buildCta,
   getCheckoutContext,
   initService,
+  polyfills,
   fetchCheckoutLinkConfigs,
   getCheckoutLinkConfig,
   getDownloadAction,
@@ -26,6 +27,7 @@ import merch, {
   appendDexterParameters,
   getLocaleSettings,
   getMiloLocaleSettings,
+  resolveCheckoutCountry,
   setCtaHash,
   openModal,
   PRICE_TEMPLATE_LEGAL,
@@ -43,12 +45,13 @@ import merch, {
   addAriaLabelToCta,
   AUP_SDK_READY_EVENT,
   waitForAupSdk,
+  overrideOptions,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig, getConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, getConfig, notifyTargetReady, resetTargetReady } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
 
 const CHECKOUT_LINK_CONFIGS = {
@@ -250,11 +253,125 @@ describe('Merch Block', () => {
     updateSearch();
   });
 
+  it('fetches checkout configs before commerce loads and reuses them for checkout actions', async () => {
+    const originalPolyfills = polyfills.promise;
+    let releasePolyfills;
+    polyfills.promise = new Promise((resolve) => { releasePolyfills = resolve; });
+    const checkoutCalls = () => window.fetch.getCalls()
+      .filter(({ args: [url] }) => url.endsWith('/commerce/checkout-link.json')).length;
+    const beforeCalls = checkoutCalls();
+    const servicePromise = initService(true);
+
+    try {
+      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+      const configsPromise = fetchCheckoutLinkConfigs.promise;
+      expect(configsPromise).to.exist;
+      expect(document.head.querySelector('mas-commerce-service')).to.not.exist;
+      expect(await getCheckoutLinkConfig('PHOTOSHOP')).to.exist;
+      expect(fetchCheckoutLinkConfigs.promise).to.equal(configsPromise);
+      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+    } finally {
+      releasePolyfills();
+      await servicePromise;
+      polyfills.promise = originalPolyfills;
+    }
+  });
+
   it('does not decorate merch with bad content', async () => {
     let el = document.querySelector('.bad-content');
     expect(await merch(el)).to.be.undefined;
     el = document.querySelector('.merch.bad-content');
     expect(await merch(el)).to.be.null;
+  });
+
+  describe('aup-select', () => {
+    const setMeta = (content) => {
+      document.head.querySelector('meta[name="aup-select"]')?.remove();
+      if (content) document.head.append(createTag('meta', { name: 'aup-select', content }));
+    };
+    const targetReady = async () => {
+      notifyTargetReady();
+      await delay(0);
+    };
+
+    beforeEach(() => { resetTargetReady(); });
+
+    afterEach(async () => {
+      setMeta(null);
+      resetTargetReady();
+      await initService(true);
+    });
+
+    it('sets aup-select on the service when the value is already available', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('sets aup-select once target is ready', async () => {
+      const service = await initService(true);
+      expect(service.hasAttribute('aup-select')).to.be.false;
+      setMeta('on');
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('removes aup-select it set when target turns it off', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      setMeta('off');
+      await targetReady();
+      expect(service.hasAttribute('aup-select')).to.be.false;
+    });
+
+    it('keeps aup-select passed in by the caller', async () => {
+      const service = await initService(true, { 'aup-select': 'on' });
+      await targetReady();
+      expect(service.getAttribute('aup-select')).to.equal('on');
+    });
+
+    it('only updates once target is ready', async () => {
+      setMeta('on');
+      const service = await initService(true);
+      setMeta('off');
+      await delay(0);
+      expect(service.getAttribute('aup-select')).to.equal('on');
+      await targetReady();
+      expect(service.hasAttribute('aup-select')).to.be.false;
+    });
+
+    it('stops updating a replaced service', async () => {
+      const oldService = await initService(true);
+      const newService = await initService(true);
+      setMeta('on');
+      await targetReady();
+      expect(oldService.hasAttribute('aup-select')).to.be.false;
+      expect(newService.getAttribute('aup-select')).to.equal('on');
+    });
+
+    describe('AUP SDK', () => {
+      let previousSdk;
+      let sdk;
+
+      beforeEach(() => {
+        previousSdk = window.aupsdk;
+        sdk = { getOrchestratorContext: () => {}, updateConfig: sinon.stub().resolves() };
+        window.aupsdk = sdk;
+      });
+
+      afterEach(() => { window.aupsdk = previousSdk; });
+
+      const features = () => sdk.updateConfig.lastCall?.args[0].miniAppContext.features;
+
+      it('loads the SDK when target turns aup-select on', async () => {
+        await initService(true);
+        setMeta('on');
+        expect(sdk.updateConfig.called).to.be.false;
+        await targetReady();
+        await waitFor(() => sdk.updateConfig.called);
+        expect(features()).to.include('tmp_aupsdk_ucv3_in_iframe');
+      });
+    });
   });
 
   describe('locale settings', () => {
@@ -965,6 +1082,82 @@ describe('Merch Block', () => {
       const result = await buildCta(el, params);
       expect(result.dataset.imsCountry).to.be.undefined;
     });
+
+    describe('market validation', () => {
+      let geoDetectionMeta;
+
+      beforeEach(() => {
+        geoDetectionMeta = createTag('meta', { name: 'mas-geo-detection', content: 'on' });
+        document.head.append(geoDetectionMeta);
+        sessionStorage.setItem('akamai', 'US');
+        getConfig().marketsConfig = { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb,ch' }] };
+      });
+
+      afterEach(() => {
+        geoDetectionMeta.remove();
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+      });
+
+      it('falls back to the configured market when the detected country is unsupported', async () => {
+        sessionStorage.setItem('akamai', 'ZZ');
+        const service = await initService(true);
+        expect(service.settings.country).to.equal('US');
+        expect(service.settings.locale).to.equal('en_US');
+      });
+
+      it('keeps a supported signed-in IMS country on checkout links', async () => {
+        await initService(true);
+        const el = createTag('a', { href: '/tools/ost?osi=29&type=checkoutUrl' });
+        const result = await buildCta(el, new URLSearchParams({ osi: '123' }));
+        expect(result.dataset.imsCountry).to.equal('CH');
+      });
+
+      it('falls back to the validated country for an unsupported IMS country', async () => {
+        const service = await initService(true);
+        expect(await resolveCheckoutCountry({
+          settings: service.settings,
+          imsCountryPromise: Promise.resolve('ZZ'),
+        })).to.equal('US');
+      });
+
+      it('corrects an unsupported IMS-country restamp after rendering', async () => {
+        const service = await initService(true);
+        const cta = createTag('a', { is: 'checkout-link' });
+        document.body.append(cta);
+        try {
+          cta.dataset.imsCountry = 'ZZ';
+          await waitFor(() => cta.dataset.imsCountry === service.settings.country);
+          expect(cta.dataset.imsCountry).to.equal('US');
+          cta.dataset.imsCountry = 'CH';
+          await delay(20);
+          expect(cta.dataset.imsCountry).to.equal('CH');
+        } finally {
+          cta.remove();
+        }
+      });
+
+      it('does not fetch market or geo data when the query flag overrides metadata to off', async () => {
+        const originalUrl = window.location.href;
+        const url = new URL(originalUrl);
+        url.searchParams.set('mas-geo-detection', 'off');
+        window.history.replaceState({}, '', url);
+        sessionStorage.removeItem('akamai');
+        delete getConfig().marketsConfig;
+        window.fetch.resetHistory();
+        try {
+          const service = await initService(true);
+          expect(service.settings.country).to.equal('US');
+          expect(service.settings.locale).to.equal('en_US');
+          const marketRequests = window.fetch.getCalls().filter(({ args: [resource] }) => (
+            /supported-markets|geo2\.adobe\.com/.test(String(resource))
+          ));
+          expect(marketRequests).to.be.empty;
+        } finally {
+          window.history.replaceState({}, '', originalUrl);
+        }
+      });
+    });
   });
 
   describe('Download flow', () => {
@@ -1088,8 +1281,22 @@ describe('Merch Block', () => {
           reject(new Error('error'));
         }, 1);
       });
-      const action = await getCheckoutAction([{ productArrangement: {} }], {}, imsSignedInPromise);
+      const offers = [{ productArrangement: {} }];
+      const action = await getCheckoutAction(offers, { entitlement: true }, imsSignedInPromise);
       expect(action).to.be.undefined;
+    });
+
+    it('getCheckoutAction: does not wait for IMS when no action needs it', async () => {
+      const action = getCheckoutAction([{ productArrangement: {} }], {}, new Promise(() => {}));
+      const timeout = new Promise((resolve) => { setTimeout(() => resolve('timeout'), 50); });
+      expect(await Promise.race([action, timeout])).to.be.undefined;
+    });
+
+    it('getCheckoutAction: waits for IMS for upgrade CTAs', async () => {
+      const offers = [{ productArrangement: {} }];
+      const action = getCheckoutAction(offers, { upgrade: true }, new Promise(() => {}));
+      const timeout = new Promise((resolve) => { setTimeout(() => resolve('timeout'), 50); });
+      expect(await Promise.race([action, timeout])).to.equal('timeout');
     });
 
     it('getCheckoutAction: returns undefined and does not throw on empty offers', async () => {
@@ -1552,6 +1759,8 @@ describe('Merch Block', () => {
       { content: 'on', calls: 2, aup: true },
       { content: 'off', query: 'on', aup: true },
       { content: 'on', query: 'off', legacy: true },
+      { content: 'enabled', calls: 2, aup: true },
+      { content: 'false', legacy: true },
       { content: 'off', legacy: true },
       { content: 'off', commercePreload: 'off' },
       { content: 'on', commercePreload: 'off' },
@@ -1566,7 +1775,14 @@ describe('Merch Block', () => {
       modal = true, aup = false, legacy = false,
     }) => {
       it(`defers commerce preload and chooses the current experience: ${JSON.stringify({
-        content, query, commercePreload, lateContent, missingSdk, failure, calls, modal,
+        content,
+        query,
+        commercePreload,
+        lateContent,
+        missingSdk,
+        failure,
+        calls,
+        modal,
       })}`, async () => {
         const previousUrl = window.location.href;
         const previousDeferred = window.milo.deferredPromise;
@@ -2853,6 +3069,41 @@ describe('Merch Block', () => {
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
+  });
+});
+
+describe('overrideOptions method', () => {
+  const withRows = (rows) => setConfig({
+    ...getConfig(),
+    mep: { inBlock: { mas: { fragments: { f1: rows } } } },
+  });
+
+  it('sets pzn for card links', () => {
+    withRows({ '': { action: 'replace', content: 't1', pzn: 'pzn-cc-lapsed' } });
+    expect(overrideOptions('f1', { fragment: 'f1' })).to.deep.equal({ fragment: 't1', pzn: 'pzn-cc-lapsed' });
+  });
+
+  it('sets pzn for field links via the card-level row', () => {
+    withRows({ '': { action: 'replace', content: 't1', pzn: 'pzn-cc-lapsed' } });
+    expect(overrideOptions('f1', { fragment: 'f1', field: 'prices' }))
+      .to.deep.equal({ fragment: 't1', field: 'prices', pzn: 'pzn-cc-lapsed' });
+  });
+
+  it('does not add pzn for commands without it', () => {
+    withRows({ '': { action: 'replace', content: 't2' } });
+    expect(overrideOptions('f1', { fragment: 'f1' })).to.deep.equal({ fragment: 't2' });
+  });
+
+  it('does not apply a card-level row without pzn to field links', () => {
+    withRows({ '': { action: 'replace', content: 't2' } });
+    const options = { fragment: 'f1', field: 'prices' };
+    expect(overrideOptions('f1', options)).to.equal(options);
+  });
+
+  it('returns options unchanged when no command matches', () => {
+    withRows({});
+    const options = { fragment: 'f1' };
+    expect(overrideOptions('f1', options)).to.equal(options);
   });
 });
 
