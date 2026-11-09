@@ -212,9 +212,6 @@ const startInitialization = async (config, event, onDemand, options = {}) => {
     loadStyle(`${asset}.css`),
     loadScript(`${asset}.js`),
   ]);
-  if (options.mountSelector && !window.AdobeMessagingExperienceClient?.supportsEmbeddedPanel) {
-    throw new Error('This Jarvis bundle does not support embedded panels');
-  }
   let language;
   let region;
   if (config.locale.ietf.includes('-')) {

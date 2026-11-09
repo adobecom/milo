@@ -78,7 +78,7 @@ and `LEO_MSG_WS_URL=wss://assistant-integration.adobe.io`.
 Start the client with `LEO_MSG_INIT_CLIENT_VERSION=2026.10.38 npm run watch`
 to match the existing integration init version pin.
 `acom-assistant-panel=on` uses the environment's hosted bundle instead, which must
-also support `mountSelector`. Unsupported bundles show an error, not a separate window.
+also support `mountSelector`, so the Jarvis change must deploy before this mode is enabled.
 Without the flag, the existing panel remains unchanged.
 Restart Leo's client dev server after the webpack entrypoint change, and allow
 Chrome's local-network access prompt for the stage page.

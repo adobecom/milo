@@ -54,10 +54,6 @@ export default function initJarvisPanel(mountIdentifier, onWindowState) {
       onReadyCallback: () => {
         if (finished) return;
         const client = window.AdobeMessagingExperienceClient;
-        if (!client.getMessagingExperienceState().embedded) {
-          fail(new Error('This Jarvis bundle does not support embedded panels'));
-          return;
-        }
         finished = true;
         clearTimeout(timer);
         window.addEventListener('feds:signOut', () => client.handleSignOut());

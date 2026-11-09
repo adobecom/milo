@@ -27,7 +27,6 @@ describe('acom-assistant-panel persistent chat panel', () => {
     document.head.append(panelMeta);
     setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA', jarvis: { id: 'bc-test', version: '1.0' } });
     client = {
-      supportsEmbeddedPanel: true,
       initialize: sinon.stub().callsFake((config) => {
         options = config;
         queueMicrotask(() => {
@@ -309,21 +308,6 @@ describe('acom-assistant-panel persistent chat panel', () => {
     expect(document.body.classList.contains('chat-panel-open')).to.be.false;
     const scripts = document.head.append.getCalls().flatMap(({ args }) => args);
     expect(scripts.some((el) => el.src?.includes('brand-concierge-web-agent'))).to.be.false;
-  });
-
-  it('does not open a native window if the bundle lacks embedded support', async () => {
-    client.supportsEmbeddedPanel = false;
-    let failure;
-    try {
-      await openChatPanel('Do not send');
-    } catch (error) {
-      failure = error;
-    }
-    expect(failure.message).to.include('does not support embedded panels');
-    expect(document.querySelector('#chat-panel [role="alert"]')).to.exist;
-    expect(client.openMessagingWindow.called).to.be.false;
-    expect(client.initialize.called).to.be.false;
-    expect(client.sendUserMessage.called).to.be.false;
   });
 
   it('does not open Jarvis after the panel is closed during initialization', async () => {
