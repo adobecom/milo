@@ -321,6 +321,45 @@ describe('loadAnalyticsAndInteractionData', () => {
     document.cookie = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent=general=in';
   });
 
+  it('should write to alloy_all without using or replacing marketingtech get/set', async () => {
+    const mtGet = sinon.stub();
+    const mtSet = sinon.stub();
+    window.alloy_all = { get: mtGet, set: mtSet };
+    window.fetch = () => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({
+        handle: [
+          {
+            type: 'personalization:decisions',
+            payload: [{
+              decisionId: '1',
+              items: [{ meta: { 'activity.id': '123', 'activity.name': 'act', 'option.name': 'opt' } }],
+            }],
+          },
+          { type: 'activation:pull', payload: [{ segments: [{ id: 'seg1' }, { id: 'seg2' }] }] },
+        ],
+      }),
+    });
+    try {
+      const result = await loadAnalyticsAndInteractionData({
+        locale: { ietf: 'en-US', prefix: 'us' },
+        env: 'prod',
+        calculatedTimeout: 10000,
+      });
+      expect(result.result.propositions).to.have.lengthOf(1);
+      expect(window.alloy_all.get).to.equal(mtGet);
+      expect(window.alloy_all.set).to.equal(mtSet);
+      expect(mtGet.called).to.be.false;
+      expect(mtSet.called).to.be.false;
+      // eslint-disable-next-line no-underscore-dangle
+      const { adobe } = window.alloy_all.data._adobe_corpnew.digitalData;
+      expect(adobe.xlg).to.equal('seg1,seg2');
+      expect(adobe.target.response).to.include('T:123:act');
+    } finally {
+      delete window.alloy_all;
+    }
+  });
+
   describe('getVisitorStatus', () => {
     let getCookieStub;
     let setCookieStub;

@@ -25,21 +25,6 @@ const clearCookie = (key) => {
   document.cookie = `${key}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
 };
 
-// Mirrors the get/set fallback lob.js defines internally, so stubbed
-// "pre-existing" alloy_all.get/set behave like a real implementation.
-const traverseGet = (obj, path) => path.split('.').reduce(
-  (current, segment) => (current !== undefined && current !== null ? current[segment] : undefined),
-  obj,
-);
-const traverseSet = (obj, path, val) => {
-  path.split('.').reduce((current, segment, index, segments) => {
-    if (index === segments.length - 1) current[segment] = val;
-    else current[segment] = current[segment] || {};
-    return current[segment];
-  }, obj);
-  return obj;
-};
-
 describe('lob', () => {
   const originalFetch = window.fetch;
 
@@ -69,33 +54,35 @@ describe('lob', () => {
     const lob = await init(true);
     expect(lob).to.be.false;
   });
-  it('should preserve an existing alloy_all get/set and push tracking values', async () => {
+  it('should push tracking values without using or replacing marketingtech get/set', async () => {
     setCookie(AMCV_COOKIE, 'MCMID|1234567890');
     setFetchResponse(API_RESPONSE);
     const customArray = [];
-    const existingGet = stub().callsFake(traverseGet);
-    const existingSet = stub().callsFake(traverseSet);
+    const mtGet = stub();
+    const mtSet = stub();
     window.alloy_all = {
-      get: existingGet,
-      set: existingSet,
+      get: mtGet,
+      set: mtSet,
       data: { _adobe_corpnew: { event: { custom: customArray } } },
     };
     const lob = await init(true);
     expect(lob).to.equal('smb');
-    expect(window.alloy_all.get).to.equal(existingGet);
-    expect(window.alloy_all.set).to.equal(existingSet);
+    expect(window.alloy_all.get).to.equal(mtGet);
+    expect(window.alloy_all.set).to.equal(mtSet);
+    expect(mtGet.called).to.be.false;
+    expect(mtSet.called).to.be.false;
     expect(customArray).to.deep.equal([
       { propertyName: 'spectraLob', propertyValue: 'smb' },
       { propertyName: 'spectraScore', propertyValue: 0.528565269468545 },
     ]);
   });
-  it('should create alloy_all and push tracking values when alloy_all does not exist yet', async () => {
+  it('should create alloy_all without get/set and push tracking values when alloy_all does not exist yet', async () => {
     setCookie(AMCV_COOKIE, 'MCMID|1234567890');
     setFetchResponse(API_RESPONSE);
     const lob = await init(true);
     expect(lob).to.equal('smb');
-    expect(window.alloy_all.get).to.be.a('function');
-    expect(window.alloy_all.set).to.be.a('function');
+    expect(window.alloy_all.get).to.be.undefined;
+    expect(window.alloy_all.set).to.be.undefined;
     // eslint-disable-next-line no-underscore-dangle
     expect(window.alloy_all.data._adobe_corpnew.event.custom).to.deep.equal([
       { propertyName: 'spectraLob', propertyValue: 'smb' },

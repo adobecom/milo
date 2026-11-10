@@ -1,5 +1,5 @@
 import { getConfig } from '../../../utils/utils.js';
-import { getCookie, AMCV_COOKIE } from '../../../martech/helpers.js';
+import { getCookie, AMCV_COOKIE, getAlloyPath, setAlloyPath } from '../../../martech/helpers.js';
 
 export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie(AMCV_COOKIE);
@@ -27,7 +27,6 @@ export async function getSpectraLOB(lastVisitedPage) {
   }
 }
 
-/* eslint-disable no-underscore-dangle */
 function addAlloyTracking(lobObject) {
   if (!lobObject) return;
   const spectraValues = {
@@ -35,24 +34,10 @@ function addAlloyTracking(lobObject) {
     modelScore: 'spectraScore',
   };
 
-  // Define helper functions for alloy_all if not already available
-  const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
-  const set = (obj, path, val) => {
-    path.split('.').reduce((current, segment, index, segments) => {
-      if (index === segments.length - 1) current[segment] = val;
-      else current[segment] = current[segment] || {};
-      return current[segment];
-    }, obj);
-    return obj;
-  };
-
   window.alloy_all = window.alloy_all || {};
-  window.alloy_all.get = window.alloy_all.get || get;
-  window.alloy_all.set = window.alloy_all.set || set;
-
   const dataObjString = 'data._adobe_corpnew.event.custom';
-  const customEvents = window.alloy_all.get(window.alloy_all, dataObjString) || [];
-  window.alloy_all.set(window.alloy_all, dataObjString, customEvents);
+  const customEvents = getAlloyPath(window.alloy_all, dataObjString) || [];
+  setAlloyPath(window.alloy_all, dataObjString, customEvents);
 
   Object.entries(lobObject).forEach(([key, value]) => {
     if (!spectraValues[key]) return;
@@ -60,7 +45,6 @@ function addAlloyTracking(lobObject) {
   });
 }
 
-/* eslint-enable no-underscore-dangle */
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
   if (window.location.hostname.includes('.aem.')) return 'cc';
