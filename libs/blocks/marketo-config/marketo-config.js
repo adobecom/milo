@@ -5,17 +5,14 @@ import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage, loa
 import Accordion from '../../ui/controls/Accordion.js';
 import CopyBtn from '../../ui/controls/CopyBtn.js';
 import { Input, Select } from '../../ui/controls/formControls.js';
-import StepPanel from './step-panel.js';
+import FieldsPanel from './fields-panel.js';
+import {
+  STEP_PREF, VISIBILITY_PREFIX, FILTER_PREFIX, META_KEYS,
+  parseOptions, createFieldMap, getTemplateRules,
+} from './field-map.js';
 
 const CONFIG_URL = 'https://milo.adobe.com/tools/marketo';
-
-const TEMPLATE_RULE_MAPPING = {
-  formVersion: 'form.id',
-  formSuccessType: 'form.success.type',
-  purpose: 'form.subtype',
-  field_visibility: 'field_visibility',
-  field_filters: 'field_filters',
-};
+const MANAGED_PREFIXES = [VISIBILITY_PREFIX, FILTER_PREFIX];
 
 async function fetchData(url) {
   const resp = await fetch(url.toLowerCase());
@@ -57,7 +54,9 @@ export const getConfigOptions = (json) => {
   }
   /* c8 ignore next 4 */
   return json[':names'].sort().reduce((sheets, sheetName) => {
-    sheets[sheetName] = json[sheetName].data;
+    if (!['form-fields', 'template-rules'].includes(sheetName)) {
+      sheets[sheetName] = json[sheetName].data;
+    }
     return sheets;
   }, {});
 };
@@ -84,16 +83,7 @@ const Fields = ({ fieldsData }) => {
       `;
     }
 
-    let options = {};
-    try {
-      options = JSON.parse(field.options);
-    } catch {
-      const keyValuePairs = field.options.split(',').map((item) => {
-        const [key, val] = item.trim().split(':');
-        return key.trim() ? [key.trim(), `${(val || key).trim()}`] : ['', 'Choose an option...'];
-      });
-      options = Object.fromEntries(keyValuePairs);
-    }
+    const options = parseOptions(field.options);
 
     return html`
       <${Select} label=${field.label} name=${prop} options=${options} tooltip=${field.description} value=${value} onChange=${(newValue) => onChange(prop, newValue)} isRequired=${required} />
@@ -106,20 +96,26 @@ const validateState = (state, panelsData) => {
 
   Object.values(panelsData).forEach((panelConfig) => {
     panelConfig.forEach((field) => {
-      if (field?.prop) {
-        const key = field.prop;
-        if (key in state) {
-          validatedState[key] = state[key];
-        }
+      const key = field?.prop;
+      if (key && key !== STEP_PREF && key in state) {
+        validatedState[key] = state[key];
       }
     });
   });
 
-  const stepPreferences = state['form.fldStepPref'] || {};
-  const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
+  Object.keys(state).forEach((key) => {
+    if (MANAGED_PREFIXES.some((p) => key.startsWith(p)) || META_KEYS.includes(key)) {
+      validatedState[key] = state[key];
+    }
+  });
 
-  if (count > 1) {
-    validatedState['form.fldStepPref'] = stepPreferences;
+  const stepPreferences = state[STEP_PREF] || {};
+  const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
+  if (count > 1) validatedState[STEP_PREF] = stepPreferences;
+  if (validatedState['form id']) {
+    validatedState['form.id'] = validatedState['form id'];
+  } else if (validatedState['form.id']) {
+    validatedState['form id'] = validatedState['form.id'];
   }
 
   return validatedState;
@@ -186,16 +182,29 @@ const AdvancedPanel = ({ lsKey }) => {
   `;
 };
 
-const getPanels = (panelsData, lsKey) => {
-  const panels = Object.entries(panelsData).map(([panelName, panelConfig]) => ({
-    title: panelName.substring(0, 1).toUpperCase() + panelName.substring(1),
-    content: html`<${Fields} fieldsData=${panelConfig} />`,
-  }));
+const getPanels = (panelsData, lsKey, templateRules, fieldMap) => {
+  const hasFormFields = Object.keys(templateRules).length > 0
+    && fieldMap.fields.some((field) => field.prop);
+  const managedProps = new Set(hasFormFields
+    ? ['form.template', ...fieldMap.fields.map((field) => field.prop).filter(Boolean)] : []);
+  const panels = [];
 
-  panels.push({
-    title: 'Multi-Step',
-    content: html`<${StepPanel} />`,
+  Object.entries(panelsData).forEach(([panelName, panelConfig]) => {
+    const fieldsData = panelConfig.filter((field) => !managedProps.has(field.prop));
+    panels.push({
+      title: panelName.substring(0, 1).toUpperCase() + panelName.substring(1),
+      content: html`<${Fields} fieldsData=${fieldsData} />`,
+    });
   });
+
+  if (hasFormFields) {
+    const coreIndex = panels.findIndex((panel) => panel.title === 'Core Preferences');
+    panels.splice(coreIndex + 1, 0, {
+      title: 'Form Fields',
+      content: html`<${FieldsPanel} templateRules=${templateRules} fieldMap=${fieldMap} />`,
+    });
+  }
+
   panels.push({
     title: 'Advanced',
     content: html`<${AdvancedPanel} lsKey=${lsKey}/>`,
@@ -206,10 +215,9 @@ const getPanels = (panelsData, lsKey) => {
 
 const getDataUrl = (state) => `${CONFIG_URL}#${utf8ToB64(JSON.stringify(state))}`;
 
-const Configurator = ({ title, panelsData, lsKey }) => {
-  const { dispatch, state } = useContext(ConfiguratorContext);
-  const panels = getPanels(panelsData, lsKey);
-  const [templateRules, setTemplateRules] = useState([]);
+const Configurator = ({ title, panelsData, lsKey, templateRules, fieldMap }) => {
+  const { state } = useContext(ConfiguratorContext);
+  const panels = getPanels(panelsData, lsKey, templateRules, fieldMap);
 
   const configFormValidation = () => {
     const invalidInputs = document.querySelectorAll('.input-invalid');
@@ -259,45 +267,10 @@ const Configurator = ({ title, panelsData, lsKey }) => {
         iframeUrl.searchParams.set(param, searchParams.get(param));
       }
     });
-    const iframe = createTag('iframe', { src: iframeUrl.toString() });
+    const iframe = createTag('iframe', { src: iframeUrl.toString(), title: 'Form preview' });
     saveStateToLocalStorage(validatedState, lsKey);
     contentEl.replaceChildren(iframe);
   }, [state]);
-
-  useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-      if (event.data.type === 'templateRules' && event.data.data) {
-        setTemplateRules(event.data.data);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  useEffect(() => {
-    const extractRuleValue = (rule) => rule?.[0]?.split(':')?.[0] || '';
-    const applyRulesToState = (rules) => {
-      Object.entries(TEMPLATE_RULE_MAPPING).forEach(([key, prop]) => {
-        const value = rules[key];
-        if (typeof value === 'object') {
-          Object.entries(value).forEach(([subKey, subValue]) => {
-            dispatch({ type: 'SET_VALUE', prop: `${prop}.${subKey}`, value: extractRuleValue(subValue) });
-          });
-          return;
-        }
-        dispatch({ type: 'SET_VALUE', prop, value: extractRuleValue(value) });
-      });
-    };
-
-    const formTemplate = state['form.template'];
-    if (!formTemplate || !templateRules || templateRules.length === 0) return;
-
-    const selectedRules = templateRules.find((t) => t[formTemplate])?.[formTemplate];
-    if (!selectedRules || Object.keys(selectedRules).length === 0) return;
-
-    applyRulesToState(selectedRules);
-  }, [state['form.template'], state.reset]);
 
   return html`
     <div class="tool-header">
@@ -319,6 +292,8 @@ const Configurator = ({ title, panelsData, lsKey }) => {
 const ConfiguratorWrapper = ({ title, link }) => {
   const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
   const [data, setData] = useState(null);
+  const [templateRules, setTemplateRules] = useState({});
+  const [fieldMap, setFieldMap] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -329,7 +304,10 @@ const ConfiguratorWrapper = ({ title, link }) => {
         Object.values(config).forEach((panelData) => {
           cleanPanelData(panelData);
         });
+        const preferences = Object.values(config).flat();
+        setFieldMap(createFieldMap(preferences));
         setData(config);
+        setTemplateRules(getTemplateRules(json['template-rules']?.data, preferences));
       })
       .catch((error) => {
         setErrorMessage(error);
@@ -366,10 +344,11 @@ const ConfiguratorWrapper = ({ title, link }) => {
   }
 
   const defaults = getDefaultStates(data);
+  Object.assign(defaults, fieldMap.applyTemplate(defaults['form.template'], templateRules));
 
   return html`
   <${ConfiguratorProvider} defaultState=${defaults} lsKey=${lsKey}>
-    <${Configurator} title=${title} panelsData=${data} lsKey=${lsKey} />
+    <${Configurator} title=${title} panelsData=${data} lsKey=${lsKey} templateRules=${templateRules} fieldMap=${fieldMap} />
   </${ConfiguratorProvider}>
   `;
 };
@@ -393,14 +372,14 @@ export default async function init(el) {
     const lsKey = `${title.toLowerCase().replace(' ', '-')}-ConfiguratorState`;
     const state = loadStateFromLocalStorage(lsKey);
     const marketoBlock = createDataBlock('marketo', state);
+    const previewHeader = createTag('div', null, 'Form Preview');
 
-    el.replaceWith(marketoBlock);
+    el.replaceWith(previewHeader, marketoBlock);
     await loadBlock(marketoBlock);
 
     const postMarketoRules = () => {
       if (window?.MktoForms2) {
         window.MktoForms2.whenReady(() => {
-          window.parent.postMessage({ type: 'templateRules', data: window.templateRules }, '*');
           window.parent.postMessage({ type: 'supportedLanguages', data: window.SUPPORTED_LANGUAGES }, '*');
         });
       } else {
