@@ -237,10 +237,6 @@
   box-shadow: none;
 }
 
-.marketo .mktoForm input[type="date"].mktoInvalid {
-  padding-right: 40px;
-}
-
 .marketo .mktoForm .mktoField.mktoInvalid {
   border: 1px solid var(--marketo-form-border);
 }
@@ -281,6 +277,16 @@
 
 [dir="rtl"] .marketo .mktoForm input[type="tel"] {
   direction: inherit;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="date"]::-webkit-calendar-picker-indicator {
+  order: -1;
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="date"]::-webkit-datetime-edit {
+  text-align: right;
 }
 
 .marketo .mktoForm .mktoCheckboxList input,
@@ -457,6 +463,16 @@
   background-repeat: no-repeat;
   background-position: 86% 50%, 97% 50%;
   background-size: 19.5px, 1em 1em;
+}
+
+.marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+  background-position: 86% 50%, 97% 50%;
+  padding-right: 12px;
+}
+
+[dir="rtl"] .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+  background-position: 14% 50%, 3% 50%;
+  padding-left: 12px;
 }
 
 [dir="rtl"] .marketo .mktoForm.show-warnings select.mktoField.mktoInvalid:not(:focus){
@@ -740,6 +756,14 @@
     margin-left: 0;
     margin-right: 0;
   }
+    
+  .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+    padding-right: 6px;
+  }
+
+  [dir="rtl"] .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+    padding-left: 4px;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -766,8 +790,4 @@
   .resource-form .columns > .row {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
-
-  .marketo .mktoForm input[type="date"].mktoInvalid {
-    padding-right: 32px;
-  } 
 }
