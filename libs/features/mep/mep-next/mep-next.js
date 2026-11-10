@@ -893,62 +893,69 @@ export async function getMepPopup(mepConfig) {
   }
   buildOptionsFooter();
 
+  const notRecorded = 'Not recorded';
+  mepPopupBody[1].append(createTextTag(
+    'p',
+    null,
+    'Summary uses recorded page data. Live visitor consent and runtime details are not recorded by MMM.',
+  ));
+
   // Build Summary : Page
   function buildSummaryPage() {
-    const mepTarget = page.target;
-
-    const foundation = (getMetadata('foundation') || 'c1').toUpperCase();
-    const pageData = {
-      manifestsFound: mepConfig.activities?.length || 0,
-      foundation,
-      targetIntegration: setTargetOnText(mepTarget, page),
-      personalization: page.personalization,
-      locale: page.locale?.toLowerCase(),
-      lastSeen: formatDate(new Date(page.lastSeen)),
-    };
-
     const rows = [
-      ['Manifests Found', pageData.manifestsFound],
-      ['Foundation', pageData.foundation],
-      ['Target Integration', pageData.targetIntegration],
-      ['Personalization', pageData.personalization],
+      ['Manifests Found', mepConfig.activities?.length ?? notRecorded],
+      ['Foundation', notRecorded],
+      ['Theme', notRecorded],
+      ['Load Target Faster (v2)', page.target === 'off' ? 'n/a' : notRecorded],
+      ['Manifest Sources', ''],
+      ['Target Integration', setTargetOnText(page.target, page) || notRecorded, true],
+      ['Personalization Metadata', page.personalization || notRecorded, true],
+      ['Promo Metadata', notRecorded, true],
+      ['MEP Param', notRecorded, true],
+      ['Locale', page.locale?.toLowerCase() || notRecorded],
     ];
-    if (page.lastSeen) rows.push(['Locale', pageData.locale]);
     mepPopupBody[1].append(createSummarySection('Page', rows));
   }
   buildSummaryPage();
 
+  function buildSummaryConsent() {
+    const consentTypes = [...new Set(mepConfig.activities?.map(
+      (activity) => activity.consentType || activity.manifestConsentType || notRecorded,
+    ))];
+    mepPopupBody[1].append(createSummarySection('Consent', [
+      ['Level 2 | Performance', notRecorded],
+      ['Level 4 | Advertising', notRecorded],
+      ['Manifest Consent Types', consentTypes.join(', ') || notRecorded],
+    ]));
+  }
+  buildSummaryConsent();
+
   // Build Summary : Lingo
-  // MMM always takes the isMmm=true branch: shows Total instead of Mep Lingo
-  // Updates, and never shows Country cookie / User Country / Geo + User (those
-  // depend on the CURRENT page/session, which doesn't apply to an arbitrary
-  // page being managed in MMM). getGeoUserSupport/countryCookie/userCountry/
-  // updates were only used by the removed in-page (isMmm=false) branch.
   function buildSummaryLingo() {
-    const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
-    const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
-
-    const lingoData = {
-      langFirst: lingoActive() ? 'on' : 'off',
-      geoFolder: page.geo || 'Us (None)',
-      total: regionalFragments.length + fallbackFragments.length,
-    };
-
     mepPopupBody[1].append(createSummarySection('Lingo', [
-      ['Total', lingoData.total],
-      ['Lang First / Lingo', lingoData.langFirst],
-      ['Geo Folder', lingoData.geoFolder],
+      ['Mep Lingo Updates', notRecorded],
+      ['Lang First | Lingo', notRecorded],
+      ['Geo Folder', page.geo === '' ? 'Us (None)' : (page.geo || notRecorded)],
+      ['Country Cookie', notRecorded],
+      ['User Country', notRecorded],
+      ['Geo + User', notRecorded],
     ]));
   }
   buildSummaryLingo();
 
   function buildSummaryMas() {
-    const rows = getMasSummary().flatMap(([label, value]) => (
-      Array.isArray(value)
-        ? value.map(([subLabel, count, sub]) => [sub ? subLabel : `${label} ${subLabel}`, count, sub])
-        : [[label, value]]
-    ));
-    mepPopupBody[1].append(createSummarySection('M@S', rows));
+    mepPopupBody[1].append(createSummarySection('M@S', [
+      ['Mas Geo Detection', notRecorded],
+      ['Geo Source', notRecorded],
+      ['Page Market', notRecorded],
+      ['Market Source', notRecorded],
+      ['Surfaces Detected', notRecorded],
+      ['Collections', notRecorded, true],
+      ['Sub-collections', notRecorded, true],
+      ['Cards', notRecorded, true],
+      ['Inline Fields', notRecorded, true],
+      ['Standalone Offers', notRecorded, true],
+    ]));
   }
   buildSummaryMas();
 

@@ -35,6 +35,16 @@ with expanded activity details spanning the full width below.
 Manifest order numbers are plain text; only the filenames are linked.
 Fragment-highlight preview links now use `otherHighlight=true`; existing
 `mepFragments=true` links are still accepted by the overlay.
+Both manifest managers' Summary tabs include Page, Consent, Lingo and M@S details.
+They use only the selected page's API data, never the manager host's metadata,
+cookies, consent state or DOM. Fields absent from the current API contract are
+shown as **Not recorded**, rather than inferred as off, zero or C1. This includes
+foundation/theme, promo metadata, visitor consent and runtime Lingo/M@S details.
+Load Target Faster is **n/a** when the recorded target setting is off.
+The Consent section lists recorded manifest consent types separately from
+Level 2 Performance and Level 4 Advertising visitor consent; a manifest's consent
+requirement does not establish a visitor's consent state. Full runtime parity
+requires capture and backend support; the live MEP overlay remains unchanged.
 MMM-2's Manifest Consent Type filter is an authored single-select dropdown.
 Author a blank-value **Show All** option as its default (no consent-type restriction).
 The target-setting and manifest-source checkbox groups can be cleared;
