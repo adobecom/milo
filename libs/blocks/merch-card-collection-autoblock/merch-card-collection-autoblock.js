@@ -553,16 +553,30 @@ function buildProductPricingBar(collection, groups) {
   const triggerAttrs = { class: 'product-pricing-filter-trigger', type: 'button', 'aria-haspopup': 'dialog' };
   const trigger = createTag('button', triggerAttrs, [svgIcon(SLIDERS_ICON), triggerLabel]);
 
-  const pillGroups = barGroups(groups).map((group) => createTag(
-    'div',
-    {
-      // Collapsed to its active pill by CSS.
-      class: `product-pricing-filter-group${group.category ? ' product-pricing-filter-group-active-only' : ''}`,
-      role: 'radiogroup',
-      'aria-label': group.title,
-    },
-    group.options.map((opt) => buildPill(opt, group, 'bar')),
-  ));
+  // Category pills, so their name can say they are filters.
+  const categoryPills = [];
+  const pillGroups = barGroups(groups).map((group) => {
+    const pillEls = group.options.map((opt) => buildPill(opt, group, 'bar'));
+    if (group.category) {
+      pillEls.forEach((pill, i) => categoryPills.push({ input: pill.querySelector('input'), label: group.options[i].label }));
+    }
+    return createTag(
+      'div',
+      {
+        // Collapsed to its active pill by CSS.
+        class: `product-pricing-filter-group${group.category ? ' product-pricing-filter-group-active-only' : ''}`,
+        role: 'radiogroup',
+        'aria-label': group.title,
+      },
+      pillEls,
+    );
+  });
+  const nameCategoryPills = (word) => categoryPills.forEach(({ input, label }) => input.setAttribute('aria-label', `${label} ${word}`));
+  nameCategoryPills('filter');
+  replaceKey('filter-pill-suffix', getFedsPlaceholderConfig()).then((word) => {
+    // An unresolved key comes back as its de-hyphenated text.
+    if (word && word !== 'filter pill suffix') nameCategoryPills(word);
+  }).catch(() => {});
   // Inside the scroller, so the trigger scrolls with the pills. Outside it, the
   // trigger would hold 141px of a 300px row on mobile.
   const pills = createTag('div', { class: 'product-pricing-filter-pills' }, [trigger, ...pillGroups]);
