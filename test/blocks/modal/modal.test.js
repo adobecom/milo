@@ -268,7 +268,8 @@ pathModalSuites.forEach(([label, open]) => {
       });
       const p = open({ id, path });
       await waitFor(() => hit);
-      const link = document.querySelector(`body > div[hidden] > .dialog-modal#${id} > a[href$="${id}"]`);
+      expect(document.getElementById(id)).to.be.null;
+      const link = document.querySelector(`body > div[hidden] > .dialog-modal > a[href$="${id}"]`);
       expect(link?.isConnected).to.be.true;
       release();
       const modal = await bounded(p);
