@@ -253,7 +253,7 @@ pathModalSuites.forEach(([label, open]) => {
       document.body.classList.remove('disable-scroll');
     });
 
-    it('loads the fragment in a hidden connected container and keeps the dialog out of the page until ready', async () => {
+    it('loads the fragment connected, inside the dialog, hidden until ready', async () => {
       seq += 1;
       const id = `pa-${seq}`;
       const path = `/test/blocks/modal/mocks/${id}`;
@@ -268,8 +268,7 @@ pathModalSuites.forEach(([label, open]) => {
       });
       const p = open({ id, path });
       await waitFor(() => hit);
-      expect(document.querySelector(`.dialog-modal#${id}`)).to.be.null;
-      const link = document.querySelector(`body > div[hidden] > a[href$="${id}"]`);
+      const link = document.querySelector(`body > div[hidden] > .dialog-modal#${id} > a[href$="${id}"]`);
       expect(link?.isConnected).to.be.true;
       release();
       const modal = await bounded(p);
