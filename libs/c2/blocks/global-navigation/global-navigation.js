@@ -275,7 +275,6 @@ export default async function init(el) {
   gnavPromise.then(async (nav) => {
     if (typeof nav?.getGnavHeight === 'function') {
       federalGetGnavHeight = nav.getGnavHeight.bind(nav);
-      console.log(federalGetGnavHeight());
     }
     if (typeof nav?.reloadUnav === 'function') {
       // Preserve the legacy host-auth refresh entry point for C2 navigation.
