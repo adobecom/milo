@@ -1,10 +1,127 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { getFederalDomain, localizeGnavLinks } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { decorateModalLinks, getFederalDomain, localizeGnavLinks } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
-import { getConfig, setConfig } from '../../../../libs/utils/utils.js';
+import { getConfig, setConfig, notifyTargetReady } from '../../../../libs/utils/utils.js';
 
 const DEFAULT = 'https://main--federal--adobecom.aem.page/federal';
+
+describe('c2 global-navigation modal links', () => {
+  let originalConfig;
+  let root;
+  let meta;
+
+  beforeEach(() => {
+    originalConfig = getConfig();
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+    meta = document.createElement('meta');
+    meta.name = 'foundation';
+    meta.content = 'c2';
+    document.head.append(meta);
+    root = document.createElement('header');
+    document.body.append(root);
+  });
+
+  afterEach(() => {
+    root.remove();
+    meta.remove();
+    setConfig(originalConfig);
+  });
+
+  it('initializes duplicate modal CTAs and preserves navigation attributes', async () => {
+    root.innerHTML = `
+      <a class="feds-primary-cta" daa-ll="Eligibility" aria-label="Check eligibility"
+        href="/in/edu-shared/fragments/check-eligibility#check-eligibility-nav">Check eligibility</a>
+      <a class="feds-secondary-cta"
+        href="/in/edu-shared/fragments/check-eligibility#check-eligibility-nav">Check again</a>`;
+    await decorateModalLinks(root);
+    await decorateModalLinks(root);
+    root.querySelectorAll('a').forEach((link) => {
+      expect(link.getAttribute('href')).to.equal('#check-eligibility-nav');
+      expect(link.dataset.modalPath).to.equal('/in/edu-shared/fragments/check-eligibility');
+      expect(link.dataset.modalHash).to.equal('#check-eligibility-nav');
+      expect(link.dataset.blockStatus).to.equal('loaded');
+      expect(link.classList.contains('modal')).to.be.true;
+    });
+    const link = root.querySelector('a');
+    expect(link.classList.contains('feds-primary-cta')).to.be.true;
+    expect(link.getAttribute('daa-ll')).to.equal('Eligibility');
+    expect(link.getAttribute('aria-label')).to.equal('Check eligibility');
+  });
+
+  it('does not mutate other link types or special fragment markers', async () => {
+    const hrefs = [
+      '#section',
+      '/page#section',
+      '/fragments/content',
+      '/fragments/content#_inline',
+      '/fragments/content#_replacecell',
+      '/fragments/content#_dnb',
+      '/fragments/icon.svg',
+      '/fragments/media_video.mp4#video',
+      'https://example.com/fragments/modal#modal',
+      'https://commerce.adobe.com/store/segmentation',
+      'https://mas.adobe.com/studio.html#field=price',
+    ];
+    hrefs.forEach((href) => {
+      const link = document.createElement('a');
+      link.href = href;
+      link.textContent = href;
+      root.append(link);
+    });
+    const html = root.innerHTML;
+    await decorateModalLinks(root);
+    expect(root.innerHTML).to.equal(html);
+  });
+
+  it('respects disabled autoblocks and checkout-owned links', async () => {
+    root.innerHTML = '<a href="/fragments/modal#modal" data-wcs-osi="offer">Open</a>';
+    const link = root.querySelector('a');
+    await decorateModalLinks(root);
+    expect(link.hasAttribute('data-modal-path')).to.be.false;
+    link.removeAttribute('data-wcs-osi');
+    getConfig().autoBlocks = [];
+    await decorateModalLinks(root);
+    expect(link.hasAttribute('data-modal-path')).to.be.false;
+    expect(link.getAttribute('href')).to.equal('/fragments/modal#modal');
+  });
+
+  it('opens a modal deep link and allows reopening from the CTA', async () => {
+    const path = '/in/edu-shared/fragments/check-eligibility';
+    root.innerHTML = `<a href="${path}#nav-modal-deep-link">Check eligibility</a>`;
+    const originalUrl = window.location.href;
+    const realFetch = window.fetch.bind(window);
+    const fetchStub = stub(window, 'fetch').callsFake((resource, options) => (
+      String(resource).includes(`${path}.plain.html`)
+        ? Promise.resolve(new Response('<div><h2>Check eligibility</h2></div>'))
+        : realFetch(resource, options)
+    ));
+    window.history.replaceState(null, '', '#nav-modal-deep-link');
+    notifyTargetReady();
+    try {
+      await decorateModalLinks(root);
+      const { closeModal } = await import('../../../../libs/c2/blocks/modal/modal.js');
+      const modal = document.querySelector('#nav-modal-deep-link.dialog-modal');
+      expect(modal).to.exist;
+      await closeModal(modal);
+      const loaded = new Promise((resolve) => {
+        window.addEventListener('milo:modal:loaded', resolve, { once: true });
+      });
+      const link = root.querySelector('a');
+      link.focus();
+      link.click();
+      await loaded;
+      expect(document.querySelector('#nav-modal-deep-link.dialog-modal')).to.exist;
+      expect(window.location.pathname).to.equal(new URL(originalUrl).pathname);
+    } finally {
+      const { closeModal } = await import('../../../../libs/c2/blocks/modal/modal.js');
+      const modal = document.querySelector('#nav-modal-deep-link.dialog-modal');
+      if (modal) await closeModal(modal);
+      window.history.replaceState(null, '', originalUrl);
+      fetchStub.restore();
+    }
+  });
+});
 
 describe('c2 global-navigation decorateBody (localizeGnavLinks)', () => {
   let originalConfig;
