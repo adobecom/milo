@@ -240,7 +240,22 @@ export async function getModal(details, custom) {
     custom.title = (await findDetails(window.location.hash, null))?.title;
   }
   if (custom) getCustomModal(custom, dialog);
-  if (details) await getPathModal(details.path, dialog);
+  if (details) {
+    // Load into a hidden, connected container: aem-fragment / mas-field only fetch once
+    // connected, and the dialog itself must stay out of the page until it is ready.
+    const staging = createTag('div', { hidden: '' });
+    document.body.append(staging);
+    try {
+      await getPathModal(details.path, staging);
+    } catch (e) {
+      window.lana?.log(`Modal fragment failed to load: ${e?.message}`, { tags: 'modal' });
+      staging.remove();
+      dialogLoadingSet.delete(id);
+      return null;
+    }
+    dialog.append(...staging.childNodes);
+    staging.remove();
+  }
   if (custom?.signal?.aborted) {
     dialogLoadingSet.delete(id);
     return null;
