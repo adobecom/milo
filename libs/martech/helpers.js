@@ -853,7 +853,8 @@ export const loadAnalyticsAndInteractionData = async (
 
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
     const filteredPayload = filterPropositionInJson(resultPayload);
-    if (filteredPayload.length) {
+    // Signed in: MEP sends the display through Launch with the Adobe ID, so skip it here.
+    if (isPageView && filteredPayload.length) {
       sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
     }
     const alloyData = {

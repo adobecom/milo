@@ -323,8 +323,9 @@ describe('loadAnalyticsAndInteractionData', () => {
 
   describe('sign-in status', () => {
     const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
-    let requestBody;
+    let requestBodies;
     let cookieWrites;
+    const eventTypes = () => requestBodies.map((b) => (b.event || b.events[0]).xdm.eventType);
 
     const load = (sis) => {
       const stub = sinon.stub(window.performance, 'getEntriesByType');
@@ -339,6 +340,7 @@ describe('loadAnalyticsAndInteractionData', () => {
 
     beforeEach(() => {
       delete window.hybridPers;
+      requestBodies = [];
       cookieWrites = [];
       Object.defineProperty(document, 'cookie', {
         configurable: true,
@@ -349,10 +351,10 @@ describe('loadAnalyticsAndInteractionData', () => {
         },
       });
       window.fetch = (url, opts) => {
-        requestBody = JSON.parse(opts.body);
+        requestBodies.push(JSON.parse(opts.body));
         return Promise.resolve({
           ok: true,
-          json: () => Promise.resolve({ handle: [{ type: 'personalization:decisions', payload: [{ decisionId: '1' }] }] }),
+          json: () => Promise.resolve({ handle: [{ type: 'personalization:decisions', payload: [{ decisionId: '1', items: [{ data: { format: 'application/json' } }] }] }] }),
         });
       };
     });
@@ -363,19 +365,19 @@ describe('loadAnalyticsAndInteractionData', () => {
       delete window.hybridPers;
     });
 
-    it('signed out: sends the page view and tells Launch to skip its own', async () => {
+    it('signed out: sends the page view and display, and tells Launch to skip its own', async () => {
       const result = await load('0');
 
-      expect(requestBody.event.xdm.eventType).to.equal('web.webpagedetails.pageViews');
+      expect(eventTypes()).to.deep.equal(['web.webpagedetails.pageViews', 'decisioning.propositionDisplay']);
       expect(window.hybridPers).to.be.true;
       expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.true;
       expect(result.type).to.equal('pageView');
     });
 
-    it('signed in: fetches Target decisions only, so Launch still sends the page view', async () => {
+    it('signed in: fetches Target decisions only, so Launch still sends the page view and display', async () => {
       const result = await load('1');
 
-      expect(requestBody.event.xdm.eventType).to.equal('decisioning.propositionFetch');
+      expect(eventTypes()).to.deep.equal(['decisioning.propositionFetch']);
       expect(window.hybridPers).to.be.undefined;
       expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.false;
       expect(result.result.propositions).to.have.lengthOf(1);
