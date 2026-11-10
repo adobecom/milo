@@ -24,6 +24,14 @@ const MOBILE_UA_REGEX = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Oper
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
+const DEFAULT_C2_GNAV_HEIGHT = 80;
+
+let federalGetGnavHeight = null;
+
+export function getGnavHeight() {
+  return federalGetGnavHeight ? federalGetGnavHeight() : DEFAULT_C2_GNAV_HEIGHT;
+}
+
 // Resolve hrefs only; decorateLinksAsync would also run decorateSVG and turn
 // federal's authored .svg icon anchors into <picture> (MWPW-198294).
 // #_dnt links are left intact so federal can honor the marker itself.
@@ -265,6 +273,10 @@ export default async function init(el) {
     return {};
   });
   gnavPromise.then(async (nav) => {
+    if (typeof nav?.getGnavHeight === 'function') {
+      federalGetGnavHeight = nav.getGnavHeight.bind(nav);
+      console.log(federalGetGnavHeight());
+    }
     if (typeof nav?.reloadUnav === 'function') {
       // Preserve the legacy host-auth refresh entry point for C2 navigation.
       window.feds = window.feds || {};
