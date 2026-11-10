@@ -1,0 +1,203 @@
+- generic [ref=f16e1]:
+  - generic [ref=f16e5]:
+    - generic [ref=f16e6]:
+      - generic [ref=f16e7]:
+        - generic [ref=f16e10]:
+          - application "Figma Design, 2 items selected" [active] [ref=f16e763]
+          - status [ref=f16e20]: Screenreader support for the board is currently disabled. To enable it via Accessibility settings, press ⌘K, type Accessibility Settings, and press Enter. To see available keyboard shortcuts, enter ⌃⇧Question mark .
+          - status [ref=f16e22]
+          - generic:
+            - generic:
+              - generic:
+                - region "Comments on canvas":
+                  - button "Create new comment"
+          - region "Left sidebar" [ref=f16e24]:
+            - generic [ref=f16e25]:
+              - toolbar "Navigation Bar" [ref=f16e26]:
+                - generic [ref=f16e27]:
+                  - button "Main menu" [ref=f16e28]
+                  - separator [ref=f16e29]
+                  - button "File" [expanded] [ref=f16e30]
+                  - separator [ref=f16e31]
+                  - button "Variables" [ref=f16e32]
+              - generic [ref=f16e33]:
+                - generic [ref=f16e34]:
+                  - generic [ref=f16e35]:
+                    - generic [ref=f16e36]:
+                      - generic [ref=f16e38]:
+                        - generic [ref=f16e43]:
+                          - button "MAX26 Final Login Modal 091126, branch file name" [ref=f16e44]: MAX26 Final Login Modal 091126
+                          - generic [ref=f16e45]: File name
+                        - button "Edit file menu" [ref=f16e49]
+                      - button "Minimize UI" [ref=f16e50]
+                    - button "MAX 2026 Virtual VizD SSOT" [ref=f16e53]
+                  - generic [ref=f16e54]:
+                    - generic [ref=f16e57]:
+                      - heading [level=2] [ref=f16e58]:
+                        - generic [ref=f16e59]:
+                          - button "Pages" [expanded] [ref=f16e60]
+                          - button "Find" [ref=f16e63]
+                      - generic [ref=f16e66]:
+                        - grid [ref=f16e73]:
+                          - row [ref=f16e75]:
+                            - gridcell [ref=f16e76]:
+                              - button "Page divider" [ref=f16e79]
+                          - row [ref=f16e82]:
+                            - gridcell [ref=f16e83]:
+                              - button "Log in Modal" [ref=f16e86]
+                          - row [ref=f16e90]:
+                            - gridcell [ref=f16e91]:
+                              - button "Page divider" [ref=f16e94]
+                          - row [ref=f16e97]:
+                            - gridcell [ref=f16e98]:
+                              - button "Page divider" [ref=f16e101]
+                        - slider "Resize handle" [ref=f16e104]
+                    - generic [ref=f16e105]:
+                      - button "Ready for development" [expanded] [ref=f16e108]
+                      - generic [ref=f16e109]: Nothing marked as ready for development yet.
+                      - generic [ref=f16e120]:
+                        - generic [ref=f16e122]:
+                          - button "Layers" [ref=f16e123]
+                          - button "Collapse layers" [ref=f16e124]
+                        - button "Section Log in Modal" [ref=f16e764]:
+                          - generic [ref=f16e765]:
+                            - img "Section" [ref=f16e769]
+                            - generic [ref=f16e773]: Log in Modal
+                        - button "Section Log in modal components" [ref=f16e775]:
+                          - generic [ref=f16e776]:
+                            - img "Section" [ref=f16e780]
+                            - generic [ref=f16e784]: Log in modal components
+                - slider "Resize handle" [ref=f16e252]
+          - generic:
+            - generic:
+              - region "Properties and plugins":
+                - generic [ref=f16e254]:
+                  - generic [ref=f16e255]:
+                    - generic [ref=f16e257]:
+                      - button "Multiplayer tools" [ref=f16e263]:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic [aria-hidden]:
+                                    - img:
+                                      - generic: D
+                      - generic [ref=f16e269]:
+                        - group "Prototype view" [ref=f16e270]:
+                          - button "Present" [ref=f16e271]
+                          - button "Prototype view" [ref=f16e272]
+                        - button "Share" [ref=f16e274]
+                    - generic [ref=f16e276]:
+                      - tablist [ref=f16e278]:
+                        - tab "Inspect" [selected] [ref=f16e279]:
+                          - generic [aria-hidden] [ref=f16e280]: Inspect
+                        - tab "Plugins" [ref=f16e282]:
+                          - generic [aria-hidden] [ref=f16e283]: Plugins
+                      - button "17%, zoom and view options" [ref=f16e288]: 17%
+                    - tabpanel "Inspect" [ref=f16e290]:
+                      - generic [ref=f16e298]:
+                        - generic [ref=f16e787]:
+                          - generic [ref=f16e788]:
+                            - heading "2 selected" [level=1] [ref=f16e791]
+                            - button "Copy URLs for selected layers" [ref=f16e795]
+                          - generic [ref=f16e797]:
+                            - generic [ref=f16e798]:
+                              - img "Instance" [ref=f16e799]
+                              - generic [ref=f16e803]: Content area
+                            - generic [ref=f16e804]:
+                              - img "Instance" [ref=f16e805]
+                              - generic [ref=f16e811]: Close button (L)
+                            - button "Compare selected items" [ref=f16e812]
+                        - generic [ref=f16e813]:
+                          - generic [ref=f16e814]:
+                            - button "MCP" [expanded] [ref=f16e815]:
+                              - heading "MCP" [level=3]
+                            - link [ref=f16e818] [cursor=pointer]:
+                              - /url: https://developers.figma.com/docs/figma-mcp-server/
+                          - generic [ref=f16e821]:
+                            - paragraph [ref=f16e823]:
+                              - generic [ref=f16e824]:
+                                - text: Generate code with context from this file via the remote MCP server.
+                                - link "Learn more" [ref=f16e825] [cursor=pointer]:
+                                  - /url: https://developers.figma.com/docs/figma-mcp-server/
+                            - button "Connect to AI agent" [ref=f16e827]
+                        - generic [ref=f16e828]:
+                          - generic [ref=f16e830]:
+                            - heading "Code Connect" [level=3] [ref=f16e834]
+                            - strong [ref=f16e837]:
+                              - generic [ref=f16e838]: Not started
+                          - generic [ref=f16e842]:
+                            - text: Publish components to a library, then you can connect them to your codebase with Code Connect.
+                            - link "Learn more" [ref=f16e843] [cursor=pointer]:
+                              - /url: https://help.figma.com/hc/articles/360025508373-Publish-a-library
+                        - generic [ref=f16e844]:
+                          - generic [ref=f16e845]:
+                            - heading "Selection colors" [level=3] [ref=f16e850]
+                            - generic [ref=f16e852]:
+                              - generic [ref=f16e853]: Color format
+                              - combobox "Color format" [ref=f16e854]:
+                                - generic [ref=f16e855]: Hex
+                          - generic [ref=f16e859]:
+                            - 'button "Copy #000000" [ref=f16e863]':
+                              - generic: "#000000"
+                            - 'button "Copy #131313" [ref=f16e868]':
+                              - generic: "#131313"
+                            - 'button "Copy #FFFFFF" [ref=f16e873]':
+                              - generic: "#FFFFFF"
+                            - 'button "Copy #2C2C2C" [ref=f16e878]':
+                              - generic: "#2C2C2C"
+                            - button "2 more" [ref=f16e881]
+                        - generic [ref=f16e888]:
+                          - button "Export" [ref=f16e889]
+                          - button "Add export settings" [ref=f16e893]
+                  - slider "Resize handle" [ref=f16e674]
+        - generic:
+          - generic:
+            - generic:
+              - region "Application toolbar":
+                - toolbar "Editor" [ref=f16e677]:
+                  - generic [ref=f16e683]:
+                    - button "Move" [pressed] [ref=f16e684]
+                    - button "Copy colors" [ref=f16e685]
+                    - button "Comment" [ref=f16e686]
+                  - radiogroup "Toolbelt Mode" [ref=f16e690]:
+                    - generic [ref=f16e692]:
+                      - generic [ref=f16e694]:
+                        - radio "Draw" [ref=f16e695]
+                        - generic [ref=f16e699]: Draw
+                      - generic [ref=f16e700]:
+                        - radio "Design" [ref=f16e701]
+                        - generic [ref=f16e705]: Design
+                      - generic [ref=f16e706]:
+                        - radio "Motion" [ref=f16e707]
+                        - generic [ref=f16e711]: Motion
+                      - generic [ref=f16e712]:
+                        - radio "Dev Mode" [checked] [ref=f16e713]
+                        - generic [ref=f16e717]: Dev Mode
+      - region "Help/zoom toolbar" [ref=f16e729]:
+        - toolbar "Help/zoom toolbar" [ref=f16e731]:
+          - button "Help" [ref=f16e733]
+    - group [ref=f16e735]:
+      - alert [ref=f16e737]
+      - alert [ref=f16e739]
+  - iframe [aria-hidden] [ref=f16e741]:
+    - iframe [ref=f19e1]:
+      - generic [ref=f24e4]:
+        - generic [ref=f24e7]:
+          - heading "👋 Hi there. Which of the following Developer Tools have you used recently?" [level=1] [ref=f24e10]
+          - group [ref=f24e12]:
+            - generic [ref=f24e14] [cursor=pointer]:
+              - checkbox "Code Connect" [ref=f24e15]
+              - generic [ref=f24e16]: Code Connect
+            - generic [ref=f24e18] [cursor=pointer]:
+              - checkbox "Dev Mode" [ref=f24e19]
+              - generic [ref=f24e20]: Dev Mode
+            - generic [ref=f24e22] [cursor=pointer]:
+              - checkbox "Figma's MCP server" [ref=f24e23]
+              - generic [ref=f24e24]: Figma's MCP server
+            - generic [ref=f24e26] [cursor=pointer]:
+              - checkbox "None of the above" [ref=f24e27]
+              - generic [ref=f24e28]: None of the above
+          - button "Next" [disabled] [ref=f24e31]
+        - button "Close button" [ref=f24e32] [cursor=pointer]

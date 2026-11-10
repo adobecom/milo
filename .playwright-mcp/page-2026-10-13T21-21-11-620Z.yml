@@ -1,0 +1,829 @@
+- generic [ref=f5e3]:
+  - banner [ref=f5e4]:
+    - list:
+      - listitem:
+        - link "Skip to sidebar" [ref=f5e5] [cursor=pointer]:
+          - /url: ""
+      - listitem:
+        - link "Skip to main content" [ref=f5e6] [cursor=pointer]:
+          - /url: "#main"
+      - listitem:
+        - link "Skip to breadcrumbs" [ref=f5e7] [cursor=pointer]:
+          - /url: "#breadcrumbs"
+      - listitem:
+        - link "Skip to search" [ref=f5e8] [cursor=pointer]:
+          - /url: "#quick-search-query"
+    - navigation "Site" [ref=f5e9]:
+      - generic [ref=f5e10]:
+        - button " Linked Applications" [ref=f5e12] [cursor=pointer]
+        - generic [ref=f5e14]:
+          - link "Confluence home page" [ref=f5e16] [cursor=pointer]:
+            - /url: /
+            - img "Wiki" [ref=f5e17]
+            - generic [ref=f5e18]: Wiki
+          - list [ref=f5e19]:
+            - listitem [ref=f5e20]:
+              - button " Spaces" [ref=f5e21] [cursor=pointer]
+            - listitem [ref=f5e22]:
+              - link "People" [ref=f5e23] [cursor=pointer]:
+                - /url: /browsepeople.action
+            - listitem [ref=f5e25]:
+              - link "Questions" [ref=f5e26] [cursor=pointer]:
+                - /url: /questions?src=header
+            - listitem [ref=f5e28]:
+              - link "Calendars" [ref=f5e29] [cursor=pointer]:
+                - /url: /calendar/mycalendar.action
+            - listitem
+            - listitem [ref=f5e31]:
+              - button "Create blank page" [ref=f5e32] [cursor=pointer]: Create
+              - button "Create from template" [ref=f5e33] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f5e34]: 
+        - list [ref=f5e36]:
+          - listitem [ref=f5e37]:
+            - generic [ref=f5e38]:
+              - button "Search" [ref=f5e39] [cursor=pointer]: 
+              - textbox "Search query" [ref=f5e40]:
+                - /placeholder: Search
+          - listitem [ref=f5e41]:
+            - button " Help" [ref=f5e42] [cursor=pointer]
+          - listitem
+          - listitem [ref=f5e44]:
+            - button "Notifications" [ref=f5e45] [cursor=pointer]:
+              - generic [ref=f5e46]: 
+          - listitem [ref=f5e47]:
+            - button "Your profile and preferences" [ref=f5e48] [cursor=pointer]
+  - generic [ref=f5e51]:
+    - complementary "sidebar" [ref=f5e52]:
+      - generic [ref=f5e53]:
+        - generic [ref=f5e54]:
+          - link "Adobe.com" [ref=f5e55] [cursor=pointer]:
+            - /url: /spaces/adobedotcom/pages/110499095/Home
+            - generic "Adobe.com" [ref=f5e61]
+          - text: 
+          - generic:
+            - button "Add to my spaces" [ref=f5e62] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f5e63]: 
+            - text: 
+        - generic [ref=f5e64]:
+          - generic [ref=f5e67]:
+            - list [ref=f5e69]:
+              - listitem [ref=f5e70]:
+                - link "Pages" [ref=f5e71] [cursor=pointer]:
+                  - /url: /collector/pages.action?key=adobedotcom
+                  - generic [ref=f5e72]: 
+                  - text: Pages
+              - listitem: 
+            - generic [ref=f5e73]:
+              - heading "Space shortcuts" [level=2] [ref=f5e74]
+              - text: 
+              - list [ref=f5e76]:
+                - listitem [ref=f5e77]:
+                  - link "Teams" [ref=f5e78] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/2144275710/Teams
+                    - generic [ref=f5e79]: 
+                    - text: Teams
+                - listitem [ref=f5e80]:
+                  - link "DOTCOM JIRA" [ref=f5e81] [cursor=pointer]:
+                    - /url: https://jira.corp.adobe.com/secure/RapidBoard.jspa?rapidView=18805
+                    - generic [ref=f5e82]: 
+                    - text: DOTCOM JIRA
+                - listitem [ref=f5e83]:
+                  - link "GWP Hub" [ref=f5e84] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/626690566/Adobe.com+Global+Production+Hub
+                    - generic [ref=f5e85]: 
+                    - text: GWP Hub
+                - listitem [ref=f5e86]:
+                  - link "PgM Hub" [ref=f5e87] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/1110953568/PMO+Hub+for+Adobe.com
+                    - generic [ref=f5e88]: 
+                    - text: PgM Hub
+                - listitem [ref=f5e89]:
+                  - link "PdM Hub" [ref=f5e90] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/1387743304/Product+Management
+                    - generic [ref=f5e91]: 
+                    - text: PdM Hub
+                - listitem [ref=f5e92]:
+                  - link "Product requirements" [ref=f5e93] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/2188056836/Product+requirements
+                    - generic [ref=f5e94]: 
+                    - text: Product requirements
+                - listitem [ref=f5e95]:
+                  - link "Decision log" [ref=f5e96] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/3450962334/Decision+log
+                    - generic [ref=f5e97]: 
+                    - text: Decision log
+                - listitem [ref=f5e98]:
+                  - link "Meeting notes" [ref=f5e99] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/3466629611/Meeting+notes
+                    - generic [ref=f5e100]: 
+                    - text: Meeting notes
+                - listitem [ref=f5e101]:
+                  - link "Jira reports" [ref=f5e102] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/3726793997/Jira+reports
+                    - generic [ref=f5e103]: 
+                    - text: Jira reports
+          - generic [ref=f5e104]:
+            - heading "Page tree" [level=2] [ref=f5e106]:  Page tree
+            - generic [ref=f5e107]: Loading...
+      - generic [ref=f5e112]:
+        - button "ConfigureSpace tools" [ref=f5e113] [cursor=pointer]:
+          - generic [ref=f5e114]:  Configure
+          - text: Space tools
+        - button "Sidebar" [expanded] [ref=f5e116] [cursor=pointer]: 
+      - tooltip [ref=f5e117]
+    - main [ref=f5e119]:
+      - generic [ref=f5e121]:
+        - generic:
+          - generic:
+            - navigation "Breadcrumbs":
+              - list:
+                - listitem [ref=f5e122]:
+                  - link "Pages" [ref=f5e124] [cursor=pointer]:
+                    - /url: /collector/pages.action?key=adobedotcom
+                - listitem "Show all breadcrumbs" [ref=f5e125] [cursor=pointer]:
+                  - text: /
+                  - button "Show all breadcrumbs" [ref=f5e126]:
+                    - strong [ref=f5e127]: …
+                - text: / / / / /
+                - listitem [ref=f5e128]:
+                  - text: /
+                  - link "EVNT026 - Summit 2026 Log in Prompt Modal" [ref=f5e130] [cursor=pointer]:
+                    - /url: /spaces/adobedotcom/pages/3757295235/EVNT026+-+Summit+2026+Log+in+Prompt+Modal
+          - generic:
+            - list:
+              - listitem [ref=f5e131]:
+                - link "Unrestricted" [ref=f5e132] [cursor=pointer]:
+                  - /url: ""
+                  - text: 
+              - listitem [ref=f5e133]:
+                - link " 2 Jira links" [ref=f5e134] [cursor=pointer]:
+                  - /url: ""
+                  - generic [ref=f5e135]: 
+                  - text: 2 Jira links
+              - listitem [ref=f5e136]: 
+          - region "Page tools" [ref=f5e137]:
+            - list:
+              - listitem [ref=f5e138]:
+                - button " Edit" [ref=f5e139] [cursor=pointer]:
+                  - generic [ref=f5e140]:
+                    - generic [ref=f5e141]: 
+                    - text: Edit
+              - listitem [ref=f5e142]:
+                - button "View inline comments 'v'" [ref=f5e143] [cursor=pointer]:
+                  - generic [ref=f5e144]:
+                    - generic [ref=f5e145]: 
+                    - text: View inline comments
+              - listitem [ref=f5e146]:
+                - button " Save for later" [ref=f5e147] [cursor=pointer]:
+                  - generic [ref=f5e148]:
+                    - generic [ref=f5e149]: 
+                    - text: Save for later
+              - listitem [ref=f5e150]:
+                - button "Watch 'w'" [ref=f5e151] [cursor=pointer]:
+                  - generic [ref=f5e152]:
+                    - generic [ref=f5e153]: 
+                    - text: Watch
+              - listitem [ref=f5e154]:
+                - button " Share" [ref=f5e155] [cursor=pointer]:
+                  - generic [ref=f5e156]:
+                    - generic [ref=f5e157]: 
+                    - text: Share
+              - listitem [ref=f5e158]:
+                - button " Send page" [ref=f5e159] [cursor=pointer]
+              - listitem [ref=f5e160]:
+                - link "More options" [ref=f5e161] [cursor=pointer]:
+                  - /url: "#"
+                  - button "More options" [ref=f5e163]: 
+        - link [ref=f5e165] [cursor=pointer]:
+          - /url: /spaces/adobedotcom/pages/4015271457/EVNT027+-+MAX+2026+Login+Prompt+Modal
+          - heading "EVNT027 - MAX 2026 Login Prompt Modal" [level=1] [ref=f5e166]
+      - generic [ref=f5e167]:
+        - list [ref=f5e169]:
+          - listitem [ref=f5e170]:
+            - text: Created by
+            - generic [ref=f5e171]:
+              - button "More information about Miles Richards-griswold" [ref=f5e172] [cursor=pointer]
+              - link "created by Miles Richards-griswold" [ref=f5e175] [cursor=pointer]:
+                - /url: "    /display/~mrichards\n"
+                - text: Miles Richards-griswold
+            - text: ", last updated on"
+            - link "modified on Aug 26, 2026, select to show changes" [ref=f5e176] [cursor=pointer]:
+              - /url: /pages/diffpagesbyversion.action?pageId=4015271457&selectedPageVersions=16&selectedPageVersions=17
+              - text: Aug 26, 2026
+            - text: • 6 minute read
+        - generic [ref=f5e177]:
+          - heading [level=2] [ref=f5e178]:
+            - text: Executive Summary (Required)
+            - button "Copy link to heading" [ref=f5e180] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e181]: 
+              - text:  
+          - table [ref=f5e183]:
+            - rowgroup [ref=f5e184]:
+              - row [ref=f5e185]:
+                - rowheader "Test ID" [ref=f5e186]
+                - cell "EVNT027" [ref=f5e187]
+            - rowgroup [ref=f5e189]:
+              - row [ref=f5e190]:
+                - rowheader "Test Name" [ref=f5e191]
+                - cell "MAX 2026 Login Prompt Modal" [ref=f5e192]
+              - row [ref=f5e193]:
+                - rowheader "Test Duration" [ref=f5e194]
+                - cell [ref=f5e195]:
+                  - paragraph [ref=f5e197]: October 27th, 2026 - December 12th, 2026
+              - row [ref=f5e198]:
+                - rowheader "Jira Ticket" [ref=f5e199]
+                - 'cell "Live event: OPT-43055 - Getting issue details... STATUS EVNT027 - MAX 2026 Login Prompt Modal (Live Event) Post event: OPT-43056 - Getting issue details... STATUS EVNT027 - MAX 2026 Login Prompt Modal (Post Event)" [ref=f5e200]':
+                  - generic [ref=f5e201]:
+                    - paragraph [ref=f5e202]:
+                      - text: "Live event:"
+                      - generic [ref=f5e203]:
+                        - link "OPT-43055" [ref=f5e204] [cursor=pointer]:
+                          - /url: https://jira.corp.adobe.com/browse/OPT-43055
+                        - text: "- Getting issue details..."
+                        - generic [ref=f5e206]: STATUS
+                      - text: EVNT027 - MAX 2026 Login Prompt Modal (Live Event)
+                    - paragraph [ref=f5e207]:
+                      - text: "Post event:"
+                      - generic [ref=f5e208]:
+                        - link "OPT-43056" [ref=f5e209] [cursor=pointer]:
+                          - /url: https://jira.corp.adobe.com/browse/OPT-43056
+                        - text: "- Getting issue details..."
+                        - generic [ref=f5e211]: STATUS
+                      - text: EVNT027 - MAX 2026 Login Prompt Modal (Post Event)
+              - row [ref=f5e212]:
+                - rowheader "Product Manager + Team" [ref=f5e213]
+                - cell [ref=f5e214]:
+                  - paragraph [ref=f5e216]:
+                    - link "@Miles Richards-griswold" [ref=f5e217] [cursor=pointer]:
+                      - /url: /display/~mrichards
+                    - text: + A.com Online Events Team
+              - row [ref=f5e218]:
+                - rowheader "Business Goal" [ref=f5e219]
+                - cell "Increase the number of logged in visitors on the MAX Event site in order to improve overall engagement with MAX content, e.g. video views, schedule adds, favorites" [ref=f5e220]
+              - row [ref=f5e221]:
+                - rowheader "Hypothesis" [ref=f5e222]
+                - cell "Across all virtual events (MAX, Summit, etc.) we see a much higher engagement rate from logged in visitors. Logged in visitors tend to have 4x the number of video views and video duration compared to logged out visitors. By providing a more explicit value proposition for logging in on pages with high-value logged in actions (adding to schedule, favoriting) we can increase the value of event content" [ref=f5e223]
+              - row [ref=f5e224]:
+                - rowheader "Primary KPI" [ref=f5e225]
+                - cell [ref=f5e226]:
+                  - paragraph [ref=f5e227]: Logins → Engagement with pages in scope
+                  - paragraph [ref=f5e228]: Sign-in completion rate
+                  - paragraph [ref=f5e229]: Registration completion rate
+              - row [ref=f5e230]:
+                - rowheader "Secondary KPIs" [ref=f5e231]
+                - cell [ref=f5e232]:
+                  - paragraph [ref=f5e233]: Bounce Rate (flat or improved)
+                  - paragraph [ref=f5e234]: Schedule Actions (Add to Schedule, Favoriting)
+                  - paragraph [ref=f5e235]: Page Engagement (Clicks to sessions, Speaker Modal opens)
+                  - paragraph [ref=f5e236]:
+                    - emphasis [ref=f5e237]: Directional
+                  - paragraph [ref=f5e238]: Video Views & Time
+                  - paragraph [ref=f5e239]: Visits to A.com or Product
+              - row [ref=f5e240]:
+                - rowheader "Personalized?" [ref=f5e241]
+                - cell "No" [ref=f5e242]
+              - row [ref=f5e243]:
+                - rowheader "URLs" [ref=f5e244]
+                - cell [ref=f5e245]:
+                  - generic [ref=f5e246]:
+                    - paragraph [ref=f5e247]:
+                      - link "https://www.adobe.com/max.html" [ref=f5e248] [cursor=pointer]:
+                        - /url: https://www.adobe.com/max.html
+                      - text: (Homepage)
+                    - paragraph [ref=f5e249]:
+                      - link "https://www.adobe.com/max/2026/sessions.html" [ref=f5e250] [cursor=pointer]:
+                        - /url: https://www.adobe.com/max/2026/sessions.html
+                      - text: (Session Guide)
+                    - paragraph [ref=f5e251]:
+                      - link "https://www.adobe.com/max/2026/broadcast.html" [ref=f5e252] [cursor=pointer]:
+                        - /url: https://www.adobe.com/max/2026/broadcast.html
+                      - text: (Session Broadcast)
+          - heading [level=1] [ref=f5e253]:
+            - text: Snapshot of Outcome & Impact (Required)
+            - button "Copy link to heading" [ref=f5e255] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e256]: 
+              - text:  
+          - table [ref=f5e258]:
+            - rowgroup [ref=f5e259]:
+              - row [ref=f5e260]:
+                - rowheader "Test Outcome" [ref=f5e261]
+                - cell [ref=f5e262]
+            - rowgroup [ref=f5e263]:
+              - row [ref=f5e264]:
+                - rowheader "Recommended Rollout" [ref=f5e265]
+                - cell "Yes / No" [ref=f5e266]
+              - row [ref=f5e267]:
+                - rowheader "RTP date (if known)" [ref=f5e268]
+                - cell "Provide date" [ref=f5e269]
+              - row [ref=f5e270]:
+                - rowheader "Actual Lift" [ref=f5e271]
+                - cell "Provide actual lift" [ref=f5e272]
+              - row [ref=f5e273]:
+                - rowheader "Summary of Learnings" [ref=f5e274]
+                - cell "Provide a few bullets of learnings" [ref=f5e275]
+              - row [ref=f5e276]:
+                - rowheader "Analysis by" [ref=f5e277]
+                - cell "Insert Name(s)" [ref=f5e278]
+              - row [ref=f5e279]:
+                - rowheader "Analysis Detail" [ref=f5e280]
+                - cell "Insert Deck" [ref=f5e281]
+          - heading [level=1] [ref=f5e282]:
+            - text: Supporting Research & Data (Optional)
+            - button "Copy link to heading" [ref=f5e284] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e285]: 
+              - text:  
+          - table [ref=f5e287]:
+            - rowgroup [ref=f5e288]:
+              - row [ref=f5e289]:
+                - columnheader [ref=f5e290] [cursor=pointer]:
+                  - button "Quant/Qual Insight" [ref=f5e292]
+                - columnheader [ref=f5e293] [cursor=pointer]:
+                  - button "Cited Source Study, Report or Dashboard" [ref=f5e295]
+            - rowgroup [ref=f5e296]:
+              - row [ref=f5e297]:
+                - cell [ref=f5e298]:
+                  - generic [ref=f5e299]:
+                    - paragraph [ref=f5e300]:
+                      - strong [ref=f5e301]: FY26 Summit Live — Registered vs. Non-Registered Engagement
+                    - table [ref=f5e303]:
+                      - rowgroup [ref=f5e304]:
+                        - row [ref=f5e305]:
+                          - columnheader [ref=f5e306] [cursor=pointer]:
+                            - button "Segment" [ref=f5e308]
+                          - columnheader [ref=f5e309] [cursor=pointer]:
+                            - button "Visitors" [ref=f5e311]
+                          - columnheader [ref=f5e312] [cursor=pointer]:
+                            - button "% Video Viewers" [ref=f5e314]
+                          - columnheader [ref=f5e315] [cursor=pointer]:
+                            - button "Avg Views / Viewer" [ref=f5e317]
+                          - columnheader [ref=f5e318] [cursor=pointer]:
+                            - button "Video Views" [ref=f5e320]
+                          - columnheader [ref=f5e321] [cursor=pointer]:
+                            - button "Time Spent / Viewer" [ref=f5e323]
+                          - columnheader [ref=f5e324] [cursor=pointer]:
+                            - button "% of Total Visitors" [ref=f5e326]
+                      - rowgroup [ref=f5e327]:
+                        - row [ref=f5e328]:
+                          - cell "Registered" [ref=f5e329]
+                          - cell "3.8K" [ref=f5e330]
+                          - cell "81%" [ref=f5e331]
+                          - cell "4.7" [ref=f5e332]
+                          - cell "14.3K" [ref=f5e333]
+                          - cell "1:26:21" [ref=f5e334]
+                          - cell "8%" [ref=f5e335]
+                        - row [ref=f5e336]:
+                          - cell "Non-Registered" [ref=f5e337]
+                          - cell "46.2K" [ref=f5e338]
+                          - cell "52%" [ref=f5e339]
+                          - cell "2.6" [ref=f5e340]
+                          - cell "62.2K" [ref=f5e341]
+                          - cell "0:37:01" [ref=f5e342]
+                          - cell "92%" [ref=f5e343]
+                        - row [ref=f5e344]:
+                          - cell "Reg & Logged In" [ref=f5e345]
+                          - cell "3.6K" [ref=f5e346]
+                          - cell "73%" [ref=f5e347]
+                          - cell "3.7" [ref=f5e348]
+                          - cell "9.8K" [ref=f5e349]
+                          - cell "1:17:41" [ref=f5e350]
+                          - cell "7%" [ref=f5e351]
+                        - row [ref=f5e352]:
+                          - cell "Logged In" [ref=f5e353]
+                          - cell "19.4K" [ref=f5e354]
+                          - cell "71%" [ref=f5e355]
+                          - cell "3.1" [ref=f5e356]
+                          - cell "42.2K" [ref=f5e357]
+                          - cell "1:00:06" [ref=f5e358]
+                          - cell "39%" [ref=f5e359]
+                    - paragraph [ref=f5e360]:
+                      - strong [ref=f5e361]: "Key takeaway:"
+                      - text: Logged-in visitors spend significantly more time engaging with content and watch nearly 2x more videos per viewer compared to non-registered visitors — supporting the hypothesis that increasing logins drives deeper event engagement.
+                    - paragraph [ref=f5e362]:
+                      - strong [ref=f5e363]: FY26 Summit Live — Page Traffic Breakdown (Live Event)
+                    - table [ref=f5e365]:
+                      - rowgroup [ref=f5e366]:
+                        - row [ref=f5e367]:
+                          - columnheader [ref=f5e368] [cursor=pointer]:
+                            - button "Page" [ref=f5e370]
+                          - columnheader [ref=f5e371] [cursor=pointer]:
+                            - button "Visits" [ref=f5e373]
+                          - columnheader [ref=f5e374] [cursor=pointer]:
+                            - button "Unique Visitors" [ref=f5e376]
+                          - columnheader [ref=f5e377] [cursor=pointer]:
+                            - button "% of Total" [ref=f5e379]
+                          - columnheader [ref=f5e380] [cursor=pointer]:
+                            - button "Avg Time on Page" [ref=f5e382]
+                      - rowgroup [ref=f5e383]:
+                        - row [ref=f5e384]:
+                          - cell "Total (FY26 Summit Live)" [ref=f5e385]
+                          - cell "65,160" [ref=f5e386]
+                          - cell "54,740" [ref=f5e387]
+                          - cell "100%" [ref=f5e388]
+                          - cell "0:17:34" [ref=f5e389]
+                        - row [ref=f5e390]:
+                          - cell "Homepage" [ref=f5e391]
+                          - cell "56,342" [ref=f5e392]
+                          - cell "48,331" [ref=f5e393]
+                          - cell "58.6%" [ref=f5e394]
+                          - cell "0:28:42" [ref=f5e395]
+                        - row [ref=f5e396]:
+                          - cell "Session Pages (Individual)" [ref=f5e397]
+                          - cell "17,947" [ref=f5e398]
+                          - cell "14,593" [ref=f5e399]
+                          - cell "18.7%" [ref=f5e400]
+                          - cell "0:09:31" [ref=f5e401]
+                        - row [ref=f5e402]:
+                          - cell "Sessions Hub" [ref=f5e403]
+                          - cell "10,860" [ref=f5e404]
+                          - cell "8,956" [ref=f5e405]
+                          - cell "11.3%" [ref=f5e406]
+                          - cell "0:03:50" [ref=f5e407]
+                        - row [ref=f5e408]:
+                          - cell "My Schedule" [ref=f5e409]
+                          - cell "5,606" [ref=f5e410]
+                          - cell "3,988" [ref=f5e411]
+                          - cell "5.8%" [ref=f5e412]
+                          - cell "0:09:02" [ref=f5e413]
+                        - row [ref=f5e414]:
+                          - cell "Agenda" [ref=f5e415]
+                          - cell "5,442" [ref=f5e416]
+                          - cell "4,652" [ref=f5e417]
+                          - cell "5.7%" [ref=f5e418]
+                          - cell "0:03:24" [ref=f5e419]
+                    - paragraph [ref=f5e420]:
+                      - emphasis [ref=f5e421]: "Source: Tran Nguyen, Aug 20 2026. Note: data may differ slightly from RTB deck as analytics data is cleaned over time."
+                - cell [ref=f5e422]:
+                  - link "FY26 Summit Post Event Report (RTB)" [ref=f5e423] [cursor=pointer]:
+                    - /url: https://adobe.sharepoint.com/:p:/r/sites/webanalytics/Shared%20Documents/Adobe%20Event%20%26%20Platform/Adobe%20Events/Event%20Platform%20RTB/Event%20RTB%20Reports/2026%20Event%20RTB/FY26%20Summit%20Post%20Event%20Report.pptx?d=w3359a64ad7af46b4a7e59a90b5483b99&csf=1&web=1&e=Wy2a8Y
+          - heading [level=1] [ref=f5e424]:
+            - text: Experiment Duration & Impact (Required)
+            - button "Copy link to heading" [ref=f5e426] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e427]: 
+              - text:  
+          - table [ref=f5e429]:
+            - rowgroup [ref=f5e430]:
+              - row [ref=f5e431]:
+                - cell "+10% Lift in Sign-In (based on FY26 Summit Live data)" [ref=f5e432]
+                - cell [ref=f5e433]:
+                  - generic [ref=f5e434]:
+                    - paragraph [ref=f5e435]: "Confidence Level: 80%"
+                    - paragraph [ref=f5e436]: "Statistical Power: 80%"
+                    - paragraph [ref=f5e437]: "Total Number of Daily Visitors: 21,720 (FY26 Summit Live — 65,160 total visits ÷ 3 event days, used as proxy for MAX 2026 planning)"
+                    - paragraph [ref=f5e438]: "Baseline Conversion Rate: 3%"
+                    - paragraph [ref=f5e439]: "Weeks to Complete Test to detect impact: 3 weeks (18 days)"
+          - heading [level=2] [ref=f5e440]:
+            - text: FY26 Summit Live Page Traffic
+            - button "Copy link to heading" [ref=f5e442] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e443]: 
+              - text:  
+          - table [ref=f5e445]:
+            - rowgroup [ref=f5e446]:
+              - row [ref=f5e447]:
+                - columnheader [ref=f5e448] [cursor=pointer]:
+                  - button "Page" [ref=f5e450]
+                - columnheader [ref=f5e451] [cursor=pointer]:
+                  - button "Live" [ref=f5e453]
+                - columnheader [ref=f5e454] [cursor=pointer]:
+                  - button "Post - 30 days" [ref=f5e456]
+            - rowgroup [ref=f5e457]:
+              - row [ref=f5e458]:
+                - cell "Homepage" [ref=f5e459]
+                - cell [ref=f5e460]:
+                  - paragraph [ref=f5e461]: 56,342
+                  - paragraph [ref=f5e462]: 48,331U
+                - cell [ref=f5e463]:
+                  - paragraph [ref=f5e464]
+                  - paragraph [ref=f5e465]: 105,800
+                  - paragraph [ref=f5e466]: 89,500U
+                  - paragraph [ref=f5e467]
+              - row [ref=f5e468]:
+                - cell "Agenda" [ref=f5e469]
+                - cell [ref=f5e470]:
+                  - paragraph [ref=f5e471]: 5,442
+                  - paragraph [ref=f5e472]: 4,652U
+                - cell "n/a" [ref=f5e473]
+              - row [ref=f5e474]:
+                - cell "Sessions Hub" [ref=f5e475]
+                - cell [ref=f5e476]:
+                  - paragraph [ref=f5e477]: 10,860
+                  - paragraph [ref=f5e478]: 8,956U
+                - cell [ref=f5e479]:
+                  - paragraph [ref=f5e480]
+                  - paragraph [ref=f5e481]: 19,300
+                  - paragraph [ref=f5e482]: 12,600U
+                  - paragraph [ref=f5e483]
+              - row [ref=f5e484]:
+                - cell "Individual session pages" [ref=f5e485]
+                - cell [ref=f5e486]:
+                  - paragraph [ref=f5e487]: 17,947
+                  - paragraph [ref=f5e488]: 14,593U
+                - cell [ref=f5e489]:
+                  - paragraph [ref=f5e490]
+                  - paragraph [ref=f5e491]: 217,700
+                  - paragraph [ref=f5e492]: 133,400U
+                  - paragraph [ref=f5e493]
+          - heading [level=2] [ref=f5e494]:
+            - text: Targeting Criteria (Required)
+            - button "Copy link to heading" [ref=f5e496] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e497]: 
+              - text:  
+          - table [ref=f5e499]:
+            - rowgroup [ref=f5e500]:
+              - row [ref=f5e501]:
+                - columnheader "Criteria" [ref=f5e502]
+                - columnheader "Geo-Targeting" [ref=f5e503]
+                - columnheader "Device Type" [ref=f5e504]
+                - columnheader "Targeted Audience" [ref=f5e505]
+                - columnheader "Excluded Audience" [ref=f5e506]
+                - columnheader "Other Personalization tests running?" [ref=f5e507]
+                - columnheader "Other tests to exclude?" [ref=f5e508]
+            - rowgroup [ref=f5e509]:
+              - row [ref=f5e510]:
+                - rowheader "Options:" [ref=f5e511]
+                - cell "All" [ref=f5e512]
+                - cell [ref=f5e513]:
+                  - paragraph [ref=f5e514]: Desktop
+                  - paragraph [ref=f5e515]: Tablet
+                  - paragraph [ref=f5e516]: Mobile Phone
+                - cell "Logged out" [ref=f5e517]
+                - cell "Logged in" [ref=f5e518]
+                - cell "No" [ref=f5e519]
+                - cell "No" [ref=f5e520]
+              - row [ref=f5e521]:
+                - rowheader "Notes:" [ref=f5e522]
+                - cell [ref=f5e523]:
+                  - paragraph [ref=f5e524]:
+                    - strong [ref=f5e525]: Targeting criteria is consistent with MAX 2025 and Summit 2026
+                    - text: — same Geo, Device, Audience, and Exclusion logic carried forward.
+                  - paragraph [ref=f5e526]:
+                    - strong [ref=f5e527]: "MAX 2026 Trigger Criteria Update:"
+                    - text: Unlike previous years where the modal fired 3 seconds after page load, MAX 2026 will shift toward lower engagement windows and quieter moments during the live event. The modal will trigger when
+                    - strong [ref=f5e528]: either
+                    - text: "of the following conditions is met:"
+                  - list [ref=f5e529]:
+                    - listitem [ref=f5e530]: User scrolls past a defined point on the page
+                    - listitem [ref=f5e531]: User has not taken any actions after a defined period of time (inactivity-based)
+                  - region "Note" [ref=f5e532]:
+                    - text: 
+                    - paragraph [ref=f5e534]:
+                      - text: Trigger criteria is still being finalized with Martech as of Aug 19, 2026. Functional requirements in the experience variants table will be updated once confirmed. See
+                      - link "#max-2026-homepage thread" [ref=f5e535] [cursor=pointer]:
+                        - /url: https://adobedotcom.slack.com/archives/C0B6XHA7KDJ/p1787074718836369
+                      - text: for full context.
+          - heading [level=2] [ref=f5e536]:
+            - text: Personalization (Required)
+            - button "Copy link to heading" [ref=f5e538] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e539]: 
+              - text:  
+          - table [ref=f5e541]:
+            - rowgroup [ref=f5e542]:
+              - row [ref=f5e543]:
+                - cell "Is this test Personalized?" [ref=f5e544]
+                - cell "No" [ref=f5e545]
+              - row [ref=f5e546]:
+                - cell "Please specify if your test is Explicit vs. Implicit Personalization" [ref=f5e547]
+                - cell "N/A" [ref=f5e548]
+              - row [ref=f5e549]:
+                - cell "Please contact Emily Kellman for charter review/input" [ref=f5e550]
+                - cell "N/A" [ref=f5e551]
+              - row [ref=f5e552]:
+                - cell "Tag POC on the Personalization Platform Team for charter review/input" [ref=f5e553]
+                - cell "N/A" [ref=f5e554]
+          - heading [level=1] [ref=f5e555]:
+            - text: Mock-ups or Design of Experience Variants (Required)
+            - button "Copy link to heading" [ref=f5e557] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e558]: 
+              - text:  
+          - paragraph [ref=f5e559]:
+            - strong [ref=f5e560]: "Figma link:"
+            - text: N/A — to be added when available from design team
+          - paragraph [ref=f5e561]:
+            - strong [ref=f5e562]: "Assets:"
+            - text: N/A — to be uploaded when available from design team
+          - heading [level=3] [ref=f5e563]:
+            - text: Live Event (November 10 – 12, 2026)
+            - button "Copy link to heading" [ref=f5e565] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e566]: 
+              - text:  
+          - table [ref=f5e568]:
+            - rowgroup [ref=f5e569]:
+              - row [ref=f5e570]:
+                - columnheader [ref=f5e571] [cursor=pointer]:
+                  - button "URL" [ref=f5e573]
+                - columnheader [ref=f5e574] [cursor=pointer]:
+                  - button "Control (0%)" [ref=f5e576]
+                - columnheader [ref=f5e577] [cursor=pointer]:
+                  - 'button "Variant #1 (100%)" [ref=f5e579]'
+                - columnheader [ref=f5e580] [cursor=pointer]:
+                  - button "Notes" [ref=f5e582]
+            - rowgroup [ref=f5e583]:
+              - row [ref=f5e584]:
+                - cell "https://www.adobe.com/max.html" [ref=f5e585]
+                - cell "n/a" [ref=f5e586]
+                - cell [ref=f5e587]:
+                  - generic [ref=f5e588]:
+                    - paragraph [ref=f5e589]:
+                      - strong [ref=f5e590]: "Functional requirements:"
+                    - list [ref=f5e591]:
+                      - listitem [ref=f5e592]: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch.
+                      - listitem [ref=f5e593]: If dismissed (click to X in modal, click off modal, click to "Continue as guest"), modal should never be shown again to a visitor across pages in scope
+                      - listitem [ref=f5e594]:
+                        - text: "\"Sign in now\" CTA Destination"
+                        - list [ref=f5e595]:
+                          - listitem [ref=f5e596]:
+                            - text: "Live Event:"
+                            - generic [ref=f5e597]: 🔴 REQUIRED — CONFIRM MAX 2026 REGISTRATION URL (WAS REG.ADOBE.COM/FLOW/ADOBE/M25/MAXREG FOR MAX 2025)
+                          - listitem [ref=f5e598]:
+                            - text: "Post-Event:"
+                            - generic [ref=f5e599]: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL FOR POST-EVENT STATE
+                      - listitem [ref=f5e600]: "'redirect_uri': 'https://www.adobe.com/max.html'})"
+                    - paragraph [ref=f5e601]:
+                      - strong [ref=f5e602]: "Livestream requirements:"
+                    - list [ref=f5e603]:
+                      - listitem [ref=f5e604]: N/A — no livestream player for MAX 2026
+                    - paragraph [ref=f5e605]:
+                      - strong [ref=f5e606]:
+                        - text: "Analytics tracking requirements:"
+                        - generic [ref=f5e607]: ⚠️ FILL IN — CREATE FY26 MAX LIVE AA TRACKING REQUIREMENTS FILE WITH JOHN WANG AND TRAN NGUYEN AND LINK HERE
+                    - list [ref=f5e608]:
+                      - listitem [ref=f5e609]: "Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal"
+                - cell [ref=f5e610]:
+                  - paragraph [ref=f5e611]: No changes.
+                  - paragraph [ref=f5e612]: Holdout needed to maintain even traffic split.
+              - row [ref=f5e613]:
+                - cell "https://www.adobe.com/max/2026/sessions.html" [ref=f5e614]
+                - cell "n/a" [ref=f5e615]
+                - 'cell "Functional requirements: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch. If dismissed, modal should never be shown again to a visitor across pages in scope \"Sign in now\" CTA Destination Live Event: 🔴 REQUIRED — CONFIRM MAX 2026 REGISTRATION URL Post-Event: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL ''redirect_uri'': ''https://www.adobe.com/max/2026/sessions.html''}) Analytics tracking requirements: See FY26 MAX Live AA Tracking Requirements file Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal" [ref=f5e616]':
+                  - generic [ref=f5e617]:
+                    - paragraph [ref=f5e618]:
+                      - strong [ref=f5e619]: "Functional requirements:"
+                    - list [ref=f5e620]:
+                      - listitem [ref=f5e621]: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch.
+                      - listitem [ref=f5e622]: If dismissed, modal should never be shown again to a visitor across pages in scope
+                      - listitem [ref=f5e623]:
+                        - text: "\"Sign in now\" CTA Destination"
+                        - list [ref=f5e624]:
+                          - listitem [ref=f5e625]:
+                            - text: "Live Event:"
+                            - generic [ref=f5e626]: 🔴 REQUIRED — CONFIRM MAX 2026 REGISTRATION URL
+                          - listitem [ref=f5e627]:
+                            - text: "Post-Event:"
+                            - generic [ref=f5e628]: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL
+                      - listitem [ref=f5e629]: "'redirect_uri': 'https://www.adobe.com/max/2026/sessions.html'})"
+                    - paragraph [ref=f5e630]:
+                      - strong [ref=f5e631]: "Analytics tracking requirements:"
+                      - text: See FY26 MAX Live AA Tracking Requirements file
+                    - list [ref=f5e632]:
+                      - listitem [ref=f5e633]: "Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal"
+                - cell [ref=f5e634]
+              - row [ref=f5e635]:
+                - cell "https://www.adobe.com/max/2026/broadcast.html" [ref=f5e636]
+                - cell "n/a" [ref=f5e637]
+                - 'cell "Functional requirements: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch. If dismissed, modal should never be shown again to a visitor across pages in scope \"Sign in now\" CTA Destination Live Event: 🔴 REQUIRED — CONFIRM MAX 2026 REGISTRATION URL Post-Event: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL ''redirect_uri'': ''https://www.adobe.com/max/2026/broadcast.html''}) Analytics tracking requirements: See FY26 MAX Live AA Tracking Requirements file Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal" [ref=f5e638]':
+                  - generic [ref=f5e639]:
+                    - paragraph [ref=f5e640]:
+                      - strong [ref=f5e641]: "Functional requirements:"
+                    - list [ref=f5e642]:
+                      - listitem [ref=f5e643]: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch.
+                      - listitem [ref=f5e644]: If dismissed, modal should never be shown again to a visitor across pages in scope
+                      - listitem [ref=f5e645]:
+                        - text: "\"Sign in now\" CTA Destination"
+                        - list [ref=f5e646]:
+                          - listitem [ref=f5e647]:
+                            - text: "Live Event:"
+                            - generic [ref=f5e648]: 🔴 REQUIRED — CONFIRM MAX 2026 REGISTRATION URL
+                          - listitem [ref=f5e649]:
+                            - text: "Post-Event:"
+                            - generic [ref=f5e650]: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL
+                      - listitem [ref=f5e651]: "'redirect_uri': 'https://www.adobe.com/max/2026/broadcast.html'})"
+                    - paragraph [ref=f5e652]:
+                      - strong [ref=f5e653]: "Analytics tracking requirements:"
+                      - text: See FY26 MAX Live AA Tracking Requirements file
+                    - list [ref=f5e654]:
+                      - listitem [ref=f5e655]: "Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal"
+                - cell [ref=f5e656]
+          - heading [level=3] [ref=f5e657]:
+            - text: Post Event (November 12 – December 12, 2026)
+            - button "Copy link to heading" [ref=f5e659] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e660]: 
+              - text:  
+          - table [ref=f5e662]:
+            - rowgroup [ref=f5e663]:
+              - row [ref=f5e664]:
+                - columnheader [ref=f5e665] [cursor=pointer]:
+                  - button "URL" [ref=f5e667]
+                - columnheader [ref=f5e668] [cursor=pointer]:
+                  - button "Control (0%)" [ref=f5e670]
+                - columnheader [ref=f5e671] [cursor=pointer]:
+                  - 'button "Variant #1 (100%)" [ref=f5e673]'
+                - columnheader [ref=f5e674] [cursor=pointer]:
+                  - button "Notes" [ref=f5e676]
+            - rowgroup [ref=f5e677]:
+              - row [ref=f5e678]:
+                - cell "https://www.adobe.com/max.html" [ref=f5e679]
+                - cell "n/a" [ref=f5e680]
+                - 'cell "Functional requirements: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch. If dismissed, modal should never be shown again to a visitor across pages in scope \"Sign in now\" CTA Destination: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL FOR POST-EVENT STATE ''redirect_uri'': ''https://www.adobe.com/max.html''}) Analytics tracking requirements: See FY26 MAX Live AA Tracking Requirements file Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal" [ref=f5e681]':
+                  - generic [ref=f5e682]:
+                    - paragraph [ref=f5e683]:
+                      - strong [ref=f5e684]: "Functional requirements:"
+                    - list [ref=f5e685]:
+                      - listitem [ref=f5e686]: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch.
+                      - listitem [ref=f5e687]: If dismissed, modal should never be shown again to a visitor across pages in scope
+                      - listitem [ref=f5e688]:
+                        - text: "\"Sign in now\" CTA Destination:"
+                        - generic [ref=f5e689]: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL FOR POST-EVENT STATE
+                      - listitem [ref=f5e690]: "'redirect_uri': 'https://www.adobe.com/max.html'})"
+                    - paragraph [ref=f5e691]:
+                      - strong [ref=f5e692]: "Analytics tracking requirements:"
+                      - text: See FY26 MAX Live AA Tracking Requirements file
+                    - list [ref=f5e693]:
+                      - listitem [ref=f5e694]: "Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal"
+                - cell [ref=f5e695]:
+                  - paragraph [ref=f5e696]: No changes.
+                  - paragraph [ref=f5e697]: Holdout needed to maintain even traffic split.
+              - row [ref=f5e698]:
+                - cell "https://www.adobe.com/max/2026/sessions.html" [ref=f5e699]
+                - cell "n/a" [ref=f5e700]
+                - 'cell "Functional requirements: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch. If dismissed, modal should never be shown again to a visitor across pages in scope \"Sign in now\" CTA Destination: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL ''redirect_uri'': ''https://www.adobe.com/max/2026/sessions.html''}) Analytics tracking requirements: See FY26 MAX Live AA Tracking Requirements file Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal" [ref=f5e701]':
+                  - generic [ref=f5e702]:
+                    - paragraph [ref=f5e703]:
+                      - strong [ref=f5e704]: "Functional requirements:"
+                    - list [ref=f5e705]:
+                      - listitem [ref=f5e706]: Trigger criteria updated for MAX 2026 — modal will fire during lower engagement windows rather than immediately on page load. Specific conditions (exact scroll threshold and inactivity timeframe) are still being finalized with Martech. To be updated before launch.
+                      - listitem [ref=f5e707]: If dismissed, modal should never be shown again to a visitor across pages in scope
+                      - listitem [ref=f5e708]:
+                        - text: "\"Sign in now\" CTA Destination:"
+                        - generic [ref=f5e709]: 🔴 REQUIRED — CONFIRM IMS SIGN-IN URL
+                      - listitem [ref=f5e710]: "'redirect_uri': 'https://www.adobe.com/max/2026/sessions.html'})"
+                    - paragraph [ref=f5e711]:
+                      - strong [ref=f5e712]: "Analytics tracking requirements:"
+                      - text: See FY26 MAX Live AA Tracking Requirements file
+                    - list [ref=f5e713]:
+                      - listitem [ref=f5e714]: "Click-tracking: Sign-in CTA, Continue as guest CTA, \"X\" (close), Click off modal"
+                - cell [ref=f5e715]
+          - heading [level=1] [ref=f5e716]:
+            - text: Analytics Checklist
+            - button "Copy link to heading" [ref=f5e718] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e719]: 
+              - text:  
+          - table [ref=f5e721]:
+            - rowgroup [ref=f5e722]:
+              - row [ref=f5e723]:
+                - cell "Analytics POC" [ref=f5e724]
+                - cell "John Wang, Tran Nguyen" [ref=f5e725]
+              - row [ref=f5e726]:
+                - cell "Analyst to review Charter for feedback/input" [ref=f5e727]
+                - cell [ref=f5e728]
+              - row [ref=f5e730]:
+                - cell "Analyst Feedback" [ref=f5e731]
+                - cell "Analyst to insert comments here" [ref=f5e732]
+              - row [ref=f5e733]:
+                - cell "Analytics Requests" [ref=f5e734]
+                - cell [ref=f5e735]
+          - heading [level=2] [ref=f5e737]:
+            - text: SEO Checklist
+            - button "Copy link to heading" [ref=f5e739] [cursor=pointer]:
+              - img "Copy link to heading" [ref=f5e740]: 
+              - text:  
+          - table [ref=f5e742]:
+            - rowgroup [ref=f5e746]:
+              - row [ref=f5e747]:
+                - cell "SEO POC" [ref=f5e748]
+                - cell "Please tag name here" [ref=f5e749]
+              - row [ref=f5e751]:
+                - cell "SEO POC to review Charter for feedback/input" [ref=f5e752]
+                - cell "Mark 'Done'" [ref=f5e753]
+              - row [ref=f5e754]:
+                - cell "SEO Feedback" [ref=f5e755]
+                - cell "SEO POC insert comments here" [ref=f5e756]
+          - paragraph [ref=f5e757]
+        - list [ref=f5e761]:
+          - listitem [ref=f5e762]: No labels
+          - listitem [ref=f5e763]:
+            - link " Edit Labels" [ref=f5e764] [cursor=pointer]:
+              - /url: "#"
+        - generic [ref=f5e768]:
+          - paragraph [ref=f5e769]:
+            - link [ref=f5e770] [cursor=pointer]:
+              - /url: /users/profile/editmyprofilepicture.action
+              - img "Add your avatar" [ref=f5e773]
+          - button "Write a Comment" [ref=f5e776]: Write a comment...
+      - paragraph [ref=f5e778]: Adobe.com WikiSpace
+    - contentinfo [ref=f5e779]:
+      - generic [ref=f5e780]:
+        - list [ref=f5e781]:
+          - listitem [ref=f5e782]:
+            - text: Powered by
+            - link "Atlassian Confluence" [ref=f5e783] [cursor=pointer]:
+              - /url: https://www.atlassian.com/software/confluence
+            - text: "10.2.7 (node1: 3c232dbf)·"
+          - text: ·
+          - listitem [ref=f5e784]:
+            - link "Report a bug" [ref=f5e785] [cursor=pointer]:
+              - /url: https://support.atlassian.com/confluence-server/
+            - text: ·
+          - listitem [ref=f5e786]:
+            - link "Atlassian News" [ref=f5e787] [cursor=pointer]:
+              - /url: https://www.atlassian.com/company
+        - link "Atlassian" [ref=f5e789] [cursor=pointer]:
+          - /url: https://www.atlassian.com/

@@ -35,9 +35,9 @@ with expanded activity details spanning the full width below.
 Manifest order numbers are plain text; only the filenames are linked.
 Fragment-highlight preview links now use `otherHighlight=true`; existing
 `mepFragments=true` links are still accepted by the overlay.
-MMM-2's Manifest Consent Type filter uses checkboxes for Promo Or No Offer Changes,
-Non-Personalized Offer Test and Personalized Offer. All are selected by default
-(no consent-type restriction). All search checkbox groups can be cleared;
+MMM-2's Manifest Consent Type filter is an authored single-select dropdown.
+Author a blank-value **Show All** option as its default (no consent-type restriction).
+The target-setting and manifest-source checkbox groups can be cleared;
 an empty group sends `''` for its API filter property and stays unchecked when restored.
 Dropdowns and single-line text filters are grouped above the checkbox groups;
 both groups use an aligned three-column grid (two columns on tablets and one on
@@ -73,7 +73,7 @@ decorator's `body-xl` default. Subsequent two-column rows configure these menus:
 
 | Tab | Required menu headers |
 |-----|-----------------------|
-| Manifest Manager (`?tab=search`) | `Menu: pages`, `Menu: geos`, `Menu: lastSeenManifest`, `Menu: subdomain` |
+| Manifest Manager (`?tab=search`) | `Menu: pages`, `Menu: geos`, `Menu: lastSeenManifest`, `Menu: subdomain`, `Menu: manifestConsentType` |
 | Inactivity Report (`?tab=inactivity`) | `Menu: geos`, `Menu: lastSeenManifest` |
 | Metadata Lookup (`?tab=metadata-lookup`) | `Menu: metadataRepo` |
 
@@ -90,14 +90,30 @@ option value in column one and its label in column two, until the next menu head
 Manifest Manager renders its dropdowns in the authored menu order, without a
 separate code-defined dropdown list.
 Values preserve case, including `threeMonths` and `sixMonths`; whitespace is removed
-from multiline/comma-separated option values. No options are injected: author a
+from grouped page/geo values. Consent values are normalized to lowercase while
+retaining their internal spaces to match the database enums.
+No options are injected: author a
 blank value with a **Show All** label when that choice is needed.
 Bold an option's label or value to make it the initial selection. Only one option
 per menu may be bold; without one, the first authored option is selected.
+Add these rows to the Manifest Manager table for the consent dropdown. Leave the
+Show All value cell empty and bold its label to make it the initial default.
+The API field is `manifestConsentType` (camelCase), not `manifestconsenttype`.
+
+| Value | Label |
+|-------|-------|
+| **Menu: manifestConsentType** | Manifest Consent Type |
+| | **Show All** |
+| promo or no offer changes | Promo Or No Offer Changes |
+| non-personalized offer test | Non-Personalized Offer Test |
+| personalized offer | Personalized Offer |
+
 Valid saved selections, including `''`, override the authored initial default.
 Saved choices that no longer exist reset to the authored default, with a visible
 notice and pagination reset to page one. Legacy saved `all` values for last-seen
 and subdomain migrate to the authored blank option.
+Previous multi-consent checkbox selections reset to the authored consent default
+unless that combined value is explicitly authored as an option.
 For last-seen, `''` maps to the backend's `100 YEAR` interval for both page search
 and expanded activity details; it does not default back to three months.
 Missing/incomplete local configuration displays an error and prevents that tab's data requests.
@@ -106,7 +122,7 @@ Manifest Manager and Inactivity Report have synchronized pagination controls abo
 and below their results. Either control changes the same current page and items-per-page setting.
 When no records match, the top control is hidden and a single "No results" message appears.
 
-The target-setting, manifest-source and consent checkboxes, country-restriction
+The target-setting and manifest-source checkboxes, country-restriction
 text field, search textarea and pagination remain code-defined. Manifest Manager
 no longer fetches `/docs/authoring/features/mmm/index.plain.html`; Inactivity Report
 also no longer fetches `/docs/authoring/features/mmm/mep-target-inactivity.plain.html`.
@@ -141,19 +157,22 @@ the light theme. Neither variant changes the surrounding page's theme or follows
 ## MMM-2 UI Authentication
 
 MMM-2 uses `sidekick-auth.js` to gate the entire app before mounting its tabs or
-starting MMM data requests. Gated hosts require AEM Sidekick login or a successful
-Adobe firewall reachability check, preserving the shared MEP policy. Without firewall
+starting MMM data requests. Every host, including localhost and `.aem.page` previews,
+requires AEM Sidekick login or a successful Adobe firewall reachability check,
+preserving the shared MEP authorization signals. Without firewall
 access, logout unmounts the app and removes loaded results; signing in again mounts a
 fresh app. Filter preferences remain saved.
 The auth subscription disconnects its observers, timers and event listeners when
 the gate unmounts.
 
-The existing MEP host policy is preserved: production domains, production config,
+MMM-2 passes `requireAuth: true` to the shared helper, disabling its host-based bypass.
+The MEP button retains its existing default host policy: production domains, production config,
 public `.aem.live`/`.hlx.live` and unknown hosts require Sidekick login or firewall access.
 Localhost,
 preview/review, stage, corp and graybox hosts normally bypass the gate unless
 production config or `prodDomains` forces authentication.
-This is authoring-extension login detection, not an Adobe IMS sign-in flow.
+This is authoring-extension login detection or corporate-network reachability,
+not an Okta redirect or an Adobe IMS sign-in flow.
 
 ### TODO: Backend Authentication and Authorization
 

@@ -6,13 +6,13 @@ import { consumeTabConfigs } from './utils.js';
 
 function AuthenticatedMmmApp({ tabConfigs }) {
   const [authenticated, setAuthenticated] = useState(null);
-  useLayoutEffect(() => onSidekickAuth(setAuthenticated), []);
+  useLayoutEffect(() => onSidekickAuth(setAuthenticated, { requireAuth: true }), []);
 
   if (authenticated) return html`<${MmmApp} tabConfigs=${tabConfigs} />`;
   return html`
     <div class="mmm2-app">
       <div class="mmm2-auth-message" role="status">
-        <h2>${authenticated === null ? 'Checking Sidekick sign-in...' : 'Sign in to use MMM-2'}</h2>
+        <h2>${authenticated === null ? 'Checking access...' : 'Sign in to use MMM-2'}</h2>
         ${authenticated === false && html`<p>Sign into AEM Sidekick or connect to the Adobe internal network to access MMM-2.</p>`}
       </div>
     </div>

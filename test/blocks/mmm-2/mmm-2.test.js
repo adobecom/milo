@@ -7,6 +7,9 @@ import { LOCAL_STORAGE_KEYS } from '../../../libs/blocks/mmm-2/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
 const originalFetch = window.fetch;
+const FIREWALL_CHECK_HOST = 'mep-auth-check.awesome-sites.corp.adobe.com';
+const dataRequests = () => window.fetch.getCalls()
+  .filter(({ args }) => !args[0].includes(FIREWALL_CHECK_HOST));
 setConfig({ codeRoot: '/libs', env: { name: 'stage' } });
 const config = getConfig();
 config.mep = {
@@ -29,6 +32,7 @@ async function loadJson(path) {
 /** Routes fetch calls by substring match against the request URL. */
 function setRoutedFetch(routes) {
   window.fetch = stub().callsFake((url) => {
+    if (url.includes(FIREWALL_CHECK_HOST)) return Promise.reject(new Error('offline'));
     const key = Object.keys(routes).find((pattern) => url.includes(pattern));
     if (!key) throw new Error(`Unmocked fetch: ${url}`);
     return Promise.resolve(routes[key]);
@@ -50,10 +54,18 @@ describe('mmm-2', () => {
     localStorage.clear();
     window.history.replaceState({}, '', window.location.pathname);
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    const sidekick = document.createElement('aem-sidekick');
+    const bar = document.createElement('plugin-action-bar');
+    const user = document.createElement('login-button');
+    user.id = 'user';
+    sidekick.attachShadow({ mode: 'open' }).append(bar);
+    bar.attachShadow({ mode: 'open' }).append(user);
+    document.body.append(sidekick);
   });
 
   afterEach(() => {
     render(null, document.querySelector('.mmm-2'));
+    document.querySelector('aem-sidekick')?.remove();
     window.fetch = originalFetch;
   });
 
@@ -101,13 +113,13 @@ describe('mmm-2', () => {
     const fieldGroup = document.querySelector('.mmm2-filter-fields');
     const checkboxGroup = document.querySelector('.mmm2-filter-checkboxes');
     expect(fieldGroup.nextElementSibling).to.equal(checkboxGroup);
-    expect(fieldGroup.querySelectorAll('select, input[type="text"]')).to.have.length(5);
+    expect(fieldGroup.querySelectorAll('select, input[type="text"]')).to.have.length(6);
     expect([...fieldGroup.querySelectorAll('select')].map(({ id }) => id))
       .to.deep.equal([
-        'mmm2-filter-geos', 'mmm2-filter-pages', 'mmm2-filter-lastseen', 'mmm2-filter-subdomain',
+        'mmm2-filter-geos', 'mmm2-filter-pages', 'mmm2-filter-lastseen', 'mmm2-filter-manifestconsenttype', 'mmm2-filter-subdomain',
       ]);
     expect(fieldGroup.querySelector('.mmm2-checkbox-group')).to.not.exist;
-    expect(checkboxGroup.querySelectorAll('.mmm2-checkbox-group')).to.have.length(3);
+    expect(checkboxGroup.querySelectorAll('.mmm2-checkbox-group')).to.have.length(2);
     expect(checkboxGroup.querySelector('select, input[type="text"], textarea')).to.not.exist;
     expect(checkboxGroup.nextElementSibling.querySelector('#mmm2-filter-search')).to.exist;
 
@@ -147,9 +159,9 @@ describe('mmm-2', () => {
     await waitFor(() => document.querySelector('.mmm2-page-item'));
     expect([...document.querySelectorAll('.mmm2-filter-fields select')].map(({ id }) => id))
       .to.deep.equal([
-        'mmm2-filter-subdomain', 'mmm2-filter-geos', 'mmm2-filter-pages', 'mmm2-filter-lastseen',
+        'mmm2-filter-subdomain', 'mmm2-filter-geos', 'mmm2-filter-pages', 'mmm2-filter-lastseen', 'mmm2-filter-manifestconsenttype',
       ]);
-    expect(JSON.parse(window.fetch.firstCall.args[1].body))
+    expect(JSON.parse(dataRequests()[0].args[1].body))
       .to.include({ subdomain: 'www', geos: '', pages: '', lastSeenManifest: 'threeMonths' });
   });
 
@@ -340,7 +352,13 @@ describe('mmm-2', () => {
   });
 
   it('uses bold CMS options as the initial defaults for all menus', async () => {
-    const defaults = { geos: 'jp', pages: '/products/photoshop.html', lastseenmanifest: 'week', subdomain: 'business' };
+    const defaults = {
+      geos: 'jp',
+      pages: '/products/photoshop.html',
+      lastseenmanifest: 'week',
+      subdomain: 'business',
+      manifestconsenttype: 'personalized offer',
+    };
     const content = document.querySelector('.section > .manifest-manager:not(.mmm-2)');
     let menu;
     [...content.children].forEach((row) => {
@@ -361,9 +379,10 @@ describe('mmm-2', () => {
     await module.default(document.querySelector('.mmm-2'));
     await waitFor(() => document.querySelector('.mmm2-page-item'));
     expect(JSON.parse(window.fetch.lastCall.args[1].body))
-      .to.include({ geos: 'jp', pages: '/products/photoshop.html', lastSeenManifest: 'week', subdomain: 'business' });
+      .to.include({ geos: 'jp', pages: '/products/photoshop.html', lastSeenManifest: 'week', subdomain: 'business', manifestConsentType: 'personalized offer' });
     expect(document.querySelector('#mmm2-filter-lastseen').value).to.equal('week');
     expect(document.querySelector('#mmm2-filter-subdomain').value).to.equal('business');
+    expect(document.querySelector('#mmm2-filter-manifestconsenttype').value).to.equal('personalized offer');
   });
 
   it('does not synthesize blank options and uses the first option when none is bold', async () => {
@@ -381,13 +400,13 @@ describe('mmm-2', () => {
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
     await waitFor(() => document.querySelector('.mmm2-page-item'));
-    ['pages', 'geos', 'lastseen', 'subdomain'].forEach((id) => {
+    ['pages', 'geos', 'lastseen', 'subdomain', 'manifestconsenttype'].forEach((id) => {
       const select = document.querySelector(`#mmm2-filter-${id}`);
       expect(select.querySelector('option[value=""]')).to.not.exist;
       expect(select.value).to.equal(select.options[0].value);
     });
     expect(JSON.parse(window.fetch.lastCall.args[1].body))
-      .to.include({ lastSeenManifest: 'day', subdomain: 'www', geos: 'us,ca,ca_fr' });
+      .to.include({ lastSeenManifest: 'day', subdomain: 'www', geos: 'us,ca,ca_fr', manifestConsentType: 'promo or no offer changes' });
   });
 
   it('preserves saved blank selections and passes an empty last-seen value to page details', async () => {
@@ -430,7 +449,7 @@ describe('mmm-2', () => {
     await delay();
     expect(document.querySelector('[role="alert"]').textContent)
       .to.include('Bold only one default option per menu: subdomain');
-    expect(window.fetch.called).to.be.false;
+    expect(dataRequests()).to.have.length(0);
   });
 
   it('reports missing local configuration without fetching legacy config or API data', async () => {
@@ -440,7 +459,7 @@ describe('mmm-2', () => {
     await module.default(document.querySelector('.mmm-2'));
     await delay();
     expect(document.querySelector('[role="alert"]').textContent).to.include('Manifest Manager table');
-    expect(window.fetch.called).to.be.false;
+    expect(dataRequests()).to.have.length(0);
   });
 
   it('reports incomplete local menus instead of displaying hardcoded substitutes', async () => {
@@ -456,7 +475,7 @@ describe('mmm-2', () => {
     await delay();
     expect(document.querySelector('[role="alert"]').textContent).to.include('subdomain');
     expect(document.querySelector('#mmm2-filter-subdomain')).to.not.exist;
-    expect(window.fetch.called).to.be.false;
+    expect(dataRequests()).to.have.length(0);
   });
 
   it('expands a page row and loads its manifest details', async () => {
@@ -683,7 +702,7 @@ describe('mmm-2', () => {
         const country = document.querySelector('#mmm2-filter-manifestcountryrestriction').getBoundingClientRect();
         if (columnCount === 3) {
           expect(subdomain.top).to.be.closeTo(country.top, 1);
-          expect(country.left).to.be.closeTo(fieldRects[1].left, 1);
+          expect(country.left).to.be.closeTo(fieldRects[2].left, 1);
         }
       }
     } finally {
@@ -692,67 +711,112 @@ describe('mmm-2', () => {
     }
   });
 
-  it('filters consent types and allows clearing or selecting the entire group', async () => {
+  it('filters by one authored consent type and defaults to Show All', async () => {
     setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
     await delay();
 
-    const group = document.querySelector('#mmm2-filter-manifestconsenttype');
-    expect(group.tagName).to.equal('FIELDSET');
-    const checkboxes = [...group.querySelectorAll('input[type="checkbox"]')];
-    expect(checkboxes).to.have.length(3);
-    expect(checkboxes.every((checkbox) => checkbox.checked)).to.be.true;
-    expect([...group.querySelectorAll('label')].map((label) => label.textContent)).to.deep.equal([
-      'Promo Or No Offer Changes', 'Non-Personalized Offer Test', 'Personalized Offer',
+    const select = document.querySelector('#mmm2-filter-manifestconsenttype');
+    expect(select.tagName).to.equal('SELECT');
+    expect(document.querySelectorAll('#mmm2-filter-manifestconsenttype')).to.have.length(1);
+    expect([...document.querySelectorAll('.mmm2-filter-checkboxes legend')]
+      .map((legend) => legend.textContent)).to.deep.equal(["Page's Target Setting", 'Manifest Source']);
+    expect(select.closest('.mmm2-filter-fields')).to.exist;
+    expect(select.multiple).to.be.false;
+    expect(select.value).to.equal('');
+    expect([...select.options].map((option) => [option.value, option.textContent])).to.deep.equal([
+      ['', 'Show All'],
+      ['promo or no offer changes', 'Promo Or No Offer Changes'],
+      ['non-personalized offer test', 'Non-Personalized Offer Test'],
+      ['personalized offer', 'Personalized Offer'],
     ]);
-    [...group.querySelectorAll('label')].forEach((label, index) => {
-      expect(label.control).to.equal(checkboxes[index]);
-      expect(/\s/.test(checkboxes[index].id)).to.be.false;
-    });
+    expect(document.querySelector('label[for="mmm2-filter-manifestconsenttype"]').control)
+      .to.equal(select);
 
     const pageRequests = () => window.fetch.getCalls()
       .filter((call) => call.args[0].includes('/get-pages'));
     const lastBody = () => JSON.parse(pageRequests().at(-1).args[1].body);
     expect(lastBody().manifestConsentType).to.equal('');
+    expect(lastBody()).to.not.have.property('manifestconsenttype');
 
-    checkboxes[0].click();
-    await delay();
-    expect(lastBody()).to.include({
-      manifestConsentType: 'non-personalized offer test, personalized offer',
-      pageNum: 1,
+    for (const value of ['promo or no offer changes', 'non-personalized offer test', 'personalized offer', '']) {
+      select.value = value;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      await waitFor(() => lastBody().manifestConsentType === value);
+      expect(lastBody()).to.include({ manifestConsentType: value, pageNum: 1 });
+      expect(lastBody()).to.not.have.property('manifestconsenttype');
+      expect(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.search)).manifestConsentType)
+        .to.equal(value);
+    }
+  });
+
+  it('uses authored consent labels and options with lowercase, spaced API values', async () => {
+    const content = document.querySelector('.manifest-manager');
+    const header = [...content.children].find((row) => row.children[0].textContent.includes('Menu: manifestConsentType'));
+    header.children[1].textContent = 'Consent policy';
+    const showAll = header.nextElementSibling;
+    const promo = showAll.nextElementSibling;
+    promo.children[0].innerHTML = '<p>Promo Or</p><p>No Offer Changes</p>';
+    promo.children[1].textContent = 'Promotion';
+    promo.nextElementSibling.remove();
+    promo.nextElementSibling.remove();
+    setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
+    const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+    await module.default(document.querySelector('.mmm-2'));
+    await waitFor(() => document.querySelector('.mmm2-page-item'));
+    const select = document.querySelector('#mmm2-filter-manifestconsenttype');
+    expect(document.querySelector(`label[for="${select.id}"]`).textContent).to.equal('Consent policy:');
+    expect([...select.options].map((option) => [option.value, option.textContent]))
+      .to.deep.equal([['', 'Show All'], ['promo or no offer changes', 'Promotion']]);
+    select.value = 'promo or no offer changes';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => (
+      JSON.parse(window.fetch.lastCall.args[1].body).manifestConsentType === select.value
+    ));
+    expect(JSON.parse(window.fetch.lastCall.args[1].body))
+      .to.not.have.property('manifestconsenttype');
+  });
+
+  [
+    'promo or no offer changes, non-personalized offer test, personalized offer',
+    'non-personalized offer test, personalized offer',
+  ].forEach((manifestConsentType) => {
+    it(`resets a previous multi-consent selection to Show All: ${manifestConsentType}`, async () => {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.search, JSON.stringify({
+        manifestConsentType,
+        pageNum: 4,
+      }));
+      setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
+      const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+      await module.default(document.querySelector('.mmm-2'));
+      await waitFor(() => document.querySelector('.mmm2-page-item'));
+      expect(document.querySelector('#mmm2-filter-manifestconsenttype').value).to.equal('');
+      expect(JSON.parse(window.fetch.lastCall.args[1].body))
+        .to.include({ manifestConsentType: '', pageNum: 1 });
+      expect(document.querySelector('.mmm2-search-view [role="status"]').textContent)
+        .to.include('Manifest Consent Type');
     });
-    expect(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.search)).manifestConsentType)
-      .to.equal('non-personalized offer test, personalized offer');
+  });
 
-    checkboxes[1].click();
+  it('requires an authored consent menu instead of injecting hardcoded options', async () => {
+    const content = document.querySelector('.manifest-manager');
+    const header = [...content.children].find((row) => row.children[0].textContent.includes('Menu: manifestConsentType'));
+    while (header.nextElementSibling && !header.nextElementSibling.children[0].textContent.startsWith('Menu:')) {
+      header.nextElementSibling.remove();
+    }
+    header.remove();
+    setRoutedFetch({});
+    const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+    await module.default(document.querySelector('.mmm-2'));
     await delay();
-    expect(lastBody().manifestConsentType).to.equal('personalized offer');
-    const requestCount = pageRequests().length;
-    checkboxes[2].click();
-    await delay();
-    expect(group.classList.contains('has-error')).to.be.false;
-    expect(checkboxes.every((checkbox) => !checkbox.checked)).to.be.true;
-    expect(pageRequests()).to.have.length(requestCount + 1);
-    expect(lastBody().manifestConsentType).to.equal('');
-    expect(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.search)).manifestConsentType)
-      .to.equal('');
-
-    checkboxes[0].click();
-    await delay();
-    expect(lastBody().manifestConsentType).to.equal('promo or no offer changes');
-    checkboxes[1].click();
-    await delay();
-    checkboxes[2].click();
-    await delay();
-    expect(checkboxes.every((checkbox) => checkbox.checked)).to.be.true;
-    expect(lastBody().manifestConsentType).to.equal('');
+    expect(document.querySelector('[role="alert"]').textContent).to.include('manifestconsenttype');
+    expect(dataRequests()).to.have.length(0);
   });
 
   [
     ['targetSetting', 'mmm2-filter-targetsetting'],
     ['manifestSrc', 'mmm2-filter-manifestsrc'],
-    ['manifestConsentType', 'mmm2-filter-manifestconsenttype'],
   ].forEach(([property, id]) => {
     it(`sends ${property} as an empty string when its last checkbox is unchecked`, async () => {
       setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
@@ -801,10 +865,10 @@ describe('mmm-2', () => {
     const lastBody = () => JSON.parse(window.fetch.getCalls()
       .filter((call) => call.args[0].includes('/get-pages')).at(-1).args[1].body);
     expect(lastBody()).to.include({ targetSetting: '', manifestSrc: '', manifestConsentType: '' });
+    expect(document.querySelector('#mmm2-filter-manifestconsenttype').value).to.equal('');
     for (const [property, id, value] of [
       ['targetSetting', 'mmm2-filter-targetsetting', 'on'],
       ['manifestSrc', 'mmm2-filter-manifestsrc', 'pzn'],
-      ['manifestConsentType', 'mmm2-filter-manifestconsenttype', 'promo or no offer changes'],
     ]) {
       const checkbox = document.querySelector(`#${id} input`);
       checkbox.click();
@@ -814,7 +878,7 @@ describe('mmm-2', () => {
     }
   });
 
-  it('restores a consent type saved by the previous single-value filter', async () => {
+  it('restores a valid saved consent dropdown selection', async () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.search, JSON.stringify({
       pageNum: 4,
       perPage: 25,
@@ -833,14 +897,17 @@ describe('mmm-2', () => {
     await module.default(document.querySelector('.mmm-2'));
     await delay();
 
-    const checkboxes = [...document.querySelectorAll('#mmm2-filter-manifestconsenttype input')];
-    expect(checkboxes.map((checkbox) => checkbox.checked)).to.deep.equal([false, true, false]);
-    checkboxes[2].click();
+    const select = document.querySelector('#mmm2-filter-manifestconsenttype');
+    expect(select.value).to.equal('non-personalized offer test');
+    expect(JSON.parse(window.fetch.lastCall.args[1].body))
+      .to.include({ pageNum: 4, manifestConsentType: 'non-personalized offer test' });
+    select.value = 'personalized offer';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
     await delay();
     const pageRequest = window.fetch.getCalls().filter((call) => call.args[0].includes('/get-pages')).at(-1);
     expect(JSON.parse(pageRequest.args[1].body)).to.include({
       pageNum: 1,
-      manifestConsentType: 'non-personalized offer test, personalized offer',
+      manifestConsentType: 'personalized offer',
     });
   });
 
@@ -1027,7 +1094,7 @@ describe('mmm-2', () => {
     });
     expect(document.querySelector('.mmm2-history-chart-summary-toggle').getAttribute('aria-expanded'))
       .to.equal('false');
-    expect(window.fetch.getCalls().every(({ args }) => args[0].includes('/get-report'))).to.be.true;
+    expect(dataRequests().every(({ args }) => args[0].includes('/get-report'))).to.be.true;
     bars()[0].querySelectorAll('.mmm2-arrow')[2].click();
     await waitFor(() => bars().length === 2 && bars().every((bar) => bar.dataset.currentPage === '2'));
     expect(JSON.parse(window.fetch.lastCall.args[1].body))
@@ -1273,8 +1340,8 @@ describe('mmm-2', () => {
     setRoutedFetch({ 'metadata-optimization.json': jsonResponse({ data: [] }) });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
-    await waitFor(() => window.fetch.called);
-    expect(window.fetch.firstCall.args[0]).to.include('main--dc--adobecom');
+    await waitFor(() => dataRequests().length);
+    expect(dataRequests()[0].args[0]).to.include('main--dc--adobecom');
     expect(document.querySelector('#mmm2-metadata-repo').value).to.equal('dc');
     expect([...document.querySelector('#mmm2-metadata-repo').options].map(({ textContent }) => textContent))
       .to.deep.equal(['CC', 'Document Cloud', 'Express', 'BACOM']);
@@ -1468,8 +1535,8 @@ describe('mmm-2', () => {
     setRoutedFetch({ 'metadata-optimization.json': jsonResponse({ data: [] }) });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
-    await waitFor(() => window.fetch.called);
-    expect(window.fetch.firstCall.args[0]).to.include('main--bacom--adobecom');
+    await waitFor(() => dataRequests().length);
+    expect(dataRequests()[0].args[0]).to.include('main--bacom--adobecom');
     expect(document.querySelector('#mmm2-metadata-repo').value).to.equal('bacom');
   });
 
@@ -1484,7 +1551,7 @@ describe('mmm-2', () => {
     await delay();
     expect(document.querySelector('[role="alert"]').textContent)
       .to.include('Unsupported metadata repositories: unknown');
-    expect(window.fetch.called).to.be.false;
+    expect(dataRequests()).to.have.length(0);
   });
 
   it('rejects incomplete inactivity content before report or chart requests', async () => {
@@ -1495,7 +1562,7 @@ describe('mmm-2', () => {
     await module.default(document.querySelector('.mmm-2'));
     await delay();
     expect(document.querySelector('[role="alert"]').textContent).to.include('Add an Inactivity Report table');
-    expect(window.fetch.called).to.be.false;
+    expect(dataRequests()).to.have.length(0);
   });
 
   it('scopes dark controls and expanded cards without changing light defaults or the page', async () => {

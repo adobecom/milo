@@ -1,0 +1,7 @@
+[     741ms] [ERROR] Manifest: Line: 1, column: 1, Syntax error. @ http://localhost:6457/libs/img/favicons/media_17d31a71aa719705ccf48e0986887008be62ab2a1.png?width=750&format=png&optimize=medium.webmanifest:0
+[     904ms] [LOG] LANA Msg:  name=Gnav-Time-To-Visible,startTime=726.7000000476837,duration=170.40000009536743,url=http://localhost:6457/docs/authoring/features/mmm/mmm-2,errorType=i 
+Opts: {clientId: feds-milo, endpoint: https://www.adobe.com/lana/ll, endpointStage: https://www.stage.adobe.com/lana/ll, errorType: e, sampleRate: 0.01} @ http://localhost:6457/libs/utils/lana.js:121
+[     934ms] [ERROR] Failed to load resource: net::ERR_NAME_NOT_RESOLVED @ https://mep-auth-check.awesome-sites.corp.adobe.com/:0
+[     947ms] [LOG] LANA Msg:  name=Gnav-Init-Function-Time,startTime=726.7000000476837,duration=214.60000014305115,url=http://localhost:6457/docs/authoring/features/mmm/mmm-2,errorType=i 
+Opts: {clientId: feds-milo, endpoint: https://www.adobe.com/lana/ll, endpointStage: https://www.stage.adobe.com/lana/ll, errorType: e, sampleRate: 0.01} @ http://localhost:6457/libs/utils/lana.js:121
+[    1053ms] [LOG] Going to iterate over instancesSettings @ https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js:11

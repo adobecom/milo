@@ -1,11 +1,6 @@
 import { html, useState, useEffect } from '../../../deps/htm-preact.js';
 import useLocalStorageState from '../../../hooks/useLocalStorageState.js';
 import { API_URLS } from '../../../features/mep/mep-next/mep-next.js';
-import {
-  PROMO_OR_NO_OFFER_CHANGES,
-  NON_PERSONALIZED_OFFER_TEST,
-  PERSONALIZED_OFFER,
-} from '../../../features/personalization/personalization.js';
 import DropdownFilter from './DropdownFilter.js';
 import CheckboxFilterGroup from './CheckboxFilterGroup.js';
 import SearchTextarea from './SearchTextarea.js';
@@ -39,29 +34,25 @@ function PageListSkeleton() {
   `;
 }
 
-const MANIFEST_CONSENT_TYPE_OPTIONS = [
-  { value: PROMO_OR_NO_OFFER_CHANGES, label: 'Promo Or No Offer Changes' },
-  { value: NON_PERSONALIZED_OFFER_TEST, label: 'Non-Personalized Offer Test' },
-  { value: PERSONALIZED_OFFER, label: 'Personalized Offer' },
-];
-const ALL_CONSENT_TYPES = MANIFEST_CONSENT_TYPE_OPTIONS.map(({ value }) => value).join(', ');
-
 const DEFAULT_FILTERS = {
   pageNum: 1,
   perPage: 25,
   targetSetting: 'on, off, postLCP',
   manifestSrc: 'pzn, promo, target, ajo, placeholders',
-  manifestConsentType: ALL_CONSENT_TYPES,
   manifestCountryRestriction: '',
   filterText: '',
 };
 
 const SEARCH_PLACEHOLDER = 'https://www.adobe.com/creativecloud.html\n/test_campaign4/test-campaign4-business.json\nDC1031';
+const SEARCH_MENU_KEYS = {
+  lastseenmanifest: 'lastSeenManifest',
+  manifestconsenttype: 'manifestConsentType',
+};
 const getSearchMenus = (authoredConfig) => Object.entries(authoredConfig)
   .filter(([, group]) => group?.options)
   .map(([key, group]) => ({
     ...group,
-    key: key === 'lastseenmanifest' ? 'lastSeenManifest' : key,
+    key: SEARCH_MENU_KEYS[key] ?? key,
   }));
 const normalizeSearchFilters = (savedFilters, authoredConfig) => (
   normalizeAuthoredFilters(
@@ -83,7 +74,6 @@ function SearchView({ authoredConfig }) {
   const [result, setResult] = useState({ result: [], totalRecords: 0 });
   const [loading, setLoading] = useState(false);
   const { filters, resetFilters } = normalizeSearchFilters(savedFilters, authoredConfig);
-  const consentTypes = filters.manifestConsentType ?? ALL_CONSENT_TYPES;
 
   const updateFilters = (changes) => setFilters((prev) => ({
     ...normalizeSearchFilters(prev, authoredConfig).filters,
@@ -103,7 +93,6 @@ function SearchView({ authoredConfig }) {
       ...Object.fromEntries(getSearchMenus(authoredConfig).map(({ key }) => [key, filters[key]])),
       targetSetting: filters.targetSetting,
       manifestSrc: filters.manifestSrc,
-      manifestConsentType: consentTypes === ALL_CONSENT_TYPES ? '' : consentTypes,
       manifestCountryRestriction: filters.manifestCountryRestriction,
       filter: toFilterParam(filters.filterText),
     };
@@ -131,7 +120,7 @@ function SearchView({ authoredConfig }) {
         <div class="mmm2-filter-fields">
           ${getSearchMenus(authoredConfig).map((group) => html`<${DropdownFilter}
             key=${group.key}
-            id=${`mmm2-filter-${group.key === 'lastSeenManifest' ? 'lastseen' : group.key}`}
+            id=${`mmm2-filter-${group.key === 'lastSeenManifest' ? 'lastseen' : group.key.toLowerCase()}`}
             label=${group.label}
             options=${menuOptions(group)}
             value=${filters[group.key]}
@@ -159,13 +148,6 @@ function SearchView({ authoredConfig }) {
             options=${Object.values(MANIFESTSRC_OPTIONS)}
             value=${filters.manifestSrc}
             onChange=${(v) => setFilter('manifestSrc', v)}
-          />
-          <${CheckboxFilterGroup}
-            id="mmm2-filter-manifestconsenttype"
-            legend="Manifest Consent Type"
-            options=${MANIFEST_CONSENT_TYPE_OPTIONS}
-            value=${consentTypes}
-            onChange=${(v) => setFilter('manifestConsentType', v)}
           />
         </div>
         <${SearchTextarea}

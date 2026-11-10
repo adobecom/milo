@@ -11,8 +11,8 @@ const {
 
 const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
 const subscriptions = [];
-const onSidekickAuth = (callback) => {
-  const unsubscribe = subscribeSidekickAuth(callback);
+const onSidekickAuth = (callback, options) => {
+  const unsubscribe = subscribeSidekickAuth(callback, options);
   subscriptions.push(unsubscribe);
   return unsubscribe;
 };
@@ -117,6 +117,39 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       const cb = sinon.spy();
       onSidekickAuth(cb);
       expect(cb.calledOnceWith(true)).to.be.true;
+    });
+
+    it('requires authorization on an otherwise ungated host when requested', async () => {
+      setConfig({ env: { name: 'stage' } });
+      const cb = sinon.spy();
+      onSidekickAuth(cb, { requireAuth: true });
+      await wait(50);
+      expect(cb.calledOnceWith(false)).to.be.true;
+      expect(cb.calledWith(true)).to.be.false;
+    });
+
+    it('tracks Sidekick login and logout on an otherwise ungated host when requested', async () => {
+      setConfig({ env: { name: 'stage' } });
+      const { user } = mountSidekick({ authed: true });
+      const cb = sinon.spy();
+      onSidekickAuth(cb, { requireAuth: true });
+      expect(cb.calledOnceWith(true)).to.be.true;
+      signOut(user);
+      await wait(50);
+      expect(cb.lastCall.calledWith(false)).to.be.true;
+      signIn(user);
+      await wait(50);
+      expect(cb.lastCall.calledWith(true)).to.be.true;
+    });
+
+    it('accepts corporate-network access on an otherwise ungated host when requested', async () => {
+      setConfig({ env: { name: 'stage' } });
+      window.fetch.resolves({});
+      const cb = sinon.spy();
+      onSidekickAuth(cb, { requireAuth: true });
+      await wait(50);
+      expect(cb.calledWith(true)).to.be.true;
+      expect(cb.calledWith(false)).to.be.false;
     });
 
     it('gates on a prod host even when env is overridden to stage (no bypass)', async () => {
