@@ -112,6 +112,20 @@
           expect(args.fetchAUPSDKInstance).to.be.a('function');
         });
 
+        it('passes a post-render modal decorator without altering Federal CTA styling', async () => {
+          disableLingo();
+          setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+          const args = await runInit();
+          const root = document.createElement('div');
+          root.innerHTML = '<a class="feds-primary-cta" href="/fragments/eligibility#nav-eligibility">Check eligibility</a>';
+          await args.decorateModalLinks(root);
+          const link = root.querySelector('a');
+          expect(link.dataset.modalPath).to.equal('/fragments/eligibility');
+          expect(link.getAttribute('href')).to.equal('#nav-eligibility');
+          expect(link.classList.contains('feds-primary-cta')).to.equal(true);
+          expect(link.dataset.blockStatus).to.equal('loaded');
+        });
+
         it('wires decorateBody when lingo is active', async () => {
           enableLingo();
           const args = await runInit();
