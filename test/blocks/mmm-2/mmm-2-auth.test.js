@@ -84,7 +84,7 @@ describe('MMM-2 Sidekick auth gate', () => {
   it('does not mount the app while a signed-out Sidekick is resolving', async () => {
     mountSidekick();
     await init(block);
-    expect(block.textContent).to.include('Checking Sidekick sign-in...');
+    expect(block.textContent).to.include('Checking access...');
     expect(dataRequests()).to.have.length(0);
     await waitFor(() => block.textContent.includes('Sign in to use MMM-2'), 2000);
     expect(dataRequests()).to.have.length(0);
@@ -160,11 +160,34 @@ describe('MMM-2 Sidekick auth gate', () => {
     });
   });
 
-  it('preserves ungated localhost access without Sidekick', async () => {
+  it('requires authorization on localhost even outside production config', async () => {
     setConfig({ miloLibs: '/libs', env: { name: 'stage' } });
+    await init(block);
+    await waitFor(() => block.textContent.includes('Sign in to use MMM-2'));
+    expect(block.querySelector('.mmm2-tabpanel')).to.not.exist;
+    expect(dataRequests()).to.have.length(0);
+    mountSidekick(true);
+    await waitFor(() => block.querySelector('.mmm2-page-item'));
+  });
+
+  it('accepts internal-network access on localhost without Sidekick', async () => {
+    setConfig({ miloLibs: '/libs', env: { name: 'stage' } });
+    fetchStub.withArgs(sinon.match('mep-auth-check.awesome-sites.corp.adobe.com'))
+      .resolves({});
     await init(block);
     await waitFor(() => block.querySelector('.mmm2-page-item'));
     expect(block.querySelector('.mmm2-auth-message')).to.not.exist;
+  });
+
+  it('removes loaded data on Sidekick logout even on localhost', async () => {
+    setConfig({ miloLibs: '/libs', env: { name: 'stage' } });
+    const { user } = mountSidekick(true);
+    await init(block);
+    await waitFor(() => block.querySelector('.mmm2-page-item'));
+    user.classList.add('not-authorized');
+    await waitFor(() => block.textContent.includes('Sign in to use MMM-2'));
+    expect(block.querySelector('.mmm2-tabpanel')).to.not.exist;
+    expect(block.textContent).to.not.include('/auth-test');
   });
 
   it('preserves prodDomains gating even when env is stage', async () => {

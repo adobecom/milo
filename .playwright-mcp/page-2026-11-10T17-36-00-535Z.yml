@@ -1,0 +1,10 @@
+- generic [active] [ref=e1]:
+  - heading "Error 403 Forbidden" [level=1] [ref=e2]
+  - paragraph [ref=e3]:
+    - text: Your request has been blocked, please use
+    - link "localhost.aem.live" [ref=e4] [cursor=pointer]:
+      - /url: https://localhost.aem.live
+    - text: instead. See
+    - link "https://www.aem.live/developer/upgrade" [ref=e5] [cursor=pointer]:
+      - /url: https://www.aem.live/developer/upgrade
+    - text: for more information.

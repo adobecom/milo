@@ -77,12 +77,13 @@ export async function isWithinFirewall() {
 }
 
 /*
- * Ungated hosts fire true immediately. Gated hosts fire the initial verdict, then
+ * Ungated hosts fire true immediately unless requireAuth is set. Gated hosts fire
+ * the initial verdict, then
  * again whenever auth flips (author signs in/out mid-session). Returns a cleanup
  * function for consumers that can unmount; existing page-lifetime consumers can ignore it.
  */
-export function onSidekickAuth(callback) {
-  if (!shouldGate()) {
+export function onSidekickAuth(callback, { requireAuth = false } = {}) {
+  if (!requireAuth && !shouldGate()) {
     callback(true);
     return () => undefined;
   }

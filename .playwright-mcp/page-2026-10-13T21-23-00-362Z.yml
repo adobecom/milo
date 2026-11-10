@@ -1,0 +1,423 @@
+- generic [ref=f16e1]:
+  - generic [ref=f16e5]:
+    - generic [ref=f16e6]:
+      - generic [ref=f16e7]:
+        - generic [ref=f16e10]:
+          - application [aria-hidden] [ref=f16e742]
+          - status [ref=f16e20]: Screenreader support for the board is currently disabled. To enable it via Accessibility settings, press ⌘K, type Accessibility Settings, and press Enter. To see available keyboard shortcuts, enter ⌃⇧Question mark .
+          - status [ref=f16e22]
+          - generic:
+            - generic:
+              - generic:
+                - generic: W
+                - generic: Hug
+                - generic: 807px
+                - generic: H
+                - generic: Hug
+                - generic: 650px
+          - generic:
+            - generic:
+              - generic:
+                - img "Instance"
+                - generic: login modal
+          - generic:
+            - generic:
+              - generic:
+                - region "Comments on canvas":
+                  - button "Create new comment"
+          - region "Left sidebar" [ref=f16e24]:
+            - generic [ref=f16e25]:
+              - toolbar "Navigation Bar" [ref=f16e26]:
+                - generic [ref=f16e27]:
+                  - button "Main menu" [ref=f16e28]
+                  - separator [ref=f16e29]
+                  - button "File" [expanded] [ref=f16e30]
+                  - separator [ref=f16e31]
+                  - button "Variables" [ref=f16e32]
+              - generic [ref=f16e33]:
+                - generic [ref=f16e34]:
+                  - generic [ref=f16e35]:
+                    - generic [ref=f16e36]:
+                      - generic [ref=f16e38]:
+                        - generic [ref=f16e43]:
+                          - button "MAX26 Final Login Modal 091126, branch file name" [ref=f16e44]: MAX26 Final Login Modal 091126
+                          - generic [ref=f16e45]: File name
+                        - button "Edit file menu" [ref=f16e49]
+                      - button "Minimize UI" [ref=f16e50]
+                    - button "MAX 2026 Virtual VizD SSOT" [ref=f16e53]
+                  - generic [ref=f16e54]:
+                    - generic [ref=f16e57]:
+                      - heading [level=2] [ref=f16e58]:
+                        - generic [ref=f16e59]:
+                          - button "Pages" [expanded] [ref=f16e60]
+                          - button "Find" [ref=f16e63]
+                      - generic [ref=f16e66]:
+                        - grid [ref=f16e73]:
+                          - row [ref=f16e75]:
+                            - gridcell [ref=f16e76]:
+                              - button "Page divider" [ref=f16e79]
+                          - row [ref=f16e82]:
+                            - gridcell [ref=f16e83]:
+                              - button "Log in Modal" [ref=f16e86]
+                          - row [ref=f16e90]:
+                            - gridcell [ref=f16e91]:
+                              - button "Page divider" [ref=f16e94]
+                          - row [ref=f16e97]:
+                            - gridcell [ref=f16e98]:
+                              - button "Page divider" [ref=f16e101]
+                        - slider "Resize handle" [ref=f16e104]
+                    - generic [ref=f16e105]:
+                      - button "Ready for development" [expanded] [ref=f16e108]
+                      - generic [ref=f16e109]: Nothing marked as ready for development yet.
+                      - generic [ref=f16e120]:
+                        - generic [ref=f16e122]:
+                          - button "Layers" [ref=f16e123]
+                          - button "Collapse layers" [ref=f16e124]
+                        - button "Frame MAX26 Log in modal" [ref=f16e126]:
+                          - generic [ref=f16e127]:
+                            - img "Frame" [ref=f16e128]
+                            - generic [ref=f16e132]: MAX26 Log in modal
+                        - button "Frame 1920" [ref=f16e134]:
+                          - generic [ref=f16e135]:
+                            - img "Frame" [ref=f16e137]
+                            - generic [ref=f16e141]: "1920"
+                        - button "Instance login modal Temporarily lock / unlock on-canvas selection, just for you." [active] [ref=f16e746]:
+                          - generic [ref=f16e144]:
+                            - img "Instance" [ref=f16e148]
+                            - generic [ref=f16e152]: login modal
+                          - button "Temporarily lock / unlock on-canvas selection, just for you." [ref=f16e750]
+                        - button "Text “1920”" [ref=f16e154]:
+                          - generic [ref=f16e155]:
+                            - img "Text" [ref=f16e157]
+                            - generic [ref=f16e161]: “1920”
+                        - button "Text “1440”" [ref=f16e163]:
+                          - generic [ref=f16e164]:
+                            - img "Text" [ref=f16e166]
+                            - generic [ref=f16e170]: “1440”
+                        - button "Auto layout 1024" [ref=f16e172]:
+                          - generic [ref=f16e173]:
+                            - img "Auto layout" [ref=f16e175]
+                            - generic [ref=f16e179]: "1024"
+                        - button "Text “1024”" [ref=f16e181]:
+                          - generic [ref=f16e182]:
+                            - img "Text" [ref=f16e184]
+                            - generic [ref=f16e188]: “1024”
+                        - button "Text “375”" [ref=f16e190]:
+                          - generic [ref=f16e191]:
+                            - img "Text" [ref=f16e193]
+                            - generic [ref=f16e197]: “375”
+                        - button "Frame 375" [ref=f16e199]:
+                          - generic [ref=f16e200]:
+                            - img "Frame" [ref=f16e202]
+                            - generic [ref=f16e206]: "375"
+                        - button "Text “Log in modal - During Live event”" [ref=f16e208]:
+                          - generic [ref=f16e209]:
+                            - img "Text" [ref=f16e211]
+                            - generic [ref=f16e215]: “Log in modal - During Live event”
+                        - button "Text “Copy, image, and page footer (in the background) is FPO.”" [ref=f16e217]:
+                          - generic [ref=f16e218]:
+                            - img "Text" [ref=f16e220]
+                            - generic [ref=f16e224]: “Copy, image, and page footer (in the background) is FPO.”
+                        - button "Auto layout 1440" [ref=f16e226]:
+                          - generic [ref=f16e227]:
+                            - img "Auto layout" [ref=f16e229]
+                            - generic [ref=f16e233]: "1440"
+                        - button "Instance Presentation nav" [ref=f16e235]:
+                          - generic [ref=f16e236]:
+                            - img "Instance" [ref=f16e238]
+                            - generic [ref=f16e242]: Presentation nav
+                        - button "Instance Presentation nav" [ref=f16e244]:
+                          - generic [ref=f16e245]:
+                            - img "Instance" [ref=f16e247]
+                            - generic [ref=f16e251]: Presentation nav
+                - slider "Resize handle" [ref=f16e252]
+          - generic:
+            - generic:
+              - region "Properties and plugins":
+                - generic [ref=f16e254]:
+                  - generic [ref=f16e255]:
+                    - generic [ref=f16e257]:
+                      - button "Multiplayer tools" [ref=f16e263]:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic [aria-hidden]:
+                                    - img:
+                                      - generic: D
+                      - generic [ref=f16e269]:
+                        - group "Prototype view" [ref=f16e270]:
+                          - button "Present" [ref=f16e271]
+                          - button "Prototype view" [ref=f16e272]
+                        - button "Share" [ref=f16e274]
+                    - generic [ref=f16e276]:
+                      - tablist [ref=f16e278]:
+                        - tab "Inspect" [selected] [ref=f16e279]:
+                          - generic [aria-hidden] [ref=f16e280]: Inspect
+                        - tab "Plugins" [ref=f16e282]:
+                          - generic [aria-hidden] [ref=f16e283]: Plugins
+                      - button "17%, zoom and view options" [ref=f16e288]: 17%
+                    - tabpanel "Inspect" [ref=f16e290]:
+                      - generic [ref=f16e298]:
+                        - generic [ref=f16e301]:
+                          - generic [ref=f16e302]:
+                            - 'button "Click to copy layer name: login modal" [ref=f16e303]':
+                              - generic: login modal
+                            - generic [ref=f16e305]:
+                              - button "Copy URL for selected layer" [ref=f16e307]
+                              - button "Go to main component" [ref=f16e309]
+                              - button "More actions" [ref=f16e311]
+                          - generic [ref=f16e315]:
+                            - img "Instance" [ref=f16e316]
+                            - generic [ref=f16e320]: Component instance
+                        - generic [ref=f16e321]:
+                          - generic [ref=f16e322]:
+                            - button "MCP" [expanded] [ref=f16e323]:
+                              - heading "MCP" [level=3]
+                            - link [ref=f16e326] [cursor=pointer]:
+                              - /url: https://developers.figma.com/docs/figma-mcp-server/
+                          - generic [ref=f16e329]:
+                            - paragraph [ref=f16e331]:
+                              - generic [ref=f16e332]:
+                                - text: Generate code with context from this file via the remote MCP server.
+                                - link "Learn more" [ref=f16e333] [cursor=pointer]:
+                                  - /url: https://developers.figma.com/docs/figma-mcp-server/
+                            - button "Connect to AI agent" [ref=f16e335]
+                        - generic [ref=f16e336]:
+                          - button "Component information" [expanded] [ref=f16e338]:
+                            - heading "Component information" [level=3]
+                          - generic [ref=f16e339]:
+                            - img "Component thumbnail" [ref=f16e341]
+                            - button "Property 1 Desktop" [ref=f16e344]:
+                              - generic:
+                                - generic: Property 1
+                                - generic:
+                                  - generic "Desktop"
+                            - button "Explore component behavior" [ref=f16e346]
+                        - generic [ref=f16e349]:
+                          - heading "Code Connect" [level=3] [ref=f16e353]
+                          - strong [ref=f16e356]:
+                            - generic [ref=f16e357]: Not published
+                        - generic [ref=f16e358]:
+                          - button "Layer properties" [expanded] [ref=f16e360]:
+                            - heading "Layer properties" [level=3]
+                          - generic [ref=f16e361]:
+                            - img "Visual representation of element layout properties including padding, border box, and spacing" [ref=f16e365]:
+                              - 'button "Copy distance to top container edge: 203" [ref=f16e369]':
+                                - generic: "203"
+                              - 'button "Copy distance to left container edge: 557" [ref=f16e373]':
+                                - generic: "557"
+                              - generic [ref=f16e374]:
+                                - 'button "Copy top left border radius: 24" [ref=f16e375]':
+                                  - generic: "24"
+                                - generic [ref=f16e376]:
+                                  - generic [ref=f16e377]: Border
+                                  - generic [ref=f16e378]: "-"
+                                - 'button "Copy top right border radius: 24" [ref=f16e380]':
+                                  - generic: "24"
+                                - generic [ref=f16e381]: "-"
+                                - link "Button to download image" [ref=f16e384] [cursor=pointer]:
+                                  - /url: /file/zmmc3c3UW8zJvmqzLbqEE4/image/872a81c3a80b268da5721ee4a003d0839b1c337f/download
+                                  - generic [ref=f16e385]:
+                                    - generic [ref=f16e386]: image.
+                                    - generic [ref=f16e387]: png
+                                - generic [ref=f16e388]: "-"
+                                - 'button "Copy bottom left border radius: 24" [ref=f16e390]':
+                                  - generic: "24"
+                                - generic [ref=f16e391]: "-"
+                                - 'button "Copy bottom right border radius: 24" [ref=f16e393]':
+                                  - generic: "24"
+                              - 'button "Copy distance to right container edge: 556" [ref=f16e396]':
+                                - generic: "556"
+                              - 'button "Copy distance to bottom container edge: 227" [ref=f16e400]':
+                                - generic: "227"
+                              - 'button "Copy box-sizing: border-box" [ref=f16e402]': border-box
+                            - generic [ref=f16e405]:
+                              - radiogroup "View" [ref=f16e407]:
+                                - generic [ref=f16e409]:
+                                  - generic [ref=f16e410]:
+                                    - radio "List" [ref=f16e411]
+                                    - generic [ref=f16e412]: List
+                                  - generic [ref=f16e413]:
+                                    - radio "Code" [checked] [ref=f16e414]
+                                    - generic [ref=f16e415]: Code
+                              - generic [ref=f16e416]:
+                                - generic [ref=f16e417]: "Language: CSS"
+                                - 'button "Language: CSS" [ref=f16e418]':
+                                  - generic: CSS
+                            - generic [ref=f16e419]:
+                              - generic [ref=f16e423]:
+                                - generic [ref=f16e425]:
+                                  - heading "Layout" [level=3] [ref=f16e426]
+                                  - button "Copy Layout, press shift to copy all code" [ref=f16e428]
+                                - generic [ref=f16e429]:
+                                  - generic [ref=f16e430]:
+                                    - generic [aria-hidden] [ref=f16e431]: "1"
+                                    - generic [aria-hidden] [ref=f16e432]: "2"
+                                    - generic [aria-hidden] [ref=f16e433]: "3"
+                                    - generic [aria-hidden] [ref=f16e434]: "4"
+                                    - generic [aria-hidden] [ref=f16e435]: "5"
+                                  - code [ref=f16e440]:
+                                    - generic [ref=f16e441]: "display: flex;"
+                                    - generic [ref=f16e445]: "padding: 48px;"
+                                    - generic [ref=f16e449]: "flex-direction: column;"
+                                    - generic [ref=f16e453]: "align-items: flex-start;"
+                                    - generic [ref=f16e457]: "gap: 10px;"
+                              - generic [ref=f16e464]:
+                                - generic [ref=f16e466]:
+                                  - heading "Style" [level=3] [ref=f16e467]
+                                  - button "Copy Style, press shift to copy all code" [ref=f16e469]
+                                - generic [ref=f16e470]:
+                                  - generic [ref=f16e471]:
+                                    - generic [aria-hidden] [ref=f16e472]: "1"
+                                    - generic [aria-hidden] [ref=f16e473]: "2"
+                                  - code [ref=f16e480]:
+                                    - generic [ref=f16e481]: "border-radius: 24px;"
+                                    - generic [ref=f16e485]:
+                                      - generic [ref=f16e486]: "background: url(<path-to-image>) lightgray -214.623px -224.37px / 153.19% 169.037% no-repeat;"
+                                      - button "This color is not tied to a style or variable in the design" [ref=f16e490]
+                            - generic [ref=f16e491]:
+                              - heading "Modes" [level=3] [ref=f16e497]
+                              - generic [ref=f16e498]:
+                                - 'button "Copy .Color theme: Auto (Light)" [ref=f16e500]':
+                                  - generic ".Color theme" [ref=f16e502]
+                                  - generic "Auto (Light)" [ref=f16e504]
+                                - 'button "Copy S2A / Semantic / Color / Theme: Auto (Light)" [ref=f16e507]':
+                                  - generic "S2A / Semantic / Color / Theme" [ref=f16e509]
+                                  - generic "Auto (Light)" [ref=f16e511]
+                                - 'button "Copy S2A / Responsive / Container / Grid: Auto (xl)" [ref=f16e514]':
+                                  - generic "S2A / Responsive / Container / Grid" [ref=f16e516]
+                                  - generic "Auto (xl)" [ref=f16e518]
+                                - 'button "Copy S2.Color-theme: Auto (Modeless)" [ref=f16e521]':
+                                  - generic "S2.Color-theme" [ref=f16e523]
+                                  - generic "Auto (Modeless)" [ref=f16e525]
+                                - 'button "Copy 2. Vanilla Tier 1: Auto (Mode 1)" [ref=f16e528]':
+                                  - generic "2. Vanilla Tier 1" [ref=f16e530]
+                                  - generic "Auto (Mode 1)" [ref=f16e532]
+                                - 'button "Copy S2A / Semantic / Dimension / Static: Auto (Value)" [ref=f16e535]':
+                                  - generic "S2A / Semantic / Dimension / Static" [ref=f16e537]
+                                  - generic "Auto (Value)" [ref=f16e539]
+                                - 'button "Copy Primitives (Core): Auto (Mode 1)" [ref=f16e542]':
+                                  - generic "Primitives (Core)" [ref=f16e544]
+                                  - generic "Auto (Mode 1)" [ref=f16e546]
+                                - 'button "Copy S2A / Primitives / Dimension / Static: Auto (Mode 1)" [ref=f16e549]':
+                                  - generic "S2A / Primitives / Dimension / Static" [ref=f16e551]
+                                  - generic "Auto (Mode 1)" [ref=f16e553]
+                                - 'button "Copy S2A / Primitives / Color / Theme: Auto (Light)" [ref=f16e556]':
+                                  - generic "S2A / Primitives / Color / Theme" [ref=f16e558]
+                                  - generic "Auto (Light)" [ref=f16e560]
+                            - generic [ref=f16e562]:
+                              - generic [ref=f16e563]:
+                                - heading "Colors" [level=3] [ref=f16e568]
+                                - generic [ref=f16e570]:
+                                  - generic [ref=f16e571]: Color format
+                                  - combobox "Color format" [ref=f16e572]:
+                                    - generic [ref=f16e573]: Hex
+                              - generic [ref=f16e578]:
+                                - heading "Selection colors" [level=3] [ref=f16e584]
+                                - generic [ref=f16e585]:
+                                  - generic [ref=f16e587]:
+                                    - button "Copy s2a/color/button/background/solid/default" [ref=f16e589]:
+                                      - generic "s2a/color/button/background/solid/default" [ref=f16e590]
+                                    - 'button "Variable details: s2a/color/button/background/solid/default" [ref=f16e592]'
+                                  - generic [ref=f16e594]:
+                                    - button "Copy Alias/content/neutral/hover" [ref=f16e596]:
+                                      - generic "Alias/content/neutral/hover" [ref=f16e597]
+                                    - 'button "Variable details: Alias/content/neutral/hover" [ref=f16e599]'
+                                  - generic [ref=f16e601]:
+                                    - button "Copy Palette/gray/200" [ref=f16e603]:
+                                      - generic "Palette/gray/200" [ref=f16e604]
+                                    - 'button "Variable details: Palette/gray/200" [ref=f16e606]'
+                                  - generic [ref=f16e608]:
+                                    - button "Copy var(--s2a-color-button-content-primary-solid-default)" [ref=f16e610]:
+                                      - generic "var(--s2a-color-button-content-primary-solid-default)" [ref=f16e611]
+                                    - 'button "Variable details: var(--s2a-color-button-content-primary-solid-default)" [ref=f16e613]'
+                                  - button "4 more" [ref=f16e615]
+                        - generic [ref=f16e616]:
+                          - button "Assets" [expanded] [ref=f16e618]:
+                            - heading "Assets" [level=3]
+                          - generic [ref=f16e619]:
+                            - generic [ref=f16e620]:
+                              - generic [ref=f16e621]:
+                                - heading "Icons" [level=3] [ref=f16e626]
+                                - button "Download icons" [ref=f16e628]
+                              - generic [ref=f16e629]:
+                                - generic [ref=f16e631]:
+                                  - button [ref=f16e632]
+                                  - generic [ref=f16e633]:
+                                    - generic [ref=f16e634]: Frame
+                                    - generic [ref=f16e635]: 12 x 12
+                                - generic [ref=f16e638]:
+                                  - button [ref=f16e639]
+                                  - generic [ref=f16e640]:
+                                    - generic [ref=f16e641]: Adobe MAX Event Lockup – Red-Black
+                                    - generic [ref=f16e642]: 135.47 x 18
+                            - generic [ref=f16e644]:
+                              - generic [ref=f16e645]:
+                                - heading "Images" [level=3] [ref=f16e650]
+                                - button "Download images" [ref=f16e652]
+                              - generic [ref=f16e655]:
+                                - button [ref=f16e656]
+                                - generic [ref=f16e657]:
+                                  - generic [ref=f16e658]: login modal
+                                  - generic [ref=f16e659]: 807 x 650
+                        - generic [ref=f16e667]:
+                          - button "Export" [ref=f16e668]
+                          - button "Add export settings" [ref=f16e672]
+                  - slider "Resize handle" [ref=f16e674]
+        - generic:
+          - generic:
+            - generic:
+              - region "Application toolbar":
+                - generic [ref=f16e675]:
+                  - toolbar "Editor" [ref=f16e677]:
+                    - generic [ref=f16e683]:
+                      - button "Move" [pressed] [ref=f16e684]
+                      - button "Copy colors" [ref=f16e685]
+                      - button "Comment" [ref=f16e686]
+                    - radiogroup "Toolbelt Mode" [ref=f16e690]:
+                      - generic [ref=f16e692]:
+                        - generic [ref=f16e694]:
+                          - radio "Draw" [ref=f16e695]
+                          - generic [ref=f16e699]: Draw
+                        - generic [ref=f16e700]:
+                          - radio "Design" [ref=f16e701]
+                          - generic [ref=f16e705]: Design
+                        - generic [ref=f16e706]:
+                          - radio "Motion" [ref=f16e707]
+                          - generic [ref=f16e711]: Motion
+                        - generic [ref=f16e712]:
+                          - radio "Dev Mode" [checked] [ref=f16e713]
+                          - generic [ref=f16e717]: Dev Mode
+                  - toolbar "Inspect" [ref=f16e718]:
+                    - generic "Re-center" [ref=f16e721]:
+                      - generic [ref=f16e724]:
+                        - generic [ref=f16e725]: Re-center
+                        - generic [ref=f16e726]: ⇧2
+      - region "Help/zoom toolbar" [ref=f16e729]:
+        - toolbar "Help/zoom toolbar" [ref=f16e731]:
+          - button "Help" [ref=f16e733]
+    - group [ref=f16e735]:
+      - alert [ref=f16e737]
+      - alert [ref=f16e739]
+  - iframe [aria-hidden] [ref=f16e741]:
+    - iframe [ref=f19e1]:
+      - generic [ref=f24e4]:
+        - generic [ref=f24e7]:
+          - heading "👋 Hi there. Which of the following Developer Tools have you used recently?" [level=1] [ref=f24e10]
+          - group [ref=f24e12]:
+            - generic [ref=f24e14] [cursor=pointer]:
+              - checkbox "Code Connect" [ref=f24e15]
+              - generic [ref=f24e16]: Code Connect
+            - generic [ref=f24e18] [cursor=pointer]:
+              - checkbox "Dev Mode" [ref=f24e19]
+              - generic [ref=f24e20]: Dev Mode
+            - generic [ref=f24e22] [cursor=pointer]:
+              - checkbox "Figma's MCP server" [ref=f24e23]
+              - generic [ref=f24e24]: Figma's MCP server
+            - generic [ref=f24e26] [cursor=pointer]:
+              - checkbox "None of the above" [ref=f24e27]
+              - generic [ref=f24e28]: None of the above
+          - button "Next" [disabled] [ref=f24e31]
+        - button "Close button" [ref=f24e32] [cursor=pointer]

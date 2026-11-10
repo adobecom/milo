@@ -1,0 +1,61 @@
+[     660ms] [LOG] Running frontend commit 8f08a1e8b36bcaa42ccfa2dc3cff74a080ee9e49 @ https://www.figma.com/email_only:503
+[   12151ms] [WARNING] Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://marketing.figma.com') does not match the recipient window's origin ('https://www.figma.com'). @ https://www.figma.com/webpack-artifacts/assets/208-81d5fa02b250c4c5.min.js.br:2
+[   12642ms] [WARNING] pixel already configured. @ https://pixel.byspotify.com/ping.min.js:0
+[   13296ms] [ERROR] Failed to load resource: net::ERR_SSL_PROTOCOL_ERROR @ https://00ox088d0esgdcaiqgey.authenticatorlocalprod.com:8769/probe:0
+[   13297ms] [ERROR] Something unexpected happened while we were checking port 8769. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13297ms] [ERROR] Authenticator is not listening on port 8769. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13334ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://00ox088d0esgdcaiqgey.authenticatorlocalprod.com:65111/probe:0
+[   13335ms] [ERROR] Something unexpected happened while we were checking port 65111. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13335ms] [ERROR] Authenticator is not listening on port 65111. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13372ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://00ox088d0esgdcaiqgey.authenticatorlocalprod.com:65121/probe:0
+[   13372ms] [ERROR] Something unexpected happened while we were checking port 65121. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13372ms] [ERROR] Authenticator is not listening on port 65121. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13420ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://00ox088d0esgdcaiqgey.authenticatorlocalprod.com:65131/probe:0
+[   13420ms] [ERROR] Something unexpected happened while we were checking port 65131. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13421ms] [ERROR] Authenticator is not listening on port 65131. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13467ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://00ox088d0esgdcaiqgey.authenticatorlocalprod.com:65141/probe:0
+[   13467ms] [ERROR] Something unexpected happened while we were checking port 65141. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13467ms] [ERROR] Authenticator is not listening on port 65141. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13595ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ https://00ox088d0esgdcaiqgey.authenticatorlocalprod.com:65151/probe:0
+[   13596ms] [ERROR] Something unexpected happened while we were checking port 65151. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   13596ms] [ERROR] Authenticator is not listening on port 65151. @ https://adobe.okta.com/assets/js/mvc/sentry-wrapper/sentry-wrapper.pack.df0341117f37a4556d86db4ca920273b.js:0
+[   15575ms] [WARNING] <meta name="apple-mobile-web-app-capable" content="yes"> is deprecated. Please include <meta name="mobile-web-app-capable" content="yes"> @ https://adobe.okta.com/login/token/redirect?stateToken=02.id.X8L35m1yq1p5aJsdIlLEnD0Y4MkijZgXFESflX3W:0
+[   16476ms] [LOG] Running frontend commit 8f08a1e8b36bcaa42ccfa2dc3cff74a080ee9e49 @ https://www.figma.com/validate_code:503
+[   16615ms] [WARNING] Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://marketing.figma.com') does not match the recipient window's origin ('https://www.figma.com'). @ https://www.figma.com/webpack-artifacts/assets/208-81d5fa02b250c4c5.min.js.br:2
+[   16615ms] [WARNING] Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://marketing.figma.com') does not match the recipient window's origin ('https://www.figma.com'). @ https://www.figma.com/webpack-artifacts/assets/208-81d5fa02b250c4c5.min.js.br:2
+[   16615ms] [WARNING] Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://marketing.figma.com') does not match the recipient window's origin ('https://www.figma.com'). @ https://www.figma.com/webpack-artifacts/assets/208-81d5fa02b250c4c5.min.js.br:2
+[   16615ms] [WARNING] Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://marketing.figma.com') does not match the recipient window's origin ('https://www.figma.com'). @ https://www.figma.com/webpack-artifacts/assets/208-81d5fa02b250c4c5.min.js.br:2
+[   16849ms] [WARNING] pixel already configured. @ https://pixel.byspotify.com/ping.min.js:0
+[   17076ms] [WARNING] Unrecognized feature: 'join-ad-interest-group'. @ https://acdn.adnxs.com/dmp/up/pixie.js:0
+[   17107ms] [WARNING] [Meta pixel] 871885529854177 is unavailable on this website due to it's traffic permission settings. Go to https://www.facebook.com/business/help/572690630080597 to learn more. @ https://connect.facebook.net/en_US/fbevents.js:205
+[   33090ms] [LOG] Running frontend commit 8f08a1e8b36bcaa42ccfa2dc3cff74a080ee9e49 @ https://www.figma.com/design/zNe8auqfmanqiXWvQBpSyH/branch/zmmc3c3UW8zJvmqzLbqEE4/MAX-2026-Virtual-VizD-SSOT?node-id=5753-170947&m=dev:688
+[   34050ms] [WARNING] Statsig is not ready to log exposures, will retry in 1 seconds @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   34051ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ https://browser-intake-datadoghq.com/api/v2/rum:0
+[   34272ms] [LOG] [import] git: 0392576e213e02b3f4d07c43557d15cebfb7ea4f, stamp: E962F78C97B24D11 @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   34431ms] [INFO] Autosave Changes not available or already claimed by another tab undefined @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   34745ms] [LOG] Loaded 0 scripts (0b), 0 from cache (0b) @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   34997ms] [INFO] [Fullscreen] Booting... (emscripten version 4.0.21) @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   35047ms] [INFO] [GPU] graphicsAPI:"WebGPU", vendor:"Google Inc. (Apple)" renderer:"ANGLE (Apple, ANGLE Metal Renderer: Apple M3 Max, Unspecified Version)" deviceArchitecture:"metal-3" deviceDescription:"" webGPUDevice:"" webGPUVendor:"apple" bindings:"emdawnwebgpu" @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   35049ms] [LOG] [Fullscreen] Ready in 385.1ms @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   35157ms] [INFO] [FullscreenApp] calling setEditorTheme and setting preference light @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   35164ms] [INFO] [MultiplayerSession] connecting to wss://www.figma.com/api/multiplayer/zmmc3c3UW8zJvmqzLbqEE4?role=editor&tracking_session_id=WIYgoFyymw3Sv1Op&version=242&recentReload=0&file-load-streaming-compression=&scenegraph-queries-initial-nodes=5753%3A170947&user-id=1384991598264966581&client_release=8f08a1e8b36bcaa42ccfa2dc3cff74a080ee9e49&tag-for-logging=dev_mode&force-dpl-journaled-reconnect=1 @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   35173ms] [INFO] [MultiplayerSession] Joining file version 106 (initial load) @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   35936ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ https://static.figma.com/fullscreen/8a9f81ff14f135fcb664ed09d79de07ae04ecd94/fullscreen-wasm/compiled_wasm.js.br:1
+[   36082ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ https://static.figma.com/fullscreen/8a9f81ff14f135fcb664ed09d79de07ae04ecd94/fullscreen-wasm/compiled_wasm.js.br:1
+[   36108ms] [INFO] afterJoinEnd PageSyncing: Loaded incrementally {loaded_pages: 5734:154203} @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   36112ms] [INFO] [FullscreenApp] calling setEditorTheme and setting preference light @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   36292ms] [ERROR] Access to image at 'https://www.gravatar.com/avatar/879d7738fffef4d97340bee6ab59f071?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_d_v2.png?c=1' from origin 'https://www.figma.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://www.figma.com/design/zNe8auqfmanqiXWvQBpSyH/branch/zmmc3c3UW8zJvmqzLbqEE4/MAX-2026-Virtual-VizD-SSOT?node-id=5753-170947&m=dev:0
+[   36292ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://www.gravatar.com/avatar/879d7738fffef4d97340bee6ab59f071?size=240&default=https%3A%2F%2Fs3-alpha.figma.com%2Fstatic%2Fuser_d_v2.png?c=1:0
+[   36580ms] [INFO] [Sprigma] Sprig SDK is ready @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   36957ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ https://www.figma.com/webpack-artifacts/assets/5519-dc0559c4467060ce.min.js.br:1650
+[   36959ms] [WARNING] Canvas2D: Multiple readback operations using getImageData are faster with the willReadFrequently attribute set to true. See: https://html.spec.whatwg.org/multipage/canvas.html#concept-canvas-will-read-frequently @ https://www.figma.com/webpack-artifacts/assets/5519-dc0559c4467060ce.min.js.br:1650
+[   37131ms] [LOG] [Fullscreen] loadtime=4.66s maxmem=14716604 @ https://www.figma.com/webpack-artifacts/assets/vendor-09da8523417ca953.min.js.br:131
+[   37401ms] [WARNING] [Sprigma] 📦 Request for permission to show survey 140960 is already in progress @ https://sprig.figma.com/:169
+[   37470ms] TypeError: Cannot read properties of undefined (reading 'then')
+    at Promise.finally.outstandingRequestsForPermissionToShowSurvey.<computed> (https://sprig.figma.com/:175:80)
+    at new Promise (<anonymous>)
+    at requestPermissionToShowSurvey (https://sprig.figma.com/:151:21)
+    at ti (https://cdn.sprig.com/shim.js?id=YWwyCyGyqg:14:11736)
+    at t (https://cdn.sprig.com/shim.js?id=YWwyCyGyqg:14:14056)
+[   37593ms] [WARNING] [Sprigma] 📦 Timed out waiting for parent to grant permission to show survey 140960 after 250ms, not showing @ https://sprig.figma.com/:152
+[   37652ms] [WARNING] [Sprigma] 📦 Timed out waiting for parent to grant permission to show survey 140960 after 250ms, not showing @ https://sprig.figma.com/:152

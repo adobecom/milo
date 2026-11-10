@@ -118,7 +118,7 @@ export function getUrlPath(rawUrl) {
 /**
  * Parses a block's authored table content (row 1 = "Menu: <key>" / <group label>,
  * subsequent rows = <option value> / <option label>) into a lookup keyed by group.
- * Menu names are normalized; option values preserve case for API enums and paths.
+ * Menu names are normalized; non-consent option values preserve case for API enums and paths.
  * Works against both decorated and raw Franklin tables.
  */
 export function parseData(el) {
@@ -129,8 +129,8 @@ export function parseData(el) {
     const cols = row.children;
     if (cols.length < 2) return;
     const val = (cols[1].innerText || cols[1].textContent).trim();
-    const rawKey = (cols[0].innerText || cols[0].textContent).replace(/\s+/g, '');
-    let key = rawKey.toLowerCase();
+    const text = (cols[0].innerText || cols[0].textContent).trim();
+    let key = text.replace(/\s+/g, '').toLowerCase();
     if (key.startsWith('menu:')) {
       key = key.split(':')[1].trim();
       currentKey = key;
@@ -139,6 +139,10 @@ export function parseData(el) {
     }
     const group = data[currentKey];
     if (!group) return;
+    // Consent API enums are lowercase with spaces; path/geo groups strip whitespace.
+    const rawKey = currentKey === 'manifestconsenttype'
+      ? text.replace(/\s+/g, ' ').toLowerCase()
+      : text.replace(/\s+/g, '');
     group.options[rawKey] = val;
     if (cols[0].querySelector('strong, b') || cols[1].querySelector('strong, b')) {
       if (Object.prototype.hasOwnProperty.call(group, 'defaultValue')) group.multipleDefaults = true;
@@ -191,7 +195,7 @@ async function consumeTabConfig(el, blockName, label, menuKeys) {
 
 export async function consumeTabConfigs(el) {
   const [search, inactivity, metadata] = await Promise.all([
-    consumeTabConfig(el, 'manifest-manager', 'Manifest Manager', ['pages', 'geos', 'lastseenmanifest', 'subdomain']),
+    consumeTabConfig(el, 'manifest-manager', 'Manifest Manager', ['pages', 'geos', 'lastseenmanifest', 'subdomain', 'manifestconsenttype']),
     consumeTabConfig(el, 'inactivity-report', 'Inactivity Report', ['geos', 'lastseenmanifest']),
     consumeTabConfig(el, 'metadata-lookup', 'Metadata Lookup', ['metadatarepo']),
   ]);
