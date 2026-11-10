@@ -321,6 +321,67 @@ describe('loadAnalyticsAndInteractionData', () => {
     document.cookie = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent=general=in';
   });
 
+  describe('sign-in status', () => {
+    const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
+    let requestBody;
+    let cookieWrites;
+
+    const load = (sis) => {
+      const stub = sinon.stub(window.performance, 'getEntriesByType');
+      stub.callThrough();
+      stub.withArgs('navigation').returns([{ serverTiming: [{ name: 'sis', description: sis }] }]);
+      return loadAnalyticsAndInteractionData({
+        locale: { ietf: 'en-US', prefix: 'us' },
+        env: 'prod',
+        calculatedTimeout: 10000,
+      });
+    };
+
+    beforeEach(() => {
+      delete window.hybridPers;
+      cookieWrites = [];
+      Object.defineProperty(document, 'cookie', {
+        configurable: true,
+        get: () => cookieDesc.get.call(document),
+        set: (value) => {
+          cookieWrites.push(value);
+          cookieDesc.set.call(document, value);
+        },
+      });
+      window.fetch = (url, opts) => {
+        requestBody = JSON.parse(opts.body);
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ handle: [{ type: 'personalization:decisions', payload: [{ decisionId: '1' }] }] }),
+        });
+      };
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      delete document.cookie;
+      delete window.hybridPers;
+    });
+
+    it('signed out: sends the page view and tells Launch to skip its own', async () => {
+      const result = await load('0');
+
+      expect(requestBody.event.xdm.eventType).to.equal('web.webpagedetails.pageViews');
+      expect(window.hybridPers).to.be.true;
+      expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.true;
+      expect(result.type).to.equal('pageView');
+    });
+
+    it('signed in: fetches Target decisions only, so Launch still sends the page view', async () => {
+      const result = await load('1');
+
+      expect(requestBody.event.xdm.eventType).to.equal('decisioning.propositionFetch');
+      expect(window.hybridPers).to.be.undefined;
+      expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.false;
+      expect(result.result.propositions).to.have.lengthOf(1);
+    });
+  });
+
   describe('getVisitorStatus', () => {
     let getCookieStub;
     let setCookieStub;

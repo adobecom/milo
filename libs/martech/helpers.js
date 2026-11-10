@@ -805,8 +805,10 @@ export const loadAnalyticsAndInteractionData = async (
   const localTime = getLocalISOString();
   const CURRENT_DATE = new Date();
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  window.hybridPers = true;
-  const hitType = 'pageView';
+  // Signed in: fetch Target decisions only, so Launch still sends the page view with the Adobe ID.
+  const isPageView = isSignedOut();
+  if (isPageView) window.hybridPers = true;
+  const hitType = isPageView ? 'pageView' : 'propositionFetch';
   const pageName = getPageNameForAnalytics();
   const processedPageName = getProcessedPageNameForAnalytics();
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
@@ -869,7 +871,7 @@ export const loadAnalyticsAndInteractionData = async (
 
     if (resultPayload?.length === 0) throw new Error('No propositions found');
 
-    setGpvCookie(pageName);
+    if (isPageView) setGpvCookie(pageName);
     return {
       type: hitType,
       result: { propositions: resultPayload },
@@ -879,7 +881,7 @@ export const loadAnalyticsAndInteractionData = async (
       // eslint-disable-next-line no-console
       console.log(err);
     }
-    setGpvCookie(pageName);
+    if (isPageView) setGpvCookie(pageName);
     return {};
   }
 };
