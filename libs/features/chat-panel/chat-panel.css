@@ -121,8 +121,33 @@ body.chat-panel-open #chat-panel {
   flex-shrink: 0;
 }
 
-body.chat-panel-open #chat-panel-toggle {
+body.chat-panel-open #chat-panel-toggle:not(.chat-panel-toggle-gnav) {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
+}
+
+/* In the gnav, after the utilities: matches the collapsed .bc-gnav-button */
+#chat-panel-toggle.chat-panel-toggle-gnav {
+  position: static;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  margin: 0 16px 0 0;
+  padding: 0;
+  background: #fff;
+  backdrop-filter: none;
+  border: 1px solid rgba(0 0 0 / 15%);
+  border-radius: 20px;
+  box-shadow: none;
+  z-index: auto;
+}
+
+#chat-panel-toggle.chat-panel-toggle-gnav:hover {
+  border-color: rgba(0 0 0 / 22%);
+}
+
+#chat-panel-toggle.chat-panel-toggle-gnav .chat-panel-toggle-label {
+  display: none;
 }

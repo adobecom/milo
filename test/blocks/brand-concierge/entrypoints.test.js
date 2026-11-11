@@ -256,6 +256,28 @@ describe('acom-assistant-panel persistent chat panel', () => {
     expect(client.initialize.calledOnce).to.be.true;
   });
 
+  it('moves the Ask button after the gnav utilities once Federal renders, and toggles the panel', async () => {
+    const header = document.createElement('header');
+    header.className = 'global-navigation';
+    document.body.append(header);
+    await initPanel();
+    expect(document.getElementById('chat-panel-toggle')).to.be.null;
+    const nav = document.createElement('nav');
+    nav.innerHTML = '<div class="feds-utilities"></div>';
+    header.append(nav);
+    await waitFor(() => document.getElementById('chat-panel-toggle'));
+    const toggle = document.getElementById('chat-panel-toggle');
+    expect(toggle.previousElementSibling.classList.contains('feds-utilities')).to.be.true;
+    expect(toggle.classList.contains('chat-panel-toggle-gnav')).to.be.true;
+    expect(getComputedStyle(toggle).position).to.equal('static');
+    toggle.click();
+    await expectOpen();
+    expect(getComputedStyle(toggle).visibility).to.equal('visible');
+    toggle.click();
+    expect(document.body.classList.contains('chat-panel-open')).to.be.false;
+    expect(toggle.getAttribute('aria-expanded')).to.equal('false');
+  });
+
   it('submits a new prompt into the same panel while already open', async () => {
     await openChatPanel('First prompt');
     const panel = await expectOpen('First prompt');
