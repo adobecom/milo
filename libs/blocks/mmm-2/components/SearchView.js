@@ -74,6 +74,13 @@ function SearchView({ authoredConfig }) {
   const [result, setResult] = useState({ result: [], totalRecords: 0 });
   const [loading, setLoading] = useState(false);
   const { filters, resetFilters } = normalizeSearchFilters(savedFilters, authoredConfig);
+  const manifestFilters = {
+    lastSeen: filters.lastSeenManifest,
+    manifestSrc: filters.manifestSrc,
+    manifestConsentType: filters.manifestConsentType,
+    manifestCountryRestriction: filters.manifestCountryRestriction,
+    filter: toFilterParam(filters.filterText),
+  };
 
   const updateFilters = (changes) => setFilters((prev) => ({
     ...normalizeSearchFilters(prev, authoredConfig).filters,
@@ -172,10 +179,9 @@ function SearchView({ authoredConfig }) {
     ? html`<${PageListSkeleton} />`
     : (result.result ?? []).map((page) => html`
           <${PageListItem}
-            key=${page.pageId}
+            key=${JSON.stringify([page.pageId, manifestFilters])}
             page=${page}
-            lastSeenManifest=${filters.lastSeenManifest}
-            manifestSrc=${filters.manifestSrc}
+            manifestFilters=${manifestFilters}
           />
         `)}
       </div>
