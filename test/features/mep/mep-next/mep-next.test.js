@@ -1728,7 +1728,7 @@ describe('getMepPopup', () => {
       .map((label, index) => [label.textContent, values[index * 2 + 1].textContent]));
   }
 
-  it('includes the missing summary fields and uses only the inspected page data', async () => {
+  it('shows only recorded summary fields with one note instead of placeholder rows', async () => {
     const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
     const theme = createTag('meta', { name: 'theme', content: 'dark' });
     const lingo = createTag('div', { 'data-mep-lingo-roc': '' });
@@ -1741,26 +1741,15 @@ describe('getMepPopup', () => {
       });
       expect(summaryValues(popup, 'Page')).to.deep.equal({
         'Manifests Found': '1',
-        Foundation: 'Not recorded',
-        Theme: 'Not recorded',
-        'Load Target Faster (v2)': 'Not recorded',
-        'Manifest Sources': '',
         'Target Integration': 'on',
         'Personalization Metadata': 'off',
-        'Promo Metadata': 'Not recorded',
-        'MEP Param': 'Not recorded',
         Locale: 'fr-fr',
       });
-      expect(summaryValues(popup, 'Lingo')).to.deep.equal({
-        'Mep Lingo Updates': 'Not recorded',
-        'Lang First | Lingo': 'Not recorded',
-        'Geo Folder': 'fr',
-        'Country Cookie': 'Not recorded',
-        'User Country': 'Not recorded',
-        'Geo + User': 'Not recorded',
-      });
-      expect(popup.querySelectorAll('.mep-popup-body')[1].textContent)
-        .to.include('Live visitor consent and runtime details are not recorded by MMM.');
+      expect(summaryValues(popup, 'Lingo')).to.deep.equal({ 'Geo Folder': 'fr' });
+      const summary = popup.querySelector('.mep-summary-body');
+      expect(summary.textContent).to.include('Visitor consent and live page diagnostics are not stored by MMM.');
+      expect(summary.textContent).to.not.include('Not recorded');
+      expect(summary.querySelectorAll('p')).to.have.length(1);
     } finally {
       foundation.remove();
       theme.remove();
@@ -1778,11 +1767,7 @@ describe('getMepPopup', () => {
         buildActivity({ consentType: '' }),
       ],
     });
-    expect(summaryValues(popup, 'Consent')).to.deep.equal({
-      'Level 2 | Performance': 'Not recorded',
-      'Level 4 | Advertising': 'Not recorded',
-      'Manifest Consent Types': 'personalized offer, non-personalized offer test, Not recorded',
-    });
+    expect(summaryValues(popup, 'Consent')).to.deep.equal({ 'Manifest Consent Types': 'personalized offer, non-personalized offer test' });
   });
 
   it('renders recorded consent types as text, not markup', async () => {
@@ -1794,26 +1779,20 @@ describe('getMepPopup', () => {
     expect(popup.querySelector('img')).to.be.null;
   });
 
-  it('does not turn absent data into off, zero or a default locale', async () => {
+  it('omits empty summary sections rather than inventing defaults or showing placeholders', async () => {
     const popup = await renderPopup({ page: { url: basePage.url } });
-    const pageSummary = summaryValues(popup, 'Page');
-    expect(pageSummary).to.include({
-      'Manifests Found': 'Not recorded',
-      'Target Integration': 'Not recorded',
-      'Personalization Metadata': 'Not recorded',
-      Locale: 'Not recorded',
-    });
-    expect(summaryValues(popup, 'Consent')['Manifest Consent Types']).to.equal('Not recorded');
-    expect(summaryValues(popup, 'Lingo')['Geo Folder']).to.equal('Not recorded');
+    const summary = popup.querySelector('.mep-summary-body');
+    expect(summary.querySelector('.mep-section')).to.not.exist;
+    expect(summary.textContent).to.not.include('Not recorded');
   });
 
-  it('reports the faster-target setting as inapplicable only when recorded target is off', async () => {
+  it('preserves recorded off and zero values without adding unrecorded diagnostics', async () => {
     const popup = await renderPopup({ page: { ...basePage, target: 'off' }, activities: [] });
     expect(summaryValues(popup, 'Page')).to.include({
-      'Load Target Faster (v2)': 'n/a',
       'Manifests Found': '0',
       'Target Integration': 'off',
     });
+    expect(summaryValues(popup, 'Page')).to.not.have.property('Load Target Faster (v2)');
   });
 
   it('setTargetOnText: falls back to page.target when target is undefined, and formats postlcp', async () => {
@@ -1914,10 +1893,7 @@ describe('getMepPopup', () => {
     const masSection = [...popup.querySelectorAll('.mep-section')].find(
       (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
     );
-    expect(masSection.textContent).to.include('Mas Geo Detection');
-    expect(Object.values(summaryValues(popup, 'M@S')))
-      .to.deep.equal(Array(10).fill('Not recorded'));
-    expect(masSection.textContent).to.include('Collections');
+    expect(masSection).to.not.exist;
   });
 
   it('does not use the manager host URL parameter as the inspected page geo source', async () => {
@@ -1937,8 +1913,7 @@ describe('getMepPopup', () => {
     const masSection = [...popup.querySelectorAll('.mep-section')].find(
       (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
     );
-    expect(masSection.textContent).to.include('Geo Source');
-    expect(summaryValues(popup, 'M@S')['Geo Source']).to.equal('Not recorded');
+    expect(masSection).to.not.exist;
   });
 
   it('does not use the manager host metadata as the inspected page geo source', async () => {
@@ -1960,8 +1935,7 @@ describe('getMepPopup', () => {
       let masSection = [...popupOn.querySelectorAll('.mep-section')].find(
         (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
       );
-      expect(masSection.textContent).to.not.include('Metadata');
-      expect(summaryValues(popupOn, 'M@S')['Geo Source']).to.equal('Not recorded');
+      expect(masSection).to.not.exist;
 
       meta.setAttribute('content', 'off');
       const popupOff = await renderPopup({
@@ -1974,8 +1948,7 @@ describe('getMepPopup', () => {
       masSection = [...popupOff.querySelectorAll('.mep-section')].find(
         (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
       );
-      expect(masSection.textContent).to.not.include('Metadata (off)');
-      expect(summaryValues(popupOff, 'M@S')['Geo Source']).to.equal('Not recorded');
+      expect(masSection).to.not.exist;
     } finally {
       meta.remove();
     }
@@ -1999,12 +1972,7 @@ describe('getMepPopup', () => {
       const masSection = [...popup.querySelectorAll('.mep-section')].find(
         (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
       );
-      expect(masSection.textContent).to.include('Page Market');
-      expect(summaryValues(popup, 'M@S')).to.include({
-        'Page Market': 'Not recorded',
-        'Market Source': 'Not recorded',
-      });
-      expect(masSection.textContent).to.not.include('mas-commerce-service');
+      expect(masSection).to.not.exist;
     } finally {
       svc.remove();
     }

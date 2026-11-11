@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { render } from '../../../libs/deps/htm-preact.js';
 import { getConfig, setConfig, loadArea, preloadLcpCodeFiles } from '../../../libs/utils/utils.js';
-import { LOCAL_STORAGE_KEYS } from '../../../libs/blocks/mmm-2/utils.js';
+import { LOCAL_STORAGE_KEYS, filterPageActivities } from '../../../libs/blocks/mmm-2/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
 
 const originalFetch = window.fetch;
@@ -493,6 +493,128 @@ describe('mmm-2', () => {
     await delay();
     expect(trigger.getAttribute('aria-expanded')).to.equal('true');
     expect(document.querySelector('.mmm2-page-detail .mep-popup')).to.exist;
+  });
+
+  it('groups matching consent activities first while keeping other manifests selectable', async () => {
+    localStorage.setItem(LOCAL_STORAGE_KEYS.search, JSON.stringify({ manifestConsentType: 'personalized offer' }));
+    const activities = [
+      ...Array.from({ length: 47 }, (_, index) => ({
+        ...getPageData.activities[0],
+        url: `https://www.adobe.com/unmatched-${index}.json`,
+        pathname: `/unmatched-${index}.json`,
+        manifestConsentType: index < 16 ? null : 'promo or no offer changes',
+      })),
+      ...[1, 2].map((id) => ({
+        ...getPageData.activities[0],
+        url: `https://www.adobe.com/matching-${id}.json`,
+        pathname: `/matching-${id}.json`,
+        manifestConsentType: 'personalized offer',
+        selectedVariantName: 'all',
+      })),
+    ];
+    const routes = {
+      '/get-pages': jsonResponse({
+        ...getPagesData,
+        result: [{ ...getPagesData.result[0], numOfActivities: 2 }],
+      }),
+      '/get-page': jsonResponse({ ...getPageData, activities }),
+    };
+    setRoutedFetch(routes);
+    const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+    await module.default(document.querySelector('.mmm-2'));
+    await waitFor(() => document.querySelector('.mmm2-page-trigger'));
+    expect(document.querySelector('.mmm2-page-subtext').textContent).to.equal('2 Manifest(s) found');
+    document.querySelector('.mmm2-page-trigger').click();
+    await waitFor(() => document.querySelector('.mep-popup'));
+    const matchingGroup = document.querySelector('[data-filter-match="true"]');
+    const otherGroup = document.querySelector('[data-filter-match="false"]');
+    expect(matchingGroup.querySelector('h6').textContent).to.equal('Matching filters (2)');
+    expect(otherGroup.querySelector('h6').textContent).to.equal('Other manifests (47)');
+    expect([...matchingGroup.querySelectorAll('.mep-edit-manifest')].map((link) => link.textContent))
+      .to.deep.equal(['matching-1.json', 'matching-2.json']);
+    expect(otherGroup.querySelectorAll('.mep-edit-manifest')).to.have.length(47);
+    expect(otherGroup.querySelector('.mep-manifest-index').textContent).to.equal('3.');
+    expect(document.querySelectorAll('.mep-edit-manifest')).to.have.length(49);
+    const params = new URL(dataRequests().find(({ args }) => args[0].includes('/get-page?')).args[0])
+      .searchParams;
+    expect(params.has('manifestConsentType')).to.be.false;
+    expect(params.get('manifestSrc')).to.equal('pzn, promo, target, ajo, placeholders');
+    const preview = document.querySelector('.mep-popup a.con-button');
+    expect(preview.href).to.not.include(getPageData.activities[2].pathname);
+    expect(preview.href).to.include('matching-1.json');
+    const otherSelect = otherGroup.querySelector('select');
+    otherSelect.value = 'all';
+    otherSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(new URL(preview.href).searchParams.get('mep')).to.include('/unmatched-0.json--all');
+    document.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+    const summary = document.querySelector('.mep-summary-body');
+    const values = [...summary.querySelector('.mep-section-data').children];
+    expect(values[0].textContent).to.equal('Manifests Found');
+    expect(values[1].textContent).to.equal('2');
+    expect(summary.textContent).to.include('personalized offer');
+    expect(summary.textContent).to.not.include('Not recorded');
+    expect(summary.textContent).to.not.include('promo or no offer changes');
+
+    routes['/get-pages'] = jsonResponse({
+      ...getPagesData,
+      result: [{ ...getPagesData.result[0], numOfActivities: 49 }],
+    });
+    const select = document.querySelector('#mmm2-filter-manifestconsenttype');
+    select.value = '';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => document.querySelector('.mmm2-page-subtext')?.textContent === '49 Manifest(s) found');
+    document.querySelector('.mmm2-page-trigger').click();
+    await waitFor(() => document.querySelectorAll('.mep-edit-manifest').length === 49);
+    expect(document.querySelector('[data-filter-match="true"] h6').textContent)
+      .to.equal('Matching filters (49)');
+    expect(document.querySelector('[data-filter-match="false"]')).to.not.exist;
+    const detailCalls = dataRequests().filter(({ args }) => args[0].includes('/get-page?'));
+    expect(detailCalls).to.have.length(2);
+  });
+
+  it('applies country/search terms as OR within each filter and AND between filters', () => {
+    const activities = [
+      { url: '/match-a.json', manifestCountryRestriction: 'US, CA', targetActivityName: 'Spring Sale' },
+      { url: '/match-b.json', manifestCountryRestriction: 'KR', variantNames: ['control', 'spring'] },
+      { url: '/match-c.json', manifestCountryRestriction: 'GB', variantNames: 'spring' },
+      { url: '/other.json', manifestCountryRestriction: 'US' },
+      { url: '/missing.json' },
+    ];
+    const data = { page: getPageData.page, activities };
+    const filtered = filterPageActivities(data, {
+      manifestCountryRestriction: 'ca, kr',
+      filter: 'SPRING, unmatched',
+    });
+    expect(filtered.activities).to.deep.equal(activities.slice(0, 2));
+    expect(data.activities).to.have.length(5);
+    const pageMatches = filterPageActivities(data, { filter: data.page.url });
+    expect(pageMatches.activities).to.deep.equal(activities);
+    expect(filterPageActivities(data, {}).activities).to.deep.equal(activities);
+    expect(filterPageActivities(data, { filter: 'does-not-exist' }).activities).to.deep.equal([]);
+  });
+
+  it('keeps unmatched details available when country and text filters match no activities', async () => {
+    const filterText = 'spring & summer\n/offer?variant=all';
+    const manifestCountryRestriction = 'US, CA';
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.search,
+      JSON.stringify({ filterText, manifestCountryRestriction }),
+    );
+    setRoutedFetch({
+      '/get-pages': jsonResponse(getPagesData),
+      '/get-page': jsonResponse(getPageData),
+    });
+    const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+    await module.default(document.querySelector('.mmm-2'));
+    await waitFor(() => document.querySelector('.mmm2-page-trigger'));
+    document.querySelector('.mmm2-page-trigger').click();
+    await waitFor(() => document.querySelector('.mep-popup'));
+    const detail = dataRequests().find(({ args }) => args[0].includes('/get-page?'));
+    const params = new URL(detail.args[0]).searchParams;
+    expect([...params.keys()]).to.deep.equal(['id', 'lastSeen', 'manifestSrc']);
+    expect(document.querySelectorAll('[data-filter-match="true"] .mep-edit-manifest')).to.have.length(0);
+    expect(document.querySelectorAll('[data-filter-match="false"] .mep-edit-manifest'))
+      .to.have.length(getPageData.activities.length);
   });
 
   it('never paints an empty detail card when swapping the skeleton or reopening cached content', async () => {

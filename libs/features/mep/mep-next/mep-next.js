@@ -594,13 +594,13 @@ export function getMasSummary() {
   ];
 }
 
-function getManifestListDomAndParameter(mepConfig) {
+function getManifestListDomAndParameter(mepConfig, indexOffset = 0) {
   const { activities, page } = mepConfig;
   const { pageId = 0 } = page;
   const manifestList = [];
   const manifestParameter = [];
   activities?.forEach((manifest, mIdx) => {
-    const entry = buildManifestEntry(manifest, mIdx, pageId, manifestParameter);
+    const entry = buildManifestEntry(manifest, mIdx + indexOffset, pageId, manifestParameter);
     const { editUrl, targetActivityName, analyticsTitle, selectedVariantName } = entry;
     const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
     entry.options.forEach((option) => {
@@ -712,7 +712,7 @@ function setTargetOnText(target, page) {
 }
 // getMepPopup serves MMM and MMM-2 — the in-page preview
 // popup it used to render is replaced by mep-overlay/mep-overlay.js.
-export async function getMepPopup(mepConfig) {
+export async function getMepPopup(mepConfig, { otherActivities } = {}) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
 
@@ -768,10 +768,27 @@ export async function getMepPopup(mepConfig) {
 
   function BuildOptionsManifestList() {
     const { manifestList } = getManifestListDomAndParameter(mepConfig);
-    const manifestTag = createTag('div', { class: 'mep-manifest-list' }, '<h6>Manifests</h6>');
+    const grouped = otherActivities !== undefined;
+    const manifestTag = createTag('div', {
+      class: 'mep-manifest-list',
+      ...(grouped && { 'data-filter-match': 'true' }),
+    }, createTextTag('h6', null, grouped ? `Matching filters (${manifestList.length})` : 'Manifests'));
     if (manifestList.length) manifestTag.append(...manifestList);
     else manifestTag.append(createTextTag('div', { class: 'mep-section' }, '(0 manifests found.)'));
     mepPopupBody[0].append(manifestTag);
+    if (otherActivities?.length) {
+      const { manifestList: otherList } = getManifestListDomAndParameter(
+        { ...mepConfig, activities: otherActivities },
+        manifestList.length,
+      );
+      mepPopupBody[0].append(createTag('div', {
+        class: 'mep-manifest-list',
+        'data-filter-match': 'false',
+      }, [
+        createTextTag('h6', null, `Other manifests (${otherList.length})`),
+        ...otherList,
+      ]));
+    }
   }
   BuildOptionsManifestList();
 
@@ -893,71 +910,28 @@ export async function getMepPopup(mepConfig) {
   }
   buildOptionsFooter();
 
-  const notRecorded = 'Not recorded';
   mepPopupBody[1].append(createTextTag(
     'p',
     null,
-    'Summary uses recorded page data. Live visitor consent and runtime details are not recorded by MMM.',
+    'Only recorded page data is shown. Visitor consent and live page diagnostics are not stored by MMM.',
   ));
 
-  // Build Summary : Page
-  function buildSummaryPage() {
-    const rows = [
-      ['Manifests Found', mepConfig.activities?.length ?? notRecorded],
-      ['Foundation', notRecorded],
-      ['Theme', notRecorded],
-      ['Load Target Faster (v2)', page.target === 'off' ? 'n/a' : notRecorded],
-      ['Manifest Sources', ''],
-      ['Target Integration', setTargetOnText(page.target, page) || notRecorded, true],
-      ['Personalization Metadata', page.personalization || notRecorded, true],
-      ['Promo Metadata', notRecorded, true],
-      ['MEP Param', notRecorded, true],
-      ['Locale', page.locale?.toLowerCase() || notRecorded],
-    ];
-    mepPopupBody[1].append(createSummarySection('Page', rows));
-  }
-  buildSummaryPage();
-
-  function buildSummaryConsent() {
-    const consentTypes = [...new Set(mepConfig.activities?.map(
-      (activity) => activity.consentType || activity.manifestConsentType || notRecorded,
-    ))];
-    mepPopupBody[1].append(createSummarySection('Consent', [
-      ['Level 2 | Performance', notRecorded],
-      ['Level 4 | Advertising', notRecorded],
-      ['Manifest Consent Types', consentTypes.join(', ') || notRecorded],
-    ]));
-  }
-  buildSummaryConsent();
-
-  // Build Summary : Lingo
-  function buildSummaryLingo() {
-    mepPopupBody[1].append(createSummarySection('Lingo', [
-      ['Mep Lingo Updates', notRecorded],
-      ['Lang First | Lingo', notRecorded],
-      ['Geo Folder', page.geo === '' ? 'Us (None)' : (page.geo || notRecorded)],
-      ['Country Cookie', notRecorded],
-      ['User Country', notRecorded],
-      ['Geo + User', notRecorded],
-    ]));
-  }
-  buildSummaryLingo();
-
-  function buildSummaryMas() {
-    mepPopupBody[1].append(createSummarySection('M@S', [
-      ['Mas Geo Detection', notRecorded],
-      ['Geo Source', notRecorded],
-      ['Page Market', notRecorded],
-      ['Market Source', notRecorded],
-      ['Surfaces Detected', notRecorded],
-      ['Collections', notRecorded, true],
-      ['Sub-collections', notRecorded, true],
-      ['Cards', notRecorded, true],
-      ['Inline Fields', notRecorded, true],
-      ['Standalone Offers', notRecorded, true],
-    ]));
-  }
-  buildSummaryMas();
+  const consentTypes = [...new Set(mepConfig.activities?.map(
+    (activity) => activity.consentType || activity.manifestConsentType,
+  ).filter(Boolean))];
+  [
+    ['Page', [
+      ['Manifests Found', mepConfig.activities?.length],
+      ['Target Integration', setTargetOnText(page.target, page)],
+      ['Personalization Metadata', page.personalization],
+      ['Locale', page.locale?.toLowerCase()],
+    ]],
+    ['Consent', [['Manifest Consent Types', consentTypes.join(', ')]]],
+    ['Lingo', [['Geo Folder', page.geo === '' ? 'Us (None)' : page.geo]]],
+  ].forEach(([title, rows]) => {
+    const recorded = rows.filter(([, value]) => value != null && value !== '');
+    if (recorded.length) mepPopupBody[1].append(createSummarySection(title, recorded));
+  });
 
   // Inject Overlay
   function compileOverlay() {

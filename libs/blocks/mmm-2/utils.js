@@ -79,6 +79,30 @@ export function toFilterParam(rawText) {
   return rawText.replace(/,/g, '').replace(/\n/g, ',\n');
 }
 
+export function filterPageActivities(pageData, filters) {
+  const { manifestConsentType = '', manifestCountryRestriction = '', filter = '' } = filters;
+  const terms = (value) => value.toLowerCase().split(',').map((term) => term.trim()).filter(Boolean);
+  const countries = terms(manifestCountryRestriction);
+  const search = terms(filter);
+  const includes = (value, term) => String(value ?? '').toLowerCase().includes(term);
+  return {
+    ...pageData,
+    // The detail API applies lastSeen/source, but ignores these list filters.
+    activities: pageData.activities?.filter((activity) => (
+      (!manifestConsentType
+        || (activity.consentType ?? activity.manifestConsentType) === manifestConsentType)
+      && (!countries.length || countries.some((term) => includes(
+        activity.countryRestriction ?? activity.manifestCountryRestriction,
+        term,
+      )))
+      && (!search.length || search.some((term) => [
+        pageData.page.url, activity.url, activity.pathname,
+        activity.variantNames, activity.targetActivityName,
+      ].some((value) => includes(value, term))))
+    )),
+  };
+}
+
 export function getDate(inputDate) {
   const date = inputDate || new Date();
   const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };

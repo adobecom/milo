@@ -1,6 +1,7 @@
 import { html, useState, useRef, useEffect, useLayoutEffect } from '../../../deps/htm-preact.js';
 import { fetchData, DATA_TYPE } from '../../../features/personalization/personalization.js';
 import { getMepPopup, API_URLS } from '../../../features/mep/mep-next/mep-next.js';
+import { filterPageActivities } from '../utils.js';
 
 const MANIFEST_SKELETON_WIDTHS = ['60%', '45%', '52%'];
 
@@ -31,22 +32,30 @@ function ManifestCardSkeleton() {
  * (existing getMepPopup DOM-building utility, reused as-is) the first time it's
  * expanded, then caches it for subsequent toggles.
  */
-function PageListItem({ page, lastSeenManifest, manifestSrc }) {
+function PageListItem({ page, manifestFilters }) {
   const [expanded, setExpanded] = useState(false);
   const [popupEl, setPopupEl] = useState(null);
   const [loading, setLoading] = useState(false);
   const contentRef = useRef(null);
 
   useEffect(() => {
-    if (!expanded || popupEl || loading) return;
+    if (!expanded || popupEl) return undefined;
+    let cancelled = false;
     setLoading(true);
+    const { lastSeen, manifestSrc } = manifestFilters;
+    const params = new URLSearchParams({ id: page.pageId, lastSeen, manifestSrc });
     fetchData(
-      `${API_URLS.pageDetails}?id=${page.pageId}&lastSeen=${lastSeenManifest}&manifestSrc=${manifestSrc}`,
+      `${API_URLS.pageDetails}?${params}`,
       DATA_TYPE.JSON,
     ).then(async (pageData) => {
-      if (!pageData) return;
-      setPopupEl(await getMepPopup(pageData));
-    }).finally(() => setLoading(false));
+      if (!pageData || cancelled) return;
+      const matchingData = filterPageActivities(pageData, manifestFilters);
+      const matching = new Set(matchingData.activities);
+      const otherActivities = pageData.activities?.filter((activity) => !matching.has(activity));
+      const popup = await getMepPopup(matchingData, { otherActivities });
+      if (!cancelled) setPopupEl(popup);
+    }).finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded]);
 
