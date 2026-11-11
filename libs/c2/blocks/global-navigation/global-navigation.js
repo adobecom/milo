@@ -29,7 +29,10 @@ const DEFAULT_C2_GNAV_HEIGHT = 80;
 let federalGetGnavHeight = null;
 
 export function getGnavHeight() {
-  return federalGetGnavHeight ? federalGetGnavHeight() : DEFAULT_C2_GNAV_HEIGHT;
+  if (federalGetGnavHeight) return federalGetGnavHeight();
+  const cssHeight = parseFloat(getComputedStyle(document.documentElement)
+    .getPropertyValue('--global-height-nav'));
+  return Number.isNaN(cssHeight) ? DEFAULT_C2_GNAV_HEIGHT : cssHeight;
 }
 
 // Resolve hrefs only; decorateLinksAsync would also run decorateSVG and turn
