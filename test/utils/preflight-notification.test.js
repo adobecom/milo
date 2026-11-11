@@ -161,7 +161,8 @@ describe('preview pop-up', function previewPopupSuite() {
     localStorage.removeItem(SNOOZE_KEY);
   });
 
-  it('shows a focused alert dialog with issue levels in order and closes on Escape from anywhere', async () => {
+  it('shows a focused dialog with issue levels in order, without scrolling, and closes on its own Escape', async () => {
+    const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
     await showNotification();
 
     const dialog = document.querySelector('.milo-preflight-overlay.preflight-popup [role="dialog"]');
@@ -169,6 +170,8 @@ describe('preview pop-up', function previewPopupSuite() {
     expect(document.getElementById(dialog.getAttribute('aria-labelledby')).textContent)
       .to.equal('Preflight found issues on this page');
     expect(document.activeElement.textContent).to.equal('Review issues');
+    expect(focusSpy.calledWith({ preventScroll: true })).to.be.true;
+    focusSpy.restore();
     const levels = [...dialog.querySelectorAll('.notification-group strong')]
       .map((label) => label.textContent);
     const order = ['Blocker:', 'Critical:', 'Major:', 'Normal:'];
@@ -180,8 +183,11 @@ describe('preview pop-up', function previewPopupSuite() {
 
     expect(isPageSnoozed()).to.be.false;
     dialog.querySelector('.notification-snooze input').checked = true;
-    // Focus is not on the dialog here: Escape works from anywhere on the page.
+    // Escape meant for another overlay (Sidekick palette, a modal) leaves the pop-up open.
     document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(document.querySelector('.milo-preflight-overlay')).to.exist;
+    expect(isPageSnoozed()).to.be.false;
+    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
     expect(isPageSnoozed()).to.be.true;
   });

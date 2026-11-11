@@ -155,12 +155,10 @@ describe('Preflight content checks', () => {
       expect(fetched.some((url) => url.includes('/fragments/broken.plain.html'))).to.be.false;
     });
 
-    it('flags raw placeholder text left on the page, but not inside scripts', async () => {
+    it('ignores braces on the rendered page that the author never wrote, like widget templates', async () => {
       const result = await checkUnresolvedPlaceholders(area('raw-placeholders'));
-      expect(result.status).to.equal('fail');
-      expect(result.details.items.map(({ key }) => key))
-        .to.deep.equal(['raw-attr', 'raw-text', 'raw-link']);
-      expect(result.details.items[0].where).to.equal('rendered page');
+      expect(result.status).to.equal('pass');
+      expect(result.details.items).to.deep.equal([]);
     });
 
     it('is undecided, never passing, when a source cannot be loaded', async () => {

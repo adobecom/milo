@@ -54,16 +54,9 @@ export function snoozePage(path = window.location.pathname, now = Date.now()) {
   }
 }
 
-// On the document so Escape works wherever focus is; ignored once the pop-up is gone.
-function onEscape(e) {
-  // eslint-disable-next-line no-use-before-define
-  if (e.key === 'Escape' && document.querySelector('.milo-preflight-overlay')) dismissNotification();
-}
-
 function dismissNotification() {
   if (document.querySelector('.milo-preflight-overlay .notification-snooze input')?.checked) snoozePage();
   document.querySelector('.milo-preflight-overlay')?.remove();
-  document.removeEventListener('keydown', onEscape);
   wasDismissed = true;
   if (!linkCheckListener) return;
   window.removeEventListener('preflightLinksComplete', linkCheckListener);
@@ -207,11 +200,16 @@ async function createPreflightNotification(results) {
     'aria-labelledby': title.id,
     'aria-describedby': message.id,
   }, content);
-  document.addEventListener('keydown', onEscape);
+  // On the pop-up only: Escape that closes the Sidekick palette or a modal must not dismiss it.
+  notification.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') dismissNotification();
+  });
   // Don't pull focus away from something the author is already using.
   const isFocusFree = !document.activeElement || document.activeElement === document.body;
   document.body.append(createTag('div', { class: 'milo-preflight-overlay preflight-popup' }, notification));
-  if (isFocusFree) reviewBtn.focus();
+  // preventScroll: the stylesheet may not have applied yet, so the card can still sit at the
+  // end of <body> and focusing it would scroll the page to the footer.
+  if (isFocusFree) reviewBtn.focus({ preventScroll: true });
   await addIssueGroups(issues, results?.runChecks ?? {});
 }
 

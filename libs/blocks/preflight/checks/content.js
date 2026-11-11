@@ -6,8 +6,6 @@ import { SEVERITY, STATUS } from './constants.js';
 
 // Same pattern placeholders.js uses to decorate the page.
 const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-const RENDERED_PAGE = 'rendered page';
-const SKIPPED_TAGS = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE'];
 
 const CHECKS = {
   fragments: { checkId: 'unpublished-fragments', title: 'Unpublished fragments' },
@@ -82,23 +80,6 @@ export async function checkUnpublishedFragments(area) {
 const extractKeys = (text) => [...text.matchAll(PLACEHOLDER_REGEX)]
   .map((match) => match[1] || match[2]).filter(Boolean);
 
-function findRawKeys(area) {
-  const roots = [...area.querySelectorAll('main, header, footer')];
-  return (roots.length ? roots : [area]).flatMap((root) => {
-    const keys = [];
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_ALL);
-    for (let node = walker.currentNode; node; node = walker.nextNode()) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const isSkipped = SKIPPED_TAGS.includes(node.parentElement?.nodeName);
-        if (!isSkipped) keys.push(...extractKeys(node.nodeValue));
-      } else {
-        [...(node.attributes ?? [])].forEach(({ value }) => keys.push(...extractKeys(value)));
-      }
-    }
-    return keys;
-  });
-}
-
 const sourceUrl = (url) => `${url.origin}${url.pathname.endsWith('/') ? `${url.pathname}index` : url.pathname}.plain.html`;
 
 async function fetchSourceKeys({ path, url }) {
@@ -125,11 +106,10 @@ export async function checkUnresolvedPlaceholders(area) {
   const authored = sources.flatMap(({ path, keys }) => keys
     .filter((key) => !key.endsWith('-geo-ip'))
     .map((key) => ({ key, where: path })));
-  const raw = findRawKeys(area).map((key) => ({ key, where: RENDERED_PAGE }));
-  const unique = [...new Map([...authored, ...raw]
-    .map((item) => [`${item.key} ${item.where}`, item])).values()];
-  const missing = await Promise.all(unique.map(({ key, where }) => (
-    where === RENDERED_PAGE || isMissing(key))));
+  // Only authored keys: Milo replaces every {{…}} it decorates, so braces left on the rendered
+  // page come from third-party or late-injected markup, not from a missing placeholder.
+  const unique = [...new Map(authored.map((item) => [`${item.key} ${item.where}`, item])).values()];
+  const missing = await Promise.all(unique.map(({ key }) => isMissing(key)));
   const items = unique.filter((_, i) => missing[i]);
   const unloaded = sources.filter(({ failed }) => failed).length;
   const details = { items };
@@ -139,7 +119,7 @@ export async function checkUnresolvedPlaceholders(area) {
   const config = getConfig();
   const hasSheet = Object.keys(window.mph ?? {}).length
     || Object.keys(config.placeholders ?? {}).length;
-  if (items.length && !hasSheet && items.every(({ where }) => where !== RENDERED_PAGE)) {
+  if (items.length && !hasSheet) {
     return result('placeholders', STATUS.LIMBO, "Couldn't load the placeholder sheet, so placeholders could not be checked. Try running Preflight again.", details);
   }
   if (items.length) {
