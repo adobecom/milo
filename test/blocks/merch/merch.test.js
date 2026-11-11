@@ -2997,6 +2997,14 @@ describe('Merch Block', () => {
       expect(getMerchCardTemplateBundles('/products/firefly.html')).to.deep.equal(['cc']);
     });
 
+    it('matches the creativecloud landing page itself, not only the pages under it', () => {
+      expect(getMerchCardTemplateBundles('/creativecloud.html')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/creativecloud')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/de/creativecloud.html', '/de')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/creativecloud/business.html')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/creativecloud-plans.html')).to.not.deep.equal(['cc']);
+    });
+
     it('prefers the longest matching rule', () => {
       expect(getMerchCardTemplateBundles('/products/catalog.html')).to.deep.equal(['catalog']);
       expect(getMerchCardTemplateBundles('/jp/products/catalog', '/jp')).to.deep.equal(['catalog']);
