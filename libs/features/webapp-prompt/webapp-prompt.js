@@ -156,7 +156,10 @@ export class AppPrompt {
     this.parent.prepend(this.template);
     this.elements.closeIcon.focus();
 
-    this.cleanupFn = this.initRedirect(this.options['pause-on-hover'] === 'on');
+    const skipAutoDismiss = new URLSearchParams(window.location.search).get('skipPepAutoDismiss');
+    this.cleanupFn = skipAutoDismiss
+      ? () => {}
+      : this.initRedirect(this.options['pause-on-hover'] === 'on');
   };
 
   doesEntitlementMatch = async () => {

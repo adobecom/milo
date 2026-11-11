@@ -13,14 +13,15 @@ const tar = require('tar');
 const BRANCH = 'update-s2a-styles';
 const TITLE = '[AUTOMATED-PR] Update S2A style tokens';
 const TARGET_FILE = './libs/c2/styles/styles.css';
+const TOKENS_FILE = './libs/c2/styles/s2a-tokens.css';
 const DEPS_DIR = './libs/c2/styles/deps';
 
 // Upstream source for the deps package. The base URL is expected to expose a
 // flat list of `.tgz` files; the package name has no consistent naming pattern,
 // so it is pinned here and bumped manually when a new release ships.
 const DEPS_RELEASE_BASE_URL = 'https://github.com/adobecom/consonant/raw/main/releases';
-const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.17.tgz';
-const DEPS_PACKAGE_SHA256 = 'fc1f98e52b723fd2d7c7060826c66a1c0bd3afc4b730478ae6d9609f542bf4a4';
+const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.21.tgz';
+const DEPS_PACKAGE_SHA256 = '105edbd0dceaf702af5987255e231a701bc678190d9b5fda475d54fba46b408d';
 // Path inside the extracted package that holds the CSS sources we want to
 // mirror into DEPS_DIR.
 const DEPS_PACKAGE_CSS_SUBPATH = path.join('css', 'dev');
@@ -45,6 +46,9 @@ const EXCLUDED_VAR_PATTERNS = [
   /* waiting for some clarity */
   '--s2a-color-button-*',
   '--s2a-color-iconbutton-*',
+  /* Deprecated */
+  '--s2a-spacing-124',
+  '--s2a-viewport-vertical-padding-*',
 ];
 
 // S2A Build Logic
@@ -155,8 +159,21 @@ async function collectDepsBuckets(cssFiles) {
   return buckets;
 }
 
+// True when `value` references, directly or through other aliases in varsMap,
+// any var in `targets`.
+function referencesAny(value, varsMap, targets, seen = new Set()) {
+  return [...value.matchAll(/var\(\s*(--s2a-[\w-]+)/g)].some(([, ref]) => {
+    if (targets.has(ref)) return true;
+    if (seen.has(ref) || !varsMap[ref]) return false;
+    seen.add(ref);
+    return referencesAny(varsMap[ref].value, varsMap, targets, seen);
+  });
+}
+
 // Turn raw buckets into the per-target var maps, applying two dedup layers:
-//   - dark mode against base :root (existing behavior)
+//   - dark mode against base :root, keeping identical aliases that resolve
+//     through a dark override (var() resolves where declared, so .dark must
+//     redeclare them or it inherits the light-resolved value)
 //   - each breakpoint against the cascade of base + all smaller breakpoints,
 //     so a breakpoint only carries values that actually override the cascade
 function buildLayerMaps(buckets) {
@@ -164,8 +181,12 @@ function buildLayerMaps(buckets) {
   const baseLight = baseBucket.light ?? [];
   const baseDark = baseBucket.dark ?? [];
   const baseLightMap = declsToMap(baseLight);
+  const darkOverrides = new Set(
+    baseDark.filter((d) => baseLightMap[d.prop]?.value !== d.value).map((d) => d.prop),
+  );
   const baseDarkMap = declsToMap(
-    baseDark.filter((d) => baseLightMap[d.prop]?.value !== d.value),
+    baseDark.filter((d) => darkOverrides.has(d.prop)
+      || referencesAny(d.value, baseLightMap, darkOverrides)),
   );
 
   const sortedBps = [...buckets.keys()]
@@ -347,10 +368,14 @@ function applyLayersToTarget(ast, layers, changeLog) {
   }
 }
 
+function hasChangeLogEntries({ updated, added, deleted }) {
+  return updated.length + added.length + deleted.length > 0;
+}
+
 function formatSummary(changeLog) {
   const { updated, added, deleted } = changeLog;
-  const hasChanges = updated.length + added.length + deleted.length > 0;
-  const summary = `Synchronized --s2a- variables in \`${TARGET_FILE}\`.
+  const hasChanges = hasChangeLogEntries(changeLog);
+  const summary = `Synchronized --s2a- variables in \`${TARGET_FILE}\` and \`${TOKENS_FILE}\`.
 
 **Updated variables:**
 ${updated.length ? updated.join('\n') : 'none'}
@@ -438,9 +463,17 @@ async function readTargetAst(targetFile) {
   }
 }
 
+async function patchTargetFile(file, layers) {
+  const targetFile = path.resolve(file);
+  const ast = await readTargetAst(targetFile);
+  const changeLog = { updated: [], added: [], deleted: [] };
+  applyLayersToTarget(ast, layers, changeLog);
+  await fsp.writeFile(targetFile, `${ast.toResult().css.trim()}\n`, 'utf8');
+  return changeLog;
+}
+
 async function buildS2AStyles({ skipDownload = false } = {}) {
   const depsDir = path.resolve(DEPS_DIR);
-  const targetFile = path.resolve(TARGET_FILE);
 
   if (skipDownload) {
     console.log('Skipping upstream download; using existing deps/.');
@@ -452,16 +485,13 @@ async function buildS2AStyles({ skipDownload = false } = {}) {
   const buckets = await collectDepsBuckets(cssFiles);
   const layers = buildLayerMaps(buckets);
 
-  const ast = await readTargetAst(targetFile);
-  const changeLog = { updated: [], added: [], deleted: [] };
-  applyLayersToTarget(ast, layers, changeLog);
-
-  await fsp.writeFile(targetFile, `${ast.toResult().css.trim()}\n`, 'utf8');
+  const changeLog = await patchTargetFile(TARGET_FILE, layers);
+  const tokensChangeLog = await patchTargetFile(TOKENS_FILE, layers);
 
   const { hasChanges, summary } = formatSummary(changeLog);
   console.log(summary);
 
-  return { hasChanges, summary };
+  return { hasChanges: hasChanges || hasChangeLogEntries(tokensChangeLog), summary };
 }
 
 // Workflow PR Logic
@@ -473,14 +503,14 @@ const execSyncSafe = (command) => {
   }
 };
 
-const createAndPushBranch = ({ filePath, branch }) => {
+const createAndPushBranch = ({ filePaths, branch }) => {
   execSync('git config --global user.name "GitHub Action"');
   execSync('git config --global user.email "action@github.com"');
   execSync('git fetch');
   execSync('git checkout stage');
   execSyncSafe(`git branch -D ${branch}`);
   execSync(`git checkout -b ${branch}`);
-  execSync(`git add ${filePath}`);
+  execSync(`git add ${filePaths.join(' ')}`);
   execSync('git commit -m "Update S2A style tokens"');
   execSync(`git push --force origin ${branch}`);
 };
@@ -507,7 +537,7 @@ const main = async ({ github, context }) => {
     }
 
     createAndPushBranch({
-      filePath: TARGET_FILE,
+      filePaths: [TARGET_FILE, TOKENS_FILE],
       branch: BRANCH,
     });
 
@@ -537,8 +567,9 @@ const main = async ({ github, context }) => {
         'overmyheadandbody',
         'robert-bogos',
         'zagi25',
+        'meganthecoder',
       ],
-      assignees: ['SilviuLCF'],
+      assignees: ['SilviuLCF', 'hadobe'],
     });
 
     console.log(`PR created: ${pr.data.html_url}`);

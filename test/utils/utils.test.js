@@ -4,7 +4,16 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../helpers/waitfor.js';
 import { mockFetch, mockRes } from '../helpers/generalHelpers.js';
-import { createTag, customFetch } from '../../libs/utils/utils.js';
+import {
+  createTag,
+  customFetch,
+  setConfig,
+  norm,
+  getMarketConfig,
+  marketsLangForLocale,
+  getValidatedMarket,
+  isSupportedMarket,
+} from '../../libs/utils/utils.js';
 
 const utils = {};
 const config = {
@@ -74,6 +83,170 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('isAupEnabled', () => {
+    let originalUrl;
+    let meta;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.delete('aup-select');
+      window.history.replaceState(null, '', url);
+      meta = document.createElement('meta');
+      meta.name = 'aup-select';
+    });
+
+    afterEach(() => {
+      meta.remove();
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('defaults to disabled and reads metadata insertion, replacement, and removal', () => {
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      document.head.append(meta);
+      expect(utils.isAupEnabled()).to.be.true;
+      const replacement = meta.cloneNode();
+      replacement.content = 'off';
+      meta.replaceWith(replacement);
+      meta = replacement;
+      expect(utils.isAupEnabled()).to.be.false;
+      meta.content = 'on';
+      expect(utils.isAupEnabled()).to.be.true;
+      meta.remove();
+      expect(utils.isAupEnabled()).to.be.false;
+    });
+
+    it('enables AUP for signed-in Universal Nav users', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled()).to.be.false;
+        expect(utils.isAupEnabled(true)).to.be.true;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
+    });
+
+    const disabled = ['off', 'false', 'OFF', 'False', '', '  '];
+    const flagged = ['on', 'ON'];
+
+    ['on', 'ucv3_in_iframe', 'enabled', 'true', 'ON', 'off', 'false', 'OFF', ''].forEach((value) => {
+      const enabled = !disabled.includes(value);
+      const flag = flagged.includes(value);
+
+      it(`reads metadata "${value}"`, () => {
+        meta.content = value;
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
+      });
+
+      it(`reads query "${value}" over metadata`, () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('aup-select', value);
+        window.history.replaceState(null, '', url);
+        meta.content = value === 'enabled' ? 'on' : 'enabled';
+        document.head.append(meta);
+        expect(utils.isAupEnabled()).to.equal(enabled);
+        expect(utils.isAupSelectOn()).to.equal(flag);
+        url.searchParams.delete('aup-select');
+        window.history.replaceState(null, '', url);
+        expect(utils.isAupEnabled()).to.be.true;
+        expect(utils.isAupSelectOn()).to.equal(meta.content === 'on');
+      });
+    });
+
+    it('marks target ready after the Target campaign is applied', async () => {
+      const { marketingtech, _satellite: satellite } = window;
+      const savedHead = document.head.innerHTML;
+      const savedBody = document.body.innerHTML;
+      const { mep } = utils.getConfig();
+      // Launch is already loaded, so only the Target response is pending (personalization V1).
+      window.marketingtech = { adobe: { launch: {} } };
+      // eslint-disable-next-line no-underscore-dangle
+      window._satellite = { track: sinon.stub() };
+      const targetResponse = {
+        propositions: [{
+          id: 'aup',
+          items: [{
+            data: {
+              content: {
+                manifestPath: '/target/aup-select.json',
+                manifestContent: {
+                  info: { data: [] },
+                  experiences: { data: [{ action: 'updatemetadata', selector: 'aup-select', all: 'on' }] },
+                },
+              },
+            },
+          }],
+        }],
+      };
+      try {
+        document.head.innerHTML = '<meta name="target" content="on">';
+        document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+        utils.resetTargetReady();
+        const ready = utils.whenTargetReady().then(() => utils.getMetadata('aup-select'));
+        // Fire the Target response only after martech has attached its listener.
+        let fireTimer;
+        const addListener = window.addEventListener.bind(window);
+        const addStub = sinon.stub(window, 'addEventListener').callsFake((type, ...args) => {
+          addListener(type, ...args);
+          if (type !== 'alloy_sendEvent') return;
+          clearTimeout(fireTimer);
+          fireTimer = setTimeout(() => {
+            addStub.restore();
+            window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { result: targetResponse } }));
+          }, 0);
+        });
+        const area = utils.loadArea();
+        expect(await ready).to.equal('on');
+        await area;
+      } finally {
+        window.addEventListener.restore?.();
+        utils.resetTargetReady();
+        utils.getConfig().mep = mep;
+        document.body.innerHTML = savedBody;
+        window.marketingtech = marketingtech;
+        // eslint-disable-next-line no-underscore-dangle
+        window._satellite = satellite;
+        document.head.innerHTML = savedHead;
+      }
+    });
+
+    it('whenTargetReady stops waiting after the target timeout', async () => {
+      const savedUrl = window.location.href;
+      window.history.replaceState(null, '', `${window.location.pathname}?target-timeout=2000`);
+      const clock = sinon.useFakeTimers();
+      try {
+        utils.resetTargetReady();
+        const onReady = sinon.spy();
+        const ready = utils.whenTargetReady().then(onReady);
+        await clock.tickAsync(1999);
+        expect(onReady.called).to.be.false;
+        await clock.tickAsync(1);
+        await ready;
+        expect(onReady.calledOnce).to.be.true;
+      } finally {
+        clock.restore();
+        window.history.replaceState(null, '', savedUrl);
+        utils.resetTargetReady();
+      }
+    });
+
+    it('does not report a value for signed-in Universal Nav users without aup-select', () => {
+      const { adobeIMS } = window;
+      try {
+        window.adobeIMS = { isSignedInUser: () => true };
+        expect(utils.isAupEnabled(true)).to.be.true;
+        expect(utils.getAupSelectValue()).to.be.null;
+        expect(utils.isAupSelectOn()).to.be.false;
+      } finally {
+        window.adobeIMS = adobeIMS;
+      }
+    });
+  });
+
   describe('prerendered support', () => {
     it('loads milo minimally when document is prerendered', async () => {
       document.head.innerHTML = head;
@@ -97,6 +270,390 @@ describe('Utils', () => {
       expect(marqueeDecoratePreload).to.exist;
       expect(scriptPreload).to.exist;
       expect(stylePreload).to.exist;
+    });
+
+    it('preloads merch-card-collection-autoblock M@S deps', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = '<main><div><div class="merch-card-collection-autoblock"></div></div></main>';
+
+      await utils.loadArea();
+      ['merch-card.js', 'merch-quantity-select.js', 'merch-card-collection.js'].forEach((dep) => {
+        const link = document.head.querySelector(`link[rel="preload"][href$="/${dep}"]`);
+        expect(link, dep).to.exist;
+        expect(link.as).to.equal('script');
+        expect(link.crossOrigin).to.equal('anonymous');
+      });
+    });
+  });
+
+  describe('preloadLcpCodeFiles', () => {
+    const preloadSel = 'link[rel="preload"], link[rel="modulepreload"]';
+
+    beforeEach(() => {
+      document.head.innerHTML = '';
+      document.body.innerHTML = '';
+      utils.setConfig(config);
+    });
+
+    it('does nothing when the disable-mep-perf-optimization kill switch is on', () => {
+      document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('preloads authored first-section blocks (js + warmed css, not applied)', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
+      expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
+    });
+
+    it('preloads router-marquee imports alongside the block without evaluating it', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      utils.preloadLcpCodeFiles();
+
+      [
+        '/libs/c2/blocks/router-marquee/router-marquee.js',
+        '/libs/martech/attributes.js',
+        '/libs/utils/action.js',
+      ].forEach((href) => {
+        const links = document.head.querySelectorAll(`link[href="${window.location.origin}${href}"]`);
+        expect(links.length).to.equal(1);
+        expect(links[0].rel).to.equal('preload');
+        expect(links[0].as).to.equal('script');
+        expect(links[0].crossOrigin).to.equal('anonymous');
+      });
+      expect(document.querySelector('.router-marquee').dataset.blockStatus).to.be.undefined;
+    });
+
+    it('does not preload router-marquee imports without a visible first-section router-marquee', () => {
+      document.head.innerHTML = '<meta name="foundation" content="c2">';
+      document.body.innerHTML = '<main><div><div class="router-marquee hide-block"></div></div><div><div class="router-marquee"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href$="/libs/martech/attributes.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href$="/libs/utils/action.js"]')).to.not.exist;
+    });
+
+    it('preloads non-commerce autoblocks but excludes merch/mas', () => {
+      document.body.innerHTML = `<main><div>
+        <a href="https://www.youtube.com/watch?v=abc">watch</a>
+        <a href="https://www.adobe.com/tools/ost?ci=1">buy</a>
+        <a href="https://mas.adobe.com/studio.html#content-type=mas-compare-chart">chart</a>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/youtube/youtube.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('excludes authored merch/mas blocks, not just link-derived autoblocks', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="merch"></div>
+        <div class="mas-compare-chart-autoblock"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/merch/merch.js"]')).to.not.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/mas-compare-chart-autoblock/"]')).to.not.exist;
+    });
+
+    it('does not preload breadcrumbs, which is not a known block (gnav loads it, not blocks/)', () => {
+      document.body.innerHTML = `<main><div>
+        <div class="marquee"></div>
+        <div class="breadcrumbs"></div>
+      </div></main>`;
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/breadcrumbs/"]')).to.not.exist;
+    });
+
+    it('only warms the video autoblock for media_*.mp4 anchors', () => {
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/clip.mp4">watch</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.not.exist;
+
+      document.head.innerHTML = '';
+      document.body.innerHTML = '<main><div><a href="https://www.adobe.com/assets/media_9.mp4">media_9.mp4</a></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('warms the video autoblock from a media_*.mp4 image alt', () => {
+      document.body.innerHTML = '<main><div><img alt="media_9.mp4"></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/video/video.js"]')).to.exist;
+    });
+
+    it('preloads placeholders.js when the first section uses {{ }} tokens', () => {
+      document.body.innerHTML = '<main><div>{{buy-now}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/placeholders.js"]')).to.exist;
+      // as=fetch preloads only get reused by the later customFetch() call if crossorigin is
+      // set - otherwise the browser treats them as a mismatched resource and double-fetches.
+      const placeholderPreload = document.head.querySelector('link[rel="preload"][as="fetch"][href*="/placeholders.json"]');
+      expect(placeholderPreload).to.exist;
+      expect(placeholderPreload.getAttribute('crossorigin')).to.equal('anonymous');
+    });
+
+    it('does not prewarm an authored div whose class is not a known block (defensive allowlist)', () => {
+      // aftermerch is not in C1_BLOCKS/C2_BLOCKS; the allowlist skips it rather than 404ing.
+      document.body.innerHTML = '<main><div><div class="aftermerch"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/aftermerch/aftermerch.js"]')).to.not.exist;
+    });
+
+    it('prewarms an external-lib block that is not in C1/C2_BLOCKS', () => {
+      utils.setConfig({ ...config, externalLibs: [{ base: 'https://x.example/libs', blocks: ['ext-hero'] }] });
+      document.body.innerHTML = '<main><div><div class="ext-hero"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/blocks/ext-hero/ext-hero.js"]')).to.exist;
+      utils.setConfig(config);
+    });
+
+    describe('eager MAS initService', () => {
+      let merch;
+      let originalUrl;
+
+      before(async () => {
+        merch = await import('../../libs/blocks/merch/merch.js');
+      });
+
+      beforeEach(() => {
+        originalUrl = window.location.href;
+        merch.initService.promise = undefined;
+      });
+
+      afterEach(() => {
+        window.history.replaceState(null, '', originalUrl);
+      });
+
+      it('starts the commerce service for an authored merch block in the first section', async () => {
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      it('starts the commerce service for a MAS studio link in the first section', async () => {
+        document.body.innerHTML = '<main><div><a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc">card</a></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      ['preview-token', ''].forEach((token) => {
+        [
+          ['authored merch block', '<div class="merch-card"></div>'],
+          ['MAS studio link', '<a href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=abc">card</a>'],
+        ].forEach(([name, content]) => {
+          it(`does not eagerly initialize a ${name} with ${token ? 'a populated' : 'an empty'} Target preview token`, async () => {
+            const url = new URL(originalUrl);
+            url.searchParams.set('at_preview_token', token);
+            window.history.replaceState(null, '', url);
+            document.body.innerHTML = `<main><div><div class="marquee"></div>${content}<span class="icon icon-play"></span></div></main>`;
+            utils.preloadLcpCodeFiles();
+            await new Promise((r) => { setTimeout(r, 50); });
+            expect(merch.initService.promise).to.be.undefined;
+            expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+            expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+          });
+        });
+      });
+
+      it('does not start it without first-section commerce content', async () => {
+        document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+
+      it('does not start it when the OST tool is in the first section', async () => {
+        document.body.innerHTML = '<main><div><div class="ost"></div><div class="merch"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+
+      it('checks for the OST tool per rushed section', async () => {
+        document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div><div><div class="ost"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await waitFor(() => merch.initService.promise, 2000);
+        expect(merch.initService.promise).to.exist;
+      });
+
+      it('does not start it when the kill switch is on', async () => {
+        document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
+        document.body.innerHTML = '<main><div><div class="merch-card"></div></div></main>';
+        utils.preloadLcpCodeFiles();
+        await new Promise((r) => { setTimeout(r, 50); });
+        expect(merch.initService.promise).to.be.undefined;
+      });
+    });
+
+    it('warms icons.js and icons.css when the first section contains icons', () => {
+      document.body.innerHTML = '<main><div><span class="icon icon-play"></span></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/features/icons/icons.js"]')).to.exist;
+      expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/features/icons/icons.css"]')).to.exist;
+    });
+
+    const geoIpUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    it('warms the geo-ip sheet when lingo is active and the LCP has a -geo-ip token', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-pos' });
+      document.head.innerHTML = '<meta name="langfirst" content="on">';
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'geo-ip sheet warmed').to.exist;
+    });
+
+    it('does not warm the geo-ip sheet when lingo is inactive', () => {
+      utils.setConfig({ ...config, contentRoot: '/geoip-neg' });
+      document.body.innerHTML = '<main><div>{{buy-now-geo-ip}}</div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(utils.getGeoIpWarmSheet(geoIpUrl()), 'no geo-ip warm without lingo').to.be.undefined;
+    });
+
+    it('does nothing when there is no first section', () => {
+      document.body.innerHTML = '<header></header>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
+    });
+
+    it('also warms blocks in the rushed sections when parallel-sections is set', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="tabs"></div></div><div><div class="aside"></div></div></main>';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.not.exist;
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="2">';
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.exist;
+      expect(document.head.querySelector('link[href*="/libs/blocks/aside/aside.js"]')).to.not.exist;
+    });
+
+    it('caps parallel-sections and ignores invalid values', () => {
+      const names = ['marquee', 'aside', 'tabs', 'accordion', 'quote', 'table'];
+      document.body.innerHTML = `<main>${names.map((name) => `<div><div class="${name}"></div></div>`).join('')}</main>`;
+      const preloaded = (name) => !!document.head.querySelector(`link[href*="/libs/blocks/${name}/${name}.js"]`);
+
+      document.head.innerHTML = '<meta name="parallel-sections" content="99">';
+      utils.preloadLcpCodeFiles();
+      expect(preloaded('quote')).to.be.true;
+      expect(preloaded('table')).to.be.false;
+
+      ['-1', '2abc'].forEach((value) => {
+        document.head.innerHTML = `<meta name="parallel-sections" content="${value}">`;
+        utils.preloadLcpCodeFiles();
+        expect(preloaded('marquee'), value).to.be.true;
+        expect(preloaded('aside'), value).to.be.false;
+      });
+    });
+  });
+
+  describe('parallel-sections in loadArea', () => {
+    let releases;
+    const holdBlock = (id) => {
+      window.parallelSectionsTest.gates[id] = new Promise((resolve) => { releases[id] = resolve; });
+    };
+    const isHidden = (selector) => !!document.querySelector(selector).closest('.section').dataset.status;
+    const psBlock = (id) => `<div><div class="ps-block" data-id="${id}"></div></div>`;
+    const setup = (count, sections, prefix = '') => {
+      document.head.innerHTML = `${head}<meta name="parallel-sections" content="${count}">`;
+      document.body.innerHTML = `${prefix}<main>${sections.join('')}</main>`;
+    };
+    const started = () => window.parallelSectionsTest.started;
+    const settle = () => new Promise((r) => { setTimeout(r, 50); });
+
+    beforeEach(() => {
+      releases = {};
+      window.parallelSectionsTest = { started: [], gates: {} };
+      utils.setConfig({ ...config, externalLibs: [{ base: '/test/utils/mocks/parallel-sections', blocks: ['ps-block'] }] });
+    });
+
+    afterEach(() => {
+      delete window.parallelSectionsTest;
+      utils.setConfig(config);
+    });
+
+    it('loads rushed sections in parallel and reveals them in order', async () => {
+      setup(2, [psBlock('a'), psBlock('b')]);
+      holdBlock('a');
+      holdBlock('b');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      releases.b();
+      await waitFor(() => document.querySelector('[data-id="b"]').dataset.blockStatus === 'loaded', 2000, 20);
+      await new Promise((r) => { setTimeout(r); });
+      expect(isHidden('[data-id="b"]')).to.be.true;
+      releases.a();
+      await loaded;
+      expect(isHidden('[data-id="a"]')).to.be.false;
+      expect(isHidden('[data-id="b"]')).to.be.false;
+    });
+
+    ['0', '-1', '2abc'].forEach((value) => {
+      it(`loads sections one at a time for parallel-sections "${value}"`, async () => {
+        setup(value, [psBlock('a'), psBlock('b')]);
+        holdBlock('a');
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 1, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a']);
+        releases.a();
+        await loaded;
+        expect(started()).to.deep.equal(['a', 'b']);
+      });
+    });
+
+    it('keeps loading later sections when a rushed section fails', async () => {
+      setup(3, [psBlock('a'), '<div><div class="ps-fail"></div></div>', psBlock('c')]);
+      utils.getConfig().mep = {
+        blocks: new Proxy({}, {
+          get: (target, name) => {
+            if (name === 'ps-fail') throw new Error('boom');
+            return undefined;
+          },
+        }),
+      };
+      const ogLana = window.lana;
+      const lanaLog = sinon.stub();
+      window.lana = { log: lanaLog };
+      const unhandled = sinon.spy();
+      window.addEventListener('unhandledrejection', unhandled);
+      try {
+        await utils.loadArea();
+        await settle();
+        expect(isHidden('[data-id="c"]')).to.be.false;
+        expect(isHidden('.ps-fail')).to.be.true;
+        expect(lanaLog.calledWithMatch(/Failed to load parallel section 1/)).to.be.true;
+        expect(unhandled.called).to.be.false;
+      } finally {
+        window.lana = ogLana;
+        window.removeEventListener('unhandledrejection', unhandled);
+      }
+    });
+
+    it('runs loadPostLCP once, after the last rushed section', async () => {
+      setup(2, [psBlock('a'), psBlock('b')], '<header></header>');
+      holdBlock('b');
+      performance.clearMarks('Gnav-Start');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      await settle();
+      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(0);
+      releases.b();
+      await loaded;
+      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(1);
     });
   });
 
@@ -485,6 +1042,23 @@ describe('Utils', () => {
       await utils.decorateLinksAsync(container);
       const link = container.querySelector('a');
       expect(link.href).to.equal(`${window.location.href}#test`);
+    });
+
+    it('Awaits image-video-link decoration so the play-button modal link exists before blocks load', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p class="image-link-play"><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | :play:" class="image-link"/></picture></p>';
+      await utils.decorateLinksAsync(container);
+      // The modal image link (poster + play button) must be fully built synchronously
+      // after the await resolves - no setTimeout - otherwise a block that loads next
+      // (e.g. how-to) races against the fire-and-forget import and drops the video.
+      expect(container.querySelector('.modal-img-link')).to.exist;
+    });
+
+    it('Does not reject decorateLinksAsync when image-video-link fails (malformed icon)', async () => {
+      const container = document.createElement('div');
+      container.innerHTML = '<p><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | badicon"/></picture></p>';
+      await utils.decorateLinksAsync(container);
+      expect(container.querySelector('a.image-link')).to.exist;
     });
 
     it('Sets up milo.deferredPromise', async () => {
@@ -880,6 +1454,21 @@ describe('Utils', () => {
       expect(document.getElementById('not-block')).to.exist;
     });
 
+    it('supports an additional sticky surface offset without changing the default', async () => {
+      const originalScrollTo = window.scrollTo;
+      const scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      try {
+        await utils.scrollToHashedElement('#not-block');
+        await utils.scrollToHashedElement('#not-block', document, 'instant', 100);
+        expect(scrollSpy.secondCall.args[0].top).to.equal(scrollSpy.firstCall.args[0].top - 100);
+        expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
+        expect(scrollSpy.secondCall.args[0].behavior).to.equal('instant');
+      } finally {
+        window.scrollTo = originalScrollTo;
+      }
+    });
+
     it('should not scroll if no hash is present', () => {
       window.location.hash = '';
       let scrollToCalled = false;
@@ -899,6 +1488,45 @@ describe('Utils', () => {
       utils.scrollToHashedElement('#tools-f%C3%BCr-das-verhalten');
       expect(scrollToCalled).to.be.true;
       expect(document.getElementById('tools-für-das-verhalten')).to.exist;
+    });
+  });
+
+  describe('loadArea hash scrolling', () => {
+    let originalUrl;
+    let originalScrollTo;
+    let area;
+    let articleHeading;
+    let scrollSpy;
+
+    beforeEach(() => {
+      originalUrl = window.location.href;
+      originalScrollTo = window.scrollTo;
+      scrollSpy = sinon.spy();
+      window.scrollTo = scrollSpy;
+      area = createTag('div');
+      area.innerHTML = '<div><h2 id="fragment-section">Fragment section</h2></div>';
+      articleHeading = createTag('h2', { id: 'article-section' }, 'Article section');
+      document.body.append(articleHeading, area);
+    });
+
+    afterEach(() => {
+      area.remove();
+      articleHeading.remove();
+      window.scrollTo = originalScrollTo;
+      window.history.replaceState(null, '', originalUrl);
+    });
+
+    it('does not revisit an article hash when an unrelated fragment finishes loading', async () => {
+      window.history.replaceState(null, '', '#article-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.called).to.be.false;
+    });
+
+    it('preserves deep links to headings inside the fragment being loaded', async () => {
+      window.history.replaceState(null, '', '#fragment-section');
+      await utils.loadArea(area);
+      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollSpy.firstCall.args[0].behavior).to.equal('smooth');
     });
   });
 
@@ -971,6 +1599,7 @@ describe('Utils', () => {
       await utils.decorateFooterPromo();
       const a = document.querySelector('main > div:last-of-type a');
       expect(a.href).includes('/fragments/footer-promos/ccx-video-links');
+      expect(a.closest('[data-footer-promo]')).to.exist;
     });
 
     it('loads from taxonomy in order on sheet', async () => {
@@ -1061,6 +1690,66 @@ describe('Utils', () => {
       await utils.loadArea();
       console.log(document.querySelector('.feds-localnav'));
       expect(document.querySelector('.feds-localnav')).to.exist;
+    });
+  });
+
+  describe('C2 gnav on a C1 page', () => {
+    const setHead = (meta) => {
+      document.head.innerHTML = head + Object.entries(meta)
+        .map(([name, content]) => `<meta name="${name}" content="${content}">`).join('');
+    };
+    const decorateHeaderWith = async (meta) => {
+      setHead(meta);
+      document.body.innerHTML = '<header></header><main></main>';
+      await utils.loadArea();
+      return document.querySelector('header').classList;
+    };
+
+    after(() => { document.head.innerHTML = head; });
+
+    it('detects the C2-gnav-on-C1 combination from metadata', () => {
+      setHead({ 'gnav-foundation': 'c2' });
+      expect(utils.isC2GnavOnC1Host()).to.be.true;
+      setHead({ 'gnav-foundation': 'c2', foundation: 'c2' });
+      expect(utils.isC2GnavOnC1Host()).to.be.false;
+      setHead({});
+      expect(utils.isC2GnavOnC1Host()).to.be.false;
+    });
+
+    it('tags the header when it is decorated, before the nav block loads', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', localnav: 'true' });
+      expect(classes.contains('c2-gnav-c1-host')).to.be.true;
+    });
+
+    it('does not tag C1 headers', async () => {
+      const classes = await decorateHeaderWith({ localnav: 'true' });
+      expect(classes.contains('global-navigation')).to.be.true;
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('does not tag a header authored as another block', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', header: 'custom-header' });
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('does not tag a header whose block is not global-navigation', async () => {
+      const classes = await decorateHeaderWith({ 'gnav-foundation': 'c2', header: 'custom-header global-navigation' });
+      expect(classes.contains('global-navigation')).to.be.true;
+      expect(classes.contains('c2-gnav-c1-host')).to.be.false;
+    });
+
+    it('re-syncs the tag if gnav metadata changes before the nav loads (post-LCP MEP)', async () => {
+      setHead({ 'gnav-foundation': 'c2' });
+      document.body.innerHTML = '<header></header><main><div><p>Content</p></div></main>';
+      const header = document.querySelector('header');
+      const observer = new MutationObserver(() => {
+        if (!header.classList.contains('c2-gnav-c1-host')) return;
+        observer.disconnect();
+        document.head.querySelector('meta[name="gnav-foundation"]').content = 'c1';
+      });
+      observer.observe(header, { attributeFilter: ['class'] });
+      await utils.loadArea();
+      expect(header.classList.contains('c2-gnav-c1-host')).to.be.false;
     });
   });
 
@@ -1510,7 +2199,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when some icons are not excluded
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -1536,7 +2225,7 @@ describe('Utils', () => {
       await utils.loadArea();
 
       // Should load CSS when no exclusion config
-      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      const cssLink = document.head.querySelector('link[href*="icons.css"][rel="stylesheet"]');
       expect(cssLink).to.not.be.null;
       expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
     });
@@ -1911,6 +2600,65 @@ describe('Utils', () => {
       );
       await allLoaded;
       await new Promise((resolve) => { setTimeout(resolve, 50); });
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
+      a.remove();
+    });
+
+    it('logs a missing (404) query index below error severity', async () => {
+      const logStub = sinon.stub();
+      window.lana = { log: logStub };
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) return mockRes({ payload: null, ok: false, status: 404 });
+        if (url.includes('lingo-site-mapping')) return mockRes({ payload: lingoSiteMapping });
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const qiCalls = logStub.getCalls().filter((c) => `${c.args[0]}`.toLowerCase().includes('query index'));
+      expect(qiCalls.length, 'a 404 query index should still be logged').to.be.greaterThan(0);
+      qiCalls.forEach((c) => {
+        expect(c.args[1].severity, '404 must not log at error severity').to.equal('info');
+      });
+      // functional behaviour unchanged: still falls back to the base prefix
+      expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
+      a.remove();
+    });
+
+    it('logs an unexpected (5xx) query index status at error severity', async () => {
+      const logStub = sinon.stub();
+      window.lana = { log: logStub };
+      fetchStub.callsFake((url) => {
+        if (url.includes('query-index')) return mockRes({ payload: null, ok: false, status: 500 });
+        if (url.includes('lingo-site-mapping')) return mockRes({ payload: lingoSiteMapping });
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync('https://www.adobe.com/creativecloud/product', 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const qiCalls = logStub.getCalls().filter((c) => `${c.args[0]}`.toLowerCase().includes('query index'));
+      expect(qiCalls.length, 'a 5xx query index should be logged').to.be.greaterThan(0);
+      qiCalls.forEach((c) => {
+        expect(c.args[1].severity, 'unexpected status must stay at error severity').to.equal('error');
+      });
       expect(new URL(a.href).pathname).to.equal('/de/creativecloud/product');
       a.remove();
     });
@@ -2824,6 +3572,167 @@ describe('Utils', () => {
     });
   });
 
+  describe('Lingo query index gating on non-Lingo locales', () => {
+    let originalFetch;
+    let originalLana;
+    let fetchStub;
+    let lingoUtils;
+    let testAnchors;
+
+    const QUERY_INDEX_PATH = 'assets/lingo/query-index';
+    const CLEAR_COUNTRY = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+
+    // Monotonic, so two sub-millisecond beforeEach calls can't share a cached module.
+    let moduleId = 0;
+    const nextModuleId = () => { moduleId += 1; return `lingo-gating-${moduleId}`; };
+
+    const addAnchor = (href) => {
+      const a = document.createElement('a');
+      a.href = href;
+      document.body.appendChild(a);
+      testAnchors.push(a);
+      return a;
+    };
+
+    // No locale declares `base`, so no locale is part of a base/regional pair. This is the
+    // shape of every legacy locale-based site, e.g. da-bacom-blog.
+    const nonLingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        uk: { ietf: 'en-GB', tk: 'hah7vzn.css' },
+        jp: { ietf: 'ja-JP', tk: 'dvg6awq' },
+      },
+      prodDomains: ['business.adobe.com'],
+      pathname: '/uk/blog/',
+      contentRoot: '/blog',
+      codeRoot: '/libs',
+    };
+
+    // `sg` declares `base: ''`, so `''` is a real Lingo base locale with one region.
+    const lingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        sg: { ietf: 'en-SG', tk: 'hah7vzn.css', base: '' },
+      },
+      prodDomains: ['www.adobe.com'],
+      pathname: '/',
+      uniqueSiteId: 'cc',
+      contentRoot: '/cc-shared',
+      codeRoot: '/libs',
+    };
+
+    const fetchedUrls = (needle) => fetchStub.getCalls()
+      .map((call) => `${call.args[0]}`)
+      .filter((url) => url.includes(needle));
+
+    beforeEach(async () => {
+      originalFetch = window.fetch;
+      fetchStub = sinon.stub();
+      fetchStub.callsFake((url) => {
+        const href = `${url}`;
+        if (href.includes('lingo-site-mapping')) {
+          return mockRes({
+            payload: {
+              'site-locales': { data: [{ uniqueSiteId: 'cc', baseSite: '/', regionalSites: '/sg' }] },
+              'site-query-index-map': {
+                data: [{
+                  uniqueSiteId: 'cc',
+                  queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/lingo/query-index.json',
+                }],
+              },
+            },
+          });
+        }
+        if (href.includes(QUERY_INDEX_PATH) && href.includes('/sg/')) {
+          return mockRes({ payload: { data: [{ path: '/sg/products/photoshop' }] } });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+      window.fetch = fetchStub;
+      originalLana = window.lana;
+      testAnchors = [];
+      // `akamai` feeds the lowest-priority slot in computeDetectedMarketCountry, so a
+      // leaked `country` cookie from an earlier test would win and break region lookup.
+      document.cookie = CLEAR_COUNTRY;
+      sessionStorage.setItem('akamai', 'sg');
+      lingoUtils = await import(`../../libs/utils/utils.js?t=${nextModuleId()}`);
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+    });
+
+    afterEach(() => {
+      window.fetch = originalFetch;
+      if (originalLana) window.lana = originalLana; else delete window.lana;
+      testAnchors.forEach((a) => a.remove());
+      document.querySelector('meta[name="langfirst"]')?.remove();
+      document.cookie = CLEAR_COUNTRY;
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('does not attach regions to a locale with no regional children', () => {
+      const locale = lingoUtils.getLocale(nonLingoConfig.locales, '/uk/blog/');
+      expect(locale.prefix).to.equal('/uk');
+      expect(locale.base).to.be.undefined;
+      expect('regions' in locale).to.be.false;
+    });
+
+    it('attaches regions to a base locale that does have regional children', () => {
+      const locale = lingoUtils.getLocale(lingoConfig.locales, '/');
+      expect(locale.prefix).to.equal('');
+      expect(Object.keys(locale.regions)).to.deep.equal(['sg']);
+    });
+
+    it('does not fetch a lingo query index on a regional locale when no locale declares a base', async () => {
+      lingoUtils.setConfig(nonLingoConfig);
+      expect(lingoUtils.lingoActive()).to.be.true;
+      const href = 'https://business.adobe.com/blog/basics/marketing-personalization';
+      const a = addAnchor(href);
+
+      const localized = await lingoUtils.localizeLinkAsync(href, 'business.adobe.com', false, a);
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH)).to.deep.equal([]);
+      expect(fetchedUrls('lingo-site-mapping')).to.deep.equal([]);
+      // Ordinary locale prefixing must still happen.
+      expect(localized).to.equal('/uk/blog/basics/marketing-personalization');
+    });
+
+    it('does not fetch a lingo query index on the root locale of a non-Lingo site', async () => {
+      // The reported case: business.adobe.com/blog, where matchedKey is '' - the same key
+      // that would carry `regions` on a real Lingo site.
+      lingoUtils.setConfig({ ...nonLingoConfig, pathname: '/blog/' });
+      expect(lingoUtils.lingoActive()).to.be.true;
+      const href = 'https://business.adobe.com/blog/basics/marketing-personalization';
+      const a = addAnchor(href);
+
+      const localized = await lingoUtils.localizeLinkAsync(href, 'business.adobe.com', false, a);
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH)).to.deep.equal([]);
+      expect(fetchedUrls('lingo-site-mapping')).to.deep.equal([]);
+      expect(localized).to.equal('/blog/basics/marketing-personalization');
+    });
+
+    it('still fetches the lingo query index and localizes on a real Lingo base locale', async () => {
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      lingoUtils.setConfig(lingoConfig);
+      const href = 'https://www.adobe.com/products/photoshop';
+      const a = addAnchor(href);
+
+      a.href = await lingoUtils.localizeLinkAsync(href, 'www.adobe.com', false, a);
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      expect(fetchedUrls(QUERY_INDEX_PATH).length).to.be.greaterThan(0);
+      expect(new URL(a.href).pathname).to.equal('/sg/products/photoshop');
+    });
+  });
+
   describe('computeDetectedMarketCountry', () => {
     it('prefers country query param over country cookie', () => {
       expect(utils.computeDetectedMarketCountry('?country=lu', 'be', null)).to.equal('lu');
@@ -3368,5 +4277,555 @@ describe('Utils', () => {
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.equal('be');
     });
+  });
+
+  describe('geo-ip sheet prewarm', () => {
+    let warmCount = 0;
+    let savedFetch;
+
+    const geoUrl = () => {
+      const { locale } = utils.getConfig();
+      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
+    };
+
+    // Unique contentRoot per test → unique sheet URL → sidesteps the module-level
+    // warm dedupe cache, so getGeoIpWarmSheet reflects only this test's warm.
+    const setup = ({ lingo = true, geoLcp = false } = {}) => {
+      warmCount += 1;
+      utils.setConfig({ ...config, contentRoot: `/geo-warm-${warmCount}` });
+      document.head.innerHTML = head;
+      if (lingo) document.head.appendChild(createTag('meta', { name: 'langfirst', content: 'on' }));
+      if (geoLcp) document.head.appendChild(createTag('meta', { name: 'geo-ip-lcp', content: 'on' }));
+    };
+
+    const fragmentArea = (html) => {
+      const area = createTag('div');
+      area.innerHTML = html;
+      return area;
+    };
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      window.fetch = mockFetch({ payload: { data: [] } });
+    });
+
+    afterEach(() => {
+      window.fetch = savedFetch;
+    });
+
+    it('warms when a -geo-ip token is in the first section', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('warms on the geo-ip-lcp opt-in even with no token in the section', async () => {
+      setup({ geoLcp: true });
+      const url = geoUrl();
+      document.body.innerHTML = '<main><div>no token here</div></main>';
+      await utils.loadArea();
+      expect(utils.getGeoIpWarmSheet(url)).to.not.be.undefined;
+    });
+
+    it('does not warm when there is no token and no opt-in', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>plain copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm when lingo is inactive even if a token is present', async () => {
+      setup({ lingo: false });
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div>{{promo-geo-ip}}</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+
+    it('does not warm on a bare -geo-ip substring with no token closer', async () => {
+      setup();
+      const url = geoUrl();
+      await utils.loadArea(fragmentArea('<div class="foo-geo-ip-bar">copy</div>'));
+      expect(utils.getGeoIpWarmSheet(url)).to.be.undefined;
+    });
+  });
+
+  describe('shouldBlockFreeTrialLinks', () => {
+    let originalPrefix;
+
+    const createLink = (text, attrs = {}) => {
+      const link = document.createElement('a');
+      link.href = 'https://www.adobe.com/kr';
+      link.textContent = text;
+      Object.entries(attrs).forEach(([key, val]) => link.setAttribute(key, val));
+      document.body.append(link);
+      return link;
+    };
+
+    beforeEach(() => {
+      const { locale } = utils.getConfig();
+      originalPrefix = locale.prefix;
+      locale.prefix = '/kr';
+    });
+
+    afterEach(() => {
+      utils.getConfig().locale.prefix = originalPrefix;
+    });
+
+    it('blocks free trial CTAs on the KR locale', () => {
+      ['무료 체험판', '무료 체험하기', 'Free Trial', 'free-trial', '{{try-for-free}}', '무료로 시작하기', 'Start for free'].forEach((copy) => {
+        const link = createLink(copy);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+        expect(link.isConnected).to.be.false;
+      });
+    });
+
+    it('removes the wrapping STRONG or EM when the link is its only child', () => {
+      ['STRONG', 'EM'].forEach((tagName) => {
+        const wrapper = document.createElement(tagName);
+        document.body.append(wrapper);
+        const link = createLink('무료 체험판');
+        wrapper.append(link);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+        expect(wrapper.isConnected).to.be.false;
+      });
+    });
+
+    it('does not block the free app download CTA', () => {
+      ['무료 앱 다운로드', '무료  앱\n다운로드', '지금 무료 앱 다운로드'].forEach((copy) => {
+        const link = createLink(copy);
+        expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+        expect(link.isConnected).to.be.true;
+        link.remove();
+      });
+    });
+
+    it('blocks trial modal links regardless of copy', () => {
+      const link = createLink('무료 앱 다운로드');
+      link.dataset.modalPath = '/kr/cc-shared/fragments/trial-modals/photoshop';
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.true;
+      expect(link.isConnected).to.be.false;
+    });
+
+    it('does not block links allowed by attribute or hash', () => {
+      const withAttribute = createLink('무료 체험판', { 'data-allow-kr-free-trial': 'true' });
+      expect(utils.shouldBlockFreeTrialLinks(withAttribute)).to.be.false;
+      expect(withAttribute.isConnected).to.be.true;
+      withAttribute.remove();
+
+      const withHash = createLink('무료 체험판');
+      withHash.href = 'https://www.adobe.com/kr#_allow-kr-trial';
+      expect(utils.shouldBlockFreeTrialLinks(withHash)).to.be.false;
+      expect(withHash.getAttribute('data-allow-kr-free-trial')).to.equal('true');
+      expect(withHash.href).to.not.include('_allow-kr-trial');
+      withHash.remove();
+    });
+
+    it('does not block when the allow-kr-free-trial metadata is on', () => {
+      const meta = document.createElement('meta');
+      meta.name = 'allow-kr-free-trial';
+      meta.content = 'on';
+      document.head.append(meta);
+      const link = createLink('무료 체험판');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+      link.remove();
+      meta.remove();
+    });
+
+    it('does not block unrelated copy', () => {
+      const link = createLink('지금 구매하기');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+      link.remove();
+    });
+
+    it('does not block outside the KR locale', () => {
+      utils.getConfig().locale.prefix = '';
+      const link = createLink('무료 체험판');
+      expect(utils.shouldBlockFreeTrialLinks(link)).to.be.false;
+      link.remove();
+    });
+  });
+
+  describe('isAcomAssistantEnabled', () => {
+    afterEach(() => document.head.querySelector('meta[name="acom-assistant"]')?.remove());
+
+    it('follows the acom-assistant metadata', () => {
+      expect(utils.isAcomAssistantEnabled()).to.be.false;
+      document.head.append(utils.createTag('meta', { name: 'acom-assistant', content: 'on' }));
+      expect(utils.isAcomAssistantEnabled()).to.be.true;
+    });
+  });
+});
+
+describe('utils.js market — norm()', () => {
+  it('returns undefined for null', () => {
+    expect(norm(null)).to.be.undefined;
+  });
+
+  it('returns undefined for undefined', () => {
+    expect(norm(undefined)).to.be.undefined;
+  });
+
+  it('returns undefined for non-string values', () => {
+    expect(norm(42)).to.be.undefined;
+    expect(norm(true)).to.be.undefined;
+  });
+
+  it('lowercases the input', () => {
+    expect(norm('US')).to.equal('us');
+    expect(norm('De')).to.equal('de');
+  });
+
+  it('maps UK to gb', () => {
+    expect(norm('UK')).to.equal('gb');
+    expect(norm('uk')).to.equal('gb');
+  });
+
+  it('splits on underscore and returns the first part', () => {
+    expect(norm('us_en')).to.equal('us');
+    expect(norm('ch_de')).to.equal('ch');
+  });
+
+  it('returns the full string when there is no underscore', () => {
+    expect(norm('de')).to.equal('de');
+    expect(norm('fr')).to.equal('fr');
+  });
+
+  it('returns empty string for empty string input', () => {
+    expect(norm('')).to.equal('');
+  });
+});
+
+describe('utils.js market — getMarketConfig()', () => {
+  afterEach(() => {
+    sinon.restore();
+    setConfig({});
+  });
+
+  it('fetches and caches marketsConfig when not present', async () => {
+    const mockData = { languages: { data: [{ prefix: '', langName: 'English' }] } };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    const jsonStub = sinon.stub().returns(dataPromise);
+    setConfig({ locale: { prefix: '' } });
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      json: jsonStub,
+    });
+
+    const first = getMarketConfig();
+    await Promise.resolve();
+    const second = getMarketConfig();
+    resolveData(mockData);
+    const [result, concurrentResult] = await Promise.all([first, second]);
+    expect(result).to.not.be.null;
+    expect(result.languages).to.be.an('array');
+    expect(result.languages[0].langName).to.equal('English');
+    expect(concurrentResult).to.deep.equal(result);
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
+    expect(await getMarketConfig()).to.deep.equal(result);
+    expect(fetchStub.calledOnce).to.be.true;
+    expect(jsonStub.calledOnce).to.be.true;
+  });
+
+  it('returns cached config on subsequent calls', async () => {
+    const mockData = { languages: { data: [{ prefix: 'de', langName: 'German' }] } };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    const fetchStub = sinon.stub(window, 'fetch');
+
+    const result = await getMarketConfig();
+    expect(result.languages[0].langName).to.equal('German');
+    expect(fetchStub.called).to.be.false;
+    expect(utils.getConfig().marketsConfig).to.equal(mockData);
+  });
+
+  it('keeps a replacement configuration request separate until it resolves', async () => {
+    const oldData = { data: [{ prefix: 'de' }] };
+    const newData = { data: [{ prefix: 'fr' }] };
+    let resolveData;
+    const dataPromise = new Promise((resolve) => { resolveData = resolve; });
+    let resolveNewData;
+    const newDataPromise = new Promise((resolve) => { resolveNewData = resolve; });
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().resolves({ ok: true, json: () => dataPromise });
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => newDataPromise });
+    setConfig({});
+    const first = getMarketConfig();
+
+    setConfig({});
+    const second = getMarketConfig();
+    resolveData(oldData);
+    expect(await first).to.deep.equal({ languages: oldData.data });
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+
+    const third = getMarketConfig();
+    resolveNewData(newData);
+    const results = await Promise.all([second, third]);
+    expect(results).to.deep.equal([{ languages: newData.data }, { languages: newData.data }]);
+    expect(fetchStub.calledTwice).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.equal(newData);
+  });
+
+  it('logs network failures and retries a shared failed request', async () => {
+    const mockData = { data: [{ prefix: '', langName: 'English' }] };
+    setConfig({ locale: { prefix: '' } });
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.onFirstCall().rejects(new Error('Network error'));
+    fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
+    window.lana = { log: sinon.stub() };
+
+    const results = await Promise.all([getMarketConfig(), getMarketConfig()]);
+    expect(results).to.deep.equal([null, null]);
+    expect(window.lana.log.calledWithExactly('Market Utils Error: Network error')).to.be.true;
+    expect(utils.getConfig().marketsConfig).to.be.undefined;
+    expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+    expect(fetchStub.calledTwice).to.be.true;
+    delete window.lana;
+  });
+
+  [
+    ['non-OK response', { ok: false, status: 500 }, 'Failed to load market config'],
+    ['invalid JSON', { ok: true, json: () => Promise.reject(new Error('Invalid JSON')) }, 'Invalid JSON'],
+  ].forEach(([failure, response, error]) => {
+    it(`logs ${failure} and retries without caching the failure`, async () => {
+      const mockData = { data: [{ prefix: '', langName: 'English' }] };
+      setConfig({});
+      const fetchStub = sinon.stub(window, 'fetch');
+      fetchStub.onFirstCall().resolves(response);
+      fetchStub.onSecondCall().resolves({ ok: true, json: () => Promise.resolve(mockData) });
+      window.lana = { log: sinon.stub() };
+
+      expect(await getMarketConfig()).to.be.null;
+      expect(window.lana.log.calledWithExactly(`Market Utils Error: ${error}`)).to.be.true;
+      expect(utils.getConfig().marketsConfig).to.be.undefined;
+      expect(await getMarketConfig()).to.deep.equal({ languages: mockData.data });
+      expect(fetchStub.calledTwice).to.be.true;
+      delete window.lana;
+    });
+  });
+
+  it('handles marketsConfig with flat data array', async () => {
+    const mockData = { data: [{ prefix: '', langName: 'English' }] };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+
+    const result = await getMarketConfig();
+    expect(result.languages).to.be.an('array');
+    expect(result.languages[0].langName).to.equal('English');
+  });
+});
+
+describe('utils.js market — marketsLangForLocale()', () => {
+  const languages = [
+    { prefix: '', langName: 'English', defaultMarket: 'us' },
+    { prefix: 'de', langName: 'German', defaultMarket: 'de' },
+    { prefix: 'fr', langName: 'French', defaultMarket: 'fr' },
+  ];
+
+  it('returns the matching language by prefix', () => {
+    const result = marketsLangForLocale({ languages }, { prefix: '/de' });
+    expect(result.langName).to.equal('German');
+  });
+
+  it('returns the matching language for empty prefix (root)', () => {
+    const result = marketsLangForLocale({ languages }, { prefix: '' });
+    expect(result.langName).to.equal('English');
+  });
+
+  it('falls back to locale.base when prefix does not match', () => {
+    const result = marketsLangForLocale({ languages }, { prefix: '/xx', base: 'fr' });
+    expect(result.langName).to.equal('French');
+  });
+
+  it('returns the first language when no match and no base', () => {
+    const result = marketsLangForLocale({ languages }, { prefix: '/xx' });
+    expect(result.langName).to.equal('English');
+  });
+
+  it('returns undefined when config has no languages', () => {
+    const result = marketsLangForLocale({}, { prefix: '' });
+    expect(result).to.be.undefined;
+  });
+
+  it('returns undefined when config is null', () => {
+    const result = marketsLangForLocale(null, { prefix: '' });
+    expect(result).to.be.undefined;
+  });
+
+  it('strips leading slash from locale prefix', () => {
+    const result = marketsLangForLocale({ languages }, { prefix: '/fr' });
+    expect(result.langName).to.equal('French');
+  });
+});
+
+describe('utils.js market — getValidatedMarket()', () => {
+  afterEach(() => {
+    sinon.restore();
+    setConfig({});
+    document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    sessionStorage.removeItem('akamai');
+    sessionStorage.removeItem('market');
+  });
+
+  it('returns the country from the URL query parameter', async () => {
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us,gb,de',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    sessionStorage.setItem('akamai', 'de');
+
+    const result = await getValidatedMarket();
+    expect(result).to.be.a('string');
+  });
+
+  it('returns us as fallback when no detection sources are available', async () => {
+    setConfig({ locale: { prefix: '' } });
+    sinon.stub(window, 'fetch').callsFake(() => Promise.reject(new Error('fail')));
+
+    const result = await getValidatedMarket();
+    expect(result).to.equal('us');
+    expect(window.fetch.called).to.be.true;
+  });
+
+  it('returns defaultMarket when config is cached but geo and market hints all fail', async () => {
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    sinon.stub(window, 'fetch').callsFake(() => Promise.reject(new Error('fail')));
+
+    const result = await getValidatedMarket();
+    expect(result).to.equal('us');
+  });
+
+  it('validates against supportedRegions and falls back to defaultMarket', async () => {
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us,gb',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    sessionStorage.setItem('akamai', 'zz');
+
+    const result = await getValidatedMarket();
+    expect(result).to.equal('us');
+  });
+
+  it('returns the detected market when it is in supportedRegions', async () => {
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us,gb,de',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    sessionStorage.setItem('akamai', 'gb');
+
+    const result = await getValidatedMarket();
+    expect(result).to.equal('gb');
+  });
+
+  it('uses cookie value when available', async () => {
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us,gb,de',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    document.cookie = 'country=de';
+
+    const result = await getValidatedMarket();
+    expect(result).to.equal('de');
+  });
+
+  it('returns null for bot user agents so URL-prefix country is used', async () => {
+    const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us,gb,de',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    sessionStorage.setItem('akamai', 'gb');
+    try {
+      const result = await getValidatedMarket();
+      expect(result).to.be.null;
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+    }
+  });
+});
+
+describe('utils.js market — isSupportedMarket()', () => {
+  const marketsConfig = {
+    languages: {
+      data: [
+        { prefix: '', defaultMarket: 'us', supportedRegions: 'us, GB,de' },
+        { prefix: 'fr', defaultMarket: 'fr', supportedRegions: 'fr,be' },
+      ],
+    },
+  };
+
+  afterEach(() => {
+    sinon.restore();
+    setConfig({});
+  });
+
+  it('returns false when no country is given', async () => {
+    setConfig({ marketsConfig, locale: { prefix: '' } });
+    expect(await isSupportedMarket()).to.be.false;
+    expect(await isSupportedMarket('')).to.be.false;
+  });
+
+  it('returns true for a supported country, ignoring case and spaces', async () => {
+    setConfig({ marketsConfig, locale: { prefix: '' } });
+    expect(await isSupportedMarket('gb')).to.be.true;
+    expect(await isSupportedMarket('DE')).to.be.true;
+  });
+
+  it('returns false for a country not supported by the current language', async () => {
+    setConfig({ marketsConfig, locale: { prefix: '' } });
+    expect(await isSupportedMarket('fr')).to.be.false;
+  });
+
+  it('returns false when the market config cannot be loaded', async () => {
+    setConfig({ locale: { prefix: '' } });
+    sinon.stub(window, 'fetch').callsFake(() => Promise.reject(new Error('fail')));
+    expect(await isSupportedMarket('us')).to.be.false;
   });
 });

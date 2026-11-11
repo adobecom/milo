@@ -57,8 +57,8 @@
 
           const dispatchEventStub = stub();
           modal.dispatchEvent = dispatchEventStub;
-          handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"OrderComplete","data":{"actionRequired":false}}' });
-          handleIFrameEvents({ data: '{"app":"ManagePlan","subType":"Close","data":{"actionRequired":false}}' });
+          handleIFrameEvents({ origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"OrderComplete","data":{"actionRequired":false}}' });
+          handleIFrameEvents({ origin: 'https://commerce.adobe.com', data: '{"app":"ManagePlan","subType":"Close","data":{"actionRequired":false}}' });
           expect(dispatchEventStub.calledOnceWith(new Event('closeModal'))).to.be.true;
           expect(reloadPage.calledOnce).to.be.true;
         });

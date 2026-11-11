@@ -71,6 +71,16 @@ describe('Quick Actions', () => {
       expect(chevron.getAttribute('aria-hidden')).to.equal('true');
       expect(chevron.querySelector('svg')).to.exist;
     });
+
+    it('adds a ghost content-aux element right before the tile footer', () => {
+      const tiles = block.querySelectorAll('.quick-actions-tile');
+      tiles.forEach((tile) => {
+        const aux = tile.querySelector(':scope > .content-aux');
+        expect(aux).to.exist;
+        expect(aux.childElementCount).to.equal(0);
+        expect(aux.nextElementSibling.classList.contains('quick-actions-tile-footer')).to.be.true;
+      });
+    });
   });
 
   describe('without a section header', () => {
@@ -118,6 +128,7 @@ describe('Quick Actions', () => {
       const media = firstTile.querySelector('img.quick-actions-media');
       expect(media).to.exist;
       expect(firstTile.querySelector('picture')).to.be.null;
+      expect(firstTile.querySelector('.content-aux')).to.exist;
     });
 
     it('renders no href and no footer for a tile without a label link', () => {
@@ -125,8 +136,22 @@ describe('Quick Actions', () => {
       const noLinkTile = tiles[1];
       expect(noLinkTile.hasAttribute('href')).to.be.false;
       expect(noLinkTile.querySelector('.quick-actions-tile-footer')).to.be.null;
+      expect(noLinkTile.querySelector('.content-aux')).to.be.null;
       // media is still moved into the tile
       expect(noLinkTile.querySelector('picture.quick-actions-media')).to.exist;
+    });
+  });
+
+  describe('labelled tile without media', () => {
+    it('does not add the ghost content-aux element', () => {
+      document.body.innerHTML = `<div class="quick-actions"><div>
+        <div><p><a href="https://www.adobe.com/express/">No media</a></p></div><div></div>
+      </div></div>`;
+      const block = document.querySelector('.quick-actions');
+      init(block);
+      const tile = block.querySelector('.quick-actions-tile');
+      expect(tile.querySelector('.quick-actions-tile-footer')).to.exist;
+      expect(tile.querySelector('.content-aux')).to.be.null;
     });
   });
 

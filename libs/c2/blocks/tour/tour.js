@@ -1,7 +1,41 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import icons from '../../assets/icons.js';
+import { closeModal } from '../modal/modal.js';
 
 const SWIPE_CLOSE_THRESHOLD = 100;
+
+function addScrollCloseSync(el) {
+  if (CSS.supports('timeline-scope', 'none')) return;
+  const modal = el.closest('.dialog-modal');
+  if (!modal) return;
+
+  requestAnimationFrame(() => {
+    const fragment = modal.querySelector('.fragment');
+    const closeBtn = modal.querySelector('.dialog-close');
+    if (!fragment || !closeBtn) return;
+
+    const style = getComputedStyle(el);
+    const sectionGap = parseFloat(style.getPropertyValue('--tour-section-gap'));
+    const initialTop = parseFloat(getComputedStyle(closeBtn).top);
+    if (Number.isNaN(sectionGap) || Number.isNaN(initialTop)) return;
+
+    fragment.addEventListener('scroll', () => {
+      const offset = Math.min(fragment.scrollTop, sectionGap);
+      closeBtn.style.top = `${initialTop - offset}px`;
+    }, { passive: true });
+  });
+}
+
+function addOutsideClickClose(el) {
+  const modal = el.closest('.dialog-modal');
+  if (!modal) return;
+
+  modal.addEventListener('click', (e) => {
+    if (!el.contains(e.target) && !e.target.closest('.dialog-close')) {
+      closeModal(modal);
+    }
+  });
+}
 
 function addCloseAnimation(el) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -12,6 +46,23 @@ function addCloseAnimation(el) {
     if (modal.classList.contains('is-dismissing')) { originalRemove(); return; }
     modal.classList.add('is-closing');
     modal.addEventListener('animationend', originalRemove, { once: true });
+  };
+}
+
+function addCurtainCloseAnimation(modal) {
+  const curtain = modal.nextElementSibling;
+  if (!curtain?.matches('.modal-curtain') || curtain.classList.contains('tour-curtain')) return;
+  curtain.classList.add('tour-curtain');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const originalRemove = curtain.remove.bind(curtain);
+  curtain.remove = () => {
+    curtain.classList.remove('modal-curtain', 'is-open');
+    curtain.classList.add('is-closing');
+    const fallback = setTimeout(originalRemove, 600);
+    curtain.addEventListener('animationend', () => {
+      clearTimeout(fallback);
+      originalRemove();
+    }, { once: true });
   };
 }
 
@@ -103,9 +154,9 @@ export default function init(el) {
     const headerInner = headerRow.querySelector(':scope > div');
     if (headerInner) {
       headerRow.replaceChildren(...headerInner.children);
-      headerRow.querySelector('p')?.classList.add('eyebrow');
+      const eyebrow = headerRow.querySelector('p');
+      eyebrow?.classList.add('eyebrow');
       headerRow.querySelector('h3')?.classList.add('heading-6');
-      headerRow.querySelector('h3')?.setAttribute('tabindex', '0');
     }
   }
 
@@ -130,14 +181,12 @@ export default function init(el) {
   }
 
   multiColumns.forEach((row, index) => {
-    const rowIndex = index + 1;
-    row.classList.add('tour-row', `row-${rowIndex}`);
+    row.classList.add('tour-row', `row-${index + 1}`);
     row.firstElementChild.classList.add('tour-row-body', 'body-sm');
     row.lastElementChild.classList.add('tour-row-image');
-    const rowIndexEl = createTag('div', { class: 'label tour-row-index' }, `( ${rowIndex}/${multiColumns.length} )`);
 
     const wrapper = createTag('div', { class: 'tour-row-content' });
-    wrapper.append(rowIndexEl, ...row.children);
+    wrapper.append(...row.children);
     row.append(wrapper);
 
     const tourRowImage = wrapper.querySelector('.tour-row-image');
@@ -152,4 +201,20 @@ export default function init(el) {
   el.replaceChildren(...[headerRow, ...multiColumns, footerRow].filter(Boolean));
   addGrabHandle(el);
   addCloseAnimation(el);
+  addScrollCloseSync(el);
+  addOutsideClickClose(el);
+  el.closest('.fragment')?.setAttribute('tabindex', '-1'); // prevent Firefox scroll-focus
+  window.addEventListener('milo:modal:loaded', () => {
+    const dialog = el.closest('.dialog-modal');
+    if (!dialog) return;
+    addCurtainCloseAnimation(dialog);
+    const labelIds = [
+      el.querySelector('.tour-header .eyebrow'),
+      el.querySelector('.tour-header h3'),
+    ].filter(Boolean).map((node, index) => {
+      if (!node.id) node.id = `${dialog.id || 'tour'}-label-${index}`;
+      return node.id;
+    });
+    if (labelIds.length) dialog.setAttribute('aria-labelledby', labelIds.join(' '));
+  }, { once: true });
 }

@@ -54,7 +54,7 @@
     }
 
     .pm-promo-chevron {
-      border-radius: var(--s2a-border-radius-xs);
+      border-radius: var(--s2a-border-radius-2xs);
       border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
       background: var(--s2a-color-transparent-white-16);
       align-items: center;

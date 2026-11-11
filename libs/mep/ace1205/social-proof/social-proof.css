@@ -90,7 +90,7 @@
 
 @media (width >= 768px) {
   .social-proof {
-    border-radius: var(--s2a-border-radius-lg);
+    border-radius: var(--s2a-border-radius-xl);
 
     > div {
       flex-direction: row;

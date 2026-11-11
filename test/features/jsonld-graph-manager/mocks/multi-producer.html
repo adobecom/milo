@@ -1,0 +1,26 @@
+<!-- Producer A (boot DOM): Organization with producer-only sameAs -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Adobe",
+  "url": "https://www.adobe.com/",
+  "sameAs": "https://en.wikipedia.org/wiki/Adobe_Inc."
+}
+</script>
+<!-- Producer B (runtime): Organization with conflicting name -->
+<script type="application/ld+json" data-producer="runtime">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Adobe Inc.",
+  "url": "https://www.adobe.com/"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article"
+}
+</script>

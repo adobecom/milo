@@ -1,9 +1,12 @@
 /* Tour Content Styles */
 .tour {
-  max-width: 696px;
   position: relative;
   display: flex;
   flex-direction: column;
+  margin: var(--tour-section-gap) auto;
+  background-color: var(--s2a-color-background-default);
+  border-radius: var(--s2a-border-radius-md);
+  clip-path: inset(0 round var(--s2a-border-radius-md));
 }
 
 .tour-header {
@@ -12,6 +15,9 @@
   /* 5px aligns eyebrow and heading with the close button */
   p {
     padding-block-start: 5px;
+    &:focus-visible {
+      outline: none;
+    }
   }
   h3 {
     padding-block-end: 5px;
@@ -22,7 +28,6 @@
 }
 
 .tour-row-body {
-  padding-block-start: var(--s2a-spacing-md);
   > p {
     padding-block-start: var(--s2a-spacing-md);
     &:first-child {
@@ -39,7 +44,7 @@
   img {
     width: 100%;
     height: 100%;
-    border-radius: var(--s2a-border-radius-sm);
+    border-radius: var(--s2a-border-radius-xs);
     object-fit: cover;
   }
 }
@@ -84,7 +89,6 @@
       width: calc(100% * 5 / 6);
       min-width: 296px;
     }
-    .tour-row-index,
     .tour-row-body {
       padding-inline-start: var(--s2a-spacing-lg);
     }
@@ -98,16 +102,15 @@
     }
     img {
       border-start-start-radius: 0;
-      border-start-end-radius: var(--s2a-border-radius-sm);
+      border-start-end-radius: var(--s2a-border-radius-xs);
       border-end-start-radius: 0;
-      border-end-end-radius: var(--s2a-border-radius-sm);
+      border-end-end-radius: var(--s2a-border-radius-xs);
     }
   }
   &.row-3 {
     .tour-row-content {
       padding-inline: var(--s2a-spacing-xs);
     }
-    .tour-row-index,
     .tour-row-body {
       text-align: center;
       max-width: 394px;
@@ -128,6 +131,10 @@
   width: 100%;
   padding-block: var(--s2a-spacing-lg);
   text-align: center;
+
+  .dark & {
+    background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-transparent-black-96) 100%);
+  }
 }
 
 .tour-grab-handle {
@@ -156,7 +163,7 @@
       height: 3px;
       border-radius: 3px;
       opacity: 0.2;
-      background-color: var(--s2a-color-gray-1000);
+      background-color: var(--s2a-color-background-inverse);
       pointer-events: none;
     }
   }
@@ -165,25 +172,24 @@
 /* Tour Modal Styles */
 .dialog-modal:has(.tour) {
   --tour-drag-y: 0px;
-  max-width: 696px;
-  width: 100dvw;
-  margin-top: 20px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  max-height: 100dvh;
-  height: calc(100dvh - 20px);
+  --tour-section-gap: var(--s2a-spacing-20);
+  --tour-modal-max-width: 696px;
+  width: 100svw;
+  max-width: 100svw;
+  height: 100svh;
+  max-height: 100svh;
+  background-color: transparent;
+  margin: 0;
+  border-radius: 0;
   transform: translateY(var(--tour-drag-y));
   will-change: transform;
+
+  .tour {
+    max-width: var(--tour-modal-max-width);
+  }
+
   & > .fragment {
     max-height: 100%;
-    /* Firefox */
-    scrollbar-width: none;
-    /* IE and old Edge */
-    -ms-overflow-style: none;
-    /* Chrome, Safari, Edge (Chromium), Opera */
-    &::-webkit-scrollbar {
-      display: none;
-    }
   }
 
   &.is-dragging {
@@ -193,19 +199,27 @@
   &.is-dismissing {
     --tour-drag-y: 100%;
   }
-  
+
   .dialog-close {
     width: 48px;
     height: 48px;
     border-radius: 6px;
     background-color: var(--s2a-color-gray-75);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-200);
-    top: var(--s2a-spacing-md);
-    right: var(--s2a-spacing-md);
+    /* If top spacing changes then update in JS as well */
+    top: calc(var(--tour-section-gap) + var(--s2a-spacing-md));
+    right: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
 
-    &:hover {
+    &:hover,
+    &:focus {
       background-color: var(--s2a-color-gray-300);
       border-color: var(--s2a-color-gray-400);
+    }
+
+    &:focus-visible {
+      outline: var(--s2a-border-width-2) solid var(--s2a-color-gray-1000);
+      outline-offset: var(--s2a-border-width-2);
+      box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-gray-25);
     }
 
     &:active {
@@ -216,34 +230,100 @@
         background-color: var(--s2a-color-content-knockout);
       }
     }
-  }
 
-  & + .modal-curtain.is-open {
-    background: var(--s2a-color-transparent-black-64);
-    backdrop-filter: blur(var(--s2a-blur-32));
-    will-change: backdrop-filter;
+    :has(.tour.dark) & {
+      background-color: var(--s2a-color-gray-800);
+      border-color: var(--s2a-color-gray-700);
+
+      &::before,
+      &::after {
+        background-color: var(--s2a-color-content-knockout);
+      }
+
+      &:hover,
+      &:focus {
+        background-color: var(--s2a-color-gray-700);
+        border-color: var(--s2a-color-gray-500);
+      }
+
+      &:active {
+        background-color: var(--s2a-color-background-default);
+        border-color: var(--s2a-color-border-inverse);
+        &::before,
+        &::after {
+          background-color: var(--s2a-color-content-default);
+        }
+      }
+    }
   }
+}
+
+.tour-curtain {
+  --tour-curtain-bg: var(--s2a-color-transparent-black-64);
+  --tour-curtain-blur: blur(var(--s2a-blur-32));
+}
+
+.modal-curtain.tour-curtain.is-open {
+  background: var(--tour-curtain-bg);
+  backdrop-filter: var(--tour-curtain-blur);
 }
 
 [dir='rtl'] {
   .dialog-modal:has(.tour) {
     .dialog-close {
       right: auto;
-      left: var(--s2a-spacing-md);
+      left: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
     }
   }
 }
 
-/* Below 696px the modal is full-width; above it the width is fixed at 696px */
+/* Below (--tour-modal-max-width) the modal is full-width,
+  above it the width is fixed at (--tour-modal-max-width) */
 @media (max-width: 696px) {
   .dialog-modal:has(.tour) {
-    max-width: 100dvw;
+    max-width: 100svw;
+    .dialog-close {
+      right: var(--s2a-spacing-md);
+    }
+  }
+
+  [dir='rtl'] {
+    .dialog-modal:has(.tour) {
+      .dialog-close {
+        right: auto;
+        left: var(--s2a-spacing-md);
+      }
+    }
+  }
+}
+
+@supports (timeline-scope: none) {
+  .dialog-modal:has(.tour) {
+    timeline-scope: --tour-scroll;
+  }
+
+  .dialog-modal:has(.tour) > .fragment {
+    scroll-timeline-name: --tour-scroll;
+    scroll-timeline-axis: block;
+  }
+
+  .dialog-modal:has(.tour) > .dialog-close {
+    animation: tour-close-track linear both;
+    animation-timeline: --tour-scroll;
+    animation-range: 0px var(--tour-section-gap);
+  }
+
+  @keyframes tour-close-track {
+    from { top: calc(var(--tour-section-gap) + var(--s2a-spacing-md)); }
+    to { top: var(--s2a-spacing-md); }
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .dialog-modal:has(.tour) {
-    animation: tour-slide-in 0.35s ease;
+    --tour-travel: 20vh;
+
+    animation: tour-slide-in 0.3s ease-out;
 
     &.is-snapping,
     &.is-dismissing {
@@ -251,25 +331,57 @@
     }
 
     &.is-closing {
-      animation: tour-slide-out 0.3s ease forwards;
+      animation: tour-slide-out 0.2s ease-in forwards;
+    }
+  }
+
+  .modal-curtain.tour-curtain.is-open {
+    animation: tour-curtain-in 0.3s ease-out;
+  }
+
+  .tour-curtain.is-closing {
+    position: fixed;
+    inset: 0;
+    z-index: var(--modal-z-index-curtain);
+    pointer-events: none;
+    background: var(--tour-curtain-bg);
+    backdrop-filter: var(--tour-curtain-blur);
+    animation: tour-curtain-out 0.2s ease-in forwards;
+  }
+
+  @keyframes tour-curtain-in {
+    from {
+      background: transparent;
+      backdrop-filter: blur(0);
+    }
+  }
+
+  @keyframes tour-curtain-out {
+    to {
+      background: transparent;
+      backdrop-filter: blur(0);
     }
   }
 
   @keyframes tour-slide-in {
     from {
-      transform: translateY(100%);
+      opacity: 0;
+      transform: translateY(var(--tour-travel));
     }
     to {
+      opacity: 1;
       transform: translateY(0);
     }
   }
 
   @keyframes tour-slide-out {
     from {
+      opacity: 1;
       transform: translateY(0);
     }
     to {
-      transform: translateY(100%);
+      opacity: 0;
+      transform: translateY(var(--tour-travel));
     }
   }
 }

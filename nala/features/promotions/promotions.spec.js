@@ -63,7 +63,7 @@ module.exports = {
         textDefault: 'Default text',
         textFuture: 'Future promo text insert',
         status1: 'Scheduled', // new format
-        status2: 'inactive', // new format
+        status2: 'Inactive', // new format
         manifestFile: 'promo-insert-future.json',
       },
       tags: '@promo @smoke @regression @milo',

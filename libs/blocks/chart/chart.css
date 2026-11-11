@@ -37,6 +37,23 @@
   --spectrum-grey-900: rgb(44 44 44 / 100%);
 }
 
+.chart.palette-warning {
+  outline: 8px solid #d31510;
+  outline-offset: 4px;
+}
+
+.chart.palette-warning::before {
+  content: "Invalid color palette";
+  display: block;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: #d31510;
+  color: var(--white);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
 .chart .title  * {
   color: var(--spectrum-grey-900);
   font-size: 24px;
@@ -121,6 +138,14 @@
   text-anchor: middle;
 }
 
+.chart.oversized-number.light svg :is(.number, .subtitle) {
+  fill: var(--black);
+}
+
+.chart.oversized-number.dark svg :is(.number, .subtitle) {
+  fill: var(--white);
+}
+
 .chart.oversized-number .number {
   font-weight: 800;
 }
@@ -187,4 +212,3 @@
 .chart.pie[data-responsive-size=large] .chart-wrapper {
   height: 512px;
 }
-

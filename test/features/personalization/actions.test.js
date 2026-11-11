@@ -3,7 +3,7 @@ import { readFile } from '@web/test-runner-commands';
 import { stub } from 'sinon';
 import { getConfig, loadBlock } from '../../../libs/utils/utils.js';
 import initFragments from '../../../libs/blocks/fragment/fragment.js';
-import { init, handleCommands } from '../../../libs/features/personalization/personalization.js';
+import { init, handleCommands, replaceInner } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 
 document.head.innerHTML = await readFile({ path: './mocks/metadata.html' });
@@ -77,6 +77,73 @@ describe('replace action', () => {
     await initFragments(inlineReplacemeFrag);
     expect(document.querySelector('a[href="/fragments/inline-replaceme#_inline"]')).to.be.null;
     expect(document.querySelector('.inlinefragmentreplaced')).to.exist;
+  });
+
+  it('reuses the replaced element\'s media in the fragment so it is not fetched again', async () => {
+    const pageSrc = '/products/media_15dedupe.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-dedupe';
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="dedupe-hero"><picture><img src="${pageSrc}"></picture></div>`;
+    document.body.append(rootEl);
+    window.fetch = stub();
+    window.fetch.withArgs(`${window.location.origin}${fragPath}.plain.html`)
+      .returns(getFetchPromise('<div><picture><img src="./media_15dedupe.png?width=750&format=png&optimize=medium"></picture></div>', 'text'));
+
+    try {
+      await handleCommands([{ action: 'replace', selector: '.dedupe-hero', content: fragPath }], rootEl, false, true);
+      expect(rootEl.querySelector('.dedupe-hero')).to.be.null;
+      await initFragments(rootEl.querySelector('a'));
+      expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      rootEl.remove();
+      delete getConfig().mep.removedMedia;
+    }
+  });
+
+  it('reuses media of an element MEP removed in a fragment inserted elsewhere', async () => {
+    const pageSrc = '/products/media_15rm.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-rm';
+    const rootEl = document.createElement('div');
+    rootEl.innerHTML = `<div class="dedupe-removed"><picture><img src="${pageSrc}"></picture></div><div class="dedupe-anchor"></div>`;
+    document.body.append(rootEl);
+    window.fetch = stub();
+    window.fetch.withArgs(`${window.location.origin}${fragPath}.plain.html`)
+      .returns(getFetchPromise('<div><picture><img src="./media_15rm.png?width=750&format=png&optimize=medium"></picture></div>', 'text'));
+
+    try {
+      await handleCommands([
+        { action: 'remove', selector: '.dedupe-removed', content: 'true' },
+        { action: 'insertafter', selector: '.dedupe-anchor', content: fragPath },
+      ], rootEl, false, true);
+      expect(rootEl.querySelector('.dedupe-removed')).to.be.null;
+      await initFragments(rootEl.querySelector('a'));
+      expect(rootEl.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      rootEl.remove();
+      delete getConfig().mep.removedMedia;
+    }
+  });
+
+  it('reuses the original page media in fragments from replacePage content', async () => {
+    const pageSrc = '/products/media_15rp.png?width=750&format=png&optimize=medium';
+    const fragPath = '/test/features/personalization/mocks/fragments/media-rp';
+    const main = document.createElement('div');
+    main.innerHTML = `<div><picture><img src="${pageSrc}"></picture></div>`;
+    document.body.append(main);
+    window.fetch = stub().callsFake((url) => {
+      if (`${url}`.includes('replacement.plain.html')) return getFetchPromise(`<div><a href="${fragPath}">frag</a></div>`, 'text');
+      return getFetchPromise('<div><picture><img src="./media_15rp.png?width=750&format=png&optimize=medium"></picture></div>', 'text');
+    });
+
+    try {
+      await replaceInner('/products/replacement', main);
+      expect(main.querySelector(`img[src="${pageSrc}"]`)).to.be.null;
+      await initFragments(main.querySelector('a'));
+      expect(main.querySelector(`img[src="${new URL(pageSrc, window.location).href}"]`)).to.exist;
+    } finally {
+      main.remove();
+      delete getConfig().mep.removedMedia;
+    }
   });
 });
 
@@ -422,6 +489,53 @@ describe('in-block:mas field-scoped replace', () => {
     // Only the cardTitle field was registered - no unscoped ('') entry that would
     // leak the override to other fields (description, ctas, ...) sharing this fragment.
     expect(Object.keys(entry)).to.deep.equal(['cardTitle']);
+  });
+});
+
+describe('in-block:mas pzn registration', () => {
+  const selector = 'in-block:mas https://mas.adobe.com/studio.html#page=content&query=src-1';
+  const content = (extra = '') => `https://mas.adobe.com/studio.html#page=content&query=tgt-1${extra}`;
+  const register = (...contents) => handleCommands(
+    contents.map((c) => ({ action: 'replace', selector, content: c })),
+    document.createElement('div'),
+    false,
+    true,
+  );
+
+  beforeEach(() => {
+    delete getConfig().mep.inBlock;
+    document.querySelector('div.mas-overrides')?.remove();
+  });
+
+  afterEach(() => {
+    delete getConfig().mep.inBlock;
+    document.querySelector('div.mas-overrides')?.remove();
+  });
+
+  it('stores pzn from the content link on the command', async () => {
+    await register(content('&pzn=pzn-cc-lapsed'));
+    const entry = getConfig().mep.inBlock.mas.fragments['src-1'][''];
+    expect(entry.content).to.equal('tgt-1');
+    expect(entry.pzn).to.equal('pzn-cc-lapsed');
+  });
+
+  it('does not add a pzn key when the content link has none', async () => {
+    await register(content());
+    const entry = getConfig().mep.inBlock.mas.fragments['src-1'][''];
+    expect(entry.content).to.equal('tgt-1');
+    expect(entry).to.not.have.property('pzn');
+  });
+
+  it('preloads one aem-fragment per fragment and pzn', async () => {
+    await register(content('&pzn=pzn-cc-lapsed'), content('&pzn=pzn-cc-lapsed'));
+    expect(document.querySelectorAll('div.mas-overrides aem-fragment[fragment="tgt-1"][pzn="pzn-cc-lapsed"]').length).to.equal(1);
+  });
+
+  it('keeps a separate preload without pzn attribute', async () => {
+    await register(content('&pzn=pzn-cc-lapsed'), content());
+    const preloads = document.querySelectorAll('div.mas-overrides aem-fragment[fragment="tgt-1"]');
+    expect(preloads.length).to.equal(2);
+    expect(document.querySelectorAll('div.mas-overrides aem-fragment[fragment="tgt-1"]:not([pzn])').length).to.equal(1);
   });
 });
 

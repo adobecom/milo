@@ -8,7 +8,8 @@ const FADE_IN_MS = 160;
 const RIGHT_DRAG_DENOM = 160;
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const DESKTOP_MQ = '(width >= 768px)';
+const NON_MOBILE_MQ = '(width >= 768px)';
+const DESKTOP_MQ = '(width >= 1280px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
   <path d="M11.208 5.417L7.50781 1.7168C7.18554 1.39453 6.66406 1.39453 6.34179 1.7168C6.01953 2.03907 6.01953 2.56055 6.34179 2.88282L8.63281 5.17481H1.375C0.918955 5.17481 0.549805 5.54395 0.549805 6.00001C0.549805 6.45607 0.918945 6.82521 1.375 6.82521H8.63281L6.34179 9.1172C6.01953 9.43947 6.01953 9.96095 6.34179 10.2832C6.50292 10.4444 6.71386 10.5254 6.9248 10.5254C7.13574 10.5254 7.34668 10.4444 7.50781 10.2832L11.208 6.58302C11.5303 6.26075 11.5303 5.73927 11.208 5.417Z" fill="currentColor"/></svg>`;
@@ -108,14 +109,13 @@ function decorateItem(item, index) {
   return { content, media, toggle };
 }
 
-function setupBlock(el) {
+function setupBlock(el, isDesktop) {
   let stack;
   let medias;
   let items;
   let dotEls;
   let ariaLive;
   let slideNum;
-  let isCarousel;
   let itemsWrap;
   let controlsWrap;
   let nextBtn;
@@ -127,9 +127,14 @@ function setupBlock(el) {
   let target = null;
   let resizeObserver = null;
 
+  const nonMobileMQ = window.matchMedia(NON_MOBILE_MQ);
+  const desktopMQ = window.matchMedia(DESKTOP_MQ);
+  const isMobile = () => !nonMobileMQ.matches;
+  const isMobileCarousel = el.classList.contains('mobile-carousel');
   const mod = (n) => ((n % slideNum) + slideNum) % slideNum;
   const slotOf = (idx) => mod(idx - rotation);
   const slideAt = (off) => medias[mod(rotation + off)];
+  const mobileCarouselCurve = getComputedStyle(document.documentElement).getPropertyValue('--parallax-easing');
 
   function setAriaHiddenAndTabIndex() {
     medias.forEach((media, idx) => {
@@ -142,18 +147,13 @@ function setupBlock(el) {
 
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
-      if (!isCarousel) {
-        const toHide = item.querySelectorAll('p[class*="body"]');
-        toHide.forEach((hide) => {
-          hide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-          hide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
-            focusable.setAttribute('tabindex', isActive ? '0' : '-1');
-          });
-        });
-        return;
-      }
-      item.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      item.removeAttribute('aria-hidden');
       item.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
+        focusable.removeAttribute('tabindex');
+      });
+      const toHide = isMobile() ? item : item.querySelector('.foreground');
+      toHide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
         focusable.setAttribute('tabindex', isActive ? '0' : '-1');
       });
     });
@@ -186,6 +186,7 @@ function setupBlock(el) {
       const { playedOnce = false } = video.dataset;
       if (playedOnce) return;
       if (isActive) {
+        if (video.hasAttribute(USER_PAUSED_ATTR)) return;
         video.play();
         syncPausePlayIcon(video, { type: 'playing' });
         return;
@@ -208,7 +209,7 @@ function setupBlock(el) {
     });
 
     setAriaHiddenAndTabIndex();
-    if (!isSetup && isCarousel) updateAriaLive(ariaLive, items);
+    if (!isSetup && isMobile()) updateAriaLive(ariaLive, items);
   }
 
   function updateStack(dir, progress, ignore) {
@@ -362,6 +363,94 @@ function setupBlock(el) {
     return 'prev';
   }
 
+  function getSlideTranslateValue({ index = 1, width, gap = 0 }) {
+    const gridPadding = parseInt(getComputedStyle(el).getPropertyValue('--split-aside-grid-gap'), 10) || 0;
+    return (index * width + index * (gap + gridPadding)) * (isRTL ? 1 : -1);
+  }
+
+  function goToMobileCarouselActive() {
+    const activeMedia = stack.querySelector('[data-slot="0"]');
+    const { width: mediaWidth } = activeMedia.getBoundingClientRect();
+    const indexOfActiveSlide = [...stack.children].indexOf(activeMedia);
+    const translateValueStack = getSlideTranslateValue({
+      index: indexOfActiveSlide,
+      width: mediaWidth,
+    });
+
+    const activeMediaIndex = activeMedia.getAttribute('data-slide-index');
+    const activeItem = itemsWrap.querySelector(`[data-slide-index="${activeMediaIndex}"]`);
+    const { width: itemWidth } = activeItem.getBoundingClientRect();
+    const translateValueItems = getSlideTranslateValue({
+      index: indexOfActiveSlide,
+      width: itemWidth,
+      gap: itemWidth,
+    });
+
+    [stack, itemsWrap].forEach((container) => clearInline(container, ['container-transition']));
+    setInline(stack, { 'stack-translate': `${translateValueStack}px` });
+    setInline(itemsWrap, { 'items-translate': `${translateValueItems}px` });
+  }
+
+  function eagerLoadMobileCarouselImages() {
+    stack.querySelectorAll('img').forEach((img) => {
+      img.setAttribute('loading', 'eager');
+    });
+  }
+
+  function cloneMobileCarouselSlides() {
+    if (stack.getAttribute('data-slides-cloned') === 'true'
+      || itemsWrap.getAttribute('data-slides-cloned') === 'true') return;
+
+    [[stack, medias], [itemsWrap, items]].forEach(([container, elements]) => {
+      const cloneBack = elements[0].cloneNode(true);
+      const cloneFront = elements[elements.length - 1].cloneNode(true);
+      [cloneBack, cloneFront].forEach((clone) => {
+        clone.setAttribute('data-cloned', 'true');
+        clone.setAttribute('inert', '');
+        clone.removeAttribute('data-slide-index');
+        clone.removeAttribute('data-slot');
+      });
+      container.replaceChildren(...[cloneFront, ...elements, cloneBack]);
+      container.setAttribute('data-slides-cloned', 'true');
+    });
+
+    goToMobileCarouselActive();
+  }
+
+  function moveMobileCarousel(direction) {
+    flying = true;
+    const dir = direction === 'next' ? 1 : -1;
+    applyRotation(dir);
+
+    const { width: mediaWidth } = medias[0].getBoundingClientRect();
+    const { width: itemWidth } = items[0].getBoundingClientRect();
+    const alreadyTranslatedStack = parseFloat(stack.style.getPropertyValue('--split-aside-grid-stack-translate')) || 0;
+    const alreadyTranslatedItem = parseFloat(itemsWrap.style.getPropertyValue('--split-aside-grid-items-translate')) || 0;
+
+    const translateValueStack = getSlideTranslateValue({ width: mediaWidth });
+    const translateValueItems = getSlideTranslateValue({ width: itemWidth, gap: itemWidth });
+
+    const translateStack = alreadyTranslatedStack + translateValueStack * dir;
+    const translateItems = alreadyTranslatedItem + translateValueItems * dir;
+
+    const stackTransitionDuration = 600;
+    const itemsTransitionDuration = stackTransitionDuration / 1.2;
+
+    setInline(stack, {
+      'stack-translate': `${translateStack}px`,
+      'container-transition': `translate ${stackTransitionDuration}ms ${mobileCarouselCurve}`,
+    });
+    setInline(itemsWrap, {
+      'items-translate': `${translateItems}px`,
+      'container-transition': `translate ${itemsTransitionDuration}ms ${mobileCarouselCurve}`,
+    });
+
+    setTimeout(() => {
+      flying = false;
+      goToMobileCarouselActive();
+    }, !reducedMotion() ? stackTransitionDuration + 20 : 0);
+  }
+
   function onPointerMove(e) {
     if (!drag || e.pointerId !== drag.id || !target) return;
 
@@ -377,13 +466,8 @@ function setupBlock(el) {
     const dir = getDirection(drag.dx);
     drag.direction = dir;
 
-    if (reducedMotion()) return;
-
-    if (drag.direction && drag.direction !== dir) {
-      /* Direction reversed — reset every drag-touched property back to the original slots */
-      medias.forEach((m) => clearInline(m, ['transform']));
-      applyRotation(0);
-    }
+    // If mobile-carousel variant, skip flying animation
+    if (isMobileCarousel || reducedMotion()) return;
 
     if (dir === 'next') {
       animateNext();
@@ -404,6 +488,13 @@ function setupBlock(el) {
 
     const commit = Math.abs(dx) >= SWIPE_THRESHOLD;
 
+    // If is mobile-carousel variant move carousel and skip commit flow
+    if (!commit && isMobileCarousel) return;
+    if (commit && isMobileCarousel) {
+      moveMobileCarousel(direction);
+      return;
+    }
+
     if (!commit) { snapBack(direction); return; }
     if (direction === 'next') commitNext(progress);
     else commitPrev(progress);
@@ -423,7 +514,10 @@ function setupBlock(el) {
     const actionTrigger = key ? triggers.get(key) : triggers.get(btn);
     if (!actionTrigger) return;
     const [commit, toFocus] = actions[actionTrigger];
-    commit(0.25, true);
+
+    if (isMobileCarousel) moveMobileCarousel(actionTrigger);
+    else commit(0.25, true);
+
     toFocus?.focus();
   }
 
@@ -457,9 +551,63 @@ function setupBlock(el) {
     controlsWrap.after(stack);
   }
 
-  const desktopMQ = window.matchMedia(DESKTOP_MQ);
+  function setCutoff() {
+    const activeMedia = medias.find((media) => media.getAttribute('data-slot') === '0');
+    if (!activeMedia) return;
+    const { left, right } = activeMedia.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const cutoff = isRTL ? -left : right - viewportWidth;
+    setInline(stack, { 'stack-cutoff': `${Math.round(cutoff)}px` });
+  }
+
+  function setStackAspectRatio(width, height) {
+    if (!width || !height) return;
+    setInline(stack, { 'aspect-ratio': `${width} / ${height}` });
+    if (isMobile() && !isMobileCarousel) return;
+    setCutoff();
+  }
+
+  function resolveFirstMediaAspectRatio() {
+    const media = medias[0];
+    if (!media) return;
+
+    const asset = media.querySelector('img, video');
+    if (!asset) return;
+
+    const applyRatio = (targetAsset = asset) => {
+      const assetWidth = parseInt(targetAsset.getAttribute('width'), 10) || targetAsset.naturalWidth || targetAsset.videoWidth;
+      const assetHeight = parseInt(targetAsset.getAttribute('height'), 10) || targetAsset.naturalHeight || targetAsset.videoHeight;
+      if (!assetWidth || !assetHeight) return false;
+      setStackAspectRatio(assetWidth, assetHeight);
+      return true;
+    };
+
+    let ratioApplied = applyRatio();
+    if (ratioApplied) return;
+
+    const isVideo = asset.tagName === 'VIDEO';
+    const loadListenerType = isVideo ? 'loadedmetadata' : 'load';
+
+    asset.addEventListener(loadListenerType, () => {
+      if (!asset.isConnected) return;
+      ratioApplied = applyRatio();
+    }, { once: true });
+
+    if (!isVideo) return;
+
+    const poster = asset.getAttribute('poster');
+    if (!poster) return;
+
+    const posterImg = new Image();
+    posterImg.addEventListener('load', () => {
+      if (ratioApplied || !asset.isConnected) return;
+      applyRatio(posterImg);
+    }, { once: true });
+    posterImg.src = poster;
+  }
+
   let mobileBound = false;
-  let desktopBound = false;
+  let nonMobileBound = false;
 
   function enableMobileNavigation() {
     prevBtn.addEventListener('click', handleNavigation);
@@ -473,6 +621,36 @@ function setupBlock(el) {
     el.removeEventListener('keydown', handleNavigation);
   }
 
+  let mobileCarouselIntersection = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      eagerLoadMobileCarouselImages();
+      mobileCarouselIntersection.disconnect();
+      mobileCarouselIntersection = null;
+    });
+  });
+
+  function addMobileCarouselIntersection() {
+    if (!isMobileCarousel || !mobileCarouselIntersection) return;
+    mobileCarouselIntersection.observe(el);
+  }
+
+  function addResizeObserver() {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      if (isMobileCarousel && isMobile()) goToMobileCarouselActive();
+      setCutoff();
+    });
+    resizeObserver.observe(el);
+  }
+
+  function removeResizeObserver() {
+    if (!resizeObserver) return;
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+
   function bindMobile() {
     if (mobileBound) return;
     mobileBound = true;
@@ -482,6 +660,11 @@ function setupBlock(el) {
     stack.addEventListener('pointercancel', onPointerUp);
     enableMobileNavigation();
     swapStackItems();
+
+    if (!isMobileCarousel) return;
+
+    addMobileCarouselIntersection();
+    addResizeObserver();
   }
 
   function unbindMobile() {
@@ -492,45 +675,29 @@ function setupBlock(el) {
     stack.removeEventListener('pointerup', onPointerUp);
     stack.removeEventListener('pointercancel', onPointerUp);
     disableMobileNavigation();
+    removeResizeObserver();
   }
 
-  function addResizeObserver() {
-    resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      const { scrollWidth } = el;
-      const width = document.documentElement.clientWidth;
-      setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
-    });
-    resizeObserver.observe(stack);
-  }
-
-  function removeResizeObserver() {
-    if (!resizeObserver) return;
-    resizeObserver.disconnect();
-    resizeObserver = null;
-  }
-
-  function bindDesktop() {
-    if (desktopBound) return;
-    desktopBound = true;
+  function bindNonMobile() {
+    if (nonMobileBound) return;
+    nonMobileBound = true;
     items.forEach((item) => item.addEventListener('click', onItemClick));
     addResizeObserver();
     swapStackItems(false);
   }
 
-  function unbindDesktop() {
-    if (!desktopBound) return;
-    desktopBound = false;
+  function unbindNonMobile() {
+    if (!nonMobileBound) return;
+    nonMobileBound = false;
     items.forEach((item) => item.removeEventListener('click', onItemClick));
     removeResizeObserver();
   }
 
   function syncBindings() {
     stack = el.querySelector('.split-aside-grid-stack');
-    medias = [...el.querySelectorAll('.media')];
+    medias = [...el.querySelectorAll('.media:not([data-cloned="true"])')];
     itemsWrap = el.querySelector('.split-aside-grid-items');
-    items = [...itemsWrap.children];
+    items = [...el.querySelectorAll('.split-aside-grid-item:not([data-cloned="true"])')];
     dotEls = [...el.querySelector('.split-aside-grid-dots').children];
     ariaLive = el.querySelector('.aria-live-container');
     slideNum = medias.length;
@@ -538,19 +705,22 @@ function setupBlock(el) {
     nextBtn = controlsWrap.querySelector('button.next');
     prevBtn = controlsWrap.querySelector('button.prev');
 
-    if (desktopMQ.matches) {
-      isCarousel = false;
-      unbindMobile();
-      bindDesktop();
+    unbindMobile();
+    unbindNonMobile();
+
+    if (nonMobileMQ.matches) {
+      bindNonMobile();
     } else {
-      isCarousel = true;
-      unbindDesktop();
       bindMobile();
     }
+
     applyRotation(0, true);
+    resolveFirstMediaAspectRatio();
+    if (isMobile() && isMobileCarousel) cloneMobileCarouselSlides();
   }
 
-  desktopMQ.addEventListener('change', syncBindings);
+  nonMobileMQ.addEventListener('change', syncBindings);
+  if (isDesktop) desktopMQ.addEventListener('change', syncBindings);
   syncBindings();
 }
 
@@ -601,6 +771,6 @@ function decorate(block) {
 }
 
 export default function init(el) {
-  decorateViewportContent(el, decorate);
-  setupBlock(el);
+  const { content } = decorateViewportContent(el, decorate);
+  setupBlock(el, !!content?.desktop);
 }

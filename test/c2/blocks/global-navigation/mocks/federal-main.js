@@ -2,8 +2,13 @@
 // global-navigation.test.html. Records every args object handed to main() so
 // the test can assert exactly what the C2 wrapper wires through.
 export const calls = [];
+let navigation = {};
+
+export function setNavigation(value) {
+  navigation = value;
+}
 
 export async function main(args) {
   calls.push(args);
-  return {};
+  return navigation;
 }

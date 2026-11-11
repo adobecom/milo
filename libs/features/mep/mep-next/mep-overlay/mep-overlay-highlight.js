@@ -1,5 +1,4 @@
-import { getConfig } from '../../../../utils/utils.js';
-import { getMarketConfig } from '../../../../utils/market.js';
+import { getConfig, getMarketConfig } from '../../../../utils/utils.js';
 import { getFileName } from '../../../personalization/personalization.js';
 import { mepMasStudioUrls } from '../../../../blocks/merch/mas-mep-utils.js';
 import {
@@ -215,7 +214,7 @@ function getBadgeHeight(el) {
   return getBadgeDimensions(getBadgeStyles(el)).height;
 }
 
-const BADGE_SELECTORS = `[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default], ${REAL_DOM_BADGE_SELECTOR}`;
+const BADGE_SELECTORS = `[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default], ${MAS_PSEUDO_BADGE_SELECTOR}, ${REAL_DOM_BADGE_SELECTOR}`;
 const BADGE_SPACING = 4;
 
 const BADGE_MAX_WIDTH_SELECTORS = `
@@ -318,13 +317,14 @@ function refreshBadges() {
   adjustBadgePositions();
 }
 
-let badgeAdjustTimer;
+let badgeAdjustRaf;
 const highlightObserver = new MutationObserver(() => {
-  clearTimeout(badgeAdjustTimer);
-  badgeAdjustTimer = setTimeout(() => {
+  if (badgeAdjustRaf) return;
+  badgeAdjustRaf = requestAnimationFrame(() => {
+    badgeAdjustRaf = null;
     refreshPageUpdateCounts();
     refreshBadges();
-  }, 50);
+  });
 });
 
 function isAnyHighlightActive() {

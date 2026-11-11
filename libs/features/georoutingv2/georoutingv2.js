@@ -98,8 +98,9 @@ const [handleOverflow, removeOverflow] = (() => {
 
       window.addEventListener('milo:modal:closed', removeOverflow);
     },
-    () => {
+    (event) => {
       if (!geoModal) return;
+      if (event?.detail?.id && event.detail.id !== geoModal.id) return;
       geoModal.removeAttribute('style');
       if (resizeObserver) resizeObserver.disconnect();
       geoModal = null;
@@ -381,10 +382,12 @@ async function getDetails(
   const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
 
   if (window.location.hash) {
-    window.addEventListener('milo:modal:closed', () => {
+    window.addEventListener('milo:modal:closed', ({ detail }) => {
       const modal = document.querySelector('.dialog-modal:not(#locale-modal-v2)');
       if (!modal) return;
-      const links = georoutingWrapper.querySelectorAll(`a[href$="${window.location.hash}"]`);
+      const hash = detail?.hash ?? window.location.hash;
+      if (!hash) return;
+      const links = georoutingWrapper.querySelectorAll(`a[href$="${hash}"]`);
       links.forEach((link) => {
         link.hash = '';
         link.setAttribute('href', link.href);

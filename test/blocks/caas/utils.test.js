@@ -13,6 +13,9 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
   initBulkPublisherLingoMapping,
+  isLingoLangFirstPath,
+  getLanguageFirstCountryAndLang,
+  getRequestSize,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -861,8 +864,8 @@ describe('getCountryAndLang', () => {
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
         'site-locales': {
           data: [
-            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
-            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: '/be, /ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: '/be, /us' },
           ],
         },
       }),
@@ -1084,6 +1087,99 @@ describe('getCountryAndLang', () => {
     expect(excludeIds).to.include(existingId);
     // Should also have the page UUID (a second UUID separated by comma)
     expect(excludeIds.split(',').length).to.be.greaterThan(1);
+  });
+});
+
+describe('getCountryAndLang with a BACOM /ara base-site (autodetect lingo)', () => {
+  // Mirrors the real-world scenario: BACOM onboards '/ara' as a base site in
+  // lingo-site-mapping.json (same convention as '/fr'), and a BACOM author
+  // publishes a page at /ara/... with "Auto detect country & lang" enabled
+  // (autoCountryLang) on a langFirst-active site. The resolved country must
+  // be 'xx' (base-site convention) and the resolved language must be the
+  // 'ar' CaaS language tag id — NOT the raw 3-letter 'ara' path segment,
+  // which has no corresponding caas:language tag in the taxonomy.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/ca, /au' },
+        // regionalSites carries a GEO-IP-promotable Arabic regional ('/ae_ar') so
+        // the alias-normalization change can be exercised against a real country
+        // promotion, not just the base '/ara' -> 'xx'/'ar' case.
+        { uniqueSiteId: 'bacom-site', baseSite: '/ara', regionalSites: '/ae_ar' },
+      ],
+    },
+  };
+  let metaLangFirst;
+  let ogFetch;
+
+  beforeEach(() => {
+    metaLangFirst = document.createElement('meta');
+    metaLangFirst.setAttribute('name', 'langfirst');
+    metaLangFirst.setAttribute('content', 'true');
+    document.head.appendChild(metaLangFirst);
+
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    if (metaLangFirst?.parentNode) document.head.removeChild(metaLangFirst);
+    if (ogFetch) window.fetch = ogFetch;
+  });
+
+  it('resolves to country: xx, language: ar (not the raw "ara" path segment)', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      // Short-circuits the GEO IP fallback with a non-regional country so the
+      // test doesn't attempt a real network/Akamai lookup via getCountry().
+      mep: { countryIP: 'us' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('ar');
+  });
+
+  // Catches regressions in Arabic GEO-IP promotion that the base-case test above
+  // can't: it uses GEO country 'us' with no matching regional, so it produces
+  // the same result before and after the alias-normalization changes.
+  it('promotes to country: ae when GEO IP matches the /ara regional site', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      mep: { countryIP: 'ae' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('ae');
+    expect(expected.language).to.eq('ar');
+  });
+
+  it('does NOT promote to country: ar for GEO IP Argentina (must not collide with the "ara" alias)', async () => {
+    setConfig({
+      pathname: '/ara/products/brand-concierge.html',
+      locales: { '': { ietf: 'en-US' } },
+      mep: { countryIP: 'ar' },
+    });
+
+    const expected = await getCountryAndLang({
+      autoCountryLang: true,
+      source: ['bacom'],
+    });
+
+    expect(expected.country).to.eq('xx');
+    expect(expected.language).to.eq('ar');
   });
 });
 
@@ -1489,6 +1585,136 @@ describe('isLocaleInRegionalSites helper function tests', () => {
   });
 });
 
+describe('isLingoLangFirstPath', () => {
+  // bacom is in mapping; /de/ is a LFL baseSite; /at/ is regional of /de/
+  // /gb/ and /au/ are English regionals
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/de', regionalSites: '/at' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('returns null when origin is absent from the mapping', async () => {
+    const result = await isLingoLangFirstPath('unknown-origin', '/de/article', 'test');
+    expect(result).to.be.null;
+  });
+
+  it('returns true when locale matches the baseSite of a non-English entry', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns true when locale is a regional site of a non-English baseSite', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/at/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false when locale is an English regional site', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/gb/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('returns true for an unprefixed path (base English page, no locale segment)', async () => {
+    // e.g. business.adobe.com/products/brand-concierge.html: the first path
+    // segment ("products") is real content, not a locale, and must not be
+    // mistaken for one just because it occupies that position in the URL.
+    const result = await isLingoLangFirstPath('bacom', '/products/brand-concierge.html', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false for a real locale code that is simply not onboarded to this site\'s Lingo mapping', async () => {
+    // 'uk' is not in bacom-site's mapping (mock has no /uk anywhere) but IS a
+    // real locale prefix in Milo's classic locale table — it must fall
+    // through to the classic non-LFL lookup, not be swept into the
+    // unprefixed root family the way genuine content segments (e.g.
+    // "products") are.
+    const result = await isLingoLangFirstPath('bacom', '/uk/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('throws when fetch fails so the caller can surface it as an error', async () => {
+    window.fetch = stub().rejects(new Error('network error'));
+    initBulkPublisherLingoMapping();
+    let caught;
+    try {
+      await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).to.be.instanceOf(Error);
+    expect(caught.message).to.equal('network error');
+  });
+});
+
+describe('getLanguageFirstCountryAndLang', () => {
+  // Same shape as bacom's real lingo-site-mapping entry: a root ('/') English
+  // family plus a French family, each with their own regional variants.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/fr', regionalSites: '/be_fr' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('resolves an unprefixed base-English path to en/xx, not the classic en-US fallback', async () => {
+    const result = await getLanguageFirstCountryAndLang('/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'en' });
+  });
+
+  it('resolves a French-prefixed path to fr/xx', async () => {
+    const result = await getLanguageFirstCountryAndLang('/fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'fr' });
+  });
+
+  it('resolves an English-regional path to its country with language en (not blank)', async () => {
+    const result = await getLanguageFirstCountryAndLang('/gb/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
+  });
+
+  it('resolves a French-regional path to its country with language fr', async () => {
+    const result = await getLanguageFirstCountryAndLang('/be_fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'be', lang: 'fr' });
+  });
+
+  it('falls through to the classic locale for a real locale code not onboarded to this site', async () => {
+    // 'uk' isn't in this mock's mapping (no /uk anywhere), but it IS a real
+    // locale in Milo's classic locale table (en-GB) — it must resolve via
+    // that classic lookup, not be misclassified as the unprefixed root
+    // family's en/xx.
+    const result = await getLanguageFirstCountryAndLang('/uk/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
+  });
+});
+
 describe('initBulkPublisherLingoMapping', () => {
   let ogFetch;
   const LINGO_MAPPING_URL = 'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json';
@@ -1516,5 +1742,73 @@ describe('initBulkPublisherLingoMapping', () => {
 
     expect(fetchedUrls).to.have.length(1);
     expect(fetchedUrls[0]).to.equal(`${LINGO_MAPPING_URL}?bulkpublisher`);
+  });
+});
+
+describe('getRequestSize', () => {
+  const pinnedOnly = {
+    collectionSize: '150',
+    totalCardsToShow: '3',
+    sortDefault: 'featured',
+    sortEnablePopup: false,
+    showFilters: false,
+    showSearch: false,
+    showBookmarksFilter: false,
+    onlyShowBookmarkedCards: false,
+    partialLoadEnabled: false,
+    filterEvent: [],
+    container: 'carousel',
+  };
+
+  it('uses totalCardsToShow when collectionSize is empty', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '', totalCardsToShow: 10 })).to.equal(10);
+  });
+
+  it('requests only totalCardsToShow when cards are shown in server order', () => {
+    expect(getRequestSize(pinnedOnly)).to.equal(3);
+  });
+
+  it('keeps collectionSize when it is not larger than totalCardsToShow', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '3' })).to.equal('3');
+    expect(getRequestSize({ ...pinnedOnly, totalCardsToShow: '' })).to.equal('150');
+  });
+
+  [
+    ['a non-featured default sort', { sortDefault: 'dateDesc' }],
+    ['the sort popup', { sortEnablePopup: true }],
+    ['filters', { showFilters: true }],
+    ['search', { showSearch: true }],
+    ['the bookmarks filter', { showBookmarksFilter: true }],
+    ['bookmark-only collections', { onlyShowBookmarkedCards: true }],
+    ['partial load', { partialLoadEnabled: true }],
+    ['event filters', { filterEvent: ['live'] }],
+    ['the categories container', { container: 'categories' }],
+  ].forEach(([name, override]) => {
+    it(`keeps collectionSize with ${name}`, () => {
+      expect(getRequestSize({ ...pinnedOnly, ...override })).to.equal('150');
+    });
+  });
+
+  describe('when featured cards fill every shown slot', () => {
+    const threeFeatured = {
+      ...pinnedOnly,
+      featuredCards: [{ contentId: 'a' }, { contentId: 'b' }, { contentId: 'c' }],
+    };
+
+    it('requests only the shown cards with the featured sort', () => {
+      expect(getRequestSize(threeFeatured)).to.equal(3);
+    });
+
+    // An unavailable featured card is backfilled by the default sort or event filter,
+    // which needs the full set of cards.
+    [
+      ['a non-featured default sort', { sortDefault: 'titleAsc' }],
+      ['the random sort', { sortDefault: 'random', sortReservoirSample: '2' }],
+      ['event filters', { filterEvent: ['live'] }],
+    ].forEach(([name, override]) => {
+      it(`keeps collectionSize with ${name}`, () => {
+        expect(getRequestSize({ ...threeFeatured, ...override })).to.equal('150');
+      });
+    });
   });
 });

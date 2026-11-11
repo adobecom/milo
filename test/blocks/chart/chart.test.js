@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { waitForElement } from '../../helpers/waitfor.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { loadStyle, setConfig } from '../../../libs/utils/utils.js';
 
 const {
   SMALL,
@@ -14,6 +14,8 @@ const {
   getResponsiveSize,
   tooltipFormatter,
   getColors,
+  parseColorPalette,
+  showPaletteWarning,
   getOverrideColors,
   chartData,
   processDataset,
@@ -123,6 +125,81 @@ describe('chart', () => {
     expect(getColors(authoredColor)).to.eql(colors);
   });
 
+  it('parses comma-separated hex colors with whitespace and mixed case', () => {
+    expect(parseColorPalette(' #abc, #112233 , #AABBCC ')).to.eql(['#abc', '#112233', '#AABBCC']);
+  });
+
+  it('rejects the whole palette when any entry is malformed', () => {
+    ['', ' ', '#112233, invalid', '#112233,', ',#112233', '#12', '#12345',
+      '#12345678', '112233', 'red', '#ggg', '#112233; background: red'].forEach((value) => {
+      expect(parseColorPalette(value)).to.equal(undefined);
+    });
+  });
+
+  it('shows palette warnings only on preview and local hosts', () => {
+    ['main--milo--adobecom.aem.page', 'main--milo--adobecom.hlx.page',
+      'localhost', '127.0.0.1', '[::1]'].forEach((hostname) => {
+      const el = document.createElement('div');
+      showPaletteWarning(el, hostname);
+      expect(el.hasAttribute('title')).to.equal(false);
+      expect(el.classList.contains('palette-warning')).to.equal(true);
+    });
+    ['main--milo--adobecom.aem.live', 'main--milo--adobecom.hlx.live',
+      'www.adobe.com', 'www.stage.adobe.com', 'main--milo--adobecom.aem.page.example.com']
+      .forEach((hostname) => {
+        const el = document.createElement('div');
+        showPaletteWarning(el, hostname);
+        expect(el.hasAttribute('title')).to.equal(false);
+        expect(el.classList.contains('palette-warning')).to.equal(false);
+      });
+  });
+
+  it('shows a thick outline and a visible warning without changing chart width', async () => {
+    const style = document.createElement('style');
+    style.textContent = await readFile({ path: '../../../libs/blocks/chart/chart.css' });
+    document.head.append(style);
+    const el = document.createElement('div');
+    el.className = 'chart border';
+    document.body.append(el);
+    try {
+      const before = el.getBoundingClientRect();
+      showPaletteWarning(el);
+      const computed = window.getComputedStyle(el);
+      expect(computed.outlineWidth).to.equal('8px');
+      expect(computed.outlineStyle).to.equal('solid');
+      expect(computed.outlineColor).to.equal('rgb(211, 21, 16)');
+      expect(computed.outlineOffset).to.equal('4px');
+      const banner = window.getComputedStyle(el, '::before');
+      expect(banner.content).to.equal('"Invalid color palette"');
+      expect(banner.display).to.equal('block');
+      expect(banner.backgroundColor).to.equal('rgb(211, 21, 16)');
+      expect(banner.color).to.equal('rgb(255, 255, 255)');
+      expect(banner.fontSize).to.equal('28px');
+      expect(banner.fontWeight).to.equal('700');
+      const after = el.getBoundingClientRect();
+      expect(after.width).to.equal(before.width);
+      expect(after.height).to.be.greaterThan(before.height);
+    } finally {
+      el.remove();
+      style.remove();
+    }
+  });
+
+  it('custom colors completely replace the original palette without mutating either palette', () => {
+    const customPalette = ['#112233', '#445566'];
+    const defaults = Object.values(colorPalette);
+    expect(getColors('indigo', customPalette)).to.eql(customPalette);
+    expect(getColors('indigo', customPalette)).not.to.equal(customPalette);
+    expect(customPalette).to.eql(['#112233', '#445566']);
+    expect(Object.values(colorPalette)).to.eql(defaults);
+  });
+
+  it('accepts custom palettes as long as or longer than the default palette', () => {
+    const colors = Array(12).fill('#123456');
+    expect(getColors(undefined, colors)).to.eql(colors);
+    expect(getColors(undefined, [...colors, '#abcdef'])).to.eql([...colors, '#abcdef']);
+  });
+
   it('getOverrideColors returns authored color with overrides', () => {
     const fetchedData = {
       data: [
@@ -139,6 +216,21 @@ describe('chart', () => {
     const colors = ['#4046CA', '#4046CA', '#4046CA', '#DE3D82', '#DE3D82', '#DE3D82', '#4046CA'];
 
     expect(getOverrideColors(authoredColor, fetchedData.data)).to.eql(colors);
+  });
+
+  it('preserves legacy spreadsheet colors, including the fallback for invalid names', () => {
+    const data = [{ Color: '' }, { Color: 'magenta' }, { color: 'invalid' }];
+    expect(getOverrideColors('indigo', data)).to.eql([
+      colorPalette.indigo, colorPalette.magenta, colorPalette.seafoam,
+    ]);
+  });
+
+  it('bar background colors repeat the resolved palette for additional series', () => {
+    const colors = getColors(undefined, ['#112233']);
+    const dimensions = Array.from({ length: 14 }, (_, index) => `Series ${index}`);
+    const options = barSeriesOptions('bar', false, dimensions, colors, SMALL, units);
+    expect(options.map(({ backgroundStyle }) => backgroundStyle.color))
+      .to.eql(Array(14).fill('#112233'));
   });
 
   it('chart dataset', () => {
@@ -723,6 +815,79 @@ describe('chart', () => {
     expect(chartWrapper.getAttribute('aria-label')).to.exist;
   });
 
+  describe('oversized number text modes', () => {
+    let stylesheet;
+
+    before(async () => {
+      await new Promise((resolve, reject) => {
+        stylesheet = loadStyle('/libs/blocks/chart/chart.css', (status) => {
+          if (status === 'error') reject(new Error('Failed to load chart styles'));
+          else resolve();
+        });
+      });
+    });
+
+    after(() => stylesheet.remove());
+    afterEach(() => { document.body.innerHTML = ''; });
+
+    const renderNumber = async (mode, sectionMode = '') => {
+      const link = '/drafts/data-viz/oversized-number-mode.json';
+      document.body.innerHTML = `<div class="section ${sectionMode}">
+        <div class="chart oversized-number blue border ${mode}">
+          <div><div><h3>Title</h3></div></div>
+          <div><div><p>Outer subtitle</p></div></div>
+          <div><div><a href="${link}"></a></div></div>
+          <div><div><p>Footnote</p></div></div>
+        </div>
+      </div>`;
+      fetch.withArgs(new URL(link, window.location.href).href).resolves({
+        ok: true,
+        json: () => ({ data: [{ number: '25', subtitle: 'Out of 60 days' }] }),
+      });
+      const el = document.querySelector('.chart');
+      init(el);
+      await waitForElement('.chart-wrapper svg');
+      return el;
+    };
+
+    [
+      ['', 'rgb(255, 255, 255)'],
+      ['light', 'rgb(0, 0, 0)'],
+      ['dark', 'rgb(255, 255, 255)'],
+    ].forEach(([mode, expectedFill]) => {
+      it(`renders ${mode || 'legacy'} text without changing other chart colors`, async () => {
+        const el = await renderNumber(mode);
+        el.querySelectorAll('svg text').forEach((text) => {
+          expect(window.getComputedStyle(text).fill).to.equal(expectedFill);
+        });
+        expect(window.getComputedStyle(el.querySelector('circle')).fill)
+          .to.equal('rgb(20, 122, 243)');
+        expect(window.getComputedStyle(el.querySelector('.title h3')).color)
+          .to.equal('rgb(44, 44, 44)');
+        expect(window.getComputedStyle(el.querySelector(':scope > .subtitle p')).color)
+          .to.equal('rgb(44, 44, 44)');
+        expect(window.getComputedStyle(el).backgroundColor).to.equal('rgb(255, 255, 255)');
+        const wrapper = el.querySelector('.chart-wrapper');
+        expect(wrapper.getAttribute('role')).to.equal('img');
+        expect(wrapper.getAttribute('aria-label')).to.equal('25 Out of 60 days');
+      });
+    });
+
+    it('keeps explicit light text mode in a dark section', async () => {
+      const el = await renderNumber('light', 'dark');
+      el.querySelectorAll('svg text').forEach((text) => {
+        expect(window.getComputedStyle(text).fill).to.equal('rgb(0, 0, 0)');
+      });
+    });
+
+    it('keeps legacy white text in a light section without a mode option', async () => {
+      const el = await renderNumber('', 'light');
+      el.querySelectorAll('svg text').forEach((text) => {
+        expect(window.getComputedStyle(text).fill).to.equal('rgb(255, 255, 255)');
+      });
+    });
+  });
+
   it('getOversizedNumberSize returns maximum size for 1 character', () => {
     expect(getOversizedNumberSize(1)).to.eql([240, 60, 70]);
   });
@@ -780,6 +945,286 @@ describe('chart', () => {
     expect(chartWrapper).to.exist;
     expect(chartWrapper.getAttribute('role')).to.equal('img');
     expect(chartWrapper.getAttribute('aria-label')).to.contain('This is a chart');
+  });
+
+  describe('authored color-palette', () => {
+    let observer;
+    let width;
+    let chart;
+    const paletteRow = '<div><div><p> Color-Palette </p></div><div><p> #112233, #445566 </p></div></div>';
+    const json = { data: [{ Day: 'Monday', First: '100', Second: '200', Third: '300' }] };
+
+    beforeEach(() => {
+      observer = window.IntersectionObserver;
+      width = window.innerWidth;
+      window.IntersectionObserver = undefined;
+    });
+
+    afterEach(() => {
+      chart?.dispose();
+      chart = undefined;
+      window.IntersectionObserver = observer;
+      window.innerWidth = width;
+      document.body.innerHTML = '';
+    });
+
+    const renderChart = async (type, rows, data = json, namedColor = '') => {
+      const link = `/drafts/data-viz/palette-${type}.json`;
+      document.body.innerHTML = `<div class="chart ${type} ${namedColor}">
+        <div><div>Title</div></div>
+        <div><div>Subtitle</div></div>
+        <div><div><a href="${link}"></a></div></div>
+        ${rows}
+      </div>`;
+      const el = document.querySelector('.chart');
+      fetch.withArgs(new URL(link, window.location.href).href)
+        .resolves({ ok: true, json: () => data });
+      init(el);
+      await waitForElement(type === 'list' ? '.list-wrapper' : '.chart-wrapper svg');
+      if (type !== 'list') chart = window.echarts.getInstanceByDom(el.querySelector('.chart-wrapper'));
+      return el;
+    };
+
+    ['column', 'line', 'bar'].forEach((type) => {
+      it(`applies only the custom palette to ${type} charts and preserves the footnote`, async () => {
+        const el = await renderChart(type, `${paletteRow}<div><div>Footnote</div></div>`, json, 'indigo');
+        expect(chart.getOption().color).to.eql(['#112233', '#445566']);
+        expect(el.querySelector('.title').textContent).to.equal('Title');
+        expect(el.querySelector('.subtitle').textContent).to.equal('Subtitle');
+        expect(el.querySelector('.footnote').textContent).to.equal('Footnote');
+        expect(el.textContent).not.to.contain('Color-Palette');
+        expect(el.querySelector(`[${type === 'line' ? 'stroke' : 'fill'}="#112233"]`)).to.exist;
+        if (type === 'bar') {
+          expect(chart.getOption().series[2].backgroundStyle.color).to.equal('#112233');
+        }
+      });
+    });
+
+    ['column', 'bar'].forEach((type) => {
+      it(`cycles colors across individual ${type} bars without a Color column`, async () => {
+        const data = {
+          data: [
+            { Day: 'Monday', Visitors: '100' },
+            { Day: 'Tuesday', Visitors: '200' },
+            { Day: 'Wednesday', Visitors: '300' },
+            { Day: 'Thursday', Visitors: '400' },
+            { Day: 'Friday', Visitors: '500' },
+          ],
+        };
+        const el = await renderChart(type, paletteRow, data, 'indigo');
+        expect(chart.getOption().color).to.eql(['#112233', '#445566']);
+        expect(chart.getOption().series[0].colorBy).to.equal('data');
+        expect(el.querySelectorAll('.chart-wrapper svg path[fill="#112233"]').length)
+          .to.be.at.least(3);
+        expect(el.querySelectorAll('.chart-wrapper svg path[fill="#445566"]').length)
+          .to.be.at.least(2);
+      });
+
+      [false, true].forEach((hasColorColumn) => {
+        const suffix = hasColorColumn ? ' despite a Color column' : '';
+        it(`keeps grouped ${type} colors aligned with their series${suffix}`, async () => {
+          const data = {
+            data: ['Wednesday', 'Thanksgiving', 'Black Friday'].map((day, index) => ({
+              0: day,
+              2024: `${100 + index * 10}`,
+              2025: `${200 + index * 10}`,
+              ...(hasColorColumn ? { Color: 'purple' } : {}),
+            })),
+          };
+          const el = await renderChart(type, paletteRow, data, 'indigo');
+          const options = chart.getOption();
+          expect(options.series.map(({ name, colorBy }) => ({ name, colorBy }))).to.eql([
+            { name: '2024', colorBy: 'series' },
+            { name: '2025', colorBy: 'series' },
+          ]);
+          const seriesModels = chart.getModel().getSeries();
+          seriesModels.forEach((seriesModel, seriesIndex) => {
+            const seriesData = seriesModel.getData();
+            const expectedColor = ['#112233', '#445566'][seriesIndex];
+            expect(seriesData.getVisual('style').fill).to.equal(expectedColor);
+            for (let index = 0; index < seriesData.count(); index += 1) {
+              expect(seriesData.getItemVisual(index, 'style').fill).to.equal(expectedColor);
+            }
+          });
+          expect(el.querySelectorAll('.chart-wrapper svg path[fill="#112233"]').length)
+            .to.be.at.least(3);
+          expect(el.querySelectorAll('.chart-wrapper svg path[fill="#445566"]').length)
+            .to.be.at.least(3);
+          expect(el.querySelector(`.chart-wrapper svg path[fill="${colorPalette.purple}"]`))
+            .not.to.exist;
+        });
+      });
+    });
+
+    it('uses every applicable custom color instead of the final spreadsheet color', async () => {
+      const colors = ['#003F5C', '#2F4B7C', '#665191', '#A05195', '#D45087', '#F95D6A', '#FF7C43'];
+      const data = {
+        data: colors.map((color, index) => ({
+          date: `${2019 + index}`,
+          'Spend ($B)': `${100 + index * 10}`,
+          Color: index === 6 ? 'purple' : '',
+          unit: index === 0 ? 'B' : '',
+        })),
+      };
+      const row = `<div><div>color-palette</div><div>${colors.join(', ')}</div></div>`;
+      const el = await renderChart('column', row, data, 'blue');
+      expect(chart.getOption().color).to.eql(colors);
+      colors.forEach((color) => {
+        expect(el.querySelector(`.chart-wrapper svg path[fill="${color}"]`)).to.exist;
+      });
+      expect(el.querySelector(`.chart-wrapper svg path[fill="${colorPalette.purple}"]`)).not.to.exist;
+    });
+
+    it('does not treat a palette row as a footnote when no footnote is authored', async () => {
+      const el = await renderChart('column', paletteRow);
+      expect(el.querySelector('.footnote')).not.to.exist;
+      expect(chart.getOption().color[0]).to.equal('#112233');
+    });
+
+    it('retains positional content when the configuration precedes the title', async () => {
+      const link = '/drafts/data-viz/palette-before-title.json';
+      document.body.innerHTML = `<div class="chart line">${paletteRow}
+        <div><div>Title</div></div><div><div>Subtitle</div></div>
+        <div><div><a href="${link}"></a></div></div><div><div>Footnote</div></div>
+      </div>`;
+      fetch.withArgs(new URL(link, window.location.href).href)
+        .resolves({ ok: true, json: () => json });
+      const el = document.querySelector('.chart');
+      init(el);
+      await waitForElement('.chart-wrapper svg');
+      chart = window.echarts.getInstanceByDom(el.querySelector('.chart-wrapper'));
+      expect(el.querySelector('.title').textContent).to.equal('Title');
+      expect(el.querySelector('.footnote').textContent).to.equal('Footnote');
+      expect(chart.getOption().color[0]).to.equal('#112233');
+    });
+
+    it('preserves legacy named colors when no palette row is present', async () => {
+      const el = await renderChart('column', '<div><div>Footnote</div></div>', json, 'indigo');
+      expect(chart.getOption().color).to.eql(getColors('indigo'));
+      expect(el.hasAttribute('title')).to.equal(false);
+    });
+
+    it('falls back to the full legacy palette when one custom color is invalid', async () => {
+      const row = '<div><div>color-palette</div><div>#112233, invalid</div></div>';
+      const el = await renderChart('column', row, json, 'indigo');
+      expect(chart.getOption().color).to.eql(getColors('indigo'));
+      expect(el.classList.contains('palette-warning')).to.equal(true);
+      expect(el.hasAttribute('title')).to.equal(false);
+    });
+
+    it('keeps the custom palette ahead of spreadsheet colors', async () => {
+      const data = {
+        data: [
+          { Day: 'Monday', Visitors: '100', Color: '' },
+          { Day: 'Tuesday', Visitors: '200', Color: 'magenta' },
+        ],
+      };
+      await renderChart('column', paletteRow, data, 'indigo');
+      expect(chart.getOption().color).to.eql(['#112233', '#445566']);
+      expect(chart.getOption().series[0].colorBy).to.equal('data');
+    });
+
+    it('ignores spreadsheet colors for line charts with a valid custom palette', async () => {
+      const data = { data: [{ ...json.data[0], Color: 'purple' }] };
+      await renderChart('line', paletteRow, data, 'indigo');
+      expect(chart.getOption().color).to.eql(getColors('indigo', ['#112233', '#445566']));
+    });
+
+    ['bar', 'column', 'line'].forEach((type) => {
+      it(`preserves spreadsheet colors for ${type} charts with a malformed custom palette`, async () => {
+        const data = {
+          data: [
+            { Day: 'Monday', Visitors: '100', Color: '' },
+            { Day: 'Tuesday', Visitors: '200', Color: 'purple' },
+          ],
+        };
+        const row = '<div><div>color-palette</div><div>#112233, invalid</div></div>';
+        const el = await renderChart(type, row, data, 'indigo');
+        expect(chart.getOption().color).to.eql([colorPalette.indigo, colorPalette.purple]);
+        expect(el.classList.contains('palette-warning')).to.equal(true);
+        expect(el.hasAttribute('title')).to.equal(false);
+      });
+    });
+
+    [false, true].forEach((singleSeries) => {
+      it(`retains ${singleSeries ? 'per-bar' : 'per-series'} custom colors after resizing`, async () => {
+        const listener = sinon.spy(window, 'addEventListener');
+        let clock;
+        try {
+          const data = singleSeries
+            ? { data: [{ Day: 'Monday', Visitors: '100', Color: 'purple' }] }
+            : { data: [{ ...json.data[0], Color: 'purple' }] };
+          const el = await renderChart('bar', paletteRow, data);
+          const resize = listener.getCalls().find(({ args }) => args[0] === 'resize').args[1];
+          clock = sinon.useFakeTimers();
+          window.innerWidth = DESKTOP_BREAKPOINT;
+          resize();
+          clock.tick(1000);
+          chart = window.echarts.getInstanceByDom(el.querySelector('.chart-wrapper'));
+          expect(el.getAttribute('data-device')).to.equal('desktop');
+          expect(chart.getOption().color).to.eql(['#112233', '#445566']);
+          expect(chart.getOption().series[0].colorBy).to.equal(singleSeries ? 'data' : 'series');
+          expect(chart.getOption().series[0].backgroundStyle.color).to.equal('#112233');
+
+          window.innerWidth = TABLET_BREAKPOINT - 1;
+          resize();
+          clock.tick(1000);
+          chart = window.echarts.getInstanceByDom(el.querySelector('.chart-wrapper'));
+          expect(el.getAttribute('data-device')).to.equal('mobile');
+          expect(chart.getOption().color).to.eql(['#112233', '#445566']);
+          expect(chart.getOption().series[0].colorBy).to.equal(singleSeries ? 'data' : 'series');
+        } finally {
+          clock?.restore();
+          listener.restore();
+        }
+      });
+    });
+
+    it('uses only the first custom color for list headers', async () => {
+      const data = JSON.parse(await readFile({ path: './mocks/listChartSingleTable.json' }));
+      data.table.data.push({ Title: 'Second list', Sheet: 'Black Friday' });
+      const el = await renderChart('list', paletteRow, data, 'indigo');
+      const headers = el.querySelectorAll('.list-wrapper .title');
+      expect(headers.length).to.equal(2);
+      headers.forEach((header) => {
+        expect(header.style.backgroundColor).to.equal('rgb(17, 34, 51)');
+      });
+      expect(el.hasAttribute('title')).to.equal(false);
+    });
+
+    ['#112233, invalid', 'invalid, #112233, #445566', '#112233,', ' #112233 ']
+      .forEach((value) => {
+        it(`uses the first valid list header color from "${value}"`, async () => {
+          const data = JSON.parse(await readFile({ path: './mocks/listChartSingleTable.json' }));
+          const row = `<div><div>color-palette</div><div>${value}</div></div>`;
+          const el = await renderChart('list', row, data, 'indigo');
+          expect(el.querySelector('.list-wrapper .title').style.backgroundColor)
+            .to.equal('rgb(17, 34, 51)');
+          expect(el.textContent).not.to.contain('color-palette');
+          expect(el.hasAttribute('title')).to.equal(false);
+        });
+      });
+
+    it('preserves the legacy list color when no custom hex code is valid', async () => {
+      const data = JSON.parse(await readFile({ path: './mocks/listChartSingleTable.json' }));
+      const row = '<div><div>color-palette</div><div>invalid, #12,</div></div>';
+      const el = await renderChart('list', row, data, 'indigo');
+      expect(el.querySelector('.list-wrapper .title').style.backgroundColor).to.equal('rgb(64, 70, 202)');
+      expect(el.classList.contains('palette-warning')).to.equal(true);
+      expect(el.hasAttribute('title')).to.equal(false);
+    });
+
+    it('preserves the named list color without a configuration row', async () => {
+      const data = JSON.parse(await readFile({ path: './mocks/listChartSingleTable.json' }));
+      const el = await renderChart('list', '', data, 'indigo');
+      expect(el.querySelector('.list-wrapper .title').style.backgroundColor).to.equal('rgb(64, 70, 202)');
+      expect(el.hasAttribute('title')).to.equal(false);
+    });
+
+    it('does not change area chart colors', async () => {
+      await renderChart('area', paletteRow, json, 'indigo');
+      expect(chart.getOption().color).to.eql(getColors('indigo'));
+    });
   });
 
   describe('processUnits', () => {

@@ -1,10 +1,35 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
+const NAV_HEIGHT_PROP = '--rc-nav-height';
+
+// Lets focused links clear the sticky header when tabbing back into the section.
+function initNavHeight(el) {
+  const section = el.closest('.section');
+  const header = document.querySelector('header');
+  if (!section || !header) return;
+  const observer = new ResizeObserver(() => {
+    if (!section.isConnected) {
+      observer.disconnect();
+      return;
+    }
+    try {
+      section.style.setProperty(NAV_HEIGHT_PROP, `${getGnavHeight()}px`);
+    } catch {
+      // Local nav not in the DOM yet; the header resize will retry.
+    }
+  });
+  observer.observe(header);
+  // getGnavHeight() also counts the promo, which sits outside the header.
+  const promo = document.querySelector('.feds-promo-aside-wrapper');
+  if (promo) observer.observe(promo);
+}
 
 function hangOpeningQuote(header) {
-  if (!header) return;
+  if (!header || header.querySelector('mas-field')) return;
   const openingQuotes = /^(\p{Pi}|["„‚「『｢﹁﹃＂⹂])/u;
   const match = header.textContent.match(openingQuotes);
   if (!match) return;
@@ -14,15 +39,23 @@ function hangOpeningQuote(header) {
   header.prepend(span);
 }
 
-function decorateText(el) {
+function decorateMasText(el) {
   decorateBlockText(el);
+  const bodyClass = [...(el.querySelector(':scope > [class*="body-"]')?.classList ?? [])]
+    .find((cls) => cls.startsWith('body-'));
+  normalizeMasFieldText(el, bodyClass?.slice(5) ?? 'md');
+}
+
+function decorateText(el) {
+  decorateMasText(el);
   const firstText = el?.querySelector('h1, h2, h3, h4, h5, h6, p');
   hangOpeningQuote(firstText);
 }
 
 function promoteParagraphHeading(content, headingSize = '2', skipFirst = false) {
   if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
-  const ps = [...content.querySelectorAll('p')];
+  const ps = [...content.querySelectorAll('p, div[class*="body-"]')]
+    .filter((paragraph) => !paragraph.closest('mas-field'));
   const target = skipFirst ? ps[1] : ps[0];
   if (!target) return;
   const bodyClass = [...target.classList].find((c) => c.startsWith('body-'));
@@ -73,33 +106,72 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
+const SPACING_CLASS_RE = /^spacing-[a-z0-9]+(-static)?(-top|-bottom)?$/;
+
+function applyMediaSpacing(root) {
+  const spacingClasses = [...root.classList].filter((cls) => SPACING_CLASS_RE.test(cls));
+  if (!spacingClasses.length) return;
+
+  const authorsTop = spacingClasses.some((cls) => !cls.endsWith('-bottom'));
+  const authorsBottom = spacingClasses.some((cls) => !cls.endsWith('-top'));
+
+  const probe = createTag('div', { class: spacingClasses.join(' '), style: 'position:absolute;visibility:hidden' });
+  root.append(probe);
+  const { paddingTop, paddingBottom } = getComputedStyle(probe);
+  probe.remove();
+
+  if (authorsTop) root.style.setProperty('--rc-media-spacing-top', paddingTop);
+  if (authorsBottom) root.style.setProperty('--rc-media-spacing-bottom', paddingBottom);
+}
+
+const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
+
+function isMediaCell(cell) {
+  if (!cell) return false;
+  if (cell.querySelector(MEDIA_SELECTOR)) return true;
+  return !!cell.querySelector('img')
+    && !cell.querySelector('.action-area, a.con-button, .con-button');
+}
+
+function hasCellContent(cell) {
+  return !!(cell?.textContent?.trim() || cell?.children.length);
+}
+
 function decorateMediaVariant(container) {
-  const row = container.children[0];
-  if (!row) return;
+  const rows = [...container.children];
+  if (!rows.length) return;
 
-  const [ctaCell, mediaCell] = [...row.children];
-  if (!ctaCell && !mediaCell) return;
+  const cells = rows.flatMap((row) => [...row.children]);
+  let mediaCell = cells.find(isMediaCell);
+  let ctaCell = cells.find((cell) => cell !== mediaCell && hasCellContent(cell)) || null;
 
-  if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
+  if (!mediaCell) {
+    const [firstCell, secondCell] = [...(rows[0]?.children ?? [])];
+    ctaCell = firstCell ?? null;
+    mediaCell = secondCell ?? null;
+  }
+
+  if (hasCellContent(mediaCell)) {
     mediaCell.classList.add('media-cell');
     container.append(mediaCell);
   } else {
     mediaCell?.remove();
   }
 
-  if (ctaCell) {
-    decorateBlockText(ctaCell);
+  if (ctaCell && ctaCell !== mediaCell && hasCellContent(ctaCell)) {
+    decorateMasText(ctaCell);
     ctaCell.classList.add('cta-area');
     container.append(ctaCell);
   }
 
-  row.remove();
+  rows.forEach((row) => row.remove());
   container.querySelector('.action-area')?.classList.add('dark');
   container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
 }
 
 function decorate(block, root = block) {
   if (root.classList.contains('media')) {
+    applyMediaSpacing(root);
     decorateMediaVariant(block);
     return;
   }
@@ -138,7 +210,13 @@ function applyHeroOverlay(el) {
 
 export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
+
+  if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
+    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+  }
+
   applyHeroOverlay(el);
+  if (el.classList.contains('merch-moment')) initNavHeight(el);
   if (viewports.hasViewportVariations) {
     const observer = new MutationObserver(() => applyHeroOverlay(el));
     observer.observe(el, { childList: true });

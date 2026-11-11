@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import init from '../../../libs/c2/blocks/hover-list/hover-list.js';
 
 describe('Hover List', () => {
-  it('marks the block as a container and builds headline + list columns', async () => {
+  it('marks the block as a container and builds description + list columns', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.hover-list');
     init(block);
@@ -12,17 +12,17 @@ describe('Hover List', () => {
     expect(block.classList.contains('container')).to.be.true;
 
     const children = [...block.children];
-    expect(children[0].classList.contains('hover-list-headline-wrapper')).to.be.true;
+    expect(children[0].classList.contains('hover-list-desc-wrapper')).to.be.true;
     expect(children[1].classList.contains('hover-list-col')).to.be.true;
     expect(block.querySelector('.hover-list-col > ol.hover-list-items')).to.exist;
   });
 
-  it('decorates the headline from the first row', async () => {
+  it('decorates the description from the first row', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.hover-list');
     init(block);
 
-    const heading = block.querySelector('.hover-list-headline-wrapper .hover-list-headline h2');
+    const heading = block.querySelector('.hover-list-desc-wrapper .hover-list-desc h2');
     expect(heading).to.exist;
     expect(heading.classList.contains('heading-2')).to.be.true;
     expect(heading.textContent.trim()).to.equal('Explore features');
@@ -77,6 +77,6 @@ describe('Hover List', () => {
     init(block);
 
     expect(block.querySelector('.hover-list-items')).to.be.null;
-    expect(block.querySelector('.hover-list-headline-wrapper')).to.be.null;
+    expect(block.querySelector('.hover-list-desc-wrapper')).to.be.null;
   });
 });

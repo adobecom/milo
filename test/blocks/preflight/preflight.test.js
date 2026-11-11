@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { html, render } from '../../../libs/deps/htm-preact.js';
-import { Preflight } from '../../../libs/blocks/preflight/preflight.js';
+import init, { Preflight, countChecks, countCategory } from '../../../libs/blocks/preflight/preflight.js';
 
 const TAB_TITLES = ['General', 'SEO', 'Martech', 'M@S', 'Accessibility', 'Performance', 'Assets'];
 // Signal-driven re-renders (tab switch) and useEffect checks resolve on a later tick.
@@ -62,5 +62,53 @@ describe('Preflight modal (isolation)', () => {
     const cta = container.querySelector('#panel-3 .preflight-action');
     expect(cta, 'martech CTA exists').to.exist;
     expect(() => cta.click()).to.not.throw();
+  });
+
+  it('init renders the modal and preloads the icon masks', async () => {
+    init(container);
+    expect(container.querySelectorAll('.preflight-tab-button')).to.have.lengthOf(TAB_TITLES.length);
+    expect(document.head.querySelector('link[rel="preload"][href*="check.svg"]')).to.exist;
+    await tick();
+  });
+});
+
+describe('Preflight badge counting', () => {
+  describe('countChecks', () => {
+    it('counts fail as an error and limbo as a warning', () => {
+      const res = countChecks([
+        { status: 'fail', severity: 'critical' },
+        { status: 'fail', severity: 'warning' },
+        { status: 'limbo' },
+        { status: 'pass' },
+      ]);
+      expect(res).to.deep.equal({ errors: 1, warnings: 2 });
+    });
+
+    it('defaults to zero counts for an empty list', () => {
+      expect(countChecks()).to.deep.equal({ errors: 0, warnings: 0 });
+    });
+  });
+
+  describe('countCategory', () => {
+    it('uses issuesCount for Accessibility failures', () => {
+      const runChecks = { accessibility: [{ status: 'fail', details: { issuesCount: 4 } }] };
+      expect(countCategory('Accessibility', runChecks)).to.deep.equal({ errors: 4, warnings: 0 });
+    });
+
+    it('uses unpublished length for M@S failures', () => {
+      const runChecks = { merch: [{ status: 'fail', details: { unpublished: [1, 2] } }] };
+      expect(countCategory('M@S', runChecks)).to.deep.equal({ errors: 2, warnings: 0 });
+    });
+
+    it('splits Assets failures into critical errors and below-fold warnings', () => {
+      const details = { criticalAssetFailures: [1], warningAssetFailures: [1, 2] };
+      const runChecks = { assets: [{ details }] };
+      expect(countCategory('Assets', runChecks)).to.deep.equal({ errors: 1, warnings: 2 });
+    });
+
+    it('falls back to countChecks for structure/seo/performance', () => {
+      const runChecks = { seo: [{ status: 'fail', severity: 'critical' }, { status: 'limbo' }] };
+      expect(countCategory('SEO', runChecks)).to.deep.equal({ errors: 1, warnings: 1 });
+    });
   });
 });

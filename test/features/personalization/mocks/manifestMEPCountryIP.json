@@ -10,6 +10,7 @@
       "param-newoffer=123": "",
       "countryIP(de)": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
       "countryIP(jp,sg)": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
+      "countryIP(UK)": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
       "android": "",
       "ios": ""
     }

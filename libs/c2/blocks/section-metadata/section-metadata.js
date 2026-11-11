@@ -6,6 +6,8 @@ const mediaQueries = {
   tablet: window.matchMedia('(768px <= width < 1280px)'),
 };
 
+const VIEWPORT_CLASSES = ['mobile-only', 'tablet-only', 'desktop-only'];
+
 export function handleBackground(div, section) {
   const items = div.background.content.map((el, i) => {
     const pic = el.querySelector('picture');
@@ -22,7 +24,7 @@ export function handleBackground(div, section) {
   section.classList.add('has-background');
 
   const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
-  const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
+  const allVP = VIEWPORT_CLASSES.map((vp) => [vp]);
   const viewports = items.length === 2 ? binaryVP : allVP;
 
   const bgContainer = createTag('div', { class: 'section-background' });
@@ -50,6 +52,31 @@ export function handleBackground(div, section) {
   });
 
   section.insertAdjacentElement('afterbegin', bgContainer);
+}
+
+let backgroundVideoId = 0;
+
+// Relocating the control out of its `.video-holder` breaks the ancestry the shared
+// video handlers use, so re-link it to the video via `aria-controls`.
+function handleBackgroundControls(section) {
+  const host = section.querySelector(':scope > .background-controls');
+  if (!host) return;
+
+  section.querySelectorAll('.section-background .play-pause-button').forEach((control) => {
+    const container = control.closest('.video-container');
+    const video = container?.querySelector('video');
+    if (video) {
+      if (!video.id) {
+        backgroundVideoId += 1;
+        video.id = `background-video-${backgroundVideoId}`;
+      }
+      control.setAttribute('aria-controls', video.id);
+    }
+    // Carry the container's viewport classes onto the control so CSS can gate it.
+    VIEWPORT_CLASSES.filter((vp) => container?.classList.contains(vp))
+      .forEach((vp) => control.classList.add(vp));
+    host.append(control);
+  });
 }
 
 export async function handleStyle(text, section) {
@@ -184,6 +211,12 @@ function handleImages(imageOptions, section) {
   decoratePictures(section, imageOptions);
 }
 
+function handleBentoStack(section) {
+  import('../../../features/bento-stack.js')
+    .then(({ default: initBentoStack }) => initBentoStack(section))
+    .catch((e) => window.lana?.log(`bento-stack init failed: ${e}`, { tags: 'bento-stack', severity: 'info' }));
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -198,10 +231,14 @@ export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
   if (metadata.style) await handleStyle(metadata.style.text, section);
-  if (metadata.background) handleBackground(metadata, section);
+  if (metadata.background) {
+    handleBackground(metadata, section);
+    handleBackgroundControls(section);
+  }
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
   if (metadata.layout) handleStyle(metadata.layout.text, section);
   if (metadata.images) handleImages(metadata.images?.text[0], section);
   handleStickyFocus(section);
+  if (section?.matches('.bento.stack-mobile')) handleBentoStack(section);
 }

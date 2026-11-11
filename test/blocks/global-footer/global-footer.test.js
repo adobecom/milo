@@ -15,11 +15,13 @@ import fetchedFooter from './mocks/fetched-footer.js';
 import icons from './mocks/icons.js';
 import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
 import placeholders from '../global-navigation/mocks/placeholders.js';
+import { notifyTargetReady } from '../../../libs/utils/utils.js';
 import { logErrorFor } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { waitForElement } from '../../helpers/waitfor.js';
 
 describe('global footer', () => {
   let clock = null;
+  before(() => notifyTargetReady());
   beforeEach(async () => {
     document.body.innerHTML = baseFooter;
     clock = sinon.useFakeTimers({

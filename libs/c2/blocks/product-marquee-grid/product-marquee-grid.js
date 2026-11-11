@@ -1,27 +1,39 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { decorateViewportContent, decorateButtons } from '../../../utils/decorate.js';
+import { decorateViewportContent, decorateButtons, normalizeMasFieldText } from '../../../utils/decorate.js';
 
-const CHEVRON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M6.58349 11.208L10.2837 7.50781C10.606 7.18554 10.606 6.66406 10.2837 6.34179C9.96142 6.01953 9.43994 6.01953 9.11767 6.34179L6.82568 8.63281V1.375C6.82568 0.918955 6.45654 0.549805 6.00048 0.549805C5.54442 0.549805 5.17528 0.918945 5.17528 1.375V8.63281L2.88329 6.34179C2.56102 6.01953 2.03954 6.01953 1.71727 6.34179C1.55614 6.50292 1.47508 6.71386 1.47508 6.9248C1.47508 7.13574 1.55613 7.34668 1.71727 7.50781L5.41747 11.208C5.73974 11.5303 6.26122 11.5303 6.58349 11.208Z" fill="#fff"/></svg>';
+const MAS_BODY_FIELDS = 'mas-field:is([field="description"], [field="shortDescription"])';
 
-function parseColumn(col, isSoftOffer) {
+const MAS_FIELD_CLASSES = {
+  description: ['mas-description'],
+  prices: ['mas-price', 'heading-5'],
+  shortDescription: ['mas-short-description'],
+  subtitle: ['mas-subtitle'],
+  badge: ['mas-badge'],
+  cardTitle: ['mas-card-title', 'heading-5'],
+};
+
+function decorateMasField(cardContent) {
+  cardContent.querySelectorAll('mas-field[field]').forEach((masField) => {
+    const classes = MAS_FIELD_CLASSES[masField.getAttribute('field')];
+    if (classes) masField.classList.add(...classes);
+  });
+  const priceParent = cardContent.querySelector('.mas-price')?.parentElement;
+  const commitmentEl = priceParent?.nextElementSibling;
+  if (!commitmentEl?.matches('p') || commitmentEl.children.length || !commitmentEl.textContent.trim()) return;
+  priceParent.append(commitmentEl);
+  commitmentEl.classList.add('mas-price-commitment');
+}
+
+function parseLeftColumn(col) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
-  if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
-
-  const ctaLinkPara = col.querySelector('p:has(em a), p:has(strong a), p:has(a[data-wcs-osi])');
-  const ctaLink = ctaLinkPara?.querySelector('em a, strong a, a[data-wcs-osi]');
-  ctaLinkPara?.remove();
+  if (iconEl) iconEl.src = getFederatedUrl(iconEl.getAttribute('src'));
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
-  heading?.classList.add('heading-super');
 
-  const allParas = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  const labelEl = isSoftOffer && allParas.length >= 2 ? allParas.at(-1) : null;
-  const bodyEls = labelEl ? allParas.slice(0, -1) : allParas;
-  bodyEls.forEach((el) => el.classList.add('heading-5'));
+  const bodyEls = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field)')]
+    .filter((el) => el !== heading && (el.textContent.trim() || el.matches('mas-field') || el.querySelector('mas-field')));
 
-  return {
-    iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
-  };
+  return { iconEl, heading, bodyEls };
 }
 
 function buildChicletRow(iconEl, heading) {
@@ -34,43 +46,84 @@ function buildChicletRow(iconEl, heading) {
   return chicletRow;
 }
 
-function buildSoftOfferCta(ctaLinkPara, labelEl) {
-  const ctaWrapper = createTag('div', { class: 'pm-promo-cta' });
-  if (labelEl) {
-    labelEl.classList.add('pm-promo-cta-label');
-    ctaWrapper.append(labelEl);
+function buildMerchCard(col, { pillCtas = false } = {}) {
+  [...col.children]
+    .filter((el) => !el.matches(MAS_BODY_FIELDS) && !el.querySelector(MAS_BODY_FIELDS))
+    .forEach((el) => decorateButtons(el));
+  col.querySelectorAll(`:scope > p:has(> ${MAS_BODY_FIELDS})`)
+    .forEach((p) => p.classList.add('body-md'));
+  normalizeMasFieldText(col, 'md', MAS_BODY_FIELDS);
+
+  let allParas = [...col.querySelectorAll(':scope > :is(p, h1, h2, h3, h4, h5, h6, mas-field, div)')]
+    .filter((el) => el.textContent.trim() || el.matches('mas-field')
+      || el.querySelector('mas-field, [is="inline-price"], .con-button, a[data-wcs-osi]'));
+  if (!allParas.length && col.textContent.trim()) {
+    const para = createTag('p');
+    para.append(...col.childNodes);
+    allParas = [para];
   }
-  ctaWrapper.append(ctaLinkPara);
-  decorateButtons(ctaWrapper);
-  return ctaWrapper;
+
+  const cardContent = createTag('div', { class: 'pm-merch-content' });
+  // Keep the mas-field wrapper: its tooltip CSS is scoped to `mas-field .icon-button`.
+  allParas.forEach((el) => cardContent.append(el.closest('mas-field') || el));
+  decorateMasField(cardContent);
+
+  const merchCard = createTag('div', { class: 'pm-merch-card' });
+  merchCard.append(cardContent);
+  const ctaSelector = '.con-button, a[data-wcs-osi], mas-field[field^="ctas"]';
+  const isCtaPara = (el) => {
+    const cta = el.matches(ctaSelector) ? el : el.querySelector(ctaSelector);
+    return !!cta && !cta.closest(MAS_BODY_FIELDS);
+  };
+  const ctaParas = [...cardContent.children].filter(isCtaPara);
+  if (ctaParas.length) {
+    const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
+    if (pillCtas) merchCard.append(ctaWrapper);
+    else ctaParas[0].replaceWith(ctaWrapper);
+    ctaParas.forEach((para) => ctaWrapper.append(para));
+  }
+
+  return merchCard;
 }
 
-// TODO: confirm if the featured-offer variant is used on other pages; remove if not needed.
-function buildPromoButton(ctaLink) {
-  return createTag('a', { class: 'pm-promo-button', href: ctaLink.getAttribute('href') }, [
-    createTag('span', { class: 'pm-promo-text eyebrow' }, ctaLink.textContent.trim()),
-    createTag('span', { class: 'pm-promo-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
-  ]);
+function toSubtext(el) {
+  const level = el.tagName.match(/^H([1-6])$/)?.[1];
+  if (!level) {
+    el.classList.add('pm-subtext');
+    return el;
+  }
+  const p = createTag('p');
+  p.append(...el.childNodes);
+  [...el.attributes].forEach(({ name, value }) => p.setAttribute(name, value));
+  p.classList.add('pm-subtext', `heading-${level}`);
+  return p;
 }
 
-function decorate(block) {
-  const isPromoCta = block.classList.contains('featured-offer');
-  const col = block.children[0]?.children[0];
+function decorate(block, blockEl = block) {
+  const row = block.children[0];
+  const col = row?.children[0];
   if (!col) return;
 
-  const {
-    iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
-  } = parseColumn(col, !isPromoCta);
+  const { iconEl, heading, bodyEls } = parseLeftColumn(col);
+  const subtextEls = bodyEls.map(toSubtext);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
-  foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
+  foreground.append(buildChicletRow(iconEl, heading), ...subtextEls);
+  foreground.querySelectorAll(`:scope > p:has(> ${MAS_BODY_FIELDS})`)
+    .forEach((p) => p.classList.add('body-md'));
+  normalizeMasFieldText(foreground, 'md', MAS_BODY_FIELDS);
+  foreground.querySelectorAll(':scope > div.body-md').forEach((body) => body.classList.add('pm-subtext'));
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
-  if (ctaLink) {
-    const promoEl = isPromoCta
-      ? buildPromoButton(ctaLink)
-      : buildSoftOfferCta(ctaLinkPara, labelEl);
-    promoArea.append(promoEl);
+  const col2 = row?.children[1];
+  if (col2 && (col2.children.length || col2.textContent.trim())) {
+    const merchCard = buildMerchCard(col2, { pillCtas: blockEl.classList.contains('cta-pill') });
+    // special-promo inverts the card vs the hero: light hero -> dark card,
+    // dark hero -> light card. The mode class flips its content via tokens.
+    if (blockEl.classList.contains('special-promo')) {
+      merchCard.classList.add(blockEl.classList.contains('dark') ? 'light' : 'dark');
+    }
+    promoArea.append(merchCard);
   }
 
   const content = createTag('div', { class: 'pm-content container' });

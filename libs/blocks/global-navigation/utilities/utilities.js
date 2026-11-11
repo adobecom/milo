@@ -231,10 +231,14 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
   const selector = forceFederate
     ? '[src], [srcset]'
     : `[src*="/${FEDERAL_PATH_KEY}/"], [srcset*="/${FEDERAL_PATH_KEY}/"]`;
+  const { fedContentPrefix } = getConfig();
   section?.querySelectorAll(selector)
     .forEach((source) => {
       const type = source.hasAttribute('src') ? 'src' : 'srcset';
-      const path = getPath(source.getAttribute(type));
+      const value = source.getAttribute(type);
+      // getFederatedContentRoot already carries fedContentPrefix, so never federate twice.
+      if (fedContentPrefix && value.startsWith(`${getFederatedContentRoot()}/`)) return;
+      const path = getPath(value);
       const [, localeOrKeySegment, keyOrPathSegment] = path.split('/');
       if (forceFederate || [localeOrKeySegment, keyOrPathSegment].includes(FEDERAL_PATH_KEY)) {
         const federalPrefix = path.includes('/federal/') ? '' : '/federal';

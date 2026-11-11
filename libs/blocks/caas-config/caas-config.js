@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useReducer,
+  useRef,
   useState,
 } from '../../deps/htm-preact.js';
 import {
@@ -249,6 +250,7 @@ const defaultOptions = {
     modifiedDate: 'Modified Date',
     staticDate: 'Static Date',
     productName: 'Product Name',
+    productIcon: 'Product Icon',
   },
   cardHoverEffect: {
     default: 'Default',
@@ -338,7 +340,7 @@ const Input = ({
   `;
 };
 
-const DropdownSelect = ({ label, options, prop }) => {
+const DropdownSelect = ({ label, options, prop, tooltip }) => {
   const { dispatch, state } = useContext(ConfiguratorContext);
   const onChange = (selections) => {
     dispatch({
@@ -354,7 +356,7 @@ const DropdownSelect = ({ label, options, prop }) => {
       options=${options}
       value=${state[prop]}
       label=${label}
-
+      tooltip=${tooltip}
       onChange=${onChange}
     />
   `;
@@ -532,7 +534,12 @@ const TagsPanel = ({ tagsData }) => {
       label="Content Type Tags"
     />
     <${DropdownSelect} options=${allTags} prop="includeTags" label="Tags to Include" />
-    <${DropdownSelect} options=${allTags} prop="excludeTags" label="Tags to Exclude" />
+    <${DropdownSelect}
+      options=${allTags}
+      prop="excludeTags"
+      label="Tags to Exclude"
+      tooltip="Content is excluded only if it matches ALL of the selected tags (AND logic). To exclude content matching ANY of several tags, use the NOT logic Tags section below instead, which lets you choose OR logic."
+    />
     <label>Complex Queries (Include & Exclude)</label>
     <${MultiField}
       onChange=${onLogicTagChange('andLogicTags')}
@@ -931,7 +938,7 @@ const CopyBtn = () => {
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
   const [configUrl, setConfigUrl] = useState('');
-  const [btnText, setBtnText] = useState('Copy');
+  const [btnText, setBtnText] = useState('Copy configuration');
 
   const setTempStatus = (setFn, status = true) => {
     setFn(status);
@@ -988,9 +995,9 @@ const CopyBtn = () => {
       () => {
         setTempStatus((status) => {
           if (status) {
-            setBtnText('OK!');
+            setBtnText('Copied!');
           } else {
-            setBtnText('Copy');
+            setBtnText('Copy configuration');
           }
           setIsSuccess(status);
         });
@@ -1000,7 +1007,7 @@ const CopyBtn = () => {
           if (status) {
             setBtnText('Error');
           } else {
-            setBtnText('Copy');
+            setBtnText('Copy configuration');
           }
           setIsError(status);
         });
@@ -1008,12 +1015,13 @@ const CopyBtn = () => {
     );
   };
 
-  return html` <textarea class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
+  return html` <textarea aria-label="Configuration URL" class=${`copy-text ${(!navigator?.clipboard) ? '' : 'hide'}`}>${configUrl}</textarea>
     <button
       class="copy-config ${isError === true ? 'is-error' : ''} ${isSuccess === true
   ? 'is-success'
   : ''}"
       onClick=${copyConfig}
+      aria-live="polite"
     >
       ${btnText}
     </button>`;
@@ -1106,6 +1114,16 @@ const Configurator = ({ rootEl }) => {
   const [title] = useState(rootEl.querySelector('h1, h2, h3, h4, h5, h6, p'));
   const [error, setError] = useState();
   const [cardMutationObsv, setCardMutationObsv] = useState(null);
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const previewRoot = useRef(null);
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(
+    document.body.classList.contains('panel-collapsed'),
+  );
+
+  useEffect(() => {
+    rootEl.classList.toggle('is-dark', isDarkTheme);
+    return () => rootEl.classList.remove('is-dark');
+  }, [isDarkTheme, rootEl]);
 
   useEffect(async () => {
     caasFilesLoaded
@@ -1151,8 +1169,14 @@ const Configurator = ({ rootEl }) => {
   }, [state.tagsUrl]);
 
   useEffect(async () => {
+    // Keep the collection's imperative DOM outside Preact's managed children.
+    const previewEl = document.createElement('div');
+    previewEl.id = 'caas';
+    previewEl.className = 'caas-preview';
+    previewRoot.current.replaceChildren(previewEl);
+
     if (isCaasLoaded && strings !== undefined) {
-      await initCaas(state, strings);
+      await initCaas(state, strings, previewEl);
       /* c8 ignore next 3 */
       if (state.showIds) {
         setTimeout(() => addIdOverlays(), 500);
@@ -1161,30 +1185,85 @@ const Configurator = ({ rootEl }) => {
     }
   }, [isCaasLoaded, state, strings]);
 
-  const toogleCollapsed = () => {
-    document.body.classList.toggle('panel-collapsed');
+  const toggleCollapsed = () => {
+    setIsPanelCollapsed(document.body.classList.toggle('panel-collapsed'));
   };
 
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
+      <div class="config-brand" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+      </div>
       <div class="tool-title">
+          <p class="config-eyebrow">CaaS / Collection builder</p>
           ${/* c8 ignore next */''}
           <h1>${title ? title.textContent : 'CaaS Configurator'}</h1>
+          <p class="config-description">Build your collection. Make it yours.</p>
         </div>
         <${CopyBtn} />
       </div>
-      <div class="tool-content ${state.showIds && 'show-ids'}">
-        <div class="config-panel">
-          ${error && html`<div class="tool-error">${error}</div>`}
+      <div class="tool-content ${state.showIds ? 'show-ids' : ''} ${isPanelCollapsed ? 'settings-hidden' : ''}">
+        <div id="caas-settings" class="config-panel" hidden=${isPanelCollapsed}>
+          <div class="config-panel-heading">
+            <h2>Configuration</h2>
+            <p>Fine-tune your collection</p>
+          </div>
+          ${error && html`<div class="tool-error" role="status">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
-        <div>
-          <button class="collapse-panel" onClick=${() => toogleCollapsed()}>⇆</button>
-        </div>
         <div class="content-panel">
+          <div class="preview-toolbar">
+            <div class="preview-heading">
+              <span class="config-eyebrow">Your workspace</span>
+              <h2>Collection preview</h2>
+            </div>
+            <div class="preview-actions">
+              <button
+                type="button"
+                class="theme-toggle"
+                role="switch"
+                aria-label="Dark theme"
+                aria-checked=${isDarkTheme}
+                onClick=${() => setIsDarkTheme(!isDarkTheme)}
+              >
+                <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                  ${isDarkTheme
+    ? html`<path d="M16.5 11.8A7 7 0 0 1 8.2 3.5a7 7 0 1 0 8.3 8.3Z" />`
+    : html`<circle cx="10" cy="10" r="3" /><path d="M10 1v2m0 14v2M1 10h2m14 0h2M3.6 3.6 5 5m10 10 1.4 1.4M3.6 16.4 5 15M15 5l1.4-1.4" />`}
+                </svg>
+                <span>${isDarkTheme ? 'Dark' : 'Light'}</span>
+                <span class="theme-toggle-track" aria-hidden="true"></span>
+              </button>
+              <button
+                class="collapse-panel"
+                onClick=${toggleCollapsed}
+                aria-expanded=${!isPanelCollapsed}
+                aria-controls="caas-settings"
+              >
+                <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="2.5" y="3.5" width="15" height="13" rx="2" />
+                  <path d="M7.5 3.5v13" />
+                </svg>
+                ${isPanelCollapsed ? 'Show settings' : 'Hide settings'}
+              </button>
+            </div>
+          </div>
+          <div class="preview-context">
+            <span>Preview updates as you make changes</span>
+            <span class="preview-layout">
+              ${defaultOptions.layoutType[state.layoutType]} layout
+              <span aria-hidden="true"> / </span>
+              ${defaultOptions.cardStyle[state.cardStyle]?.replace('...', '')}
+            </span>
+          </div>
           <div class="modalContainer"></div>
-          <div id="caas" class="caas-preview"></div>
+          <div ref=${previewRoot}></div>
         </div>
       </div>
     </ConfiguratorContext.Provider>`;

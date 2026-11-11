@@ -1,4 +1,7 @@
-import { loadStyle } from '../utils/utils.js';
+import { loadStyle, loadLink } from '../utils/utils.js';
+
+// Replaced with true by build.mjs; native ES modules load stylesheet links instead.
+const isBundled = import.meta.standaloneNavBundle === true;
 
 const blockConfig = [
   {
@@ -141,23 +144,25 @@ export default async function loadBlock(configs, customLib) {
   if (useLocal) {
     miloLibs = 'http://localhost:6456';
   }
-  // The below css imports will fail when using the non-bundled standalone gnav
-  // and fallback to using loadStyle. On the other hand, the bundler will rewrite
-  // the css imports to attach the styles to the head (and point to the dist folder
-  // using the custom StyleLoader plugin found in build.mjs
-  try {
+  const isC2Gnav = header?.foundation === 'c2';
+  // StyleLoader rewrites these imports to inline styles only in the bundle.
+  if (isBundled) {
     await import('./base.css');
     if (theme === 'dark') {
       await import('./dark-nav.css');
     }
-    await import('./navigation.css');
-  } catch (e) {
+    if (isC2Gnav) {
+      await import('./navigation-c2.css');
+    } else {
+      await import('./navigation.css');
+    }
+  } else {
     if (theme === 'dark') {
       loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dark-nav.css`));
     } else {
       loadStyle(`${miloLibs}/libs/navigation/base.css`);
     }
-    loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
+    loadStyle(`${miloLibs}/libs/navigation/${isC2Gnav ? 'navigation-c2.css' : 'navigation.css'}`);
   }
 
   const origin = (originOverride && allowedOriginOverrides.includes(originOverride))
@@ -168,11 +173,12 @@ export default async function loadBlock(configs, customLib) {
   let setConfig;
   let getConfig;
   let createTag;
+  let notifyTargetReady;
   try {
     ([
       { default: bootstrapBlock },
       locales,
-      { setConfig, getConfig, createTag },
+      { setConfig, getConfig, createTag, notifyTargetReady },
     ] = await Promise.all([
       import('./bootstrapper.js'),
       resolveLocales(origin, configs?.locales),
@@ -205,6 +211,7 @@ export default async function loadBlock(configs, customLib) {
     allowedOrigins: [...allowedOrigins, origin],
     onFooterReady: footer?.onReady,
     onFooterError: footer?.onError,
+    isEvent: footer?.isEvent,
     ...paramConfigs,
   };
   try {
@@ -219,6 +226,25 @@ export default async function loadBlock(configs, customLib) {
     });
     return;
   }
+  // Standalone pages have no personalization, so don't make modals wait for it.
+  notifyTargetReady();
+  // Standalone consumers don't run Milo's loadArea bootstrap, which is what
+  // normally loads the Typekit stylesheet that defines Adobe Clean / Adobe
+  // Clean Display Black. Without it, gnav/footer headings fall back to a
+  // substitute font. Warm the Typekit origins, then load the font stylesheet
+  // (fire-and-forget so it doesn't block gnav/footer decoration).
+  ['https://use.typekit.net', 'https://p.typekit.net']
+    .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
+  import('../utils/fonts.js')
+    .then(({ default: loadFonts }) => {
+      const configLocale = getConfig().locale;
+      return loadFonts(configLocale?.tk ? configLocale : { tk: 'hah7vzn.css' });
+    })
+    .catch((e) => window.lana?.log(`${e.message} | standalone-gnav failed to load fonts | href: ${window.location.href}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    }));
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
 
@@ -243,6 +269,8 @@ export default async function loadBlock(configs, customLib) {
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
             productEntryCta: configBlock.productEntryCta || 'off',
             promoSource,
+            gnavFoundation: isC2Gnav ? 'c2' : undefined,
+            darkFont: configBlock.darkFont || 'false',
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
@@ -251,12 +279,22 @@ export default async function loadBlock(configs, customLib) {
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
             { key: 'productEntryCta', name: 'product-entry-cta' },
             { key: 'promoSource', name: 'gnav-promo-source' },
+            { key: 'gnavFoundation', name: 'gnav-foundation' },
+            { key: 'darkFont', name: 'gnav-dark-font' },
+            { key: 'isLocalNav', name: 'localnav' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
-          const { default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js');
+          let init;
+          let closeGnavOptions;
+          let updateGnavActiveLink;
+          if (isC2Gnav) {
+            ({ default: init } = await import('../c2/blocks/global-navigation/global-navigation.js'));
+          } else {
+            ({ default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js'));
+          }
           await bootstrapBlock(init, gnavConfigs);
-          window.closeGnav = closeGnavOptions;
-          window.updateGnavActiveLink = updateGnavActiveLink;
+          if (closeGnavOptions) window.closeGnav = closeGnavOptions;
+          if (updateGnavActiveLink) window.updateGnavActiveLink = updateGnavActiveLink;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);
@@ -269,19 +307,35 @@ export default async function loadBlock(configs, customLib) {
       }
       if (block.key === 'footer') {
         const footerSource = configBlock.footerSource || `${config?.locale?.contentRoot}/footer`;
+        const isC2Footer = configBlock.foundation === 'c2';
         try {
           const metaTags = [
             { key: 'footerSource', name: 'footer-source' },
+            { key: 'footerFoundation', name: 'footer-foundation' },
           ];
           const footerConfigs = {
             ...block,
             footerSource,
             isContainerResponsive: configBlock.isContainerResponsive,
+            footerFoundation: isC2Footer ? 'c2' : undefined,
           };
 
           setMetaTags(metaTags, footerConfigs, createTag);
-          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
-          const { default: init } = await import('../blocks/global-footer/global-footer.js');
+          if (isBundled) {
+            if (isC2Footer) {
+              await import('./footer-c2.css');
+            } else {
+              await import('./footer.css');
+            }
+          } else {
+            loadStyle(`${miloLibs}/libs/navigation/${isC2Footer ? 'footer-c2.css' : 'footer.css'}`);
+          }
+          let init;
+          if (isC2Footer) {
+            ({ default: init } = await import('../c2/blocks/global-footer/global-footer.js'));
+          } else {
+            ({ default: init } = await import('../blocks/global-footer/global-footer.js'));
+          }
           await bootstrapBlock(init, footerConfigs);
         } catch (e) {
           configBlock.onError?.(e);

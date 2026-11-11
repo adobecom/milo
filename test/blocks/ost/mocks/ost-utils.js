@@ -35,6 +35,8 @@ const createTag = (tag, attributes = {}) => {
 
 const loadArea = () => Promise.resolve();
 
+const loadIms = () => Promise.resolve();
+
 const localizeLinkAsync = () => Promise.resolve();
 
 const loadLink = () => Promise.resolve();
@@ -66,7 +68,7 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
   };
   const params = { ...defaultParams, ...overrideParams };
 
-  window.fetch = sinon.stub()
+  const fetchStub = sinon.stub()
     .onFirstCall()
     .callsFake(
       () => (
@@ -83,6 +85,10 @@ function mockOstDeps({ failStatus = false, failMetadata = false, mockToken, over
           : mockRes({ payload: `<head><meta name="checkout-workflow" content="${options.workflow}"></head>` })
       ),
     );
+  // initService eagerly fetches checkout-link.json; keep it out of the call-order stub.
+  window.fetch = (url, ...args) => (String(url).includes('checkout-link.json')
+    ? mockRes({ payload: { data: [] } })
+    : fetchStub(url, ...args));
 
   window.adobeIMS = {
     isSignedInUser: sinon.stub().returns(false),
@@ -138,6 +144,30 @@ const shouldAllowKrTrial = (button, localePrefix) => {
 const lingoActive = () => false;
 const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
+const getGeoIpWarmSheet = () => undefined;
+const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+const normCountryCode = (country) => {
+  if (typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
+const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
+
+// Unused by ost.js itself; only needed because merch.js statically imports
+// decorate.js and autoblock.js, which import these from utils.js.
+const isBot = () => false;
+const getMarketsUrl = () => '';
+const getValidatedMarket = () => Promise.resolve(null);
+const isSupportedMarket = () => Promise.resolve(false);
+const createIntersectionObserver = () => {};
+const getFederatedContentRoot = () => '';
+const getFedsPlaceholderConfig = () => ({});
+const shouldBlockFreeTrialLinks = () => false;
+const isAupEnabled = () => false;
+const getAupSelectValue = () => null;
+const whenTargetReady = () => Promise.resolve();
+const decorateLinksAsync = () => Promise.resolve();
+const loadBlock = () => Promise.resolve();
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -166,6 +196,7 @@ export {
   getLocale,
   getMetadata,
   loadArea,
+  loadIms,
   loadScript,
   loadStyle,
   getCountry,
@@ -180,5 +211,22 @@ export {
   lingoActive,
   getGeoLocalePrefix,
   getPlaceholderPaths,
+  getGeoIpWarmSheet,
+  geoIpSiteKey,
+  normCountryCode,
+  resolveDetectedMarketCountry,
   getValidatedMasLibsUrl,
+  isBot,
+  getMarketsUrl,
+  getValidatedMarket,
+  isSupportedMarket,
+  createIntersectionObserver,
+  getFederatedContentRoot,
+  getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
+  isAupEnabled,
+  getAupSelectValue,
+  whenTargetReady,
+  decorateLinksAsync,
+  loadBlock,
 };

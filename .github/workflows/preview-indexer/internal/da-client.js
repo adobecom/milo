@@ -1,48 +1,8 @@
 import FormData from 'form-data';
 import { DA_ORIGIN, createAxiosWithRetry } from './utils.js';
+import { getImsToken } from './ims-client.js';
 
 const axiosWithRetry = createAxiosWithRetry();
-let token;
-function checkTokenValidity(tokenToCheck) {
-  try {
-    const [, payloadB64] = tokenToCheck.split('.');
-    const payload = JSON.parse(Buffer.from(payloadB64, 'base64').toString('utf8'));
-    const createdAt = Number(payload.created_at || 0);
-    const expiresIn = Number(payload.expires_in || 0);
-    const expiresAt = createdAt + expiresIn;
-    const now = Date.now();
-    return now < expiresAt;
-  } catch (e) {
-    console.error('Failed to check token validity', e);
-  }
-  return false;
-}
-
-export async function getImsToken() {
-  if (token && checkTokenValidity(token)) {
-    return token;
-  }
-  const params = new URLSearchParams();
-  params.append('client_id', process.env.ROLLING_IMPORT_CLIENT_ID);
-  params.append('client_secret', process.env.ROLLING_IMPORT_CLIENT_SECRET);
-  params.append('code', process.env.ROLLING_IMPORT_CODE);
-  params.append('grant_type', process.env.ROLLING_IMPORT_GRANT_TYPE);
-
-  const response = await axiosWithRetry({
-    method: 'POST',
-    url: process.env.ROLLING_IMPORT_IMS_URL,
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    data: params.toString(),
-  });
-
-  if (response.status < 200 || response.status >= 300) {
-    throw new Error('Failed to retrieve IMS token');
-  }
-
-  token = response.data.access_token;
-  console.debug('Fetched IMS token');
-  return token;
-}
 
 export const daFetch = async (url, opts = {}, { on404 } = {}) => {
   opts.headers ||= {};

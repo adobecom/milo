@@ -34,12 +34,14 @@
 }
 
 .dialog-modal > .fragment {
+  isolation: isolate;
   overflow-y: auto;
   max-height: var(--modal-max-height);
 }
 
 .dialog-modal.upgrade-flow-modal,
-.dialog-modal.three-in-one {
+.dialog-modal.three-in-one,
+.dialog-modal.aup-modal {
   height: 100%;
   width: 100%;
   max-height: 100%;
@@ -53,7 +55,8 @@
 }
 
 .upgrade-flow-modal .upgrade-flow-iframe,
-.three-in-one .milo-iframe {
+.three-in-one .milo-iframe,
+.aup-modal .aup-workflow-content {
   overflow: hidden;
   height: 100%;
   width: 100%;
@@ -62,6 +65,23 @@
 
 .three-in-one iframe {
   width: 100%;
+}
+
+/* AUP workflow dialog: sized like the 3-in-1 modal; the SDK spinner overlays the iframe until app_loaded. */
+.aup-modal .aup-workflow-content {
+  position: relative;
+}
+
+.aup-modal .aup-workflow-content.loading > iframe {
+  visibility: hidden;
+}
+
+.aup-modal .aup-loading-indicator {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #locale-modal-v2 .dialog-close,
@@ -281,11 +301,18 @@
   --dialog-modal-close-size: 12px;
   --dialog-modal-close-line-width: calc(var(--dialog-modal-close-size) * 1.33);
   --dialog-modal-close-line-thickness: 2px;
+  --dialog-modal-close-bg: transparent;
+  --dialog-modal-close-outline-color: var(--modal-focus-color);
+  --close-button-circle-size: 40px;
+  --close-button-circle-line-width: calc(var(--close-button-circle-size) * 0.375);
+  --close-button-circle-bg: var(--s2a-color-gray-200);
+  --close-button-circle-outline-color: var(--s2a-color-blue-1000);
   border-radius: var(--s2a-spacing-md);
 
   button.dialog-close {
     width: var(--dialog-modal-close-size);
     height: var(--dialog-modal-close-size);
+    background: var(--dialog-modal-close-bg);
     border: none;
     right: var(--s2a-spacing-lg);
     top: var(--s2a-spacing-lg);
@@ -314,6 +341,45 @@
     &::after {
       transform: translate(-50%, -50%) rotate(-45deg);
     }
+  }
+
+  /* stylelint-disable-next-line no-descending-specificity */
+  .dialog-close:focus-visible {
+    outline-color: var(--dialog-modal-close-outline-color);
+  }
+}
+
+.dialog-modal.close-button-circle {
+  --dialog-modal-close-size: var(--close-button-circle-size);
+  --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+  --dialog-modal-close-bg: var(--close-button-circle-bg);
+  --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
+}
+
+@media (width < 768px) {
+  .dialog-modal.close-button-circle-mobile {
+    --dialog-modal-close-size: var(--close-button-circle-size);
+    --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+    --dialog-modal-close-bg: var(--close-button-circle-bg);
+    --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .dialog-modal.close-button-circle-tablet {
+    --dialog-modal-close-size: var(--close-button-circle-size);
+    --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+    --dialog-modal-close-bg: var(--close-button-circle-bg);
+    --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
+  }
+}
+
+@media (width >= 1280px) {
+  .dialog-modal.close-button-circle-desktop {
+    --dialog-modal-close-size: var(--close-button-circle-size);
+    --dialog-modal-close-line-width: var(--close-button-circle-line-width);
+    --dialog-modal-close-bg: var(--close-button-circle-bg);
+    --dialog-modal-close-outline-color: var(--close-button-circle-outline-color);
   }
 }
 
@@ -392,7 +458,7 @@
     border-radius: 0;
   }
 
-  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame, .upgrade-flow-modal) {
+  .dialog-modal:not(.tall-video, .three-in-one, .aup-modal, .commerce-frame, .upgrade-flow-modal) {
     max-height: var(--modal-max-height-mobile);
   }
 
@@ -471,7 +537,8 @@
     overflow: hidden;
   }
 
-  .dialog-modal.three-in-one {
+  .dialog-modal.three-in-one,
+  .dialog-modal.aup-modal {
     height: 820px;
     max-width: 1280px;
     overflow: hidden;

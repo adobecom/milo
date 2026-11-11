@@ -1,7 +1,6 @@
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { sendAnalytics } from '../../../martech/helpers.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
+import { sendAnalytics, processTrackingLabels } from '../../../martech/helpers.js';
 
 const leaveTimeouts = new WeakMap();
 let hoverTracked = false;

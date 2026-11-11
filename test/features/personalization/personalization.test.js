@@ -2,11 +2,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { assert, stub } from 'sinon';
-import { getConfig, setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl, fetchData, DATA_TYPE, categorizeActions,
+  fetchData, DATA_TYPE, categorizeActions, replaceInner, deleteMarkedEls,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -74,8 +74,8 @@ describe('Functional Test', () => {
     expect(fragment).to.not.be.null;
     expect(secondFrag).to.not.be.null;
 
-    const firstMarqueeReplacedCell = firstMarquee.querySelector('p > a');
-    const secondMarqueeReplacedCell = secondMarquee.querySelector('p > a');
+    const firstMarqueeReplacedCell = firstMarquee.querySelector('a[href="/fragments/replace/marquee/r2c1"]');
+    const secondMarqueeReplacedCell = secondMarquee.querySelector('a[href="/fragments/replace/marquee-2/r2c2"]');
     expect(firstMarqueeReplacedCell.href).to.equal(fragment.href);
     expect(secondMarqueeReplacedCell.href).to.equal(secondFrag.href);
   });
@@ -180,6 +180,106 @@ describe('Functional Test', () => {
 
     const fragment = document.querySelector('a[href="/fragments/insertafter4"]');
     expect(fragment).to.be.null;
+  });
+
+  it('records a manifestErrors entry when the manifest fails to fetch (bad location)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    window.fetch = stub().returns(Promise.resolve({ ok: false, status: 404, json: () => ({}), text: () => '' }));
+    const badManifest = [{ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', disabled: false }];
+    await applyPers({ manifests: badManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Broken Manifest', manifestPath: '/promos/broken/manifest.json', error: 'Manifest', source: undefined });
+  });
+
+  it('records a manifestErrors entry when the manifest has no experience rows (lack of tabs)', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({ data: [] });
+    const emptyManifest = [{ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', disabled: false }];
+    await applyPers({ manifests: emptyManifest });
+
+    expect(config.mep.manifestErrors).to.deep.include({ name: 'Empty Manifest', manifestPath: '/promos/empty/manifest.json', error: 'Experience columns', source: undefined });
+  });
+
+  it('fires "was served" analytics when the consent requirement is met', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Personalized offer' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-served/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.calledOnce).to.be.true;
+    const [, payload] = trackStub.firstCall.args;
+    expect(payload.xdm.web.webInteraction.name).to.equal('manifest was served');
+    delete window._satellite;
+  });
+
+  it('does not fire "was served" analytics when the consent requirement is promo or no offer changes', async () => {
+    const config = getConfig();
+    config.mep = {
+      handleFragmentCommand,
+      preview: false,
+      variantOverride: {},
+      highlight: false,
+      targetEnabled: false,
+      experiments: [],
+      promises: {},
+      consentState: { performance: true, advertising: true },
+    };
+    setFetchResponse({
+      info: {
+        data: [
+          { key: 'manifest-type', value: 'Personalization' },
+          { key: 'manifest-consent-type', value: 'Promo or no offer changes' },
+        ],
+      },
+      experiences: { data: [{ action: 'replace', selector: 'body', 'target-var1': 'target-var1' }] },
+    });
+    const trackStub = stub();
+    window._satellite = { track: trackStub };
+    const manifest = [{ manifestPath: '/promos/consent-skipped/manifest.json', disabled: false }];
+    await applyPers({ manifests: manifest });
+
+    expect(trackStub.called).to.be.false;
+    delete window._satellite;
   });
 
   it('test or promo manifest', async () => {
@@ -392,6 +492,32 @@ describe('Functional Test', () => {
     window.console.log.reset();
   });
 
+  it('skips the LCP check setup in preview without ?meplcp', async () => {
+    await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
+    await init(mepSettingsPreview);
+    const { lcpCheck, lcpExperiments, lcpSection } = getConfig().mep;
+    expect(lcpCheck).to.be.false;
+    expect(lcpExperiments).to.be.undefined;
+    expect(lcpSection).to.be.undefined;
+  });
+
+  it('keeps variants and a pre-decoration LCP section clone with ?meplcp', async () => {
+    const { href } = window.location;
+    window.history.replaceState({}, '', `${window.location.pathname}?mepLCP`);
+    await loadManifestAndSetResponse('./mocks/manifestWithNot.json');
+    const firstSection = document.querySelector('body > main > div');
+    try {
+      await init(mepSettingsPreview);
+    } finally {
+      window.history.replaceState({}, '', href);
+    }
+    const { lcpCheck, lcpExperiments, lcpSection } = getConfig().mep;
+    expect(lcpCheck).to.be.true;
+    expect(Object.keys(lcpExperiments[0].variants)).to.not.be.empty;
+    expect(lcpSection.clone).to.not.equal(firstSection);
+    expect(lcpSection.clone.tagName).to.equal(firstSection.tagName);
+  });
+
   it('updateMetadata should be able to add and change metadata', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateMetadata.json' });
     manifestJson = JSON.parse(manifestJson);
@@ -595,6 +721,86 @@ describe('matchGlob function', () => {
     );
     expect(wrapper.tagName).to.equal('P');
     expect(wrapper.classList.contains('hide-block')).to.be.true;
+  });
+
+  it('keeps a section-level delayed modal hidden after loadArea resets the section class', async () => {
+    const main = document.createElement('main');
+    const el = document.createElement('div');
+    main.appendChild(el);
+    const wrapper = await createContent(
+      el,
+      {
+        content: '/fragments/promos/path-to-promo/#modal-hash:delay=1',
+        manifestId: 'manifest',
+        targetManifestId: '',
+        action: 'insertafter',
+        modifiers: [],
+      },
+    );
+    // hide-block must sit on an inner node, not the top-level div loadArea reclasses to `section`
+    expect(wrapper.tagName).to.equal('DIV');
+    expect(wrapper.classList.contains('hide-block')).to.be.false;
+    const anchor = wrapper.querySelector('a');
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+    wrapper.className = 'section'; // simulate utils.js loadArea section-class reset
+    expect(anchor.closest('.hide-block')).to.not.be.null;
+  });
+  describe('removed media', () => {
+    let prevMep;
+    beforeEach(() => {
+      const config = getConfig();
+      prevMep = config.mep;
+      config.mep = {};
+    });
+    afterEach(() => { getConfig().mep = prevMep; });
+
+    it('records media of elements MEP deletes', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div class="p13n-deleted"><picture><source srcset="./media_1a.png?width=750"><source srcset="./media_1a.png?width=2000 1x"><img src="./media_1a.png?width=750"></picture><img src="/other.png"></div><img class="p13n-deleted" src="./media_1b.png">';
+      deleteMarkedEls(root);
+      expect(root.children.length).to.equal(0);
+      expect([...getConfig().mep.removedMedia]).to.deep.equal([
+        './media_1a.png?width=750',
+        './media_1a.png?width=2000 1x',
+        './media_1b.png',
+      ]);
+    });
+
+    it('does not record images that failed to load', async () => {
+      const root = document.createElement('div');
+      document.body.append(root);
+      try {
+        await new Promise((resolve) => {
+          root.innerHTML = '<div class="p13n-deleted"><img src="/does-not-exist/media_1broken.png"><picture><source srcset="/does-not-exist/media_1broken.png?w=2"><img src="/does-not-exist/media_1broken.png?w=1"></picture></div>';
+          const imgs = [...root.querySelectorAll('img')];
+          let pending = imgs.length;
+          imgs.forEach((img) => img.addEventListener('error', () => { pending -= 1; if (!pending) resolve(); }, { once: true }));
+        });
+        deleteMarkedEls(root);
+        expect(getConfig().mep.removedMedia).to.be.undefined;
+      } finally {
+        root.remove();
+      }
+    });
+
+    it('records the original page media on replacePage', async () => {
+      const main = document.createElement('div');
+      main.innerHTML = '<div><picture><img src="./media_1rp.png?width=750"></picture></div>';
+      setFetchResponse('<div><a href="/fragments/hero">frag</a></div>', 'text');
+      expect(await replaceInner('/products/replacement', main)).to.be.true;
+      expect([...getConfig().mep.removedMedia]).to.deep.equal(['./media_1rp.png?width=750']);
+    });
+
+    it('records nothing for deleted elements without media or when MEP is off', () => {
+      const root = document.createElement('div');
+      root.innerHTML = '<div class="p13n-deleted"><p>no media</p></div>';
+      deleteMarkedEls(root);
+      expect(getConfig().mep.removedMedia).to.be.undefined;
+      getConfig().mep = undefined;
+      root.innerHTML = '<img class="p13n-deleted" src="./media_1c.png">';
+      expect(() => deleteMarkedEls(root)).to.not.throw();
+      expect(root.children.length).to.equal(0);
+    });
   });
 });
 
@@ -802,6 +1008,41 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl(123)).to.be.false;
       expect(isTrustedUrl({})).to.be.false;
       expect(isTrustedUrl([])).to.be.false;
+    });
+  });
+  describe('isSameOriginManifestPath', () => {
+    it('allows same-origin absolute paths', () => {
+      expect(isSameOriginManifestPath('/path/to/data/')).to.be.true;
+      expect(isSameOriginManifestPath('/content/dam/cc/')).to.be.true;
+      expect(isSameOriginManifestPath('/drafts/x/')).to.be.true;
+    });
+    it('rejects absolute URLs, even same-origin or trusted', () => {
+      expect(isSameOriginManifestPath(`${window.location.origin}/x`)).to.be.false;
+      expect(isSameOriginManifestPath('https://www.adobe.com/x')).to.be.false;
+      expect(isSameOriginManifestPath('http://www.adobe.com/x')).to.be.false;
+    });
+    it('rejects protocol-relative paths', () => {
+      expect(isSameOriginManifestPath('//evil.com/')).to.be.false;
+    });
+    it('rejects paths that normalize to a cross-origin host', () => {
+      expect(isSameOriginManifestPath('/\\evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('\\/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\t/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\n/evil.com/')).to.be.false;
+      expect(isSameOriginManifestPath('/\r/evil.com/')).to.be.false;
+    });
+    it('rejects non-path schemes', () => {
+      // eslint-disable-next-line no-script-url
+      expect(isSameOriginManifestPath('javascript:alert(1)')).to.be.false;
+      expect(isSameOriginManifestPath('data:text/html,x')).to.be.false;
+    });
+    it('rejects null/empty and non-string inputs', () => {
+      expect(isSameOriginManifestPath(null)).to.be.false;
+      expect(isSameOriginManifestPath(undefined)).to.be.false;
+      expect(isSameOriginManifestPath('')).to.be.false;
+      expect(isSameOriginManifestPath(123)).to.be.false;
+      expect(isSameOriginManifestPath({})).to.be.false;
+      expect(isSameOriginManifestPath([])).to.be.false;
     });
   });
   describe('fetchData', () => {

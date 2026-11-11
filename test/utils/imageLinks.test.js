@@ -39,6 +39,25 @@ describe('Image Link', () => {
     expect(p.querySelector('.modal-img-link')).to.exist;
   });
 
+  it('Returns image-video-link promises that resolve the play button deterministically', async () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<p class="image-link-play-regression"><picture><img src="./test/utils/mocksmedia_.png" alt="https://www.adobe.com | image link | :play:" class="image-link"/></picture></p>';
+    document.body.append(container);
+    const promises = decorateImageLinks(container);
+    expect(Array.isArray(promises)).to.be.true;
+    expect(promises.length).to.equal(1);
+    await Promise.all(promises);
+    // Once the returned promises resolve, the modal image link is guaranteed to exist
+    // without relying on an arbitrary timeout (prevents the block-decoration race).
+    expect(container.querySelector('.modal-img-link')).to.exist;
+  });
+
+  it('Returns an empty array when there are no image links', () => {
+    const container = document.createElement('div');
+    container.innerHTML = '<p>no images here</p>';
+    expect(decorateImageLinks(container)).to.deep.equal([]);
+  });
+
   it('Creates an image link with parameters', () => {
     const p = document.querySelector('#link-with-params');
     const url = new URL(p.querySelector('a').href);

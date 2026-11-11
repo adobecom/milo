@@ -1,11 +1,63 @@
 import { getConfig } from '../../../utils/utils.js';
+import { getChatSessionId } from './bc-utils.js';
+
+const getCardProductName = (element) => (
+  element?.entity_info?.productName ?? element?.productName
+);
+const getCardProductPageURL = (element) => (
+  element?.entity_info?.productPageURL ?? element?.productPageURL
+);
+const FIREFLY_CARD_TYPES = ['firefly-community-gallery', 'heroMediaCard'];
+const getFireflyLoginStatusSuffix = (element) => {
+  const isFireflyCard = FIREFLY_CARD_TYPES.includes(element?.type)
+    || FIREFLY_CARD_TYPES.includes(element?.cardType);
+  if (!isFireflyCard || !element?.loginStatus) return '';
+  return `|loginStatus:${element.loginStatus}`;
+};
 
 export function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
 }
 
+const recordNavClick = ({ clickType, destinationPage, clickSource } = {}) => {
+  window.history.replaceState(
+    {
+      ...window.history.state,
+      bcClickType: clickType,
+      bcSourcePage: window.location.href,
+      bcDestinationPage: destinationPage ?? '',
+      bcClickSource: clickSource ?? '',
+    },
+    '',
+  );
+};
+
+const handleNav = (event) => {
+  switch (event.eventType) {
+    case 'card:clicked':
+      recordNavClick({
+        clickType: 'product_card_cta',
+        destinationPage: event.data?.destinationUrl,
+      });
+      break;
+    case 'cta:clicked':
+      recordNavClick({ clickType: 'cta', clickSource: event.data?.source });
+      break;
+    case 'link:clicked':
+      recordNavClick({
+        clickType: event.data?.element?.linkType ?? 'inline_hyperlink',
+        destinationPage: event.data?.element?.href,
+      });
+      break;
+    default:
+      break;
+  }
+};
+
 /* eslint-disable no-undef, no-underscore-dangle */
 export const bcAnalytics = (event) => {
+  handleNav(event);
+
   if (window?._satellite?.track) {
     switch (event.eventType) {
       case 'query:submitted':
@@ -41,7 +93,7 @@ export const bcAnalytics = (event) => {
         // eslint-disable-next-line no-case-declarations
         let cardimpression = '';
         // eslint-disable-next-line no-return-assign
-        event.data?.element.forEach((element) => cardimpression += `BC-card|${element.cardType}|${element.productName}|${element.productPageURL},`);
+        event.data?.element.forEach((element) => cardimpression += `BC-card|${element.cardType}|${getCardProductName(element)}|${getCardProductPageURL(element)},`);
         _satellite.track('event', {
           data: {
             web: { webInteraction: { name: `BC-card_rendered|${event.data?.displayMode}` } },
@@ -50,16 +102,18 @@ export const bcAnalytics = (event) => {
           },
         });
         break;
-      case 'card:clicked':
+      case 'card:clicked': {
+        const element = event.data?.element;
+        const loginStatusSuffix = getFireflyLoginStatusSuffix(element);
         _satellite.track('event', {
           data: {
-            web: { webInteraction: { name: `BC-card_clicked|${event.data?.element?.cardType}|${event.data?.element?.productName}|loginStatus:${event.data?.element?.loginStatus}` } },
+            web: { webInteraction: { name: `BC-card_clicked|${element?.cardType}|${getCardProductName(element)}${loginStatusSuffix}` } },
             _adobe_corpnew: {
               digitalData: {
                 primaryEvent: {
                   eventInfo: {
                     interaction: {
-                      click: `BC-card|${event.data?.element?.cardType}|${event.data?.element?.productName}|${event.data?.element?.productPageURL}|loginStatus:${event.data?.element?.loginStatus}`,
+                      click: `BC-card|${element?.cardType}|${getCardProductName(element)}|${event.data?.destinationUrl ?? ''}${loginStatusSuffix}`,
                       iclick: true,
                     },
                   },
@@ -69,6 +123,7 @@ export const bcAnalytics = (event) => {
           },
         });
         break;
+      }
       case 'cta:clicked':
         _satellite.track('event', {
           data: {
@@ -112,8 +167,93 @@ export const bcAnalytics = (event) => {
           },
         });
         break;
+      case 'navigation:backNavigation': {
+        const {
+          clickType = 'unknown',
+          sessionId = '',
+          sourcePage = '',
+          destinationPage = '',
+          clickSource = '',
+          loginStatus = '',
+          navigatedBack = true,
+        } = event.data ?? {};
+        const eventName = `BC-chat_${clickType}_back_navigation`;
+        _satellite.track('event', {
+          data: {
+            web: { webInteraction: { name: `${eventName}|loginStatus:${loginStatus}` } },
+            bc: {
+              eventName,
+              timestamp: new Date().toISOString(),
+              sessionId,
+              clickType,
+              sourcePage,
+              destinationPage,
+              clickSource,
+              navigatedBack,
+              loginStatus,
+            },
+            _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { interaction: { click: `${eventName}|session:${sessionId}|from:${sourcePage}|to:${destinationPage}|source:${clickSource}|nav:${navigatedBack}|loginStatus:${loginStatus}` } } } } },
+          },
+        });
+        break;
+      }
       default:
         break;
     }
   }
+};
+
+const initBackNavAnalytics = () => {
+  const emitAnalyticsIfBackNav = () => {
+    const state = window.history.state ?? {};
+    if (!state.bcClickType) {
+      return;
+    }
+
+    bcAnalytics({
+      eventType: 'navigation:backNavigation',
+      data: {
+        clickType: state.bcClickType,
+        sessionId: getChatSessionId(),
+        sourcePage: state.bcSourcePage ?? window.location.href,
+        destinationPage: state.bcDestinationPage ?? '',
+        clickSource: state.bcClickSource ?? '',
+        loginStatus: window.adobeIMS?.isSignedInUser() ? 'logged-in' : 'logged-out',
+        navigatedBack: true,
+      },
+    });
+  };
+
+  // bfcache restore: page is brought back from memory, init does not re-run.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) emitAnalyticsIfBackNav();
+  });
+
+  // full-page back/forward load: init re-runs, navigation type is back_forward.
+  if (window.performance.getEntriesByType('navigation')[0]?.type === 'back_forward') {
+    emitAnalyticsIfBackNav();
+  }
+};
+
+const blockRenderAnalytics = (blockValue) => {
+  window.alloy_all = window.alloy_all || {};
+  window.alloy_all.data = window.alloy_all.data || {};
+  window.alloy_all.data._adobe_corpnew = window.alloy_all.data._adobe_corpnew || {};
+  window.alloy_all.data._adobe_corpnew.event = window.alloy_all.data._adobe_corpnew.event || {};
+
+  const bcCustomExisting = window.alloy_all.data._adobe_corpnew.event.custom;
+  const bcAlreadyPresent = bcCustomExisting
+  && bcCustomExisting.some((e) => e.propertyName === blockValue);
+
+  if (!bcAlreadyPresent) {
+    // eslint-disable-next-line max-len
+    window.alloy_all.data._adobe_corpnew.event.custom = window.alloy_all.data._adobe_corpnew.event.custom || [];
+    const bcCustom = window.alloy_all.data._adobe_corpnew.event.custom;
+    bcCustom.push({ propertyName: blockValue, propertyValue: 'true', propertyType: 'string' });
+  }
+};
+
+export const initAnalytics = (blockValue) => {
+  initBackNavAnalytics();
+  blockRenderAnalytics(blockValue);
 };

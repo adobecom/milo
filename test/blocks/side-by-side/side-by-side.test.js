@@ -23,11 +23,15 @@ describe('side-by-side (c2)', () => {
     });
 
     it('pairs each card with a .media then a .foreground child', () => {
-      [...block.children].forEach((card) => {
-        const kids = [...card.children];
-        expect(kids.length).to.equal(2);
-        expect(kids[0].classList.contains('media')).to.be.true;
-        expect(kids[1].classList.contains('foreground')).to.be.true;
+      const [overlay, stacked] = block.children;
+      // card-overlay gets an extra .content-aux layer before the media/foreground
+      expect(overlay.querySelector(':scope > .content-aux')).to.exist;
+      [overlay, stacked].forEach((card) => {
+        const media = card.querySelector(':scope > .media');
+        const foreground = card.querySelector(':scope > .foreground');
+        expect(media).to.exist;
+        expect(foreground).to.exist;
+        expect(media.nextElementSibling).to.equal(foreground);
       });
     });
 

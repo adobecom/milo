@@ -48,6 +48,8 @@ export const reloadPage = stub();
 
 export const getCountry = stub().resolves('us');
 
+export const loadIms = stub().resolves();
+
 /**
  * TODO: This method will be deprecated and removed in a future version.
  * @see https://jira.corp.adobe.com/browse/MWPW-173470
@@ -58,6 +60,32 @@ export const shouldAllowKrTrial = stub();
 export const lingoActive = () => false;
 export const getGeoLocalePrefix = () => Promise.resolve(null);
 export const getPlaceholderPaths = () => [];
+export const getGeoIpWarmSheet = () => undefined;
+export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+export const normCountryCode = (country) => {
+  if (typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+};
+export const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
+
+// Unused directly by these tests; needed because merch.js statically imports
+// decorate.js and autoblock.js, which import these from utils.js.
+export const isBot = () => false;
+export const getMarketsUrl = () => '';
+export const getValidatedMarket = () => Promise.resolve(null);
+export const isSupportedMarket = () => Promise.resolve(false);
+export const createIntersectionObserver = stub();
+export const getFederatedContentRoot = () => '';
+export const getFedsPlaceholderConfig = () => ({});
+export const shouldBlockFreeTrialLinks = () => false;
+export const isAupEnabled = () => false;
+export const getAupSelectValue = () => null;
+export const whenTargetReady = () => Promise.resolve();
+export const decorateLinksAsync = stub().resolves();
+export const loadBlock = stub().resolves();
+export const getMepEnablement = () => false;
+export const isSignedOut = () => true;
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -79,3 +107,5 @@ export function getValidatedMasLibsUrl(masLibs) {
   if (!url.hostname.endsWith('.aem.live')) return null;
   return url.origin;
 }
+
+export const isTrustedUrl = () => true;

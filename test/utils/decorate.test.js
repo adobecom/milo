@@ -1,6 +1,45 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { setBackgroundFocus, decorateBlockText, getButtonType, decoratePictures } from '../../libs/utils/decorate.js';
+import { getConfig } from '../../libs/utils/utils.js';
+import {
+  setBackgroundFocus, decorateBlockText, getButtonType,
+  decoratePictures, decorateViewportContent, normalizeMasFieldText,
+} from '../../libs/utils/decorate.js';
+
+describe('normalizeMasFieldText', () => {
+  it('can normalize body fields without wrapping other MAS roles', () => {
+    const cell = document.createElement('div');
+    cell.innerHTML = '<mas-field field="description"></mas-field><mas-field field="prices"></mas-field><mas-field field="badge"></mas-field>';
+    normalizeMasFieldText(cell, 'md', 'mas-field[field="description"]');
+    expect(cell.querySelector('[field="description"]').parentElement.className).to.equal('body-md');
+    expect(cell.querySelector('[field="prices"]').parentElement).to.equal(cell);
+    expect(cell.querySelector('[field="badge"]').parentElement).to.equal(cell);
+  });
+
+  it('preserves paragraph attributes and siblings without duplicating field containers', () => {
+    const cell = document.createElement('div');
+    cell.innerHTML = '<p id="copy" class="body-lg" data-tracking="copy">Before <mas-field field="description"></mas-field> after</p>';
+    const field = cell.querySelector('mas-field');
+    normalizeMasFieldText(cell, 'lg');
+    const body = cell.firstElementChild;
+    expect(body.tagName).to.equal('DIV');
+    expect(body.id).to.equal('copy');
+    expect(body.dataset.tracking).to.equal('copy');
+    expect(body.textContent).to.equal('Before  after');
+    expect(field.parentElement).to.equal(body);
+    normalizeMasFieldText(cell, 'lg');
+    expect(cell.firstElementChild).to.equal(body);
+    expect(cell.querySelectorAll('div').length).to.equal(1);
+  });
+
+  it('leaves headings, CTAs, and ordinary paragraphs untouched', () => {
+    const cell = document.createElement('div');
+    cell.innerHTML = '<h1><mas-field field="cardTitle"></mas-field></h1><mas-field field="description"><h2>Title</h2></mas-field><mas-field field="ctas[buy]"></mas-field><p class="body-lg">Ordinary copy</p>';
+    const original = cell.innerHTML;
+    normalizeMasFieldText(cell, 'lg');
+    expect(cell.innerHTML).to.equal(original);
+  });
+});
 
 describe('setBackgroundFocus', () => {
   let container;
@@ -300,5 +339,114 @@ describe('decoratePictures', () => {
     expect(noSources.classList.contains('large-image-decorated')).to.be.false;
     expect(noImg.classList.contains('large-image-decorated')).to.be.false;
     expect(nanWidth.classList.contains('large-image-decorated')).to.be.false;
+  });
+});
+
+describe('decorateViewportContent — resolveInheritance extra-row handling', () => {
+  let container;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    container.remove();
+  });
+
+  // Builds a block with a content row (2 media cells) + one extra row
+  // (2 text cells) per viewport, mirroring side-by-side's row shape.
+  function buildBlock({ mobileText, tabletMedia, tabletText }) {
+    container.innerHTML = `
+      <div><div>Mobile-viewport</div></div>
+      <div>
+        <div><p>mobile media A</p></div>
+        <div><p>mobile media B</p></div>
+      </div>
+      <div>
+        <div><p>${mobileText[0]}</p></div>
+        <div><p>${mobileText[1]}</p></div>
+      </div>
+      <div><div>Tablet-viewport</div></div>
+      <div>
+        <div>${tabletMedia[0] ? `<p>${tabletMedia[0]}</p>` : ''}</div>
+        <div>${tabletMedia[1] ? `<p>${tabletMedia[1]}</p>` : ''}</div>
+      </div>
+      <div>
+        <div>${tabletText[0] ? `<p>${tabletText[0]}</p>` : ''}</div>
+        <div>${tabletText[1] ? `<p>${tabletText[1]}</p>` : ''}</div>
+      </div>
+    `;
+    return container;
+  }
+
+  // decorateViewportContent swaps the active viewport's rows directly onto
+  // `el` (via applyViewportContent's replaceChildren), so assert against
+  // `el.children` — the same DOM a block's own decorate() would see — rather
+  // than the internal per-viewport container references.
+
+  it('does not notify MEP about inherited content outside preview mode', () => {
+    const config = getConfig();
+    const originalMep = config.mep;
+    const events = [];
+    const listener = (event) => events.push(event);
+    document.addEventListener('mep:content-cloned', listener);
+    try {
+      config.mep = { ...originalMep, preview: false };
+      const el = buildBlock({
+        mobileText: ['mobile A', 'mobile B'],
+        tabletMedia: ['', ''],
+        tabletText: ['', ''],
+      });
+      decorateViewportContent(el, () => {});
+      expect(events.length).to.equal(0);
+    } finally {
+      config.mep = originalMep;
+      document.removeEventListener('mep:content-cloned', listener);
+    }
+  });
+
+  it('content row (row 0): empty cell still inherits from the previous viewport', () => {
+    const el = buildBlock({
+      mobileText: ['mobile text A', 'mobile text B'],
+      tabletMedia: ['', 'tablet media B'],
+      tabletText: ['', ''],
+    });
+
+    decorateViewportContent(el, () => {});
+    const [mediaRow] = el.children;
+
+    expect(mediaRow.children[0].textContent.trim()).to.equal('mobile media A');
+    expect(mediaRow.children[1].textContent.trim()).to.equal('tablet media B');
+  });
+
+  it('extra row (row 1+): an empty cell inherits from the previous viewport, for every column', () => {
+    const el = buildBlock({
+      mobileText: ['mobile text A', 'mobile text B'],
+      tabletMedia: ['tablet media A', 'tablet media B'],
+      tabletText: ['', ''],
+    });
+
+    decorateViewportContent(el, () => {});
+    const [, textRow] = el.children;
+
+    // Before the fix, only cell 0 (card 1) inherited — cell 1 (card 2) stayed
+    // blank instead of picking up mobile's text. Both must inherit now.
+    expect(textRow.children[0].textContent.trim()).to.equal('mobile text A');
+    expect(textRow.children[1].textContent.trim()).to.equal('mobile text B');
+  });
+
+  it('extra row (row 1+): explicitly authored content on the new viewport is preserved', () => {
+    const el = buildBlock({
+      mobileText: ['mobile text A', 'mobile text B'],
+      tabletMedia: ['tablet media A', 'tablet media B'],
+      tabletText: ['tablet text A', 'tablet text B'],
+    });
+
+    decorateViewportContent(el, () => {});
+    const [, textRow] = el.children;
+
+    expect(textRow.children[0].textContent.trim()).to.equal('tablet text A');
+    expect(textRow.children[1].textContent.trim()).to.equal('tablet text B');
   });
 });

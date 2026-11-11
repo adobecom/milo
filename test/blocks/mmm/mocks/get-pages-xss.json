@@ -1,0 +1,12 @@
+{
+  "result": [
+    {
+      "pageId": 1,
+      "numOfActivities": "<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">",
+      "url": "javascript:window.mmmXss=true//<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">"
+    }
+  ],
+  "totalRecords": "1<img class=\"xss\" src=\"x\" onerror=\"window.mmmXss=true\">",
+  "pageNum": 1,
+  "perPage": 25
+}
