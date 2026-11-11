@@ -269,6 +269,11 @@ describe('Utils', () => {
       const stylePreload = document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.css"]');
       expect(marqueeDecoratePreload).to.exist;
       expect(scriptPreload).to.exist;
+      [scriptPreload, marqueeDecoratePreload].forEach((link) => {
+        expect(link.rel).to.equal('modulepreload');
+        expect(link.hasAttribute('as')).to.be.false;
+        expect(link.crossOrigin).to.equal('anonymous');
+      });
       expect(stylePreload).to.exist;
     });
 
@@ -278,9 +283,9 @@ describe('Utils', () => {
 
       await utils.loadArea();
       ['merch-card.js', 'merch-quantity-select.js', 'merch-card-collection.js'].forEach((dep) => {
-        const link = document.head.querySelector(`link[rel="preload"][href$="/${dep}"]`);
+        const link = document.head.querySelector(`link[rel="modulepreload"][href$="/${dep}"]`);
         expect(link, dep).to.exist;
-        expect(link.as).to.equal('script');
+        expect(link.hasAttribute('as')).to.be.false;
         expect(link.crossOrigin).to.equal('anonymous');
       });
     });
@@ -323,8 +328,8 @@ describe('Utils', () => {
       ].forEach((href) => {
         const links = document.head.querySelectorAll(`link[href="${window.location.origin}${href}"]`);
         expect(links.length).to.equal(1);
-        expect(links[0].rel).to.equal('preload');
-        expect(links[0].as).to.equal('script');
+        expect(links[0].rel).to.equal('modulepreload');
+        expect(links[0].hasAttribute('as')).to.be.false;
         expect(links[0].crossOrigin).to.equal('anonymous');
       });
       expect(document.querySelector('.router-marquee').dataset.blockStatus).to.be.undefined;
