@@ -35,6 +35,16 @@ describe('Preflight issue counts', () => {
     }, 1).General).to.deep.equal({ errors: 5, warnings: 1 });
   });
 
+  it('adds failing taxonomy checks to General warnings only', () => {
+    expect(countIssues({
+      taxonomy: [
+        { status: 'fail', severity: 'warning' },
+        { status: 'pass', severity: 'warning' },
+        { status: 'empty', severity: 'warning' },
+      ],
+    }).General).to.deep.equal({ errors: 0, warnings: 1 });
+  });
+
   it('counts nothing for missing, passing, or detail-less categories', () => {
     const empty = Object.fromEntries(['General', 'SEO', 'M@S', 'Accessibility', 'Performance', 'Assets']
       .map((tab) => [tab, { errors: 0, warnings: 0 }]));

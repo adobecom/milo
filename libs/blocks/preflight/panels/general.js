@@ -4,6 +4,7 @@ import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
 import { runChecks as runContentChecks } from '../checks/content.js';
+import { runChecks as runTaxonomyChecks } from '../checks/taxonomy.js';
 import { clearPageStatusCache, getAdminUrl } from '../checks/adminStatus.js';
 
 const DEF_NOT_FOUND = 'Not found';
@@ -28,6 +29,7 @@ const localizationIssues = signal([]);
 const localizationClosed = signal(false);
 const fragmentsResult = signal({ icon: 'purple', title: 'Unpublished fragments', description: 'Checking...' });
 const placeholdersResult = signal({ icon: 'purple', title: 'Unresolved placeholders', description: 'Checking...' });
+const taxonomyResults = signal([]);
 
 const FRAGMENT_REASONS = {
   unpublished: 'not published',
@@ -43,6 +45,35 @@ const listFragments = ({ items = [], unchecked = [] }) => [
 
 const listPlaceholders = ({ items = [] }) => items
   .map(({ key, where }) => html`<li><code>${key}</code> (${where})</li>`);
+
+const TAXONOMY_REASONS = {
+  uppercase: 'uppercase letters',
+  spaces: 'spaces',
+  underscores: 'underscores',
+  'special-characters': 'special characters',
+  hyphens: 'extra hyphens',
+  'outside-fragments-folder': 'not in a fragments folder',
+  naming: 'naming',
+};
+
+const listTaxonomy = ({ items = [] }) => items.map((item) => {
+  if (typeof item === 'string') return html`<li><code>${item}</code></li>`;
+  if (item.segment) {
+    const reasons = item.issues.map((issue) => TAXONOMY_REASONS[issue]).join(', ');
+    return html`<li><code>${item.segment}</code> (${reasons}), try <code>${item.suggestion}</code></li>`;
+  }
+  const reasons = item.reasons.map((reason) => TAXONOMY_REASONS[reason]).join(', ');
+  return html`<li><a href=${item.path} target=_blank>${item.path}</a> (${reasons})</li>`;
+});
+
+export function getTaxonomyResults() {
+  taxonomyResults.value = runTaxonomyChecks({ area: document }).map((res) => ({
+    icon: STATUS_TO_ICON_MAP[res.status] || 'orange',
+    title: res.title,
+    description: res.description,
+    list: listTaxonomy(res.details ?? {}),
+  }));
+}
 
 async function getContentResults() {
   const [fragments, placeholders] = runContentChecks({ area: document });
@@ -359,6 +390,7 @@ function LocalizationIssuesList({ issues }) {
 export default function General() {
   useEffect(() => {
     setContent(); getStructureResults(); getLocalizationResults(); getContentResults();
+    getTaxonomyResults();
   }, []);
 
   const allChecked = Object.values(content.value)
@@ -403,6 +435,16 @@ export default function General() {
           <${StructureItem} ...${placeholdersResult.value} />
         </div>
       </div>
+      ${taxonomyResults.value.length > 0 && html`
+        <p class="preflight-structure-title">Page naming and placement</p>
+        <div class=preflight-structure-columns>
+          <div class=preflight-column>
+            ${taxonomyResults.value.slice(0, 2).map((res) => html`<${StructureItem} ...${res} />`)}
+          </div>
+          <div class=preflight-column>
+            ${taxonomyResults.value.slice(2).map((res) => html`<${StructureItem} ...${res} />`)}
+          </div>
+        </div>`}
       <p class="preflight-structure-title">Content</p>
       ${Object.keys(content.value).map((key) => html`<${ContentGroup} name=${key} group=${content.value[key]} />`)}
     </div>

@@ -1,3 +1,5 @@
+import { getConfig } from '../../../utils/utils.js';
+import { findFragments } from './content.js';
 import { SEVERITY, STATUS } from './constants.js';
 
 export const TAXONOMY_IDS = {
@@ -106,4 +108,20 @@ export function checkFragmentPlacement(fragmentPathnames = []) {
     return result('fragments', STATUS.PASS, description, { items });
   }
   return result('fragments', STATUS.FAIL, `${count(items.length, 'fragment')} outside a fragments folder or not following the naming rules.`, { items });
+}
+
+const KEYS = ['naming', 'temporary', 'fragments'];
+
+// Drafts are scratch space by design, so warnings there are noise.
+export function runChecks({ area = document, pathname = window.location.pathname } = {}) {
+  const segments = toSegments(pathname, getConfig().locale?.prefix);
+  if (segments.includes('drafts')) {
+    return KEYS.map((key) => result(key, STATUS.EMPTY, 'Draft page, taxonomy checks skipped.'));
+  }
+  const fragmentPathnames = findFragments(area).map(({ url }) => url.pathname);
+  return [
+    checkNaming(segments),
+    checkTemporaryFolders(segments),
+    checkFragmentPlacement(fragmentPathnames),
+  ];
 }

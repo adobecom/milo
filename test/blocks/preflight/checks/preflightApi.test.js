@@ -7,7 +7,8 @@ describe('preflight checks preflightApi', () => {
   afterEach(() => sinon.restore());
 
   it('exposes a check suite namespace for each preflight tab', () => {
-    expect(preflightApi).to.have.all.keys('accessibility', 'assets', 'performance', 'seo', 'structure', 'merch');
+    expect(preflightApi).to.have.all.keys('accessibility', 'assets', 'performance', 'seo', 'structure', 'merch', 'taxonomy');
+    expect(preflightApi.taxonomy.runChecks).to.be.a('function');
     expect(preflightApi.seo.checkH1s).to.be.a('function');
     expect(preflightApi.performance.runChecks).to.be.a('function');
     expect(preflightApi.assets.isViewportTooSmall).to.be.a('function');
