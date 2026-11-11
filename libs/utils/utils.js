@@ -2371,6 +2371,7 @@ export const MERCH_CARD_TEMPLATE_RULES = {
   'products/catalog': 'catalog',
   'products/firefly/': 'firefly',
   'products/': 'cc',
+  creativecloud: 'cc',
   'creativecloud/': 'cc',
   'express/': 'express',
 };
