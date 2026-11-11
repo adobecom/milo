@@ -35,6 +35,7 @@ function ManifestCardSkeleton() {
 function PageListItem({ page, manifestFilters }) {
   const [expanded, setExpanded] = useState(false);
   const [popupEl, setPopupEl] = useState(null);
+  const [manifestCounts, setManifestCounts] = useState(null);
   const [loading, setLoading] = useState(false);
   const contentRef = useRef(null);
 
@@ -53,7 +54,13 @@ function PageListItem({ page, manifestFilters }) {
       const matching = new Set(matchingData.activities);
       const otherActivities = pageData.activities?.filter((activity) => !matching.has(activity));
       const popup = await getMepPopup(matchingData, { otherActivities });
-      if (!cancelled) setPopupEl(popup);
+      if (!cancelled) {
+        setManifestCounts({
+          matched: matchingData.activities?.length,
+          total: pageData.activities?.length,
+        });
+        setPopupEl(popup);
+      }
     }).finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,6 +77,14 @@ function PageListItem({ page, manifestFilters }) {
     }
   }, [popupEl, expanded]);
 
+  const filtered = Boolean(manifestFilters.manifestConsentType
+    || manifestFilters.manifestCountryRestriction || manifestFilters.filter);
+  const matchedCount = manifestCounts?.matched ?? page.numOfActivities;
+  const totalCount = manifestCounts?.total;
+  const countLabel = filtered
+    ? `${matchedCount}${totalCount == null ? '' : ` of ${totalCount}`} Manifest(s) matched`
+    : `${totalCount ?? page.numOfActivities} Manifest(s) found`;
+
   return html`
     <div class="mmm2-page-item ${expanded ? 'is-expanded' : ''}">
       <button
@@ -82,7 +97,7 @@ function PageListItem({ page, manifestFilters }) {
         <h5 class="mmm2-page-heading">
           <a class="mmm2-primary-link" href=${page.url} target="_blank" rel="noopener" onClick=${(e) => e.stopPropagation()}>${page.url}</a>
         </h5>
-        <span class="mmm2-page-subtext">${page.numOfActivities} Manifest(s) found</span>
+        <span class="mmm2-page-subtext">${countLabel}</span>
       </button>
       ${expanded ? html`
         <div class="mmm2-page-detail">

@@ -1304,6 +1304,42 @@ describe('saveToMmm', () => {
     }
   });
 
+  it('captures page diagnostics outside page fields for compatibility with older backends', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, json: async () => ({ result: 'ok' }) });
+    const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
+    const regional = createTag('div', { 'data-mep-lingo-roc': '' });
+    const fallback = createTag('div', { 'data-mep-lingo-fallback': '' });
+    const collection = createTag('div', { 'data-mas-block': 'collection' });
+    const service = createTag('mas-commerce-service', { country: 'FR' });
+    const regionalBefore = document.querySelectorAll('[data-mep-lingo-roc]').length;
+    const fallbackBefore = document.querySelectorAll('[data-mep-lingo-fallback]').length;
+    const collectionsBefore = document.querySelectorAll('[data-mas-block="collection"]').length;
+    document.head.append(foundation, service);
+    document.body.append(regional, fallback, collection);
+    try {
+      await saveToMmm();
+      const body = JSON.parse(fetchStub.firstCall.args[1].body);
+      expect(body.page).to.not.have.property('pageSummary');
+      expect(body.pageSummary).to.have.all.keys('version', 'capturedAt', 'foundation', 'lingo', 'mas');
+      expect(body.pageSummary.version).to.equal(1);
+      expect(body.pageSummary.foundation).to.equal('C2');
+      expect(Number.isFinite(Date.parse(body.pageSummary.capturedAt))).to.be.true;
+      expect(body.pageSummary.lingo.regional).to.equal(regionalBefore + 1);
+      expect(body.pageSummary.lingo.total).to.equal(regionalBefore + fallbackBefore + 2);
+      expect(body.pageSummary.lingo).to.not.have.property('countryCookie');
+      expect(body.pageSummary.mas.find(([label]) => label === 'Page Market')[1]).to.equal('US');
+      expect(body.pageSummary.mas.find(([label]) => label === 'Market Source')[1]).to.equal('page locale');
+      const surfaces = body.pageSummary.mas.find(([label]) => label === 'Surfaces')[1];
+      expect(surfaces.find(([label]) => label === 'Collections')[1]).to.equal(collectionsBefore + 1);
+    } finally {
+      foundation.remove();
+      service.remove();
+      regional.remove();
+      fallback.remove();
+      collection.remove();
+    }
+  });
+
   it('filters activities, transforms fields, and posts the payload on success', async () => {
     fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
@@ -1430,7 +1466,7 @@ describe('getMepPopup', () => {
 
     const sections = popup.querySelectorAll('.mep-section-data');
     expect([...sections].some((data) => data.textContent.includes('Allowed User Countries')), 'country restriction row rendered').to.be.true;
-    expect([...sections].some((data) => data.textContent.includes('inactive')), 'disabled activity shows inactive').to.be.true;
+    expect(popup.querySelector('.mep-manifest-state.inactive').textContent, 'disabled activity shows inactive').to.equal('Inactive');
     const defaultSelectedOptions = popup.querySelectorAll('option[value="not-in-list"]');
     // selectedVariantName not in variantNames -> falls back to default
     expect(defaultSelectedOptions.length).to.equal(0);
@@ -1581,6 +1617,66 @@ describe('getMepPopup', () => {
     });
     expect(activityValues(invalid).On).to.equal('Invalid date');
     expect(invalid.querySelector('a[href*="instant"]')).to.be.null;
+  });
+
+  [
+    { name: 'future', now: '2026-01-01', state: 'inactive', progress: 0 },
+    { name: 'at start', now: '2026-01-02', state: 'active', progress: 0 },
+    { name: 'active', now: '2026-01-03', state: 'active', progress: 50 },
+    { name: 'at end', now: '2026-01-04', state: 'active', progress: 100 },
+    { name: 'completed', now: '2026-01-05', state: 'complete', progress: 100 },
+    { name: 'disabled', now: '2026-01-03', state: 'inactive', progress: 50, disabled: true },
+    { name: 'recorded without disabled state', now: '2026-01-03', state: 'active', progress: 50, disabled: undefined },
+  ].forEach((testCase) => {
+    it(`uses the MEP status and timeline for a ${testCase.name} manager schedule`, async () => {
+      const now = sinon.stub(Date, 'now').returns(Date.parse(`${testCase.now}T00:00:00Z`));
+      const eventStart = '2026-01-02T00:00:00.000Z';
+      const eventEnd = '2026-01-04T00:00:00.000Z';
+      try {
+        const popup = await renderPopup({
+          page: { ...basePage },
+          activities: [buildActivity({
+            eventStart,
+            eventEnd,
+            disabled: 'disabled' in testCase ? testCase.disabled : false,
+          })],
+        });
+        const schedule = popup.querySelector('.mep-manifest-summary');
+        expect(schedule.parentElement).to.equal(popup.querySelector('.mep-manifest-info'));
+        const state = schedule.querySelector('.mep-manifest-state');
+        expect(state.classList.contains(testCase.state)).to.be.true;
+        expect(state.textContent.toLowerCase()).to.equal(testCase.state);
+        const timeline = schedule.querySelector('.mep-manifest-timeline');
+        expect(timeline.classList.contains(testCase.state)).to.be.true;
+        expect(timeline.style.getPropertyValue('--mep-manifest-progress')).to.equal(`${testCase.progress}%`);
+        const track = timeline.querySelector('[role="progressbar"]');
+        expect(track.getAttribute('aria-valuenow')).to.equal(`${testCase.progress}`);
+        expect(track.getAttribute('aria-label')).to.equal('Schedule progress');
+        const endpoints = [...timeline.querySelectorAll('.mep-manifest-endpoint')];
+        expect(endpoints).to.have.length(2);
+        [eventStart, eventEnd].forEach((date, index) => {
+          expect(endpoints[index].querySelector('.mep-manifest-date').textContent)
+            .to.equal(new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }));
+          expect(endpoints[index].querySelector('.mep-manifest-time').textContent)
+            .to.equal(new Date(date).toLocaleTimeString(undefined, { timeStyle: 'short' }));
+        });
+        const instant = schedule.querySelector('.mep-manifest-status-row a');
+        expect(new URL(instant.href).searchParams.get('instant')).to.equal(eventStart);
+        expect(instant.getAttribute('rel')).to.equal('noopener');
+        expect(activityValues(popup)).to.not.have.any.keys('Active?', 'On', 'Off');
+      } finally {
+        now.restore();
+      }
+    });
+  });
+
+  it('does not invent a status or timeline for an unscheduled manager manifest', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity()],
+    });
+    expect(popup.querySelector('.mep-manifest-summary')).to.be.null;
+    expect(popup.querySelector('[role="progressbar"]')).to.be.null;
   });
 
   it('escapes API metadata aliases and the newly visible activity fields', async () => {
@@ -1747,7 +1843,7 @@ describe('getMepPopup', () => {
       });
       expect(summaryValues(popup, 'Lingo')).to.deep.equal({ 'Geo Folder': 'fr' });
       const summary = popup.querySelector('.mep-summary-body');
-      expect(summary.textContent).to.include('Visitor consent and live page diagnostics are not stored by MMM.');
+      expect(summary.textContent).to.include('Additional page diagnostics have not been captured yet.');
       expect(summary.textContent).to.not.include('Not recorded');
       expect(summary.querySelectorAll('p')).to.have.length(1);
     } finally {
@@ -1768,6 +1864,74 @@ describe('getMepPopup', () => {
       ],
     });
     expect(summaryValues(popup, 'Consent')).to.deep.equal({ 'Manifest Consent Types': 'personalized offer, non-personalized offer test' });
+  });
+
+  it('restores Foundation, Lingo and M@S from the inspected page snapshot', async () => {
+    const pageSummary = {
+      version: 1,
+      capturedAt: '2026-11-11T18:00:00.000Z',
+      foundation: 'C2',
+      lingo: { regional: 1, total: 3, langFirst: 'on', geoFolder: 'fr' },
+      mas: [
+        ['Mas Geo Detection', 'on'],
+        ['Geo Source', 'Metadata'],
+        ['Page Market', 'FR'],
+        ['Market Source', 'page locale'],
+        ['Surfaces', [
+          ['Detected', 5],
+          ['Collections', 1, true],
+          ['Sub-collections', 3, true],
+          ['Cards', 2, true],
+          ['Inline Fields', 1, true],
+          ['Standalone Offers', 1, true],
+        ]],
+      ],
+    };
+    const popup = await renderPopup({
+      page: { ...basePage, pageSummary },
+      activities: [buildActivity()],
+    });
+    expect(summaryValues(popup, 'Page').Foundation).to.equal('C2');
+    expect(summaryValues(popup, 'Lingo')).to.deep.equal({
+      Total: '1 of 3',
+      'Lang First / Lingo': 'on',
+      'Geo Folder': 'fr',
+    });
+    expect(summaryValues(popup, 'M@S')).to.deep.equal({
+      'Mas Geo Detection': 'on',
+      'Geo Source': 'Metadata',
+      'Page Market': 'FR',
+      'Market Source': 'page locale',
+      'Surfaces Detected': '5',
+      Collections: '1',
+      'Sub-collections': '3',
+      Cards: '2',
+      'Inline Fields': '1',
+      'Standalone Offers': '1',
+    });
+    expect(popup.querySelector('.mep-summary-body p').textContent)
+      .to.equal(`Page diagnostics captured ${formatDate(pageSummary.capturedAt)}.`);
+    pageSummary.lingo.total = 0;
+    pageSummary.lingo.regional = 0;
+    pageSummary.lingo.langFirst = 'off';
+    pageSummary.mas[0][1] = 'off';
+    pageSummary.mas[4][1].forEach((row) => { row[1] = 0; });
+    const zeroPopup = await renderPopup({
+      page: { ...basePage, pageSummary },
+      activities: [],
+    });
+    expect(summaryValues(zeroPopup, 'Lingo')).to.include({ Total: '0 of 0', 'Lang First / Lingo': 'off' });
+    expect(summaryValues(zeroPopup, 'M@S')).to.include({ 'Mas Geo Detection': 'off', Cards: '0' });
+    pageSummary.foundation = XSS;
+    pageSummary.lingo.geoFolder = XSS;
+    pageSummary.mas[2][1] = XSS;
+    const textPopup = await renderPopup({
+      page: { ...basePage, pageSummary },
+      activities: [],
+    });
+    expect(summaryValues(textPopup, 'Page').Foundation).to.equal(XSS);
+    expect(summaryValues(textPopup, 'M@S')['Page Market']).to.equal(XSS);
+    expect(textPopup.querySelector('img')).to.not.exist;
   });
 
   it('renders recorded consent types as text, not markup', async () => {

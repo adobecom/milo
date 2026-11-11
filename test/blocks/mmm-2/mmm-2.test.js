@@ -523,9 +523,11 @@ describe('mmm-2', () => {
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(document.querySelector('.mmm-2'));
     await waitFor(() => document.querySelector('.mmm2-page-trigger'));
-    expect(document.querySelector('.mmm2-page-subtext').textContent).to.equal('2 Manifest(s) found');
+    expect(document.querySelector('.mmm2-page-subtext').textContent).to.equal('2 Manifest(s) matched');
     document.querySelector('.mmm2-page-trigger').click();
     await waitFor(() => document.querySelector('.mep-popup'));
+    expect(document.querySelector('.mmm2-page-subtext').textContent)
+      .to.equal('2 of 49 Manifest(s) matched');
     const matchingGroup = document.querySelector('[data-filter-match="true"]');
     const otherGroup = document.querySelector('[data-filter-match="false"]');
     expect(matchingGroup.querySelector('h6').textContent).to.equal('Matching filters (2)');
@@ -550,10 +552,18 @@ describe('mmm-2', () => {
     const summary = document.querySelector('.mep-summary-body');
     const values = [...summary.querySelector('.mep-section-data').children];
     expect(values[0].textContent).to.equal('Manifests Found');
-    expect(values[1].textContent).to.equal('2');
+    expect(values[1].textContent).to.equal('49');
     expect(summary.textContent).to.include('personalized offer');
     expect(summary.textContent).to.not.include('Not recorded');
     expect(summary.textContent).to.not.include('promo or no offer changes');
+    document.querySelector('.mmm2-page-trigger').click();
+    await waitFor(() => !document.querySelector('.mmm2-page-detail'));
+    expect(document.querySelector('.mmm2-page-subtext').textContent)
+      .to.equal('2 of 49 Manifest(s) matched');
+    document.querySelector('.mmm2-page-trigger').click();
+    await waitFor(() => document.querySelector('.mep-popup'));
+    expect(document.querySelector('.mmm2-page-subtext').textContent)
+      .to.equal('2 of 49 Manifest(s) matched');
 
     routes['/get-pages'] = jsonResponse({
       ...getPagesData,
@@ -565,6 +575,8 @@ describe('mmm-2', () => {
     await waitFor(() => document.querySelector('.mmm2-page-subtext')?.textContent === '49 Manifest(s) found');
     document.querySelector('.mmm2-page-trigger').click();
     await waitFor(() => document.querySelectorAll('.mep-edit-manifest').length === 49);
+    expect(document.querySelector('.mmm2-page-subtext').textContent)
+      .to.equal('49 Manifest(s) found');
     expect(document.querySelector('[data-filter-match="true"] h6').textContent)
       .to.equal('Matching filters (49)');
     expect(document.querySelector('[data-filter-match="false"]')).to.not.exist;
@@ -615,6 +627,8 @@ describe('mmm-2', () => {
     expect(document.querySelectorAll('[data-filter-match="true"] .mep-edit-manifest')).to.have.length(0);
     expect(document.querySelectorAll('[data-filter-match="false"] .mep-edit-manifest'))
       .to.have.length(getPageData.activities.length);
+    expect(document.querySelector('.mmm2-page-subtext').textContent)
+      .to.equal(`0 of ${getPageData.activities.length} Manifest(s) matched`);
   });
 
   it('never paints an empty detail card when swapping the skeleton or reopening cached content', async () => {

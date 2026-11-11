@@ -1,12 +1,15 @@
 import { html, render, useLayoutEffect, useState } from '../../deps/htm-preact.js';
 import { loadStyle } from '../../utils/utils.js';
-import { onSidekickAuth } from '../../features/mep/sidekick-auth.js';
+import { isLocalHost, onSidekickAuth } from '../../features/mep/sidekick-auth.js';
 import MmmApp from './components/MmmApp.js';
 import { consumeTabConfigs } from './utils.js';
 
 function AuthenticatedMmmApp({ tabConfigs }) {
   const [authenticated, setAuthenticated] = useState(null);
-  useLayoutEffect(() => onSidekickAuth(setAuthenticated, { requireAuth: true }), []);
+  useLayoutEffect(() => {
+    const requireAuth = !isLocalHost(window.location.hostname);
+    return onSidekickAuth(setAuthenticated, { requireAuth });
+  }, []);
 
   if (authenticated) return html`<${MmmApp} tabConfigs=${tabConfigs} />`;
   return html`

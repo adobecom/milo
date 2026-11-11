@@ -33,22 +33,43 @@ explicit boundary information without generating invalid Instant links.
 MMM-2 keeps the manifest link, experience selector and expand control on one row,
 with expanded activity details spanning the full width below.
 Manifest order numbers are plain text; only the filenames are linked.
+Scheduled manifests reuse the MEP button's status dot/label, start/end date and
+time, elapsed progress bar and Instant link. This presentation is shared by the
+live overlay and both manifest managers, with light/dark manager colors.
+Partial or invalid schedules retain the On/Off rows without fabricated dates;
+unscheduled manifests do not gain a timeline.
 Fragment-highlight preview links now use `otherHighlight=true`; existing
 `mepFragments=true` links are still accepted by the overlay.
 Both manifest managers' Summary tabs show only the selected page's API data,
 never the manager host's metadata, cookies, consent state or DOM. Unavailable
-fields and empty sections are omitted, with one note explaining that visitor
-consent and live page diagnostics are not stored. They are not inferred as off,
-zero or C1. Consent lists the distinct recorded manifest consent types, not a
-visitor's Performance/Advertising consent. Full runtime parity requires capture
-and backend support; the live MEP overlay remains unchanged.
+fields and empty sections are omitted rather than inferred as off, zero or C1.
+Consent lists recorded manifest consent types, not visitor Performance/Advertising
+consent. The existing MEP save hook also sends a versioned top-level `pageSummary`:
+Foundation, Lingo counts/settings and the shared M@S diagnostics observed after
+personalization. It contains no visitor consent, cookies or detected-user-country
+fields. Summary restores these sections from `page.pageSummary` and shows its
+capture timestamp; these are observations at that time, not live page readings.
+Recorded M@S market/source use the page locale, never the commerce service's
+potentially visitor-geolocated country; the live overlay still shows its live market.
+Existing records without snapshots keep one explanatory note and gain diagnostics
+on their next visit with the updated capture code.
+
+Deploy the backend's nullable `Pages.pageSummary` JSON migration and storage/API
+support before expecting diagnostics to appear. The top-level save field is
+ignored by older backends, preserving existing page/activity saves during rollout.
+Do not run a migration against the shared production database as a local-only
+setup step. The live overlay retains its existing labels and behavior.
 MMM-2 applies the selected consent, country-restriction and text filters to page
 details as well as the page list. The detail API already applies last-seen and
 source filters; remaining manifest filters are applied before rendering. Options
 groups **Matching filters** first and **Other manifests** below, with group counts
-and continuous numbering; both groups remain selectable for preview. Summary
-counts and consent types use only the matching activities. Detail query parameters
-are URL-encoded and cached cards are scoped to their filter selections.
+and continuous numbering; both groups remain selectable for preview. Summary's
+**Manifests Found** shows the total across both groups; consent types use the
+matching activities. Filtered row labels show **N of M Manifest(s) matched** once
+details provide the total, retaining that total when collapsed. Before the lazy
+detail request, only the matching count is shown; unfiltered rows show the total
+as **Manifest(s) found**. Detail query parameters are URL-encoded and cached cards
+are scoped to their filter selections.
 MMM-2's Manifest Consent Type filter is an authored single-select dropdown.
 Author a blank-value **Show All** option as its default (no consent-type restriction).
 The target-setting and manifest-source checkbox groups can be cleared;
@@ -171,15 +192,18 @@ the light theme. Neither variant changes the surrounding page's theme or follows
 ## MMM-2 UI Authentication
 
 MMM-2 uses `sidekick-auth.js` to gate the entire app before mounting its tabs or
-starting MMM data requests. Every host, including localhost and `.aem.page` previews,
-requires AEM Sidekick login or a successful Adobe firewall reachability check,
+starting MMM data requests. Remote hosts, including `.aem.page` previews,
+require AEM Sidekick login or a successful Adobe firewall reachability check,
 preserving the shared MEP authorization signals. Without firewall
 access, logout unmounts the app and removes loaded results; signing in again mounts a
 fresh app. Filter preferences remain saved.
 The auth subscription disconnects its observers, timers and event listeners when
 the gate unmounts.
 
-MMM-2 passes `requireAuth: true` to the shared helper, disabling its host-based bypass.
+Local development on `localhost`, `127.0.0.1` and `[::1]` bypasses authentication,
+unless production config or `prodDomains` explicitly forces it. Sidekick logout
+does not interrupt the app during local development.
+MMM-2 passes `requireAuth: true` on every remote host, disabling other host-based bypasses.
 The MEP button retains its existing default host policy: production domains, production config,
 public `.aem.live`/`.hlx.live` and unknown hosts require Sidekick login or firewall access.
 Localhost,

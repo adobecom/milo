@@ -46,8 +46,12 @@ export function isSidekickAuthed() {
 // graybox.adobe.com and the hyphenated business-graybox.adobe.com. Keyed on hostname,
 // not config.env.name (spoofable via ?env=stage on any host).
 const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$|(^|\.)(stage|corp)\.adobe\.com$|(^|[.-])graybox\.adobe\.com$/;
+export function isLocalHost(hostname) {
+  return ['localhost', '127.0.0.1', '[::1]'].includes(hostname);
+}
+
 export function isUngatedHost(hostname) {
-  return hostname === 'localhost' || hostname === '127.0.0.1' || UNGATED_HOST.test(hostname);
+  return isLocalHost(hostname) || UNGATED_HOST.test(hostname);
 }
 
 function shouldGate() {

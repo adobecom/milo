@@ -1,5 +1,6 @@
 import {
   createTag,
+  loadStyle,
   getConfig,
   getMetadata,
   lingoActive,
@@ -463,6 +464,63 @@ export function buildManifestEntry(manifest, mIdx, pageId, manifestParameter) {
   };
 }
 
+export function buildManifestSchedule(manifest) {
+  const summary = createTag('div', { class: 'mep-manifest-summary' });
+  const statusRow = createTag('div', { class: 'mep-manifest-status-row' });
+  const start = Date.parse(manifest.eventStartIso);
+  const end = Date.parse(manifest.eventEndIso);
+  const instant = Date.parse(new URLSearchParams(window.location.search).get('instant'));
+  const now = Number.isFinite(instant) ? instant : Date.now();
+  const hasRange = Number.isFinite(start) && Number.isFinite(end) && end > start;
+  const progress = hasRange ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
+  let state = manifest.isActive;
+  if (hasRange && now < start) state = 'inactive';
+  if (hasRange && now > end) state = 'complete';
+  if (manifest.showActive) {
+    const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete', unknown: 'Unknown' }[state];
+    statusRow.append(createTextTag('span', { class: `mep-manifest-state ${state}` }, label));
+  }
+  if (manifest.eventStartIso && manifest.eventEndIso) {
+    const instantLink = createTag('a', {
+      href: `?instant=${encodeURIComponent(manifest.eventStartIso)}`,
+      target: '_blank',
+      rel: 'noopener',
+    });
+    instantLink.append(
+      'Instant',
+      createTextTag('span', { class: 'mep-visually-hidden' }, ' preview at start date (opens in a new tab)'),
+    );
+    statusRow.append(instantLink);
+    const endpoints = [
+      { label: 'Start', date: manifest.eventStartDate, time: manifest.eventStartTime },
+      { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime },
+    ].map(({ label, date, time }) => createTag('div', { class: 'mep-manifest-endpoint' }, [
+      createTextTag('span', { class: 'mep-visually-hidden' }, `${label}:`),
+      createTextTag('span', { class: 'mep-manifest-date' }, date),
+      createTextTag('span', { class: 'mep-manifest-time' }, time),
+    ]));
+    const roundedProgress = Math.round(progress);
+    const track = createTag('div', {
+      class: 'mep-manifest-track',
+      role: 'progressbar',
+      'aria-label': 'Schedule progress',
+      'aria-valuenow': `${roundedProgress}`,
+      'aria-valuemin': '0',
+      'aria-valuemax': '100',
+      'aria-valuetext': `${roundedProgress}% elapsed`,
+    });
+    summary.append(createTag('div', {
+      class: `mep-manifest-timeline ${state}`,
+      style: `--mep-manifest-progress: ${progress}%`,
+    }, [track, ...endpoints]));
+  }
+  if (statusRow.childElementCount) summary.prepend(statusRow);
+  if (summary.childElementCount) {
+    loadStyle(new URL('./mep-manifest-schedule.css', import.meta.url));
+  }
+  return summary;
+}
+
 export function getManifestList(
   mepConfig = parseMepConfig(),
   manifestErrors = getConfig().mep?.manifestErrors ?? [],
@@ -551,7 +609,7 @@ export function getManifestStatus(manifest) {
   return { level: finalLevel.toLowerCase(), label: finalLabel, messages };
 }
 
-export function getMasSummary() {
+export function getMasSummary({ includeLiveMarket = true } = {}) {
   const config = getConfig();
   const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
   const subCollectionCount = [...collectionContainers]
@@ -575,7 +633,8 @@ export function getMasSummary() {
   } else if (geoParam || geoMeta) {
     geoSource = geoParam ? 'URL param (off)' : 'Metadata (off)';
   }
-  const liveCountry = document.head.querySelector('mas-commerce-service')?.getAttribute('country');
+  const liveCountry = includeLiveMarket
+    ? document.head.querySelector('mas-commerce-service')?.getAttribute('country') : undefined;
   const localeCountry = getMiloLocaleSettings(config.locale)?.country;
   const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
   return [
@@ -592,6 +651,28 @@ export function getMasSummary() {
       ['Standalone Offers', counts.standaloneOffer, true],
     ]],
   ];
+}
+
+export function getLingoSummaryData() {
+  const regional = document.querySelectorAll('[data-mep-lingo-roc]').length;
+  const fallback = document.querySelectorAll('[data-mep-lingo-fallback]').length;
+  return {
+    regional,
+    total: regional + fallback,
+    langFirst: lingoActive() ? 'on' : 'off',
+    geoFolder: parseMepConfig()?.page.geo || 'Us (None)',
+  };
+}
+
+function getPageSummarySnapshot() {
+  return {
+    version: 1,
+    capturedAt: new Date().toISOString(),
+    foundation: (getMetadata('foundation') || 'c1').toUpperCase(),
+    lingo: getLingoSummaryData(),
+    // The live commerce market can come from visitor geolocation; persist only the page locale.
+    mas: getMasSummary({ includeLiveMarket: false }),
+  };
 }
 
 function getManifestListDomAndParameter(mepConfig, indexOffset = 0) {
@@ -643,9 +724,8 @@ function getManifestListDomAndParameter(mepConfig, indexOffset = 0) {
     addRow('Source', entry.source || 'Not specified');
     addRow('Consent req', entry.consentType || 'Not specified');
     addRow('Allowed User Countries', entry.countryRestriction === '' ? 'No restriction' : (entry.countryRestriction ?? 'Not specified'));
-    if (entry.showActive) addRow('Active?', entry.isActive);
     if (entry.lastSeen) addRow('Last Seen', entry.lastSeen);
-    if (entry.eventStart || entry.eventEnd) {
+    if ((!entry.eventStartIso || !entry.eventEndIso) && (entry.eventStart || entry.eventEnd)) {
       const start = createTextTag('span', null, entry.eventStart || 'Not scheduled');
       if (entry.eventStartIso) {
         const instantLink = createTextTag('a', { target: '_blank', rel: 'noopener', href: `?instant=${encodeURIComponent(entry.eventStartIso)}` }, 'Instant');
@@ -663,6 +743,8 @@ function getManifestListDomAndParameter(mepConfig, indexOffset = 0) {
     addRow('Manifest Path', entry.pathname, valueAttrs);
 
     const info = createTag('div', { class: 'mep-manifest-info' });
+    const schedule = buildManifestSchedule(entry);
+    if (schedule.childElementCount) info.append(schedule);
     if (targetActivityName) info.append(createTextTag('div', { class: 'target-activity-name' }, targetActivityName));
     info.append(data);
 
@@ -910,24 +992,40 @@ export async function getMepPopup(mepConfig, { otherActivities } = {}) {
   }
   buildOptionsFooter();
 
+  const snapshot = page.pageSummary?.version === 1 ? page.pageSummary : undefined;
   mepPopupBody[1].append(createTextTag(
     'p',
     null,
-    'Only recorded page data is shown. Visitor consent and live page diagnostics are not stored by MMM.',
+    snapshot
+      ? `Page diagnostics captured ${formatDate(snapshot.capturedAt)}.`
+      : 'Additional page diagnostics have not been captured yet. Only recorded page data is shown.',
   ));
 
   const consentTypes = [...new Set(mepConfig.activities?.map(
     (activity) => activity.consentType || activity.manifestConsentType,
   ).filter(Boolean))];
+  const matchingCount = mepConfig.activities?.length;
+  const totalCount = matchingCount == null
+    ? undefined : matchingCount + (otherActivities?.length ?? 0);
   [
     ['Page', [
-      ['Manifests Found', mepConfig.activities?.length],
+      ['Manifests Found', totalCount],
+      ['Foundation', snapshot?.foundation],
       ['Target Integration', setTargetOnText(page.target, page)],
       ['Personalization Metadata', page.personalization],
       ['Locale', page.locale?.toLowerCase()],
     ]],
     ['Consent', [['Manifest Consent Types', consentTypes.join(', ')]]],
-    ['Lingo', [['Geo Folder', page.geo === '' ? 'Us (None)' : page.geo]]],
+    ['Lingo', [
+      ['Total', snapshot?.lingo ? `${snapshot.lingo.regional} of ${snapshot.lingo.total}` : undefined],
+      ['Lang First / Lingo', snapshot?.lingo?.langFirst],
+      ['Geo Folder', snapshot?.lingo?.geoFolder ?? (page.geo === '' ? 'Us (None)' : page.geo)],
+    ]],
+    ['M@S', snapshot?.mas?.flatMap(([label, value]) => (
+      Array.isArray(value)
+        ? value.map(([subLabel, count, sub]) => [sub ? subLabel : `${label} ${subLabel}`, count, sub])
+        : [[label, value]]
+    )) ?? []],
   ].forEach(([title, rows]) => {
     const recorded = rows.filter(([, value]) => value != null && value !== '');
     if (recorded.length) mepPopupBody[1].append(createSummarySection(title, recorded));
@@ -970,6 +1068,8 @@ export async function saveToMmm() {
   if (!data) return false;
   const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];
   if (excludedStrings.some((str) => data.page.url.includes(str))) return false;
+  // Top-level so older backends ignore diagnostics instead of inserting an unknown page column.
+  data.pageSummary = getPageSummarySnapshot();
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
     activity.source = source.filter((item) => item !== 'mep param');

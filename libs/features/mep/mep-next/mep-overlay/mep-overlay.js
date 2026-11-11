@@ -1,6 +1,6 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import { onSidekickAuth } from '../../sidekick-auth.js';
-import { getManifestStatus, safeUrl } from '../mep-next.js';
+import { getManifestStatus, safeUrl, buildManifestSchedule } from '../mep-next.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -233,65 +233,15 @@ function buildManifestCard(manifest) {
   rows.push(buildRow('Execution Order', manifest.executionOrder || 'none'));
   if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
 
-  const summary = createTag('div', { class: 'mep-manifest-summary' });
-  const statusRow = createTag('div', { class: 'mep-manifest-status-row' });
-  const start = Date.parse(manifest.eventStartIso);
-  const end = Date.parse(manifest.eventEndIso);
-  const instant = Date.parse(new URLSearchParams(window.location.search).get('instant'));
-  const now = Number.isFinite(instant) ? instant : Date.now();
-  const hasRange = Number.isFinite(start) && Number.isFinite(end) && end > start;
-  const progress = hasRange ? Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100)) : 0;
-  let state = manifest.isActive;
-  if (hasRange && now < start) state = 'inactive';
-  if (hasRange && now > end) state = 'complete';
-  if (manifest.showActive) {
-    const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete', unknown: 'Unknown' }[state];
-    statusRow.append(createTextTag('span', { class: `mep-manifest-state ${state}` }, label));
-  }
-  if (manifest.eventStartIso && manifest.eventEndIso) {
-    const instantLink = createTag('a', {
-      href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`,
-      target: '_blank',
-      rel: 'noopener',
-    });
-    instantLink.append(
-      'Instant',
-      createTag('span', { class: 'mep-visually-hidden' }, ' preview at start date (opens in a new tab)'),
-    );
-    statusRow.append(instantLink);
-    const endpoints = [
-      { label: 'Start', date: manifest.eventStartDate, time: manifest.eventStartTime },
-      { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime },
-    ].map(({ label, date, time }) => {
-      const endpoint = createTag('div', { class: 'mep-manifest-endpoint' });
-      const srLabel = createTextTag('span', { class: 'mep-visually-hidden' }, `${label}:`);
-      const dateEl = createTextTag('span', { class: 'mep-manifest-date' }, date);
-      const timeEl = createTextTag('span', { class: 'mep-manifest-time' }, time);
-      endpoint.append(srLabel, dateEl, timeEl);
-      return endpoint;
-    });
-    const roundedProgress = Math.round(progress);
-    const track = createTag('div', {
-      class: 'mep-manifest-track',
-      role: 'progressbar',
-      'aria-label': 'Schedule progress',
-      'aria-valuenow': `${roundedProgress}`,
-      'aria-valuemin': '0',
-      'aria-valuemax': '100',
-      'aria-valuetext': `${roundedProgress}% elapsed`,
-    });
-    summary.append(createTag('div', {
-      class: `mep-manifest-timeline ${state}`,
-      style: `--mep-manifest-progress: ${progress}%`,
-    }, [track, ...endpoints]));
-  } else if (manifest.eventStart || manifest.eventEnd) {
+  const summary = buildManifestSchedule(manifest);
+  const hasBothDates = manifest.eventStartIso && manifest.eventEndIso;
+  if (!hasBothDates && (manifest.eventStart || manifest.eventEnd)) {
     const onRow = buildRow('On', manifest.eventStart || 'Not scheduled');
     if (manifest.eventStartIso) {
       onRow.querySelector('h2').append(createTag('a', { href: `?instant=${encodeURIComponent(manifest.eventStartIso)}`, target: '_blank', rel: 'noopener' }, 'Instant'));
     }
     rows.push(onRow, buildRow('Off', manifest.eventEnd || 'Not scheduled'));
   }
-  if (statusRow.childElementCount) summary.prepend(statusRow);
 
   rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
   const select = buildVariantSelect(manifest.options);

@@ -21,6 +21,7 @@ import {
   buildManifestEntry,
   getManifestList,
   getMasSummary,
+  getLingoSummaryData,
 } from '../mep-next.js';
 
 export { API_URLS, getManifestList, getMasSummary };
@@ -139,21 +140,6 @@ function getAdvertisingConsent() {
   return consentState?.advertising ? 'on' : 'off';
 }
 
-function getLingoUpdates() {
-  const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
-  const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
-  return `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`;
-}
-
-function getLangFirst() {
-  return lingoActive() ? 'on' : 'off';
-}
-
-function getGeoFolder() {
-  const { page } = parseMepConfig();
-  return page.geo || 'Us (None)';
-}
-
 function getCountryCookie() {
   const searchParams = new URLSearchParams(window.location.search);
   const countryParam = normCountryCode(searchParams.get('country'));
@@ -200,10 +186,11 @@ export function getConsentSummary() {
 }
 
 export function getLingoSummary() {
+  const lingo = getLingoSummaryData();
   return resolvePairs([
-    ['Mep Lingo Updates', getLingoUpdates()],
-    ['Lang First | Lingo', getLangFirst()],
-    ['Geo Folder', getGeoFolder()],
+    ['Mep Lingo Updates', `${lingo.regional} of ${lingo.total}`],
+    ['Lang First | Lingo', lingo.langFirst],
+    ['Geo Folder', lingo.geoFolder],
     ['Country Cookie', getCountryCookie()],
     ['User Country', getUserCountry()],
     ['Geo + User', getGeoUser()],
