@@ -4,6 +4,7 @@ import sinon from 'sinon';
 const { setConfig } = await import('../../../libs/utils/utils.js');
 const {
   isSidekickAuthed,
+  isLocalHost,
   isUngatedHost,
   isWithinFirewall,
   onSidekickAuth: subscribeSidekickAuth,
@@ -56,6 +57,15 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
   });
 
   describe('isUngatedHost (gate defaults to on for anything not a preview/dev host)', () => {
+    it('recognizes only exact loopback hosts as local development', () => {
+      ['localhost', '127.0.0.1', '[::1]'].forEach((host) => {
+        expect(isLocalHost(host), host).to.be.true;
+        expect(isUngatedHost(host), host).to.be.true;
+      });
+      ['localhost.example.com', '127.0.0.1.example.com', 'main--milo--adobecom.aem.page', 'www.adobe.com']
+        .forEach((host) => expect(isLocalHost(host), host).to.be.false);
+    });
+
     it('ungates genuine preview/dev/stage/internal surfaces', () => {
       [
         'main--milo--adobecom.aem.page',
