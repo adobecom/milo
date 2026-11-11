@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import { setConfig } from '../../../../libs/utils/utils.js';
 
 const {
   TAXONOMY_IDS,
@@ -8,6 +9,7 @@ const {
   checkNaming,
   checkTemporaryFolders,
   checkFragmentPlacement,
+  runChecks,
 } = await import('../../../../libs/blocks/preflight/checks/taxonomy.js');
 
 describe('preflight taxonomy checks', () => {
@@ -145,6 +147,55 @@ describe('preflight taxonomy checks', () => {
         { path: '/fragments', reasons: ['outside-fragments-folder'] },
       ]);
       expect(res.description).to.equal('3 fragments outside a fragments folder or not following the naming rules.');
+    });
+  });
+
+  describe('runChecks', () => {
+    let area;
+
+    beforeEach(() => {
+      area = document.createElement('div');
+      area.innerHTML = '<main></main>';
+    });
+
+    it('returns the three checks in order, all as warnings', () => {
+      setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      const res = runChecks({ area, pathname: '/products/test-page' });
+      expect(res.map(({ id }) => id)).to.deep.equal([
+        TAXONOMY_IDS.naming, TAXONOMY_IDS.temporary, TAXONOMY_IDS.fragments,
+      ]);
+      expect(res.every(({ severity }) => severity === 'warning')).to.be.true;
+      expect(res.map(({ status }) => status)).to.deep.equal(['pass', 'fail', 'pass']);
+    });
+
+    it('skips draft pages, including nested drafts folders', () => {
+      setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      ['/drafts/sino/My_Page', '/express/drafts/axel/test-page'].forEach((pathname) => {
+        const res = runChecks({ area, pathname });
+        expect(res.every(({ status }) => status === 'empty'), pathname).to.be.true;
+      });
+    });
+
+    it('ignores the locale prefix of the current page', () => {
+      setConfig({
+        pathname: '/de/products/photoshop',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, de: { ietf: 'de-DE', tk: 'hah7vzn.css' } },
+      });
+      const [naming] = runChecks({ area, pathname: '/de/products/photoshop' });
+      expect(naming.status).to.equal('pass');
+    });
+
+    it('reads fragment paths from the page, including other origins', () => {
+      setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      area.querySelector('main').innerHTML = `
+        <div data-path="/misc/cta-banner"></div>
+        <div data-path="https://main--federal--adobecom.aem.page/federal/fragments/promo"></div>
+        <a class="fragment" href="/fragments/Not_Loaded">link</a>`;
+      const [, , fragments] = runChecks({ area, pathname: '/products/photoshop' });
+      expect(fragments.details.items).to.deep.equal([
+        { path: '/misc/cta-banner', reasons: ['outside-fragments-folder'] },
+        { path: '/fragments/Not_Loaded', reasons: ['naming'] },
+      ]);
     });
   });
 });

@@ -143,6 +143,39 @@ describe('preflight panels general', () => {
     });
   });
 
+  describe('Page naming and placement', () => {
+    let container;
+    let main;
+
+    beforeEach(() => {
+      setConfig({ georouting: { enabled: 'off' }, locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      main = document.createElement('main');
+      main.innerHTML = '<div class="fragment" data-path="/misc/cta-banner"><p>Banner</p></div>';
+      container = document.createElement('div');
+      document.body.append(main, container);
+      sinon.stub(window, 'fetch').resolves({ ok: true, status: 200, json: async () => ({ data: [] }) });
+    });
+
+    afterEach(() => {
+      render(null, container);
+      container.remove();
+      main.remove();
+      sinon.restore();
+    });
+
+    it('shows the taxonomy checks and lists misplaced fragments', async () => {
+      const misplaced = () => [...container.querySelectorAll('.preflight-item li')]
+        .find((li) => li.textContent.includes('not in a fragments folder'));
+      render(html`<${General} />`, container);
+      await waitFor(misplaced);
+      const headings = [...container.querySelectorAll('.preflight-structure-title')].map((p) => p.textContent);
+      expect(headings).to.include('Page naming and placement');
+      const titles = [...container.querySelectorAll('.preflight-item-title')].map((p) => p.textContent);
+      expect(titles).to.include.members(['Page naming', 'Test or temporary folders', 'Fragment placement']);
+      expect(misplaced().querySelector('a').getAttribute('href')).to.equal('/misc/cta-banner');
+    });
+  });
+
   describe('getStatus', () => {
     afterEach(() => sinon.restore());
 
