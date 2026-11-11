@@ -7,6 +7,10 @@
     position: relative;
     display: grid;
     isolation: isolate;
+
+    /* Mobile: the inner box (and its background) bleeds edge to edge; the content stays in the page grid */
+    margin-inline: calc(-1 * var(--grid-padding, 0px));
+    padding-inline: var(--grid-padding, 0);
   }
 
   .background {
@@ -47,7 +51,7 @@
   .link-container {
     display: flex;
     align-items: center;
-    min-block-size: var(--s2a-spacing-lg);
+    min-block-size: 24px;
     padding-block-start: var(--s2a-spacing-xs);
   }
 
@@ -70,8 +74,7 @@
   }
 
   &.content-boxed .inner {
-    margin-inline: calc(-1 * var(--grid-padding, 0px));
-    padding: var(--s2a-spacing-lg) var(--grid-padding, 0);
+    padding-block: var(--s2a-spacing-lg);
     border-radius: var(--s2a-border-radius-lg);
     background-color: var(--s2a-color-background-subtle);
 
@@ -79,19 +82,15 @@
       border-radius: var(--s2a-border-radius-lg);
     }
   }
-
-  /* Background bleeds edge to edge on mobile while the content stays in the page grid */
-  &:not(.content-boxed) .inner:has(> .background) {
-    margin-inline: calc(-1 * var(--grid-padding, 0px));
-    padding-inline: var(--grid-padding, 0);
-  }
 }
 
 @media (width >= 768px) {
   .aside-c2 {
     .inner {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
       column-gap: var(--grid-gutter);
+      margin-inline: 0;
+      padding-inline: 0;
     }
 
     .background {
@@ -115,7 +114,7 @@
       align-self: center;
     }
 
-    &:has(.media-first) {
+    &.media-first {
       .foreground {
         grid-column: 8 / span 5;
       }
@@ -126,13 +125,7 @@
     }
 
     &.content-boxed .inner {
-      margin-inline: 0;
       padding: var(--s2a-spacing-lg);
-    }
-
-    &:not(.content-boxed) .inner:has(> .background) {
-      margin-inline: 0;
-      padding-inline: 0;
     }
   }
 }
@@ -153,7 +146,7 @@
       grid-column: 2 / span 4;
     }
 
-    &.offset:has(.media-first) {
+    &.offset.media-first {
       .foreground {
         grid-column: 9 / span 4;
       }
@@ -163,7 +156,7 @@
       }
     }
 
-    &.condensed:has(.media-first) .foreground {
+    &.condensed.media-first .foreground {
       grid-column: 8 / span 4;
     }
   }

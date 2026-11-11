@@ -24,7 +24,6 @@ const getBlock = (name) => document.querySelector(`.aside-c2.${name}`);
 const inner = (block) => block.querySelector(':scope > .inner');
 const childClasses = (block) => [...inner(block).children].map((child) => child.className);
 const isMediaFirstInDom = (block) => block.querySelector(':scope > .inner > .media + .foreground') !== null;
-const isAuthoredMediaFirst = (block) => block.querySelector(':scope > .inner > .media.media-first') !== null;
 
 describe('aside-c2', () => {
   beforeEach(async () => {
@@ -112,11 +111,14 @@ describe('aside-c2', () => {
     expect(getBlock('lockup').querySelector('.background')).to.not.exist;
   });
 
-  it('flags authored media-first blocks and keeps media before the foreground', () => {
-    const block = getBlock('reversed');
-    expect(isAuthoredMediaFirst(block)).to.be.true;
-    expect(childClasses(block)).to.deep.equal(['media media-first', 'foreground']);
-    expect(isAuthoredMediaFirst(getBlock('lockup'))).to.be.false;
+  it('puts the media first for the media-first variant at every breakpoint', async () => {
+    const block = getBlock('mirrored');
+    expect(childClasses(block)).to.deep.equal(['media', 'foreground']);
+    expect(block.querySelector('.foreground h2')).to.exist;
+    await setViewport(MOBILE);
+    await setViewport(TABLET);
+    await waitFor(() => isMediaFirstInDom(block));
+    expect(isMediaFirstInDom(getBlock('lockup'))).to.be.false;
   });
 
   it('puts the media first on mobile and restores the authored order above (crossing only 768)', async () => {
@@ -146,7 +148,6 @@ describe('aside-c2', () => {
     await setViewport(DESKTOP);
     await waitFor(() => block.querySelector('h2').textContent === 'Desktop heading');
     await waitFor(() => !isMediaFirstInDom(block));
-    expect(isAuthoredMediaFirst(block)).to.be.false;
   });
 
   it('keeps the correct order with viewport content when loaded on mobile and resized step by step', async () => {
@@ -179,7 +180,7 @@ describe('aside-c2', () => {
 
   it('ignores a background image and keeps a heading-less text cell as the foreground', () => {
     const block = getBlock('image-background');
-    expect(childClasses(block)).to.deep.equal(['media media-first', 'foreground']);
+    expect(childClasses(block)).to.deep.equal(['foreground', 'media']);
     expect(block.querySelector('.background-image')).to.not.exist;
     expect(block.querySelector('.foreground').textContent).to.contain('Plain text without a heading.');
     expect(block.querySelector('.media .media-image')).to.exist;
@@ -199,15 +200,12 @@ describe('aside-c2', () => {
     expect(block.querySelector('.media picture')).to.exist;
   });
 
-  it('renders the media and background without throwing when there is no text cell', () => {
+  it('does not throw for an empty block', () => {
     const block = document.createElement('div');
     block.className = 'aside-c2';
-    block.innerHTML = `
-      <div><div>#f3f3f3</div></div>
-      <div><div><picture><img width="960" height="720" alt=""></picture></div></div>`;
     document.body.append(block);
     expect(() => init(block)).to.not.throw();
-    expect(childClasses(block)).to.deep.equal(['media', 'background']);
+    expect(childClasses(block)).to.deep.equal([]);
   });
 });
 
@@ -241,7 +239,7 @@ describe('aside-c2 styles', () => {
     expect(getComputedStyle(img).borderRadius).to.equal('16px');
   });
 
-  it('places authored media-first content in the mirrored offset columns', () => {
+  it('places media-first content in the mirrored offset columns', () => {
     const block = getBlock('media-first-offset');
     expect(getComputedStyle(block.querySelector('.media')).gridColumnStart).to.equal('1');
     expect(getComputedStyle(block.querySelector('.foreground')).gridColumnStart).to.equal('9');

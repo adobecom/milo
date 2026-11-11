@@ -2,15 +2,10 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 const TEXT_CONFIG = { heading: '4', body: 'md' };
-const MEDIA = 'picture, video, a[href*=".mp4"]';
 const mobileQuery = window.matchMedia('(width < 768px)');
 
 function isColorCell(cell) {
   return CSS.supports('color', cell.textContent.trim()) && cell.firstChild?.nodeType === Node.TEXT_NODE;
-}
-
-function isMediaCell(cell) {
-  return cell.children.length === 1 && !!cell.querySelector(MEDIA);
 }
 
 function decorateProductLockup(foreground) {
@@ -45,7 +40,7 @@ function orderContent(el) {
   const foreground = el.querySelector(':scope > .inner > .foreground');
   const media = el.querySelector(':scope > .inner > .media');
   if (!foreground || !media) return;
-  const mediaFirst = mobileQuery.matches || media.classList.contains('media-first');
+  const mediaFirst = mobileQuery.matches || el.classList.contains('media-first');
   if (mediaFirst === (media.nextElementSibling === foreground)) return;
   // Move the element without focus so keyboard focus survives breakpoint changes
   if (media.contains(document.activeElement)) media[mediaFirst ? 'after' : 'before'](foreground);
@@ -58,16 +53,11 @@ function addOrderListeners(el) {
   });
 }
 
-function decorate(block) {
+function decorate(block, el) {
   const [firstRow, secondRow] = block.children;
-  const firstRowCells = [...(firstRow?.children ?? [])];
-  const secondRowCells = [...(secondRow?.children ?? [])];
-  const backgroundCell = secondRow && firstRowCells.find((cell) => isColorCell(cell));
-  const media = (secondRow ? secondRowCells : firstRowCells).find((cell) => isMediaCell(cell));
-  // The background is a color only; in the two-row form a row-1 image or video is dropped
-  const foreground = firstRowCells.find((cell) => cell !== backgroundCell && cell !== media
-    && !(secondRow && isMediaCell(cell)));
-  const isMediaFirst = firstRowCells.indexOf(foreground) > 0;
+  const [foreground, assetCell] = firstRow?.children ?? [];
+  const media = secondRow ? secondRow.firstElementChild : assetCell;
+  const backgroundCell = secondRow && assetCell && isColorCell(assetCell) ? assetCell : null;
 
   if (foreground) {
     foreground.classList.add('foreground');
@@ -76,11 +66,11 @@ function decorate(block) {
     decorateStandaloneLink(foreground);
   }
   media?.classList.add('media');
-  if (isMediaFirst) media?.classList.add('media-first');
   const background = createBackground(backgroundCell);
 
   const inner = createTag('div', { class: 'inner' });
-  const content = isMediaFirst || mobileQuery.matches ? [media, foreground] : [foreground, media];
+  const mediaFirst = el.classList.contains('media-first') || mobileQuery.matches;
+  const content = mediaFirst ? [media, foreground] : [foreground, media];
   inner.append(...[...content, background].filter(Boolean));
   block.replaceChildren(inner);
 }
