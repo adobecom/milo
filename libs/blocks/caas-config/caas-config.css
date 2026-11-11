@@ -68,8 +68,8 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   line-height: 1.5;
   padding: 32px;
   border-radius: 20px;
-  margin: 24px auto 48px;
-  max-width: 1800px;
+  margin: 0 auto 48px;
+  max-width: 2080px;
   box-sizing: border-box;
 }
 
@@ -270,7 +270,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
 .caas-config .config-panel dt.title span,
 .caas-config .config-panel dt.title button {
   background: transparent;
-  color: var(--config-muted);
+  color: var(--config-label);
   font-weight: 500;
   line-height: 1.5;
 }
@@ -349,6 +349,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
 
 .caas-config .config-panel .accordion dd.content .content-container {
   padding: 20px 22px 12px;
+  border-bottom: solid 2px #eeedff;
 }
 
 .caas-config .config-panel .accordion .multifield-fields .field {
@@ -366,7 +367,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
 .caas-config .config-panel .accordion dd.content .field label {
   margin: 0 0 6px;
   color: var(--config-label);
-  font-size: calc(12px * var(--settings-font-scale));
+  font-size: calc(13px * var(--settings-font-scale));
   font-weight: 600;
   line-height: 1.5;
 }
@@ -760,6 +761,11 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   padding: 24px;
   box-sizing: border-box;
 }
+
+/* stylelint-disable-next-line selector-class-pattern -- CaaS library class. */
+/* .caas-config .consonant-Wrapper--1600MaxWidth {
+  max-width: 1600px;
+} */
 
 /* stylelint-disable-next-line selector-class-pattern -- CaaS library class. */
 .caas-config .consonant-Wrapper--carousel {
