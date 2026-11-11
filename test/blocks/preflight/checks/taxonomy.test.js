@@ -138,6 +138,13 @@ describe('preflight taxonomy checks', () => {
       expect(res.description).to.equal('Fragments are stored in a fragments folder.');
     });
 
+    it('accepts { path, pathname } entries and reports the display path', () => {
+      const res = checkFragmentPlacement([{ path: 'https://other.site/misc/a', pathname: '/misc/a' }]);
+      expect(res.details.items).to.deep.equal([
+        { path: 'https://other.site/misc/a', reasons: ['outside-fragments-folder'] },
+      ]);
+    });
+
     it('flags fragments outside a fragments folder and badly named fragments', () => {
       const res = checkFragmentPlacement(['/misc/cta-banner', '/fragments/CTA_Banner', '/fragments']);
       expect(res.status).to.equal('fail');
@@ -195,6 +202,36 @@ describe('preflight taxonomy checks', () => {
       expect(fragments.details.items).to.deep.equal([
         { path: '/misc/cta-banner', reasons: ['outside-fragments-folder'] },
         { path: '/fragments/Not_Loaded', reasons: ['naming'] },
+      ]);
+    });
+
+    it('ignores locale keys on fragments, including other locales and underscore keys', () => {
+      setConfig({
+        pathname: '/ae_ar/products/photoshop',
+        locales: {
+          '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+          ae_ar: { ietf: 'ar-AE', tk: 'hah7vzn.css' },
+          be_fr: { ietf: 'fr-BE', tk: 'hah7vzn.css' },
+        },
+      });
+      area.querySelector('main').innerHTML = `
+        <div data-path="/ae_ar/fragments/promo"></div>
+        <div data-path="/be_fr/fragments/products/card"></div>
+        <div data-path="/ae_ar/misc/banner"></div>`;
+      const [naming, , fragments] = runChecks({ area, pathname: '/ae_ar/products/photoshop' });
+      expect(naming.status).to.equal('pass');
+      expect(fragments.details.items).to.deep.equal([
+        { path: '/ae_ar/misc/banner', reasons: ['outside-fragments-folder'] },
+      ]);
+    });
+
+    it('keeps the origin of fragments from another site for display', () => {
+      setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      const federal = 'https://main--federal--adobecom.aem.page/federal/promo';
+      area.querySelector('main').innerHTML = `<div data-path="${federal}"></div>`;
+      const [, , fragments] = runChecks({ area, pathname: '/products/photoshop' });
+      expect(fragments.details.items).to.deep.equal([
+        { path: federal, reasons: ['outside-fragments-folder'] },
       ]);
     });
   });

@@ -91,10 +91,21 @@ export function checkTemporaryFolders(segments = []) {
   return result('temporary', STATUS.FAIL, 'Path looks like a test or temporary page.', { items });
 }
 
-export function checkFragmentPlacement(fragmentPathnames = []) {
-  const items = fragmentPathnames
-    .map((path) => {
-      const segments = toSegments(path);
+// Fragments can come from any locale (MEP, lingo), so drop a leading locale key.
+const stripLocale = (pathname, localeKeys) => {
+  const [first] = toSegments(pathname);
+  return localeKeys.includes(first) ? `/${toSegments(pathname).slice(1).join('/')}` : pathname;
+};
+
+// Each fragment is a pathname, or { path, pathname } when the displayed path
+// (e.g. one on another origin) differs from the one to check.
+export function checkFragmentPlacement(fragments = [], localeKeys = []) {
+  const items = fragments
+    .map((fragment) => {
+      const { path, pathname } = typeof fragment === 'string'
+        ? { path: fragment, pathname: fragment }
+        : fragment;
+      const segments = toSegments(stripLocale(pathname, localeKeys));
       const reasons = [];
       if (!segments.slice(0, -1).includes('fragments')) reasons.push('outside-fragments-folder');
       if (segments.some((segment) => getSegmentIssues(segment).length)) reasons.push('naming');
@@ -102,7 +113,7 @@ export function checkFragmentPlacement(fragmentPathnames = []) {
     })
     .filter(({ reasons }) => reasons.length);
   if (!items.length) {
-    const description = fragmentPathnames.length
+    const description = fragments.length
       ? 'Fragments are stored in a fragments folder.'
       : 'No fragments on this page.';
     return result('fragments', STATUS.PASS, description, { items });
@@ -114,14 +125,15 @@ const KEYS = ['naming', 'temporary', 'fragments'];
 
 // Drafts are scratch space by design, so warnings there are noise.
 export function runChecks({ area = document, pathname = window.location.pathname } = {}) {
-  const segments = toSegments(pathname, getConfig().locale?.prefix);
+  const { locale, locales = {} } = getConfig();
+  const segments = toSegments(pathname, locale?.prefix);
   if (segments.includes('drafts')) {
     return KEYS.map((key) => result(key, STATUS.EMPTY, 'Draft page, taxonomy checks skipped.'));
   }
-  const fragmentPathnames = findFragments(area).map(({ url }) => url.pathname);
+  const fragments = findFragments(area).map(({ path, url }) => ({ path, pathname: url.pathname }));
   return [
     checkNaming(segments),
     checkTemporaryFolders(segments),
-    checkFragmentPlacement(fragmentPathnames),
+    checkFragmentPlacement(fragments, Object.keys(locales).filter(Boolean)),
   ];
 }
