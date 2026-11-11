@@ -18,6 +18,7 @@ import {
   getLingoRegion,
   lingoActive,
   isAcomAssistantEnabled,
+  isAcomAssistantPanelEnabled,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -716,7 +717,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
-        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
+        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' && !isAcomAssistantPanelEnabled() ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${this.decoratePinnedCta()}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}

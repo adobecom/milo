@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { waitFor, waitForElement, delay } from '../../helpers/waitfor.js';
+import { waitFor } from '../../helpers/waitfor.js';
 import initPanel, { openChatPanel, closeChatPanel } from '../../../libs/features/chat-panel/chat-panel.js';
 import initMilo from '../../../libs/blocks/brand-concierge/brand-concierge.js';
 import initC2 from '../../../libs/c2/blocks/brand-concierge/brand-concierge.js';
@@ -143,11 +143,17 @@ describe('acom-assistant-panel persistent chat panel', () => {
         expect(client.initialize.calledOnce).to.be.true;
       });
 
-      it('uses the navigation panel for inline prompts on the same page', async () => {
+      async function initGlobalWithGnav() {
         document.body.innerHTML = await readFile({ path: '../brand-concierge-global/mocks/default.html' });
+        document.querySelector('.feds-topnav').append(Object.assign(document.createElement('div'), { className: 'feds-utilities' }));
         await foundation.initGlobal(document.querySelector('.brand-concierge-global'));
-        const gnav = await waitForElement('.bc-gnav');
-        gnav.querySelector('.gnav-button').click();
+        await waitFor(() => window.milo?.brandConcierge?.brandConciergeGlobal);
+        return document.getElementById('chat-panel-toggle');
+      }
+
+      it('uses the navigation panel for inline prompts on the same page', async () => {
+        const toggle = await initGlobalWithGnav();
+        toggle.click();
         const panel = await expectOpen();
         const mount = panel.querySelector('#brand-concierge-mount');
         mount.textContent = 'Existing conversation';
@@ -164,37 +170,14 @@ describe('acom-assistant-panel persistent chat panel', () => {
         expect(client.initialize.calledOnce).to.be.true;
       });
 
-      ['navigation button', 'send button', 'Enter', 'prompt card'].forEach((entrypoint) => {
-        it(`opens from the global ${entrypoint}`, async () => {
-          document.body.innerHTML = await readFile({ path: '../brand-concierge-global/mocks/default.html' });
-          await foundation.initGlobal(document.querySelector('.brand-concierge-global'));
-          const gnav = await waitForElement('.bc-gnav');
-          let message;
-          if (entrypoint === 'navigation button') {
-            gnav.querySelector('.gnav-button').click();
-          } else if (entrypoint === 'prompt card') {
-            const card = gnav.querySelector('.prompt-card-button');
-            message = card.textContent.trim();
-            card.click();
-          } else {
-            message = `Global ${entrypoint}`;
-            const input = gnav.querySelector('textarea');
-            input.value = message;
-            input.dispatchEvent(new Event('input'));
-            if (entrypoint === 'Enter') {
-              input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-            } else {
-              gnav.querySelector('.input-field-button').click();
-            }
-          }
-          const panel = await expectOpen(message);
-          expect(gnav.classList.contains('has-chat-history')).to.be.true;
-          gnav.querySelector('.gnav-button').click();
-          await delay(0);
-          expect(document.getElementById('chat-panel')).to.equal(panel);
-          expect(document.body.classList.contains('chat-panel-open')).to.be.true;
-          expect(client.initialize.calledOnce).to.be.true;
-        });
+      it('replaces the global gnav entry point with the gnav drawer toggle', async () => {
+        const toggle = await initGlobalWithGnav();
+        expect(document.querySelector('.bc-gnav')).to.be.null;
+        expect(getComputedStyle(document.querySelector('.feds-bc-wrapper')).display).to.equal('none');
+        expect(toggle.previousElementSibling.classList.contains('feds-utilities')).to.be.true;
+        toggle.click();
+        await expectOpen();
+        expect(client.initialize.calledOnce).to.be.true;
       });
     });
   });

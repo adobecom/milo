@@ -82,7 +82,19 @@ function promptUp() {
   stayActive = false;
 }
 
+// In drawer mode the gnav toggle from chat-panel.js is the only entry point.
+function suppressGnavEntry(topNav) {
+  const wrapper = topNav.querySelector('.feds-bc-wrapper');
+  if (wrapper) wrapper.style.display = 'none';
+  window.milo ||= {};
+  window.milo.brandConcierge = { brandConciergeGlobal: true };
+}
+
 function decorateGnav(cards, input, topNav, el) {
+  if (useAcomAssistantPanel) {
+    suppressGnavEntry(topNav);
+    return;
+  }
   const bcWrapper = topNav.querySelector('.feds-bc-wrapper');
   const bcGnav = createTag('div', { class: `bc-gnav${hasChatCookie() ? ' has-chat-history' : ''} ${isC2() ? ' is-c2' : ''} ${isC2Nav() ? ' is-c2-nav' : ''}` });
   const hasNoMobile = el.classList.contains('no-gnav-mobile');

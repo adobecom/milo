@@ -83,10 +83,22 @@ function promptUp() {
   stayActive = false;
 }
 
+// In drawer mode the gnav toggle from chat-panel.js is the only entry point.
+function suppressGnavEntry(topNav) {
+  const wrapper = topNav.querySelector('.feds-bc-wrapper');
+  if (wrapper) wrapper.style.display = 'none';
+  window.milo ||= {};
+  window.milo.brandConcierge = { brandConciergeGlobal: true };
+}
+
 async function decorateGnav(cards, input, topNav, el) {
   if (useAcomAssistant) {
     const { decorateNavWithAssistant } = await import('../../features/acom-assistant-gnav.js');
     decorateNavWithAssistant(cards, topNav, el);
+    return;
+  }
+  if (useAcomAssistantPanel) {
+    suppressGnavEntry(topNav);
     return;
   }
 

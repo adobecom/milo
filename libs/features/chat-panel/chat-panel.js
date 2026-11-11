@@ -53,7 +53,9 @@ function buildToggle() {
 
 const GNAV_SLOT_TIMEOUT = 10000;
 
-function placeToggle(toggle, slot) {
+function placeToggle(toggle, slot, panel) {
+  // The panel may have been torn down (e.g. replaced page content) while waiting for the gnav.
+  if (!panel.isConnected) return;
   if (slot) {
     toggle.classList.add('chat-panel-toggle-gnav');
     slot.after(toggle);
@@ -64,11 +66,11 @@ function placeToggle(toggle, slot) {
 
 // Sits after the gnav utilities. Federal renders the gnav asynchronously, so wait
 // for it; pages without a gnav (or one that never renders) get the floating toggle.
-function mountToggle(toggle) {
+function mountToggle(toggle, panel) {
   const header = document.querySelector('header.global-navigation');
   const find = () => header?.querySelector('.feds-utilities');
   if (!header || find()) {
-    placeToggle(toggle, find());
+    placeToggle(toggle, find(), panel);
     return;
   }
   let timer;
@@ -77,11 +79,11 @@ function mountToggle(toggle) {
     if (!slot) return;
     observer.disconnect();
     clearTimeout(timer);
-    placeToggle(toggle, slot);
+    placeToggle(toggle, slot, panel);
   });
   timer = setTimeout(() => {
     observer.disconnect();
-    placeToggle(toggle, null);
+    placeToggle(toggle, null, panel);
   }, GNAV_SLOT_TIMEOUT);
   observer.observe(header, { childList: true, subtree: true });
 }
@@ -167,7 +169,7 @@ export default function init() {
     panelEl = panel;
     toggleEl = toggle;
     document.body.append(panel);
-    mountToggle(toggle);
+    mountToggle(toggle, panel);
 
     toggle.addEventListener('click', () => (isChatPanelOpen() ? closeChatPanel() : openChatPanel()));
     closeBtn.addEventListener('click', closeChatPanel);
