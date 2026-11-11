@@ -10,6 +10,7 @@ logs/*
 test-html-results/
 test-results/
 test-a11y-results/
+test-drawer-layout-results/
 tmp
 nala/utils/auth.json
 libs/navigation/dist/
