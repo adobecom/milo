@@ -1941,9 +1941,24 @@ export function isC2GnavOnC1Host() {
   return getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
 }
 
+const DEFAULT_COMPACT_OVERFLOW_MAX = 1315;
+
+export function reserveCompactOverflow(header) {
+  const meta = getMetadata('gnav-compact-overflow');
+  if (!meta || meta === 'off') return;
+  const parsed = Number.parseInt(meta, 10);
+  const maxWidth = Number.isFinite(parsed) ? parsed : DEFAULT_COMPACT_OVERFLOW_MAX;
+  const mq = window.matchMedia(`(min-width: 1024px) and (max-width: ${maxWidth}px)`);
+  header.classList.toggle('c2-reserve-compact', mq.matches);
+  if (header.dataset.compactOverflowBound) return;
+  header.dataset.compactOverflowBound = 'true';
+  mq.addEventListener('change', () => header.classList.toggle('c2-reserve-compact', mq.matches));
+}
+
 function syncC2GnavHost(header) {
   const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
   header.classList.toggle('c2-gnav-c1-host', isHost);
+  if (isHost) reserveCompactOverflow(header);
 }
 
 async function decorateHeader() {

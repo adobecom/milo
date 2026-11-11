@@ -187,6 +187,10 @@
   --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
 }
 
+:root header.c2-gnav-c1-host.c2-reserve-compact {
+  --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
+}
+
 @media (max-width: 1023px) {
   :root header.c2-gnav-c1-host:has(.feds-localnav-bar),
   :root:has(> head > meta[name="localnav"][content="true"]) header.c2-gnav-c1-host {
