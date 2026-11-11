@@ -3323,6 +3323,9 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    await import('../features/c2-blog-look/c2-blog-look.js')
+      .then(({ default: loadC2BlogLook }) => loadC2BlogLook())
+      .catch(() => {});
     if (getMetadata('foundation') === 'c2') {
       warmTypekit();
       importFonts();

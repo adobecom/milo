@@ -1,0 +1,22 @@
+footer {
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-typography-font-size-body-md);
+  font-weight: var(--s2a-font-weight-body);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+  color: var(--s2a-color-content-default);
+  -webkit-font-smoothing: antialiased;
+}
+
+footer .feds-menu-headline.feds-menu-headline.feds-menu-headline {
+  display: flex;
+  position: static;
+}
+
+footer .feds-menu-headline::after {
+  content: none;
+}
+
+footer a {
+  color: var(--s2a-color-content-default);
+}

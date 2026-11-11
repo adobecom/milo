@@ -1,0 +1,206 @@
+main .blog-article-content .content > :is(p, ul, ol, blockquote, table) {
+  margin-block: 0 var(--s2a-spacing-lg);
+}
+
+main .blog-article-content .content li + li {
+  margin-block-start: var(--s2a-spacing-xs);
+}
+
+main .blog-article-content .content > :is(h2, h3, h4, h5, h6) {
+  margin-block: var(--s2a-spacing-3xl) var(--s2a-spacing-md);
+}
+
+main .blog-article-content .content > h2 {
+  margin-block-start: var(--s2a-spacing-4xl);
+}
+
+main .blog-article-content .content > :first-child {
+  margin-block-start: 0;
+}
+
+main .blog-article-content .container {
+  padding-inline: 0;
+}
+
+main .blog-article-content .section > :not(.content) + .content > :first-child {
+  margin-block-start: var(--s2a-spacing-lg);
+}
+
+main .blog-article-content .section > :not(.content) + .content > :is(h2, h3, h4, h5, h6):first-child {
+  margin-block-start: var(--s2a-spacing-3xl);
+}
+
+main .blog-article-content .content > h2 {
+  font-size: var(--s2a-typography-font-size-heading-3);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-3);
+}
+
+main .blog-article-content .content > h3 {
+  font-size: var(--s2a-typography-font-size-heading-4);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
+}
+
+main .blog-article-content .content > :is(h4, h5, h6) {
+  font-size: var(--s2a-typography-font-size-heading-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+}
+
+main .blog-article-content .content > :is(h2, h3, h4, h5, h6) {
+  line-height: 1.1;
+}
+
+main :is(.ai-summary, .blog-side-navigation, .blog-related-content) :is(h1, h2, h3, h4, h5, h6) {
+  letter-spacing: normal;
+}
+
+main .aside :is(h1, h2, h3, h4, h5, h6) {
+  letter-spacing: -0.02em;
+}
+
+main .blog-header {
+  color: var(--s2a-color-content-default);
+}
+
+main .blog-header-title h1 {
+  color: var(--s2a-color-content-heading);
+  font-weight: var(--s2a-font-weight-heading);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+main,
+main .dark {
+  --text-color: var(--s2a-color-content-default);
+  --link-color: var(--s2a-color-content-default);
+  --link-hover-color: var(--s2a-color-content-default);
+}
+
+main {
+  --color-gray-100: var(--s2a-color-gray-50);
+  --color-gray-200: var(--s2a-color-gray-100);
+  --color-gray-300: var(--s2a-color-gray-300);
+  --color-gray-400: var(--s2a-color-gray-400);
+  --color-gray-500: var(--s2a-color-gray-500);
+  --color-gray-600: var(--s2a-color-gray-600);
+  --color-gray-700: var(--s2a-color-gray-700);
+  --color-gray-800: var(--s2a-color-gray-800);
+}
+
+main .blog-progress-bar {
+  background: var(--s2a-color-blue-900);
+}
+
+main .blog-divider-frame,
+main .blog-divider-frame + .blog-article-layout {
+  --blog-divider-dots: var(--s2a-color-border-subtle) 0 2px;
+  --blog-divider-rule-image: linear-gradient(var(--s2a-color-border-subtle), var(--s2a-color-border-subtle));
+  --blog-divider-rule-size: 1px;
+}
+
+main > .blog-article-layout,
+main .blog-divider-frame + .blog-article-layout {
+  padding-block-end: var(--s2a-section-spacing-lg);
+}
+
+main .ai-summary {
+  border: 0;
+  border-radius: var(--s2a-border-radius-md);
+  background-color: var(--s2a-color-background-subtle);
+}
+
+@media (width >= 600px) {
+  main .blog-side-navigation nav > ul {
+    border-color: var(--s2a-color-border-subtle);
+    border-radius: var(--s2a-border-radius-md);
+    box-shadow: none;
+    overflow: hidden;
+  }
+}
+
+main .blog-side-navigation .blog-side-navigation-toggle {
+  border-radius: var(--s2a-border-radius-round);
+}
+
+main .blog-side-navigation .blog-side-navigation-label,
+main .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) .blog-side-navigation-label {
+  -webkit-line-clamp: none;
+  overflow: visible;
+}
+
+main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
+  border-color: var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-sm);
+  background-color: var(--s2a-color-background-default);
+}
+
+main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
+  height: auto;
+  min-height: 80px;
+}
+
+main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-header {
+  height: auto;
+  align-self: stretch;
+}
+
+main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-title {
+  -webkit-line-clamp: none;
+  overflow: visible;
+}
+
+main .accordion .descr-term .accordion-heading {
+  font-size: var(--s2a-typography-font-size-heading-5);
+  line-height: var(--s2a-typography-line-height-heading-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+}
+
+main .accordion .descr-term .accordion-heading .accordion-trigger {
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-heading);
+  font-size: var(--s2a-typography-font-size-heading-5);
+  line-height: var(--s2a-typography-line-height-heading-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+}
+
+main .quote blockquote .quote-copy {
+  color: var(--s2a-color-content-default);
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-heading);
+  font-style: normal;
+  font-size: var(--s2a-typography-font-size-heading-4);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+main .quote blockquote .quote-copy :is(em, i, strong, b) {
+  font-style: normal;
+  font-weight: inherit;
+}
+
+main .quote figcaption .figcaption {
+  color: var(--s2a-color-content-default);
+  font-family: var(--body-font-family);
+  font-weight: var(--s2a-font-weight-label);
+  font-style: normal;
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+}
+
+main .quote figcaption cite {
+  color: var(--s2a-color-content-subtle);
+  font-family: var(--body-font-family);
+  font-weight: var(--s2a-font-weight-body);
+  font-style: normal;
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main .con-button,
+  main .icon-button,
+  main .icon-button path,
+  main a.standalone-link::after {
+    transition: none;
+  }
+}

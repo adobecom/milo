@@ -1,0 +1,945 @@
+// decorate.js with the C2 foundation always on, for C2 blocks shown on a C1 page.
+import {
+  createTag,
+  loadStyle,
+  getConfig,
+  getMetadata,
+  createIntersectionObserver,
+  getFederatedContentRoot,
+  getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
+} from './utils.js';
+
+const { miloLibs, codeRoot } = getConfig();
+const HIDE_CONTROLS = '_hide-controls';
+export const USER_PAUSED_ATTR = 'data-user-paused';
+let firstVideo = null;
+let videoLabels = {
+  playMotion: 'Play',
+  pauseMotion: 'Pause',
+  pauseIcon: 'Pause icon',
+  playIcon: 'Play icon',
+  hasFetched: false,
+};
+
+const C2_PLAY_PAUSE_ICONS = `
+<div class='offset-filler accessibility-control'>
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" class="play-icon" aria-hidden="true">
+    <g clip-path="url(#clip0_16178_1778)">
+      <path d="M10.4279 5.39378C10.8946 5.66321 10.8946 6.33679 10.4279 6.60622L3.52791 10.5899C3.06124 10.8594 2.47791 10.5226 2.47791 9.98372V2.01628C2.47791 1.47742 3.06124 1.14064 3.52791 1.41007L10.4279 5.39378Z" fill="#292929"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_16178_1778">
+        <rect width="12" height="12" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="12" viewBox="0 0 10 12" fill="none" class="pause-icon" aria-hidden="true">
+    <path d="M2.48822 9.42876V1.74622M7.28981 9.42876V1.74622" stroke="#292929" stroke-width="1.86008" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+`;
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let videoCounter = 0;
+
+export function getButtonType(buttonParent) {
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
+  let { nodeName } = buttonParent;
+  if (nodeName === 'STRONG') {
+    nodeName = buttonParent.parentElement?.nodeName === 'EM' ? 'EM' : nodeName;
+  }
+  return buttonTypeMap[nodeName] || 'outline';
+}
+
+export function decorateButtons(el, size) {
+  const buttons = el.querySelectorAll('em a, strong a, p > a strong');
+  if (buttons.length === 0) return;
+
+  buttons.forEach((button) => {
+    if ((button.classList.contains('merch-card-autoblock') || button.classList.contains('merch'))
+      && button.classList.contains('link-block')) return;
+    const parent = button.parentElement;
+    if (shouldBlockFreeTrialLinks(button)) return;
+    let target = button;
+    const buttonType = getButtonType(parent);
+    if (button.nodeName === 'STRONG') {
+      target = parent;
+    } else {
+      parent.insertAdjacentElement('afterend', button);
+      parent.remove();
+    }
+    target.classList.add('con-button', buttonType);
+    if (size) target.classList.add(size); /* button-l, button-xl */
+    const customClasses = target.href && [...target.href.matchAll(/#_button-([a-zA-Z-]+)/g)];
+    if (customClasses) {
+      customClasses.forEach((match) => {
+        target.href = target.href.replace(match[0], '');
+        if (target.dataset.modalHash) {
+          target.setAttribute('data-modal-hash', target.dataset.modalHash.replace(match[0], ''));
+        }
+        target.classList.add(match[1]);
+      });
+    }
+    const actionArea = button.closest('p, div');
+    if (actionArea) {
+      actionArea.classList.add('action-area');
+      actionArea.nextElementSibling?.classList.add('supplemental-text', 'body-xl');
+    }
+  });
+}
+
+export function decorateIconStack(el) {
+  const ulElems = el.querySelectorAll('ul');
+  if (!ulElems.length) return;
+  const stackEl = ulElems[ulElems.length - 1];
+  stackEl.classList.add('icon-stack-area', 'body-s');
+  el.classList.add('icon-stack');
+  const items = stackEl.querySelectorAll('li');
+  [...items].forEach((i) => {
+    const links = i.querySelectorAll('a');
+    if (links.length <= 1) return;
+    const picIndex = links[0].querySelector('a picture') ? 0 : 1;
+    const linkImg = links[picIndex];
+    const linkText = links[1 - picIndex];
+    const linkPic = linkImg.querySelector('picture');
+    if (linkPic) {
+      linkText.prepend(linkPic);
+      linkImg.remove();
+    }
+  });
+}
+
+export function decorateIconArea(el) {
+  const icons = el.querySelectorAll('.icon');
+  icons.forEach((icon) => {
+    icon.parentElement.classList.add('icon-area');
+    if (icon.textContent.includes('persona')) icon.parentElement.classList.add('persona-area');
+  });
+}
+
+function elContainsText(el) {
+  return [...el.childNodes].some((node) => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() !== '';
+    if (node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (node.innerText.trim() !== '') return true;
+    // Custom elements (tag name contains a hyphen) may render content asynchronously;
+    // treat non-hidden ones as containing text so body classes are applied upfront.
+    return node.tagName?.includes('-') && !node.hidden;
+  });
+}
+
+const isC2 = true;
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'md' } : ['m', 's', 'm'];
+
+export function decorateBlockText(el, config = blockTextConfig, type = null) {
+  const sizeMap = Array.isArray(config)
+    ? { heading: config[0], body: config[1], detail: config[2], button: config[3] }
+    : { ...blockTextConfig, ...config };
+
+  if (!el.classList.contains('default')) {
+    let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    if (headings) {
+      if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
+      headings.forEach((h) => h.classList.add(`heading-${sizeMap.heading}`));
+      if (sizeMap.detail || isC2) {
+        const prevSib = headings[0]?.previousElementSibling;
+        prevSib?.classList.toggle(isC2 ? 'eyebrow' : `detail-${sizeMap.detail}`, !prevSib.querySelector('picture'));
+        decorateIconArea(el);
+      }
+    }
+    const bodyStyle = `body-${sizeMap.body}`;
+    const emptyEls = el?.querySelectorAll(':is(p, ul, ol, div):not([class])');
+    if (emptyEls.length) {
+      [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
+    } else if (!el.classList.length && elContainsText(el)) {
+      el.classList.add(bodyStyle);
+    }
+  }
+  decorateButtons(el, sizeMap.button ? `button-${sizeMap.button}` : '');
+  if (type === 'merch') decorateIconStack(el);
+}
+
+export function normalizeMasFieldText(cell, bodySize, fieldSelector = 'mas-field') {
+  cell.querySelectorAll(`:scope > ${fieldSelector}, :scope > p.body-${bodySize} > ${fieldSelector}`)
+    .forEach((field) => {
+      if (field.querySelector('h1, h2, h3, h4, h5, h6') || field.getAttribute('field')?.startsWith('ctas')) return;
+      const parent = field.parentElement;
+      const body = createTag('div', { class: `body-${bodySize}` });
+      // A div survives merch.js unwrapping block-valued fields, unlike an authored p.
+      if (parent === cell) {
+        field.before(body);
+        body.append(field);
+      } else {
+        [...parent.attributes].forEach(({ name, value }) => body.setAttribute(name, value));
+        body.append(...parent.childNodes);
+        parent.replaceWith(body);
+      }
+    });
+}
+
+export function handleFocalpoint(pic, child, removeChild) {
+  const image = pic.querySelector('img');
+  if (!child || !image) return;
+  let text = '';
+  if (child.childElementCount === 2) {
+    const dataElement = child.querySelectorAll('p')[1];
+    text = dataElement?.textContent;
+    if (removeChild) dataElement?.remove();
+  } else if (child.textContent) {
+    text = child.textContent;
+    const childData = child.childNodes;
+    if (removeChild) childData.forEach((c) => c.nodeType === Node.TEXT_NODE && c.remove());
+  }
+  if (!text) return;
+  const directions = text.trim().toLowerCase().split(',');
+  const [x, y = ''] = directions;
+  image.style.objectPosition = `${x} ${y}`;
+}
+
+// Used in DA focal point feature
+export function setBackgroundFocus(pic) {
+  const img = pic?.querySelector('img');
+  if (!img) return;
+  const { title } = img.dataset;
+  if (!title?.startsWith('data-focal:')) return;
+  const coords = title.split(':')[1]?.split(',');
+  if (coords?.length !== 2) return;
+  const [x, y] = coords;
+  delete img.dataset.title;
+  img.style.objectPosition = `${x}% ${y}%`;
+}
+
+export async function decorateBlockBg(block, node, { useHandleFocalpoint = false, className = 'background' } = {}) {
+  const childCount = node.childElementCount;
+  if (node.querySelector('img, video, a[href*=".mp4"]') || childCount > 1) {
+    node.classList.add(className);
+    const binaryVP = [['mobile-only'], ['tablet-only', 'desktop-only']];
+    const allVP = [['mobile-only'], ['tablet-only'], ['desktop-only']];
+    const viewports = childCount === 2 ? binaryVP : allVP;
+    [...node.children].forEach((child, i) => {
+      if (childCount > 1 && i < viewports.length) child.classList.add(...viewports[i]);
+      const pic = child.querySelector('picture');
+      setBackgroundFocus(pic); // Used in DA focal point feature
+      if (useHandleFocalpoint && pic
+        && (child.childElementCount === 2 || child.textContent?.trim())) {
+        handleFocalpoint(pic, child, true);
+      }
+      const vid = child.querySelector('video');
+      vid?.setAttribute('disablepictureinpicture', 'true');
+      if (!child.querySelector('img, video, a[href*=".mp4"]')) {
+        child.style.background = child.textContent;
+        child.classList.add('expand-background');
+        child.textContent = '';
+      }
+    });
+  } else {
+    block.style.background = node.textContent;
+    node.remove();
+  }
+}
+
+export function getBlockSize(el, defaultSize = 1) {
+  const sizes = ['small', 'medium', 'large', 'xlarge', 'medium-compact'];
+  if (defaultSize < 0 || defaultSize > sizes.length - 1) return null;
+  return sizes.find((size) => el.classList.contains(size)) || sizes[defaultSize];
+}
+
+export const decorateBlockHrs = (el) => {
+  const pTags = el.querySelectorAll('p');
+  let hasHr = false;
+  const decorateHr = ((tag) => {
+    const hrTag = tag.textContent.trim().startsWith('---');
+    if (!hrTag) return;
+    hasHr = true;
+    const bgStyle = tag.textContent.substring(3).trim();
+    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
+    tag.textContent = '';
+    tag.appendChild(hrElem);
+  });
+  [...pTags].forEach((p) => {
+    decorateHr(p);
+  });
+  const singleElementInRow = el.children[0].childElementCount === 0;
+  if (singleElementInRow) {
+    decorateHr(el.children[0]);
+  }
+  if (hasHr) el.classList.add('has-divider');
+};
+
+function applyTextOverrides(el, override, targetEl) {
+  const parts = override.split('-');
+  const type = isC2 ? parts[0] : parts[1];
+  const modifier = isC2 ? parts[1] : parts[0];
+  const scopeEl = targetEl !== false ? targetEl : el;
+  const els = [...scopeEl.querySelectorAll('[class]')]
+    .filter((elOfType) => [...elOfType.classList].some((cls) => cls.startsWith(type)));
+  if (!els.length) return;
+  els.forEach((elem) => {
+    const replace = [...elem.classList].find((i) => i.startsWith(type));
+    elem.classList.replace(replace, `${type}-${modifier}`);
+  });
+}
+
+const textOverridesConfig = isC2 ? ['heading-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
+
+export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
+  const overrides = [...el.classList]
+    .filter((elClass) => options.some((ovClass) => (
+      isC2 ? elClass.startsWith(ovClass) : elClass.endsWith(ovClass)
+    )));
+  if (!overrides.length) return;
+  overrides.forEach((override) => {
+    applyTextOverrides(el, override, target);
+    el.classList.remove(override);
+  });
+}
+
+function defineDeviceByScreenSize() {
+  const screenWidth = window.innerWidth;
+  if (screenWidth <= 600) {
+    return 'mobile';
+  }
+  return 'desktop';
+}
+
+export function getImgSrc(pic) {
+  let source = '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(pic, 'text/html');
+  if (defineDeviceByScreenSize() === 'mobile') source = doc.querySelector('source[type="image/webp"]:not([media])');
+  else source = doc.querySelector('source[type="image/webp"][media]');
+  return source?.srcset ? `poster='${source.srcset}'` : '';
+}
+
+export function getVideoAttrs(hash, dataset) {
+  const isAutoplay = hash?.includes('autoplay');
+  const isAutoplayOnce = hash?.includes('autoplay1');
+  const playOnHover = hash?.includes('hoverplay');
+  const playInViewport = hash?.includes('viewportplay');
+  const poster = getImgSrc(dataset.videoPoster);
+  const globalAttrs = `playsinline ${poster}`;
+  const autoPlayAttrs = playInViewport ? 'muted' : 'autoplay muted';
+  const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
+
+  if (isAutoplay && !isAutoplayOnce) {
+    return `${globalAttrs} ${autoPlayAttrs} loop ${playInViewportAttrs}`;
+  }
+  if (playOnHover && isAutoplayOnce) {
+    return `${globalAttrs} ${autoPlayAttrs} data-hoverplay`;
+  }
+  if (playOnHover) {
+    return `${globalAttrs} muted data-hoverplay`;
+  }
+  if (isAutoplayOnce) {
+    return `${globalAttrs} ${autoPlayAttrs} ${playInViewportAttrs}`;
+  }
+  return `${globalAttrs} controls`;
+}
+
+export function syncPausePlayIcon(video, event) {
+  if (!video || video.hasAttribute('data-hoverplay')) return;
+  const holder = video.closest('.video-holder');
+  if (!holder) return;
+  const playPauseBtn = holder.querySelector('.pause-play-wrapper, .play-pause-button')
+    || holder.querySelector('a, button')
+    || (video.id && document.querySelector(`[aria-controls="${video.id}"]`));
+  if (!playPauseBtn) return;
+  const offsetFiller = playPauseBtn.querySelector('.offset-filler');
+  if (!offsetFiller) return;
+  if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
+  offsetFiller.classList.toggle('is-playing');
+  const isPlaying = offsetFiller.classList.contains('is-playing');
+  const indexOfVideo = (playPauseBtn.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : playPauseBtn.getAttribute('video-index');
+  const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+  playPauseBtn.setAttribute('title', `${ariaLabel}`);
+  playPauseBtn.setAttribute('aria-label', ariaLabel);
+  playPauseBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  const daaLL = playPauseBtn.getAttribute('daa-ll');
+  if (daaLL) playPauseBtn.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
+}
+
+export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
+  if (videoAttrs.includes('controls')) return videoString;
+
+  if (videoAttrs.includes('hoverplay')) {
+    return isC2
+      ? `<div class='video-holder' tabindex=${tabIndex}>${videoString}</div>`
+      : `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
+  }
+
+  const fedRoot = getFederatedContentRoot();
+  const labels = `title='${videoLabels.pauseMotion}' aria-label='${videoLabels.pauseMotion}' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}`;
+  const icons = `
+    <div class='offset-filler'>
+      <img class='accessibility-control pause-icon' alt='${videoLabels.pauseIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
+      <img class='accessibility-control play-icon' alt='${videoLabels.playIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
+    </div>
+  `;
+
+  const control = isC2
+    ? `<button class='play-pause-button video-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
+    : `<a class='pause-play-wrapper' role='button' ${labels}>${icons}</a>`;
+
+  return `<div class='video-container video-holder'>${videoString}${control}</div>`;
+}
+
+function isVideoReady(video) {
+  return video.readyState > 1 && document.visibilityState === 'visible';
+}
+
+export function handlePause(event) {
+  if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  const holder = event.target.closest('.video-holder');
+  const video = holder
+    ? holder.parentElement.querySelector('video')
+    : document.getElementById(event.target.closest('.play-pause-button, .pause-play-wrapper')?.getAttribute('aria-controls'));
+  if (!video) return;
+  const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
+  if (event.type === 'blur') {
+    video.pause();
+  } else if (video.paused || video.ended || event.type === 'focus') {
+    if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
+    if (isVideoReady(video)) { video.play(); }
+  } else {
+    video.pause();
+    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
+  }
+  syncPausePlayIcon(video);
+}
+
+export function applyHoverPlay(video) {
+  if (!video) return;
+  if (video.hasAttribute('data-hoverplay')) {
+    video.parentElement.addEventListener('focus', handlePause);
+    video.parentElement.addEventListener('blur', handlePause);
+    if (!video.hasAttribute('data-mouseevent')) {
+      video.addEventListener('mouseenter', () => { if (isVideoReady(video)) { video.play(); } });
+      video.addEventListener('mouseleave', () => { if (isVideoReady(video)) { video.pause(); } });
+      video.addEventListener('ended', () => { syncPausePlayIcon(video); });
+      video.setAttribute('data-mouseevent', true);
+    }
+  }
+}
+
+export function applyAccessibilityEvents(videoEl) {
+  const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button') || videoEl.closest('.pause-play-wrapper, .play-pause-button');
+  if (pausePlayWrapper?.querySelector('.accessibility-control')) {
+    pausePlayWrapper.addEventListener('click', handlePause);
+    pausePlayWrapper.addEventListener('keydown', handlePause);
+  }
+  if (videoEl.hasAttribute('autoplay')) {
+    videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
+    videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
+    if (isReducedMotion) {
+      videoEl.pause();
+      return;
+    }
+    videoEl.addEventListener('canplay', () => !videoEl.hasAttribute(USER_PAUSED_ATTR) && isVideoReady(videoEl) && videoEl.play());
+  }
+}
+
+function setObjectFitAndPos(text, pic, bgEl, objFitOptions) {
+  const backgroundConfig = text.split(',').map((c) => c.toLowerCase().trim());
+  const fitOption = objFitOptions.filter((c) => backgroundConfig.includes(c));
+  const focusOption = backgroundConfig.filter((c) => !fitOption.includes(c));
+  if (fitOption) [pic.querySelector('img').style.objectFit] = fitOption;
+  bgEl.innerHTML = '';
+  bgEl.append(pic);
+  bgEl.append(document.createTextNode(focusOption.join(',')));
+}
+
+export function handleObjectFit(bgRow) {
+  const bgConfig = bgRow.querySelectorAll('div');
+  [...bgConfig].forEach((r) => {
+    const pic = r.querySelector('picture');
+    if (!pic) return;
+    let text = '';
+    const pchild = [...r.querySelectorAll('p:not(:empty)')].filter((p) => p.innerHTML.trim() !== '');
+    if (pchild.length > 2) text = pchild[1]?.textContent.trim();
+    if (!text && r.textContent) text = r.textContent;
+    if (!text) return;
+    setObjectFitAndPos(text, pic, r, ['fill', 'contain', 'cover', 'none', 'scale-down']);
+  });
+}
+
+function getVideoIntersectionObserver() {
+  if (!window?.videoIntersectionObs) {
+    window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { intersectionRatio, target: video } = entry;
+        const isHaveLoopAttr = video.getAttributeNames().includes('loop');
+        const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
+        const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
+          && video.readyState > video.HAVE_CURRENT_DATA;
+
+        if (intersectionRatio <= 0.8) {
+          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
+          video.pause();
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
+          video.play();
+          syncPausePlayIcon(video, { type: 'playing' });
+        }
+      });
+    }, { threshold: [0.8] });
+  }
+  return window.videoIntersectionObs;
+}
+
+function applyInViewPortPlay(video) {
+  if (!video) return;
+  if (video.hasAttribute('data-play-viewport')) {
+    const observer = getVideoIntersectionObserver();
+    video.addEventListener('ended', () => {
+      video.dataset.playedOnce = true;
+      syncPausePlayIcon(video);
+    });
+    observer.observe(video);
+  }
+}
+
+export function decorateMultiViewport(el) {
+  const foreground = el.querySelector('.foreground');
+  const cols = foreground.childElementCount;
+  if (cols === 2 || cols === 3) {
+    const viewports = [
+      '(max-width: 599px)',
+      '(min-width: 600px) and (max-width: 1199px)',
+      '(min-width: 1200px)',
+      '(min-width: 600px)',
+    ].filter((v, i) => (cols === 2 ? [0, 3].includes(i) : i !== 3));
+    [...foreground.children].forEach((child, index) => {
+      const mq = window.matchMedia(viewports[index]);
+      const setContent = () => mq.matches && foreground.replaceChildren(child);
+      setContent();
+      mq.addEventListener('change', setContent);
+    });
+  }
+  return foreground;
+}
+
+/**
+ * Resolves the block-level element a countdown timer belongs to: the highest ancestor of `el`
+ * that still sits inside the same section/main/body. Used to scope one timer per block.
+ */
+export function getCdtScope(el) {
+  let node = el;
+  let parent = node?.parentElement;
+  while (parent && !parent.matches?.('.section, main, body')) {
+    node = parent;
+    parent = node.parentElement;
+  }
+  return node ?? el;
+}
+
+// One countdown timer per block, whichever loader (block decoration or MAS field) claims it
+// first. The claim is taken synchronously so two loaders racing on the same block can't both
+// render, and it is released once the rendered timer leaves the block (e.g. a MAS re-render
+// replaced the field content) so the timer can be rebuilt.
+const PENDING = Symbol('cdt-pending');
+const cdtScopes = new WeakMap();
+
+export async function loadCDT(el, classList, cdtMetadata) {
+  const scope = getCdtScope(el);
+  const claim = cdtScopes.get(scope);
+  if (claim === PENDING || (claim && scope.contains(claim))) return;
+  cdtScopes.set(scope, PENDING);
+  try {
+    const [, timer] = await Promise.all([
+      loadStyle(`${miloLibs || codeRoot}/features/cdt/cdt.css`),
+      import('../features/cdt/cdt.js')
+        .then(({ default: initCDT }) => initCDT(el, classList, cdtMetadata)),
+    ]);
+    cdtScopes.set(scope, timer);
+  } catch (error) {
+    cdtScopes.delete(scope);
+    window.lana?.log(`Failed to load countdown timer: ${error}`, { tags: 'countdown-timer', severity: 'error' });
+  }
+}
+
+export function isVideoAccessible(anchorTag) {
+  return !anchorTag?.hash.includes(HIDE_CONTROLS);
+}
+
+function updateFirstVideo() {
+  if (firstVideo != null && firstVideo?.controls === false && videoCounter > 1) {
+    let videoHolder = document.querySelector('[video-index="1"]') || firstVideo.closest('.video-holder');
+    if (!videoHolder) return;
+    if (!videoHolder.classList.contains('pause-play-wrapper') && !videoHolder.classList.contains('play-pause-button')) {
+      videoHolder = videoHolder.querySelector('.pause-play-wrapper, .play-pause-button');
+    }
+    if (!videoHolder) return;
+    const firstVideoLabel = videoHolder.getAttribute('aria-label');
+    videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);
+    firstVideo = null;
+  }
+}
+
+function updateAriaLabel(videoEl, videoAttrs) {
+  if (!videoEl.getAttributeNames().includes('data-hoverplay')) {
+    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button')
+      || videoEl.closest('.pause-play-wrapper, .play-pause-button')
+      || (videoEl.id && document.querySelector(`[aria-controls="${videoEl.id}"]`));
+    if (!pausePlayWrapper) return;
+    const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
+    const playIcon = pausePlayWrapper.querySelector('.play-icon');
+    const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
+    let ariaLabel = `${videoAttrs.includes('autoplay') ? videoLabels.pauseMotion : videoLabels.playMotion}`;
+    ariaLabel = ariaLabel.concat(` ${indexOfVideo === '1' && videoCounter === 1 ? '' : indexOfVideo}`);
+    pausePlayWrapper.setAttribute('aria-label', ariaLabel);
+    pauseIcon.setAttribute('alt', videoLabels.pauseMotion);
+    playIcon.setAttribute('alt', videoLabels.playMotion);
+    updateFirstVideo();
+  }
+}
+
+export function decoratePausePlayWrapper(videoEl, videoAttrs) {
+  if (!videoLabels.hasFetched) {
+    import('../features/placeholders.js').then(({ replaceKeyArray }) => {
+      replaceKeyArray(['pause-motion', 'play-motion', 'pause-icon', 'play-icon'], getFedsPlaceholderConfig())
+        .then(([pauseMotion, playMotion, pauseIcon, playIcon]) => {
+          videoLabels = { playMotion, pauseMotion, pauseIcon, playIcon };
+          videoLabels.hasFetched = true;
+          updateAriaLabel(videoEl, videoAttrs);
+        });
+    });
+  } else {
+    updateAriaLabel(videoEl, videoAttrs);
+  }
+}
+
+export function decorateAnchorVideo({ src = '', anchorTag }) {
+  if (!src.length || !(anchorTag instanceof HTMLElement)) return;
+  const accessibilityEnabled = isVideoAccessible(anchorTag);
+  anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
+  if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
+  const { dataset, parentElement } = anchorTag;
+  let attrs = getVideoAttrs(anchorTag.hash, dataset);
+  // Router Marquee poster deferred to a private attr
+  // until slide activates, avoiding eager fetch when hidden.
+  if (anchorTag.closest('.router-marquee')) attrs = attrs.replace("poster='", "data-rm-poster='");
+  else if (anchorTag.closest('.hero-marquee') && !getConfig().mep?.blocks?.['hero-marquee']) {
+    attrs = attrs.replace("poster='", "data-hm-poster='");
+  }
+  const tabIndex = anchorTag.tabIndex || 0;
+  const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
+  let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
+  if (!attrs.includes('controls') && !attrs.includes('hoverplay') && accessibilityEnabled) {
+    videoCounter += 1;
+  }
+  const indexOfVideo = videoCounter;
+  if (accessibilityEnabled) {
+    video = addAccessibilityControl(video, attrs, indexOfVideo, tabIndex);
+  }
+  anchorTag.insertAdjacentHTML('afterend', video);
+  const videoEl = parentElement.querySelector('video');
+  if (indexOfVideo === 1) {
+    firstVideo = videoEl;
+  }
+
+  createIntersectionObserver({
+    el: videoEl,
+    options: { rootMargin: '1000px' },
+    callback: () => {
+      if (videoEl.dataset.hmPoster) {
+        videoEl.setAttribute('poster', videoEl.dataset.hmPoster);
+        delete videoEl.dataset.hmPoster;
+      }
+      if (videoEl.querySelector('source')) return;
+      videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
+    },
+  });
+
+  if (videoEl.controls) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(({ isIntersecting, target }) => {
+        if (!isIntersecting && !target.paused) target.pause();
+      });
+    }, { rootMargin: '0px' });
+    io.observe(videoEl);
+  }
+
+  if (accessibilityEnabled) {
+    applyAccessibilityEvents(videoEl);
+    if (!videoEl.controls) {
+      decoratePausePlayWrapper(videoEl, attrs);
+    }
+  }
+  applyHoverPlay(videoEl);
+  applyInViewPortPlay(videoEl);
+  if (anchorTag.closest('div')?.querySelector('a.video-transcript-source')) {
+    import('../features/video-transcript/video-transcript.js')
+      .then(({ default: decorateVideoTranscript }) => decorateVideoTranscript(videoEl));
+  }
+  anchorTag.remove();
+}
+
+/* NOTE: Experimental logic to substitute authored classes
+   with centralized kit classes */
+export function decorateBlockKit(el, kits = {}) {
+  const kitClass = [...el.classList].find((cls) => cls.endsWith('-kit'));
+  if (!kitClass || !Object.keys(kits).includes(kitClass)) return;
+
+  const blockClass = [...el.classList][0];
+  const kitClasses = kits[kitClass];
+  el.className = blockClass;
+  el.classList.add(kitClass, ...kitClasses);
+}
+
+/* Per-viewport content decoration */
+const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+const VIEWPORT_SUFFIX = '-viewport';
+
+const VIEWPORT_QUERIES = {
+  'mobile-tablet-desktop': {
+    mobile: '(width < 768px)',
+    tablet: '(768px <= width < 1280px)',
+    desktop: '(width >= 1280px)',
+  },
+  'mobile-desktop': {
+    mobile: '(width < 1280px)',
+    desktop: '(width >= 1280px)',
+  },
+  'mobile-tablet': {
+    mobile: '(width < 768px)',
+    tablet: '(width >= 768px)',
+  },
+  mobile: { mobile: 'all' },
+  tablet: { tablet: 'all' },
+  desktop: { desktop: 'all' },
+};
+
+function isEmptyCell(el) {
+  if (!el) return true;
+  return !el.children.length && !el.textContent?.trim();
+}
+
+export function cloneWithPreviewMetadata(source) {
+  const clone = source.cloneNode(true);
+  if (getConfig()?.mep?.preview && source.nodeType === Node.ELEMENT_NODE) {
+    document.dispatchEvent(new CustomEvent('mep:content-cloned', { detail: { source, clone } }));
+  }
+  return clone;
+}
+
+function cloneChildren(source) {
+  return [...source.childNodes].map(cloneWithPreviewMetadata);
+}
+
+function parseVariants(text) {
+  const match = text.match(/\(([^)]+)\)/);
+  return match
+    ? match[1].split(',').map((cls) => cls.trim()).filter(Boolean)
+    : [];
+}
+
+function getDelimiterKeyword(row) {
+  if (row.children.length !== 1) return null;
+  const text = row.children[0].textContent.trim().toLowerCase();
+  // TODO: remove bare-keyword fallback post-rollout (replace with the line below)
+  // return VIEWPORT_KEYWORDS.find((kw) => text.startsWith(kw + VIEWPORT_SUFFIX)) ?? null;
+  return VIEWPORT_KEYWORDS.find((kw) => (
+    text.startsWith(kw + VIEWPORT_SUFFIX) || text === kw || text.startsWith(`${kw} `) || text.startsWith(`${kw}(`)
+  )) ?? null;
+}
+
+function warnDuplicateH1s(viewportData) {
+  const h1Count = Object.values(viewportData)
+    .reduce((n, vp) => n + vp.container.querySelectorAll('h1').length, 0);
+  if (h1Count > 1) {
+    /* TODO: this should be surfaced in Preflight */
+    /* eslint-disable-next-line no-console */
+    console.warn(
+      '[parseViewportContent] Multiple <h1> elements detected across viewport sections. '
+      + 'This may cause SEO issues — consider using a single <h1> and swapping its text content.',
+    );
+  }
+}
+
+function inheritRowCells(row, prevRow) {
+  if (!row || !prevRow) return;
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
+      col.replaceChildren(...cloneChildren(prevCol));
+    }
+  });
+}
+
+function resolveInheritance(rows, previousContent) {
+  if (!previousContent) return;
+
+  const [contentRow, ...extraRows] = rows;
+  const [prevContentRow, ...prevExtraRows] = previousContent.children;
+
+  inheritRowCells(contentRow, prevContentRow);
+  extraRows.forEach((row, i) => inheritRowCells(row, prevExtraRows[i]));
+}
+
+function parseViewportContent(el) {
+  const children = [...el.children];
+  const content = {};
+  const delimiterEls = [];
+
+  VIEWPORT_KEYWORDS.forEach((keyword, kwIndex) => {
+    const delimiterIdx = children.findIndex((child) => getDelimiterKeyword(child) === keyword);
+    if (delimiterIdx < 0) return;
+
+    // Find the next delimiter (if any) to bound this section
+    const nextIdx = children.findIndex((child, i) => {
+      if (i <= delimiterIdx) return false;
+      const nextKw = getDelimiterKeyword(child);
+      return nextKw && VIEWPORT_KEYWORDS.indexOf(nextKw) > kwIndex;
+    });
+
+    const rows = children.slice(
+      delimiterIdx + 1,
+      nextIdx < 0 ? children.length : nextIdx,
+    );
+
+    // Inherit from the nearest defined lower viewport
+    const prevKey = VIEWPORT_KEYWORDS.slice(0, kwIndex).reverse()
+      .find((k) => content[k]);
+    resolveInheritance(rows, content[prevKey]?.container);
+
+    const container = createTag('div');
+    container.append(...rows);
+
+    const delimiterEl = children[delimiterIdx];
+    const variants = parseVariants(delimiterEl.textContent);
+    delimiterEls.push(delimiterEl);
+
+    content[keyword] = { container, variants };
+  });
+
+  delimiterEls.forEach((d) => d.remove());
+
+  if (!Object.keys(content).length) {
+    return { hasViewportVariations: false };
+  }
+
+  warnDuplicateH1s(content);
+
+  const allVariants = Object.values(content).flatMap(({ variants }) => variants);
+
+  return { hasViewportVariations: true, content, allVariants };
+}
+
+function applyViewportContent(el, viewports) {
+  if (!viewports.hasViewportVariations) return;
+
+  const { content, allVariants } = viewports;
+  const vpKeys = Object.keys(content);
+  const queryKey = vpKeys.join('-');
+  const queries = VIEWPORT_QUERIES[queryKey];
+
+  if (!queries) return;
+
+  vpKeys.forEach((viewport) => {
+    const mq = window.matchMedia(queries[viewport]);
+    const { container, variants } = content[viewport];
+    const children = [...container.children];
+
+    const setContent = () => {
+      if (!mq.matches) return;
+      el.classList.remove(...allVariants);
+      if (variants.length) el.classList.add(...variants);
+      el.replaceChildren(...children);
+      decorateTextOverrides(el);
+    };
+
+    setContent();
+    mq.addEventListener('change', setContent);
+  });
+}
+
+/* decorateFn receives:
+ * - block — the element to decorate (viewport container or el itself)
+ * - root  — for checking base classes on detached containers */
+export function decorateViewportContent(el, decorateFn) {
+  const viewports = parseViewportContent(el);
+  if (viewports.hasViewportVariations) {
+    Object.values(viewports.content).forEach(({ container }) => {
+      decorateFn(container, el);
+    });
+    applyViewportContent(el, viewports);
+  } else {
+    decorateFn(el, el);
+    decorateTextOverrides(el);
+  }
+  return viewports;
+}
+
+export function hangOpeningQuote(el) {
+  if (!el) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = el.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  el.textContent = el.textContent.slice(1);
+  const span = createTag('span', { class: 'hang-opening-quote' }, quote);
+  el.prepend(span);
+}
+
+export function decoratePictures(area, options) {
+  if (!area || !options) return;
+
+  const conf = {};
+  const opts = options?.split(',').map((opt) => opt.trim().toLowerCase());
+  if (!opts.filter(Boolean).length) return;
+  if (opts.includes('off')) return; // skip picture decoration
+
+  const SIZES = ['1x', '2x', '3x'];
+  opts.forEach((opt) => {
+    if (SIZES.includes(opt)) {
+      const size = Number(opt.replace('x', ''));
+      if (!Number.isNaN(size)) conf.size = size;
+    }
+    if (opt === 'photography') conf.type = 'avif';
+    if (opt === 'product') conf.type = 'webp';
+  });
+  if (!Object.keys(conf).length) return;
+  const DEFAULT_CONFIG = { size: 1, type: 'webp' };
+  const config = { ...DEFAULT_CONFIG, ...conf };
+  const RENDITIONS = [
+    { breakpoint: undefined, width: 500 }, // mobile
+    { breakpoint: '(min-width: 768px)', width: 768 }, // tablet
+    { breakpoint: '(min-width: 1280px)', width: 1280 }, // desktop
+    { breakpoint: '(min-width: 1440px)', width: 1440 }, // large desktop
+    { breakpoint: '(min-width: 1920px)', width: 1920 }, // larger desktop
+  ];
+
+  area.querySelectorAll('picture').forEach((picture) => {
+    if (picture.classList.contains('large-image-decorated')) return;
+    const sources = picture.querySelectorAll('source');
+    const image = picture.querySelector('img');
+    if (!sources.length || !image) return;
+
+    const path = image.src.split('?')[0];
+
+    const imageNaturalSize = Number(image.getAttribute('width'));
+    if (Number.isNaN(imageNaturalSize)) return;
+
+    const newSources = [];
+    RENDITIONS.forEach(({ breakpoint, width }) => {
+      const targetWidth = width * config.size;
+      if (imageNaturalSize < targetWidth) return;
+      const source = createTag('source', {
+        type: `image/${config.type}`,
+        srcset: `${path}?width=${targetWidth}&format=${config.type === 'webp' ? 'webply' : config.type}`,
+      });
+      if (breakpoint) source.setAttribute('media', breakpoint);
+      newSources.push(source);
+    });
+
+    // TODO: consider replacing existing sources instead of prepending
+    picture.prepend(...newSources.reverse());
+    picture.classList.add('large-image-decorated', `${config.type}-${config.size}`);
+  });
+}
