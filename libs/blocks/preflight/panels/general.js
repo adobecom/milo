@@ -68,7 +68,8 @@ const listTaxonomy = ({ items = [] }) => items.map((item) => {
 
 export function getTaxonomyResults() {
   taxonomyResults.value = runTaxonomyChecks({ area: document }).map((res) => ({
-    icon: STATUS_TO_ICON_MAP[res.status] || 'orange',
+    // Advisory only: a failing taxonomy check is a warning, never a red error.
+    icon: res.status === 'fail' ? 'orange' : STATUS_TO_ICON_MAP[res.status] || 'orange',
     title: res.title,
     description: res.description,
     list: listTaxonomy(res.details ?? {}),

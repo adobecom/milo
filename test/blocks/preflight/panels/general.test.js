@@ -173,6 +173,9 @@ describe('preflight panels general', () => {
       const titles = [...container.querySelectorAll('.preflight-item-title')].map((p) => p.textContent);
       expect(titles).to.include.members(['Page naming', 'Test or temporary folders', 'Fragment placement']);
       expect(misplaced().querySelector('a').getAttribute('href')).to.equal('/misc/cta-banner');
+      const placementIcon = misplaced().closest('.preflight-item').querySelector('.result-icon');
+      expect(placementIcon.classList.contains('orange')).to.be.true;
+      expect(placementIcon.classList.contains('red')).to.be.false;
     });
   });
 
