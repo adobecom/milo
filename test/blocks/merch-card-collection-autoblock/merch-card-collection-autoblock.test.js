@@ -1378,6 +1378,60 @@ describe('merch-card-collection autoblock', () => {
         }
       });
 
+      it('zero-match search announces no count from any live region', async () => {
+        const original = data.placeholders.noSearchResultsText;
+        data.placeholders.noSearchResultsText = '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p>';
+        try {
+          window.location.hash = 'filter=all&search=test';
+          const { collection, container } = mount();
+          await delay(50);
+          collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 0 } }));
+          const status = container.querySelector('.sr-only[role="status"]');
+          expect(status.textContent).to.equal('Your search for test did not yield any results');
+          expect(container.querySelector('.product-pricing-drawer-results').getAttribute('aria-hidden')).to.equal('true');
+          const emptyEl = container.querySelector('.product-pricing-results');
+          expect(emptyEl.hasAttribute('role')).to.be.false;
+          expect(emptyEl.hasAttribute('aria-live')).to.be.false;
+        } finally {
+          data.placeholders.noSearchResultsText = original;
+        }
+      });
+
+      it('search with matches still announces the result count', async () => {
+        window.location.hash = 'filter=all&search=acro';
+        const { collection, container } = mount();
+        await delay(50);
+        collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 3 } }));
+        const results = container.querySelector('.product-pricing-drawer-results');
+        expect(container.querySelector('.sr-only[role="status"]').textContent).to.equal('3 Results');
+        expect(results.hasAttribute('aria-hidden')).to.be.false;
+        expect(results.textContent).to.equal('3 Results');
+      });
+
+      it('count is announced again after a zero-match search is cleared or changed to a matching one', async () => {
+        window.location.hash = 'filter=all&search=test';
+        const { collection, container } = mount();
+        await delay(50);
+        const emit = (resultCount) => collection.dispatchEvent(new CustomEvent(
+          'merch-card-collection:literals-changed',
+          { detail: { resultCount } },
+        ));
+        const status = container.querySelector('.sr-only[role="status"]');
+        const results = container.querySelector('.product-pricing-drawer-results');
+        emit(0);
+        window.location.hash = 'filter=all&search=acro';
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        expect(status.textContent).to.equal('');
+        emit(2);
+        expect(status.textContent).to.equal('2 Results');
+        expect(results.hasAttribute('aria-hidden')).to.be.false;
+        window.location.hash = 'filter=all';
+        window.dispatchEvent(new HashChangeEvent('hashchange'));
+        expect(status.textContent).to.equal('');
+        emit(5);
+        expect(status.textContent).to.equal('5 Results');
+      });
+
       it('falls back to the count when no empty state text is authored', () => {
         const original = data.placeholders.noResultsText;
         delete data.placeholders.noResultsText;
