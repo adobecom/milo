@@ -159,7 +159,7 @@ const initNavHeight = (hubHero) => {
 
 const initHeaderPin = (hubHero, header) => {
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    || CSS.supports('(not (animation-timeline: view())) or (-moz-appearance: none)');
+    || !CSS.supports('animation-timeline: view()');
   if (reducedMotion || !isMobile()) return;
 
   const pinController = new AbortController();

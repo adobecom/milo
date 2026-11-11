@@ -523,7 +523,7 @@
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+      @supports (animation-timeline: view()) {
         .hub-hero-carousel-container {
           animation-name: carousel-slides-three-assemble;
         }
@@ -603,7 +603,7 @@
   }
 }
 
-@supports (not (animation-timeline: view())) or (-moz-appearance: none) {
+@supports not (animation-timeline: view()) {
   .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
     display: revert;
   }
@@ -1121,7 +1121,7 @@
   }
 
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+    @supports (animation-timeline: view()) {
       .hub-hero-carousel-item-footer {
         box-sizing: border-box;
         min-height: calc(var(--footer-icon-size) + 2 * var(--s2a-spacing-lg));
@@ -1222,7 +1222,7 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view()) and (not (-moz-appearance: none)) {
+    @supports (animation-timeline: view()) {
       .hub-hero {
         --carousel-nav-height: var(--hub-hero-nav-h, calc(var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px)));
         --carousel-heading-height: var(--hub-hero-carousel-header-height, 0px);
@@ -2195,7 +2195,12 @@
   }
 }
 
-@supports (not (animation-timeline: view())) or (-moz-appearance: none) {
+@supports not (animation-timeline: view()) {
+  /* Override more-specific three-slide animations in unsupported browsers. */
+  .hub-hero,
+  .hub-hero * {
+    animation: none !important;
+  }
 
   .hub-hero {
     --carousel-items-top: 15%;
