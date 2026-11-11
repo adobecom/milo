@@ -202,18 +202,26 @@ describe('caas-payload-core: forced-.html card identity', () => {
     expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
   });
 
-  it('applies to every path, with no section carved out', async () => {
-    // Sections are scoped out by their own repo's config not setting the flag,
-    // never by path here -- otherwise the flag silently does nothing for a
-    // section that migrates later and orphans all of its cards.
-    const cases = ['/blog/post', '/fr/blog/post', '/blog', '/products/y'];
+  it('carves out the extensionless blog section, but nothing adjacent to it', async () => {
+    // `/blog` is published without the extension, so there is no `.html` form
+    // to force. Everything else is scoped out by its own repo's config not
+    // setting the flag, never by path here -- otherwise the flag silently does
+    // nothing for a section that migrates later and orphans all of its cards.
+    const exempt = ['/blog/post', '/fr/blog/post', '/blog'];
+    const forced = ['/products/y', '/resources/blog/post', '/blogging/y'];
     // Sequential, not Promise.all: buildCaasXdmPayload is NOT reentrant (it
     // threads module-global config/tag state), as documented at its definition.
     // The concurrent form passes here only incidentally, because contentid is
     // computed from the per-call prodUrl closure and so happens to survive the
     // interleaving -- every other resolved prop would not. This is also the
     // place a future reader looks for the house style on calling it.
-    for (const path of cases) {
+    for (const path of exempt) {
+      // eslint-disable-next-line no-await-in-loop
+      const md = await build({ path, htmlIdentity: true });
+      // eslint-disable-next-line no-await-in-loop
+      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}`));
+    }
+    for (const path of forced) {
       // eslint-disable-next-line no-await-in-loop
       const md = await build({ path, htmlIdentity: true });
       // eslint-disable-next-line no-await-in-loop
@@ -283,7 +291,29 @@ describe('caas-payload-core: forced-.html card identity', () => {
       // Another host is not covered by the policy, so the flag cannot change
       // the answer and the warning would be pure noise.
       await getCaasIds('https://www.adobe.com/resources/x', 'default');
+      // An already-`.html` url hashes the same either way too.
+      await getCaasIds(`https://${BACOM}/resources/x.html`, 'default');
+      // An exempt section hashes the same either way, so the omission is
+      // harmless and a warning here would crowd out a real one.
+      await getCaasIds(`https://${BACOM}/blog/post`, 'default');
       expect(log.called).to.be.false;
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('still warns for an exempt section authored WITH the extension', async () => {
+    // The carve-out strips `.html`, so for this shape the omission really does
+    // change the ids -- exempting the whole section from the warning would
+    // silence the one case that most needs it.
+    const log = stub();
+    window.lana = { log };
+    try {
+      const omitted = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default');
+      const passed = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default', true);
+      expect(omitted.contentId).to.not.equal(passed.contentId);
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('without htmlIdentity');
     } finally {
       delete window.lana;
     }

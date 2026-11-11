@@ -315,10 +315,12 @@ const validateProps = async (prodHost, publishingModal) => {
   //
   // Evaluated on the url actually being published, AFTER the modal resolves and
   // after the abort paths above. Checking `pathname` alone before `useHtml` was
-  // known reported a duplicate for the operator who DID tick "use .html" -- that
-  // publish ends in `.html` and mints exactly the legacy id, so there is no
-  // duplicate. On a post-migration BACOM page with the metadata absent that
-  // false positive would have fired on every correct sidekick publish.
+  // known reported a duplicate for the operator who DID tick "use .html": for
+  // an ordinary section that publish ends in `.html` and mints exactly the
+  // legacy id, so there is no duplicate. On a post-migration BACOM page with
+  // the metadata absent that false positive would have fired on every correct
+  // sidekick publish. In an extensionless section the `.html` form is instead
+  // the one that misses, which isIdentityPolicyMiss now reports correctly.
   const publishedProdUrl = `${prodHost}${window.location.pathname}${useHtml ? '.html' : ''}`;
   if (isIdentityPolicyMiss(publishedProdUrl, htmlIdentity)) {
     window.lana?.log(

@@ -1384,11 +1384,11 @@ describe('auto-publish: per-environment htmlExt', () => {
     expect(refusal).to.include('Set htmlIdentity on the rule');
   });
 
-  it('covers a blog path rather than exempting it, so its ids survive', async () => {
-    // The blog is scoped out by its own repo's config, never by path here. If
-    // the blog repo turns the flag on, an env split must behave like any other
-    // section: both environments keep hashing the .html url the ids were
-    // minted from.
+  it('exempts a blog path from forced .html, and its env variants converge', async () => {
+    // `/blog` is published extensionless, so there is no `.html` form to force
+    // onto its identity. Forcing one would mint an id no card holds, and the
+    // collection consumer -- which applies the same carve-out -- would hash a
+    // different string for the same page.
     const origin = uniqueOrigin();
     const posts = setupPath(origin, '/blog/post', {
       host: 'business.adobe.com',
@@ -1412,10 +1412,30 @@ describe('auto-publish: per-environment htmlExt', () => {
     // The public urls still differ per environment; only identity converges.
     expect(stage.body.url).to.equal('https://business.adobe.com/blog/post');
     expect(prod.body.url).to.equal('https://business.adobe.com/blog/post.html');
-
-    const expectedId = await getUuid('business.adobe.com/blog/post.html');
+    const expectedId = await getUuid('business.adobe.com/blog/post');
     expect(stage.body.contentId).to.equal(expectedId);
     expect(prod.body.contentId).to.equal(expectedId);
+  });
+
+  it('still forces .html on a nested blog path, which is not exempt', async () => {
+    const origin = uniqueOrigin();
+    const posts = setupPath(origin, '/resources/blog/post', {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    await caasAutoPublish({
+      action: 'preview',
+      url: `${origin}/resources/blog/post`,
+      path: '/resources/blog/post',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(posts).to.have.lengthOf(2);
+    const expectedId = await getUuid('business.adobe.com/resources/blog/post.html');
+    posts.forEach((post) => expect(post.body.contentId).to.equal(expectedId));
   });
 
   it('reports the resolved htmlExt per target', async () => {

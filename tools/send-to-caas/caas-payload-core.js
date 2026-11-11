@@ -20,8 +20,8 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import {
   toIdentityUrl,
+  policyAltersIdentity,
   isLegacyHtmlExtEnabled,
-  isForcedHtmlIdentityUrl,
 } from '../../libs/utils/caasIdentity.js';
 // The 706KB caas-tags.js taxonomy is NOT imported here. It is only needed as a
 // fallback when the network tag fetch fails, so the host injects it lazily via
@@ -1083,7 +1083,9 @@ function localizeCtaUrl(val, options = {}) {
 // options.prodUrl, which continues to drive the public url, uci and CTA urls:
 // BACOM publishes extensionless public urls while keeping its existing
 // `.html`-derived card identities, so the two must not be coupled.
-const getIdentityUrl = (options = {}) => toIdentityUrl(options.prodUrl, options.htmlIdentity);
+const getIdentityUrl = (options = {}) => (
+  toIdentityUrl(options.prodUrl, options.htmlIdentity)
+);
 
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => (pair)),
@@ -1476,16 +1478,19 @@ const getCaasIds = async (
 ) => {
   const omitted = htmlIdentity === HTML_IDENTITY_UNSET;
   // Removal has to reproduce the identity the page was published under, so it
-  // applies the same forced-`.html` policy as publish. toIdentityUrl also strips
-  // the scheme the way buildCaasXdmPayload does before hashing, so a schemed
+  // applies the same forced-`.html` policy as publish -- including its
+  // extensionless-section carve-out. toIdentityUrl also strips the
+  // scheme the way buildCaasXdmPayload does before hashing, so a schemed
   // prodUrl (e.g. straight from getProdUrl()) hashes to the same ids.
   const identityUrl = toIdentityUrl(prodUrl, omitted ? false : htmlIdentity);
   // A caller that omits htmlIdentity gets no error, just ids that match no
-  // card -- so the only symptom is a card nobody can delete. Warn precisely:
-  // the omission only changes the answer for urls the policy actually covers.
-  // isForcedHtmlIdentityUrl accepts schemed input (it splits the url itself),
-  // so this needs no separate scheme strip.
-  if (omitted && isForcedHtmlIdentityUrl(prodUrl)) {
+  // card -- so the only symptom is a card nobody can delete. Warn only where
+  // the omission actually changes the answer: an out-of-scope url, an already
+  // `.html` url and an exempt section all hash the same either way, and a
+  // warning on those would be noise on the one signal that catches an
+  // undeletable card. policyAltersIdentity accepts schemed input (it splits
+  // the url itself), so this needs no separate scheme strip.
+  if (omitted && policyAltersIdentity(prodUrl)) {
     logIdentity(
       `getCaasIds called without htmlIdentity for in-scope url '${identityUrl}'. `
       + 'If the page was published with htmlIdentity on, these ids will not match '

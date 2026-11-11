@@ -40,7 +40,7 @@ const warnOnIdentityPolicyMiss = (link) => {
   if (identityPolicyMissLogged || !isIdentityPolicyMiss(link, htmlIdentityEnabled())) return;
   identityPolicyMissLogged = true;
   window.lana?.log(
-    `CaaS: extensionless in-scope card link resolved without the .html identity policy; set the 'caas-identity-html' metadata to 'true' or these cards will not resolve. Example: ${link}`,
+    `CaaS: card link whose id depends on the .html identity policy resolved with the policy off; set the 'caas-identity-html' metadata to 'true' or these cards will not resolve. Example: ${link}`,
     // sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
     // calls; this is a rare per-page diagnostic, not volume telemetry.
     { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
@@ -1020,9 +1020,11 @@ const fetchUuidForCard = async (card) => {
   try {
     const localizedLink = await localizeLinkAsync(card.contentId, null, true);
     warnOnIdentityPolicyMiss(String(localizedLink));
-    // toIdentityUrl strips the scheme the same way the publishers do. The old
-    // split('https://') missed http:// entirely, leaving the scheme on the hash
-    // input so the id could never match the published card.
+    // toIdentityUrl strips the scheme the same way the publishers do.
+    // The old split('https://') missed http:// entirely, leaving the scheme on
+    // the hash input so the id could never match the published card. It also
+    // applies the publishers' extensionless-section carve-out, so an authored
+    // `/blog` reference hashes to the id the publisher actually minted.
     return await getUuid(toIdentityUrl(String(localizedLink), htmlIdentityEnabled()));
   } catch (error) {
     return null;

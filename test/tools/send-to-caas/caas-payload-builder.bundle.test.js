@@ -58,6 +58,13 @@ describe('caas-payload-builder bundle is not stale', () => {
       'https://business.adobe.com/resources/x',
       'https://business.adobe.com/resources/x.html',
       'https://www.adobe.com/resources/x',
+      // Extensionless-section carve-out. Without these the parity guard is
+      // blind to it: every other fixture is outside the carve-out, so a bundle
+      // built before it existed still agrees on all of them.
+      'https://business.adobe.com/blog/post',
+      'https://business.adobe.com/blog/post.html',
+      'https://business.adobe.com/de/blog/post',
+      'https://business.adobe.com/resources/blog/post',
     ];
     const flags = [true, false, 'true', 'false', 'TRUE', 'on'];
     await Promise.all(urls.flatMap((url) => flags.map(async (flag) => {
@@ -78,6 +85,13 @@ describe('caas-payload-builder bundle is not stale', () => {
       'https://business.adobe.com/resources/x',
       'https://business.adobe.com/resources/x.html',
       'https://www.adobe.com/resources/x',
+      // Extensionless-section carve-out. Without these the parity guard is
+      // blind to it: every other fixture is outside the carve-out, so a bundle
+      // built before it existed still agrees on all of them.
+      'https://business.adobe.com/blog/post',
+      'https://business.adobe.com/blog/post.html',
+      'https://business.adobe.com/de/blog/post',
+      'https://business.adobe.com/resources/blog/post',
     ];
     await Promise.all(urls.map(async (url) => {
       const [fromBundle, fromCore] = await Promise.all([

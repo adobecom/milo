@@ -7,6 +7,7 @@ import {
   isHtmlIdentityEnabled,
   isIdentityPolicyMiss,
   toIdentityUrl,
+  isExtensionlessSection,
 } from '../../libs/utils/caasIdentity.js';
 
 describe('caasIdentity', () => {
@@ -249,8 +250,91 @@ describe('caasIdentity', () => {
     });
   });
 
+  describe('toIdentityUrl: extensionless sections', () => {
+    it('never forces .html onto a blog url, flag on', () => {
+      expect(toIdentityUrl('https://business.adobe.com/blog/x', true))
+        .to.equal('business.adobe.com/blog/x');
+    });
+
+    it('never forces .html onto a locale-prefixed blog url', () => {
+      expect(toIdentityUrl('business.adobe.com/de/blog/x', 'true'))
+        .to.equal('business.adobe.com/de/blog/x');
+    });
+
+    it('still forces .html outside the carve-out', () => {
+      expect(toIdentityUrl('business.adobe.com/resources/x', true))
+        .to.equal('business.adobe.com/resources/x.html');
+    });
+
+    it('does not exempt a nested blog path', () => {
+      expect(toIdentityUrl('business.adobe.com/resources/blog/x', true))
+        .to.equal('business.adobe.com/resources/blog/x.html');
+    });
+
+    it('does not exempt a section that merely starts with blog', () => {
+      expect(toIdentityUrl('business.adobe.com/blogging/x', true))
+        .to.equal('business.adobe.com/blogging/x.html');
+    });
+
+    it('strips .html so env-split variants of one blog page converge', () => {
+      expect(toIdentityUrl('business.adobe.com/blog/x.html', true))
+        .to.equal(toIdentityUrl('business.adobe.com/blog/x', true));
+      expect(toIdentityUrl('business.adobe.com/blog/x.html', true))
+        .to.equal('business.adobe.com/blog/x');
+    });
+
+    it('leaves a .html blog url alone when the flag is off', () => {
+      expect(toIdentityUrl('business.adobe.com/blog/x.html', false))
+        .to.equal('business.adobe.com/blog/x.html');
+    });
+
+    it('is an exact no-op when the flag is off', () => {
+      expect(toIdentityUrl('https://business.adobe.com/blog/x', false))
+        .to.equal('business.adobe.com/blog/x');
+      expect(toIdentityUrl('business.adobe.com/resources/x', false))
+        .to.equal('business.adobe.com/resources/x');
+    });
+
+    it('does not exempt an unlisted locale prefix', () => {
+      // The hazard MWPW-213847 names: a locale the blog adds later still gets
+      // `.html` forced until it is added to the prefix list.
+      expect(toIdentityUrl('business.adobe.com/es/blog/x', true))
+        .to.equal('business.adobe.com/es/blog/x.html');
+    });
+
+    it('exempts every listed locale prefix', () => {
+      ['au', 'de', 'fr', 'jp', 'kr', 'uk'].forEach((prefix) => {
+        expect(toIdentityUrl(`business.adobe.com/${prefix}/blog/x`, true), prefix)
+          .to.equal(`business.adobe.com/${prefix}/blog/x`);
+      });
+    });
+
+    it('does not apply the carve-out off the bacom prod host', () => {
+      expect(isExtensionlessSection('main--da-bacom--adobecom.aem.page/blog/x')).to.be.false;
+      expect(isExtensionlessSection('business.adobe.com/blog/x')).to.be.true;
+    });
+
+    it('ignores query and fragment when matching the section', () => {
+      expect(toIdentityUrl('business.adobe.com/blog/x?a=1#b', true))
+        .to.equal('business.adobe.com/blog/x?a=1#b');
+    });
+  });
+
   describe('isIdentityPolicyMiss', () => {
     const IN_SCOPE = 'https://business.adobe.com/resources/articles/x';
+
+    it('does not flag an exempt section, whose ids the policy cannot change', () => {
+      // The warning latches after one call, so a false positive here consumes
+      // the page's only slot and silences a real miss elsewhere on it.
+      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x', 'false')).to.be.false;
+      expect(isIdentityPolicyMiss('https://business.adobe.com/de/blog/x')).to.be.false;
+    });
+
+    it('flags an exempt section authored WITH the extension', () => {
+      // The carve-out strips `.html` when the flag is on, so for this shape
+      // the flag state really does decide the id.
+      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x.html')).to.be.true;
+    });
 
     it('flags an in-scope extensionless link while the policy is off', () => {
       expect(isIdentityPolicyMiss(IN_SCOPE, 'false')).to.be.true;

@@ -36,13 +36,22 @@
 // its own input: the identity pathname keeps exactly one terminal `.html`,
 // regardless of what the public URL looks like.
 //
-// Scope is the host plus the authored flag, with no path carve-outs. BACOM
+// Scope is the host plus the authored flag, with ONE path carve-out. BACOM
 // splits its content across repos (`da-bacom`, `da-bacom-blog`, ...) and each
-// repo serves its own /.milo/caas/config.json, so the flag is already scoped
-// by whoever owns the content. A hardcoded path exemption would sit *under*
-// that boundary and silently neutralize the flag for a section that later
-// migrates -- the failure mode being a section-wide orphaning with no error
-// raised anywhere. Sections opt in by setting the flag in their own config.
+// repo serves its own /.milo/caas/config.json, so the flag is normally scoped
+// by whoever owns the content, and sections opt in through their own config.
+//
+// That boundary is not airtight: the flag also reaches the publishers from
+// page metadata, which an author sets without a config change or a review.
+// `/blog` is already published extensionless, so forcing `.html` onto its
+// identity mints an id no card holds -- a section-wide orphaning with no error
+// raised anywhere. It is therefore exempted here, below the config boundary,
+// by toIdentityUrl. The exemption is deliberately kept at a single
+// chokepoint every runtime shares: a publisher and a consumer that disagree
+// about one page break every card in the section, silently.
+//
+// Keep the list minimal and anchored: an exemption silently neutralizes the
+// flag for a section that later migrates TO `.html`.
 //
 // Only the identity hash input is affected. The public url, uci and CTA urls
 // continue to use prodUrl untouched.
@@ -82,15 +91,21 @@ const splitUrl = (url) => {
 // Case-sensitive on purpose: every publisher matched `.html` case-sensitively
 // (`pathname.replace('.html', '')` in the bulk tool, `.endsWith('.html')` in
 // getProdUrl), and identity is a hash of this exact string.
-const forceSingleHtml = (pathname) => {
+const stripHtml = (pathname) => {
   let path = pathname;
   while (path.endsWith(HTML_EXT)) path = path.slice(0, -HTML_EXT.length);
-  return `${path}${HTML_EXT}`;
+  return path;
 };
+
+const forceSingleHtml = (pathname) => `${stripHtml(pathname)}${HTML_EXT}`;
 
 /**
  * Whether a url is in scope for the forced-`.html` identity policy: any BACOM
  * production url with a pathname.
+ *
+ * HOST scope, not policy effect. An exempt section answers true here and is
+ * still left alone by toIdentityUrl -- callers asking "does the flag change
+ * this id?" want policyAltersIdentity.
  * @param {string} url schemed or scheme-less url
  * @returns {boolean}
  */
@@ -232,41 +247,117 @@ const getCaasIdentityUrl = (prodUrl, enabled = false) => {
 };
 
 /**
- * The exact string the publishers hash into contentId/entityId.
+ * Scheme strip + forced-`.html`, WITHOUT the extensionless-section carve-out.
  *
  * Card ids are a uuid v5 of the SCHEME-LESS production url, so producing one
- * is two steps: strip the scheme, then apply the forced-`.html` policy. Both
- * live here because every caller that does only the second step by hand has to
- * reproduce the first, and the auto-publish convergence guard has to reproduce
- * BOTH to predict what the builder will hash. A guard that predicts the hash
- * input by convention degrades silently into a no-op the moment either step
- * changes, so guard and builder call one function instead.
+ * is two steps: strip the scheme, then apply the policy. Both live here
+ * because every caller that does only the second step by hand has to reproduce
+ * the first, and the auto-publish convergence guard has to reproduce BOTH to
+ * predict what the builder will hash.
+ *
+ * Module-private: this is only half the policy. toIdentityUrl is the exported
+ * entry point, and a caller reaching past it to this one would skip the
+ * carve-out and mint an id no card holds, with no error and no failing test.
  *
  * @param {string} prodUrl schemed or scheme-less production url
  * @param {string|boolean} enabled authored or resolved feature-flag state
  * @returns {string} the string to hash
  */
-export const toIdentityUrl = (prodUrl, enabled = false) => {
+const toRawIdentityUrl = (prodUrl, enabled = false) => {
   const bare = typeof prodUrl === 'string' ? prodUrl.replace(/^https?:\/\//, '') : prodUrl;
   return getCaasIdentityUrl(bare, enabled);
 };
 
+// Sections published WITHOUT the extension, whose pages therefore have no
+// `.html` form to force. Hardcoded rather than configured: half of this runs
+// in the UMD/poller bundle, where no site config is reachable, and publisher
+// and consumer MUST agree -- two sides that disagree about one page mint two
+// different ids and every card in the section stops resolving, silently.
+const EXTENSIONLESS_SECTIONS = ['blog'];
+
+// Locale prefixes the extensionless sections are actually published under.
+// Hardcoded for the same reason: this leaf cannot import a locale table, and a
+// `[a-z]{2}(_[a-z]{2})?` shape heuristic would be wrong in both directions.
+// TODO(MWPW-213847): if the blog repo indexes a new locale, add it here or its
+// pages start having `.html` forced onto their ids.
+const EXTENSIONLESS_SECTION_PREFIXES = ['au', 'de', 'fr', 'jp', 'kr', 'uk'];
+
 /**
- * True when a url is in policy scope, authored WITHOUT the `.html` extension,
- * and the policy is off -- the one combination that silently resolves to an id
- * no published card holds.
+ * Whether a url is in a section that is published without the extension.
  *
- * Deliberately narrower than "in scope and flag off": before a site completes
- * its extensionless migration its authored links still carry `.html`, and those
- * resolve correctly with the flag off. Warning on those too would fire on every
- * bacom page today and train readers to ignore the signal.
+ * Anchored to the first content segment, after at most one locale prefix, so
+ * `/resources/blog/x` and `/products/blogging-tool` do NOT match. That
+ * anchoring is load-bearing: both belong to the `.html`-publishing repo, and
+ * exempting either would create the very divergence this prevents.
+ *
+ * @param {string} url schemed or scheme-less url
+ * @returns {boolean}
+ */
+export const isExtensionlessSection = (url) => {
+  if (!isForcedHtmlIdentityUrl(url)) return false;
+  const { pathname } = splitUrl(url);
+  const segments = stripHtml(pathname).split('/').filter(Boolean);
+  const [first] = segments;
+  if (!first) return false;
+  const rest = EXTENSIONLESS_SECTION_PREFIXES.includes(first.toLowerCase())
+    ? segments.slice(1)
+    : segments;
+  const [section] = rest;
+  return !!section && EXTENSIONLESS_SECTIONS.includes(section.toLowerCase());
+};
+
+/**
+ * The identity url, with the full forced-`.html` policy applied -- including
+ * its carve-out for sections that are published extensionless.
+ *
+ * Every runtime that mints or reproduces an identity goes through this, so the
+ * publisher, the removal path and the collection consumer cannot drift apart.
+ * Gated on the flag like the rest of the policy: with the flag off nothing is
+ * forced, so there is nothing to carve out, and rewriting ids for a site that
+ * never opted in would orphan cards that resolve correctly today.
+ *
+ * @param {string} prodUrl production url of the page
+ * @param {string|boolean} enabled authored htmlIdentity flag value
+ * @returns {string} the string to hash
+ */
+export const toIdentityUrl = (prodUrl, enabled = false) => {
+  if (!isHtmlIdentityEnabled(enabled) || !isExtensionlessSection(prodUrl)) {
+    return toRawIdentityUrl(prodUrl, enabled);
+  }
+  // STRIP rather than decline to add: the per-environment htmlExt split means
+  // the same page arrives as `/blog/x` from one environment and `/blog/x.html`
+  // from another, and only normalizing to the extensionless form makes those
+  // variants hash alike.
+  const { scheme, host, pathname, suffix } = splitUrl(toRawIdentityUrl(prodUrl, false));
+  return `${scheme}${host}${stripHtml(pathname)}${suffix}`;
+};
+
+/**
+ * Whether the policy actually changes the id for a url -- the only question
+ * worth warning on. Subsumes "is it in scope" and "was it authored with the
+ * extension": an out-of-scope url, an already-`.html` url and an exempt
+ * section all answer no, because for each of them both flag states hash the
+ * same string.
+ * @param {string} url schemed or scheme-less url
+ * @returns {boolean}
+ */
+export const policyAltersIdentity = (url) => toIdentityUrl(url, true) !== toIdentityUrl(url, false);
+
+/**
+ * True when the policy is off and turning it on would change the url's id --
+ * the one combination that silently resolves to an id no published card holds.
+ *
+ * Narrower than "in scope and flag off" by construction, via
+ * policyAltersIdentity. Before a site completes its extensionless migration
+ * its authored links still carry `.html`, and those resolve correctly with the
+ * flag off; warning on them would fire on every bacom page today and train
+ * readers to ignore the signal. In an exempt section the comparison inverts --
+ * the bare form is the correct one and a link carrying `.html` is the miss.
  *
  * @param {string} url authored link, schemed or scheme-less
  * @param {string|boolean} enabled authored or resolved feature-flag state
  * @returns {boolean}
  */
-export const isIdentityPolicyMiss = (url, enabled = false) => {
-  if (isHtmlIdentityEnabled(enabled) || !isForcedHtmlIdentityUrl(url)) return false;
-  const { pathname } = splitUrl(typeof url === 'string' ? url : '');
-  return !pathname.endsWith(HTML_EXT);
-};
+export const isIdentityPolicyMiss = (url, enabled = false) => (
+  !isHtmlIdentityEnabled(enabled) && policyAltersIdentity(url)
+);
