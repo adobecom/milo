@@ -139,6 +139,8 @@ const defaultOptions = {
       '14257-chimera-dev.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
     '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
       '14257-chimera-feature.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
+    '14257-chimera-cmiqueo.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection':
+      '14257-chimera-cmiqueo.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection',
   },
   filterBuildPanel: {
     automatic: 'Automatic',
@@ -255,6 +257,10 @@ const defaultOptions = {
   partialLoadEnabled: {
     true: 'Enabled',
     false: 'Disabled',
+  },
+  descriptionSizeOptions: {
+    default: 'default',
+    large: 'Large',
   },
 };
 
@@ -476,6 +482,7 @@ const UiPanel = () => {
     <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
     <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
     <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+    <${Select} label="Description Size" prop="descriptionSizeOptions" options=${defaultOptions.descriptionSizeOptions} />
     <${Select}
       label="Card Hover Effect"
       prop="cardHoverEffect"
