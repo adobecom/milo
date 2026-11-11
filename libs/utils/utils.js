@@ -2296,16 +2296,58 @@ export function isSignedOut() {
   return !Object.keys(serverTiming || {}).length || serverTiming?.sis === '0';
 }
 
+const SIGNED_IN_ECID_KEY = 'milo-signed-in-ecid';
+// Adobe links an ECID to the Adobe ID 20-60 s after a signed-in page view.
+const ECID_LINK_DELAY_MS = 2 * 60 * 1000;
+
+function getEcid() {
+  try {
+    return decodeURIComponent(getCookie('AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg') || '')
+      .match(/MCMID\|([^|]+)/)?.[1];
+  } catch (e) {
+    return undefined;
+  }
+}
+
+function readSignedInEcid() {
+  try {
+    return JSON.parse(localStorage.getItem(SIGNED_IN_ECID_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+/**
+ * Remembers the ECID after Launch sends a signed-in page view with the Adobe ID.
+ */
+export function rememberSignedInEcid() {
+  const ecid = getEcid();
+  if (!ecid || readSignedInEcid().ecid === ecid) return;
+  try {
+    localStorage.setItem(SIGNED_IN_ECID_KEY, JSON.stringify({ ecid, time: Date.now() }));
+  } catch (e) {
+    // Storage is not available.
+  }
+}
+
+function isEcidLinked() {
+  const { ecid, time } = readSignedInEcid();
+  return !!ecid && ecid === getEcid() && Date.now() - time >= ECID_LINK_DELAY_MS;
+}
+
 /**
  * Enables personalization (V2) for the page.
- * Signed-in users get V2 only when the page also sets personalization-v2-signed-in to on.
+ * Signed-in users get V2 only when the page also sets personalization-v2-signed-in to on,
+ * and Adobe has already linked this browser's ECID to the Adobe ID.
+ * Before that, ECID-only calls miss audiences that need the Adobe ID.
  *
  * @returns {boolean} True if personalization is enabled, otherwise false.
  */
 export function enablePersonalizationV2() {
   const enablePersV2 = getMepEnablement('personalization-v2');
   if (!enablePersV2) return false;
-  return isSignedOut() || getMepEnablement('personalization-v2-signed-in') === true;
+  if (isSignedOut()) return true;
+  return getMepEnablement('personalization-v2-signed-in') === true && isEcidLinked();
 }
 
 export function loadMepAddons() {
