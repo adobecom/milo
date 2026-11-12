@@ -46,31 +46,18 @@ const listFragments = ({ items = [], unchecked = [] }) => [
 const listPlaceholders = ({ items = [] }) => items
   .map(({ key, where }) => html`<li><code>${key}</code> (${where})</li>`);
 
-const TAXONOMY_REASONS = {
-  uppercase: 'uppercase letters',
-  spaces: 'spaces',
-  underscores: 'underscores',
-  'special-characters': 'special characters',
-  hyphens: 'extra hyphens',
-  'outside-fragments-folder': 'not in a fragments folder',
-  naming: 'naming',
-};
-
 const listTaxonomy = ({ items = [] }) => items.map((item) => {
   if (typeof item === 'string') return html`<li><code>${item}</code></li>`;
-  if (item.segment) {
-    const reasons = item.issues.map((issue) => TAXONOMY_REASONS[issue]).join(', ');
-    const fix = item.suggestion && html`, try <code>${item.suggestion}</code>`;
-    return html`<li><code>${item.segment}</code> (${reasons})${fix}</li>`;
-  }
-  const reasons = item.reasons.map((reason) => TAXONOMY_REASONS[reason]).join(', ');
-  return html`<li><a href=${item.path} target=_blank>${item.path}</a> (${reasons})</li>`;
+  const reasons = ` (${item.reasons.join(', ')})`;
+  if (item.path) return html`<li><a href=${item.path} target=_blank>${item.path}</a>${reasons}</li>`;
+  const fix = item.suggestion && html`, try <code>${item.suggestion}</code>`;
+  return html`<li><code>${item.segment}</code>${reasons}${fix}</li>`;
 });
 
 function getTaxonomyResults() {
   taxonomyResults.value = runTaxonomyChecks({ area: document }).map((res) => ({
     // Advisory only: a failing taxonomy check is a warning, never a red error.
-    icon: res.status === 'fail' ? 'orange' : STATUS_TO_ICON_MAP[res.status] || 'orange',
+    icon: res.status === 'fail' ? 'orange' : STATUS_TO_ICON_MAP[res.status],
     title: res.title,
     description: res.description,
     list: listTaxonomy(res.details ?? {}),

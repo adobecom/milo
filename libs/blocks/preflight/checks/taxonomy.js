@@ -2,16 +2,10 @@ import { getConfig } from '../../../utils/utils.js';
 import { findFragments } from './content.js';
 import { SEVERITY, STATUS } from './constants.js';
 
-export const TAXONOMY_IDS = {
-  naming: 'taxonomy-naming',
-  temporary: 'taxonomy-temporary-folder',
-  fragments: 'taxonomy-fragment-placement',
-};
-
-const TITLES = {
-  naming: 'Page naming',
-  temporary: 'Test or temporary folders',
-  fragments: 'Fragment placement',
+const CHECKS = {
+  naming: { id: 'taxonomy-naming', title: 'Page naming' },
+  temporary: { id: 'taxonomy-temporary-folder', title: 'Test or temporary folders' },
+  fragments: { id: 'taxonomy-fragment-placement', title: 'Fragment placement' },
 };
 
 // A test word at the start of a segment, "test"/"tmp"/"temp" at the end, or "test" followed
@@ -19,18 +13,11 @@ const TITLES = {
 // "the-power-of-ab-testing", so "-testing"/"-tests" endings are not matched.
 const TEMP_WORDS = /^(test|tests|testing|tmp|temp)\d*(-|$)|-(test|tmp|temp)$|(^|-)test\d*-\d|(^|-)test-page(-|$)|(^|-)form-test(-|$)/;
 const VALID_SEGMENT = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const EXTENSION = /\.(plain\.html|html|json)$/;
 
 const count = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 
-const result = (key, status, description, details = {}) => ({
-  id: TAXONOMY_IDS[key],
-  title: TITLES[key],
-  status,
-  severity: SEVERITY.WARNING,
-  description,
-  details,
-});
+const result = (key, status, description, details = {}) => (
+  { ...CHECKS[key], status, severity: SEVERITY.WARNING, description, details });
 
 const safeDecode = (value) => {
   try {
@@ -40,44 +27,37 @@ const safeDecode = (value) => {
   }
 };
 
-export function toSegments(pathname = '', localePrefix = '') {
-  let path = safeDecode(pathname.split(/[?#]/)[0]);
-  if (localePrefix && (path === localePrefix || path.startsWith(`${localePrefix}/`))) {
-    path = path.slice(localePrefix.length);
-  }
-  const segments = path.replace(EXTENSION, '').split('/').filter(Boolean);
-  if (segments.at(-1) === 'index') segments.pop();
+// Pages and fragments can come from any locale (MEP, lingo), so drop a leading locale key.
+export function toSegments(pathname = '', localeKeys = []) {
+  const segments = safeDecode(pathname).replace(/\.(plain\.)?html$/, '').split('/').filter(Boolean);
+  if (localeKeys.includes(segments[0])) segments.shift();
+  if (segments[segments.length - 1] === 'index') segments.pop();
   return segments;
 }
 
-export function slugify(value = '') {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+const slugify = (value) => value
+  .toLowerCase()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-|-$/g, '');
 
-export function getSegmentIssues(segment) {
-  const issues = [];
-  if (/[A-Z]/.test(segment)) issues.push('uppercase');
-  if (/\s/.test(segment)) issues.push('spaces');
-  if (segment.includes('_')) issues.push('underscores');
-  if (/[^A-Za-z0-9\s_-]/.test(segment)) issues.push('special-characters');
-  if (!issues.length && !VALID_SEGMENT.test(segment)) issues.push('hyphens');
+const getSegmentIssues = (segment) => {
+  const issues = [
+    /[A-Z]/.test(segment) && 'uppercase letters',
+    /\s/.test(segment) && 'spaces',
+    segment.includes('_') && 'underscores',
+    /[^A-Za-z0-9\s_-]/.test(segment) && 'special characters',
+  ].filter(Boolean);
+  if (!issues.length && !VALID_SEGMENT.test(segment)) issues.push('extra hyphens');
   return issues;
-}
+};
 
 export function checkNaming(segments = []) {
   const items = segments
-    .map((segment) => ({
-      segment,
-      issues: getSegmentIssues(segment),
-      suggestion: slugify(segment),
-    }))
-    .filter(({ issues }) => issues.length);
+    .map((segment) => ({ segment, reasons: getSegmentIssues(segment) }))
+    .filter(({ reasons }) => reasons.length)
+    .map((item) => ({ ...item, suggestion: slugify(item.segment) }));
   if (!items.length) {
     return result('naming', STATUS.PASS, 'Path uses lowercase words separated by hyphens.', { items });
   }
@@ -92,23 +72,17 @@ export function checkTemporaryFolders(segments = []) {
   return result('temporary', STATUS.FAIL, 'Path looks like a test or temporary page.', { items });
 }
 
-// Fragments can come from any locale (MEP, lingo), so drop a leading locale key.
-const fragmentSegments = (pathname, localeKeys) => {
-  const segments = toSegments(pathname);
-  if (localeKeys.includes(segments[0])) segments.shift();
-  return segments;
-};
-
 // `path` is what the panel shows (it keeps another site's origin), `pathname` is what gets checked.
 export function checkFragmentPlacement(fragments = [], localeKeys = []) {
   const items = fragments
     .map(({ path, pathname }) => {
-      const segments = fragmentSegments(pathname, localeKeys);
+      const segments = toSegments(pathname, localeKeys);
       // A trailing slash means every segment is a folder.
       const folders = pathname.endsWith('/') ? segments : segments.slice(0, -1);
-      const reasons = [];
-      if (!folders.includes('fragments')) reasons.push('outside-fragments-folder');
-      if (segments.some((segment) => getSegmentIssues(segment).length)) reasons.push('naming');
+      const reasons = [
+        !folders.includes('fragments') && 'not in a fragments folder',
+        segments.some((segment) => getSegmentIssues(segment).length) && 'naming',
+      ].filter(Boolean);
       return { path, reasons };
     })
     .filter(({ reasons }) => reasons.length);
@@ -121,19 +95,17 @@ export function checkFragmentPlacement(fragments = [], localeKeys = []) {
   return result('fragments', STATUS.FAIL, `${count(items.length, 'fragment')} outside a fragments folder or not following the naming rules.`, { items });
 }
 
-const KEYS = ['naming', 'temporary', 'fragments'];
-
-// Drafts are scratch space by design, so warnings there are noise.
 export function runChecks({ area = document, pathname = window.location.pathname } = {}) {
-  const { locale, locales = {} } = getConfig();
-  const segments = toSegments(pathname, locale?.prefix);
+  const localeKeys = Object.keys(getConfig().locales ?? {}).filter(Boolean);
+  const segments = toSegments(pathname, localeKeys);
+  // Drafts are scratch space by design, so warnings there are noise.
   if (segments.includes('drafts')) {
-    return KEYS.map((key) => result(key, STATUS.EMPTY, 'Draft page, taxonomy checks skipped.'));
+    return Object.keys(CHECKS).map((key) => result(key, STATUS.EMPTY, 'Draft page, taxonomy checks skipped.'));
   }
   const fragments = findFragments(area).map(({ path, url }) => ({ path, pathname: url.pathname }));
   return [
     checkNaming(segments),
     checkTemporaryFolders(segments),
-    checkFragmentPlacement(fragments, Object.keys(locales).filter(Boolean)),
+    checkFragmentPlacement(fragments, localeKeys),
   ];
 }

@@ -67,7 +67,6 @@ export default {
   },
   structure: { runChecks: runChecksStructure },
   merch: { runChecks: runChecksMerch },
-  taxonomy: { runChecks: runChecksTaxonomy },
 };
 
 export const getChecksSuite = () => {
