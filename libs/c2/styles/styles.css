@@ -464,7 +464,7 @@
   --grid-max-width-fluid: 2560px;
 
   --global-height-nav: 80px;
-
+  --c2-global-height-nav: 80px;
   --feds-breadcrumbs-height: 52px;
 
   /* Regional font variations */
@@ -515,7 +515,7 @@
   }
 }
 
-@property --global-height-nav {
+@property --c2-global-height-nav {
   syntax: '<length>';
   inherits: true;
   initial-value: 80px;
@@ -523,12 +523,12 @@
 
 :root:has(.breadcrumbs, .feds-breadcrumbs),
 :root:has(meta[name="localnav"][content="true"]):has(header.global-navigation.is-compact) {
-  --global-height-nav: calc(80px + var(--feds-breadcrumbs-height) - 8px);
+  --c2-global-height-nav: calc(80px + var(--feds-breadcrumbs-height) - 8px);
 }
 
 @media (width < 1024px) {
   :root:has(meta[name="localnav"][content="true"]) {
-    --global-height-nav: calc(80px + var(--feds-breadcrumbs-height) - 8px);
+    --c2-global-height-nav: calc(80px + var(--feds-breadcrumbs-height) - 8px);
   }
 }
 
@@ -608,11 +608,11 @@ body {
 }
 
 header.global-navigation {
-  min-height: var(--global-height-nav);
+  min-height: var(--c2-global-height-nav);
 }
 
 body:has(.global-navigation) main {
-  margin-top: calc(-1 * var(--global-height-nav));
+  margin-top: calc(-1 * var(--c2-global-height-nav));
 }
 
 main > div,

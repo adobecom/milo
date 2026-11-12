@@ -31,7 +31,7 @@ let federalGetGnavHeight = null;
 export function getGnavHeight() {
   if (federalGetGnavHeight) return federalGetGnavHeight();
   const cssHeight = parseFloat(getComputedStyle(document.documentElement)
-    .getPropertyValue('--global-height-nav'));
+    .getPropertyValue('--c2-global-height-nav'));
   return Number.isNaN(cssHeight) ? DEFAULT_C2_GNAV_HEIGHT : cssHeight;
 }
 
