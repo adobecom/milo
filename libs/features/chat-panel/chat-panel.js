@@ -4,7 +4,7 @@ import {
   loadStyle,
   isAcomAssistantPanelEnabled,
 } from '../../utils/utils.js';
-import { aiIcon, getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
+import { getBetaLabel } from '../../blocks/brand-concierge/bc-utils.js';
 import { getAnalyticsLabel } from '../../blocks/brand-concierge/bc-analytics.js';
 import initJarvisPanel from './jarvis-panel.js';
 
@@ -12,7 +12,6 @@ const mountId = 'brand-concierge-mount';
 let initialization = null;
 let bootstrapPromise = null;
 let panelEl = null;
-let toggleEl = null;
 let jarvisClient = null;
 
 function buildPanel() {
@@ -34,43 +33,26 @@ function buildPanel() {
   return { panel, closeBtn };
 }
 
-function buildToggle() {
-  const icon = createTag('span', {
-    class: 'chat-panel-toggle-icon',
-    'aria-hidden': 'true',
-  }, aiIcon('chat-panel-toggle-ai', 'chat-panel-ai-icon', null, 20));
-  const label = createTag('span', { class: 'chat-panel-toggle-label' }, 'Ask');
-  return createTag('button', {
-    id: 'chat-panel-toggle',
-    type: 'button',
-    class: 'no-track',
-    'aria-label': 'Ask Adobe',
-    'aria-expanded': 'false',
-    'aria-controls': 'chat-panel',
-    'daa-ll': getAnalyticsLabel('floating-bc'),
-  }, [icon, label]);
-}
-
 const GNAV_SLOT_TIMEOUT = 10000;
 
-function placeToggle(toggle, slot, panel) {
+function placeGnavMount(mount, slot, panel) {
   // The panel may have been torn down (e.g. replaced page content) while waiting for the gnav.
   if (!panel.isConnected) return;
   if (slot) {
-    toggle.classList.add('chat-panel-toggle-gnav');
-    slot.after(toggle);
+    mount.classList.add('chat-panel-gnav');
+    slot.after(mount);
   } else {
-    document.body.append(toggle);
+    document.body.append(mount);
   }
 }
 
 // Sits after the gnav utilities. Federal renders the gnav asynchronously, so wait
-// for it; pages without a gnav (or one that never renders) get the floating toggle.
-function mountToggle(toggle, panel) {
+// for it; pages without a gnav (or one that never renders) get a floating mount.
+function mountGnav(mount, panel) {
   const header = document.querySelector('header.global-navigation');
   const find = () => header?.querySelector('.feds-utilities');
   if (!header || find()) {
-    placeToggle(toggle, find(), panel);
+    placeGnavMount(mount, find(), panel);
     return;
   }
   let timer;
@@ -79,11 +61,11 @@ function mountToggle(toggle, panel) {
     if (!slot) return;
     observer.disconnect();
     clearTimeout(timer);
-    placeToggle(toggle, slot, panel);
+    placeGnavMount(mount, slot, panel);
   });
   timer = setTimeout(() => {
     observer.disconnect();
-    placeToggle(toggle, null, panel);
+    placeGnavMount(mount, null, panel);
   }, GNAV_SLOT_TIMEOUT);
   observer.observe(header, { childList: true, subtree: true });
 }
@@ -92,13 +74,25 @@ export function isChatPanelOpen() {
   return document.body.classList.contains('chat-panel-open');
 }
 
+function setChatPanelOpen(open) {
+  if (isChatPanelOpen() === open) return;
+  document.body.classList.toggle('chat-panel-open', open);
+  localStorage.setItem('bc-side-overlay', open ? 'open' : 'closed');
+  window.dispatchEvent(new CustomEvent(open ? 'bc:side-modal-open' : 'bc:side-modal-close'));
+}
+
 export function closeChatPanel() {
   if (!isChatPanelOpen()) return;
-  document.body.classList.remove('chat-panel-open');
-  toggleEl?.setAttribute('aria-expanded', 'false');
-  localStorage.setItem('bc-side-overlay', 'closed');
+  setChatPanelOpen(false);
   jarvisClient?.closeMessageWindow();
-  window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
+}
+
+function reportPanelError(error) {
+  window.lana?.log(`Jarvis panel: ${error.message}`, { tags: 'brand-concierge', severity: 'error' });
+  const mount = panelEl.querySelector(`#${mountId}`);
+  if (!mount.querySelector('[role="alert"]')) {
+    mount.append(createTag('p', { role: 'alert' }, 'Chat could not be loaded. Please reload the page to try again.'));
+  }
 }
 
 /**
@@ -108,17 +102,8 @@ export function closeChatPanel() {
 export async function openChatPanel(initialMessage) {
   // eslint-disable-next-line no-use-before-define
   await init();
-  const wasOpen = isChatPanelOpen();
-  document.body.classList.add('chat-panel-open');
-  toggleEl?.setAttribute('aria-expanded', 'true');
-  localStorage.setItem('bc-side-overlay', 'open');
-  if (!wasOpen) window.dispatchEvent(new CustomEvent('bc:side-modal-open'));
+  setChatPanelOpen(true);
   try {
-    if (!bootstrapPromise) {
-      bootstrapPromise = initJarvisPanel(mountId, ({ state }) => {
-        if (state === 'hidden') closeChatPanel();
-      });
-    }
     jarvisClient = await bootstrapPromise;
     if (!isChatPanelOpen()) return;
     if (initialMessage) {
@@ -128,11 +113,7 @@ export async function openChatPanel(initialMessage) {
       jarvisClient.openMessagingWindow({ sourceType: 'button', sourceText: 'Ask' });
     }
   } catch (error) {
-    window.lana?.log(`Jarvis panel: ${error.message}`, { tags: 'brand-concierge', severity: 'error' });
-    const mount = panelEl.querySelector(`#${mountId}`);
-    if (!mount.querySelector('[role="alert"]')) {
-      mount.append(createTag('p', { role: 'alert' }, 'Chat could not be loaded. Please reload the page to try again.'));
-    }
+    reportPanelError(error);
     throw error;
   }
 }
@@ -149,8 +130,8 @@ function handleJarvisLink(event) {
 }
 
 /**
- * Build the panel DOM + wire up close/toggle/Escape. Idempotent — calling
- * again is a no-op. Does NOT open the panel; callers must call openChatPanel().
+ * Build the panel DOM, initialize the SDK entrypoint, and wire up close/Escape.
+ * Idempotent — calling again is a no-op. Does NOT open the panel.
  */
 export default function init() {
   if (initialization && (!panelEl || document.contains(panelEl))) return initialization;
@@ -165,18 +146,29 @@ export default function init() {
     });
 
     const { panel, closeBtn } = buildPanel();
-    const toggle = buildToggle();
+    const gnavMount = createTag('div', {
+      id: 'acomAssistant-gnav-mount',
+      class: 'chat-panel-entrypoint',
+      style: 'visibility: hidden',
+    });
     panelEl = panel;
-    toggleEl = toggle;
     document.body.append(panel);
-    mountToggle(toggle, panel);
+    mountGnav(gnavMount, panel);
 
-    toggle.addEventListener('click', () => (isChatPanelOpen() ? closeChatPanel() : openChatPanel()));
     closeBtn.addEventListener('click', closeChatPanel);
     document.removeEventListener('keydown', handleKeydown);
     document.addEventListener('keydown', handleKeydown);
     document.removeEventListener('click', handleJarvisLink, true);
     document.addEventListener('click', handleJarvisLink, true);
+
+    bootstrapPromise = initJarvisPanel(mountId, ({ state }) => {
+      if (state === 'hidden') setChatPanelOpen(false);
+      if (state === 'panel' || state === 'maximised') setChatPanelOpen(true);
+    });
+    bootstrapPromise.then((client) => {
+      jarvisClient = client;
+      gnavMount.style.visibility = '';
+    }, reportPanelError);
   })();
   return initialization;
 }

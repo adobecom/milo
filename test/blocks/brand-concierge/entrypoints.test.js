@@ -36,8 +36,8 @@ describe('acom-assistant-panel persistent chat panel', () => {
         return { status: 'success', type: 'init_started' };
       }),
       getMessagingExperienceState: sinon.stub().returns({ embedded: true }),
-      openMessagingWindow: sinon.spy(),
-      closeMessageWindow: sinon.spy(),
+      openMessagingWindow: sinon.spy(() => options.callbacks.windowStateCallback({ state: 'panel' })),
+      closeMessageWindow: sinon.spy(() => options.callbacks.windowStateCallback({ state: 'hidden' })),
       sendUserMessage: sinon.stub().returns(true),
       handleSignOut: sinon.spy(),
       updateAccessToken: sinon.spy(),
@@ -82,6 +82,7 @@ describe('acom-assistant-panel persistent chat panel', () => {
     expect(document.querySelectorAll('#brand-concierge-mount').length).to.equal(1);
     expect(document.querySelector('.dialog-modal')).to.be.null;
     expect(options.mountSelector).to.equal('#brand-concierge-mount');
+    expect(options.gnavFabState).to.equal('collapsed');
     if (message) {
       await waitFor(() => client.sendUserMessage.calledWith({ label: message }));
     } else {
@@ -148,12 +149,13 @@ describe('acom-assistant-panel persistent chat panel', () => {
         document.querySelector('.feds-topnav').append(Object.assign(document.createElement('div'), { className: 'feds-utilities' }));
         await foundation.initGlobal(document.querySelector('.brand-concierge-global'));
         await waitFor(() => window.milo?.brandConcierge?.brandConciergeGlobal);
-        return document.getElementById('chat-panel-toggle');
+        await waitFor(() => client.initialize.called);
+        return document.getElementById('acomAssistant-gnav-mount');
       }
 
       it('uses the navigation panel for inline prompts on the same page', async () => {
-        const toggle = await initGlobalWithGnav();
-        toggle.click();
+        await initGlobalWithGnav();
+        client.openMessagingWindow();
         const panel = await expectOpen();
         const mount = panel.querySelector('#brand-concierge-mount');
         mount.textContent = 'Existing conversation';
@@ -170,12 +172,15 @@ describe('acom-assistant-panel persistent chat panel', () => {
         expect(client.initialize.calledOnce).to.be.true;
       });
 
-      it('replaces the global gnav entry point with the gnav drawer toggle', async () => {
-        const toggle = await initGlobalWithGnav();
+      it('provides a single SDK entrypoint mount after the gnav utilities', async () => {
+        const mount = await initGlobalWithGnav();
         expect(document.querySelector('.bc-gnav')).to.be.null;
         expect(getComputedStyle(document.querySelector('.feds-bc-wrapper')).display).to.equal('none');
-        expect(toggle.previousElementSibling.classList.contains('feds-utilities')).to.be.true;
-        toggle.click();
+        expect(mount.previousElementSibling.classList.contains('feds-utilities')).to.be.true;
+        expect(document.querySelectorAll('#acomAssistant-gnav-mount')).to.have.lengthOf(1);
+        expect(document.querySelector('#chat-panel-toggle')).to.be.null;
+        expect(document.body.classList.contains('chat-panel-open')).to.be.false;
+        client.openMessagingWindow();
         await expectOpen();
         expect(client.initialize.calledOnce).to.be.true;
       });
@@ -202,63 +207,71 @@ describe('acom-assistant-panel persistent chat panel', () => {
     expect(client.initialize.calledOnce).to.be.true;
   });
 
-  it('renders a floating Ask button with the shared BC logo', async () => {
+  it('initializes the collapsed SDK entrypoint without opening the drawer', async () => {
     await initPanel();
-    const toggle = document.getElementById('chat-panel-toggle');
-    expect(toggle.textContent.trim()).to.equal('Ask');
-    expect(toggle.type).to.equal('button');
-    expect(toggle.getAttribute('aria-label')).to.equal('Ask Adobe');
-    expect(toggle.getAttribute('aria-controls')).to.equal('chat-panel');
-    expect(toggle.getAttribute('daa-ll')).to.equal('Filters|testAA|bc#floating-bc');
-    expect(toggle.querySelector('.chat-panel-toggle-icon').getAttribute('aria-hidden'))
-      .to.equal('true');
-    const icon = toggle.querySelector('svg');
-    expect(icon.getAttribute('width')).to.equal('20');
-    expect(icon.getAttribute('height')).to.equal('20');
-    expect(icon.querySelector('radialGradient').id).to.equal('chat-panel-toggle-ai');
-    expect(icon.querySelector('path[fill="url(#chat-panel-toggle-ai)"]')).to.exist;
-    expect(getComputedStyle(toggle).position).to.equal('fixed');
-    expect(getComputedStyle(toggle).minHeight).to.equal('48px');
+    await waitFor(() => client.initialize.called);
+    const mount = document.getElementById('acomAssistant-gnav-mount');
+    expect(options.gnavFabState).to.equal('collapsed');
+    expect(document.querySelector('#chat-panel-toggle')).to.be.null;
+    expect(getComputedStyle(mount).position).to.equal('fixed');
+    expect(document.body.classList.contains('chat-panel-open')).to.be.false;
+    expect(client.openMessagingWindow.called).to.be.false;
+    expect(client.sendUserMessage.called).to.be.false;
   });
 
-  it('opens from the floating Ask button and closes on Escape without destroying the mount', async () => {
+  it('reserves the entrypoint space while waiting for Jarvis to be ready', async () => {
+    document.body.innerHTML = '<header class="global-navigation"><nav><div class="feds-utilities"></div></nav></header>';
+    client.initialize.callsFake((config) => {
+      options = config;
+      return { status: 'success', type: 'init_started' };
+    });
     await initPanel();
-    const toggle = document.getElementById('chat-panel-toggle');
-    toggle.click();
+    await waitFor(() => !!options);
+    const mount = document.getElementById('acomAssistant-gnav-mount');
+    expect(getComputedStyle(mount).visibility).to.equal('hidden');
+    const before = mount.getBoundingClientRect();
+    expect(before.width).to.equal(40);
+    expect(before.height).to.equal(40);
+    options.callbacks.onReadyCallback();
+    await waitFor(() => getComputedStyle(mount).visibility === 'visible');
+    const after = mount.getBoundingClientRect();
+    expect([after.x, after.y, after.width, after.height])
+      .to.deep.equal([before.x, before.y, before.width, before.height]);
+    expect(document.body.classList.contains('chat-panel-open')).to.be.false;
+  });
+
+  it('opens from the SDK and closes on Escape without destroying the mount', async () => {
+    await initPanel();
+    await waitFor(() => client.initialize.called);
+    client.openMessagingWindow();
     const panel = await expectOpen();
-    expect(toggle.getAttribute('aria-expanded')).to.equal('true');
-    expect(getComputedStyle(toggle).visibility).to.equal('hidden');
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.body.classList.contains('chat-panel-open')).to.be.false;
     expect(localStorage.getItem('bc-side-overlay')).to.equal('closed');
-    expect(toggle.getAttribute('aria-expanded')).to.equal('false');
-    expect(getComputedStyle(toggle).visibility).to.equal('visible');
-    toggle.click();
+    client.openMessagingWindow();
     await expectOpen();
     expect(document.getElementById('chat-panel')).to.equal(panel);
     expect(client.initialize.calledOnce).to.be.true;
   });
 
-  it('moves the Ask button after the gnav utilities once Federal renders, and toggles the panel', async () => {
+  it('moves the SDK mount after the gnav utilities once Federal renders', async () => {
     const header = document.createElement('header');
     header.className = 'global-navigation';
     document.body.append(header);
     await initPanel();
-    expect(document.getElementById('chat-panel-toggle')).to.be.null;
+    expect(document.getElementById('acomAssistant-gnav-mount')).to.be.null;
     const nav = document.createElement('nav');
     nav.innerHTML = '<div class="feds-utilities"></div>';
     header.append(nav);
-    await waitFor(() => document.getElementById('chat-panel-toggle'));
-    const toggle = document.getElementById('chat-panel-toggle');
-    expect(toggle.previousElementSibling.classList.contains('feds-utilities')).to.be.true;
-    expect(toggle.classList.contains('chat-panel-toggle-gnav')).to.be.true;
-    expect(getComputedStyle(toggle).position).to.equal('static');
-    toggle.click();
+    await waitFor(() => document.getElementById('acomAssistant-gnav-mount') && client.initialize.called);
+    const mount = document.getElementById('acomAssistant-gnav-mount');
+    expect(mount.previousElementSibling.classList.contains('feds-utilities')).to.be.true;
+    expect(mount.classList.contains('chat-panel-gnav')).to.be.true;
+    expect(getComputedStyle(mount).position).to.equal('static');
+    client.openMessagingWindow();
     await expectOpen();
-    expect(getComputedStyle(toggle).visibility).to.equal('visible');
-    toggle.click();
+    client.closeMessageWindow();
     expect(document.body.classList.contains('chat-panel-open')).to.be.false;
-    expect(toggle.getAttribute('aria-expanded')).to.equal('false');
   });
 
   it('submits a new prompt into the same panel while already open', async () => {
@@ -290,9 +303,34 @@ describe('acom-assistant-panel persistent chat panel', () => {
 
   it('synchronizes Jarvis close notifications with the host panel', async () => {
     await openChatPanel();
+    client.closeMessageWindow.resetHistory();
     options.callbacks.windowStateCallback({ state: 'hidden' });
     expect(document.body.classList.contains('chat-panel-open')).to.be.false;
     expect(localStorage.getItem('bc-side-overlay')).to.equal('closed');
+    expect(client.closeMessageWindow.called).to.be.false;
+  });
+
+  it('reveals the existing panel on Jarvis popup opens without opening Jarvis again', async () => {
+    await openChatPanel('Initial prompt');
+    const panel = document.getElementById('chat-panel');
+    closeChatPanel();
+    const onOpen = sinon.spy();
+    window.addEventListener('bc:side-modal-open', onOpen);
+    client.openMessagingWindow.resetHistory();
+    client.sendUserMessage.resetHistory();
+    try {
+      options.callbacks.windowStateCallback({ state: 'panel' });
+      options.callbacks.windowStateCallback({ state: 'panel' });
+      expect(document.body.classList.contains('chat-panel-open')).to.be.true;
+      expect(localStorage.getItem('bc-side-overlay')).to.equal('open');
+      expect(document.getElementById('chat-panel')).to.equal(panel);
+      expect(onOpen.calledOnce).to.be.true;
+      expect(client.initialize.calledOnce).to.be.true;
+      expect(client.openMessagingWindow.called).to.be.false;
+      expect(client.sendUserMessage.called).to.be.false;
+    } finally {
+      window.removeEventListener('bc:side-modal-open', onOpen);
+    }
   });
 
   it('uses Jarvis sign-out handling without loading the web client', async () => {

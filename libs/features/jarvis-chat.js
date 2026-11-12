@@ -225,7 +225,10 @@ const startInitialization = async (config, event, onDemand, options = {}) => {
     appid: getMetadata('jarvis-surface-id') || config.jarvis.id || jarvisSecMeta?.['jarvis-surface-id'],
     appver: getMetadata('jarvis-surface-version') || config.jarvis.version || jarvisSecMeta?.['jarvis-surface-version'],
     env: config.env.name !== 'prod' ? 'stage' : 'prod',
-    ...(options.mountSelector && { mountSelector: options.mountSelector }),
+    ...(options.mountSelector && {
+      mountSelector: options.mountSelector,
+      gnavFabState: 'collapsed',
+    }),
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
