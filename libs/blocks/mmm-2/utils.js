@@ -85,12 +85,18 @@ export function filterPageActivities(pageData, filters) {
   const countries = terms(manifestCountryRestriction);
   const search = terms(filter);
   const includes = (value, term) => String(value ?? '').toLowerCase().includes(term);
+  const matchesConsent = (activity) => {
+    const value = activity.consentType ?? activity.manifestConsentType;
+    if (!manifestConsentType) return true;
+    return manifestConsentType === 'not-set'
+      ? !String(value ?? '').trim()
+      : value === manifestConsentType;
+  };
   return {
     ...pageData,
     // The detail API applies lastSeen/source, but ignores these list filters.
     activities: pageData.activities?.filter((activity) => (
-      (!manifestConsentType
-        || (activity.consentType ?? activity.manifestConsentType) === manifestConsentType)
+      matchesConsent(activity)
       && (!countries.length || countries.some((term) => includes(
         activity.countryRestriction ?? activity.manifestCountryRestriction,
         term,

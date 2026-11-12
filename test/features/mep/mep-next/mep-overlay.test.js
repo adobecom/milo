@@ -186,6 +186,13 @@ describe('init: DOM structure — stage env first call', () => {
     const footer = bodyEl.querySelector('#mep-drawer .mep-footer');
     expect(footer).to.exist;
     expect(footer.querySelector('a').textContent.trim()).to.equal('Preview');
+    const links = footer.querySelectorAll('a');
+    expect(links).to.have.length(2);
+    expect(links[0].getAttribute('target')).to.be.null;
+    expect(links[1].textContent.trim()).to.equal('Preview in new tab');
+    expect(links[1].getAttribute('target')).to.equal('_blank');
+    expect(links[1].getAttribute('rel')).to.equal('noopener');
+    expect(links[1].getAttribute('href')).to.equal(links[0].getAttribute('href'));
   });
 
   it('Highlight card is present in Actions tab', () => {

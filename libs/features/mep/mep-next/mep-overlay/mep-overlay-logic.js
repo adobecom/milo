@@ -292,7 +292,9 @@ export async function setPreviewButton() {
   simulateHref.searchParams.delete('mepFragments');
   // URLSearchParams serializes an empty value as `mep=`; drop the `=` for bare `mep`/`meplcp`.
   const href = simulateHref.href.replace(/([?&](?:mep|meplcp))=(?=[&#]|$)/g, '$1');
-  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', href);
+  popup.querySelectorAll('.mep-footer a.con-button').forEach((link) => {
+    link.setAttribute('href', href);
+  });
 }
 
 export function getLingoRegions() {

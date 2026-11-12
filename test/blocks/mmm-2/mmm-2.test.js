@@ -605,6 +605,29 @@ describe('mmm-2', () => {
     expect(filterPageActivities(data, { filter: 'does-not-exist' }).activities).to.deep.equal([]);
   });
 
+  it('distinguishes Show All, NOT SET and concrete consent types in page details', () => {
+    const activities = [
+      { url: '/missing.json' },
+      { url: '/null.json', manifestConsentType: null },
+      { url: '/empty.json', manifestConsentType: '' },
+      { url: '/spaces.json', manifestConsentType: ' \t\n ' },
+      { url: '/internal-empty.json', consentType: '' },
+      { url: '/personalized.json', manifestConsentType: 'personalized offer' },
+      { url: '/promo.json', consentType: 'promo or no offer changes' },
+    ];
+    const data = { page: getPageData.page, activities };
+    expect(filterPageActivities(data, { manifestConsentType: '' }).activities).to.deep.equal(activities);
+    expect(filterPageActivities(data, { manifestConsentType: 'not-set' }).activities)
+      .to.deep.equal(activities.slice(0, 5));
+    expect(filterPageActivities(data, { manifestConsentType: 'personalized offer' }).activities)
+      .to.deep.equal([activities[5]]);
+    expect(filterPageActivities(data, {
+      manifestConsentType: 'not-set',
+      filter: '/spaces.json',
+    }).activities).to.deep.equal([activities[3]]);
+    expect(data.activities).to.have.length(7);
+  });
+
   it('keeps unmatched details available when country and text filters match no activities', async () => {
     const filterText = 'spring & summer\n/offer?variant=all';
     const manifestCountryRestriction = 'US, CA';
@@ -912,6 +935,37 @@ describe('mmm-2', () => {
     ));
     expect(JSON.parse(window.fetch.lastCall.args[1].body))
       .to.not.have.property('manifestconsenttype');
+  });
+
+  it('sends and restores an authored NOT SET option without treating it as Show All', async () => {
+    const header = [...document.querySelector('.manifest-manager').children]
+      .find((row) => row.children[0].textContent.includes('Menu: manifestConsentType'));
+    const option = document.createElement('div');
+    option.innerHTML = '<div>not-set</div><div>NOT SET</div>';
+    const lastOption = header.nextElementSibling.nextElementSibling
+      .nextElementSibling.nextElementSibling;
+    lastOption.after(option);
+    localStorage.setItem(
+      LOCAL_STORAGE_KEYS.search,
+      JSON.stringify({ manifestConsentType: 'not-set' }),
+    );
+    setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
+    const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+    await module.default(document.querySelector('.mmm-2'));
+    await waitFor(() => document.querySelector('.mmm2-page-item'));
+    const select = document.querySelector('#mmm2-filter-manifestconsenttype');
+    expect(select.value).to.equal('not-set');
+    expect(select.selectedOptions[0].textContent).to.equal('NOT SET');
+    const lastBody = () => JSON.parse(window.fetch.getCalls()
+      .filter((call) => call.args[0].includes('/get-pages')).at(-1).args[1].body);
+    expect(lastBody().manifestConsentType).to.equal('not-set');
+    select.value = '';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => lastBody().manifestConsentType === '');
+    select.value = 'not-set';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await waitFor(() => lastBody().manifestConsentType === 'not-set');
+    expect(JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.search)).manifestConsentType).to.equal('not-set');
   });
 
   [

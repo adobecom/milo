@@ -38,6 +38,9 @@ time, elapsed progress bar and Instant link. This presentation is shared by the
 live overlay and both manifest managers, with light/dark manager colors.
 Partial or invalid schedules retain the On/Off rows without fabricated dates;
 unscheduled manifests do not gain a timeline.
+The live MEP panel also offers **Preview in new tab**, keeping the existing
+same-tab Preview action. Both links use the same current manifest selections,
+additional manifests, geo spoofing, highlight and preview settings.
 Fragment-highlight preview links now use `otherHighlight=true`; existing
 `mepFragments=true` links are still accepted by the overlay.
 Both manifest managers' Summary tabs show only the selected page's API data,
@@ -72,6 +75,10 @@ as **Manifest(s) found**. Detail query parameters are URL-encoded and cached car
 are scoped to their filter selections.
 MMM-2's Manifest Consent Type filter is an authored single-select dropdown.
 Author a blank-value **Show All** option as its default (no consent-type restriction).
+Author `not-set` with the label **NOT SET** to match manifests with missing, null,
+empty or whitespace-only consent types. A blank Show All value includes both
+set and unset manifests; listing the three concrete types excludes unset records.
+The API page-list query and client-side detail grouping both recognize `not-set`.
 The target-setting and manifest-source checkbox groups can be cleared;
 an empty group sends `''` for its API filter property and stays unchecked when restored.
 Dropdowns and single-line text filters are grouped above the checkbox groups;

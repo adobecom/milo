@@ -397,6 +397,12 @@ function buildFAB(gnavOffset) {
 function buildFooter() {
   return createTag('div', { class: 'mep-footer' }, [
     createTag('a', { class: 'con-button button-l fill', title: 'Preview' }, 'Preview'),
+    createTag('a', {
+      class: 'con-button button-l outline mep-preview-new-tab',
+      title: 'Preview all selected manifests and settings in a new tab',
+      target: '_blank',
+      rel: 'noopener',
+    }, 'Preview in new tab'),
   ]);
 }
 
