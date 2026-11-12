@@ -1,5 +1,6 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { loadStyle } from '../../../libs/utils/utils.js';
 
 import init from '../../../libs/c2/blocks/split-hero/split-hero.js';
@@ -769,6 +770,30 @@ describe('Split Hero', () => {
       await nextFrame();
       expect(frame.getBoundingClientRect().top).to.be.closeTo(initial.top, 1);
       expect(frame.getBoundingClientRect().width).to.be.closeTo(initial.width, 1);
+    });
+
+    it('defers and batches observer notifications with resize events', async () => {
+      const observer = sinon.stub(window, 'ResizeObserver').returns({ observe() {} });
+      let measure;
+      try {
+        const block = await renderReveal(1440);
+        const notify = observer.firstCall.args[0];
+        measure = sinon.spy(block.querySelector('.split-hero-media-frame'), 'getBoundingClientRect');
+
+        for (let i = 0; i < 10; i += 1) notify();
+        window.dispatchEvent(new Event('resize'));
+        expect(measure.callCount).to.equal(0);
+        await nextFrame();
+        expect(measure.callCount).to.equal(1);
+
+        notify();
+        expect(measure.callCount).to.equal(1);
+        await nextFrame();
+        expect(measure.callCount).to.equal(2);
+      } finally {
+        measure?.restore();
+        observer.restore();
+      }
     });
 
     it('batches repeated resize events into one measurement per frame', async () => {
