@@ -579,7 +579,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
             + max(0px, (100vw - var(--sh-d-fit-width)) * var(--sh-d-next-wide-delay)));
           --sh-next-ramp: calc(var(--sh-d-shrink) * var(--sh-d-next-ramp));
           --sh-next-end: calc(var(--sh-next-start) + var(--sh-next-ramp));
-          --sh-next-offset: calc(var(--sh-next-start) + var(--sh-next-ramp) / 2);
+          --sh-end: calc(var(--sh-next-end) + 100svh);
         }
 
         .section.split-hero-reveal {
@@ -589,20 +589,19 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
           --sh-lock-ramp: calc(var(--sh-d-shrink) * var(--sh-d-lock-ramp));
           --sh-lock-end: calc(var(--sh-lock-start) + var(--sh-lock-ramp));
           --sh-top-gap: clamp(32px, calc((100svh - var(--sh-header-h) - var(--sh-row-h)) / 2), 128px);
-          --sh-end: calc(var(--sh-next-end) + 100svh);
 
-          padding-block-end: var(--sh-next-offset);
+          padding-block-end: 0;
 
           &:has(> .split-hero)::after {
-            display: none;
+            content: '';
+            display: block;
+            height: var(--sh-end);
           }
 
           > .split-hero.parallax-reveal {
             min-height: 0;
-            will-change: transform;
-            animation: sh-fix linear both;
-            animation-timeline: --split-hero;
-            animation-range: exit-crossing 0 exit-crossing var(--sh-end);
+            position: sticky;
+            inset-block-start: 0;
 
             .split-hero-content {
               box-sizing: border-box;
@@ -696,11 +695,6 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
     to { transform: translateY(var(--sh-drift)); }
   }
 
-  @keyframes sh-fix {
-    from { transform: translateY(0); }
-    to { transform: translateY(var(--sh-end)); }
-  }
-
   @keyframes sh-shrink {
     from { scale: 1; }
     to { scale: var(--sh-scale); }
@@ -727,8 +721,8 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
   }
 
   @keyframes sh-next-pin {
-    from { margin-block-start: calc(-1 * (var(--sh-next-offset) + var(--sh-d-overlap))); }
-    to { margin-block-start: calc(var(--sh-next-start) - var(--sh-next-offset) - var(--sh-d-overlap)); }
+    from { margin-block-start: calc(-1 * (var(--sh-end) + var(--sh-d-overlap))); }
+    to { margin-block-start: calc(var(--sh-next-start) - var(--sh-end) - var(--sh-d-overlap)); }
   }
 
   @keyframes sh-next-release {
