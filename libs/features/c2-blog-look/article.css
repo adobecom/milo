@@ -1,20 +1,58 @@
-main .blog-article-content .content > :is(p, ul, ol, blockquote, table) {
-  margin-block: 0 var(--s2a-spacing-lg);
+main {
+
+  --forge-blog-side-title-size: var(--s2a-typography-font-size-heading-6);
+
+  --forge-blog-side-title-leading: var(--s2a-typography-line-height-heading-6);
+
+  --forge-blog-summary-heading-size: var(--s2a-typography-font-size-heading-5);
+
+  --forge-blog-summary-heading-leading: var(--s2a-typography-line-height-heading-5);
+
+  --forge-blog-jump-link-padding: var(--s2a-spacing-sm);
+
+  --forge-blog-frame-space: var(--s2a-section-spacing-lg);
+
+  --forge-blog-page-margin-sm: var(--s2a-spacing-lg);
+
+  --forge-blog-paragraph-space: var(--s2a-spacing-lg);
+
+  --forge-blog-heading-space-h2: var(--s2a-spacing-2xl);
+
+  --forge-blog-heading-space-h3: var(--s2a-spacing-xl);
+
+  --forge-blog-heading-space-below: var(--s2a-spacing-md);
+
+  --forge-blog-end-spacing: var(--s2a-section-spacing-lg);
+
+  --forge-blog-card-radius: var(--s2a-border-radius-md);
+
+  --forge-blog-card-padding: var(--s2a-spacing-sm);
 }
 
-main .blog-article-content .content li + li {
+@media (width >= 1280px) {
+  main {
+    --forge-blog-heading-space-h2: var(--s2a-spacing-4xl);
+    --forge-blog-heading-space-h3: var(--s2a-spacing-3xl);
+  }
+}
+
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > :is(p, ul, ol, blockquote, table) {
+  margin-block: 0 var(--forge-blog-paragraph-space);
+}
+
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content li + li {
   margin-block-start: var(--s2a-spacing-xs);
 }
 
-main .blog-article-content .content > :is(h2, h3, h4, h5, h6) {
-  margin-block: var(--s2a-spacing-3xl) var(--s2a-spacing-md);
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > :is(h2, h3, h4, h5, h6) {
+  margin-block: var(--forge-blog-heading-space-h3) var(--forge-blog-heading-space-below);
 }
 
-main .blog-article-content .content > h2 {
-  margin-block-start: var(--s2a-spacing-4xl);
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > h2 {
+  margin-block-start: var(--forge-blog-heading-space-h2);
 }
 
-main .blog-article-content .content > :first-child {
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > :first-child {
   margin-block-start: 0;
 }
 
@@ -22,35 +60,51 @@ main .blog-article-content .container {
   padding-inline: 0;
 }
 
-main .blog-article-content .section > :not(.content) + .content > :first-child {
-  margin-block-start: var(--s2a-spacing-lg);
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) > :not(.content) + .content > :first-child,
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .section > :not(.content) + .content > :first-child {
+  margin-block-start: var(--forge-blog-paragraph-space);
 }
 
-main .blog-article-content .section > :not(.content) + .content > :is(h2, h3, h4, h5, h6):first-child {
-  margin-block-start: var(--s2a-spacing-3xl);
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) > :not(.content) + .content > :is(h2, h3, h4, h5, h6):first-child,
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .section > :not(.content) + .content > :is(h2, h3, h4, h5, h6):first-child {
+  margin-block-start: var(--forge-blog-heading-space-h3);
 }
 
-main .blog-article-content .content > h2 {
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > h2 {
   font-size: var(--s2a-typography-font-size-heading-3);
   letter-spacing: var(--s2a-typography-letter-spacing-heading-3);
 }
 
-main .blog-article-content .content > h3 {
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > h3 {
   font-size: var(--s2a-typography-font-size-heading-4);
   letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
 }
 
-main .blog-article-content .content > :is(h4, h5, h6) {
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > :is(h4, h5, h6) {
   font-size: var(--s2a-typography-font-size-heading-5);
   letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
 }
 
-main .blog-article-content .content > :is(h2, h3, h4, h5, h6) {
+main :is(.blog-article-content > .section, main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo)) .content > :is(h2, h3, h4, h5, h6) {
   line-height: 1.1;
 }
 
-main :is(.ai-summary, .blog-side-navigation, .blog-related-content) :is(h1, h2, h3, h4, h5, h6) {
-  letter-spacing: normal;
+main .blog-side-navigation > p,
+main .blog-related-content > h3 {
+  color: var(--s2a-color-content-heading);
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-heading);
+  font-size: var(--forge-blog-side-title-size);
+  line-height: var(--forge-blog-side-title-leading);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
+  text-transform: uppercase;
+}
+
+main .ai-summary :is(h1, h2, h3, h4, h5, h6) {
+  font-weight: var(--s2a-font-weight-heading);
+  font-size: var(--forge-blog-summary-heading-size);
+  line-height: var(--forge-blog-summary-heading-leading);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
 }
 
 main .aside :is(h1, h2, h3, h4, h5, h6) {
@@ -97,9 +151,50 @@ main .blog-divider-frame + .blog-article-layout {
   --blog-divider-rule-size: 1px;
 }
 
+@media (width >= 600px) {
+  main .blog-divider-frame,
+  main .blog-divider-frame + .blog-article-layout {
+    --blog-divider-gap: var(--forge-blog-frame-space);
+  }
+
+  main .blog-divider-frame::before {
+    inset-inline: max(0px, calc(var(--grid-margins-width) - var(--forge-blog-frame-space) - 2px));
+  }
+
+  main .blog-divider-frame + .blog-article-layout {
+    --blog-divider-inline-space: var(--forge-blog-frame-space);
+    column-gap: calc(2 * var(--forge-blog-frame-space) + 2px);
+  }
+
+  main .blog-divider-frame + .blog-article-layout > .blog-side-navigation,
+  main .blog-divider-frame + .blog-article-layout .ai-summary {
+    margin-block-start: 0;
+  }
+}
+
+@media (width < 600px) {
+  main {
+    --grid-container-width: calc(100% - 2 * var(--forge-blog-page-margin-sm));
+    --grid-margins-width: var(--forge-blog-page-margin-sm);
+  }
+
+  main .ai-summary {
+    width: var(--grid-container-width);
+  }
+
+  main .blog-related-content .consonant-Wrapper-inner.consonant-Wrapper-inner {
+    width: 100%;
+    margin: 0;
+  }
+}
+
 main > .blog-article-layout,
 main .blog-divider-frame + .blog-article-layout {
-  padding-block-end: var(--s2a-section-spacing-lg);
+  padding-block-end: var(--forge-blog-end-spacing);
+}
+
+main:not(:has(> .blog-article-layout)) > .blog-divider-frame ~ .section:not([hidden], [data-footer-promo], .footer-promo):has(> :not(.metadata, .section-metadata, .card-metadata)):not(:has(~ .section:not([hidden], [data-footer-promo], .footer-promo) > :not(.metadata, .section-metadata, .card-metadata))) {
+  padding-block-end: var(--forge-blog-end-spacing);
 }
 
 main .ai-summary {
@@ -121,6 +216,24 @@ main .blog-side-navigation .blog-side-navigation-toggle {
   border-radius: var(--s2a-border-radius-round);
 }
 
+main .blog-side-navigation.blog-side-navigation nav > ul > li > a {
+  padding: var(--forge-blog-jump-link-padding);
+}
+
+main .blog-side-navigation nav > ul > li > .blog-side-navigation-toggle {
+  align-self: flex-start;
+  font-size: inherit;
+  line-height: inherit;
+  margin-block-start: calc(var(--forge-blog-jump-link-padding) + (1lh - 32px) / 2);
+  margin-inline-end: var(--forge-blog-jump-link-padding);
+}
+
+@media (width < 600px) {
+  main .blog-side-navigation nav > ul > li {
+    padding-inline: calc(var(--forge-blog-page-margin-sm) - var(--forge-blog-jump-link-padding));
+  }
+}
+
 main .blog-side-navigation .blog-side-navigation-label,
 main .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) .blog-side-navigation-label {
   -webkit-line-clamp: none;
@@ -129,8 +242,12 @@ main .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria
 
 main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
   border-color: var(--s2a-color-border-subtle);
-  border-radius: var(--s2a-border-radius-sm);
+  border-radius: var(--forge-blog-card-radius);
   background-color: var(--s2a-color-background-default);
+}
+
+main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-content {
+  padding: var(--forge-blog-card-padding);
 }
 
 main .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
