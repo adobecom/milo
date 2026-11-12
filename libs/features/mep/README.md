@@ -33,6 +33,10 @@ explicit boundary information without generating invalid Instant links.
 MMM-2 keeps the manifest link, experience selector and expand control on one row,
 with expanded activity details spanning the full width below.
 Manifest order numbers are plain text; only the filenames are linked.
+Each expanded page has its own **Preview** button inside its Options panel,
+below that page's settings. The button uses only that page's selected manifests
+and preview settings, and stays within the panel rather than floating at the
+document bottom.
 Scheduled manifests reuse the MEP button's status dot/label, start/end date and
 time, elapsed progress bar and Instant link. This presentation is shared by the
 live overlay and both manifest managers, with light/dark manager colors.

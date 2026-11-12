@@ -495,6 +495,97 @@ describe('mmm-2', () => {
     expect(document.querySelector('.mmm2-page-detail .mep-popup')).to.exist;
   });
 
+  it('keeps independent Preview buttons within each expanded page at every breakpoint', async () => {
+    const pages = getPagesData.result.slice(0, 2);
+    const detail = (page) => ({
+      page: { ...getPageData.page, ...page },
+      activities: [{
+        ...getPageData.activities[0],
+        url: `https://www.adobe.com/preview-${page.pageId}.json`,
+        pathname: `/preview-${page.pageId}.json`,
+        variantNames: 'all||test',
+        selectedVariantName: 'all',
+      }],
+    });
+    setRoutedFetch({
+      '/get-pages': jsonResponse({ ...getPagesData, totalRecords: 2, result: pages }),
+      [`/get-page?id=${pages[0].pageId}`]: jsonResponse(detail(pages[0])),
+      [`/get-page?id=${pages[1].pageId}`]: jsonResponse(detail(pages[1])),
+    });
+    const style = document.createElement('style');
+    style.textContent = (await Promise.all([
+      readFile({ path: '../../../libs/features/mep/mep-next/mep-next.css' }),
+      readFile({ path: '../../../libs/blocks/mmm-2/mmm-2.css' }),
+    ])).join('\n');
+    document.head.append(style);
+    try {
+      const block = document.querySelector('.mmm-2');
+      const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
+      await module.default(block);
+      await waitFor(() => block.querySelectorAll('.mmm2-page-trigger').length === 2);
+      block.querySelectorAll('.mmm2-page-trigger').forEach((trigger) => trigger.click());
+      await waitFor(() => block.querySelectorAll('.mep-popup-footer a').length === 2);
+      const items = [...block.querySelectorAll('.mmm2-page-item')];
+      const previews = items.map((item) => item.querySelector('.mep-popup-footer a'));
+      previews.forEach((preview, index) => {
+        expect(preview.getAttribute('target')).to.equal('_blank');
+        expect(preview.getAttribute('rel')).to.equal('noopener');
+        expect(preview.closest('.mmm2-page-item')).to.equal(items[index]);
+        const previewUrl = new URL(preview.href);
+        expect(previewUrl.origin + previewUrl.pathname).to.equal(pages[index].url);
+        expect(new URL(preview.href).searchParams.get('mep'))
+          .to.equal(`/preview-${pages[index].pageId}.json--all`);
+      });
+      for (const width of [1440, 768, 375]) {
+        await setViewport({ width, height: 1000 });
+        items.forEach((item) => {
+          const panel = item.querySelector('.mmm2-page-detail');
+          const footer = item.querySelector('.mep-popup-footer');
+          const footerRect = footer.getBoundingClientRect();
+          const panelRect = panel.getBoundingClientRect();
+          const buttonRect = footer.querySelector('a').getBoundingClientRect();
+          expect(getComputedStyle(footer).position, `footer in normal flow at ${width}px`)
+            .to.equal('static');
+          expect(footerRect.top).to.be.at.least(panelRect.top);
+          expect(footerRect.bottom).to.be.at.most(panelRect.bottom + 1);
+          expect(buttonRect.left).to.be.at.least(panelRect.left);
+          expect(buttonRect.right).to.be.at.most(panelRect.right + 1);
+          expect(buttonRect.bottom).to.be.at.most(panelRect.bottom + 1);
+          if (item.nextElementSibling) {
+            expect(item.nextElementSibling.getBoundingClientRect().top)
+              .to.be.at.least(footerRect.bottom - 1);
+          }
+        });
+      }
+      const secondHref = previews[1].href;
+      const select = items[0].querySelector('.mep-manifest-variants');
+      select.value = 'test';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      const highlight = items[0].querySelector(`input#mepHighlightCheckbox-${pages[0].pageId}`);
+      highlight.checked = true;
+      highlight.dispatchEvent(new Event('change', { bubbles: true }));
+      const params = new URL(previews[0].href).searchParams;
+      expect(params.get('mep')).to.equal(`/preview-${pages[0].pageId}.json--test`);
+      expect(params.get('mepHighlight')).to.equal('true');
+      expect(previews[1].href).to.equal(secondHref);
+      const firstHref = previews[0].href;
+      items[0].querySelector('.mmm2-page-trigger').click();
+      await waitFor(() => !items[0].querySelector('.mmm2-page-detail'));
+      expect(block.querySelectorAll('.mep-popup-footer a')).to.have.length(1);
+      items[0].querySelector('.mmm2-page-trigger').click();
+      await waitFor(() => items[0].querySelector('.mep-popup-footer a'));
+      const restored = items[0].querySelector('.mep-popup-footer a');
+      expect(restored.href).to.equal(firstHref);
+      items[0].querySelectorAll('.mep-tab')[1].click();
+      expect(restored.getClientRects()).to.have.length(0);
+      items[0].querySelectorAll('.mep-tab')[0].click();
+      expect(restored.getClientRects().length).to.be.greaterThan(0);
+    } finally {
+      style.remove();
+      await setViewport({ width: 800, height: 600 });
+    }
+  });
+
   it('groups matching consent activities first while keeping other manifests selectable', async () => {
     localStorage.setItem(LOCAL_STORAGE_KEYS.search, JSON.stringify({ manifestConsentType: 'personalized offer' }));
     const activities = [
