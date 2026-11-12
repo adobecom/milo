@@ -29,7 +29,7 @@ export default {
   ee: { ietf: 'et-EE', tk: 'qxw8hzm.css' },
   eg_ar: { ietf: 'ar', tk: 'qxw8hzm.css', dir: 'rtl', base: 'ara' },
   eg_en: { ietf: 'en-GB', tk: 'hah7vzn.css' },
-  el: { ietf: 'el', tk: 'fnx0rsr.css' },
+  el: { ietf: 'el', tk: 'qxw8hzm.css' },
   es: { ietf: 'es-ES', tk: 'hah7vzn.css' },
   fi: { ietf: 'fi-FI', tk: 'qxw8hzm.css' },
   fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
