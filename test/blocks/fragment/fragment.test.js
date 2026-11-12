@@ -196,6 +196,27 @@ describe('Fragments', () => {
     expect(section.querySelector('img[src^="http://localhost:2000/test/blocks/fragment/mocks/fragments/media_15"]')).to.exist;
   });
 
+  describe('Multi-section inline fragments', () => {
+    const loadInline = async (name) => {
+      const href = `/test/blocks/fragment/mocks/fragments/${name}#_inline`;
+      const area = createTag('div', null, `<div><p><a href="${href}">${href}</a></p></div>`);
+      document.body.append(area);
+      window.lana.log.resetHistory();
+      await loadArea(area);
+      area.remove();
+    };
+
+    it('warns when an #_inline fragment has more than one content section', async () => {
+      await loadInline('inline-multi-section');
+      expect(window.lana.log.calledWithMatch('Inline fragment')).to.be.true;
+    });
+
+    it('does not warn when the extra sections only hold metadata', async () => {
+      await loadInline('inline-metadata-section');
+      expect(window.lana.log.calledWithMatch('Inline fragment')).to.be.false;
+    });
+  });
+
   describe('Fragment media dedupe', () => {
     const query = '?width=750&format=webply&optimize=medium';
     const fragPath = '/cc-shared/fragments/some/frag';
