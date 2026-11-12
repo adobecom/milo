@@ -899,6 +899,51 @@ describe('setPreviewButton', () => {
     expect(err).to.be.undefined;
   });
 
+  it('updates both preview actions with every selected manifest and setting', async () => {
+    drawer.querySelector('.mep-footer').insertAdjacentHTML(
+      'beforeend',
+      '<a class="con-button" target="_blank" rel="noopener">Preview in new tab</a>',
+    );
+    drawer.insertAdjacentHTML('beforeend', `
+      <input type="text" class="mep-load-manifest" value="/extra.json">
+      <select class="mep-manifest-variants">
+        <option value="control" data-manifest="/first.json" selected>Control</option>
+        <option value="test" data-manifest="/first.json">Test</option>
+      </select>
+      <select class="mep-manifest-variants">
+        <option value="test" data-manifest="/second.json" selected>Test</option>
+      </select>
+      <select class="mep-manifest-variants">
+        <option value="" data-manifest="/excluded.json" selected>None</option>
+      </select>
+      <select class="mep-spoof-geo"><option value="de" selected>Germany</option></select>
+      <input type="checkbox" id="toggle-mep" checked>
+      <input type="checkbox" id="toggle-caas" checked>
+      <input type="checkbox" id="toggle-mas" checked>
+      <input type="checkbox" id="toggle-other-fragments" checked>
+      <input type="checkbox" id="toggle-preview-link" checked>
+      <input type="checkbox" id="toggle-lcp-img-check" checked>
+    `);
+    await setPreviewButton();
+    const links = [...drawer.querySelectorAll('.mep-footer a.con-button')];
+    expect(links[1].href).to.equal(links[0].href);
+    const params = new URL(links[1].href).searchParams;
+    expect(params.get('mep')).to.equal('/extra.json---/first.json--control---/second.json--test');
+    expect(params.get('akamaiLocale')).to.equal('de');
+    expect(params.get('mboxOverride.browserIp')).to.equal('2.247.255.255');
+    ['mepHighlight', 'mepCaasHighlight', 'mepMasHighlight', 'otherHighlight']
+      .forEach((key) => expect(params.get(key)).to.equal('true'));
+    expect(params.get('mepButton')).to.equal('off');
+    expect(params.has('meplcp')).to.be.true;
+    drawer.querySelector('.mep-manifest-variants').value = 'test';
+    drawer.querySelector('#toggle-preview-link').checked = false;
+    await setPreviewButton();
+    expect(links[1].href).to.equal(links[0].href);
+    const updated = new URL(links[1].href).searchParams;
+    expect(updated.get('mep')).to.include('/first.json--test');
+    expect(updated.has('mepButton')).to.be.false;
+  });
+
   it('includes akamaiLocale in href when spoof geo select has a non-empty value', async () => {
     const select = document.createElement('select');
     select.className = 'mep-spoof-geo';
