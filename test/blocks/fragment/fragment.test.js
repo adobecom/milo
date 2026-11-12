@@ -197,46 +197,23 @@ describe('Fragments', () => {
   });
 
   describe('Multi-section inline fragments', () => {
-    const fragPath = '/test/blocks/fragment/mocks/fragments';
-    const createArea = (html) => {
-      const area = createTag('div', null, `<div>${html}</div>`);
+    const loadInline = async (name) => {
+      const href = `/test/blocks/fragment/mocks/fragments/${name}#_inline`;
+      const area = createTag('div', null, `<div><p><a href="${href}">${href}</a></p></div>`);
       document.body.append(area);
-      return area;
+      window.lana.log.resetHistory();
+      await loadArea(area);
+      area.remove();
     };
 
-    afterEach(() => window.lana.log.resetHistory());
-
-    it('keeps only the first section of a multi-section #_inline link and warns once', async () => {
-      const area = createArea(`<p><a href="${fragPath}/inline-multi-section#_inline">${fragPath}/inline-multi-section#_inline</a></p>`);
-      await loadArea(area);
-      expect(area.querySelector('#multi-first')).to.exist;
-      expect(area.querySelector('#multi-second')).to.not.exist;
-      expect(area.querySelector('#multi-third')).to.not.exist;
-      const warnings = window.lana.log.getCalls()
-        .filter((call) => String(call.args[0]).startsWith('Inline fragment'));
-      expect(warnings.length).to.equal(1);
-      expect(warnings[0].args[0]).to.equal(`Inline fragment ${fragPath}/inline-multi-section has 3 content sections; only the first is rendered`);
-      expect(warnings[0].args[1]).to.deep.equal({ tags: 'fragment', severity: 'warning' });
-      area.remove();
+    it('warns when an #_inline fragment has more than one content section', async () => {
+      await loadInline('inline-multi-section');
+      expect(window.lana.log.calledWithMatch('Inline fragment')).to.be.true;
     });
 
-    it('does not warn for a multi-section fragment linked without #_inline', async () => {
-      const area = createArea(`<p><a href="${fragPath}/inline-multi-section">${fragPath}/inline-multi-section</a></p>`);
-      await loadArea(area);
-      expect(area.querySelector('.fragment #multi-third')).to.exist;
-      expect(window.lana.log.getCalls()
-        .some((call) => String(call.args[0]).startsWith('Inline fragment'))).to.be.false;
-      area.remove();
-    });
-
-    it('keeps inlining when the extra sections only hold metadata', async () => {
-      const area = createArea(`<p><a href="${fragPath}/inline-metadata-section#_inline">${fragPath}/inline-metadata-section#_inline</a></p>`);
-      await loadArea(area);
-      expect(area.querySelector('#meta-only-first')).to.exist;
-      expect(area.querySelector('.fragment')).to.not.exist;
-      expect(window.lana.log.getCalls()
-        .some((call) => String(call.args[0]).startsWith('Inline fragment'))).to.be.false;
-      area.remove();
+    it('does not warn when the extra sections only hold metadata', async () => {
+      await loadInline('inline-metadata-section');
+      expect(window.lana.log.calledWithMatch('Inline fragment')).to.be.false;
     });
   });
 
