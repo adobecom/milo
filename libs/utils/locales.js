@@ -95,6 +95,6 @@ export default {
   za: { ietf: 'en-GB', tk: 'hah7vzn.css' },
   'zh-hant': { ietf: 'zh-Hant', tk: 'jay0ecd' },
   cis_en: { ietf: 'en', tk: 'rks2kng.css' },
-  cis_ru: { ietf: 'ru', tk: 'qxw8hzm.css' },
+  cis_ru: { ietf: 'ru', tk: 'qxw8hzm.css', base: 'ru' },
   sea: { ietf: 'en', tk: 'hah7vzn.css' },
 };
