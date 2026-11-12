@@ -1,6 +1,63 @@
-import { getMepEnablement, isSignedOut } from '../utils/utils.js';
-
 /* eslint-disable no-underscore-dangle */
+// Copies of the utils.js v2 Target gates: the head path runs before utils.js. Parity-tested.
+const PAGE_PARAMS = new URL(window.location.href).searchParams;
+const TARGET_TIMEOUT_MS = 4000;
+
+const getMetadata = (name) => document.head.querySelector(`meta[name="${name}"]`)?.content;
+
+const getMepValue = (val) => {
+  const valMap = { on: true, off: false, postLCP: 'postlcp' };
+  const finalVal = val?.toLowerCase().trim();
+  if (finalVal in valMap) return valMap[finalVal];
+  return finalVal;
+};
+
+const getMepEnablement = (key) => {
+  const paramValue = PAGE_PARAMS.get(key);
+  if (paramValue) return getMepValue(paramValue);
+  const mdValue = getMetadata(key);
+  return mdValue ? getMepValue(mdValue) : false;
+};
+
+const getServerTiming = () => window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming;
+
+function isSignedOut() {
+  const serverTiming = getServerTiming()?.reduce(
+    (acc, { name, description }) => ({ ...acc, [name]: description }),
+    {},
+  );
+  return !Object.keys(serverTiming || {}).length || serverTiming?.sis === '0';
+}
+
+export function shouldStartTargetV2() {
+  const { mep, martech } = Object.fromEntries(PAGE_PARAMS);
+  if (mep === 'off' || martech === 'off') return false;
+  return !!(getMepEnablement('target') || getMepEnablement('xlg'))
+    && !!getMepEnablement('personalization-v2') && isSignedOut();
+}
+
+export const getTargetTimeout = () => parseInt(PAGE_PARAMS.get('target-timeout'), 10)
+  || parseInt(getMetadata('target-timeout'), 10)
+  || TARGET_TIMEOUT_MS;
+
+export function setCountry() {
+  const country = getServerTiming()?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+  if (!country) return;
+  sessionStorage.setItem('akamai', country);
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
+}
+
+// Same result as getEnv({}).name in utils.js, which only looks at ?env and the host.
+export function getEnvName() {
+  const query = PAGE_PARAMS.get('env');
+  if (query) return ['stage', 'prod', 'local'].includes(query) ? query : undefined;
+  const { host } = window.location;
+  if (host.includes('localhost')) return 'local';
+  if (['aem.page', 'aem.live', 'stage.adobe', 'corp.adobe', 'graybox.adobe', 'aem.reviews']
+    .some((h) => host.includes(h))) return 'stage';
+  return 'prod';
+}
+
 export const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
@@ -883,6 +940,48 @@ export const loadAnalyticsAndInteractionData = async (
     return {};
   }
 };
+
+// Singleton so the head and utils.js share one interact call (it is also the page view).
+export function startTargetInteraction({ locale, env, calculatedTimeout, source = 'utils' }) {
+  window.milo ||= {};
+  const existing = window.milo.targetInteraction;
+  if (existing) {
+    if (existing.source === 'head' && locale
+      && getLanguageCode(existing.locale) !== getLanguageCode(locale)) {
+      window.lana?.log(`Early target locale mismatch: ${getLanguageCode(existing.locale)} vs ${getLanguageCode(locale)}`, { tags: 'target-early' });
+    }
+    return existing.promise;
+  }
+
+  const promise = (async () => {
+    const now = performance.now();
+    performance.mark('interaction-start');
+    const data = await loadAnalyticsAndInteractionData({ locale, env, calculatedTimeout });
+    performance.mark('interaction-end');
+    performance.measure('total-time', 'interaction-start', 'interaction-end');
+    const respTime = performance.getEntriesByName('total-time')[0];
+    return { targetInteractionData: data, respTime, respStartTime: now };
+  })();
+  window.milo.targetInteraction = { promise, locale, env, calculatedTimeout, source };
+  return promise;
+}
+
+// Unmapped locale-shaped prefixes are left to utils.js so adobeLocale can't differ from config.
+function getHeadLocale() {
+  const segment = window.location.pathname.split('/')[1] || '';
+  if (segment && Object.hasOwn(LOCALE_MAPPINGS, segment)) return { prefix: `/${segment}` };
+  if (/^[a-z]{2}(_[a-z]{2,4})?$/i.test(segment)) return null;
+  return { prefix: '' };
+}
+
+// Consumer head.html entry point; returns null when utils.js would not start a v2 call.
+export function startEarlyTargetInteraction() {
+  if (!shouldStartTargetV2()) return null;
+  const locale = getHeadLocale();
+  if (!locale) return null;
+  setCountry();
+  return startTargetInteraction({ locale, env: getEnvName(), calculatedTimeout: getTargetTimeout(), source: 'head' });
+}
 
 export function getMepConsentConfig() {
   const cookies = getAllCookies();

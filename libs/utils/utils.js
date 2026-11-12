@@ -409,7 +409,7 @@ export function isAupSelectOn() {
   return getAupSelectValue() === 'on';
 }
 
-const getTargetTimeout = () => parseInt(new URLSearchParams(window.location.search).get('target-timeout'), 10)
+export const getTargetTimeout = () => parseInt(new URLSearchParams(window.location.search).get('target-timeout'), 10)
   || parseInt(getMetadata('target-timeout'), 10)
   || TARGET_TIMEOUT_MS;
 
@@ -1096,7 +1096,7 @@ function localizeLinkCore(
   }
 }
 
-function setCountry() {
+export function setCountry() {
   const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
     ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
   if (!country) return;
@@ -2369,6 +2369,13 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+// Mirrored by shouldStartTargetV2 in martech/helpers.js for the consumer head path.
+export function shouldStartTargetV2() {
+  const { mep, martech } = Object.fromEntries(PAGE_URL.searchParams);
+  if (mep === 'off' || martech === 'off') return false;
+  return !!(getMepEnablement('target') || getMepEnablement('xlg')) && enablePersonalizationV2();
+}
+
 export function loadMepAddons() {
   const mepAddons = ['lob'];
   const promises = {};
@@ -2607,23 +2614,15 @@ async function checkForPageMods() {
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
   const enablePersV2 = enablePersonalizationV2();
-  if ((target || xlg) && enablePersV2) {
+  if (shouldStartTargetV2()) {
     calculatedTimeout = getTargetTimeout();
 
     const { locale } = getConfig();
-    targetInteractionPromise = (async () => {
-      const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
-      const now = performance.now();
-      performance.mark('interaction-start');
-      const data = await loadAnalyticsAndInteractionData(
+    // Reuses the call already started by a consumer head (startEarlyTargetInteraction).
+    targetInteractionPromise = import('../martech/helpers.js')
+      .then(({ startTargetInteraction }) => startTargetInteraction(
         { locale, env: getEnv({})?.name, calculatedTimeout },
-      );
-      performance.mark('interaction-end');
-      performance.measure('total-time', 'interaction-start', 'interaction-end');
-      const respTime = performance.getEntriesByName('total-time')[0];
-
-      return { targetInteractionData: data, respTime, respStartTime: now };
-    })();
+      ));
   } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
   else if ((pzn || pznroc) && martech !== 'off') {
     loadIms()
