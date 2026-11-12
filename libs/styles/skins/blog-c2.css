@@ -1,0 +1,173 @@
+/* The C2 look for blog articles on the C1 blog blocks. Opt in with metadata, per page or per folder
+   through the metadata sheet: `skin: blog-c2`, and `footer-foundation: c2` for the C2 footer.
+   S2A tokens come from the generated token file; never redefine an --s2a-* value here. */
+@import url('../../c2/styles/s2a-tokens.css');
+
+:root:has(meta[name="skin"][content="blog-c2"]) {
+  main {
+    --text-color: var(--s2a-color-content-default);
+    --link-color: var(--s2a-color-content-default);
+    --link-hover-color: var(--s2a-color-content-default);
+  }
+
+  /* blog-header */
+  .blog-header {
+    color: var(--s2a-color-content-default);
+  }
+
+  .blog-header-title h1 {
+    color: var(--s2a-color-content-heading);
+    font-weight: var(--s2a-font-weight-heading);
+  }
+
+  .blog-progress-bar {
+    background: var(--s2a-color-blue-900);
+  }
+
+  .blog-divider-frame,
+  .blog-article-layout {
+    --blog-divider-dots: var(--s2a-color-border-subtle) 0 2px;
+    --blog-divider-rule-image: linear-gradient(var(--s2a-color-border-subtle), var(--s2a-color-border-subtle));
+    --blog-divider-rule-size: 1px;
+  }
+
+  /* side navigation and related content */
+  .blog-side-navigation > p,
+  .blog-related-content > h3 {
+    color: var(--s2a-color-content-heading);
+    font-weight: var(--s2a-font-weight-heading);
+    font-size: var(--s2a-typography-font-size-heading-6);
+    line-height: var(--s2a-typography-line-height-heading-6);
+    letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
+    text-transform: uppercase;
+  }
+
+  .blog-side-navigation-toggle {
+    border-radius: var(--s2a-border-radius-round);
+  }
+
+  /* stylelint-disable-next-line selector-class-pattern */
+  .blog-related-content .consonant-Card {
+    border-color: var(--s2a-color-border-subtle);
+    border-radius: var(--s2a-border-radius-md);
+    background-color: var(--s2a-color-background-default);
+  }
+
+  /* ai-summary: its image is the page's LCP image, so show it at every width rather than
+     downloading it hidden on mobile */
+  .ai-summary {
+    border: 0;
+    border-radius: var(--s2a-border-radius-md);
+    background-color: var(--s2a-color-background-subtle);
+
+    .ai-summary-image {
+      display: block;
+    }
+
+    :is(h1, h2, h3, h4, h5, h6) {
+      font-weight: var(--s2a-font-weight-heading);
+      font-size: var(--s2a-typography-font-size-heading-5);
+      line-height: var(--s2a-typography-line-height-heading-5);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+    }
+  }
+
+  /* accordion and quote */
+  .accordion .accordion-heading {
+    font-size: var(--s2a-typography-font-size-heading-5);
+    line-height: var(--s2a-typography-line-height-heading-5);
+    letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+  }
+
+  .quote .quote-copy {
+    color: var(--s2a-color-content-default);
+    font-weight: var(--s2a-font-weight-heading);
+    font-style: normal;
+    font-size: var(--s2a-typography-font-size-heading-4);
+    line-height: var(--s2a-typography-line-height-heading-4);
+  }
+
+  .quote figcaption cite {
+    color: var(--s2a-color-content-subtle);
+    font-style: normal;
+  }
+
+  /* article copy */
+  main .content {
+    > :is(p, ul, ol, blockquote, table) {
+      margin-block: 0 var(--s2a-spacing-lg);
+    }
+
+    li + li {
+      margin-block-start: var(--s2a-spacing-xs);
+    }
+
+    > :is(h2, h3, h4, h5, h6) {
+      margin-block: var(--s2a-spacing-xl) var(--s2a-spacing-md);
+      color: var(--s2a-color-content-heading);
+      font-weight: var(--s2a-font-weight-heading);
+    }
+
+    > h2 {
+      margin-block-start: var(--s2a-spacing-2xl);
+      font-size: var(--s2a-typography-font-size-heading-3);
+      line-height: var(--s2a-typography-line-height-heading-3);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-3);
+    }
+
+    > h3 {
+      font-size: var(--s2a-typography-font-size-heading-4);
+      line-height: var(--s2a-typography-line-height-heading-4);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
+    }
+
+    > :is(h4, h5, h6) {
+      font-size: var(--s2a-typography-font-size-heading-5);
+      line-height: var(--s2a-typography-line-height-heading-5);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+    }
+
+    > :first-child {
+      margin-block-start: 0;
+    }
+  }
+
+  /* motion: CSS scroll-driven reveal, no script */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      .blog-article-content .content > *,
+      main > .section ~ .section {
+        animation: blog-c2-reveal linear both;
+        /* stylelint-disable property-no-unknown */
+        animation-timeline: view();
+        animation-range: entry 0% entry 40%;
+        /* stylelint-enable property-no-unknown */
+      }
+    }
+  }
+
+  @media (width >= 768px) {
+    .blog-side-navigation nav > ul {
+      border-color: var(--s2a-color-border-subtle);
+      border-radius: var(--s2a-border-radius-md);
+      box-shadow: none;
+    }
+  }
+
+  @media (width >= 1280px) {
+    main .content > h2 {
+      margin-block-start: var(--s2a-spacing-4xl);
+    }
+
+    main .content > h3 {
+      margin-block-start: var(--s2a-spacing-3xl);
+    }
+  }
+}
+
+@keyframes blog-c2-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
