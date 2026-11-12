@@ -984,7 +984,7 @@ export async function getMepPopup(mepConfig, { otherActivities } = {}) {
   // Build Options : Footer
   function buildOptionsFooter() {
     const mepFooterHTML = `
-      <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" target="_blank" active>
+      <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview this page with selected manifests and settings" target="_blank" rel="noopener" active>
         Preview
       </a>`;
 
