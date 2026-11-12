@@ -14,15 +14,16 @@ const TITLES = {
   fragments: 'Fragment placement',
 };
 
-// A test word at the start or end of a segment, or "test" followed by a number.
-// Matching the word anywhere flagged real content such as "security-testing-report".
-const TEMP_WORDS = /^(test|tests|testing|tmp|temp)\d*(-|$)|-(test|tests|testing|tmp|temp)$|(^|-)test\d*-\d|(^|-)test-page(-|$)|(^|-)form-test(-|$)/;
+// A test word at the start of a segment, "test"/"tmp"/"temp" at the end, or "test" followed
+// by a number. Matching anywhere flagged real content such as "security-testing-report" and
+// "the-power-of-ab-testing", so "-testing"/"-tests" endings are not matched.
+const TEMP_WORDS = /^(test|tests|testing|tmp|temp)\d*(-|$)|-(test|tmp|temp)$|(^|-)test\d*-\d|(^|-)test-page(-|$)|(^|-)form-test(-|$)/;
 const VALID_SEGMENT = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const EXTENSION = /\.(plain\.html|html|json)$/;
 
 const count = (n, noun) => `${n} ${noun}${n === 1 ? '' : 's'}`;
 
-export const result = (key, status, description, details = {}) => ({
+const result = (key, status, description, details = {}) => ({
   id: TAXONOMY_IDS[key],
   title: TITLES[key],
   status,
@@ -92,22 +93,21 @@ export function checkTemporaryFolders(segments = []) {
 }
 
 // Fragments can come from any locale (MEP, lingo), so drop a leading locale key.
-const stripLocale = (pathname, localeKeys) => {
-  const [first] = toSegments(pathname);
-  return localeKeys.includes(first) ? `/${toSegments(pathname).slice(1).join('/')}` : pathname;
+const fragmentSegments = (pathname, localeKeys) => {
+  const segments = toSegments(pathname);
+  if (localeKeys.includes(segments[0])) segments.shift();
+  return segments;
 };
 
-// Each fragment is a pathname, or { path, pathname } when the displayed path
-// (e.g. one on another origin) differs from the one to check.
+// `path` is what the panel shows (it keeps another site's origin), `pathname` is what gets checked.
 export function checkFragmentPlacement(fragments = [], localeKeys = []) {
   const items = fragments
-    .map((fragment) => {
-      const { path, pathname } = typeof fragment === 'string'
-        ? { path: fragment, pathname: fragment }
-        : fragment;
-      const segments = toSegments(stripLocale(pathname, localeKeys));
+    .map(({ path, pathname }) => {
+      const segments = fragmentSegments(pathname, localeKeys);
+      // A trailing slash means every segment is a folder.
+      const folders = pathname.endsWith('/') ? segments : segments.slice(0, -1);
       const reasons = [];
-      if (!segments.slice(0, -1).includes('fragments')) reasons.push('outside-fragments-folder');
+      if (!folders.includes('fragments')) reasons.push('outside-fragments-folder');
       if (segments.some((segment) => getSegmentIssues(segment).length)) reasons.push('naming');
       return { path, reasons };
     })

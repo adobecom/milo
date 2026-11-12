@@ -12,6 +12,8 @@ const {
   runChecks,
 } = await import('../../../../libs/blocks/preflight/checks/taxonomy.js');
 
+const frags = (...paths) => paths.map((path) => ({ path, pathname: path }));
+
 describe('preflight taxonomy checks', () => {
   describe('toSegments', () => {
     it('strips locale prefix, extension, query, hash and trailing index', () => {
@@ -85,7 +87,6 @@ describe('preflight taxonomy checks', () => {
         'tmp',
         'temp',
         'test',
-        'qa-bacom-roadshow-testing',
         'test2-roadshow',
         'form-test-3-prod',
         'fred-test',
@@ -109,6 +110,9 @@ describe('preflight taxonomy checks', () => {
         'ab-test-segmentation',
         'what-to-test-with-your-digital-ads-checklist',
         'project-test-kitchen',
+        'the-power-of-ab-testing',
+        'multivariate-testing',
+        'usability-tests',
       ].forEach((segment) => {
         expect(checkTemporaryFolders([segment]).status, segment).to.equal('pass');
       });
@@ -129,11 +133,12 @@ describe('preflight taxonomy checks', () => {
     });
 
     it('passes fragments inside any fragments folder', () => {
-      const res = checkFragmentPlacement([
+      const res = checkFragmentPlacement(frags(
         '/fragments/products/acrobat/cta-banner',
         '/cc-shared/fragments/promos/black-friday',
         '/de/fragments/products/cards/learning-manager',
-      ]);
+        '/foo/fragments/',
+      ));
       expect(res.status).to.equal('pass');
       expect(res.description).to.equal('Fragments are stored in a fragments folder.');
     });
@@ -146,7 +151,7 @@ describe('preflight taxonomy checks', () => {
     });
 
     it('flags fragments outside a fragments folder and badly named fragments', () => {
-      const res = checkFragmentPlacement(['/misc/cta-banner', '/fragments/CTA_Banner', '/fragments']);
+      const res = checkFragmentPlacement(frags('/misc/cta-banner', '/fragments/CTA_Banner', '/fragments'));
       expect(res.status).to.equal('fail');
       expect(res.details.items).to.deep.equal([
         { path: '/misc/cta-banner', reasons: ['outside-fragments-folder'] },

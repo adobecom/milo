@@ -60,13 +60,14 @@ const listTaxonomy = ({ items = [] }) => items.map((item) => {
   if (typeof item === 'string') return html`<li><code>${item}</code></li>`;
   if (item.segment) {
     const reasons = item.issues.map((issue) => TAXONOMY_REASONS[issue]).join(', ');
-    return html`<li><code>${item.segment}</code> (${reasons}), try <code>${item.suggestion}</code></li>`;
+    const fix = item.suggestion && html`, try <code>${item.suggestion}</code>`;
+    return html`<li><code>${item.segment}</code> (${reasons})${fix}</li>`;
   }
   const reasons = item.reasons.map((reason) => TAXONOMY_REASONS[reason]).join(', ');
   return html`<li><a href=${item.path} target=_blank>${item.path}</a> (${reasons})</li>`;
 });
 
-export function getTaxonomyResults() {
+function getTaxonomyResults() {
   taxonomyResults.value = runTaxonomyChecks({ area: document }).map((res) => ({
     // Advisory only: a failing taxonomy check is a warning, never a red error.
     icon: res.status === 'fail' ? 'orange' : STATUS_TO_ICON_MAP[res.status] || 'orange',
