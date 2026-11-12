@@ -29,6 +29,14 @@ function decorateStandaloneLink(foreground) {
   link.classList.add('standalone-link', 'label');
 }
 
+// Last non-empty cell: the media sits on the right whether row 2 is merged or not,
+// and viewport inheritance can put it into the first cell of an unmerged row
+function getMediaCell(row) {
+  const cells = [...row.children];
+  return cells.reverse().find((cell) => cell.children.length || cell.textContent.trim())
+    ?? row.lastElementChild;
+}
+
 function createBackground(cell) {
   if (!cell) return null;
   const background = createTag('div', { class: 'background' });
@@ -56,7 +64,7 @@ function addOrderListeners(el) {
 function decorate(block, el) {
   const [firstRow, secondRow] = block.children;
   const [foreground, assetCell] = firstRow?.children ?? [];
-  const media = secondRow ? secondRow.firstElementChild : assetCell;
+  const media = secondRow ? getMediaCell(secondRow) : assetCell;
   const backgroundCell = secondRow && assetCell && isColorCell(assetCell) ? assetCell : null;
 
   if (foreground) {
@@ -77,5 +85,6 @@ function decorate(block, el) {
 
 export default function init(el) {
   decorateViewportContent(el, decorate);
+  orderContent(el);
   addOrderListeners(el);
 }

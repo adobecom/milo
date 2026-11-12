@@ -100,6 +100,26 @@ describe('aside-c2', () => {
     expect(block.querySelector('.background').style.backgroundColor).to.equal('rgb(243, 243, 243)');
   });
 
+  it('takes the media from the last cell of an unmerged second row', () => {
+    const block = getBlock('unmerged-background');
+    expect(childClasses(block)).to.deep.equal(['foreground', 'media', 'background']);
+    expect(block.querySelector('.media picture')).to.exist;
+  });
+
+  it('keeps media inherited from a merged second row into an unmerged one', () => {
+    const block = getBlock('viewport-inherited-media');
+    expect(block.querySelector('h2').textContent).to.equal('Desktop heading');
+    expect(childClasses(block)).to.deep.equal(['foreground', 'media', 'background']);
+    expect(block.querySelector('.media picture')).to.exist;
+  });
+
+  it('puts the media first in the DOM on load for a per-viewport media-first variant', () => {
+    const block = getBlock('viewport-media-first');
+    expect(block.classList.contains('media-first')).to.be.true;
+    expect(block.querySelector('h2').textContent).to.equal('Desktop heading');
+    expect(isMediaFirstInDom(block)).to.be.true;
+  });
+
   it('ignores a background cell that is not a valid color', () => {
     const block = getBlock('injected-color');
     expect(block.querySelector('.background')).to.not.exist;
