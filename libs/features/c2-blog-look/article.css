@@ -1,31 +1,17 @@
 main {
-
   --forge-blog-side-title-size: var(--s2a-typography-font-size-heading-6);
-
   --forge-blog-side-title-leading: var(--s2a-typography-line-height-heading-6);
-
   --forge-blog-summary-heading-size: var(--s2a-typography-font-size-heading-5);
-
   --forge-blog-summary-heading-leading: var(--s2a-typography-line-height-heading-5);
-
   --forge-blog-jump-link-padding: var(--s2a-spacing-sm);
-
   --forge-blog-frame-space: var(--s2a-section-spacing-lg);
-
   --forge-blog-page-margin-sm: var(--s2a-spacing-lg);
-
   --forge-blog-paragraph-space: var(--s2a-spacing-lg);
-
   --forge-blog-heading-space-h2: var(--s2a-spacing-2xl);
-
   --forge-blog-heading-space-h3: var(--s2a-spacing-xl);
-
   --forge-blog-heading-space-below: var(--s2a-spacing-md);
-
   --forge-blog-end-spacing: var(--s2a-section-spacing-lg);
-
   --forge-blog-card-radius: var(--s2a-border-radius-md);
-
   --forge-blog-card-padding: var(--s2a-spacing-sm);
 }
 

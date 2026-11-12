@@ -13,16 +13,18 @@
   const io = new IntersectionObserver((entries) => {
     for (const { target: el, isIntersecting, boundingClientRect: box } of entries) {
       if (!pending.has(el)) {
-        if (isIntersecting || (!box.width && !box.height)) { io.unobserve(el); continue; }
-        pending.add(el);
-        el.setAttribute(MARK, 'out');
-        continue;
+        if (isIntersecting || (!box.width && !box.height)) {
+          io.unobserve(el);
+        } else {
+          pending.add(el);
+          el.setAttribute(MARK, 'out');
+        }
+      } else if (isIntersecting) {
+        pending.delete(el);
+        io.unobserve(el);
+        el.setAttribute(MARK, 'in');
+        setTimeout(() => clear(el), 700);
       }
-      if (!isIntersecting) continue;
-      pending.delete(el);
-      io.unobserve(el);
-      el.setAttribute(MARK, 'in');
-      setTimeout(() => clear(el), 700);
     }
   });
   const showAll = () => {
@@ -36,10 +38,11 @@
     queued = false;
     let found = false;
     for (const el of document.querySelectorAll(TARGETS)) {
-      if (seen.has(el)) continue;
-      seen.add(el);
-      io.observe(el);
-      found = true;
+      if (!seen.has(el)) {
+        seen.add(el);
+        io.observe(el);
+        found = true;
+      }
     }
     if (found || !quiet) {
       clearTimeout(quiet);
@@ -59,7 +62,7 @@
     try {
       const u = new URL(a.href, window.location.href);
       if (u.hash && u.pathname === window.location.pathname) showAll();
-    } catch {  }
+    } catch { /* do nothing */ }
   }, true);
   window.addEventListener('hashchange', showAll);
   if (reduce.addEventListener) reduce.addEventListener('change', () => { if (reduce.matches) showAll(); });

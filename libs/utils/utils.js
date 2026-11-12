@@ -3323,9 +3323,20 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    await import('../features/c2-blog-look/c2-blog-look.js')
-      .then(({ default: loadC2BlogLook }) => loadC2BlogLook())
-      .catch(() => {});
+    // The C2 blog look (preview branch only): blog drafts, or localhost with ?c2-blog-look=on.
+    const { hostname, pathname, searchParams } = PAGE_URL;
+    const blogDraft = /^[a-z0-9-]+--da-bacom-blog--adobecom\.(aem|hlx)\.(page|live)$/.test(hostname)
+      && pathname.startsWith('/drafts/');
+    const localOptIn = /^(localhost|127\.0\.0\.1)$/.test(hostname)
+      && searchParams.get('c2-blog-look') === 'on';
+    if (blogDraft || localOptIn) {
+      await import('../features/c2-blog-look/c2-blog-look.js')
+        .then(({ default: loadC2BlogLook }) => loadC2BlogLook())
+        .catch((e) => window.lana?.log(`Failed to load the C2 blog look: ${e}`, {
+          tags: 'c2-blog-look',
+          severity: 'error',
+        }));
+    }
     if (getMetadata('foundation') === 'c2') {
       warmTypekit();
       importFonts();

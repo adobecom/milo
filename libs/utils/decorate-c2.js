@@ -3,7 +3,6 @@ import {
   createTag,
   loadStyle,
   getConfig,
-  getMetadata,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,

@@ -38,13 +38,17 @@
           if (value) nav.style.setProperty(name, value, priority);
           else nav.style.removeProperty(name);
         });
-      } catch {  }
+      } catch { /* do nothing */ }
       return true;
     };
     const pin = () => {
       const nav = list.closest('nav');
       if (!nav || pinned) return;
-      const saved = PIN.map((name) => [name, nav.style.getPropertyValue(name), nav.style.getPropertyPriority(name)]);
+      const saved = PIN.map((name) => [
+        name,
+        nav.style.getPropertyValue(name),
+        nav.style.getPropertyPriority(name),
+      ]);
       const h = nav.getBoundingClientRect().height;
       pinned = { nav, saved };
       nav.style.setProperty('box-sizing', 'border-box');
@@ -55,9 +59,9 @@
     const fail = () => {
       if (failed) return;
       failed = true;
-      try { release(); } catch {  }
-      try { if (mo) mo.disconnect(); } catch {  }
-      try { delete button.hidden; } catch {  }
+      try { release(); } catch { /* do nothing */ }
+      try { if (mo) mo.disconnect(); } catch { /* do nothing */ }
+      try { delete button.hidden; } catch { /* do nothing */ }
       try {
         const hadFocus = document.activeElement === button;
         if (button.parentElement !== items[0]) items[0].append(button);
@@ -65,7 +69,7 @@
         button.setAttribute('aria-expanded', 'true');
         items.forEach((li) => { li.hidden = false; });
         if (hadFocus) links[0].focus({ preventScroll: true });
-      } catch {  }
+      } catch { /* do nothing */ }
     };
 
     const apply = (index) => {
@@ -73,7 +77,8 @@
       try {
         if (mo) mo.disconnect();
         const open = expanded[viewport()];
-        const active = Number.isInteger(index) && index >= 0 && index < items.length ? index : activeIndex();
+        const active = Number.isInteger(index) && index >= 0 && index < items.length
+          ? index : activeIndex();
         const visible = open ? items[0] : items[active];
         const focused = document.activeElement;
         visible.hidden = false;
@@ -81,7 +86,9 @@
           visible.append(button);
           if (focused === button) button.focus({ preventScroll: true });
         }
-        if (!open && items.some((li, i) => i !== active && li.contains(focused))) button.focus({ preventScroll: true });
+        if (!open && items.some((li, i) => i !== active && li.contains(focused))) {
+          button.focus({ preventScroll: true });
+        }
         button.setAttribute('aria-expanded', String(open));
         items.forEach((li, i) => { li.hidden = !open && i !== active; });
         if (mo) mo.observe(list, OPTIONS);
@@ -92,7 +99,7 @@
       Object.defineProperty(button, 'hidden', {
         configurable: true,
         get() { return this.hasAttribute('hidden'); },
-        set() {  },
+        set() { /* do nothing */ },
       });
       taken = true;
       button.removeAttribute('hidden');
@@ -104,7 +111,8 @@
       });
       list.addEventListener('click', (event) => {
         if (failed || tablet.matches) return;
-        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (event.button !== 0
+          || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const a = event.target instanceof Element ? event.target.closest('a') : null;
         const index = a ? links.indexOf(a) : -1;
         if (index === -1) return;
@@ -132,9 +140,9 @@
 
   const seen = (button) => {
     found = true;
-    try { if (watch) watch.disconnect(); } catch {  }
-    try { take(button); } catch {  }
-    try { button.removeAttribute('aria-controls'); } catch {  }
+    try { if (watch) watch.disconnect(); } catch { /* do nothing */ }
+    try { take(button); } catch { /* do nothing */ }
+    try { button.removeAttribute('aria-controls'); } catch { /* do nothing */ }
   };
 
   try {
@@ -151,7 +159,7 @@
     const first = document.querySelector(TOGGLE);
     if (first) seen(first);
   } catch {
-    try { if (watch) watch.disconnect(); } catch {  }
+    try { if (watch) watch.disconnect(); } catch { /* do nothing */ }
   }
 
   const RELATED = 'main .blog-related-content > h3';
@@ -159,8 +167,8 @@
   let headWatch = null;
   const level = (h) => {
     headed = true;
-    try { if (headWatch) headWatch.disconnect(); } catch {  }
-    try { if (!h.hasAttribute('aria-level')) h.setAttribute('aria-level', '2'); } catch {  }
+    try { if (headWatch) headWatch.disconnect(); } catch { /* do nothing */ }
+    try { if (!h.hasAttribute('aria-level')) h.setAttribute('aria-level', '2'); } catch { /* do nothing */ }
   };
   const headingIn = (node) => {
     if (!(node instanceof Element)) return null;
@@ -180,6 +188,6 @@
     const firstHeading = document.querySelector(RELATED);
     if (firstHeading) level(firstHeading);
   } catch {
-    try { if (headWatch) headWatch.disconnect(); } catch {  }
+    try { if (headWatch) headWatch.disconnect(); } catch { /* do nothing */ }
   }
 })();
