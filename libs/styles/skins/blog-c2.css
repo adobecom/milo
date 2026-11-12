@@ -5,6 +5,7 @@
 
 :root:has(meta[name="skin"][content="blog-c2"]) {
   main {
+    --heading-font-family: var(--s2a-font-family-heading), adobe-clean-display, sans-serif;
     --text-color: var(--s2a-color-content-default);
     --link-color: var(--s2a-color-content-default);
     --link-hover-color: var(--s2a-color-content-default);
@@ -18,6 +19,8 @@
   .blog-header-title h1 {
     color: var(--s2a-color-content-heading);
     font-weight: var(--s2a-font-weight-heading);
+    line-height: var(--s2a-typography-line-height-heading-1);
+    letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
   }
 
   .blog-progress-bar {
