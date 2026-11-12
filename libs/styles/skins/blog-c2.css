@@ -4,11 +4,47 @@
 @import url('../../c2/styles/s2a-tokens.css');
 
 :root:has(meta[name="skin"][content="blog-c2"]) {
-  main {
+  main,
+  footer {
     --heading-font-family: var(--s2a-font-family-heading), adobe-clean-display, sans-serif;
     --text-color: var(--s2a-color-content-default);
     --link-color: var(--s2a-color-content-default);
     --link-hover-color: var(--s2a-color-content-default);
+
+    color: var(--text-color);
+  }
+
+  main {
+    --grid-container-width: calc(100% - 2 * var(--s2a-spacing-lg));
+    --grid-margins-width: var(--s2a-spacing-lg);
+  }
+
+  main :is(h1, h2, h3, h4, h5, h6),
+  .blog-side-navigation > p,
+  .accordion-trigger,
+  .quote .quote-copy {
+    font-family: var(--heading-font-family);
+  }
+
+  /* the C2 footer on a C1 page: the body type and the two C2 utility classes its markup uses */
+  footer {
+    font-size: var(--s2a-typography-font-size-body-md);
+    line-height: var(--s2a-typography-line-height-body-md);
+    letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+    -webkit-font-smoothing: antialiased;
+
+    .body-md {
+      font-size: var(--s2a-typography-font-size-body-md);
+      line-height: var(--s2a-typography-line-height-body-md);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+    }
+
+    .caption {
+      font-weight: var(--s2a-font-weight-caption);
+      font-size: var(--s2a-typography-font-size-caption);
+      line-height: var(--s2a-typography-line-height-caption);
+      letter-spacing: var(--s2a-typography-letter-spacing-caption);
+    }
   }
 
   /* blog-header */
@@ -19,8 +55,12 @@
   .blog-header-title h1 {
     color: var(--s2a-color-content-heading);
     font-weight: var(--s2a-font-weight-heading);
-    line-height: var(--s2a-typography-line-height-heading-1);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .blog-article-layout {
+    padding-block-end: var(--s2a-section-spacing-lg);
   }
 
   .blog-progress-bar {
@@ -109,30 +149,37 @@
       margin-block: var(--s2a-spacing-xl) var(--s2a-spacing-md);
       color: var(--s2a-color-content-heading);
       font-weight: var(--s2a-font-weight-heading);
+      line-height: 1.1;
     }
 
     > h2 {
       margin-block-start: var(--s2a-spacing-2xl);
       font-size: var(--s2a-typography-font-size-heading-3);
-      line-height: var(--s2a-typography-line-height-heading-3);
       letter-spacing: var(--s2a-typography-letter-spacing-heading-3);
     }
 
     > h3 {
       font-size: var(--s2a-typography-font-size-heading-4);
-      line-height: var(--s2a-typography-line-height-heading-4);
       letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
     }
 
     > :is(h4, h5, h6) {
       font-size: var(--s2a-typography-font-size-heading-5);
-      line-height: var(--s2a-typography-line-height-heading-5);
       letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
     }
 
     > :first-child {
       margin-block-start: 0;
     }
+  }
+
+  main :is(.columns, .aside) :is(h1, h2, h3, h4, h5, h6, p) {
+    margin-block: 0;
+  }
+
+  /* copy that follows a block, e.g. the ai-summary, starts one paragraph space below it */
+  main :not(.content) + .content > :first-child {
+    margin-block-start: var(--s2a-spacing-lg);
   }
 
   /* motion: CSS scroll-driven reveal, no script */
@@ -150,6 +197,29 @@
   }
 
   @media (width >= 768px) {
+    main {
+      --grid-container-width: revert;
+      --grid-margins-width: revert;
+    }
+
+    .blog-divider-frame,
+    .blog-article-layout {
+      --blog-divider-gap: var(--s2a-section-spacing-lg);
+      --blog-divider-inline-space: var(--s2a-section-spacing-lg);
+    }
+
+    .blog-divider-frame::before {
+      inset-inline: max(0px, calc(var(--grid-margins-width) - var(--s2a-section-spacing-lg) - 2px));
+    }
+
+    .blog-article-layout {
+      column-gap: calc(2 * var(--s2a-section-spacing-lg) + 2px);
+    }
+
+    :is(.blog-side-navigation, .ai-summary) {
+      margin-block-start: 0;
+    }
+
     .blog-side-navigation nav > ul {
       border-color: var(--s2a-color-border-subtle);
       border-radius: var(--s2a-border-radius-md);

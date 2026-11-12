@@ -1336,19 +1336,6 @@ export function loadStyle(href, callback) {
   return loadLink(href, { rel: 'stylesheet', callback });
 }
 
-// The `skin` metadata names a stylesheet in libs/styles/skins. Milo's own scripts.js adds it to the
-// head before loadArea; this loads it for consumers whose loadStyles does not.
-export function loadSkin() {
-  const skin = getMetadata('skin');
-  if (!skin || !/^[a-z0-9-]+$/.test(skin)) return Promise.resolve();
-  const file = `/styles/skins/${skin}.css`;
-  const loaded = [...document.head.querySelectorAll('link[rel="stylesheet"]')]
-    .some((link) => link.getAttribute('href')?.endsWith(file));
-  if (loaded) return Promise.resolve();
-  const { miloLibs, codeRoot } = getConfig();
-  return new Promise((resolve) => { loadStyle(`${miloLibs || codeRoot}${file}`, resolve); });
-}
-
 export function appendHtmlToCanonicalUrl() {
   const { useDotHtml } = getConfig();
   if (!useDotHtml) return;
@@ -3336,7 +3323,6 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    await loadSkin();
     if (getMetadata('foundation') === 'c2') {
       warmTypekit();
       importFonts();
