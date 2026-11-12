@@ -1564,6 +1564,44 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadSkin', () => {
+    const setSkin = (content) => {
+      document.head.querySelector('meta[name="skin"]')?.remove();
+      if (content) document.head.append(createTag('meta', { name: 'skin', content }));
+    };
+    const skinLinks = () => [...document.head.querySelectorAll('link[href*="/styles/skins/"]')];
+
+    beforeEach(() => {
+      utils.setConfig(config);
+      skinLinks().forEach((link) => link.remove());
+    });
+    afterEach(() => {
+      setSkin();
+      skinLinks().forEach((link) => link.remove());
+    });
+
+    it('loads the skin named in metadata from the code root', async () => {
+      setSkin('max25');
+      await utils.loadSkin();
+      expect(skinLinks().map((link) => link.getAttribute('href')))
+        .to.deep.equal([`${utils.getConfig().codeRoot}/styles/skins/max25.css`]);
+    });
+
+    it('does not load a second copy when the skin is already linked', async () => {
+      setSkin('max25');
+      document.head.append(createTag('link', { rel: 'stylesheet', href: 'https://main--milo--adobecom.aem.live/libs/styles/skins/max25.css' }));
+      await utils.loadSkin();
+      expect(skinLinks()).to.have.length(1);
+    });
+
+    it('ignores a missing or malformed skin name', async () => {
+      await utils.loadSkin();
+      setSkin('../../evil');
+      await utils.loadSkin();
+      expect(skinLinks()).to.have.length(0);
+    });
+  });
+
   describe('footer promo', () => {
     const favicon = '<link rel="icon" href="data:,">';
     const typeTaxonomy = '<meta name="footer-promo-type" content="taxonomy">';
