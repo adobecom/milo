@@ -57,7 +57,8 @@ const updateFragMap = async (fragment, a, href) => {
 const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const contentCount = [...sections]
-    .filter((s) => s.matches(':has(> :not(.metadata, .section-metadata))')).length;
+    .filter((s) => [...s.children].some((child) => !child.matches('.metadata, .section-metadata')))
+    .length;
   if (contentCount > 1) {
     window.lana?.log(`Inline fragment ${relHref} has ${contentCount} content sections; only the first is rendered`, { tags: 'fragment', severity: 'warning' });
   }
