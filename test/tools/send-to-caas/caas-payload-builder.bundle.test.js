@@ -21,6 +21,24 @@ import * as core from '../../../tools/send-to-caas/caas-payload-core.js';
 describe('caas-payload-builder bundle is not stale', () => {
   let bundle;
 
+  // Shared by both getCaasIds matrices below. The `/blog` fixtures are what
+  // make the parity guard see the extensionless-section carve-out at all:
+  // every other url is outside it, so a bundle built before the carve-out
+  // existed would still agree on all of them. `/blogging/post` pins the
+  // segment match specifically -- a bundle that matched on substring would
+  // disagree there and nowhere else.
+  const IDENTITY_URLS = [
+    'https://business.adobe.com/resources/x',
+    'https://business.adobe.com/resources/x.html',
+    'https://www.adobe.com/resources/x',
+    'https://business.adobe.com/blog/post',
+    'https://business.adobe.com/blog/post.html',
+    'https://business.adobe.com/de/blog/post',
+    'https://business.adobe.com/resources/blog/post',
+    'https://business.adobe.com/blogging/post',
+  ];
+  const SECTION_LISTS = ['', 'blog', ['blog'], 'blog,news'];
+
   before(async () => {
     const res = await fetch('/tools/send-to-caas/caas-payload-builder.js');
     expect(res.ok, 'bundle is not fetchable').to.be.true;
@@ -54,52 +72,40 @@ describe('caas-payload-builder bundle is not stale', () => {
   });
 
   it('agrees with the source on getCaasIds across the htmlIdentity matrix', async () => {
-    const urls = [
-      'https://business.adobe.com/resources/x',
-      'https://business.adobe.com/resources/x.html',
-      'https://www.adobe.com/resources/x',
-      // Extensionless-section carve-out. Without these the parity guard is
-      // blind to it: every other fixture is outside the carve-out, so a bundle
-      // built before it existed still agrees on all of them.
-      'https://business.adobe.com/blog/post',
-      'https://business.adobe.com/blog/post.html',
-      'https://business.adobe.com/de/blog/post',
-      'https://business.adobe.com/resources/blog/post',
-    ];
+    // The section list has to vary alongside the flag. Held constant -- and
+    // especially held empty -- the carve-out never runs, so every fixture
+    // would agree on both sides no matter what the bundle does with it.
     const flags = [true, false, 'true', 'false', 'TRUE', 'on'];
-    await Promise.all(urls.flatMap((url) => flags.map(async (flag) => {
-      const [fromBundle, fromCore] = await Promise.all([
-        bundle.getCaasIds(url, 'default', flag),
-        core.getCaasIds(url, 'default', flag),
-      ]);
-      expect(fromBundle, `${url} / ${JSON.stringify(flag)}`).to.eql(fromCore);
-    })));
+    await Promise.all(IDENTITY_URLS.flatMap((url) => flags.flatMap((flag) => SECTION_LISTS
+      .map(async (sections) => {
+        const [fromBundle, fromCore] = await Promise.all([
+          bundle.getCaasIds(url, 'default', flag, sections),
+          core.getCaasIds(url, 'default', flag, sections),
+        ]);
+        const label = `${url} / ${JSON.stringify(flag)} / ${JSON.stringify(sections)}`;
+        expect(fromBundle, label).to.eql(fromCore);
+      }))));
   });
 
   it('agrees with the source on getCaasIds when htmlIdentity is OMITTED', async () => {
     // The poller's actual call shape today: it passes no third argument at all.
-    // That is a distinct code path from an explicit `false` (an internal
-    // sentinel distinguishes them to drive a warning), so the matrix above does
-    // not cover the one form production currently uses.
-    const urls = [
-      'https://business.adobe.com/resources/x',
-      'https://business.adobe.com/resources/x.html',
-      'https://www.adobe.com/resources/x',
-      // Extensionless-section carve-out. Without these the parity guard is
-      // blind to it: every other fixture is outside the carve-out, so a bundle
-      // built before it existed still agrees on all of them.
-      'https://business.adobe.com/blog/post',
-      'https://business.adobe.com/blog/post.html',
-      'https://business.adobe.com/de/blog/post',
-      'https://business.adobe.com/resources/blog/post',
-    ];
-    await Promise.all(urls.map(async (url) => {
+    // That is a distinct code path from an explicit `false` -- an internal
+    // sentinel distinguishes them to drive a warning -- so the matrix above
+    // does not cover the one form production currently uses.
+    //
+    // The section list is varied for the same reason the flag forms are, but
+    // it CANNOT change the ids here: an omitted flag resolves to off, and with
+    // the policy off there is nothing to carve out. What this does pin is that
+    // the bundle agrees on that, rather than letting the qualifier leak into
+    // the omitted path -- which is exactly how a half-applied policy would
+    // first show up.
+    await Promise.all(IDENTITY_URLS.flatMap((url) => SECTION_LISTS.map(async (sections) => {
       const [fromBundle, fromCore] = await Promise.all([
-        bundle.getCaasIds(url, 'default'),
-        core.getCaasIds(url, 'default'),
+        bundle.getCaasIds(url, 'default', undefined, sections),
+        core.getCaasIds(url, 'default', undefined, sections),
       ]);
-      expect(fromBundle, url).to.eql(fromCore);
-    }));
+      expect(fromBundle, `${url} / ${JSON.stringify(sections)}`).to.eql(fromCore);
+    })));
   });
 
   it('agrees with the source on the whole payload for a fixed page', async () => {

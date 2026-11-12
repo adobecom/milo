@@ -18,7 +18,7 @@ import {
   setConfig,
 } from './send-utils.js';
 import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
-import { isFlagEnabled, isFlagUnrecognized, isHtmlIdentityEnabled } from '../../libs/utils/caasIdentity.js';
+import { isFlagEnabled, isFlagUnrecognized, isHtmlIdentityEnabled, normalizeSections, findUnrecognizedSections } from '../../libs/utils/caasIdentity.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const logIdentity = createIdentityLogger('caas-bulk-publish');
@@ -43,7 +43,7 @@ STATUS_EL.addEventListener('click', (e) => {
 });
 
 const LS_KEY = 'bulk-publish-caas';
-const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
+const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate', 'htmlIdentitySections'];
 const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'htmlIdentity', 'usePreview', 'languageFirst'];
 const DEFAULT_VALUES = {
   preset: 'default',
@@ -55,6 +55,7 @@ const DEFAULT_VALUES = {
   repo: 'bacom',
   urls: '',
   publishToFloodgate: 'default',
+  htmlIdentitySections: '',
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
@@ -211,6 +212,7 @@ const processData = async (data, accessToken) => {
     languageFirst,
     autoDetectLingo,
     htmlIdentity,
+    htmlIdentitySections,
   } = getConfig();
 
   if (!repo) {
@@ -258,6 +260,7 @@ const processData = async (data, accessToken) => {
       const { caasMetadata, errors } = await getCardMetadata({
         prodUrl,
         htmlIdentity: htmlIdentityEnabled,
+        htmlIdentitySections,
         host,
         repo,
         floodgatecolor: floodgateColor,
@@ -389,9 +392,14 @@ const checkCaasEnv = () => {
 
 // presets options
 const presetsJsonPath = 'https://milo.adobe.com/drafts/caas/bppresets.json';
-let presetsData = {};
+// Seeded as an ARRAY, not `{}`: the change handler below calls .find on it,
+// so a preset change dispatched before getPresetsData() resolves threw a
+// TypeError and left the form half-applied. Pre-existing, surfaced by the
+// preset-policy test.
+let presetsData = [];
 
-// loadFromLS restores the WHOLE saved config object, htmlIdentity included, so
+// loadFromLS restores the WHOLE saved config object, htmlIdentity and its
+// section list included, so
 // the stored value outlived the sheet it came from: un-authoring the column --
 // the only rollback available to a publishing team -- left anyone who had
 // already selected that preset still publishing with the policy on, silently
@@ -413,10 +421,21 @@ export const reconcileHtmlIdentity = (presets) => {
   if (!selected || selected === 'advanced' || selected === 'default') return;
   const live = presets.find((preset) => preset.id === selected);
   const liveValue = isFlagEnabled(live?.htmlIdentity);
-  if (liveValue === isFlagEnabled(stored.htmlIdentity)) return;
-  setConfig({ htmlIdentity: liveValue });
+  // The section list is reconciled for the same reason and in the same pass:
+  // it qualifies the policy, so a stale list is as wrong as a stale flag --
+  // it re-forces `.html` onto a section's ids, or stops forcing it where the
+  // sheet still says to. Normalized before comparing so a whitespace-only
+  // edit in the sheet does not look like a change.
+  const normalize = (value) => normalizeSections(value).join(',');
+  const liveSections = normalize(live?.htmlIdentitySections);
+  const flagStale = liveValue !== isFlagEnabled(stored.htmlIdentity);
+  const sectionsStale = liveSections !== normalize(stored.htmlIdentitySections);
+  if (!flagStale && !sectionsStale) return;
+  setConfig({ htmlIdentity: liveValue, htmlIdentitySections: liveSections });
   const el = document.getElementById('htmlIdentity');
   if (el) el.checked = liveValue;
+  const sectionsEl = document.getElementById('htmlIdentitySections');
+  if (sectionsEl) sectionsEl.value = liveSections;
   window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
 };
 
@@ -461,6 +480,7 @@ const resetAdvancedOptions = () => {
   dryRun.checked = false;
   useHtml.checked = false;
   htmlIdentity.checked = false;
+  htmlIdentitySections.value = '';
   usePreview.checked = false;
   languageFirst.checked = false;
   autoDetectLingo.checked = false;
@@ -527,6 +547,20 @@ presetSelector.addEventListener('change', () => {
   });
   config.useHtml = isFlagEnabled(selectedPreset.useHtml);
   config.htmlIdentity = isFlagEnabled(selectedPreset.htmlIdentity);
+  // Taken from the preset in the same pass as the flag. `config` is seeded
+  // from localStorage, so leaving this out carried the PREVIOUSLY selected
+  // preset's list into this one -- and left a first-time operator, who has no
+  // stored config at all, publishing flag-ON with no carve-out.
+  config.htmlIdentitySections = normalizeSections(selectedPreset.htmlIdentitySections).join(',');
+  const badSections = findUnrecognizedSections(selectedPreset.htmlIdentitySections);
+  if (badSections.length) {
+    logIdentity(
+      `unrecognized htmlIdentitySections entries '${badSections.join(', ')}' on preset `
+      + `'${selectedPreset.id}': these name a path, host or glob rather than a path `
+      + 'segment, so they match nothing and the section keeps forced-`.html` ids',
+      'warning',
+    );
+  }
   // Deliberately NOT converted to isFlagDisabled with the two above. This cell
   // has inverted semantics and does not feed the identity hash, so switching it
   // would change language/country resolution for every existing preset -- a
@@ -747,6 +781,29 @@ helpButtons.forEach((btn) => {
             at any time.</p>`);
         break;
 
+      case 'html-identity-sections':
+        showAlert(`<p><b>Extensionless sections</b></p>
+          <p>A comma separated list of URL path segments that this site publishes <b>without</b>
+            the <b>.html</b> extension &mdash; typically <b>blog</b>, which is served by a different
+            repository. <b>Keep .html card identity</b> leaves these alone, so their cards keep the
+            extensionless IDs they already have.</p>
+          <p>Matched as a path <b>segment</b>, anywhere in the path: <b>blog</b> covers
+            <tt>/blog/x</tt>, <tt>/de/blog/x</tt> and <tt>/products/blog/x</tt>, but not
+            <tt>/products/blogging-tool</tt>. A page <i>named</i> for the section matches too
+            &mdash; <tt>/products/blog.html</tt> is treated as extensionless.</p>
+          <p>Write bare segments: <b>blog</b>, not <tt>/blog</tt> or <tt>blog/*</tt>. Surrounding
+            slashes are tidied up, but anything that still looks like a path, glob or hostname
+            matches nothing and is reported in the log.</p>
+          <p>Leave it empty and there is no exception at all &mdash; every in-scope URL has
+            <b>.html</b> forced onto its ID.</p>
+          <p>This must MATCH everywhere the same cards are published or rendered: the
+            <b>htmlIdentitySections</b> column in <b>/.milo/caas/config.json</b> where the site also
+            auto-publishes, and the <b>caas-identity-extensionless-sections</b> page metadata on
+            every site that renders these cards in a collection. A site that sets it in one place
+            but not another hashes the same page two ways, and every card in the section silently
+            stops resolving.</p>`);
+        break;
+
       case 'use-preview':
         showAlert(`<p><b>Use Preview Content</b>
           <p>When this option is checked, the tool will publish CaaS Metadata content from the stage environments:</p>
@@ -798,6 +855,52 @@ themeOptions.forEach((btn) => {
   });
 });
 
+// Exported so the Publish snapshot is reachable without running init(),
+// which binds a dozen handlers and talks to IMS. This snapshot is where
+// a missing field silently publishes a half-applied identity policy, so
+// it needs to be assertable on its own.
+export const snapshotPublishConfig = () => {
+  const authoredSections = document.getElementById('htmlIdentitySections').value;
+  // The advanced panel is free text, so it is the one channel where an
+  // operator can invent a value. The preset path, the poller and the
+  // sidekick all warn on an entry that cannot name a segment; without this
+  // the typed-in box would be the only way to get the silent orphaning
+  // those warnings exist to surface.
+  const badSections = findUnrecognizedSections(authoredSections);
+  if (badSections.length) {
+    logIdentity(
+      `unrecognized extensionless sections '${badSections.join(', ')}': these name a path, `
+      + 'host or glob rather than a bare path segment, so they match nothing and the '
+      + 'section keeps forced-`.html` ids. Author bare segments, e.g. `blog`.',
+      'warning',
+    );
+  }
+  setConfig({
+    host: document.getElementById('host').value,
+    project: '',
+    branch: 'main',
+    caasEnv: document.getElementById('caasEnv').value || 'prod',
+    contentType: document.getElementById('contentType').value,
+    repo: document.getElementById('repo').value,
+    owner: document.getElementById('owner').value,
+    urls: document.getElementById('urls').value,
+    publishToFloodgate: document.getElementById('publishToFloodgate').value,
+    draftOnly: document.getElementById('draftOnly').checked,
+    dryRun: document.getElementById('dryRun').checked,
+    useHtml: document.getElementById('useHtml').checked,
+    htmlIdentity: document.getElementById('htmlIdentity').checked,
+    // Read live alongside the checkbox it qualifies. Omitting it published
+    // the flag ON with whatever list the last page load happened to leave in
+    // config -- usually none -- so an operator who typed `blog` in the box
+    // and clicked Publish in the same session forced `.html` onto the whole
+    // section anyway.
+    htmlIdentitySections: authoredSections,
+    usePreview: document.getElementById('usePreview').checked,
+    languageFirst: document.getElementById('languageFirst').checked,
+    autoDetectLingo: document.getElementById('autoDetectLingo').checked,
+  });
+};
+
 const init = async () => {
   setTheme();
   // Before getPresetsData(): its failure path calls showAlert(), which needs the
@@ -824,24 +927,7 @@ const init = async () => {
 
   const bulkPublishBtn = document.querySelector('#bulkpublish');
   bulkPublishBtn.addEventListener('click', () => {
-    setConfig({
-      host: document.getElementById('host').value,
-      project: '',
-      branch: 'main',
-      caasEnv: document.getElementById('caasEnv').value || 'prod',
-      contentType: document.getElementById('contentType').value,
-      repo: document.getElementById('repo').value,
-      owner: document.getElementById('owner').value,
-      urls: document.getElementById('urls').value,
-      publishToFloodgate: document.getElementById('publishToFloodgate').value,
-      draftOnly: document.getElementById('draftOnly').checked,
-      dryRun: document.getElementById('dryRun').checked,
-      useHtml: document.getElementById('useHtml').checked,
-      htmlIdentity: document.getElementById('htmlIdentity').checked,
-      usePreview: document.getElementById('usePreview').checked,
-      languageFirst: document.getElementById('languageFirst').checked,
-      autoDetectLingo: document.getElementById('autoDetectLingo').checked,
-    });
+    snapshotPublishConfig();
     bulkPublish();
   });
 };

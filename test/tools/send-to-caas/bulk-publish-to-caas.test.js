@@ -159,6 +159,7 @@ describe('getBulkPublishLangAttr — auto-detect Lingo matrix', () => {
 
 describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
   let reconcileHtmlIdentity;
+  let snapshotPublishConfig;
   let getConfig;
   let setConfig;
 
@@ -170,7 +171,7 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     const pageHtml = await readFile({ path: '../../../tools/send-to-caas/bulkpublisher.html' });
     const parsed = new DOMParser().parseFromString(pageHtml, 'text/html');
     document.body.append(...parsed.body.children);
-    ({ reconcileHtmlIdentity } = await import('../../../tools/send-to-caas/bulk-publish-to-caas.js'));
+    ({ reconcileHtmlIdentity, snapshotPublishConfig } = await import('../../../tools/send-to-caas/bulk-publish-to-caas.js'));
     ({ getConfig, setConfig } = await import('../../../tools/send-to-caas/send-utils.js'));
   });
 
@@ -198,6 +199,29 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     setConfig({ presetSelector: 'bacom', htmlIdentity: true });
     reconcileHtmlIdentity([{ id: 'other', htmlIdentity: 'true' }]);
     expect(getConfig().htmlIdentity).to.equal(false);
+  });
+
+  it('clears a stored section list once the column is un-authored', () => {
+    // Same rollback path as the flag, and the same failure if it is missed:
+    // a stale list keeps carving out a section the sheet no longer declares,
+    // so the ids diverge from everything else publishing that section.
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true, htmlIdentitySections: 'blog' });
+    reconcileHtmlIdentity([{ id: 'bacom', htmlIdentity: 'true' }]);
+    expect(getConfig().htmlIdentitySections).to.equal('');
+  });
+
+  it('adopts the sheet section list, normalized', () => {
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true, htmlIdentitySections: '' });
+    reconcileHtmlIdentity([{ id: 'bacom', htmlIdentity: 'true', htmlIdentitySections: ' Blog , news ' }]);
+    expect(getConfig().htmlIdentitySections).to.equal('blog,news');
+  });
+
+  it('reconciles the section list even when the flag itself is unchanged', () => {
+    // The early return used to key on the flag alone, so a sheet that changed
+    // only the section list would have been ignored entirely.
+    setConfig({ presetSelector: 'bacom', htmlIdentity: true, htmlIdentitySections: 'blog' });
+    reconcileHtmlIdentity([{ id: 'bacom', htmlIdentity: 'true', htmlIdentitySections: 'news' }]);
+    expect(getConfig().htmlIdentitySections).to.equal('news');
   });
 
   it('leaves advanced mode alone, since the operator sets the checkbox directly', () => {
@@ -248,6 +272,46 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
       document.getElementById('htmlIdentity').checked = false;
       reconcileHtmlIdentity([{ id: 'bacom', htmlIdentity: 'true' }]);
       expect(document.getElementById('htmlIdentity').checked).to.be.true;
+    });
+  });
+
+  describe('the Publish snapshot carries the whole policy', () => {
+    it('reads the live section box, not whatever config was left holding', () => {
+      // The original defect: the snapshot took htmlIdentity from the live
+      // checkbox but never read htmlIdentitySections, so an operator who
+      // ticked the box, typed `blog` and clicked Publish in one session
+      // published flag-ON with an empty list -- forcing `.html` onto the very
+      // section they had just exempted. Both fields must come from the DOM.
+      setConfig({ htmlIdentity: false, htmlIdentitySections: '' });
+      document.getElementById('htmlIdentity').checked = true;
+      document.getElementById('htmlIdentitySections').value = 'blog';
+      snapshotPublishConfig();
+      expect(getConfig().htmlIdentity).to.equal(true);
+      expect(getConfig().htmlIdentitySections).to.equal('blog');
+    });
+
+    it('does not resurrect a stale list once the box is cleared', () => {
+      setConfig({ htmlIdentity: true, htmlIdentitySections: 'blog' });
+      document.getElementById('htmlIdentitySections').value = '';
+      snapshotPublishConfig();
+      expect(getConfig().htmlIdentitySections).to.equal('');
+    });
+  });
+
+  describe('preset selection applies the whole policy, not half of it', () => {
+    it('clears a previous preset section list when the preset changes', () => {
+      // The preset handler overwrote htmlIdentity from the sheet but left
+      // htmlIdentitySections at whatever the PREVIOUS preset stored, because
+      // `config` is seeded from localStorage. reconcileHtmlIdentity only runs
+      // from init(), so nothing corrected it until the next page load -- and
+      // in the meantime the operator published flag-ON with a carve-out the
+      // selected site never declared, or none at all.
+      const stored = { presetSelector: 'other', htmlIdentity: true, htmlIdentitySections: 'blog' };
+      window.localStorage.setItem('bulk-publish-caas', JSON.stringify(stored));
+      setConfig(stored);
+      const selector = document.getElementById('presetSelector');
+      selector.dispatchEvent(new Event('change'));
+      expect(getConfig().htmlIdentitySections).to.equal('');
     });
   });
 });

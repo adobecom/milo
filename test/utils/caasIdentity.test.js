@@ -1,11 +1,13 @@
 import { expect } from '@esm-bundle/chai';
 import {
+  findUnrecognizedSections,
   isFlagDisabled,
   isFlagEnabled,
   isFlagUnrecognized,
   isForcedHtmlIdentityUrl,
   isHtmlIdentityEnabled,
   isIdentityPolicyMiss,
+  normalizeSections,
   toIdentityUrl,
   isExtensionlessSection,
 } from '../../libs/utils/caasIdentity.js';
@@ -32,11 +34,15 @@ describe('caasIdentity', () => {
       expect(isForcedHtmlIdentityUrl('https://business.adobe.com/resources/x')).to.be.true;
     });
 
-    it('carves out no path, so a section that migrates later is covered', () => {
-      // The blog is a separate repo serving its own /.milo/caas/config.json, so
-      // it is scoped out by not setting the flag there -- not by path. A path
-      // exemption here would sit under that boundary and silently neutralize
-      // the flag once the section does migrate, orphaning all of its cards.
+    it('carves out no path on the publish path, so a section that migrates later is covered', () => {
+      // Scope here is host plus flag only. The blog is a separate repo serving
+      // its own /.milo/caas/config.json, so for a PUBLISHER it is scoped out by
+      // not setting the flag there -- not by path. A path exemption at this
+      // level would sit under that boundary and silently neutralize the flag
+      // once the section does migrate, orphaning all of its cards.
+      // Every runtime carries the same exemption, because each is GIVEN the
+      // same configured list; nothing here exempts a path on its own.
+      // MWPW-213847 wires the rendering side to the companion metadata.
       [
         '/blog/post', '/blog', '/blog/', '/fr/blog/post', '/mena_ar/blog/post',
         '/resources/blog/x', '/resources/jp/blog-post', '/products/y',
@@ -251,72 +257,124 @@ describe('caasIdentity', () => {
   });
 
   describe('toIdentityUrl: extensionless sections', () => {
-    it('never forces .html onto a blog url, flag on', () => {
-      expect(toIdentityUrl('https://business.adobe.com/blog/x', true))
+    const SECTIONS = ['blog'];
+
+    it('never forces .html onto a configured section, flag on', () => {
+      expect(toIdentityUrl('https://business.adobe.com/blog/x', true, SECTIONS))
         .to.equal('business.adobe.com/blog/x');
     });
 
-    it('never forces .html onto a locale-prefixed blog url', () => {
-      expect(toIdentityUrl('business.adobe.com/de/blog/x', 'true'))
-        .to.equal('business.adobe.com/de/blog/x');
+    it('matches the section anywhere in the path, so no locale table is needed', () => {
+      ['de', 'es', 'ch_de', 'africa', 'langstore/en'].forEach((prefix) => {
+        expect(toIdentityUrl(`business.adobe.com/${prefix}/blog/x`, 'true', SECTIONS), prefix)
+          .to.equal(`business.adobe.com/${prefix}/blog/x`);
+      });
+      expect(toIdentityUrl('business.adobe.com/products/blog/x', true, SECTIONS))
+        .to.equal('business.adobe.com/products/blog/x');
     });
 
-    it('still forces .html outside the carve-out', () => {
-      expect(toIdentityUrl('business.adobe.com/resources/x', true))
+    it('still forces .html outside the configured sections', () => {
+      expect(toIdentityUrl('business.adobe.com/resources/x', true, SECTIONS))
         .to.equal('business.adobe.com/resources/x.html');
     });
 
-    it('does not exempt a nested blog path', () => {
-      expect(toIdentityUrl('business.adobe.com/resources/blog/x', true))
-        .to.equal('business.adobe.com/resources/blog/x.html');
-    });
-
-    it('does not exempt a section that merely starts with blog', () => {
-      expect(toIdentityUrl('business.adobe.com/blogging/x', true))
+    it('matches whole segments only, so a longer word is not exempt', () => {
+      expect(toIdentityUrl('business.adobe.com/blogging/x', true, SECTIONS))
         .to.equal('business.adobe.com/blogging/x.html');
+      expect(toIdentityUrl('business.adobe.com/products/blogging-tool', true, SECTIONS))
+        .to.equal('business.adobe.com/products/blogging-tool.html');
     });
 
-    it('strips .html so env-split variants of one blog page converge', () => {
-      expect(toIdentityUrl('business.adobe.com/blog/x.html', true))
-        .to.equal(toIdentityUrl('business.adobe.com/blog/x', true));
-      expect(toIdentityUrl('business.adobe.com/blog/x.html', true))
+    it('has no carve-out at all for a site that configures none', () => {
+      [[], '', undefined].forEach((sections) => {
+        expect(toIdentityUrl('business.adobe.com/blog/x', true, sections), String(sections))
+          .to.equal('business.adobe.com/blog/x.html');
+      });
+    });
+
+    it('accepts the comma string the config sheet and metadata carry', () => {
+      expect(toIdentityUrl('business.adobe.com/blog/x', true, ' Blog , news '))
+        .to.equal('business.adobe.com/blog/x');
+      expect(toIdentityUrl('business.adobe.com/news/x', true, ' Blog , news '))
+        .to.equal('business.adobe.com/news/x');
+    });
+
+    it('strips .html so env-split variants of one page converge', () => {
+      expect(toIdentityUrl('business.adobe.com/blog/x.html', true, SECTIONS))
+        .to.equal(toIdentityUrl('business.adobe.com/blog/x', true, SECTIONS));
+      expect(toIdentityUrl('business.adobe.com/blog/x.html', true, SECTIONS))
         .to.equal('business.adobe.com/blog/x');
     });
 
-    it('leaves a .html blog url alone when the flag is off', () => {
-      expect(toIdentityUrl('business.adobe.com/blog/x.html', false))
+    it('leaves a .html url alone when the flag is off', () => {
+      expect(toIdentityUrl('business.adobe.com/blog/x.html', false, SECTIONS))
         .to.equal('business.adobe.com/blog/x.html');
     });
 
     it('is an exact no-op when the flag is off', () => {
-      expect(toIdentityUrl('https://business.adobe.com/blog/x', false))
+      expect(toIdentityUrl('https://business.adobe.com/blog/x', false, SECTIONS))
         .to.equal('business.adobe.com/blog/x');
-      expect(toIdentityUrl('business.adobe.com/resources/x', false))
+      expect(toIdentityUrl('business.adobe.com/resources/x', false, SECTIONS))
         .to.equal('business.adobe.com/resources/x');
     });
 
-    it('does not exempt an unlisted locale prefix', () => {
-      // The hazard MWPW-213847 names: a locale the blog adds later still gets
-      // `.html` forced until it is added to the prefix list.
-      expect(toIdentityUrl('business.adobe.com/es/blog/x', true))
-        .to.equal('business.adobe.com/es/blog/x.html');
-    });
-
-    it('exempts every listed locale prefix', () => {
-      ['au', 'de', 'fr', 'jp', 'kr', 'uk'].forEach((prefix) => {
-        expect(toIdentityUrl(`business.adobe.com/${prefix}/blog/x`, true), prefix)
-          .to.equal(`business.adobe.com/${prefix}/blog/x`);
-      });
-    });
-
     it('does not apply the carve-out off the bacom prod host', () => {
-      expect(isExtensionlessSection('main--da-bacom--adobecom.aem.page/blog/x')).to.be.false;
-      expect(isExtensionlessSection('business.adobe.com/blog/x')).to.be.true;
+      expect(isExtensionlessSection('main--da-bacom--adobecom.aem.page/blog/x', SECTIONS)).to.be.false;
+      expect(isExtensionlessSection('business.adobe.com/blog/x', SECTIONS)).to.be.true;
     });
 
     it('ignores query and fragment when matching the section', () => {
-      expect(toIdentityUrl('business.adobe.com/blog/x?a=1#b', true))
+      expect(toIdentityUrl('business.adobe.com/blog/x?a=1#b', true, SECTIONS))
         .to.equal('business.adobe.com/blog/x?a=1#b');
+    });
+
+    it('matches a page named for the section, not just a directory', () => {
+      // Unanchored segment matching has this consequence, and it is documented
+      // rather than special-cased: a page literally named `blog` is treated as
+      // part of the section. Pinned so the behaviour cannot drift away from
+      // what the authoring docs promise.
+      expect(toIdentityUrl('business.adobe.com/products/blog.html', true, SECTIONS))
+        .to.equal('business.adobe.com/products/blog');
+    });
+
+    it('accepts a section authored with the slashes authors reach for', () => {
+      // `/blog` is the form this module's own prose uses throughout, so it is
+      // the likeliest authoring mistake -- and it fails in the catastrophic
+      // direction, forcing `.html` across the whole section it was meant to
+      // exempt. Normalizing is the difference between a typo and an outage.
+      ['/blog', 'blog/', '/blog/', '  /Blog/  '].forEach((authored) => {
+        expect(toIdentityUrl('business.adobe.com/blog/x', true, authored))
+          .to.equal('business.adobe.com/blog/x');
+      });
+    });
+  });
+
+  describe('normalizeSections', () => {
+    it('trims, lowercases, strips slashes and dedupes', () => {
+      expect(normalizeSections(' /Blog/ , news ,, blog')).to.deep.equal(['blog', 'news']);
+      expect(normalizeSections(['BLOG', '/blog/'])).to.deep.equal(['blog']);
+    });
+
+    it('treats every absent or malformed shape as no carve-out', () => {
+      // Coercing to "no sections" is the orphaning direction, so this is the
+      // one place the leaf must not quietly invent a carve-out either.
+      [undefined, null, '', '   ', ',,', [], {}, 0].forEach((value) => {
+        expect(normalizeSections(value)).to.deep.equal([]);
+      });
+    });
+  });
+
+  describe('findUnrecognizedSections', () => {
+    it('reports entries that cannot name a path segment', () => {
+      // A path, glob or host matches nothing, which is indistinguishable at
+      // match time from a site that configured no carve-out at all -- so the
+      // channels surface it rather than letting the section orphan silently.
+      expect(findUnrecognizedSections('blog/*, business.adobe.com/blog, news'))
+        .to.deep.equal(['blog/*', 'business.adobe.com/blog']);
+    });
+
+    it('accepts bare segments and the slash forms normalization repairs', () => {
+      expect(findUnrecognizedSections('blog, /news/, resources')).to.deep.equal([]);
     });
   });
 
@@ -326,14 +384,20 @@ describe('caasIdentity', () => {
     it('does not flag an exempt section, whose ids the policy cannot change', () => {
       // The warning latches after one call, so a false positive here consumes
       // the page's only slot and silences a real miss elsewhere on it.
-      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x', 'false')).to.be.false;
-      expect(isIdentityPolicyMiss('https://business.adobe.com/de/blog/x')).to.be.false;
+      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x', 'false', ['blog'])).to.be.false;
+      expect(isIdentityPolicyMiss('https://business.adobe.com/de/blog/x', false, 'blog')).to.be.false;
     });
 
     it('flags an exempt section authored WITH the extension', () => {
       // The carve-out strips `.html` when the flag is on, so for this shape
       // the flag state really does decide the id.
-      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x.html')).to.be.true;
+      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x.html', false, ['blog'])).to.be.true;
+    });
+
+    it('flags a blog link on a site that configured no sections', () => {
+      // Without the configuration the policy really would change this id, so
+      // the miss is reported rather than assumed away.
+      expect(isIdentityPolicyMiss('https://business.adobe.com/blog/x', 'false')).to.be.true;
     });
 
     it('flags an in-scope extensionless link while the policy is off', () => {

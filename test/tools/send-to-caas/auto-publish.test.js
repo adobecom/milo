@@ -7,6 +7,7 @@ import {
   matchesUrl,
   resolveHtmlExt,
   resolveHtmlIdentity,
+  resolveHtmlIdentitySections,
   resolveRule,
   resolveTargets,
   resetIdentityNoticesForTesting,
@@ -172,6 +173,44 @@ describe('auto-publish: resolveRule', () => {
 
   it('skips rules without a url field', () => {
     expect(resolveRule([{ enabled: true }, { url: '/foo' }], '/foo').url).to.equal('/foo');
+  });
+});
+
+describe('auto-publish: resolveHtmlIdentitySections', () => {
+  it('is empty when no rule declares any section', () => {
+    // A site that has not opted in gets no carve-out at all -- `/blog` is not
+    // special-cased on its behalf.
+    expect(resolveHtmlIdentitySections([{ url: '/a' }], { url: '/a' })).to.equal('');
+  });
+
+  it('unions across rules, so a rule omitting the column does not narrow it', () => {
+    // Site-wide for the same reason htmlIdentity is: resolveRule returns only
+    // the most-specific match, so reading the column off that rule alone would
+    // let a narrow rule silently re-force `.html` for its whole subtree.
+    const rules = [
+      { url: '/a', htmlIdentitySections: 'blog' },
+      { url: '/a/b' },
+      { url: '/c', htmlIdentitySections: 'news' },
+    ];
+    expect(resolveHtmlIdentitySections(rules, rules[1])).to.equal('blog,news');
+  });
+
+  it('normalizes and de-duplicates authored cells', () => {
+    const rules = [
+      { url: '/a', htmlIdentitySections: ' Blog , blog ' },
+      { url: '/b', htmlIdentitySections: 'BLOG,news' },
+    ];
+    expect(resolveHtmlIdentitySections(rules, rules[0])).to.equal('blog,news');
+  });
+
+  it('includes the matched rule even when it is absent from the list', () => {
+    expect(resolveHtmlIdentitySections([], { url: '/a', htmlIdentitySections: 'blog' }))
+      .to.equal('blog');
+  });
+
+  it('does not throw on a malformed config', () => {
+    expect(resolveHtmlIdentitySections(undefined, undefined)).to.equal('');
+    expect(resolveHtmlIdentitySections(null, { htmlIdentitySections: null })).to.equal('');
   });
 });
 
@@ -1385,10 +1424,10 @@ describe('auto-publish: per-environment htmlExt', () => {
   });
 
   it('exempts a blog path from forced .html, and its env variants converge', async () => {
-    // `/blog` is published extensionless, so there is no `.html` form to force
-    // onto its identity. Forcing one would mint an id no card holds, and the
-    // collection consumer -- which applies the same carve-out -- would hash a
-    // different string for the same page.
+    // The site declares `/blog` extensionless, so there is no `.html` form to
+    // force onto its identity. Forcing one would mint an id no card holds, and
+    // the collection consumer -- configured with the same section list -- would
+    // hash a different string for the same page.
     const origin = uniqueOrigin();
     const posts = setupPath(origin, '/blog/post', {
       host: 'business.adobe.com',
@@ -1396,6 +1435,7 @@ describe('auto-publish: per-environment htmlExt', () => {
       htmlExt: 'true',
       htmlExtStage: 'false',
       htmlIdentity: 'true',
+      htmlIdentitySections: 'blog',
     });
     const result = await caasAutoPublish({
       action: 'preview',

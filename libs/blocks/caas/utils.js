@@ -1021,10 +1021,10 @@ const fetchUuidForCard = async (card) => {
     const localizedLink = await localizeLinkAsync(card.contentId, null, true);
     warnOnIdentityPolicyMiss(String(localizedLink));
     // toIdentityUrl strips the scheme the same way the publishers do.
-    // The old split('https://') missed http:// entirely, leaving the scheme on
-    // the hash input so the id could never match the published card. It also
-    // applies the publishers' extensionless-section carve-out, so an authored
-    // `/blog` reference hashes to the id the publisher actually minted.
+    // No extensionless sections are passed here yet, so this reproduces the
+    // unqualified policy. The consumer's own configuration arrives with
+    // MWPW-213847; until it lands, a site must not author the publishing-side
+    // section list or the two will hash that section differently.
     return await getUuid(toIdentityUrl(String(localizedLink), htmlIdentityEnabled()));
   } catch (error) {
     return null;
@@ -1176,6 +1176,9 @@ export const getConfig = async (originalState, strs = {}) => {
   const currentPage = `${window.location.hostname}${window.location.pathname}`;
   let currentPageUuid = null;
   try {
+    // Unqualified like fetchUuidForCard above: no extensionless sections are
+    // passed yet, and the consumer's own configuration arrives with
+    // MWPW-213847. Both call sites must gain the section list together.
     currentPageUuid = await getUuid(toIdentityUrl(currentPage, htmlIdentityEnabled()));
   } catch (error) {
     window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);

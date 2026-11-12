@@ -170,13 +170,14 @@ describe('caas-payload-core: forced-.html card identity', () => {
 
   const dom = () => buildDom([['CardTitle', 'Test card'], ['CardImage', 'https://example.com/img.jpg']]);
 
-  const build = async ({ path, htmlIdentity, floodgatecolor }) => {
+  const build = async ({ path, htmlIdentity, floodgatecolor, htmlIdentitySections }) => {
     const { caasMetadata } = await buildCaasXdmPayload({
       dom: dom(),
       pageUrl: getProdUrl({ host: BACOM, path }),
       host: BACOM,
       repo: 'bacom',
       htmlIdentity,
+      htmlIdentitySections,
       floodgatecolor,
     });
     return caasMetadata;
@@ -202,13 +203,13 @@ describe('caas-payload-core: forced-.html card identity', () => {
     expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
   });
 
-  it('carves out the extensionless blog section, but nothing adjacent to it', async () => {
-    // `/blog` is published without the extension, so there is no `.html` form
-    // to force. Everything else is scoped out by its own repo's config not
-    // setting the flag, never by path here -- otherwise the flag silently does
-    // nothing for a section that migrates later and orphans all of its cards.
-    const exempt = ['/blog/post', '/fr/blog/post', '/blog'];
-    const forced = ['/products/y', '/resources/blog/post', '/blogging/y'];
+  it('carves out a configured section wherever it appears, but nothing adjacent', async () => {
+    // A site declares the sections it publishes without the extension, so
+    // there is no `.html` form to force. Matched as a whole path segment, so
+    // `/blogging/y` is untouched while `/resources/blog/post` -- genuinely in
+    // the section -- is exempt.
+    const exempt = ['/blog/post', '/fr/blog/post', '/blog', '/resources/blog/post'];
+    const forced = ['/products/y', '/blogging/y'];
     // Sequential, not Promise.all: buildCaasXdmPayload is NOT reentrant (it
     // threads module-global config/tag state), as documented at its definition.
     // The concurrent form passes here only incidentally, because contentid is
@@ -217,13 +218,13 @@ describe('caas-payload-core: forced-.html card identity', () => {
     // place a future reader looks for the house style on calling it.
     for (const path of exempt) {
       // eslint-disable-next-line no-await-in-loop
-      const md = await build({ path, htmlIdentity: true });
+      const md = await build({ path, htmlIdentity: true, htmlIdentitySections: 'blog' });
       // eslint-disable-next-line no-await-in-loop
       expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}`));
     }
     for (const path of forced) {
       // eslint-disable-next-line no-await-in-loop
-      const md = await build({ path, htmlIdentity: true });
+      const md = await build({ path, htmlIdentity: true, htmlIdentitySections: 'blog' });
       // eslint-disable-next-line no-await-in-loop
       expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}.html`));
     }
@@ -282,12 +283,14 @@ describe('caas-payload-core: forced-.html card identity', () => {
     }
   });
 
-  it('does not warn when htmlIdentity is passed, or when the url is out of scope', async () => {
+  it('does not warn when the full policy is passed, or when the url is out of scope', async () => {
     const log = stub();
     window.lana = { log };
     try {
-      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
-      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false);
+      // Flag AND qualifier both supplied. An explicit '' is a site declaring
+      // it publishes nothing extensionless -- legitimate, and the common case.
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true, '');
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false, '');
       // Another host is not covered by the policy, so the flag cannot change
       // the answer and the warning would be pure noise.
       await getCaasIds('https://www.adobe.com/resources/x', 'default');
@@ -295,7 +298,38 @@ describe('caas-payload-core: forced-.html card identity', () => {
       await getCaasIds(`https://${BACOM}/resources/x.html`, 'default');
       // An exempt section hashes the same either way, so the omission is
       // harmless and a warning here would crowd out a real one.
-      await getCaasIds(`https://${BACOM}/blog/post`, 'default');
+      await getCaasIds(`https://${BACOM}/blog/post`, 'default', undefined, 'blog');
+      expect(log.called).to.be.false;
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('warns when the flag is on but the section list was never supplied', async () => {
+    // The qualifier decides whether an in-scope url keeps its bare id or gets
+    // `.html` forced onto it. A caller that supplies the flag alone -- the
+    // external milo-caas service, until it learns to read the new column --
+    // orphans every card in a section the site publishes extensionless, with
+    // nothing in-process able to detect it. Omission must therefore be
+    // distinguishable from an explicit empty list.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('no htmlIdentitySections');
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('does not warn about a missing section list when the flag is off', async () => {
+    // With the policy off nothing is forced, so there is nothing to carve out
+    // and the qualifier cannot change any id.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false);
       expect(log.called).to.be.false;
     } finally {
       delete window.lana;
@@ -309,8 +343,8 @@ describe('caas-payload-core: forced-.html card identity', () => {
     const log = stub();
     window.lana = { log };
     try {
-      const omitted = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default');
-      const passed = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default', true);
+      const omitted = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default', undefined, 'blog');
+      const passed = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default', true, 'blog');
       expect(omitted.contentId).to.not.equal(passed.contentId);
       expect(log.calledOnce).to.be.true;
       expect(log.firstCall.args[0]).to.contain('without htmlIdentity');

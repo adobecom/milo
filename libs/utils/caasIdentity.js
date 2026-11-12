@@ -36,22 +36,23 @@
 // its own input: the identity pathname keeps exactly one terminal `.html`,
 // regardless of what the public URL looks like.
 //
-// Scope is the host plus the authored flag, with ONE path carve-out. BACOM
-// splits its content across repos (`da-bacom`, `da-bacom-blog`, ...) and each
-// repo serves its own /.milo/caas/config.json, so the flag is normally scoped
-// by whoever owns the content, and sections opt in through their own config.
+// Scope is the host plus the authored flag, qualified by a per-site list of
+// sections that are published WITHOUT the extension. BACOM splits its content
+// across repos (`da-bacom`, `da-bacom-blog`, ...) and each repo serves its own
+// /.milo/caas/config.json, so the flag is scoped by whoever owns the content.
 //
-// That boundary is not airtight: the flag also reaches the publishers from
-// page metadata, which an author sets without a config change or a review.
 // `/blog` is already published extensionless, so forcing `.html` onto its
-// identity mints an id no card holds -- a section-wide orphaning with no error
-// raised anywhere. It is therefore exempted here, below the config boundary,
-// by toIdentityUrl. The exemption is deliberately kept at a single
-// chokepoint every runtime shares: a publisher and a consumer that disagree
-// about one page break every card in the section, silently.
+// identity would mint an id no card holds -- a section-wide orphaning with no
+// error raised anywhere. Which sections those are is a fact about one SITE, so
+// it is never known here: callers pass it in, through the same channel that
+// carries the flag itself. A site that has not enabled the policy therefore
+// has no carve-out, and nothing here special-cases `/blog` for everyone else.
 //
-// Keep the list minimal and anchored: an exemption silently neutralizes the
-// flag for a section that later migrates TO `.html`.
+// The qualifier is applied at a single chokepoint every runtime shares,
+// toIdentityUrl, because a publisher and a consumer that disagree about one
+// page break every card in the section, silently. That also means every
+// runtime must be GIVEN the same list. The rendering side reads it from the
+// `caas-identity-extensionless-sections` page metadata (MWPW-213847).
 //
 // Only the identity hash input is affected. The public url, uci and CTA urls
 // continue to use prodUrl untouched.
@@ -268,60 +269,108 @@ const toRawIdentityUrl = (prodUrl, enabled = false) => {
   return getCaasIdentityUrl(bare, enabled);
 };
 
-// Sections published WITHOUT the extension, whose pages therefore have no
-// `.html` form to force. Hardcoded rather than configured: half of this runs
-// in the UMD/poller bundle, where no site config is reachable, and publisher
-// and consumer MUST agree -- two sides that disagree about one page mint two
-// different ids and every card in the section stops resolving, silently.
-const EXTENSIONLESS_SECTIONS = ['blog'];
+/**
+ * Normalizes an authored or configured section list.
+ *
+ * Accepts the comma string the config sheet, the advanced panel and page
+ * metadata all carry, or an array from a caller that has already parsed one.
+ * Lowercased so every comparison downstream is a plain equality check, and
+ * stripped of the surrounding slashes authors reach for by habit -- `/blog`,
+ * `blog/` and `/blog/` all name the same segment, and silently matching none
+ * of them would orphan the section this list exists to protect.
+ *
+ * Exported because all three publishing channels parse the same authored
+ * value, and the module header's rule applies to this as much as to the flag
+ * helpers: import it rather than writing a fourth variant.
+ *
+ * @param {string|string[]} sections
+ * @returns {string[]} deduped, lowercased, slash-free segment names
+ */
+/**
+ * The page-metadata name carrying the per-site extensionless section list.
+ *
+ * Declared here, in the leaf both sides import, because this string is a
+ * contract spanning two repositories and two tickets: the sidekick publisher
+ * reads it, MWPW-213847's consumer reads it, and the bulk publisher's help
+ * text tells authors to write it. A typo in any one of them resolves to the
+ * empty string, which is the deliberately-silent "no exceptions" case -- so
+ * the failure mode is a section-wide orphaning with nothing logged anywhere.
+ * A shared constant makes that drift impossible rather than merely unlikely.
+ */
+export const EXTENSIONLESS_SECTIONS_META = 'caas-identity-extensionless-sections';
 
-// Locale prefixes the extensionless sections are actually published under.
-// Hardcoded for the same reason: this leaf cannot import a locale table, and a
-// `[a-z]{2}(_[a-z]{2})?` shape heuristic would be wrong in both directions.
-// TODO(MWPW-213847): if the blog repo indexes a new locale, add it here or its
-// pages start having `.html` forced onto their ids.
-const EXTENSIONLESS_SECTION_PREFIXES = ['au', 'de', 'fr', 'jp', 'kr', 'uk'];
+export const normalizeSections = (sections) => {
+  if (!Array.isArray(sections) && typeof sections !== 'string') return [];
+  const list = Array.isArray(sections) ? sections : sections.split(',');
+  const cleaned = list
+    .map((section) => (typeof section === 'string' ? section.trim().toLowerCase() : ''))
+    .map((section) => section.replace(/^\/+/, '').replace(/\/+$/, '').trim())
+    .filter(Boolean);
+  return [...new Set(cleaned)];
+};
 
 /**
- * Whether a url is in a section that is published without the extension.
+ * Authored section entries that cannot name a path segment.
  *
- * Anchored to the first content segment, after at most one locale prefix, so
- * `/resources/blog/x` and `/products/blogging-tool` do NOT match. That
- * anchoring is load-bearing: both belong to the `.html`-publishing repo, and
- * exempting either would create the very divergence this prevents.
+ * Mirrors isFlagUnrecognized: a value that normalizes to something matching
+ * nothing is indistinguishable, at match time, from a site that configured no
+ * carve-out -- and the failure is the silent section-wide orphaning this
+ * module exists to prevent. So the channels surface it instead, each with the
+ * logger it already uses.
+ *
+ * A residual `/` means the author wrote a path or a glob (`blog/*`,
+ * `business.adobe.com/blog`) where a segment belongs; a `.` means they wrote a
+ * host or a filename.
+ *
+ * @param {string|string[]} sections
+ * @returns {string[]} the offending entries, empty when all are usable
+ */
+export const findUnrecognizedSections = (sections) => (
+  normalizeSections(sections).filter((section) => section.includes('/') || section.includes('.'))
+);
+
+/**
+ * Whether a url sits in a section this SITE publishes without the extension.
+ *
+ * The section list is supplied by the caller, never known here -- see the
+ * module header for why, and for the channels it arrives through.
+ *
+ * Matched as any whole path SEGMENT, so one configured `blog` covers
+ * `/blog/x`, `/de/blog/x` and `/products/blog/x` alike, with no locale table
+ * and no assumption about where in the path the section sits. Segment
+ * matching also means `/products/blogging-tool` is not the blog.
  *
  * @param {string} url schemed or scheme-less url
+ * @param {string|string[]} sections sections this site publishes extensionless
  * @returns {boolean}
  */
-export const isExtensionlessSection = (url) => {
-  if (!isForcedHtmlIdentityUrl(url)) return false;
+export const isExtensionlessSection = (url, sections = []) => {
+  const configured = normalizeSections(sections);
+  if (!configured.length || !isForcedHtmlIdentityUrl(url)) return false;
   const { pathname } = splitUrl(url);
-  const segments = stripHtml(pathname).split('/').filter(Boolean);
-  const [first] = segments;
-  if (!first) return false;
-  const rest = EXTENSIONLESS_SECTION_PREFIXES.includes(first.toLowerCase())
-    ? segments.slice(1)
-    : segments;
-  const [section] = rest;
-  return !!section && EXTENSIONLESS_SECTIONS.includes(section.toLowerCase());
+  return stripHtml(pathname)
+    .split('/')
+    .filter(Boolean)
+    .some((segment) => configured.includes(segment.toLowerCase()));
 };
 
 /**
  * The identity url, with the full forced-`.html` policy applied -- including
- * its carve-out for sections that are published extensionless.
+ * the carve-out for sections this site publishes extensionless.
  *
  * Every runtime that mints or reproduces an identity goes through this, so the
  * publisher, the removal path and the collection consumer cannot drift apart.
+ *
  * Gated on the flag like the rest of the policy: with the flag off nothing is
- * forced, so there is nothing to carve out, and rewriting ids for a site that
- * never opted in would orphan cards that resolve correctly today.
+ * forced, so there is nothing to carve out.
  *
  * @param {string} prodUrl production url of the page
  * @param {string|boolean} enabled authored htmlIdentity flag value
+ * @param {string|string[]} sections sections this site publishes extensionless
  * @returns {string} the string to hash
  */
-export const toIdentityUrl = (prodUrl, enabled = false) => {
-  if (!isHtmlIdentityEnabled(enabled) || !isExtensionlessSection(prodUrl)) {
+export const toIdentityUrl = (prodUrl, enabled = false, sections = []) => {
+  if (!isHtmlIdentityEnabled(enabled) || !isExtensionlessSection(prodUrl, sections)) {
     return toRawIdentityUrl(prodUrl, enabled);
   }
   // STRIP rather than decline to add: the per-environment htmlExt split means
@@ -335,13 +384,22 @@ export const toIdentityUrl = (prodUrl, enabled = false) => {
 /**
  * Whether the policy actually changes the id for a url -- the only question
  * worth warning on. Subsumes "is it in scope" and "was it authored with the
- * extension": an out-of-scope url, an already-`.html` url and an exempt
- * section all answer no, because for each of them both flag states hash the
- * same string.
+ * extension": an out-of-scope url and an already-`.html` url both answer no,
+ * because for each of them both flag states hash the same string.
+ *
+ * Inside an EXEMPT section the polarity inverts rather than going quiet: the
+ * bare form answers no (both states hash it bare), while the `.html` form
+ * answers yes, because enabling the policy strips the extension the author
+ * wrote. That is the correct signal -- in an extensionless section it is the
+ * `.html` url that misses.
+ *
  * @param {string} url schemed or scheme-less url
+ * @param {string|string[]} sections sections this site publishes extensionless
  * @returns {boolean}
  */
-export const policyAltersIdentity = (url) => toIdentityUrl(url, true) !== toIdentityUrl(url, false);
+export const policyAltersIdentity = (url, sections = []) => (
+  toIdentityUrl(url, true, sections) !== toIdentityUrl(url, false, sections)
+);
 
 /**
  * True when the policy is off and turning it on would change the url's id --
@@ -358,6 +416,6 @@ export const policyAltersIdentity = (url) => toIdentityUrl(url, true) !== toIden
  * @param {string|boolean} enabled authored or resolved feature-flag state
  * @returns {boolean}
  */
-export const isIdentityPolicyMiss = (url, enabled = false) => (
-  !isHtmlIdentityEnabled(enabled) && policyAltersIdentity(url)
+export const isIdentityPolicyMiss = (url, enabled = false, sections = []) => (
+  !isHtmlIdentityEnabled(enabled) && policyAltersIdentity(url, sections)
 );

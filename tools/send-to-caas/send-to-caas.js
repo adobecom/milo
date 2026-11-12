@@ -3,9 +3,12 @@
 /* eslint-disable no-alert */
 import { getImsToken } from '../utils/utils.js';
 import {
+  EXTENSIONLESS_SECTIONS_META,
+  findUnrecognizedSections,
   isFlagUnrecognized,
   isHtmlIdentityEnabled,
   isIdentityPolicyMiss,
+  normalizeSections,
 } from '../../libs/utils/caasIdentity.js';
 
 import {
@@ -248,7 +251,10 @@ const validateProps = async (prodHost, publishingModal) => {
   // tool the auto-publish rule-matching engine (path globs, per-env overrides),
   // which is a larger change than this ticket should carry. Operational rule
   // until then: a site enabling the policy must set BOTH the
-  // `caas-identity-html` metadata and the `htmlIdentity` config.json column.
+  // `caas-identity-html` metadata and the `htmlIdentity` config.json column --
+  // and, where it publishes a section extensionless, both the
+  // `caas-identity-extensionless-sections` metadata and the matching
+  // `htmlIdentitySections` column.
   const identityMeta = document.head.querySelector('meta[name="caas-identity-html"]')?.content;
   if (isFlagUnrecognized(identityMeta)) {
     // Resolves to OFF, so this page would publish under a legacy id while the
@@ -260,8 +266,25 @@ const validateProps = async (prodHost, publishingModal) => {
     );
   }
   const htmlIdentity = isHtmlIdentityEnabled(identityMeta);
+  // The qualifier travels with the flag, from the companion metadata. This is
+  // a publishing channel like any other, so omitting it here would force
+  // `.html` onto the very sections the site publishes extensionless -- while
+  // auto-publish, reading htmlIdentitySections from config.json, would not.
+  // One page, two contentIds, no error. It also sets the polarity of the
+  // isIdentityPolicyMiss check below, which inverts inside an exempt section.
+  const sectionsMeta = document.head.querySelector(`meta[name="${EXTENSIONLESS_SECTIONS_META}"]`)?.content ?? '';
+  const badSections = findUnrecognizedSections(sectionsMeta);
+  if (badSections.length) {
+    window.lana?.log(
+      `send-to-caas: unrecognized ${EXTENSIONLESS_SECTIONS_META} entries `
+      + `'${badSections.join(', ')}'. These name a path, host or glob rather than a bare `
+      + 'path segment, so they match nothing and the section keeps forced-`.html` ids.',
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
+  }
+  const htmlIdentitySections = normalizeSections(sectionsMeta).join(',');
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
-    { prodUrl: `${prodHost}${window.location.pathname}`, htmlIdentity },
+    { prodUrl: `${prodHost}${window.location.pathname}`, htmlIdentity, htmlIdentitySections },
   );
 
   const showAllPropertiesAlert = async () => {
@@ -269,6 +292,7 @@ const validateProps = async (prodHost, publishingModal) => {
       {
         prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}`,
         htmlIdentity,
+        htmlIdentitySections,
       },
     );
     const mdStr = JSON.stringify(sortObjByPropName(cMetaData), undefined, 4);
@@ -301,7 +325,7 @@ const validateProps = async (prodHost, publishingModal) => {
   let metaWithUseHtml;
   if (useHtml) {
     ({ caasMetadata: metaWithUseHtml } = await getCardMetadata(
-      { prodUrl: `${prodHost}${window.location.pathname}.html`, htmlIdentity },
+      { prodUrl: `${prodHost}${window.location.pathname}.html`, htmlIdentity, htmlIdentitySections },
     ));
   }
 
@@ -322,7 +346,7 @@ const validateProps = async (prodHost, publishingModal) => {
   // sidekick publish. In an extensionless section the `.html` form is instead
   // the one that misses, which isIdentityPolicyMiss now reports correctly.
   const publishedProdUrl = `${prodHost}${window.location.pathname}${useHtml ? '.html' : ''}`;
-  if (isIdentityPolicyMiss(publishedProdUrl, htmlIdentity)) {
+  if (isIdentityPolicyMiss(publishedProdUrl, htmlIdentity, htmlIdentitySections)) {
     window.lana?.log(
       'send-to-caas: publishing an in-scope url without caas-identity-html. If this '
       + "site's config.json sets htmlIdentity, this mints a DUPLICATE card under a "

@@ -45,6 +45,29 @@
  *                 with an htmlExt<Env> split it cannot make the ids converge,
  *                 so the rule is refused outright and that path stops
  *                 publishing (see BACOM_PROD_HOST in caasIdentity.js).
+ *   htmlIdentitySections
+ *                 comma list of path SEGMENTS this site publishes without the
+ *                 extension (e.g. `blog`), which htmlIdentity must leave
+ *                 alone. Authored as bare segments: `blog`, not `/blog` or
+ *                 `blog/*`. Matched anywhere in the path, so `blog` covers
+ *                 `/blog/x`, `/de/blog/x` and `/products/blog/x`; it is a
+ *                 segment match, so `/products/blogging-tool` is unaffected.
+ *                 A page NAMED for the section matches too: `/products/blog`
+ *                 is treated as extensionless.
+ *                 SITE-WIDE like htmlIdentity, and UNIONED across rules: a
+ *                 rule that omits the column does not re-force `.html` for its
+ *                 subtree. Omit it entirely and there is no carve-out at all.
+ *                 The rendering side MUST be configured to match, via the
+ *                 `caas-identity-extensionless-sections` page metadata
+ *                 (MWPW-213847), or the two sides hash the same page
+ *                 differently and every card in the section silently stops
+ *                 resolving.
+ *                 Subject to the same bundle-pin gate as htmlIdentity below,
+ *                 and more urgently: a poller pinned to a build that has
+ *                 htmlIdentity but not this column honours the flag while
+ *                 ignoring the carve-out, which orphans the section rather
+ *                 than merely duplicating it. DO NOT author this column until
+ *                 the pin is bumped to a build containing it.
  *
  * Two things outside this file must agree, or cards silently disappear:
  *   1. PAGE METADATA. Setting htmlIdentity here is only the publisher half.
@@ -85,11 +108,13 @@ import {
 import { getCustomConfig } from '../utils/utils.js';
 import {
   toIdentityUrl,
+  findUnrecognizedSections,
   isFlagDisabled,
   isFlagEnabled,
   isFlagUnrecognized,
   isHtmlIdentityEnabled,
   isLegacyHtmlExtEnabled,
+  normalizeSections,
 } from '../../libs/utils/caasIdentity.js';
 
 // Nothing on the identity path used to emit a single log line, so a site whose
@@ -115,6 +140,12 @@ const siteWideNoticesLogged = new Set();
 // and that resolver runs 3-4 times per url.
 const pinnedHtmlExtLogged = new Set();
 
+// See resolveHtmlIdentitySections: the misauthored-cell warning names the
+// offending entries, and that resolver runs once per url, so a single bad
+// `blog/*` cell would otherwise emit one lana entry per page in a bulk job.
+// Keyed on the entries themselves, so a second distinct typo still reports.
+const unrecognizedSectionsLogged = new Set();
+
 // Test-only. The set above is module-level by design (matching
 // warnOnIdentityPolicyMiss in libs/blocks/caas/utils.js), which makes the
 // "fires once, then suppressed" behaviour untestable from a known state: the
@@ -124,6 +155,7 @@ const pinnedHtmlExtLogged = new Set();
 export const resetIdentityNoticesForTesting = () => {
   siteWideNoticesLogged.clear();
   pinnedHtmlExtLogged.clear();
+  unrecognizedSectionsLogged.clear();
 };
 
 // Re-exported from send-utils so the per-page opt-out check stays importable
@@ -283,12 +315,13 @@ export const resolveHtmlExt = (rule, caasEnv) => {
   return isLegacyHtmlExtEnabled(value);
 };
 
-// Card identity is a SITE-level scheme, not a per-path one: a single site must
-// hash every card the same way or its collections fracture. resolveRule returns
-// only the single most-specific match, so reading htmlIdentity off that rule
-// alone means a narrow rule that merely omits the column silently reverts the
-// policy for its whole subtree -- exactly the "section-wide orphaning with no
-// error raised anywhere" that caasIdentity.js rejects path carve-outs to avoid.
+// Card identity is a SITE-level scheme on the publish path, not a per-path
+// one: a single site must hash every card it publishes the same way or its
+// collections fracture. resolveRule returns only the single most-specific
+// match, so reading htmlIdentity off that rule alone means a narrow rule that
+// merely omits the column silently reverts the policy for its whole subtree --
+// exactly the "section-wide orphaning with no error raised anywhere" that
+// caasIdentity.js exists to prevent.
 //
 // So resolve it across the whole config: if ANY rule enables it, the site has
 // opted in. Disagreement is an authoring error, and the safe direction is ON --
@@ -343,6 +376,32 @@ export const resolveHtmlIdentity = (rules, rule, origin = '') => {
     );
   }
   return true;
+};
+
+// The SECTION list that qualifies the policy, resolved the same way and for
+// the same reason: a narrow rule that merely omits the column must not
+// silently re-force `.html` onto a section's ids for its subtree. So the list
+// is UNIONED across every rule. Union is also the safe direction -- an exempt
+// section keeps the bare id its cards already hold, while losing the exemption
+// orphans them with no way back.
+//
+// The rendering side must be configured to match, via the
+// `caas-identity-extensionless-sections` page metadata (MWPW-213847).
+export const resolveHtmlIdentitySections = (rules, rule) => {
+  const list = Array.isArray(rules) ? rules : [];
+  const declared = [...list, rule].flatMap((r) => normalizeSections(r?.htmlIdentitySections));
+  const unrecognized = findUnrecognizedSections(declared);
+  const noticeKey = unrecognized.join(',');
+  if (unrecognized.length && !unrecognizedSectionsLogged.has(noticeKey)) {
+    unrecognizedSectionsLogged.add(noticeKey);
+    logIdentity(
+      `unrecognized htmlIdentitySections entries '${unrecognized.join(', ')}': these name `
+      + 'a path, host or glob rather than a bare path segment, so they match nothing and '
+      + 'the section keeps forced-`.html` ids. Author bare segments, e.g. `blog`.',
+      'warning',
+    );
+  }
+  return normalizeSections(declared).join(',');
 };
 
 export const resolveTargets = (rule, action) => {
@@ -453,6 +512,7 @@ export const caasAutoPublish = async ({
       );
     }
     const htmlIdentity = resolveHtmlIdentity(rules, rule, origin);
+    const htmlIdentitySections = resolveHtmlIdentitySections(rules, rule);
 
     const targets = resolveTargets(rule, action);
 
@@ -515,7 +575,7 @@ export const caasAutoPublish = async ({
       ...ruleEnvs.map((env) => resolveHtmlExt(rule, env)),
     ]);
     const identityUrls = new Set([...reachableHtmlExts].map((htmlExt) => (
-      toIdentityUrl(variantProdUrl(htmlExt), htmlIdentity)
+      toIdentityUrl(variantProdUrl(htmlExt), htmlIdentity, htmlIdentitySections)
     )));
     if (identityUrls.size > 1) {
       // Deliberately NOT the `skipped: true` shape. Five routine conditions
@@ -551,6 +611,7 @@ export const caasAutoPublish = async ({
         repo: effRepo,
         floodgatecolor,
         htmlIdentity,
+        htmlIdentitySections,
         // A rule opts a language-first (Lingo) site into per-page locale resolution;
         // an explicit caller-supplied languageFirst (used by the legacy bulk tool) wins.
         languageFirst: languageFirst ?? rule.languageFirst,
