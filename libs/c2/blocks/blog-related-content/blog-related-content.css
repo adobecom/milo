@@ -1,7 +1,7 @@
 /* stylelint-disable selector-class-pattern -- CaaS owns the mixed-case class names. */
 
 .blog-related-content {
-  margin-block-start: 40px;
+  margin-block-start: var(--s2a-spacing-40);
 }
 
 .blog-related-content[hidden] {
@@ -9,8 +9,8 @@
 }
 
 .blog-related-content > h3 {
-  margin: 0 0 20px;
-  font-size: 16px;
+  margin: 0 0 var(--s2a-spacing-20);
+  font-size: var(--s2a-font-size-16);
   font-weight: 700;
   line-height: 1.5;
   text-transform: uppercase;
@@ -28,7 +28,7 @@
 .blog-related-content .consonant-CardsGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--s2a-spacing-16);
 }
 
 .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
@@ -39,8 +39,8 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--s2a-color-gray-100);
-  border-radius: 4px;
+  border: var(--s2a-border-width-1) solid var(--s2a-color-gray-100);
+  border-radius: var(--s2a-border-radius-4);
   background: var(--s2a-color-gray-25);
 }
 
@@ -57,7 +57,7 @@
   flex: 1;
   min-width: 0;
   width: auto;
-  padding: 10px 12px;
+  padding: 10px var(--s2a-spacing-12);
 }
 
 .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-title {
@@ -65,7 +65,7 @@
   margin: 0;
   overflow: hidden;
   color: var(--s2a-color-content-default);
-  font-size: 14px;
+  font-size: var(--s2a-font-size-14);
   font-weight: 700;
   line-height: 20px;
   -webkit-box-orient: vertical;
@@ -79,6 +79,6 @@
 }
 
 .blog-related-content a:focus-visible {
-  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
   outline-offset: -2px;
 }

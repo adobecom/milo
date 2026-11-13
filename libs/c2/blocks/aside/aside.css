@@ -8,7 +8,7 @@
 }
 
 .aside {
-  --min-height: 160px;
+  --aside-min-height: 160px;
 
   display: flex;
   width: 100%;
@@ -41,7 +41,7 @@
 }
 
 .aside:not(.notification, .promobar) {
-  min-height: var(--min-height);
+  min-height: var(--aside-min-height);
 }
 
 .aside.promobar [class^="body-"],
@@ -118,7 +118,7 @@
 }
 
 .aside.simple .foreground.container .text {
-  margin-bottom: 80px;
+  margin-bottom: var(--s2a-spacing-80);
 }
 
 .aside.notification .foreground.container .text {
@@ -152,7 +152,7 @@
 .aside.split .icon-stack-area li a {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s2a-spacing-12);
   font-weight: bold;
 }
 
@@ -320,7 +320,7 @@
 .aside.rounded-corners .foreground .image:not(:has(.video-container)) .pause-play-wrapper,
 .aside.rounded-corners .foreground .image video,
 .aside.rounded-corners .foreground.container .image .milo-video iframe {
-  border-radius: 16px;
+  border-radius: var(--s2a-border-radius-16);
 }
 
 .aside .foreground.container .image video,
@@ -460,7 +460,7 @@
 }
 
 .aside.center:not(.notification) .foreground.container .text {
-  margin: 80px 0;
+  margin: var(--s2a-spacing-80) 0;
   text-align: center;
   padding: 0;
 }
@@ -547,7 +547,7 @@
 .aside.split .icon-stack-area {
   display: flex;
   flex-flow: row wrap;
-  gap: 12px;
+  gap: var(--s2a-spacing-12);
   margin: -8px 0 var(--spacing-s);
   width: 100%;
   padding: 0;
@@ -707,23 +707,23 @@
   display: none;
 }
 
-@media screen and (min-width: 600px) {
+@media (width >= 768px) {
   .aside {
-    --min-height-small: 420px;
-    --min-height-medium: 560px;
-    --min-height-large: 700px;
+    --aside-min-height-small: 420px;
+    --aside-min-height-medium: 560px;
+    --aside-min-height-large: 700px;
   }
 
   .aside.small:not(.notification, .promobar) {
-    min-height: var(--min-height-small);
+    min-height: var(--aside-min-height-small);
   }
 
   .aside.medium:not(.notification, .promobar) {
-    min-height: var(--min-height-medium);
+    min-height: var(--aside-min-height-medium);
   }
 
   .aside.large:not(.notification, .promobar) {
-    min-height: var(--min-height-large);
+    min-height: var(--aside-min-height-large);
   }
 
   .aside.media-top-mobile .foreground .image,
@@ -884,12 +884,12 @@
   }
 
   .aside.notification.small .foreground.container .text .body-m.action-area {
-    margin-left: 24px;
+    margin-left: var(--s2a-spacing-24);
   }
 
   [dir = "rtl"] .aside.notification.small .foreground.container .text .body-m.action-area {
     margin-left: 0;
-    margin-right: 24px;
+    margin-right: var(--s2a-spacing-24);
   }
 
   .aside.split.half .foreground.container .text {
@@ -1007,7 +1007,7 @@
   }
 }
 
-@media (min-width: 600px) and (max-width: 1199px) {
+@media (768px <= width < 1280px) {
   .aside.promobar.popup .tablet-up.hide-block ~ .promo-close {
     display: none;
   }
@@ -1070,7 +1070,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media (width >= 1280px) {
   .aside.small {
     min-height: 420px;
   }
@@ -1291,7 +1291,7 @@
   }
 }
 
-@media screen and (min-width: 1440px) {
+@media (width >= 1920px) {
   .aside.split .foreground.container .text {
     flex: 0 0 calc(500px - 10.5vw);
   }
@@ -1304,11 +1304,13 @@
   margin-bottom: unset;
 }
 
-@media (max-width: 599px) {
+/* Mobile-only variants: they override several variant-specific desktop values, so they stay
+   bounded instead of being re-declared at every breakpoint. */
+@media (width < 768px) {
   .aside.container-mobile {
     width: var(--grid-container-width);
     margin: var(--spacing-s) auto;
-    border-radius: 16px;
+    border-radius: var(--s2a-border-radius-16);
   }
 
   .aside.container-mobile .foreground.container {
