@@ -991,12 +991,70 @@ describe('merch-card-collection autoblock', () => {
     };
 
     // The clear button's label comes from the gnav placeholders; no fetch in tests.
-    before(() => setConfig({ ...conf, placeholders: { 'clear-results': 'Clear results' } }));
+    before(() => setConfig({ ...conf, placeholders: { 'clear-results': 'Clear results', 'filter-pill-suffix': 'filter' } }));
     after(() => setConfig(conf));
 
     afterEach(() => {
       window.location.hash = '';
       document.body.innerHTML = '';
+    });
+
+    it('every bar-filter radio has accessible name "<label> filter"', async () => {
+      const { container } = mount();
+      const inputs = [...container.querySelectorAll('.product-pricing-filter-bar input[name="bar-filter"]')];
+      expect(inputs.length).to.be.greaterThan(1);
+      const check = () => inputs.forEach((input) => {
+        expect(input.getAttribute('aria-label')).to.equal(`${input.parentElement.textContent.trim()} filter`);
+      });
+      check();
+      await delay(0);
+      check();
+      expect(inputs.map((i) => i.parentElement.textContent.trim())).to.deep.equal(['Featured', 'Photo']);
+    });
+
+    it('filter word comes from replaceKey and falls back to English "filter"', async () => {
+      const { placeholders } = getFedsPlaceholderConfig();
+      try {
+        placeholders['filter-pill-suffix'] = 'Filtro';
+        let { container } = mount();
+        await delay(0);
+        expect(container.querySelector('input[name="bar-filter"]').getAttribute('aria-label')).to.equal('Featured Filtro');
+        document.body.innerHTML = '';
+        // An unresolved key comes back as its de-hyphenated text: keep English.
+        placeholders['filter-pill-suffix'] = 'filter pill suffix';
+        ({ container } = mount());
+        await delay(0);
+        expect(container.querySelector('.product-pricing-filter-bar')).to.exist;
+        expect(container.querySelector('input[name="bar-filter"]').getAttribute('aria-label')).to.equal('Featured filter');
+      } finally {
+        placeholders['filter-pill-suffix'] = 'filter';
+      }
+    });
+
+    it('bar-pricing and drawer pills get no added aria-label', async () => {
+      const { container } = mount();
+      await delay(0);
+      const others = [
+        ...container.querySelectorAll('input[name="bar-pricing"]'),
+        ...container.querySelectorAll('.product-pricing-drawer .product-pricing-pill input'),
+      ];
+      expect(others.length).to.be.greaterThan(0);
+      others.forEach((input) => expect(input.hasAttribute('aria-label')).to.be.false);
+    });
+
+    it('toggling a bar-filter pill filters cards as before', async () => {
+      const { container } = mount();
+      const params = () => new URLSearchParams(window.location.hash.slice(1));
+      const radio = (value) => container.querySelector(`.product-pricing-filter-bar input[name="bar-filter"][value="${value}"]`);
+      radio('photo').click();
+      expect(params().get('filter')).to.equal('photo');
+      // The drawer mirrors the hash on hashchange, which fires asynchronously.
+      await delay(50);
+      expect(container.querySelector('.product-pricing-drawer input[value="photo"]').checked).to.be.true;
+      radio('featured').click();
+      expect(params().get('filter')).to.equal('featured');
+      await delay(50);
+      expect(container.querySelector('.product-pricing-drawer input[value="featured"]').checked).to.be.true;
     });
 
     it('seeds the defaults and renders both surfaces', () => {
