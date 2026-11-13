@@ -2476,10 +2476,15 @@ export function preloadLcpCodeFiles(area = document) {
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = sectionData.some((data) => !data.hasOst
+  const hasCommerce = (data) => !data.hasOst
     && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
-      || [...data.autoNames].some(isCommerceBlock)));
-  if (hasCommerceContent) {
+      || [...data.autoNames].some(isCommerceBlock));
+  if (hasCommerce(sectionData[0])) {
+    loadLink(getMasDepUrl('commerce.js'), { rel: 'modulepreload', crossorigin: 'anonymous' });
+    ['utils/decorate.js', 'features/placeholders.js', 'blocks/merch/autoblock.js']
+      .forEach((path) => loadLink(`${base}/${path}`, { rel: 'modulepreload', crossorigin: 'anonymous' }));
+  }
+  if (sectionData.some(hasCommerce)) {
     // Target previews must apply their AUP config before the service initializes.
     const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
     import(`${base}/blocks/merch/merch.js`)
