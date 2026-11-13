@@ -543,4 +543,9 @@ export default async function init(el) {
     },
     options: { rootMargin: `${ROOT_MARGIN}px` },
   });
+
+  /* c8 ignore next 3 */
+  if (getConfig().env?.name !== 'prod') {
+    import('./status.js').then(({ default: main }) => main(el, formData));
+  }
 }
