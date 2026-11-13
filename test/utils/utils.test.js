@@ -1753,6 +1753,55 @@ describe('Utils', () => {
     });
   });
 
+  describe('reserveCompactOverflow', () => {
+    let header;
+    let mmStub;
+    beforeEach(() => {
+      document.head.innerHTML = head;
+      header = document.createElement('header');
+      header.className = 'global-navigation c2-gnav-c1-host';
+      mmStub = sinon.stub(window, 'matchMedia').returns({ matches: false, addEventListener: () => {} });
+    });
+    afterEach(() => {
+      mmStub.restore();
+      document.head.innerHTML = head;
+    });
+    const withMeta = (content, matches = true) => {
+      if (content !== undefined) {
+        document.head.insertAdjacentHTML('beforeend', `<meta name="gnav-compact-overflow" content="${content}">`);
+      }
+      mmStub.returns({ matches, addEventListener: () => {} });
+      utils.reserveCompactOverflow(header);
+    };
+
+    it('reserves across the compact range by default', () => {
+      withMeta('on', true);
+      expect(header.classList.contains('c2-reserve-compact')).to.be.true;
+      expect(mmStub.calledWith('(min-width: 1024px) and (max-width: 1315px)')).to.be.true;
+    });
+
+    it('does not reserve outside the compact range', () => {
+      withMeta('on', false);
+      expect(header.classList.contains('c2-reserve-compact')).to.be.false;
+    });
+
+    it('honours an author-provided breakpoint width', () => {
+      withMeta('1440', true);
+      expect(mmStub.calledWith('(min-width: 1024px) and (max-width: 1440px)')).to.be.true;
+    });
+
+    it('does nothing without the metadata', () => {
+      withMeta(undefined);
+      expect(header.classList.contains('c2-reserve-compact')).to.be.false;
+      expect(mmStub.called).to.be.false;
+    });
+
+    it('does nothing when the metadata is off', () => {
+      withMeta('off');
+      expect(header.classList.contains('c2-reserve-compact')).to.be.false;
+    });
+  });
+
   describe('loadFooter', async () => {
     it('Should load if footer meta is not off', async () => {
       const footer = document.createElement('footer');
