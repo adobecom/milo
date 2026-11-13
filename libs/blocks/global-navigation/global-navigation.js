@@ -624,12 +624,10 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
+      this.addChangeEventListeners,
       this.revealGnav,
       this.decorateAcomAssistantGnav,
       this.ims,
-      this.addChangeEventListeners,
-      this.initCompactOverflow,
-      this.initToolbarCtaOverflow,
     ];
     const fetchKeyboardNav = () => {
       setupKeyboardNav(this.isLocalNav());
@@ -652,10 +650,49 @@ class Gnav {
 
   revealGnav = async () => {
     await cssPromise;
+    // Attach compact listeners and make the first measurement before revealing.
+    this.initCompactOverflow();
+    this.initToolbarCtaOverflow();
+    if (this.dynamicReflowEnabled && typeof this.measureCompact === 'function') {
+      const deadline = performance.now() + 1200;
+      // Reserve the self-hosted profile slot so it's measured before it loads.
+      this.reserveProfileWidth();
+      // Brand/logo images have no reserved box and load after render, so wait
+      // for them — otherwise the row is measured too narrow and snaps on load.
+      const imgs = [...(this.elements.topnav?.querySelectorAll('img') ?? [])]
+        .filter((img) => !img.complete);
+      if (imgs.length) {
+        const imgCap = Math.max(0, deadline - performance.now());
+        await Promise.race([
+          Promise.all(imgs.map((img) => img.decode().catch(() => {}))),
+          new Promise((resolve) => { setTimeout(resolve, imgCap); }),
+        ]);
+      }
+      // Webfonts apply in multiple passes, so one fonts.ready can leave the nav
+      // measured with a narrower fallback weight. Re-measure (header still hidden)
+      // until the width is stable, so the first painted frame is final.
+      let prev = this.measureCompact();
+      while (performance.now() < deadline) {
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => { requestAnimationFrame(resolve); });
+        const width = this.measureCompact();
+        if (width === prev) break;
+        prev = width;
+      }
+    }
     this.block.classList.remove('gnav-hide');
     this.block.classList.add('ready');
     performance.mark('Gnav-Visible');
     logPerformance('Gnav-Time-To-Visible', 'Gnav-Start', 'Gnav-Visible');
+  };
+
+  // Reserve the self-hosted profile slot width before it's decorated so the
+  // compact measurement counts it up front. No-op for UNAV pages.
+  reserveProfileWidth = () => {
+    const slot = this.blocks.profile?.decoratedElem;
+    if (!(slot instanceof HTMLElement)) return;
+    const signedIn = window.adobeIMS?.isSignedInUser?.() === true;
+    slot.style.minWidth = signedIn ? '44px' : '92px';
   };
 
   ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
@@ -913,7 +950,7 @@ class Gnav {
       // firing feds:compactchange here would race it and blank the popup.
       if (!isDesktop.matches) {
         if (wasCompact) header.classList.remove('is-compact');
-        return;
+        return -1;
       }
       const { navWrapper } = this.elements;
       if (this.newMobileNav && navWrapper instanceof HTMLElement) navWrapper.style.transition = 'none';
@@ -954,6 +991,7 @@ class Gnav {
         requestAnimationFrame(() => navWrapper.style.removeProperty('transition'));
       }
       if (shouldCompact !== wasCompact) window.dispatchEvent(new CustomEvent('feds:compactchange'));
+      return contentWidth;
     };
 
     const schedule = () => { if (rafId === null) rafId = requestAnimationFrame(measure); };
@@ -964,7 +1002,9 @@ class Gnav {
     new MutationObserver(schedule).observe(topnav, { childList: true, subtree: true });
     isDesktop.addEventListener('change', schedule);
     document.fonts?.ready?.then(schedule);
-    schedule();
+    // Exposed so revealGnav can re-measure to a stable width before revealing.
+    this.measureCompact = measure;
+    measure();
   };
 
   // Hide the toolbar CTAs (pinned clone + product entry) if they'd collide with
@@ -1003,7 +1043,7 @@ class Gnav {
     isDesktop.addEventListener('change', schedule);
     if (this.dynamicReflowEnabled) window.addEventListener('feds:compactchange', schedule);
     document.fonts?.ready?.then(schedule);
-    schedule();
+    measure();
   };
 
   loadDelayed = async () => {
