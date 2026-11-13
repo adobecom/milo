@@ -1677,7 +1677,19 @@ span.hang-opening-quote {
 
   @keyframes parallax-fade-to-dark {
     from { opacity: 0; }
-    to { opacity: 0.75; }
+    to { opacity: var(--parallax-dim-max, 0.75); }
+  }
+
+  /* At high browser zoom (a common low-vision aid) the viewport collapses to a
+     narrow width while the pointer stays fine/hover — unlike a real phone or
+     tablet. The move-up dim otherwise reaches full strength within a few px of
+     scroll and washes out the marquee text, so soften it to stay readable.
+     Normal desktop pages (wide) and touch devices (coarse pointer) are
+     unaffected. */
+  @media (hover: hover) and (pointer: fine) and (width <= 600px) {
+    .section.parallax-move-up-fast {
+      --parallax-dim-max: 0.15;
+    }
   }
 
   .section:has(+ .section.parallax-double-garage-door),
