@@ -2479,7 +2479,6 @@ export function preloadLcpCodeFiles(area = document) {
   const hasCommerce = (data) => !data.hasOst
     && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
       || [...data.autoNames].some(isCommerceBlock));
-  // loadSection awaits autoblocks before section blocks, so section 0 commerce gates the hero.
   if (hasCommerce(sectionData[0])) {
     loadLink(getMasDepUrl('commerce.js'), { rel: 'modulepreload', crossorigin: 'anonymous' });
     ['utils/decorate.js', 'features/placeholders.js', 'blocks/merch/autoblock.js']
