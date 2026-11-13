@@ -24,6 +24,43 @@
   gap: 12px;
 }
 
+.notification-close {
+  background: none;
+  border: none;
+  color: rgb(242 242 242);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+.preflight-review-link {
+  background: none;
+  border: none;
+  color: rgb(59 99 251);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  transition: color 0.15s ease;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.preflight-review-link:hover {
+  color: rgb(90 127 255);
+} 
+
 .milo-preflight-overlay.preflight-popup {
   top: 50%;
   bottom: auto;

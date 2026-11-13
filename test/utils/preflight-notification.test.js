@@ -161,6 +161,20 @@ describe('preview pop-up', function previewPopupSuite() {
     localStorage.removeItem(SNOOZE_KEY);
   });
 
+  it('shows the original small toast instead of the pop-up on a snoozed page', async () => {
+    snoozePage();
+    await showNotification();
+    const overlay = document.querySelector('.milo-preflight-overlay');
+    expect(overlay.classList.contains('preflight-popup')).to.be.false;
+    expect(overlay.querySelector('[role="dialog"]')).to.be.null;
+    expect(overlay.textContent).to.include('Content quality checks are failing');
+    expect(overlay.querySelector('.preflight-review-link')).to.exist;
+    expect(overlay.querySelector('.notification-close').getAttribute('aria-label')).to.equal('Close');
+    // Removed by hand, not via the close button, so the next test can still show the pop-up.
+    overlay.remove();
+    localStorage.removeItem(SNOOZE_KEY);
+  });
+
   it('shows a focused dialog with issue levels in order, without scrolling, and closes on its own Escape', async () => {
     const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
     await showNotification();
@@ -187,8 +201,13 @@ describe('preview pop-up', function previewPopupSuite() {
     document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(document.querySelector('.milo-preflight-overlay')).to.exist;
     expect(isPageSnoozed()).to.be.false;
+    // With "don't show again" ticked, closing collapses the pop-up into the small toast.
     dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
     expect(isPageSnoozed()).to.be.true;
+    expect(document.querySelector('[role="dialog"]')).to.be.null;
+    const toast = document.querySelector('.milo-preflight-overlay');
+    expect(toast.classList.contains('preflight-popup')).to.be.false;
+    toast.querySelector('.notification-close').click();
+    expect(document.querySelector('.milo-preflight-overlay')).to.be.null;
   });
 });

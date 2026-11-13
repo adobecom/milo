@@ -54,8 +54,10 @@ export function snoozePage(path = window.location.pathname, now = Date.now()) {
   }
 }
 
+const isSnoozeTicked = () => !!document.querySelector('.milo-preflight-overlay .notification-snooze input')?.checked;
+
 function dismissNotification() {
-  if (document.querySelector('.milo-preflight-overlay .notification-snooze input')?.checked) snoozePage();
+  if (isSnoozeTicked()) snoozePage();
   document.querySelector('.milo-preflight-overlay')?.remove();
   wasDismissed = true;
   if (!linkCheckListener) return;
@@ -66,6 +68,31 @@ function dismissNotification() {
 // Dismiss the notification the moment preflight is opened (via the review link or
 // the sidekick plugin) — both routes fire `custom:preflight` on the sidekick.
 sidekick?.addEventListener('custom:preflight', dismissNotification);
+
+// The original small toast. A snoozed page shows it instead of the pop-up, so issues
+// never go silent.
+function createToast() {
+  const reviewLink = createTag('button', { class: 'preflight-review-link' }, 'review');
+  const closeBtn = createTag('button', { class: 'notification-close', 'aria-label': 'Close' }, '×');
+  reviewLink.addEventListener('click', openPreflightPanel);
+  closeBtn.addEventListener('click', dismissNotification);
+  const message = createTag('span', { class: 'notification-message' }, [
+    'Content quality checks are failing. Please ', reviewLink, ' before publishing.',
+  ]);
+  const content = createTag('div', { class: 'notification-content' }, [message, closeBtn]);
+  const notification = createTag('div', { class: 'preflight-notification' }, content);
+  return createTag('div', { class: 'milo-preflight-overlay' }, notification);
+}
+
+// Dismiss or Escape: with "don't show again" ticked, the pop-up collapses into the toast.
+function closePopup() {
+  if (!isSnoozeTicked()) {
+    dismissNotification();
+    return;
+  }
+  snoozePage();
+  document.querySelector('.milo-preflight-overlay')?.replaceWith(createToast());
+}
 
 function isPreflightOpen() {
   return !!document.getElementById('preflight');
@@ -169,10 +196,14 @@ async function createPreflightNotification(results) {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
   // The modal already surfaces the results, so don't also show the notification.
-  if (isPreflightOpen() || isPageSnoozed()) return;
+  if (isPreflightOpen()) return;
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
+  if (isPageSnoozed()) {
+    document.body.append(createToast());
+    return;
+  }
 
   const title = createTag('p', { id: 'preflight-popup-title', class: 'notification-title' }, 'Preflight found issues on this page');
   const message = createTag('p', { id: 'preflight-popup-message', class: 'notification-message' }, 'Please review before publishing.');
@@ -181,7 +212,7 @@ async function createPreflightNotification(results) {
   const reviewBtn = createTag('button', { class: 'notification-review' }, 'Review issues');
   const dismissBtn = createTag('button', { class: 'notification-dismiss' }, 'Dismiss');
   reviewBtn.addEventListener('click', openPreflightPanel);
-  dismissBtn.addEventListener('click', dismissNotification);
+  dismissBtn.addEventListener('click', closePopup);
 
   const snooze = createTag('label', { class: 'notification-snooze' }, [
     createTag('input', { type: 'checkbox' }),
@@ -202,7 +233,7 @@ async function createPreflightNotification(results) {
   }, content);
   // On the pop-up only: Escape that closes the Sidekick palette or a modal must not dismiss it.
   notification.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') dismissNotification();
+    if (e.key === 'Escape') closePopup();
   });
   // Don't pull focus away from something the author is already using.
   const isFocusFree = !document.activeElement || document.activeElement === document.body;
