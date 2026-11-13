@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { getConfig } from '../../libs/utils/utils.js';
+import { setViewport } from '@web/test-runner-commands';
 import {
   setBackgroundFocus, decorateBlockText, getButtonType,
   decoratePictures, decorateViewportContent, normalizeMasFieldText,
@@ -342,111 +342,100 @@ describe('decoratePictures', () => {
   });
 });
 
-describe('decorateViewportContent — resolveInheritance extra-row handling', () => {
-  let container;
+describe('decorateViewportContent — delimiter detection', () => {
+  let el;
 
   beforeEach(() => {
-    container = document.createElement('div');
-    document.body.appendChild(container);
+    el = document.createElement('div');
+    document.body.appendChild(el);
   });
 
-  afterEach(() => {
-    container.remove();
+  afterEach(() => el.remove());
+
+  it('ignores multi-cell rows that hold a viewport keyword', () => {
+    el.innerHTML = `
+      <div><div>Header</div><div></div></div>
+      <div><div>mobile-viewport</div><div>tile 1</div></div>
+      <div><div>desktop-viewport</div><div>tile 2</div></div>`;
+
+    const { hasViewportVariations } = decorateViewportContent(el, () => {});
+
+    expect(hasViewportVariations).to.be.false;
+    expect(el.children.length).to.equal(3);
+    expect(el.children[0].textContent).to.equal('Header');
   });
 
-  // Builds a block with a content row (2 media cells) + one extra row
-  // (2 text cells) per viewport, mirroring side-by-side's row shape.
-  function buildBlock({ mobileText, tabletMedia, tabletText }) {
-    container.innerHTML = `
-      <div><div>Mobile-viewport</div></div>
-      <div>
-        <div><p>mobile media A</p></div>
-        <div><p>mobile media B</p></div>
-      </div>
-      <div>
-        <div><p>${mobileText[0]}</p></div>
-        <div><p>${mobileText[1]}</p></div>
-      </div>
-      <div><div>Tablet-viewport</div></div>
-      <div>
-        <div>${tabletMedia[0] ? `<p>${tabletMedia[0]}</p>` : ''}</div>
-        <div>${tabletMedia[1] ? `<p>${tabletMedia[1]}</p>` : ''}</div>
-      </div>
-      <div>
-        <div>${tabletText[0] ? `<p>${tabletText[0]}</p>` : ''}</div>
-        <div>${tabletText[1] ? `<p>${tabletText[1]}</p>` : ''}</div>
-      </div>
-    `;
-    return container;
-  }
+  it('treats only a keyword with optional -viewport and (variants) as a delimiter', () => {
+    el.innerHTML = `
+      <div><div>Mobile</div></div>
+      <div><div>m0</div></div>
+      <div><div>Desktop benefits</div></div>
+      <div><div>Tablet (variant-a, variant-b)</div></div>
+      <div><div>t0</div></div>
+      <div><div>desktop-viewport(variant-c)</div></div>
+      <div><div>d0</div></div>`;
 
-  // decorateViewportContent swaps the active viewport's rows directly onto
-  // `el` (via applyViewportContent's replaceChildren), so assert against
-  // `el.children` — the same DOM a block's own decorate() would see — rather
-  // than the internal per-viewport container references.
+    const { content } = decorateViewportContent(el, () => {});
 
-  it('does not notify MEP about inherited content outside preview mode', () => {
-    const config = getConfig();
-    const originalMep = config.mep;
-    const events = [];
-    const listener = (event) => events.push(event);
-    document.addEventListener('mep:content-cloned', listener);
+    expect(Object.keys(content)).to.deep.equal(['mobile', 'tablet', 'desktop']);
+    expect(content.mobile.container.textContent).to.equal('m0Desktop benefits');
+    expect(content.tablet.variants).to.deep.equal(['variant-a', 'variant-b']);
+    expect(content.desktop.variants).to.deep.equal(['variant-c']);
+  });
+
+  it('treats a delimiter whose variants wrap onto a second line as a delimiter', () => {
+    el.innerHTML = `
+      <div><div>mobile-viewport</div></div>
+      <div><div>m0</div></div>
+      <div><div><p>desktop-viewport (variant-a,</p>
+        <p>variant-b)</p></div></div>
+      <div><div>d0</div></div>`;
+
+    const { content } = decorateViewportContent(el, () => {});
+
+    expect(Object.keys(content)).to.deep.equal(['mobile', 'desktop']);
+    expect(el.textContent).to.not.include('viewport');
+    expect(content.desktop.variants).to.deep.equal(['variant-a', 'variant-b']);
+  });
+
+  it('does not throw on rows without cells', () => {
+    el.innerHTML = '<div><div>mobile-viewport</div></div><div></div><div>text only</div>';
+
+    expect(() => decorateViewportContent(el, () => {})).to.not.throw();
+  });
+
+  it('removes the delimiter of an empty viewport and keeps the 3-viewport layout', async () => {
+    const { innerWidth: width, innerHeight: height } = window;
+    await setViewport({ width: 1000, height });
+    el.innerHTML = `
+      <div><div>mobile-viewport</div></div>
+      <div><div>tablet-viewport</div></div>
+      <div><div>t0</div></div>
+      <div><div>desktop-viewport</div></div>
+      <div><div>d0</div></div>`;
+
     try {
-      config.mep = { ...originalMep, preview: false };
-      const el = buildBlock({
-        mobileText: ['mobile A', 'mobile B'],
-        tabletMedia: ['', ''],
-        tabletText: ['', ''],
-      });
-      decorateViewportContent(el, () => {});
-      expect(events.length).to.equal(0);
+      const { content } = decorateViewportContent(el, () => {});
+
+      expect(Object.keys(content)).to.deep.equal(['mobile', 'tablet', 'desktop']);
+      expect(content.mobile.container.children.length).to.equal(0);
+      expect(el.textContent).to.equal('t0');
     } finally {
-      config.mep = originalMep;
-      document.removeEventListener('mep:content-cloned', listener);
+      await setViewport({ width, height });
     }
   });
 
-  it('content row (row 0): empty cell still inherits from the previous viewport', () => {
-    const el = buildBlock({
-      mobileText: ['mobile text A', 'mobile text B'],
-      tabletMedia: ['', 'tablet media B'],
-      tabletText: ['', ''],
-    });
+  it('leaves empty cells empty (inheritance runs earlier, in decorateSection)', () => {
+    el.innerHTML = `
+      <div><div>mobile-viewport</div></div>
+      <div><div>m0</div><div>m1</div></div>
+      <div><div>tablet-viewport</div></div>
+      <div><div></div><div>t1</div></div>`;
 
-    decorateViewportContent(el, () => {});
-    const [mediaRow] = el.children;
+    const { content } = decorateViewportContent(el, () => {});
+    const text = [el, ...Object.values(content).map((vp) => vp.container)]
+      .map((node) => node.textContent).join('|');
 
-    expect(mediaRow.children[0].textContent.trim()).to.equal('mobile media A');
-    expect(mediaRow.children[1].textContent.trim()).to.equal('tablet media B');
-  });
-
-  it('extra row (row 1+): an empty cell inherits from the previous viewport, for every column', () => {
-    const el = buildBlock({
-      mobileText: ['mobile text A', 'mobile text B'],
-      tabletMedia: ['tablet media A', 'tablet media B'],
-      tabletText: ['', ''],
-    });
-
-    decorateViewportContent(el, () => {});
-    const [, textRow] = el.children;
-
-    // Before the fix, only cell 0 (card 1) inherited — cell 1 (card 2) stayed
-    // blank instead of picking up mobile's text. Both must inherit now.
-    expect(textRow.children[0].textContent.trim()).to.equal('mobile text A');
-    expect(textRow.children[1].textContent.trim()).to.equal('mobile text B');
-  });
-
-  it('extra row (row 1+): explicitly authored content on the new viewport is preserved', () => {
-    const el = buildBlock({
-      mobileText: ['mobile text A', 'mobile text B'],
-      tabletMedia: ['tablet media A', 'tablet media B'],
-      tabletText: ['tablet text A', 'tablet text B'],
-    });
-
-    decorateViewportContent(el, () => {});
-    const [, textRow] = el.children;
-
-    expect(textRow.children[0].textContent.trim()).to.equal('tablet text A');
-    expect(textRow.children[1].textContent.trim()).to.equal('tablet text B');
+    expect(text.match(/m0/g)).to.have.length(1);
   });
 });

@@ -7,6 +7,8 @@ import {
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getViewportContent,
+  VIEWPORT_KEYWORDS,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -692,8 +694,6 @@ export function decorateBlockKit(el, kits = {}) {
 }
 
 /* Per-viewport content decoration */
-const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
-const VIEWPORT_SUFFIX = '-viewport';
 
 const VIEWPORT_QUERIES = {
   'mobile-tablet-desktop': {
@@ -714,11 +714,6 @@ const VIEWPORT_QUERIES = {
   desktop: { desktop: 'all' },
 };
 
-function isEmptyCell(el) {
-  if (!el) return true;
-  return !el.children.length && !el.textContent?.trim();
-}
-
 export function cloneWithPreviewMetadata(source) {
   const clone = source.cloneNode(true);
   if (getConfig()?.mep?.preview && source.nodeType === Node.ELEMENT_NODE) {
@@ -727,25 +722,11 @@ export function cloneWithPreviewMetadata(source) {
   return clone;
 }
 
-function cloneChildren(source) {
-  return [...source.childNodes].map(cloneWithPreviewMetadata);
-}
-
 function parseVariants(text) {
   const match = text.match(/\(([^)]+)\)/);
   return match
     ? match[1].split(',').map((cls) => cls.trim()).filter(Boolean)
     : [];
-}
-
-function getDelimiterKeyword(row) {
-  if (row.children.length !== 1) return null;
-  const text = row.children[0].textContent.trim().toLowerCase();
-  // TODO: remove bare-keyword fallback post-rollout (replace with the line below)
-  // return VIEWPORT_KEYWORDS.find((kw) => text.startsWith(kw + VIEWPORT_SUFFIX)) ?? null;
-  return VIEWPORT_KEYWORDS.find((kw) => (
-    text.startsWith(kw + VIEWPORT_SUFFIX) || text === kw || text.startsWith(`${kw} `) || text.startsWith(`${kw}(`)
-  )) ?? null;
 }
 
 function warnDuplicateH1s(viewportData) {
@@ -761,51 +742,14 @@ function warnDuplicateH1s(viewportData) {
   }
 }
 
-function inheritRowCells(row, prevRow) {
-  if (!row || !prevRow) return;
-  [...row.children].forEach((col, i) => {
-    const prevCol = prevRow.children[i];
-    if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
-      col.replaceChildren(...cloneChildren(prevCol));
-    }
-  });
-}
-
-function resolveInheritance(rows, previousContent) {
-  if (!previousContent) return;
-
-  const [contentRow, ...extraRows] = rows;
-  const [prevContentRow, ...prevExtraRows] = previousContent.children;
-
-  inheritRowCells(contentRow, prevContentRow);
-  extraRows.forEach((row, i) => inheritRowCells(row, prevExtraRows[i]));
-}
-
 function parseViewportContent(el) {
   const children = [...el.children];
   const content = {};
   const delimiterEls = [];
 
   VIEWPORT_KEYWORDS.forEach((keyword, kwIndex) => {
-    const delimiterIdx = children.findIndex((child) => getDelimiterKeyword(child) === keyword);
+    const { viewportRows: rows, delimiterIdx } = getViewportContent(children, keyword, kwIndex);
     if (delimiterIdx < 0) return;
-
-    // Find the next delimiter (if any) to bound this section
-    const nextIdx = children.findIndex((child, i) => {
-      if (i <= delimiterIdx) return false;
-      const nextKw = getDelimiterKeyword(child);
-      return nextKw && VIEWPORT_KEYWORDS.indexOf(nextKw) > kwIndex;
-    });
-
-    const rows = children.slice(
-      delimiterIdx + 1,
-      nextIdx < 0 ? children.length : nextIdx,
-    );
-
-    // Inherit from the nearest defined lower viewport
-    const prevKey = VIEWPORT_KEYWORDS.slice(0, kwIndex).reverse()
-      .find((k) => content[k]);
-    resolveInheritance(rows, content[prevKey]?.container);
 
     const container = createTag('div');
     container.append(...rows);

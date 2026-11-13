@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import {
   createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix, isTrustedUrl,
+  inheritViewportContent,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -69,6 +70,8 @@ const insertInlineFrag = async (sections, a, relHref) => {
   } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
     fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
   } else {
+    // Inherit while still raw: nested fragments below decorate the content before the 2nd pass
+    inheritViewportContent(section);
     fragChildren = [...section.children];
   }
   if (!fragChildren.length) return;

@@ -1,7 +1,7 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { getConfig, loadStyle } from '../../../libs/utils/utils.js';
+import { createTag, getConfig, inheritViewportContent, loadStyle } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
@@ -38,9 +38,14 @@ describe('offer-hero', () => {
         });
       });
       const fields = [...block.querySelectorAll('mas-field')];
-      fields.forEach((field, index) => {
+      const meta = createTag('meta', { name: 'foundation', content: 'c2' });
+      document.head.append(meta);
+      inheritViewportContent(block.parentElement);
+      meta.remove();
+      // Each inherited copy is hydrated on its own and gets the same Studio URL
+      [...block.querySelectorAll('mas-field')].forEach((field, index) => {
         field.dataset.masBlock = 'inline';
-        mepMasStudioUrls.set(field, `https://mas.adobe.com/studio.html#query=viewport-${index}`);
+        mepMasStudioUrls.set(field, `https://mas.adobe.com/studio.html#query=viewport-${index % fields.length}`);
       });
       const openStub = sinon.stub(window, 'open');
       document.body.dataset.mepMasHighlight = 'true';
