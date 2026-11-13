@@ -493,6 +493,12 @@ describe('MiloFloodgate', () => {
       readPromoteIgnorePaths(el);
       expect(el._promoteIgnorePaths).to.deep.equal([]);
     });
+
+    it('keeps wildcard paths without appending .html', () => {
+      el._floodgateConfig = { getPromoteIgnorePaths: () => ['/summit25/*', '/promo*'] };
+      readPromoteIgnorePaths(el);
+      expect(el._promoteIgnorePaths).to.deep.equal(['/summit25/*', '/promo*']);
+    });
   });
 
   describe('applyPromoteIgnore', () => {
@@ -515,6 +521,19 @@ describe('MiloFloodgate', () => {
       el._promoteIgnorePaths = ['/summit25/'];
       applyPromoteIgnore(el);
       expect(el._filesToProcess).to.deep.equal(['/org/repo/other.html']);
+    });
+
+    it('filters wildcard ignore paths', () => {
+      el._filesToProcess = [
+        '/org/repo/summit25/page',
+        '/org/repo/summit25/sub/data.json',
+        '/org/repo/promo-a',
+        '/org/repo/other',
+      ];
+      el._promoteIgnorePaths = ['/org/repo/summit25/*', '/promo*'];
+      applyPromoteIgnore(el);
+      expect(el._filesToProcess).to.deep.equal(['/org/repo/other']);
+      expect(el._promoteIgnoreList).to.have.length(3);
     });
 
     it('matches extensionless pages against normalized ignore paths', () => {
