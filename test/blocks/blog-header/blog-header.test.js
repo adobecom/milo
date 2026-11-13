@@ -385,6 +385,26 @@ describe('blog-header decoration', () => {
     });
   });
 
+  [
+    'Rachel Thornton',
+    '<strong>Rachel</strong> Thornton',
+    '<p>Rachel Thornton</p>',
+  ].forEach((markup) => {
+    it(`renders a name-only author from ${markup}`, async () => {
+      fetchStub = mockFetch();
+      const { block } = buildBlock({ link: false, metadata: false });
+      block.children[2].firstElementChild.innerHTML = markup;
+      await init(block);
+      const authorName = block.querySelector('.blog-header-author-name');
+      expect(authorName.tagName).to.equal('SPAN');
+      expect(authorName.textContent).to.equal('Rachel Thornton');
+      expect(block.querySelector('.blog-header-author-meta')).not.to.exist;
+      expect(block.querySelector('.blog-header-author-avatar img')).to.exist;
+      expect(block.querySelector('.blog-header-title h1')).to.exist;
+      expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    });
+  });
+
   it('renders names fetched from author profiles as text', async () => {
     fetchStub = mockFetch({ profileMarkup: buildProfile({ name: '&lt;img src=x onerror="void 0"&gt; &amp; Author' }) });
     const { block } = buildBlock({ name: null });
