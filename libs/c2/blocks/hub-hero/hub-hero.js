@@ -507,8 +507,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
     ...(isModal && { 'aria-haspopup': 'dialog' }),
-    'aria-setsize': slidesTotal,
-    'aria-posinset': index + 1,
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);

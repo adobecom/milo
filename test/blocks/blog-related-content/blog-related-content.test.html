@@ -35,8 +35,8 @@
           + '<div class="blog-side-navigation"></div></div>'
           + `<div class="section"><div class="content">${headings ? '<h2>First section</h2>' : '<p>Article</p>'}</div></div>`
           + '<div class="section"><div class="blog-related-content">'
-          + `${title ? `<div><div>Heading</div><div>${title}</div></div>` : ''}`
-          + '<div><div>collection</div><div><a href="https://milo.adobe.com/tools/caas#encoded">'
+          + `${title ? `<div><div>CaaS-Heading</div><div>${title}</div></div>` : ''}`
+          + '<div><div>caas-collection</div><div><a href="https://milo.adobe.com/tools/caas#encoded">'
           + 'Collection (no-lazy)</a></div></div></div></div>';
         document.body.append(main);
         return {
@@ -114,6 +114,20 @@
             navigation.append(block);
             await init(block);
             expect(block.querySelector('h3').textContent).to.equal('Recommended reading');
+          });
+
+          it('renders authored heading markup as literal text rather than HTML', async () => {
+            const { block, navigation } = buildArticle({ title: 'Placeholder' });
+            const title = '<img src=x onerror="void 0"> & Related content';
+            block.firstElementChild.children[1].textContent = title;
+            expect(block.querySelector('img')).not.to.exist;
+            navigation.append(block);
+            await init(block);
+            const heading = block.querySelector('h3');
+            expect(heading.textContent).to.equal(title);
+            expect(heading.childElementCount).to.equal(0);
+            expect(block.hidden).to.equal(false);
+            expect(loadCaas.calledOnce).to.equal(true);
           });
 
           it('does not load related content when there are no eligible article headings', async () => {
