@@ -179,7 +179,7 @@ function initParallax(el) {
       measure();
     });
   };
-  const observer = new ResizeObserver(measure);
+  const observer = new ResizeObserver(schedule);
   el.querySelectorAll('.split-hero-foreground, .split-hero-media-frame')
     .forEach((item) => observer.observe(item));
   el.addEventListener('load', schedule, true);
