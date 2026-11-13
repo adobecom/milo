@@ -121,6 +121,7 @@ const C1_BLOCKS = [
 const C2_BLOCKS = [
   'ai-summary',
   'aside',
+  'aside-c2',
   'base-card',
   'blog-header',
   'blog-related-content',
