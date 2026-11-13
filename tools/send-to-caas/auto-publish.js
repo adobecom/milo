@@ -62,6 +62,14 @@
  *                 (MWPW-213847), or the two sides hash the same page
  *                 differently and every card in the section silently stops
  *                 resolving.
+ *                 CONSUMER PREREQUISITE: collection card resolution does not
+ *                 yet READ that metadata. Until MWPW-213847 is deployed,
+ *                 authoring this column is worse than omitting it -- the
+ *                 publisher preserves the section's extensionless ids while
+ *                 url-based featured-card lookups keep hashing the `.html`
+ *                 form, so the section drops out of every collection
+ *                 referencing it, localized paths included. Omit it until
+ *                 consumer resolution ships, then set both sides together.
  *                 Subject to the same bundle-pin gate as htmlIdentity below,
  *                 and more urgently: a poller pinned to a build that has
  *                 htmlIdentity but not this column honours the flag while

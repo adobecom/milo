@@ -255,6 +255,16 @@ const validateProps = async (prodHost, publishingModal) => {
   // and, where it publishes a section extensionless, both the
   // `caas-identity-extensionless-sections` metadata and the matching
   // `htmlIdentitySections` column.
+  //
+  // CONSUMER PREREQUISITE: that last clause is the steady state, not today's.
+  // Collection card resolution does not yet read
+  // `caas-identity-extensionless-sections` -- it ships with MWPW-213847. Until
+  // then, and while the policy is on, authoring the metadata for a section is
+  // worse than omitting it: the publishers preserve that section's
+  // extensionless ids while URL-based card lookups keep hashing the `.html`
+  // form, so every card in the section drops out of the collections
+  // referencing it, localized paths included. Leave the sections metadata
+  // unset until consumer resolution is deployed.
   const identityMeta = document.head.querySelector('meta[name="caas-identity-html"]')?.content;
   if (isFlagUnrecognized(identityMeta)) {
     // Resolves to OFF, so this page would publish under a legacy id while the
