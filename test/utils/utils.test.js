@@ -642,6 +642,50 @@ describe('Utils', () => {
       await loaded;
       expect(performance.getEntriesByName('Gnav-Start').length).to.equal(1);
     });
+
+    it('waits for loadPostLCP before loading the next sections when Target runs post LCP', async () => {
+      setup(2, [psBlock('a'), psBlock('b')], '<header></header>');
+      utils.getConfig().mep = { targetEnabled: 'postlcp', targetAjoManifests: [] };
+      performance.clearMarks('Gnav-Start');
+      let gnavStartsBeforeB;
+      Object.defineProperty(window.parallelSectionsTest.gates, 'b', {
+        get: () => {
+          gnavStartsBeforeB = performance.getEntriesByName('Gnav-Start').length === 1;
+          return undefined;
+        },
+      });
+      try {
+        await utils.loadArea();
+        expect(gnavStartsBeforeB).to.be.true;
+      } finally {
+        delete utils.getConfig().mep;
+      }
+    });
+
+    it('rejects loadArea without an unhandled rejection when loadPostLCP fails', async () => {
+      setup(2, [psBlock('a'), psBlock('b')]);
+      holdBlock('b');
+      const ogQuerySelector = document.body.querySelector;
+      sinon.stub(document.body, 'querySelector').callsFake(function querySelector(selector) {
+        if (selector === 'header') throw new Error('post-lcp boom');
+        return ogQuerySelector.call(this, selector);
+      });
+      const unhandled = sinon.spy();
+      window.addEventListener('unhandledrejection', unhandled);
+      try {
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 2, 2000, 20);
+        await settle();
+        releases.b();
+        let error;
+        try { await loaded; } catch (e) { error = e; }
+        expect(error?.message).to.equal('post-lcp boom');
+        expect(unhandled.called).to.be.false;
+      } finally {
+        window.removeEventListener('unhandledrejection', unhandled);
+        document.body.querySelector.restore();
+      }
+    });
   });
 
   it('renders global navigation when header tag is present', async () => {

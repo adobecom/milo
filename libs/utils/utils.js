@@ -3387,7 +3387,8 @@ export async function loadArea(area = document) {
         lcpSectionId = section.idx;
       }
       const isLcpSection = section.idx === lcpSectionId;
-      const rushesNext = isLcpSection && idx < parallelCount - 1;
+      const rushesNext = isLcpSection && idx < parallelCount - 1
+        && config.mep?.targetEnabled !== 'postlcp';
       sectionBlocks = await processSection(section, config, {
         isLcpSection,
         loadsPostLCP: isDoc && isLcpSection && !rushesNext,
@@ -3395,6 +3396,7 @@ export async function loadArea(area = document) {
       if (rushesNext) {
         rushSectionsAfter(idx, { htmlSections, parallelCount, parallelSections, config });
         postLcpPromise = loadPostLCP(config);
+        postLcpPromise.catch(() => {});
       }
     }
     areaBlocks.push(...sectionBlocks);
