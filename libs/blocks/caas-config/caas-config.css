@@ -25,6 +25,7 @@ body:has(.caas-config) #tagselect-modal-container {
   --config-warning-text: #825416;
   --config-invalid-background: #fff5f5;
   --config-danger-hover: #ffebee;
+  --config-accordion-background: #eeedff33;
 }
 
 .caas-config.is-dark,
@@ -54,6 +55,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   --config-warning-text: #f2ce91;
   --config-invalid-background: #422733;
   --config-danger-hover: #4b2938;
+  --config-accordion-background: #2c2c44;
 
   color-scheme: dark;
 }
@@ -67,6 +69,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   font-size: 14px;
   line-height: 1.5;
   padding: 32px;
+  padding: 16px;
   border-radius: 20px;
   margin: 0 auto 48px;
   max-width: 2080px;
@@ -180,6 +183,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   grid-template-columns: 320px minmax(0, 1fr);
   align-items: start;
   gap: 24px;
+  gap: 16px;
   transition: none;
 }
 
@@ -319,6 +323,10 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   color: var(--config-accent);
 }
 
+.caas-config .config-panel .is-expanded .content-container {
+    background: var(--config-accordion-background);
+}
+
 .caas-config .config-panel dt.title.is-expanded span {
   font-weight: 700;
 }
@@ -414,7 +422,7 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
 }
 
 .caas-config .config-panel input::placeholder {
-  color: var(--config-muted);
+  color: var(--config-subtle);
 }
 
 .caas-config .config-panel .accordion dd.content .field.checkbox {
