@@ -2434,51 +2434,39 @@ const getParallelSectionCount = () => {
 
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
-  const sections = [...area.querySelectorAll('body > main > div')]
-    .slice(0, Math.max(1, getParallelSectionCount()));
-  if (!sections.length) return;
-  const queryAll = (selector) => sections
-    .flatMap((section) => [...section.querySelectorAll(selector)]);
+  const [firstSection] = area.querySelectorAll('body > main > div');
+  if (!firstSection) return;
   const config = getConfig();
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
-  const getAutoNames = (section) => {
-    const names = new Set();
-    section.querySelectorAll('a[href]').forEach((a) => {
-      let url;
-      try { url = new URL(a.href); } catch { return; }
-      const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
-      if (!match) return;
-      const name = Object.keys(match)[0];
-      if (name === 'video' && !isMediaVideo(a.textContent)) return;
-      names.add(name);
-    });
-    if ([...section.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
-      names.add('video');
-    }
-    return names;
-  };
-  const sectionData = sections.map((section) => ({
-    blockEls: [...section.querySelectorAll(':scope > div[class]:not(.content)')],
-    autoNames: getAutoNames(section),
-    hasOst: !!section.querySelector(':scope > .ost'),
-  }));
-  const autoNames = new Set(sectionData.flatMap((data) => [...data.autoNames]));
+  const autoNames = new Set();
+  firstSection.querySelectorAll('a[href]').forEach((a) => {
+    let url;
+    try { url = new URL(a.href); } catch { return; }
+    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+    if (!match) return;
+    const name = Object.keys(match)[0];
+    if (name === 'video' && !isMediaVideo(a.textContent)) return;
+    autoNames.add(name);
+  });
+  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+    autoNames.add('video');
+  }
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const sectionBlockEls = sectionData.flatMap((data) => data.blockEls);
+  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
   const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = sectionData.some((data) => !data.hasOst
-    && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
-      || [...data.autoNames].some(isCommerceBlock)));
+  const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
+    && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
+      || [...autoNames].some(isCommerceBlock));
   if (hasCommerceContent) {
     // Target previews must apply their AUP config before the service initializes.
     const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
@@ -2496,14 +2484,14 @@ export function preloadLcpCodeFiles(area = document) {
       .catch(() => {});
   }
 
-  if (sections.some((section) => /{{|%7B%7B/.test(section.innerHTML)) && config.locale?.contentRoot) {
+  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
   }
 
-  sections.forEach((section) => warmGeoIpSheet(config, section));
+  warmGeoIpSheet(config, firstSection);
 
-  const icons = queryAll('span.icon');
+  const icons = [...firstSection.querySelectorAll('span.icon')];
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
@@ -3371,36 +3359,43 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   const parallelCount = isDoc ? getParallelSectionCount() : 0;
-  let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
+  let lcpSectionId = null;
+  let postLcpPromise;
   const parallelSections = [];
-  htmlSections.slice(0, parallelCount).forEach((el, idx) => {
-    const revealAfter = parallelSections[idx - 1];
-    parallelSections[idx] = decorateSection(el, idx)
-      .then((section) => processSection(section, config, { isLcpSection: true, revealAfter }))
-      .catch(async (e) => {
-        window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
-        await revealAfter;
-        return [];
-      })
-      .then(async (sectionBlocks) => {
-        if (idx === lcpSectionId) await loadPostLCP(config);
-        return sectionBlocks;
-      });
-  });
+  // The LCP section loads alone; the sections after it, up to parallelCount, then load together.
+  const rushSectionsAfter = (lcpIdx) => {
+    htmlSections.slice(lcpIdx + 1, parallelCount).forEach((el, offset) => {
+      const idx = lcpIdx + 1 + offset;
+      const revealAfter = parallelSections[idx - 1];
+      parallelSections[idx] = decorateSection(el, idx)
+        .then((section) => processSection(section, config, { revealAfter }))
+        .catch(async (e) => {
+          window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
+          await revealAfter;
+          return [];
+        });
+    });
+  };
 
   for (const [idx, htmlSection] of htmlSections.entries()) {
     let sectionBlocks = await parallelSections[idx];
     if (!sectionBlocks) {
+      if (postLcpPromise) await postLcpPromise;
       const section = await decorateSection(htmlSection, idx);
       const isLastSection = section.idx === htmlSections.length - 1;
       if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
         lcpSectionId = section.idx;
       }
       const isLcpSection = section.idx === lcpSectionId;
+      const rushesNext = isLcpSection && idx < parallelCount - 1;
       sectionBlocks = await processSection(section, config, {
         isLcpSection,
-        loadsPostLCP: isDoc && isLcpSection,
+        loadsPostLCP: isDoc && isLcpSection && !rushesNext,
       });
+      if (rushesNext) {
+        rushSectionsAfter(idx);
+        postLcpPromise = loadPostLCP(config);
+      }
     }
     areaBlocks.push(...sectionBlocks);
     if (isDoc && idx === lcpSectionId) scheduleJsonLdInit();
@@ -3410,6 +3405,7 @@ export async function loadArea(area = document) {
     });
   }
 
+  if (postLcpPromise) await postLcpPromise;
   if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
