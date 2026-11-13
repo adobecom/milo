@@ -1,0 +1,92 @@
+/* stylelint-disable selector-class-pattern -- CaaS owns the mixed-case class names. */
+
+/* No display here: the block relies on [hidden] until CaaS has cards. */
+.blog-related-content {
+  margin-block-start: var(--s2a-spacing-2xl);
+  color: var(--s2a-color-content-default);
+}
+
+.blog-related-content > h3 {
+  margin: 0 0 var(--s2a-spacing-sm);
+  color: var(--s2a-color-content-heading);
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-heading);
+  font-size: var(--s2a-typography-font-size-heading-6);
+  line-height: var(--s2a-typography-line-height-heading-6);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
+  text-transform: uppercase;
+}
+
+.blog-related-content :is(.consonant-Wrapper, .consonant-Wrapper-inner, .consonant-CardsGrid) {
+  inline-size: 100%;
+  max-inline-size: none;
+  margin: 0;
+  padding: 0;
+}
+
+.blog-related-content .consonant-CardsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s2a-spacing-sm);
+}
+
+.blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
+  display: flex;
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-inline-size: 0;
+  block-size: var(--s2a-spacing-80);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-sm);
+  background: var(--s2a-color-background-default);
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card:hover {
+  border-color: var(--s2a-color-border-default);
+}
+
+.blog-related-content .consonant-Card.horizontal-card .consonant-Card-header {
+  flex: none;
+  inline-size: var(--s2a-spacing-64);
+  min-inline-size: var(--s2a-spacing-64);
+  block-size: 100%;
+  padding: 0;
+  border-radius: 0;
+  background-position: center;
+  background-size: cover;
+}
+
+.blog-related-content .consonant-Card.horizontal-card .consonant-Card-content {
+  box-sizing: border-box;
+  flex: 1;
+  min-inline-size: 0;
+  inline-size: auto;
+  padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
+}
+
+.blog-related-content .consonant-Card.horizontal-card .consonant-Card-title {
+  display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+  margin: 0;
+  overflow: hidden;
+  color: var(--s2a-color-content-default);
+  font-family: var(--body-font-family);
+  font-weight: var(--s2a-font-weight-label);
+  font-size: var(--s2a-typography-font-size-label);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.blog-related-content :is(.consonant-Card-label, .consonant-Card-text, .consonant-Card-footer) {
+  display: none;
+}
+
+.blog-related-content a:focus-visible {
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: calc(-1 * var(--s2a-border-width-md));
+}

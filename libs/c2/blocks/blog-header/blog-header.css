@@ -1,0 +1,386 @@
+.blog-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-lg);
+  padding-block: calc(var(--global-height-nav) + var(--s2a-spacing-3xl)) var(--s2a-spacing-3xl);
+  padding-inline: max(var(--grid-margin-width), calc((100% - var(--grid-max-width)) / 2));
+  color: var(--s2a-color-content-default);
+}
+
+.blog-header-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s2a-spacing-xs);
+  color: var(--s2a-color-content-subtle);
+  font-weight: var(--s2a-font-weight-body);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+}
+
+.blog-header-eyebrow-start + .blog-header-eyebrow-end {
+  padding-inline-start: var(--s2a-spacing-xs);
+  border-inline-start: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+}
+
+.blog-header-title h1 {
+  color: var(--s2a-color-content-heading);
+  font-size: var(--s2a-font-size-4xl);
+  line-height: var(--s2a-font-line-height-xl);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
+  text-wrap: balance;
+}
+
+.blog-header-summary {
+  font-size: var(--s2a-typography-font-size-body-lg);
+  line-height: var(--s2a-typography-line-height-body-lg);
+}
+
+.blog-header-summary:not(:has(:not(:empty))) {
+  display: none;
+}
+
+.blog-header-byline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s2a-spacing-lg);
+  margin-block-start: var(--s2a-spacing-lg);
+}
+
+.blog-header-authors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2a-spacing-md) var(--s2a-spacing-xl);
+  min-width: 0;
+}
+
+.blog-header-author {
+  display: flex;
+  align-items: center;
+  gap: var(--s2a-spacing-md);
+  min-width: 0;
+}
+
+.blog-header-author-avatar {
+  flex: none;
+  inline-size: var(--s2a-spacing-3xl);
+  block-size: var(--s2a-spacing-3xl);
+  overflow: hidden;
+  border-radius: var(--s2a-border-radius-round);
+  background: var(--s2a-color-background-subtle);
+
+  :is(picture, img) {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+
+.blog-header-author-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  overflow-wrap: anywhere;
+}
+
+.blog-header-author-name {
+  color: var(--s2a-color-content-default);
+  font-weight: var(--s2a-font-weight-label);
+  text-decoration: none;
+}
+
+a.blog-header-author-name:hover {
+  text-decoration: underline;
+}
+
+.blog-header-author-meta {
+  color: var(--s2a-color-content-subtle);
+}
+
+.blog-header-share {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-xs);
+  flex: none;
+  block-size: var(--s2a-spacing-xl);
+  padding-inline: var(--s2a-spacing-md);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-border-strong);
+  border-radius: var(--s2a-border-radius-round);
+  background: transparent;
+  color: var(--s2a-color-content-default);
+  font: inherit;
+  font-weight: var(--s2a-font-weight-label);
+  font-size: var(--s2a-typography-font-size-label);
+  line-height: var(--s2a-typography-line-height-label);
+  cursor: pointer;
+
+  svg {
+    inline-size: var(--s2a-spacing-md);
+    block-size: var(--s2a-spacing-md);
+  }
+}
+
+.blog-header-share:hover {
+  background: var(--s2a-color-transparent-black-08);
+}
+
+.blog-header-share:active {
+  background: var(--s2a-color-transparent-black-16);
+}
+
+.blog-header-share:focus-visible,
+.blog-header-author-name:focus-visible {
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-md);
+}
+
+/* Article frame (classes added by blog-header.js): rules that never take layout space. */
+.blog-divider-frame + .blog-article-layout > .blog-article-content {
+  position: relative;
+  margin-block-start: calc(2 * var(--s2a-spacing-3xl) + var(--s2a-border-width-sm));
+}
+
+/* Mobile: the rule sits between the jump bar and the article, centred in that gap. */
+.blog-divider-frame + .blog-article-layout > .blog-article-content::before {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(-1 * (var(--s2a-spacing-3xl) + var(--s2a-border-width-sm)));
+  inset-inline: calc(-1 * var(--grid-margin-width));
+  block-size: var(--s2a-border-width-sm);
+  background: var(--s2a-color-border-subtle);
+  pointer-events: none;
+}
+
+/* Reading progress: positioned and filled by JS; never takes up layout space. */
+.blog-progress-bar {
+  position: fixed;
+  inset-inline: 0;
+  z-index: 2;
+  block-size: var(--s2a-spacing-xs); /* blog-header.js centres an 8px bar on the divider */
+  background: var(--s2a-color-blue-900);
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+
+[dir="rtl"] .blog-progress-bar {
+  transform-origin: right;
+}
+
+/* Share dialog (built by blog-header.js inside the shared modal). */
+.blog-share-modal.dialog-modal {
+  inline-size: fit-content;
+  max-inline-size: calc(100% - 2 * var(--s2a-spacing-lg));
+  padding: var(--s2a-spacing-lg);
+  border-radius: var(--s2a-border-radius-md);
+  background: var(--s2a-color-background-subtle);
+}
+
+.blog-share {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-md);
+  inline-size: 100%;
+  max-inline-size: calc(var(--s2a-spacing-240) + var(--s2a-spacing-24));
+}
+
+.blog-share-heading {
+  padding-inline-end: var(--s2a-spacing-xl);
+  color: var(--s2a-color-content-heading);
+  font-size: var(--s2a-typography-font-size-heading-5);
+  line-height: var(--s2a-typography-line-height-heading-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+}
+
+.blog-share-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--s2a-border-radius-sm);
+  background: var(--s2a-color-background-default);
+  box-shadow: var(--s2a-shadow-level-1-x) var(--s2a-shadow-level-1-y) var(--s2a-spacing-xs) var(--s2a-shadow-level-1-color);
+}
+
+.blog-share-card-image {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+
+.blog-share-card-text {
+  padding: var(--s2a-spacing-sm);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+}
+
+.blog-share-card-desc {
+  overflow: hidden;
+  color: var(--s2a-color-content-subtle);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blog-share-actions {
+  display: flex;
+  gap: var(--s2a-spacing-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.blog-share-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: var(--s2a-border-radius-sm);
+  background: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
+  cursor: pointer;
+
+  svg {
+    inline-size: var(--s2a-spacing-lg);
+    block-size: var(--s2a-spacing-lg);
+  }
+}
+
+.blog-share-action:hover {
+  background: var(--s2a-color-transparent-black-08);
+}
+
+.blog-share-action:active,
+.blog-share-action.blog-share-copied {
+  background: var(--s2a-color-background-inverse);
+  color: var(--s2a-color-content-inverse);
+}
+
+.blog-share-action:focus-visible {
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-md);
+}
+
+.blog-share-feedback {
+  position: absolute;
+  inset-block-end: calc(100% + var(--s2a-spacing-2xs));
+  inset-inline-end: 0;
+  padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs);
+  border-radius: var(--s2a-border-radius-xs);
+  background: var(--s2a-color-background-inverse);
+  color: var(--s2a-color-content-inverse);
+  font-size: var(--s2a-typography-font-size-caption);
+  line-height: var(--s2a-typography-line-height-caption);
+  white-space: nowrap;
+}
+
+.blog-share-feedback:empty {
+  display: none;
+}
+
+@media (width >= 768px) {
+  .blog-header {
+    padding-block: calc(var(--global-height-nav) + var(--s2a-spacing-4xl)) var(--s2a-spacing-3xl);
+  }
+
+  .blog-header-title h1 {
+    font-size: var(--s2a-font-size-6xl);
+    line-height: var(--s2a-font-line-height-2xl);
+  }
+
+  .blog-header-byline {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-start: var(--s2a-spacing-xl);
+  }
+
+  .blog-header-author-avatar {
+    inline-size: var(--s2a-spacing-4xl);
+    block-size: var(--s2a-spacing-4xl);
+  }
+
+  .blog-header-share {
+    block-size: var(--s2a-spacing-2xl);
+    padding-inline: var(--s2a-spacing-lg);
+    font-size: var(--s2a-typography-font-size-body-md);
+
+    svg {
+      inline-size: var(--s2a-spacing-lg);
+      block-size: var(--s2a-spacing-lg);
+    }
+  }
+
+  .blog-divider-frame {
+    margin-block-end: var(--s2a-spacing-4xl);
+  }
+
+  /* Outer frame: two vertical hairlines halfway into the page margins, down to the article end. */
+  .blog-divider-frame::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: calc(max(var(--grid-margin-width), (100% - var(--grid-max-width)) / 2) / 2);
+    z-index: 1;
+    block-size: var(--blog-divider-height, 100%);
+    border-inline: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+    pointer-events: none;
+  }
+
+  .blog-divider-frame::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: var(--s2a-border-width-sm);
+    background: var(--s2a-color-border-subtle);
+    pointer-events: none;
+  }
+
+  .blog-divider-frame + .blog-article-layout > .blog-article-content {
+    margin-block-start: 0;
+  }
+
+  .blog-divider-frame + .blog-article-layout > .blog-article-content::before {
+    content: none;
+  }
+
+  .blog-share-modal.dialog-modal {
+    padding: var(--s2a-spacing-2xl);
+  }
+
+  .blog-share {
+    max-inline-size: calc(var(--s2a-spacing-240) + var(--s2a-spacing-128));
+  }
+
+  .blog-share-action svg {
+    inline-size: var(--s2a-spacing-xl);
+    block-size: var(--s2a-spacing-xl);
+  }
+}
+
+@media (width >= 1024px) {
+  .blog-header-title h1 {
+    font-size: var(--s2a-font-size-7xl);
+    line-height: var(--s2a-font-line-height-3xl);
+  }
+}
+
+@media (width >= 1280px) {
+  .blog-header-title h1 {
+    font-size: var(--s2a-font-size-8xl);
+    line-height: var(--s2a-font-line-height-4xl);
+  }
+}

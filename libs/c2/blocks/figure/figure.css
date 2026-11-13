@@ -1,0 +1,89 @@
+.figure {
+  padding-block: var(--s2a-spacing-lg);
+}
+
+.figure + .figure,
+.figure.no-spacing {
+  padding-block-start: 0;
+}
+
+.figure.no-spacing {
+  padding-block-end: 0;
+}
+
+.figure figure {
+  margin: 0;
+  text-align: center;
+}
+
+.figure :is(img, video) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  max-height: 37.5rem;
+  margin-inline: auto;
+  object-fit: contain;
+  border-radius: var(--s2a-border-radius-sm);
+}
+
+.figure figure > :is(a, picture, .video-container) {
+  display: block;
+}
+
+.figure-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-lg);
+}
+
+.figure-list figure {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.figure-list img {
+  width: 100%;
+}
+
+.figure.full-height img {
+  max-height: none;
+}
+
+.figure.left figure {
+  text-align: start;
+}
+
+.figure.left :is(img, video) {
+  margin-inline: 0;
+}
+
+.figure figure > a {
+  border-radius: var(--s2a-border-radius-sm);
+}
+
+.figure figure > a:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-2);
+}
+
+.figure figcaption {
+  margin-block-start: var(--s2a-spacing-xs);
+  font-size: var(--s2a-typography-font-size-caption);
+  line-height: var(--s2a-typography-line-height-caption);
+  color: var(--s2a-color-content-caption);
+}
+
+.figure .caption {
+  font-style: normal;
+  font-weight: var(--s2a-font-weight-body);
+}
+
+@media (width >= 768px) {
+  .figure {
+    padding-block: var(--s2a-spacing-xl);
+  }
+
+  .figure-list {
+    flex-direction: row;
+  }
+}

@@ -1,0 +1,42 @@
+.columns > .row {
+  display: grid;
+  gap: var(--s2a-spacing-lg);
+}
+
+.columns > .row + .row {
+  margin-block-start: var(--s2a-spacing-lg);
+}
+
+.columns .col {
+  min-width: 0;
+}
+
+.columns .col > :first-child {
+  margin-block-start: 0;
+}
+
+.columns .col > :last-child {
+  margin-block-end: 0;
+}
+
+.columns .col p + p {
+  margin-block-start: var(--s2a-spacing-xs);
+}
+
+.columns .tracking-header {
+  font-weight: var(--s2a-font-weight-label);
+}
+
+.columns a:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-2);
+  border-radius: var(--s2a-border-radius-2xs);
+}
+
+@media (width >= 768px) {
+  .columns > .row {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: var(--s2a-spacing-xl);
+  }
+}
