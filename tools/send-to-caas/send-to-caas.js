@@ -2,6 +2,14 @@
 /* global tingle */
 /* eslint-disable no-alert */
 import { getImsToken } from '../utils/utils.js';
+import {
+  EXTENSIONLESS_SECTIONS_META,
+  findUnrecognizedSections,
+  isFlagUnrecognized,
+  isHtmlIdentityEnabled,
+  isIdentityPolicyMiss,
+  normalizeSections,
+} from '../../libs/utils/caasIdentity.js';
 
 import {
   getCardMetadata,
@@ -228,13 +236,74 @@ const sortObjByPropName = (obj) => Object.keys(obj)
   .sort().reduce((c, d) => (c[d] = obj[d], c), {});
 
 const validateProps = async (prodHost, publishingModal) => {
+  // The sidekick publishes the page it is running on, so the page's own opt-in
+  // metadata is the flag source. Without this the single-page tool would mint a
+  // legacy id for a page the bulk/auto publishers give a forced-`.html` id,
+  // creating a duplicate card for one page.
+  //
+  // KNOWN DIVERGENCE (needs a follow-up ticket -- see PR #7106 description):
+  // this reads page metadata, while
+  // auto-publish resolves the same flag from the path-scoped rules in
+  // `/.milo/caas/config.json`. The two agree only while a site keeps them in
+  // sync by hand, and a disagreement is silent -- the page publishes fine, just
+  // under a second contentId, so the duplicate surfaces later as a stray card
+  // rather than as an error here. Reconciling them properly means teaching this
+  // tool the auto-publish rule-matching engine (path globs, per-env overrides),
+  // which is a larger change than this ticket should carry. Operational rule
+  // until then: a site enabling the policy must set BOTH the
+  // `caas-identity-html` metadata and the `htmlIdentity` config.json column --
+  // and, where it publishes a section extensionless, both the
+  // `caas-identity-extensionless-sections` metadata and the matching
+  // `htmlIdentitySections` column.
+  //
+  // CONSUMER PREREQUISITE: that last clause is the steady state, not today's.
+  // Collection card resolution does not yet read
+  // `caas-identity-extensionless-sections` -- it ships with MWPW-213847. Until
+  // then, and while the policy is on, authoring the metadata for a section is
+  // worse than omitting it: the publishers preserve that section's
+  // extensionless ids while URL-based card lookups keep hashing the `.html`
+  // form, so every card in the section drops out of the collections
+  // referencing it, localized paths included. Leave the sections metadata
+  // unset until consumer resolution is deployed.
+  const identityMeta = document.head.querySelector('meta[name="caas-identity-html"]')?.content;
+  if (isFlagUnrecognized(identityMeta)) {
+    // Resolves to OFF, so this page would publish under a legacy id while the
+    // bulk/auto publishers give it a forced-`.html` one -- a duplicate card
+    // rather than an error. Surfaced for parity with the other publishers.
+    window.lana?.log(
+      `send-to-caas: unrecognized caas-identity-html metadata '${identityMeta}', treating as OFF`,
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
+  }
+  const htmlIdentity = isHtmlIdentityEnabled(identityMeta);
+  // The qualifier travels with the flag, from the companion metadata. This is
+  // a publishing channel like any other, so omitting it here would force
+  // `.html` onto the very sections the site publishes extensionless -- while
+  // auto-publish, reading htmlIdentitySections from config.json, would not.
+  // One page, two contentIds, no error. It also sets the polarity of the
+  // isIdentityPolicyMiss check below, which inverts inside an exempt section.
+  const sectionsMeta = document.head.querySelector(`meta[name="${EXTENSIONLESS_SECTIONS_META}"]`)?.content ?? '';
+  const badSections = findUnrecognizedSections(sectionsMeta);
+  if (badSections.length) {
+    window.lana?.log(
+      `send-to-caas: unrecognized ${EXTENSIONLESS_SECTIONS_META} entries `
+      + `'${badSections.join(', ')}'. These name a path, host or glob rather than a bare `
+      + 'path segment, so they match nothing and the section keeps forced-`.html` ids.',
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
+  }
+  const htmlIdentitySections = normalizeSections(sectionsMeta).join(',');
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata(
-    { prodUrl: `${prodHost}${window.location.pathname}` },
+    { prodUrl: `${prodHost}${window.location.pathname}`, htmlIdentity, htmlIdentitySections },
   );
 
   const showAllPropertiesAlert = async () => {
     const { caasMetadata: cMetaData } = await getCardMetadata(
-      { prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}` },
+      {
+        prodUrl: `${prodHost}${window.location.pathname}${isUseHtmlChecked() ? '.html' : ''}`,
+        htmlIdentity,
+        htmlIdentitySections,
+      },
     );
     const mdStr = JSON.stringify(sortObjByPropName(cMetaData), undefined, 4);
     showAlert(`<h3>All CaaS Properties</h3><pre id="json" style="white-space:pre-wrap;font-size:14px;">${mdStr}</pre>`);
@@ -266,8 +335,34 @@ const validateProps = async (prodHost, publishingModal) => {
   let metaWithUseHtml;
   if (useHtml) {
     ({ caasMetadata: metaWithUseHtml } = await getCardMetadata(
-      { prodUrl: `${prodHost}${window.location.pathname}.html` },
+      { prodUrl: `${prodHost}${window.location.pathname}.html`, htmlIdentity, htmlIdentitySections },
     ));
+  }
+
+  // The unrecognized-value check above catches a typo, which is the rare case.
+  // This catches the common one: metadata simply absent while the site's
+  // config.json rule has htmlIdentity on. That publishes the page under a
+  // second contentId with no error at all, surfacing weeks later as a stray
+  // duplicate card. The sidekick runs on a real Milo page, so lana is loaded
+  // here (as it also is for bulk-publish-v2, though not for the standalone
+  // bulk publisher page, da-live or the poller).
+  //
+  // Evaluated on the url actually being published, AFTER the modal resolves and
+  // after the abort paths above. Checking `pathname` alone before `useHtml` was
+  // known reported a duplicate for the operator who DID tick "use .html": for
+  // an ordinary section that publish ends in `.html` and mints exactly the
+  // legacy id, so there is no duplicate. On a post-migration BACOM page with
+  // the metadata absent that false positive would have fired on every correct
+  // sidekick publish. In an extensionless section the `.html` form is instead
+  // the one that misses, which isIdentityPolicyMiss now reports correctly.
+  const publishedProdUrl = `${prodHost}${window.location.pathname}${useHtml ? '.html' : ''}`;
+  if (isIdentityPolicyMiss(publishedProdUrl, htmlIdentity, htmlIdentitySections)) {
+    window.lana?.log(
+      'send-to-caas: publishing an in-scope url without caas-identity-html. If this '
+      + "site's config.json sets htmlIdentity, this mints a DUPLICATE card under a "
+      + `second contentId. Page: ${publishedProdUrl}`,
+      { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+    );
   }
 
   return {
