@@ -1,0 +1,121 @@
+/* Rows are flex, not grid, so the inline grid-template-columns table.js sets below 900px has no effect. */
+.table {
+  display: grid;
+  padding-block: var(--s2a-spacing-lg);
+  overflow-x: auto;
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  color: var(--s2a-color-content-default);
+}
+
+.table.no-spacing {
+  padding-block: 0;
+}
+
+.table:focus-visible,
+.table a:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline-offset: calc(-1 * var(--s2a-border-width-2));
+}
+
+.table > .row {
+  display: flex;
+}
+
+.table .col {
+  display: flex;
+  box-sizing: border-box;
+  flex: 1 0 8rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--s2a-spacing-sm);
+  border-block-end: var(--s2a-border-width-1) solid var(--s2a-color-border-subtle);
+  background: var(--s2a-color-background-default);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.table.left .col,
+.table .section-row-title {
+  text-align: start;
+}
+
+.table .col p {
+  margin: 0;
+}
+
+.table .col p + p {
+  margin-block-start: var(--s2a-spacing-xs);
+}
+
+.table .col-1 {
+  position: sticky;
+  inset-inline-start: 0;
+}
+
+/* Heading cells take the C2 heading face from the global [class*="heading-"] rule; only its 100% line-height is reset. */
+.table .row-heading .col {
+  background: var(--s2a-color-background-subtle);
+  border-block-end-color: var(--s2a-color-border-strong);
+  line-height: inherit;
+}
+
+.table .heading-content {
+  line-height: inherit;
+}
+
+.table .section-row-title {
+  font-weight: var(--s2a-font-weight-label);
+}
+
+.table .heading-button:not(:has(a, button)),
+.table .divider,
+.table-section > .filters {
+  display: none;
+}
+
+.table.bordered .col {
+  border-inline-start: var(--s2a-border-width-1) solid var(--s2a-color-border-subtle);
+}
+
+.table.bordered .col:last-child {
+  border-inline-end: var(--s2a-border-width-1) solid var(--s2a-color-border-subtle);
+}
+
+.table.bordered .row-1 .col {
+  border-block-start: var(--s2a-border-width-1) solid var(--s2a-color-border-subtle);
+}
+
+.table.top .section-row .col {
+  justify-content: flex-start;
+}
+
+.table.sticky .row-heading {
+  position: sticky;
+  z-index: 1;
+}
+
+.table.sticky .row-heading.active {
+  box-shadow: 0 var(--s2a-spacing-2xs) var(--s2a-spacing-xs) var(--s2a-color-transparent-black-08);
+}
+
+.table.cancel-sticky .row-heading {
+  position: static;
+}
+
+@media (width >= 768px) {
+  .table {
+    font-size: var(--s2a-typography-font-size-body-md);
+    line-height: var(--s2a-typography-line-height-body-md);
+  }
+
+  .table .col {
+    padding: var(--s2a-spacing-md) var(--s2a-spacing-lg);
+  }
+}
+
+@media (width >= 1024px) {
+  .table.sticky {
+    overflow-x: visible;
+  }
+}

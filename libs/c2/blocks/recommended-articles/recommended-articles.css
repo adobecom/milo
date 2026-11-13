@@ -1,0 +1,153 @@
+.recommended-articles {
+  display: block;
+  margin-block: var(--s2a-spacing-xl);
+  color: var(--s2a-color-content-default);
+}
+
+.recommended-articles > h3,
+.recommended-articles-content h3 {
+  margin-block-end: var(--s2a-spacing-lg);
+  font-size: var(--s2a-typography-font-size-heading-5);
+  line-height: var(--s2a-typography-line-height-heading-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+}
+
+.recommended-articles-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-sm);
+  margin-block-end: var(--s2a-spacing-lg);
+}
+
+.recommended-articles-content h3 {
+  margin: 0;
+}
+
+.recommended-articles-content .button {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--s2a-spacing-2xs) var(--s2a-spacing-md);
+  border: var(--s2a-border-width-2) solid var(--s2a-color-border-strong);
+  border-radius: var(--s2a-border-radius-round);
+  color: var(--s2a-color-content-default);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  font-weight: var(--s2a-font-weight-label);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  text-decoration: none;
+}
+
+.recommended-articles-content .button:hover {
+  border-color: var(--s2a-color-background-inverse);
+  background-color: var(--s2a-color-background-inverse);
+  color: var(--s2a-color-content-inverse);
+}
+
+.recommended-articles .article-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s2a-spacing-lg);
+}
+
+.recommended-articles .article-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-md);
+  background-color: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
+  text-decoration: none;
+}
+
+.recommended-articles .article-card-image {
+  aspect-ratio: 16 / 9;
+  background-color: var(--s2a-color-background-subtle);
+}
+
+.recommended-articles .article-card-image :is(picture, img) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.recommended-articles .article-card-image img {
+  object-fit: cover;
+}
+
+.recommended-articles .article-card-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--s2a-spacing-xs);
+  padding: var(--s2a-spacing-lg);
+}
+
+.recommended-articles :is(.article-card-category, .article-card-date) {
+  color: var(--s2a-color-content-subtle);
+  font-size: var(--s2a-typography-font-size-body-xs);
+  line-height: var(--s2a-typography-line-height-body-xs);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+  text-transform: uppercase;
+}
+
+.recommended-articles .article-card-category a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.recommended-articles .article-card-category a:hover {
+  text-decoration: underline;
+}
+
+.recommended-articles .article-card h3 {
+  font-size: var(--s2a-typography-font-size-heading-6);
+  line-height: var(--s2a-typography-line-height-heading-6);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
+}
+
+.recommended-articles .article-card h3:empty {
+  display: none;
+}
+
+.recommended-articles .article-card:hover h3 {
+  text-decoration: underline;
+}
+
+.recommended-articles .article-card-description {
+  color: var(--s2a-color-content-body-subtle);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+}
+
+.recommended-articles .article-card-date {
+  margin-block-start: auto;
+  padding-block-start: var(--s2a-spacing-xs);
+}
+
+.recommended-articles-small-content-wrapper .article-card {
+  flex-direction: row;
+}
+
+.recommended-articles-small-content-wrapper .article-card-image {
+  flex: 0 0 40%;
+  aspect-ratio: auto;
+}
+
+.recommended-articles-small-content-wrapper .article-card-description {
+  display: none;
+}
+
+.recommended-articles .article-card:focus-visible,
+.recommended-articles .article-card-category a:focus-visible,
+.recommended-articles-content .button:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-2);
+}
+
+@media (width >= 768px) {
+  .recommended-articles .article-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
