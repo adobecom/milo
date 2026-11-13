@@ -1183,6 +1183,13 @@ const Configurator = ({ rootEl, isV2 }) => {
     setIsPanelCollapsed(document.body.classList.toggle('panel-collapsed'));
   };
 
+  const alternateUiUrl = new URL(window.location.href);
+  if (isV2) {
+    alternateUiUrl.searchParams.delete('configurator');
+  } else {
+    alternateUiUrl.searchParams.set('configurator', 'v2');
+  }
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
@@ -1200,7 +1207,14 @@ const Configurator = ({ rootEl, isV2 }) => {
           <h1>${title ? title.textContent : 'CaaS Configurator'}</h1>
           ${isV2 && html`<p class="config-description">Build your collection. Make it yours.</p>`}
         </div>
-        <${CopyBtn} isV2=${isV2} />
+        <div class="config-header-actions">
+          <a
+            class="config-ui-switch"
+            href=${alternateUiUrl.href}
+            onClick=${() => saveStateToLocalStorage(state)}
+          >Switch to ${isV2 ? 'classic' : 'modern'} UI</a>
+          <${CopyBtn} isV2=${isV2} />
+        </div>
       </div>
       <div class="tool-content ${state.showIds ? 'show-ids' : ''} ${isPanelCollapsed ? 'settings-hidden' : ''}">
         <div id="caas-settings" class="config-panel" hidden=${isV2 && isPanelCollapsed}>

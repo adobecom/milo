@@ -1,3 +1,35 @@
+.caas-config .tool-header .config-header-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  grid-column: 4;
+  gap: 8px;
+  margin: 0 16px 16px;
+}
+
+.caas-config .tool-header .config-header-actions button.copy-config {
+  margin: 0;
+}
+
+.caas-config .tool-header a.config-ui-switch {
+  /* Shared CaaS styles hide authoring links containing this page's URL. */
+  visibility: visible !important;
+  color: var(--config-accent, #5046e5);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.caas-config .tool-header a.config-ui-switch:hover {
+  text-decoration: underline;
+}
+
+.caas-config .tool-header a.config-ui-switch:focus-visible {
+  outline: 2px solid var(--config-accent, #5046e5);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
 .caas-config:not(.configurator-v2) .input-invalid {
   border: red solid 3px !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='18' viewBox='0 0 18 18' width='18'%3E%3Cpath fill='%23464646' d='M8.5635,1.2895.2,16.256A.5.5,0,0,0,.636,17H17.364a.5.5,0,0,0,.436-.744L9.4365,1.2895a.5.5,0,0,0-.873,0ZM10,14.75a.25.25,0,0,1-.25.25H8.25A.25.25,0,0,1,8,14.75v-1.5A.25.25,0,0,1,8.25,13h1.5a.25.25,0,0,1,.25.25Zm0-3a.25.25,0,0,1-.25.25H8.25A.25.25,0,0,1,8,11.75v-6a.25.25,0,0,1,.25-.25h1.5a.25.25,0,0,1,.25.25Z'/%3E%3C/svg%3E") !important;

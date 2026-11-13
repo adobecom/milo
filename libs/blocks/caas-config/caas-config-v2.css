@@ -88,6 +88,10 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   padding: 0 0 30px;
 }
 
+.caas-config .tool-header .config-header-actions {
+  margin: 0;
+}
+
 .caas-config .tool-header::after,
 .caas-config .tool-title h1::before,
 .caas-config .tool-title h1::after {
@@ -934,6 +938,15 @@ body:has(.caas-config) #tagselect-modal-container .tagselect-picker .cb:focus-vi
 
   .caas-config .tool-header button.copy-config {
     width: 100%;
+  }
+
+  .caas-config .tool-header .config-header-actions {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .caas-config .tool-header a.config-ui-switch {
+    align-self: flex-end;
   }
 
   .caas-config .tool-content {
