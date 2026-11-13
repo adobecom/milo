@@ -207,9 +207,9 @@ function getAuthorData(row) {
   const nameIndex = directLink ? -1 : paragraphs.findIndex((p) => (
     p.querySelector('a') || p.textContent.trim()
   ));
-  const nameP = paragraphs[nameIndex];
-  const link = directLink || nameP?.querySelector('a');
-  const name = (link || nameP)?.textContent.trim() || '';
+  const nameElement = paragraphs[nameIndex] || (paragraphs.length === 0 ? inner : null);
+  const link = directLink || nameElement?.querySelector('a');
+  const name = (link || nameElement)?.textContent.trim() || '';
   const href = getAuthorHref(link?.getAttribute('href'));
   const details = directLink ? paragraphs : paragraphs.slice(nameIndex + 1);
   const needsName = !!href
