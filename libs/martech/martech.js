@@ -1,5 +1,6 @@
 import {
   getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
+  rememberSignedInEcid,
 } from '../utils/utils.js';
 
 const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
@@ -158,6 +159,10 @@ const loadMartechFiles = async (config) => {
     } else if (!hasServerSignInHint()) {
       // Server-Timing sign-in hint is absent on non-adobe.com hosts (e.g. aem.live).
       setupEntitlementCallback(loadIms().then(() => !!window.adobeIMS?.isSignedInUser()));
+    }
+    // Launch's signed-in page view sends the Adobe ID with the ECID, so Adobe links them.
+    if (!isSignedOut()) {
+      window.addEventListener(ALLOY_SEND_EVENT, rememberSignedInEcid, { once: true });
     }
 
     setDeep(
