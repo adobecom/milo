@@ -1,4 +1,14 @@
 const vh = window.innerHeight;
+// Page zoom (e.g. a low-vision user at 200%+) shrinks the viewport while the
+// browser window frame stays put, so outerWidth / innerWidth climbs above ~1.
+// On unzoomed desktop and on mobile this ratio is ~1, so normal pages are never
+// affected by any zoom-gated behaviour below.
+const MOVE_UP_FAST_ZOOM_THRESHOLD = 2;
+function getZoomFactor() {
+  const { outerWidth, innerWidth } = window;
+  if (!outerWidth || !innerWidth) return 1;
+  return outerWidth / innerWidth;
+}
 const BREAKPOINT_MD = 1280;
 const BREAKPOINT_LG = 1440;
 const BREAKPOINT_XL = 1920;
@@ -79,6 +89,17 @@ function initMoveUpFast() {
 
   injectCSS('.section.parallax-move-up-fast::after { animation: none; }');
 
+  // When the page is zoomed in, vh (captured at load) is tiny, so the dimming
+  // overlay reaches full opacity after only a few px of scroll and blacks out
+  // the content a low-vision user is trying to read. Only in that zoomed case
+  // do we spread the fade over a longer scroll distance and cap its peak
+  // opacity so text stays legible. Unzoomed pages keep the exact original
+  // (dimDist === vh80px, maxDim === 0.75 → opacity === 0.75 * t).
+  const zoom = getZoomFactor();
+  const zoomed = zoom >= MOVE_UP_FAST_ZOOM_THRESHOLD;
+  const dimDist = zoomed ? vh80px * zoom : vh80px;
+  const maxDim = zoomed ? 0.3 : 0.75;
+
   sections.forEach((section) => {
     section.style.position = 'sticky';
     section.style.top = '0';
@@ -92,7 +113,8 @@ function initMoveUpFast() {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
       const newTop = `${-Math.round(topMaxPx * t)}px`;
       if (section.style.top !== newTop) section.style.top = newTop;
-      overlay.style.opacity = 0.75 * t;
+      const dimT = Math.max(0, Math.min(1, (scroll - sectionTop) / dimDist));
+      overlay.style.opacity = maxDim * dimT;
     });
     cleanupTasks.push(() => {
       section.style.position = '';
