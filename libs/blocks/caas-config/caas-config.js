@@ -925,12 +925,13 @@ const getEncodedObject = async (obj, replacer = null) => {
 };
 
 /* c8 ignore start */
-const CopyBtn = () => {
+const CopyBtn = ({ isV2 = false }) => {
   const { state } = useContext(ConfiguratorContext);
   const [isError, setIsError] = useState();
   const [isSuccess, setIsSuccess] = useState();
   const [configUrl, setConfigUrl] = useState('');
-  const [btnText, setBtnText] = useState('Copy configuration');
+  const defaultBtnText = isV2 ? 'Copy configuration' : 'Copy';
+  const [btnText, setBtnText] = useState(defaultBtnText);
 
   const setTempStatus = (setFn, status = true) => {
     setFn(status);
@@ -952,6 +953,7 @@ const CopyBtn = () => {
   const getUrl = async () => {
     const url = new URL(window.location.href);
     url.search = '';
+    if (isV2) url.searchParams.set('configurator', 'v2');
     const reducedState = removeDefaultsFromState(state);
     const hashStr = await getEncodedObject(reducedState, fgKeyReplacer);
     // starts with ~~ to differentiate from old hash format
@@ -987,9 +989,9 @@ const CopyBtn = () => {
       () => {
         setTempStatus((status) => {
           if (status) {
-            setBtnText('Copied!');
+            setBtnText(isV2 ? 'Copied!' : 'OK!');
           } else {
-            setBtnText('Copy configuration');
+            setBtnText(defaultBtnText);
           }
           setIsSuccess(status);
         });
@@ -999,7 +1001,7 @@ const CopyBtn = () => {
           if (status) {
             setBtnText('Error');
           } else {
-            setBtnText('Copy configuration');
+            setBtnText(defaultBtnText);
           }
           setIsError(status);
         });
@@ -1098,7 +1100,7 @@ const idOverlayMO = () => {
   return mo;
 };
 
-const Configurator = ({ rootEl }) => {
+const Configurator = ({ rootEl, isV2 }) => {
   const [state, dispatch] = useReducer(reducer, {});
   const [isCaasLoaded, setIsCaasLoaded] = useState(false);
   const [strings, setStrings] = useState();
@@ -1184,33 +1186,36 @@ const Configurator = ({ rootEl }) => {
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
-      <div class="config-brand" aria-hidden="true">
+      ${isV2 && html`<div class="config-brand" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
           <rect x="3" y="3" width="7" height="7" rx="1.5" />
           <rect x="14" y="3" width="7" height="7" rx="1.5" />
           <rect x="3" y="14" width="7" height="7" rx="1.5" />
           <rect x="14" y="14" width="7" height="7" rx="1.5" />
         </svg>
-      </div>
+      </div>`}
       <div class="tool-title">
-          <p class="config-eyebrow">CaaS / Collection builder</p>
+          ${isV2 && html`<p class="config-eyebrow">CaaS / Collection builder</p>`}
           ${/* c8 ignore next */''}
           <h1>${title ? title.textContent : 'CaaS Configurator'}</h1>
-          <p class="config-description">Build your collection. Make it yours.</p>
+          ${isV2 && html`<p class="config-description">Build your collection. Make it yours.</p>`}
         </div>
-        <${CopyBtn} />
+        <${CopyBtn} isV2=${isV2} />
       </div>
       <div class="tool-content ${state.showIds ? 'show-ids' : ''} ${isPanelCollapsed ? 'settings-hidden' : ''}">
-        <div id="caas-settings" class="config-panel" hidden=${isPanelCollapsed}>
-          <div class="config-panel-heading">
+        <div id="caas-settings" class="config-panel" hidden=${isV2 && isPanelCollapsed}>
+          ${isV2 && html`<div class="config-panel-heading">
             <h2>Configuration</h2>
             <p>Fine-tune your collection</p>
-          </div>
+          </div>`}
           ${error && html`<div class="tool-error" role="status">${error}</div>`}
           <${Accordion} lskey=caasconfig items=${panels} alwaysOpen=${false} />
         </div>
+        ${!isV2 && html`<div>
+          <button class="collapse-panel" onClick=${toggleCollapsed} aria-label="Toggle settings" aria-expanded=${!isPanelCollapsed} aria-controls="caas-settings">⇆</button>
+        </div>`}
         <div class="content-panel">
-          <div class="preview-toolbar">
+          ${isV2 && html`<div class="preview-toolbar">
             <div class="preview-heading">
               <span class="config-eyebrow">Your workspace</span>
               <h2>Collection preview</h2>
@@ -1253,7 +1258,7 @@ const Configurator = ({ rootEl }) => {
               <span aria-hidden="true"> / </span>
               ${defaultOptions.cardStyle[state.cardStyle]?.replace('...', '')}
             </span>
-          </div>
+          </div>`}
           <div class="modalContainer"></div>
           <div ref=${previewRoot}></div>
         </div>
@@ -1263,10 +1268,13 @@ const Configurator = ({ rootEl }) => {
 
 const init = async (el) => {
   const { miloLibs, codeRoot } = getConfig();
+  const isV2 = new URLSearchParams(window.location.search).get('configurator') === 'v2';
+  el.classList.toggle('configurator-v2', isV2);
   loadStyle(`${miloLibs || codeRoot}/ui/page/page.css`);
   loadStyle(`${miloLibs || codeRoot}/blocks/caas/caas.css`);
+  if (isV2) loadStyle(`${miloLibs || codeRoot}/blocks/caas-config/caas-config-v2.css`);
 
-  const app = html` <${Configurator} rootEl=${el} /> `;
+  const app = html` <${Configurator} rootEl=${el} isV2=${isV2} /> `;
 
   render(app, el);
 };

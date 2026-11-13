@@ -1,0 +1,959 @@
+.caas-config.configurator-v2,
+body:has(.caas-config) #tagselect-modal-container {
+  --config-accent: #5046e5;
+  --config-accent-soft: #eeedff;
+  --config-primary: #5046e5;
+  --config-primary-hover: #3e35bd;
+  --config-text: #202335;
+  --config-muted: #656b7e;
+  --config-label: #505568;
+  --config-border: #e3e5ed;
+  --config-field-border: #d8dbe6;
+  --config-divider: #f0f1f6;
+  --config-surface: #fff;
+  --config-background: #f6f7fb;
+  --config-subtle: #f8f9fc;
+  --config-context: #fcfcfe;
+  --config-button: #f5f5fa;
+  --config-button-hover: #eae8ff;
+  --config-tag-background: #f1f0ff;
+  --config-tag-border: #dedbff;
+  --config-tag-text: #48409f;
+  --config-tag-icon: #7165ad;
+  --config-warning-background: #fff9ec;
+  --config-warning-border: #f0d7a8;
+  --config-warning-text: #825416;
+  --config-invalid-background: #fff5f5;
+  --config-danger-hover: #ffebee;
+}
+
+.caas-config.is-dark,
+body:has(.caas-config.is-dark) #tagselect-modal-container {
+  --config-accent: #b9b1ff;
+  --config-accent-soft: #302a50;
+  --config-primary: #6658e8;
+  --config-primary-hover: #7463ef;
+  --config-text: #eef0f8;
+  --config-muted: #a9aec4;
+  --config-label: #c6cadd;
+  --config-border: #363a4d;
+  --config-field-border: #4c5268;
+  --config-divider: #303447;
+  --config-surface: #202332;
+  --config-background: #151722;
+  --config-subtle: #252939;
+  --config-context: #242737;
+  --config-button: #303447;
+  --config-button-hover: #3a335e;
+  --config-tag-background: #332d54;
+  --config-tag-border: #504773;
+  --config-tag-text: #d1caff;
+  --config-tag-icon: #b7abd9;
+  --config-warning-background: #3c3020;
+  --config-warning-border: #6b5130;
+  --config-warning-text: #f2ce91;
+  --config-invalid-background: #422733;
+  --config-danger-hover: #4b2938;
+
+  color-scheme: dark;
+}
+
+.caas-config {
+  --field-max-size: 100%;
+
+  color: var(--config-text);
+  background: var(--config-background);
+  font-family: var(--body-font-family, adobe-clean, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 32px;
+  border-radius: 20px;
+  margin: 24px auto 48px;
+  max-width: 1800px;
+  box-sizing: border-box;
+}
+
+.caas-config button:focus-visible,
+.caas-config input:focus-visible,
+.caas-config select:focus-visible,
+.caas-config .tagselect-input:focus-within {
+  outline: 2px solid var(--config-accent);
+  outline-offset: 3px;
+}
+
+.caas-config .tool-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 0 30px;
+}
+
+.caas-config .tool-header::after,
+.caas-config .tool-title h1::before,
+.caas-config .tool-title h1::after {
+  display: none;
+}
+
+.caas-config .config-brand {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border: 1px solid var(--config-tag-border);
+  border-radius: 15px;
+  background: var(--config-accent-soft);
+  color: var(--config-accent);
+}
+
+.caas-config .config-brand svg {
+  width: 27px;
+  height: 27px;
+}
+
+.caas-config .tool-title {
+  border: 0;
+  margin: 0;
+  z-index: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+.caas-config .config-eyebrow {
+  display: block;
+  margin: 0 0 4px;
+  color: var(--config-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.caas-config .tool-header h1 {
+  padding: 0;
+  margin: 0;
+  font-size: clamp(24px, 2.5vw, 34px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+}
+
+.caas-config .config-description {
+  margin: 8px 0 0;
+  color: var(--config-muted);
+  font-size: 14px;
+}
+
+.caas-config .tool-header button.copy-config {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 20px 0 42px;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background-color: var(--config-primary);
+  background-position: 16px center;
+  background-size: 16px;
+  box-shadow: 0 3px 8px #5046e51f;
+  clip-path: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.caas-config .tool-header button.copy-config:hover {
+  background-color: var(--config-primary-hover);
+  box-shadow: 0 4px 12px #5046e533;
+}
+
+.caas-config .tool-header button.copy-config.is-success {
+  background-color: #18764a;
+}
+
+.caas-config .tool-header button.copy-config.is-error {
+  background-color: #ba303e;
+}
+
+.caas-config .tool-content {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  transition: none;
+}
+
+.caas-config .tool-content.settings-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.caas-config .config-panel {
+  --settings-font-scale: 1.1;
+
+  font-size: calc(14px * var(--settings-font-scale));
+  position: sticky;
+  top: 80px;
+  max-width: none;
+  max-height: calc(100dvh - 100px);
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d3d5e0 transparent;
+  z-index: auto;
+  margin: 0;
+  border: 1px solid var(--config-border);
+  border-radius: 14px;
+  background: var(--config-surface);
+  box-shadow: 0 3px 12px #20233504;
+}
+
+.caas-config .config-panel[hidden] {
+  display: none;
+}
+
+.caas-config .config-panel-heading {
+  padding: 22px 22px 18px;
+  border-bottom: 1px solid var(--config-border);
+}
+
+.caas-config .config-panel-heading h2,
+.caas-config .preview-heading h2 {
+  margin: 0;
+  color: var(--config-text);
+  font-size: calc(17px * var(--settings-font-scale, 1));
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: -0.2px;
+}
+
+.caas-config .config-panel-heading p {
+  margin: 4px 0 0;
+  color: var(--config-muted);
+  font-size: calc(12px * var(--settings-font-scale));
+}
+
+.caas-config .tool-error {
+  padding: 12px 14px;
+  margin: 16px;
+  border: 1px solid var(--config-warning-border);
+  border-radius: 8px;
+  background: var(--config-warning-background);
+  color: var(--config-warning-text);
+  font-size: calc(12px * var(--settings-font-scale, 1));
+  line-height: 1.6;
+}
+
+.caas-config .config-panel .accordion {
+  --field-max-size: 100%;
+
+  counter-reset: config-section;
+  margin: 8px 0;
+}
+
+.caas-config .config-panel .accordion > .accordion-item {
+  counter-increment: config-section;
+  margin: 0;
+  border-bottom: 1px solid var(--config-divider);
+}
+
+.caas-config .config-panel .accordion-item:last-child {
+  border-bottom: 0;
+}
+
+.caas-config .config-panel .accordion dt.title {
+  height: auto;
+  min-height: 50px;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: stretch;
+  gap: 0;
+}
+
+.caas-config .config-panel dt.title span,
+.caas-config .config-panel dt.title button {
+  background: transparent;
+  color: var(--config-muted);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.caas-config .config-panel dt.title span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 12px 22px;
+  font-size: calc(14px * var(--settings-font-scale));
+}
+
+.caas-config .config-panel dt.title span::before {
+  content: counter(config-section, decimal-leading-zero);
+  color: #8b90a1;
+  font-size: calc(10px * var(--settings-font-scale));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.caas-config .config-panel dt.title button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background-image: none;
+  clip-path: none;
+  cursor: pointer;
+}
+
+.caas-config .config-panel dt.title button::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: rotate(45deg);
+  transition: transform 150ms ease;
+}
+
+.caas-config .config-panel dt.title:hover span,
+.caas-config .config-panel dt.title:hover button,
+.caas-config .config-panel dt.title.is-expanded span,
+.caas-config .config-panel dt.title.is-expanded button {
+  background: var(--config-accent-soft);
+  color: var(--config-accent);
+}
+
+.caas-config .config-panel dt.title.is-expanded span {
+  font-weight: 700;
+}
+
+.caas-config .config-panel dt.title.is-expanded span::before {
+  color: var(--config-accent);
+}
+
+.caas-config .config-panel dt.title.is-expanded button::after {
+  transform: rotate(225deg);
+}
+
+.caas-config .config-panel .accordion dd.content {
+  font-size: calc(16px * var(--settings-font-scale));
+  background: transparent;
+  color: var(--config-text);
+  clip-path: none;
+  visibility: hidden;
+  transition: none;
+}
+
+.caas-config .config-panel .accordion dd.content.is-expanded {
+  margin: 0;
+  max-height: none;
+  overflow: visible;
+  visibility: visible;
+}
+
+.caas-config .config-panel .accordion dd.content .content-container {
+  padding: 20px 22px 12px;
+}
+
+.caas-config .config-panel .accordion .multifield-fields .field {
+  padding: 0;
+}
+
+.caas-config .config-panel .accordion dd.content .field,
+.caas-config .config-panel .accordion .tagselect {
+  margin: 0 0 16px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.caas-config .config-panel .accordion .tagselect label,
+.caas-config .config-panel .accordion dd.content .field label {
+  margin: 0 0 6px;
+  color: var(--config-label);
+  font-size: calc(12px * var(--settings-font-scale));
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.caas-config .tagselect-dropdown-search input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--config-border);
+  border-radius: 5px;
+  background: var(--config-subtle);
+  color: var(--config-text);
+  font: inherit;
+}
+
+.caas-config .config-panel .accordion dd.content .field input,
+.caas-config .config-panel .accordion dd.content .field select,
+.caas-config .config-panel .accordion .tagselect-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  margin: 0;
+  border: 1px solid var(--config-field-border) !important;
+  border-radius: 7px;
+  background: var(--config-surface);
+  color: var(--config-text);
+  font-family: inherit;
+  font-size: calc(13px * var(--settings-font-scale));
+  line-height: 1.5;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.caas-config .config-panel .accordion dd.content .field select {
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23656b7e' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 14px;
+  background-position: right 10px center;
+}
+
+.caas-config .config-panel input::placeholder {
+  color: var(--config-muted);
+}
+
+.caas-config .config-panel .accordion dd.content .field.checkbox {
+  align-items: center;
+  gap: 9px;
+  margin: 14px 0;
+}
+
+.caas-config .config-panel .accordion dd.content .field.checkbox label {
+  flex: 1;
+  margin: 0;
+  font-weight: 400;
+}
+
+.caas-config .config-panel .accordion dd.content .field input[type="checkbox"] {
+  align-self: center;
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--config-accent);
+  cursor: pointer;
+}
+
+.caas-config .config-panel .accordion dd.content .field .input-invalid {
+  border: 2px solid #ba303e !important;
+  background-color: var(--config-invalid-background);
+}
+
+.caas-config .config-panel .accordion .tagselect-input {
+  padding: 3px 5px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.caas-config .tagselect-values {
+  min-width: 0;
+}
+
+.caas-config .tagselect-tag {
+  max-width: 100%;
+  padding: 4px 7px;
+  margin: 2px 4px 2px 0;
+  border: 1px solid var(--config-tag-border);
+  border-radius: 5px;
+  background: var(--config-tag-background);
+  color: var(--config-tag-text);
+  font-size: calc(11px * var(--settings-font-scale, 1));
+  line-height: 1.5;
+}
+
+.caas-config .tagselect-tag-text {
+  overflow-wrap: anywhere;
+}
+
+.caas-config .tagselect-tag-delete {
+  display: flex;
+  flex-shrink: 0;
+  border-radius: 3px;
+}
+
+.caas-config .tagselect-tag-close {
+  fill: var(--config-tag-icon);
+}
+
+.caas-config .tagselect-add {
+  margin: 0 9px;
+}
+
+.caas-config .tagselect-plus,
+.caas-config .tagselect-plus::after {
+  background: #79738d;
+}
+
+.caas-config .tagselect-dropdown {
+  margin-top: 6px;
+  padding: 6px;
+  border: 1px solid var(--config-border);
+  border-radius: 8px;
+  background: var(--config-surface);
+  box-shadow: 0 8px 24px #20233514;
+}
+
+.caas-config .tagselect-dropdown-item {
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: calc(12px * var(--settings-font-scale, 1));
+  color: var(--config-text);
+}
+
+.caas-config .tagselect-dropdown-item:not(.is-disabled):hover {
+  background: var(--config-accent-soft);
+  color: var(--config-accent);
+}
+
+.caas-config .config-panel .accordion dd.content button {
+  height: 32px;
+  margin: 0 0 12px;
+  padding: 0 10px;
+  border: 1px solid var(--config-field-border);
+  border-radius: 6px;
+  background-color: var(--config-button);
+  color: var(--config-label);
+  font-family: inherit;
+  font-size: calc(12px * var(--settings-font-scale));
+  font-weight: 600;
+  clip-path: none;
+  cursor: pointer;
+}
+
+.caas-config .config-panel .accordion dd.content button:hover {
+  background-color: var(--config-button-hover);
+  color: var(--config-accent);
+}
+
+.caas-config .config-panel .accordion .multifield {
+  padding: 12px;
+  margin: 16px 0;
+  width: auto;
+  border: 1px solid var(--config-border);
+  border-radius: 8px;
+  background: var(--config-subtle);
+}
+
+.caas-config .config-panel .accordion .multifield > .multifield-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.caas-config .config-panel .accordion .multifield > .multifield-header h3 {
+  margin: 0;
+  font-size: calc(13px * var(--settings-font-scale));
+  font-weight: 600;
+}
+
+.caas-config .config-panel .accordion .multifield > .multifield-header h5 {
+  max-width: none;
+  margin: 0;
+  color: var(--config-muted);
+  font-size: calc(11px * var(--settings-font-scale));
+  font-style: normal;
+  font-weight: 400;
+}
+
+.caas-config .config-panel .accordion .multifield > .multifield-header > .multifield-add {
+  margin: 0;
+  height: 28px;
+  background-color: var(--config-accent-soft);
+  color: var(--config-accent);
+}
+
+.caas-config .config-panel .accordion .multifield > .multifield-set {
+  position: relative;
+  gap: 8px;
+  padding: 14px 0 0;
+  margin: 12px 0 0;
+  border-top: 1px solid var(--config-border);
+}
+
+.caas-config .config-panel .accordion .multifield-fields {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.caas-config .config-panel .accordion dd.content button.multifield-delete {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0 0 16px;
+  background-color: var(--config-surface);
+  background-size: 15px;
+  background-position: center;
+}
+
+.caas-config .config-panel .accordion dd.content button.multifield-delete:hover {
+  background-color: var(--config-danger-hover);
+}
+
+.caas-config .config-panel .accordion .multifield[class^="multifield filters"] > .multifield-set {
+  padding-top: 38px;
+}
+
+.caas-config [class^="multifield filters"] > .multifield-set > .up-down {
+  display: flex;
+  position: absolute;
+  top: 6px;
+  right: 0;
+  gap: 4px;
+}
+
+.caas-config .config-panel .accordion dd.content .up-down button {
+  height: 24px;
+  margin: 0;
+  padding: 0 6px;
+}
+
+.caas-config .move-down {
+  transform: rotate(180deg);
+}
+
+.caas-config .config-panel dd.content .nested {
+  padding: 12px;
+  margin: -4px 0 18px;
+  border: 1px solid var(--config-border);
+  border-radius: 8px;
+  background: var(--config-subtle);
+}
+
+.caas-config .config-panel dd.content .nested .field {
+  max-width: 100%;
+}
+
+.caas-config .config-panel dd.content .note {
+  color: var(--config-muted);
+  font-size: calc(11px * var(--settings-font-scale));
+}
+
+.caas-config dd.content .sort-options {
+  margin: 0 0 16px 12px;
+  padding-left: 12px;
+  border-left: 2px solid #dedbff;
+}
+
+.caas-config .config-panel hr.divider {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid var(--config-border);
+}
+
+.caas-config .tool-content > .content-panel {
+  min-width: 0;
+  padding: 0;
+  border: 1px solid var(--config-border);
+  border-radius: 14px;
+  background: var(--config-surface);
+  box-shadow: 0 3px 12px #20233504;
+}
+
+.caas-config .preview-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px;
+}
+
+.caas-config .preview-heading .config-eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+}
+
+.caas-config .preview-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.caas-config button.theme-toggle,
+.caas-config button.collapse-panel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 6px;
+  width: auto;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--config-border);
+  border-radius: 7px;
+  background: var(--config-surface);
+  color: var(--config-muted);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.caas-config button.theme-toggle:hover,
+.caas-config button.collapse-panel:hover {
+  background: var(--config-accent-soft);
+  color: var(--config-accent);
+}
+
+.caas-config .theme-toggle svg,
+.caas-config .collapse-panel svg {
+  width: 16px;
+  height: 16px;
+}
+
+.caas-config .theme-toggle-track {
+  display: inline-flex;
+  align-items: center;
+  width: 26px;
+  height: 16px;
+  padding: 2px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: var(--config-field-border);
+}
+
+.caas-config .theme-toggle-track::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--config-surface);
+  transition: transform 150ms ease;
+}
+
+.caas-config .theme-toggle[aria-checked="true"] .theme-toggle-track {
+  background: var(--config-accent);
+}
+
+.caas-config .theme-toggle[aria-checked="true"] .theme-toggle-track::after {
+  transform: translateX(10px);
+}
+
+.caas-config .preview-context {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--config-divider);
+  border-bottom: 1px solid var(--config-divider);
+  background: var(--config-context);
+  color: var(--config-muted);
+  font-size: 11px;
+}
+
+.caas-config .preview-layout {
+  color: var(--config-label);
+  font-weight: 600;
+}
+
+.caas-config .caas-preview {
+  min-height: 520px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* stylelint-disable-next-line selector-class-pattern -- CaaS library class. */
+.caas-config .consonant-Wrapper--carousel {
+  width: 100%;
+  margin: 0;
+}
+
+.caas-config .cardid {
+  display: none;
+}
+
+.caas-config .show-ids .cardid {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  padding: 5px 8px;
+  border: 1px solid #d6d1ff;
+  border-radius: 5px;
+  background: #eeedff;
+  color: #3e35a5;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.caas-config .show-ids .cardid:hover {
+  background: #dcd8ff;
+}
+
+/* stylelint-disable-next-line selector-class-pattern -- CaaS library class. */
+.caas-config .show-ids .consonant-DoubleWideCard .cardid {
+  top: 12px;
+}
+
+/* The shared tag picker is rendered in a portal outside the block. */
+body:has(.caas-config) #tagselect-modal-container .tagselect-modal-overlay {
+  background: #20233566;
+  backdrop-filter: blur(4px);
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-modal {
+  box-sizing: border-box;
+  width: min(1000px, calc(100vw - 32px));
+  height: min(660px, calc(100dvh - 48px));
+  padding: 76px 24px 24px;
+  border: 1px solid var(--config-border);
+  border-radius: 16px;
+  background: var(--config-surface);
+  color: var(--config-text);
+  box-shadow: 0 24px 80px #20233540;
+  font-family: var(--body-font-family, adobe-clean, sans-serif);
+  font-size: 13px;
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-modal-close {
+  top: 22px;
+  right: 24px;
+  border: 1px solid var(--config-border);
+  border-radius: 7px;
+  background-color: var(--config-background);
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-picker-search {
+  box-sizing: border-box;
+  top: 22px;
+  left: 24px;
+  width: calc(100% - 96px);
+  height: 36px;
+  padding: 8px 12px;
+  border: 1px solid var(--config-field-border);
+  border-radius: 7px;
+  background: var(--config-subtle);
+  color: var(--config-text);
+  font: inherit;
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-picker .col {
+  min-width: 220px;
+  margin-right: 16px;
+  padding-right: 12px;
+  border-right: 1px solid var(--config-border);
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-picker label {
+  box-sizing: border-box;
+  font-weight: 400;
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-item {
+  margin-bottom: 3px;
+  border-radius: 5px;
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-item:hover,
+body:has(.caas-config) #tagselect-modal-container .tagselect-item.expanded,
+body:has(.caas-config) #tagselect-modal-container .tagselect-picker-table .search-item:hover {
+  background: var(--config-accent-soft);
+  color: var(--config-accent);
+}
+
+body:has(.caas-config) #tagselect-modal-container .tagselect-picker-search:focus-visible,
+body:has(.caas-config) #tagselect-modal-container .tagselect-modal-close:focus-visible,
+body:has(.caas-config) #tagselect-modal-container .tagselect-picker .cb:focus-visible + label {
+  outline: 2px solid var(--config-accent);
+  outline-offset: 2px;
+}
+
+@media (min-width: 1600px) {
+  .caas-config .tool-content {
+    grid-template-columns: 350px minmax(0, 1fr);
+  }
+
+  .caas-config .tool-content.settings-hidden {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1000px) {
+  .caas-config {
+    padding: 24px 16px;
+    border-radius: 12px;
+  }
+
+  .caas-config .tool-content {
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .caas-config .preview-toolbar,
+  .caas-config .preview-context,
+  .caas-config .caas-preview {
+    padding: 16px;
+  }
+
+  .caas-config .preview-toolbar {
+    align-items: start;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 760px) {
+  .caas-config {
+    padding: 20px 12px;
+    margin: 12px auto 24px;
+  }
+
+  .caas-config .tool-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 24px;
+  }
+
+  .caas-config .config-brand {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+  }
+
+  .caas-config .config-brand svg {
+    width: 23px;
+    height: 23px;
+  }
+
+  .caas-config .tool-header h1 {
+    font-size: 24px;
+  }
+
+  .caas-config .config-description {
+    font-size: 12px;
+  }
+
+  .caas-config .tool-header button.copy-config {
+    width: 100%;
+  }
+
+  .caas-config .tool-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .caas-config .config-panel {
+    position: static;
+    max-height: none;
+  }
+
+  .caas-config .caas-preview {
+    min-height: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caas-config *,
+  .caas-config *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
