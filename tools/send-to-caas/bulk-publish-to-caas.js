@@ -18,7 +18,14 @@ import {
   setConfig,
 } from './send-utils.js';
 import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
-import { isFlagEnabled, isFlagUnrecognized, isHtmlIdentityEnabled, normalizeSections, findUnrecognizedSections } from '../../libs/utils/caasIdentity.js';
+import {
+  isFlagEnabled,
+  isFlagUnrecognized,
+  isHtmlIdentityEnabled,
+  isLegacyHtmlExtEnabled,
+  normalizeSections,
+  findUnrecognizedSections,
+} from '../../libs/utils/caasIdentity.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const logIdentity = createIdentityLogger('caas-bulk-publish');
@@ -69,13 +76,20 @@ const DEFAULT_VALUES_CB = {
 // Hold the selected preset data
 let selectedPreset = {};
 
-const fetchExcelJson = async (url) => {
+// Throws rather than returning [] on a non-ok response. An empty array is
+// indistinguishable from "the sheet has no rows", and the identity policy is
+// reconciled against this fetch -- so a 403/404/503 read as an empty sheet is a
+// failure the operator is never told about, while they keep publishing under a
+// policy that could not be checked. The caller's .catch surfaces it and leaves
+// the stored policy alone.
+//
+// Exported for tests: that ok/non-ok boundary is the whole fix, and the only
+// other seam is getPresetsData, which is DOM-bound.
+export const fetchExcelJson = async (url) => {
   const resp = await fetch(url);
-  if (resp.ok) {
-    const json = await resp.json();
-    return json.data;
-  }
-  return [];
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const json = await resp.json();
+  return json.data;
 };
 
 const checkIms = async (prompt = true) => {
@@ -410,17 +424,18 @@ export const reconcileHtmlIdentity = (presets) => {
   // un-authored. Treating it as such would silently turn the policy off on a
   // transient network error -- rehashing every card the operator then publishes.
   //
-  // An EMPTY list is the same non-answer: fetchExcelJson returns [] for any
-  // non-ok response (404/403/500/stale cache), which never reaches the .catch.
+  // An EMPTY list is the same non-answer: a sheet that returns zero rows (a
+  // renamed tab, a filtered view) cannot tell us the column was un-authored.
   // Reconciling against it would find no matching preset, read that as "the
   // column is off", and persist the rollback to localStorage -- so the policy
   // would stay off after the sheet recovered. No preset rows means no evidence.
+  // Non-ok responses now throw in fetchExcelJson and arrive here as `null`.
   if (!Array.isArray(presets) || !presets.length) return;
   const stored = getConfig();
   const selected = stored?.presetSelector;
   if (!selected || selected === 'advanced' || selected === 'default') return;
   const live = presets.find((preset) => preset.id === selected);
-  const liveValue = isFlagEnabled(live?.htmlIdentity);
+  const liveValue = isHtmlIdentityEnabled(live?.htmlIdentity);
   // The section list is reconciled for the same reason and in the same pass:
   // it qualifies the policy, so a stale list is as wrong as a stale flag --
   // it re-forces `.html` onto a section's ids, or stops forcing it where the
@@ -428,7 +443,7 @@ export const reconcileHtmlIdentity = (presets) => {
   // edit in the sheet does not look like a change.
   const normalize = (value) => normalizeSections(value).join(',');
   const liveSections = normalize(live?.htmlIdentitySections);
-  const flagStale = liveValue !== isFlagEnabled(stored.htmlIdentity);
+  const flagStale = liveValue !== isHtmlIdentityEnabled(stored.htmlIdentity);
   const sectionsStale = liveSections !== normalize(stored.htmlIdentitySections);
   if (!flagStale && !sectionsStale) return;
   setConfig({ htmlIdentity: liveValue, htmlIdentitySections: liveSections });
@@ -501,6 +516,64 @@ const setTheme = () => {
   }
 };
 
+// Extracted so the identity policy a preset resolves to is assertable without
+// dispatching a change event through the DOM. The pin below is precisely the
+// kind of fix that reads as correct and silently stops working, so it needs a
+// test that fails when it is removed -- which the inline handler could not have.
+export const resolvePresetIdentityConfig = (preset = {}) => {
+  // htmlIdentity is NEW, so no live cell can already mean something else: it
+  // goes through the canonical parser, and a 'TRUE' or ' true ' cell is honored
+  // rather than silently failing a strict === 'true'.
+  //
+  // useHtml is NOT new. It shipped reading `=== 'true'`, so a live preset
+  // authored 'TRUE' or 'on' resolves to false today, and useHtml feeds prodUrl,
+  // which is the uuid v5 hash input -- widening it would flip those presets'
+  // public urls and silently rehash every card they publish, at merge, with no
+  // rollback. It keeps the legacy parser for the same reason resolveHtmlExt
+  // does, and is reported rather than quietly honored.
+  if (typeof preset.useHtml === 'string'
+    && !isLegacyHtmlExtEnabled(preset.useHtml)
+    && isFlagEnabled(preset.useHtml)) {
+    logIdentity(
+      `useHtml '${preset.useHtml}' on preset '${preset.id}' was read as false `
+      + 'before the parser was widened; keeping it false to avoid rehashing live cards. '
+      + 'Author it as lowercase \'true\' to enable.',
+      'error',
+    );
+  }
+  // A cell that means neither true nor false resolves to OFF, which on the
+  // identity path mints a second set of card ids. auto-publish already reports
+  // this; the three publishers must not disagree on whether a typo is worth
+  // mentioning, or the one that stays quiet becomes the one that drifts.
+  ['useHtml', 'htmlIdentity'].forEach((flag) => {
+    if (isFlagUnrecognized(preset[flag])) {
+      logIdentity(
+        `unrecognized ${flag} value '${preset[flag]}' on preset `
+        + `'${preset.id}', treating as OFF`,
+        'warning',
+      );
+    }
+  });
+  const badSections = findUnrecognizedSections(preset.htmlIdentitySections);
+  if (badSections.length) {
+    logIdentity(
+      `unrecognized htmlIdentitySections entries '${badSections.join(', ')}' on preset `
+      + `'${preset.id}': these name a path, host or glob rather than a path `
+      + 'segment, so they match nothing and the section keeps forced-`.html` ids',
+      'warning',
+    );
+  }
+  return {
+    useHtml: isLegacyHtmlExtEnabled(preset.useHtml),
+    htmlIdentity: isHtmlIdentityEnabled(preset.htmlIdentity),
+    // Taken from the preset in the same pass as the flag. `config` is seeded
+    // from localStorage, so leaving this out carried the PREVIOUSLY selected
+    // preset's list into this one -- and left a first-time operator, who has no
+    // stored config at all, publishing flag-ON with no carve-out.
+    htmlIdentitySections: normalizeSections(preset.htmlIdentitySections).join(','),
+  };
+};
+
 // eslint-disable-next-line no-undef
 presetSelector.addEventListener('change', () => {
   // eslint-disable-next-line no-undef
@@ -529,40 +602,10 @@ presetSelector.addEventListener('change', () => {
   config.host = selectedPreset.host || '';
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
-  // Both flow into the identity hash (useHtml via prodUrl, htmlIdentity via the
-  // forced-.html policy), so both go through the canonical parser rather than a
-  // strict === 'true' that a 'TRUE' or ' true ' cell would silently fail.
-  // A cell that means neither true nor false resolves to OFF, which on the
-  // identity path mints a second set of card ids. auto-publish already reports
-  // this; the three publishers must not disagree on whether a typo is worth
-  // mentioning, or the one that stays quiet becomes the one that drifts.
-  ['useHtml', 'htmlIdentity'].forEach((flag) => {
-    if (isFlagUnrecognized(selectedPreset[flag])) {
-      logIdentity(
-        `unrecognized ${flag} value '${selectedPreset[flag]}' on preset `
-        + `'${selectedPreset.id}', treating as OFF`,
-        'warning',
-      );
-    }
-  });
-  config.useHtml = isFlagEnabled(selectedPreset.useHtml);
-  config.htmlIdentity = isFlagEnabled(selectedPreset.htmlIdentity);
-  // Taken from the preset in the same pass as the flag. `config` is seeded
-  // from localStorage, so leaving this out carried the PREVIOUSLY selected
-  // preset's list into this one -- and left a first-time operator, who has no
-  // stored config at all, publishing flag-ON with no carve-out.
-  config.htmlIdentitySections = normalizeSections(selectedPreset.htmlIdentitySections).join(',');
-  const badSections = findUnrecognizedSections(selectedPreset.htmlIdentitySections);
-  if (badSections.length) {
-    logIdentity(
-      `unrecognized htmlIdentitySections entries '${badSections.join(', ')}' on preset `
-      + `'${selectedPreset.id}': these name a path, host or glob rather than a path `
-      + 'segment, so they match nothing and the section keeps forced-`.html` ids',
-      'warning',
-    );
-  }
-  // Deliberately NOT converted to isFlagDisabled with the two above. This cell
-  // has inverted semantics and does not feed the identity hash, so switching it
+  Object.assign(config, resolvePresetIdentityConfig(selectedPreset));
+  // Deliberately NOT converted to isFlagDisabled with the identity flags
+  // resolved above in resolvePresetIdentityConfig. This cell has inverted
+  // semantics and does not feed the identity hash, so switching it
   // would change language/country resolution for every existing preset -- a
   // behaviour change unrelated to card identity, and not one this ticket should
   // smuggle in.
@@ -570,7 +613,7 @@ presetSelector.addEventListener('change', () => {
   // KNOWN LATENT DEFECT, pre-existing and unchanged here: this is a strict
   // `=== 'false'` compare, so the authored cells 'FALSE', 'False' and ' false '
   // all resolve to `languageFirst = false` -- the opposite of what the author
-  // wrote. It is the same bug class the two lines above fix, left in place only
+  // wrote. It is the same bug class the identity flags fix, left in place only
   // because the blast radius is language resolution rather than identity. Fixing
   // it needs an audit of which presets currently author a non-exact 'false',
   // since those sites are silently getting the wrong resolution today and the
@@ -752,10 +795,16 @@ helpButtons.forEach((btn) => {
           <p>When this option is checked, the bulkpublisher adds the <b>.html</b> extension to the page URL
             it publishes. That URL becomes the card's link and is what the card's <b>ID</b> is derived from,
             so changing this option changes the IDs of the cards you publish. It is also used for CTA 1 only
-            when the page does not author its own <b>CardCta1Url</b>.</p>
+            when the page does not author its own <b>CTA1Url</b>.</p>
           <p>Sites that serve extensionless URLs but need their existing card IDs to stay valid should leave
             this unchecked and turn on <b>Keep .html card identity</b> instead, which keeps
-            the <b>.html</b> form for ID purposes only.</p>`);
+            the <b>.html</b> form for ID purposes only.</p>
+          <p><b>Authoring the preset column.</b> This column is read strictly: only a lowercase
+            <tt>true</tt> turns it on. <b>TRUE</b>, <b>On</b> and <b>yes</b> are all read as
+            <i>off</i>, and the checkbox above will show unchecked. That is deliberate &mdash; this
+            column has always been read that way, and widening it would change the published URL,
+            and therefore the <b>ID</b>, of every card the preset publishes. If the checkbox does not
+            match your sheet, re-author the cell as lowercase <tt>true</tt>.</p>`);
         break;
 
       case 'html-identity':
@@ -778,7 +827,14 @@ helpButtons.forEach((btn) => {
             the sidekick publisher too, so it mints IDs on its own. Do not set it there until the
             poller's pinned payload-builder build includes this change &mdash; otherwise the sidekick
             and the poller disagree and the page gets two IDs. Consumer-only sites can be set up
-            at any time.</p>`);
+            at any time.</p>
+          <p><b>Poller prerequisites.</b> Updating the pinned payload-builder build is necessary
+            but <b>not sufficient</b>. The <b>milo-caas</b> integration that drives the poller must
+            also forward <b>htmlIdentity</b> and <b>htmlIdentitySections</b> on both the publish and
+            the <b>removal</b> paths; the bundle defaults them to off when they are not passed.
+            Without that wiring the poller and this tool disagree on a page's ID, and a removal
+            through the poller computes the wrong ID and leaves the real card behind. Confirm both
+            the build and the argument wiring are deployed before enabling the policy for a site.</p>`);
         break;
 
       case 'html-identity-sections':

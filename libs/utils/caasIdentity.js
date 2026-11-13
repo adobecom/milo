@@ -150,18 +150,21 @@ export const isFlagEnabled = (flag) => {
 };
 
 /**
- * The PRE-EXISTING `htmlExt` config column, which must NOT use the canonical
- * parser above. It was shipped reading `=== true || === 'true'`, so a live cell
- * authored `TRUE`, `On` or ` true ` resolves to false today. Widening it would
- * flip those sites' public urls -- and prodUrl is the uuid v5 hash input, so it
- * would silently rehash every card they publish, at merge, with no rollback.
+ * The PRE-EXISTING `htmlExt` config column AND the bulk publisher's equally
+ * pre-existing `useHtml` preset column, neither of which may use the canonical
+ * parser above. Both shipped reading `=== true || === 'true'`, so a live cell
+ * authored `TRUE`, `On` or ` true ` resolves to false today. Widening either
+ * would flip those sites' public urls -- and prodUrl is the uuid v5 hash input,
+ * so it would silently rehash every card they publish, at merge, with no
+ * rollback.
  *
- * Deliberately shared by BOTH runtimes that read this column (resolveHtmlExt in
- * the browser publisher, getProdUrl in the poller bundle). Pinning only one of
- * them is worse than widening both: the two publishers then disagree about the
- * same cell and mint two contentIds for one page, which is the precise failure
- * the env-split guard exists to prevent and which that guard cannot see,
- * because the fork is across runtimes rather than within one build.
+ * Deliberately shared by EVERY runtime that reads one of these columns
+ * (resolveHtmlExt in the browser publisher, getProdUrl in the poller bundle,
+ * resolvePresetIdentityConfig in the bulk publisher). Pinning only some of them
+ * is worse than widening all: the publishers then disagree about the same cell
+ * and mint two contentIds for one page, which is the precise failure the
+ * env-split guard exists to prevent and which that guard cannot see, because
+ * the fork is across runtimes rather than within one build.
  *
  * To opt in, author the cell as lowercase 'true'. That is an explicit action,
  * so the rehash happens when someone chooses it rather than when this merges.

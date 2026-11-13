@@ -160,6 +160,8 @@ describe('getBulkPublishLangAttr — auto-detect Lingo matrix', () => {
 describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
   let reconcileHtmlIdentity;
   let snapshotPublishConfig;
+  let resolvePresetIdentityConfig;
+  let fetchExcelJson;
   let getConfig;
   let setConfig;
 
@@ -171,7 +173,7 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     const pageHtml = await readFile({ path: '../../../tools/send-to-caas/bulkpublisher.html' });
     const parsed = new DOMParser().parseFromString(pageHtml, 'text/html');
     document.body.append(...parsed.body.children);
-    ({ reconcileHtmlIdentity, snapshotPublishConfig } = await import('../../../tools/send-to-caas/bulk-publish-to-caas.js'));
+    ({ reconcileHtmlIdentity, snapshotPublishConfig, resolvePresetIdentityConfig, fetchExcelJson } = await import('../../../tools/send-to-caas/bulk-publish-to-caas.js'));
     ({ getConfig, setConfig } = await import('../../../tools/send-to-caas/send-utils.js'));
   });
 
@@ -236,12 +238,13 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     expect(getConfig().htmlIdentity).to.equal(true);
   });
 
-  it('does nothing for an EMPTY sheet, which is what an HTTP error actually returns', () => {
-    // fetchExcelJson returns [] for any non-ok response (404/403/500/stale
-    // cache) and never rejects, so this never reaches the .catch. Treating an
-    // empty list as authoritative would find no matching preset, read that as
-    // "the column is off", and persist the rollback to localStorage -- leaving
-    // the policy off even after the sheet recovered.
+  it('does nothing for an EMPTY sheet, which is not evidence either way', () => {
+    // A sheet that loads but returns zero rows (a renamed tab, a filtered view)
+    // cannot tell us the column was un-authored. Treating an empty list as
+    // authoritative would find no matching preset, read that as "the column is
+    // off", and persist the rollback to localStorage -- leaving the policy off
+    // even after the sheet recovered. Non-ok responses throw in fetchExcelJson
+    // and arrive here as null, covered by the test above.
     setConfig({ presetSelector: 'bacom', htmlIdentity: true });
     reconcileHtmlIdentity([]);
     expect(getConfig().htmlIdentity).to.equal(true);
@@ -253,6 +256,87 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     setConfig({ presetSelector: 'bacom', htmlIdentity: true });
     reconcileHtmlIdentity([{ id: 'other', htmlIdentity: 'true' }]);
     expect(getConfig().htmlIdentity).to.equal(false);
+  });
+
+  describe('fetchExcelJson — a failed sheet load must not look like an empty sheet', () => {
+    let realFetch;
+    beforeEach(() => { realFetch = window.fetch; });
+    afterEach(() => { window.fetch = realFetch; });
+
+    it('throws on a non-ok response instead of returning an empty list', async () => {
+      // Returning [] here is indistinguishable from "the sheet has no rows",
+      // so the caller's warning never ran and the operator kept publishing
+      // under an identity policy that could not be checked against the sheet.
+      window.fetch = async () => ({ ok: false, status: 403, statusText: 'Forbidden' });
+      let caught;
+      try {
+        await fetchExcelJson('/presets.json');
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).to.be.instanceOf(Error);
+      expect(caught.message).to.equal('HTTP 403');
+    });
+
+    it('returns the sheet rows on a successful response', async () => {
+      window.fetch = async () => ({ ok: true, json: async () => ({ data: [{ id: 'bacom' }] }) });
+      expect(await fetchExcelJson('/presets.json')).to.deep.equal([{ id: 'bacom' }]);
+    });
+  });
+
+  describe('resolvePresetIdentityConfig — a preset cell must not change live ids', () => {
+    it('keeps the legacy strict parser for useHtml, so a TRUE cell stays off', () => {
+      // useHtml feeds prodUrl, which is the uuid v5 hash input. It shipped
+      // reading `=== 'true'`, so a live preset authored 'TRUE' resolves to
+      // false today. Widening it here would flip that preset's public urls and
+      // rehash every card it publishes, at merge, with no rollback.
+      expect(resolvePresetIdentityConfig({ id: 'bacom', useHtml: 'TRUE' }).useHtml).to.equal(false);
+      expect(resolvePresetIdentityConfig({ id: 'bacom', useHtml: ' true ' }).useHtml).to.equal(false);
+      expect(resolvePresetIdentityConfig({ id: 'bacom', useHtml: 'on' }).useHtml).to.equal(false);
+    });
+
+    it('still honors the lowercase opt-in for useHtml', () => {
+      expect(resolvePresetIdentityConfig({ id: 'bacom', useHtml: 'true' }).useHtml).to.equal(true);
+    });
+
+    it('reports the pinned cell at error severity, rather than keeping it false silently', () => {
+      // The value assertions above pin WHAT happens; this pins the only signal
+      // telling an author their 'TRUE' cell was ignored. Without it, deleting
+      // the report leaves the suite green and the cell mis-authored forever.
+      const calls = [];
+      window.lana = { log: (msg, opts) => calls.push({ msg, opts }) };
+      try {
+        resolvePresetIdentityConfig({ id: 'bacom', useHtml: 'TRUE' });
+      } finally {
+        delete window.lana;
+      }
+      const pin = calls.find((c) => c.msg.includes('was read as false before the parser was widened'));
+      expect(pin, 'expected a pinned-cell report').to.not.be.undefined;
+      expect(pin.opts.severity).to.equal('error');
+    });
+
+    it('stays silent for a cell that was already off, so the report means something', () => {
+      const calls = [];
+      window.lana = { log: (msg) => calls.push(msg) };
+      try {
+        resolvePresetIdentityConfig({ id: 'bacom', useHtml: 'false' });
+        resolvePresetIdentityConfig({ id: 'bacom', useHtml: 'true' });
+      } finally {
+        delete window.lana;
+      }
+      expect(calls.filter((m) => m.includes('before the parser was widened'))).to.have.lengthOf(0);
+    });
+
+    it('applies the canonical parser to htmlIdentity, which has no live cells to protect', () => {
+      expect(resolvePresetIdentityConfig({ id: 'bacom', htmlIdentity: 'TRUE' }).htmlIdentity).to.equal(true);
+      expect(resolvePresetIdentityConfig({ id: 'bacom', htmlIdentity: ' true ' }).htmlIdentity).to.equal(true);
+    });
+
+    it('normalizes the section list off the preset rather than inheriting the last one', () => {
+      expect(resolvePresetIdentityConfig({ id: 'bacom', htmlIdentitySections: ' Blog , news ' })
+        .htmlIdentitySections).to.equal('blog,news');
+      expect(resolvePresetIdentityConfig({ id: 'bacom' }).htmlIdentitySections).to.equal('');
+    });
   });
 
   describe('htmlIdentity advanced option', () => {
