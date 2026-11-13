@@ -18,6 +18,7 @@ const selectors = {
   imagePromo: 'a.feds-promo-image',
   cta: '.feds-cta',
   regionPicker: '.feds-regionPicker',
+  marketSelectorButton: '.market-selector-button',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   contactSupportLink: '.feds-footer-contactSupport-link',
@@ -30,6 +31,7 @@ selectors.popupItems = `
   ${selectors.imagePromo},
   ${selectors.cta},
   ${selectors.regionPicker},
+  ${selectors.marketSelectorButton},
   ${selectors.socialLink},
   ${selectors.privacyLink},
   ${selectors.contactSupportLink},
@@ -430,6 +432,8 @@ class FooterKeyboardNavigation {
       linkTrigger.click();
       return;
     }
+
+    if (e.target.closest('.market-selector')) return;
 
     if (this.isDesktopForFooter()) {
       if (e.target.closest(selectors.languagePicker)) return;
