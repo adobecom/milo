@@ -209,11 +209,10 @@ describe('Preflight static prices check', () => {
     const NativeRegExp = window.RegExp;
     window.RegExp = function noLookbehind() { throw new SyntaxError('invalid group'); };
     try {
-      // A fresh module instance, because the pattern is built once per instance.
-      const freshPath = '../../../../libs/blocks/preflight/checks/merch.js?no-lookbehind';
-      const fresh = await import(freshPath);
+      const merchWithoutLookbehindPath = '../../../../libs/blocks/preflight/checks/merch.js?no-lookbehind';
+      const merchWithoutLookbehind = await import(merchWithoutLookbehindPath);
       area.innerHTML = '<p>Only $9.99/mo</p>';
-      const [, promise] = fresh.runChecks({ area, delayMs: 0 });
+      const [, promise] = merchWithoutLookbehind.runChecks({ area, delayMs: 0 });
       expect(await promise).to.include({ checkId: 'static-prices', status: 'limbo' });
     } finally {
       window.RegExp = NativeRegExp;

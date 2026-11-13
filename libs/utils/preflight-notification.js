@@ -42,15 +42,14 @@ export function isPageSnoozed(path = window.location.pathname) {
   return readSnoozes()[path] > Date.now();
 }
 
-// Per page and time-bound: editing a page doesn't nag, but no page is silenced for good.
 export function snoozePage(path = window.location.pathname, now = Date.now()) {
   const snoozes = Object.fromEntries(Object.entries(readSnoozes())
     .filter(([, until]) => until > now));
   snoozes[path] = now + SNOOZE_MS;
   try {
     localStorage.setItem(SNOOZE_KEY, JSON.stringify(snoozes));
-  } catch {
-    // Storage blocked: the pop-up simply shows again next time.
+  } catch (e) {
+    window.lana?.log?.(`Preflight pop-up snooze not saved: ${e.message}`, { tags: 'preflight' });
   }
 }
 
@@ -69,8 +68,6 @@ function dismissNotification() {
 // the sidekick plugin) — both routes fire `custom:preflight` on the sidekick.
 sidekick?.addEventListener('custom:preflight', dismissNotification);
 
-// The original small toast. A snoozed page shows it instead of the pop-up, so issues
-// never go silent.
 function createToast() {
   const reviewLink = createTag('button', { class: 'preflight-review-link' }, 'review');
   const closeBtn = createTag('button', { class: 'notification-close', 'aria-label': 'Close' }, '×');
@@ -84,8 +81,7 @@ function createToast() {
   return createTag('div', { class: 'milo-preflight-overlay' }, notification);
 }
 
-// Dismiss or Escape: with "don't show again" ticked, the pop-up collapses into the toast.
-function closePopup() {
+function dismissOrCollapseToToast() {
   if (!isSnoozeTicked()) {
     dismissNotification();
     return;
@@ -98,22 +94,19 @@ function isPreflightOpen() {
   return !!document.getElementById('preflight');
 }
 
-// Stands in for an SEO check that threw (usually the network link check).
-const failedCheck = { status: STATUS.FAIL, severity: SEVERITY.CRITICAL, title: 'SEO check (could not run)' };
+const SEO_CHECK_THAT_THREW = { status: STATUS.FAIL, severity: SEVERITY.CRITICAL, title: 'SEO check (could not run)' };
 const isFail = (check) => check?.status === STATUS.FAIL;
-// Limbo shows as a warning in the panel, so it counts here too.
-const isIssue = (check) => isFail(check) || check?.status === STATUS.LIMBO;
+const isUndecided = (check) => check?.status === STATUS.LIMBO;
+const isIssue = (check) => isFail(check) || isUndecided(check);
 const issue = (check, key, title, count) => (
   { key, title, count, severity: check.severity, status: check.status });
 
-// Tab order (General, SEO, M@S, Accessibility, Performance, Assets), matching countIssues.
 function listIssues({
   structure = [], content = [], seo = [], merch = [], accessibility = [], performance = [],
   assets = [],
 } = {}) {
   const plain = (checks) => checks.filter(isIssue)
     .map((check) => issue(check, check.checkId ?? check.id, check.title));
-  // Content checks show in the General tab; undecided (limbo) ones have no reliable count.
   const contentIssues = content.filter(isIssue).map((check) => issue(
     check,
     check.checkId,
@@ -141,15 +134,12 @@ function listIssues({
     ...plain(performance), ...assetIssues];
 }
 
-// Limbo means the check couldn't decide (e.g. link service unreachable); the panel shows it
-// as a warning, so it never outranks Normal here.
-const priorityOf = ({ key, severity, status }) => {
-  if (status === STATUS.LIMBO) return PRIORITY.NORMAL;
-  return CHECK_PRIORITIES[key]
-    ?? (severity === SEVERITY.CRITICAL ? PRIORITY.CRITICAL : PRIORITY.NORMAL);
+const priorityOf = (found) => {
+  if (isUndecided(found)) return PRIORITY.NORMAL;
+  return CHECK_PRIORITIES[found.key]
+    ?? (found.severity === SEVERITY.CRITICAL ? PRIORITY.CRITICAL : PRIORITY.NORMAL);
 };
 
-// Failing check titles per priority level, Blocker first; empty levels are dropped.
 export function groupByPriority(runChecks) {
   const issues = listIssues(runChecks);
   return PRIORITY_ORDER.map((level) => ({
@@ -159,19 +149,17 @@ export function groupByPriority(runChecks) {
   })).filter(({ items }) => items.length);
 }
 
-const settle = (check) => Promise.resolve(check).catch(() => failedCheck);
-// Pending SEO checks (the network link check) are skipped so they can't hold the pop-up back.
-const settleNow = (check) => Promise.race([settle(check), new Promise((r) => { setTimeout(r); })]);
+const settle = (check) => Promise.resolve(check).catch(() => SEO_CHECK_THAT_THREW);
+const nextTick = () => new Promise((resolve) => { setTimeout(resolve); });
+const settledOrSkipped = (check) => Promise.race([settle(check), nextTick()]);
 
-async function resolveSeo(runChecks, now) {
-  const seo = await Promise.all((runChecks.seo ?? []).map(now ? settleNow : settle));
+async function resolveSeo(runChecks, { skipPending = false } = {}) {
+  const seo = await Promise.all((runChecks.seo ?? []).map(skipPending ? settledOrSkipped : settle));
   return { ...runChecks, seo: seo.filter(Boolean) };
 }
 
-// Every level counts, but a check that couldn't decide (limbo) doesn't open the pop-up on its
-// own. preflightLinksComplete reports link failures that land later.
 export async function hasSettledIssues(runChecks = {}) {
-  return listIssues(await resolveSeo(runChecks, true)).some(({ status }) => status === STATUS.FAIL);
+  return listIssues(await resolveSeo(runChecks, { skipPending: true })).some(isFail);
 }
 
 function renderIssueGroups(container, runChecks) {
@@ -183,12 +171,8 @@ function renderIssueGroups(container, runChecks) {
   )));
 }
 
-// Ranks the run that triggered the pop-up instead of re-running Preflight: what has
-// settled now, then again once the slow link check lands.
-// shortcut: skips the page-wide localization link scan, so Links can be missing
-// here while the panel flags it; add it only if authors need the exact list.
 async function addIssueGroups(container, runChecks) {
-  renderIssueGroups(container, await resolveSeo(runChecks, true));
+  renderIssueGroups(container, await resolveSeo(runChecks, { skipPending: true }));
   renderIssueGroups(container, await resolveSeo(runChecks));
 }
 
@@ -212,7 +196,7 @@ async function createPreflightNotification(results) {
   const reviewBtn = createTag('button', { class: 'notification-review' }, 'Review issues');
   const dismissBtn = createTag('button', { class: 'notification-dismiss' }, 'Dismiss');
   reviewBtn.addEventListener('click', openPreflightPanel);
-  dismissBtn.addEventListener('click', closePopup);
+  dismissBtn.addEventListener('click', dismissOrCollapseToToast);
 
   const snooze = createTag('label', { class: 'notification-snooze' }, [
     createTag('input', { type: 'checkbox' }),
@@ -231,15 +215,11 @@ async function createPreflightNotification(results) {
     'aria-labelledby': title.id,
     'aria-describedby': message.id,
   }, content);
-  // On the pop-up only: Escape that closes the Sidekick palette or a modal must not dismiss it.
   notification.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closePopup();
+    if (e.key === 'Escape') dismissOrCollapseToToast();
   });
-  // Don't pull focus away from something the author is already using.
   const isFocusFree = !document.activeElement || document.activeElement === document.body;
   document.body.append(createTag('div', { class: 'milo-preflight-overlay preflight-popup' }, notification));
-  // preventScroll: the stylesheet may not have applied yet, so the card can still sit at the
-  // end of <body> and focusing it would scroll the page to the footer.
   if (isFocusFree) reviewBtn.focus({ preventScroll: true });
   await addIssueGroups(issues, results?.runChecks ?? {});
 }

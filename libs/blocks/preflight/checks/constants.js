@@ -17,7 +17,6 @@ export const SEVERITY = {
   WARNING: 'warning',
 };
 
-// Declared highest first; PRIORITY_ORDER follows this order.
 export const PRIORITY = {
   BLOCKER: 'Blocker',
   CRITICAL: 'Critical',
@@ -25,16 +24,13 @@ export const PRIORITY = {
   NORMAL: 'Normal',
 };
 
-export const PRIORITY_ORDER = Object.values(PRIORITY);
+export const PRIORITY_ORDER = [
+  PRIORITY.BLOCKER,
+  PRIORITY.CRITICAL,
+  PRIORITY.MAJOR,
+  PRIORITY.NORMAL,
+];
 
-// Display-only ranking for the preview pop-up, keyed by check id (or name when a
-// check has no id). It never changes `severity`, which metrics and scoring use.
-// Levels follow the Adobe.com QA Priority Definitions (wiki page 1201009817).
-// Only overrides are listed: unlisted checks rank from severity (critical → Critical,
-// anything else → Normal), e.g. region selector, breadcrumbs, accessibility, above-the-fold
-// asset dimensions and unresolved placeholders are Critical, and the Performance
-// image/video/fragment/placeholder/icon/personalization checks are Normal.
-// Asset dimensions rank per fold, hence the -below-fold key.
 export const CHECK_PRIORITIES = {
   'M@S Unpublished Fragments': PRIORITY.BLOCKER,
   'unpublished-fragments': PRIORITY.BLOCKER,

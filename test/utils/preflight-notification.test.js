@@ -3,10 +3,10 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../libs/utils/utils.js';
 
-// The module reads the sidekick once on import, so the fixture must exist first.
 document.body.innerHTML = await readFile({ path: './mocks/preflight-notification.html' });
 const { default: showNotification, groupByPriority, hasSettledIssues, isPageSnoozed, snoozePage } = await import('../../libs/utils/preflight-notification.js');
 const SNOOZE_KEY = 'milo-preflight-popup-snooze';
+const pressEscapeOn = (el) => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
 
 describe('snooze', () => {
   afterEach(() => localStorage.removeItem(SNOOZE_KEY));
@@ -142,7 +142,6 @@ describe('groupByPriority', () => {
 });
 
 describe('preview pop-up', function previewPopupSuite() {
-  // The first Preflight run waits out the M@S hydration delay (3s).
   this.timeout(10000);
 
   before(() => {
@@ -170,7 +169,6 @@ describe('preview pop-up', function previewPopupSuite() {
     expect(overlay.textContent).to.include('Content quality checks are failing');
     expect(overlay.querySelector('.preflight-review-link')).to.exist;
     expect(overlay.querySelector('.notification-close').getAttribute('aria-label')).to.equal('Close');
-    // Removed by hand, not via the close button, so the next test can still show the pop-up.
     overlay.remove();
     localStorage.removeItem(SNOOZE_KEY);
   });
@@ -190,19 +188,16 @@ describe('preview pop-up', function previewPopupSuite() {
       .map((label) => label.textContent);
     const order = ['Blocker:', 'Critical:', 'Major:', 'Normal:'];
     expect(levels).to.deep.equal([...levels].sort((a, b) => order.indexOf(a) - order.indexOf(b)));
-    // The fixture has no header or footer, so a Blocker leads.
     const [firstGroup] = dialog.querySelectorAll('.notification-group');
     expect(firstGroup.classList.contains('is-blocker')).to.be.true;
     expect(firstGroup.textContent).to.include('Navigation');
 
     expect(isPageSnoozed()).to.be.false;
     dialog.querySelector('.notification-snooze input').checked = true;
-    // Escape meant for another overlay (Sidekick palette, a modal) leaves the pop-up open.
-    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    pressEscapeOn(document.body);
     expect(document.querySelector('.milo-preflight-overlay')).to.exist;
     expect(isPageSnoozed()).to.be.false;
-    // With "don't show again" ticked, closing collapses the pop-up into the small toast.
-    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    pressEscapeOn(dialog);
     expect(isPageSnoozed()).to.be.true;
     expect(document.querySelector('[role="dialog"]')).to.be.null;
     const toast = document.querySelector('.milo-preflight-overlay');

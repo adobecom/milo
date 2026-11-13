@@ -49,7 +49,6 @@ describe('Preflight issue counts', () => {
 });
 
 describe('getIssueCounts', function getIssueCountsSuite() {
-  // Each run waits out the M@S hydration delay (3s) on stage.
   this.timeout(10000);
   const draft = '<div><h1>Draft</h1><p>Real copy</p></div>';
   const linkServiceDown = { ok: false, status: 404 };

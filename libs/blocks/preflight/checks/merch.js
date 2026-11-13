@@ -67,39 +67,36 @@ export async function checkUnpublishedFragments({ area = document, locale } = {}
   return { unpublished, scanned: uuids.length };
 }
 
-// Text inside these is rendered by OST / M@S, so it is a dynamic price or M@S-owned copy.
-const DYNAMIC_PRICE_SELECTOR = '[data-wcs-osi], [is="inline-price"], [is="checkout-link"], [is="checkout-button"], merch-card, merch-card-collection, merch-offer, merch-offer-select, merch-quantity-select, mas-field, aem-fragment';
-const NOT_PAGE_TEXT_SELECTOR = `script, style, noscript, template, ${DYNAMIC_PRICE_SELECTOR}`;
+const RENDERED_BY_OST_OR_MAS = '[data-wcs-osi], [is="inline-price"], [is="checkout-link"], [is="checkout-button"], merch-card, merch-card-collection, merch-offer, merch-offer-select, merch-quantity-select, mas-field, aem-fragment';
+const NOT_AUTHORED_TEXT = `script, style, noscript, template, ${RENDERED_BY_OST_OR_MAS}`;
 
-const SYM_PRE = String.raw`(?:USD\$|US\$|A\$|AU\$|C\$|CA\$|NZ\$|HK\$|S\$|SG\$|MX\$|R\$|NT\$|\$|€|£|¥|￥|₩|₹|₺|₽|₪|฿|₱|₫|₴|zł|kr|Kč|Ft|lei|RM|Rp|ر\.س|د\.إ)`;
-const SYM_POST = String.raw`(?:€|£|¥|₩|₹|₺|₽|₪|₫|₴|zł|kr|Kč|Ft|lei|円|원|元|руб\.?|TL|Fr\.)`;
-const ISO = String.raw`(?:USD|EUR|GBP|JPY|KRW|INR|AUD|CAD|NZD|BRL|MXN|CHF|SEK|NOK|DKK|PLN|CZK|HUF|TRY|RUB|ILS|THB|PHP|IDR|MYR|SGD|HKD|TWD|CNY|ZAR|AED|SAR|UAH|RON)`;
-// 1,234.56 | 1.234,56 | 1 234,56 | 1'234.56 | 22.99 | 20.– | 49
-const AMT = String.raw`\d{1,3}(?:[.,\u00a0\u202f ']\d{3})+(?:[.,](?:\d{1,2}|[–-]))?|\d+(?:[.,](?:\d{1,2}|[–-]))?`;
-const RECUR = String.raw`(?:\s?\/\s?(?:mo|month|yr|year|mes|mês|mois|an|ano|año|Monat|Jahr|mån|år|kk|月|年|월|년)\.?|\s(?:per|a|\/)\s(?:month|year))`;
-// Amounts with a magnitude ("$54 billion", "$15K") are statistics, not prices.
-const END = String.raw`(?![.,]?\d)(?!\s?(?:K|M|B|bn|k|[Mm]illions?|[Bb]illions?|[Tt]rillions?|Mio\.?|Mrd\.?|milliards?|万|億|억|만)(?!\p{L}))`;
-// Lookbehinds are ASCII-only so a price glued to CJK text ("에₩30,300/월") still matches.
+const SYMBOL_BEFORE_AMOUNT = String.raw`(?:USD\$|US\$|A\$|AU\$|C\$|CA\$|NZ\$|HK\$|S\$|SG\$|MX\$|R\$|NT\$|\$|€|£|¥|￥|₩|₹|₺|₽|₪|฿|₱|₫|₴|zł|kr|Kč|Ft|lei|RM|Rp|ر\.س|د\.إ)`;
+const SYMBOL_AFTER_AMOUNT = String.raw`(?:€|£|¥|₩|₹|₺|₽|₪|₫|₴|zł|kr|Kč|Ft|lei|円|원|元|руб\.?|TL|Fr\.)`;
+const CURRENCY_CODE = String.raw`(?:USD|EUR|GBP|JPY|KRW|INR|AUD|CAD|NZD|BRL|MXN|CHF|SEK|NOK|DKK|PLN|CZK|HUF|TRY|RUB|ILS|THB|PHP|IDR|MYR|SGD|HKD|TWD|CNY|ZAR|AED|SAR|UAH|RON)`;
+const AMOUNT = String.raw`\d{1,3}(?:[.,\u00a0\u202f ']\d{3})+(?:[.,](?:\d{1,2}|[–-]))?|\d+(?:[.,](?:\d{1,2}|[–-]))?`;
+const PER_PERIOD = String.raw`(?:\s?\/\s?(?:mo|month|yr|year|mes|mês|mois|an|ano|año|Monat|Jahr|mån|år|kk|月|年|월|년)\.?|\s(?:per|a|\/)\s(?:month|year))`;
+const ENDS_WITHOUT_MAGNITUDE = String.raw`(?![.,]?\d)(?!\s?(?:K|M|B|bn|k|[Mm]illions?|[Bb]illions?|[Tt]rillions?|Mio\.?|Mrd\.?|milliards?|万|億|억|만)(?!\p{L}))`;
+const NOT_AFTER_LATIN_OR_DIGIT = String.raw`(?<![A-Za-z\d])`;
+const NOT_AFTER_LATIN_DIGIT_OR_SEPARATOR = String.raw`(?<![A-Za-z\d.,])`;
+const NOT_BEFORE_LETTER = String.raw`(?!\p{L})`;
 const PRICE_PATTERNS = [
-  String.raw`(?<![A-Za-z\d])${SYM_PRE}\s?(?:${AMT})${END}(?:${RECUR})?`,
-  String.raw`(?<![A-Za-z\d.,])(?:${AMT})\s?${SYM_POST}(?!\p{L})(?:${RECUR})?`,
-  String.raw`(?<![A-Za-z\d])${ISO}\s?(?:${AMT})${END}(?:${RECUR})?`,
-  String.raw`(?<![A-Za-z\d.,])(?:${AMT})\s?${ISO}(?!\p{L})(?:${RECUR})?`,
-  String.raw`(?<![A-Za-z\d.,])\d+[.,]\d{2}${RECUR}`,
+  `${NOT_AFTER_LATIN_OR_DIGIT}${SYMBOL_BEFORE_AMOUNT}\\s?(?:${AMOUNT})${ENDS_WITHOUT_MAGNITUDE}(?:${PER_PERIOD})?`,
+  `${NOT_AFTER_LATIN_DIGIT_OR_SEPARATOR}(?:${AMOUNT})\\s?${SYMBOL_AFTER_AMOUNT}${NOT_BEFORE_LETTER}(?:${PER_PERIOD})?`,
+  `${NOT_AFTER_LATIN_OR_DIGIT}${CURRENCY_CODE}\\s?(?:${AMOUNT})${ENDS_WITHOUT_MAGNITUDE}(?:${PER_PERIOD})?`,
+  `${NOT_AFTER_LATIN_DIGIT_OR_SEPARATOR}(?:${AMOUNT})\\s?${CURRENCY_CODE}${NOT_BEFORE_LETTER}(?:${PER_PERIOD})?`,
+  `${NOT_AFTER_LATIN_DIGIT_OR_SEPARATOR}\\d+[.,]\\d{2}${PER_PERIOD}`,
 ];
-let priceRe;
+let priceRegex;
 
-// Built on first use: lookbehind needs Safari 16.4+, and a module-level throw would
-// break all of Preflight on older browsers. null = not supported here.
-function getPriceRe() {
-  if (priceRe === undefined) {
+function getPriceRegexIfSupported() {
+  if (priceRegex === undefined) {
     try {
-      priceRe = new RegExp(PRICE_PATTERNS.join('|'), 'gu');
+      priceRegex = new RegExp(PRICE_PATTERNS.join('|'), 'gu');
     } catch {
-      priceRe = null;
+      priceRegex = null;
     }
   }
-  return priceRe;
+  return priceRegex;
 }
 
 const isHidden = (el) => (typeof el.checkVisibility === 'function'
@@ -108,13 +105,12 @@ const isHidden = (el) => (typeof el.checkVisibility === 'function'
 
 const SNIPPET_CONTEXT = 30;
 
-// Hidden text is scanned too: closed tabs and footnotes go live with the page.
 export function findStaticPrices(area = document) {
-  const re = getPriceRe();
+  const re = getPriceRegexIfSupported();
   if (!re) return [];
   const root = area.querySelector('main') || area;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode: (node) => (/\d/.test(node.nodeValue) && !node.parentElement?.closest(NOT_PAGE_TEXT_SELECTOR)
+    acceptNode: (node) => (/\d/.test(node.nodeValue) && !node.parentElement?.closest(NOT_AUTHORED_TEXT)
       ? NodeFilter.FILTER_ACCEPT
       : NodeFilter.FILTER_REJECT),
   });
@@ -138,8 +134,7 @@ export function findStaticPrices(area = document) {
 
 function checkStaticPrices(area) {
   const base = { checkId: 'static-prices', title: 'Static prices', severity: SEVERITY.CRITICAL };
-  // Unsupported browser: say so rather than report a clean page.
-  if (!getPriceRe()) {
+  if (!getPriceRegexIfSupported()) {
     return { ...base, status: 'limbo', description: "This browser can't run the static price check. Use a current Chrome.", details: { prices: [] } };
   }
   const prices = findStaticPrices(area);
@@ -155,10 +150,9 @@ function checkStaticPrices(area) {
 }
 
 export function runChecks({ area = document, locale, delayMs = HYDRATION_DELAY_MS } = {}) {
-  // Both checks wait for OST / M@S to render first.
-  const hydrated = new Promise((resolve) => { setTimeout(resolve, delayMs); });
+  const pricesRendered = new Promise((resolve) => { setTimeout(resolve, delayMs); });
   return [
-    hydrated.then(async () => {
+    pricesRendered.then(async () => {
       const { unpublished, scanned } = await checkUnpublishedFragments({ area, locale });
       const failed = unpublished.length > 0;
       return {
@@ -168,6 +162,6 @@ export function runChecks({ area = document, locale, delayMs = HYDRATION_DELAY_M
         details: failed ? { unpublished, scanned } : { scanned },
       };
     }),
-    hydrated.then(() => checkStaticPrices(area)),
+    pricesRendered.then(() => checkStaticPrices(area)),
   ];
 }

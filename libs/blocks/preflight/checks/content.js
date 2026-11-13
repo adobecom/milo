@@ -4,7 +4,6 @@ import { getPageStatus, isCrossRepo } from './adminStatus.js';
 import { isConfirmedUnpublished } from './diff/versionHelpers.js';
 import { SEVERITY, STATUS } from './constants.js';
 
-// Same pattern placeholders.js uses to decorate the page.
 const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 const CHECKS = {
@@ -29,14 +28,17 @@ function toRef(path, failed) {
   return { path: isSameOrigin ? url.pathname : `${url.origin}${url.pathname}`, url, failed };
 }
 
-// Loaded fragments (incl. inline and nested) keep data-path; modal fragments only load
-// on click so they stay links; an autoblock link still classed .fragment never loaded.
+const LOADED_FRAGMENT = '[data-path]';
+const MODAL_FRAGMENT_LINK = 'a[data-modal-path]';
+const FRAGMENT_LINK_THAT_NEVER_LOADED = 'a.fragment:not([data-modal-path])';
+
 export function findFragments(area) {
   const root = area.querySelector('main') ?? area;
+  const all = (selector) => [...root.querySelectorAll(selector)];
   const refs = [
-    ...[...root.querySelectorAll('[data-path]')].map((el) => toRef(el.dataset.path, false)),
-    ...[...root.querySelectorAll('a[data-modal-path]')].map((a) => toRef(a.dataset.modalPath, false)),
-    ...[...root.querySelectorAll('a.fragment:not([data-modal-path])')].map((a) => toRef(a.href, true)),
+    ...all(LOADED_FRAGMENT).map((el) => toRef(el.dataset.path, false)),
+    ...all(MODAL_FRAGMENT_LINK).map((a) => toRef(a.dataset.modalPath, false)),
+    ...all(FRAGMENT_LINK_THAT_NEVER_LOADED).map((a) => toRef(a.href, true)),
   ].filter(Boolean);
   const byPath = new Map();
   refs.forEach((ref) => {
@@ -88,13 +90,18 @@ async function fetchSourceKeys({ path, url }) {
   return { path, keys: extractKeys(await resp.text()) };
 }
 
-// A missing key renders as the key with spaces (placeholders.js keyToStr), so that is the
-// tell; keys present in a loaded sheet (window.mph) whose value happens to match are fine.
+const fallbackTextOf = (key) => key.replaceAll('-', ' ');
+
+const isInLoadedSheet = (key, config) => typeof window.mph?.[key] === 'string'
+  || typeof config.placeholders?.[key] === 'string';
+
+const isAnySheetLoaded = (config) => Object.keys(window.mph ?? {}).length > 0
+  || Object.keys(config.placeholders ?? {}).length > 0;
+
 async function isMissing(key) {
   const config = getConfig();
-  const value = await replaceText(`{{${key}}}`, config);
-  if (value !== key.replaceAll('-', ' ')) return false;
-  return typeof window.mph?.[key] !== 'string' && typeof config.placeholders?.[key] !== 'string';
+  const shownText = await replaceText(`{{${key}}}`, config);
+  return shownText === fallbackTextOf(key) && !isInLoadedSheet(key, config);
 }
 
 export async function checkUnresolvedPlaceholders(area) {
@@ -106,20 +113,13 @@ export async function checkUnresolvedPlaceholders(area) {
   const authored = sources.flatMap(({ path, keys }) => keys
     .filter((key) => !key.endsWith('-geo-ip'))
     .map((key) => ({ key, where: path })));
-  // Only authored keys: Milo replaces every {{…}} it decorates, so braces left on the rendered
-  // page come from third-party or late-injected markup, not from a missing placeholder.
   const unique = [...new Map(authored.map((item) => [`${item.key} ${item.where}`, item])).values()];
   const missing = await Promise.all(unique.map(({ key }) => isMissing(key)));
   const items = unique.filter((_, i) => missing[i]);
   const unloaded = sources.filter(({ failed }) => failed).length;
   const details = { items };
 
-  // Without any loaded sheet every authored key "falls back", so a failed fetch would look
-  // like N broken placeholders.
-  const config = getConfig();
-  const hasSheet = Object.keys(window.mph ?? {}).length
-    || Object.keys(config.placeholders ?? {}).length;
-  if (items.length && !hasSheet) {
+  if (items.length && !isAnySheetLoaded(getConfig())) {
     return result('placeholders', STATUS.LIMBO, "Couldn't load the placeholder sheet, so placeholders could not be checked. Try running Preflight again.", details);
   }
   if (items.length) {

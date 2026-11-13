@@ -25,15 +25,13 @@ export function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-// The Admin API allows 10 requests/second per project, shared with Sidekick: each URL is
-// fetched once per page load and at most MAX_ACTIVE calls run at a time.
-const MAX_ACTIVE = 3;
+const MAX_CONCURRENT_ADMIN_CALLS = 3;
 const statusCache = new Map();
 const waiting = [];
 let active = 0;
 
 function acquire() {
-  if (active < MAX_ACTIVE) {
+  if (active < MAX_CONCURRENT_ADMIN_CALLS) {
     active += 1;
     return Promise.resolve();
   }
@@ -46,7 +44,6 @@ function release() {
   else active -= 1;
 }
 
-// Call after the author previews or publishes, so the next check sees the new state.
 export function clearPageStatusCache() {
   statusCache.clear();
 }
@@ -54,7 +51,6 @@ export function clearPageStatusCache() {
 async function fetchPageStatus(adminUrl) {
   await acquire();
   try {
-    // include: protected sites return 401 unless the author's Sidekick login cookie is sent.
     const resp = await fetch(adminUrl, { cache: 'no-store', credentials: 'include' });
     if (!resp.ok) return null;
     const json = await resp.json();
@@ -68,16 +64,15 @@ async function fetchPageStatus(adminUrl) {
   }
 }
 
+function cacheSuccessfulStatus(adminUrl, request) {
+  const forget = () => statusCache.delete(adminUrl);
+  request.then((status) => status || forget(), forget);
+  statusCache.set(adminUrl, request);
+}
+
 export function getPageStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
   if (!adminUrl) return Promise.resolve(null);
-  if (!statusCache.has(adminUrl)) {
-    // Only successes are kept: a 401/429 or network error is retried on the next call.
-    const forget = () => statusCache.delete(adminUrl);
-    statusCache.set(adminUrl, fetchPageStatus(adminUrl).then(
-      (status) => { if (!status) forget(); return status; },
-      (e) => { forget(); throw e; },
-    ));
-  }
+  if (!statusCache.has(adminUrl)) cacheSuccessfulStatus(adminUrl, fetchPageStatus(adminUrl));
   return statusCache.get(adminUrl);
 }

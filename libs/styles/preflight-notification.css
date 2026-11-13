@@ -115,7 +115,6 @@
     --level-color: rgb(150 16 16);
   }
 
-  /* Strongest emphasis: white on dark red (8.8:1). */
   .is-blocker strong {
     padding: 0 6px;
     border-radius: 4px;
