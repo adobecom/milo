@@ -89,16 +89,17 @@ function initMoveUpFast() {
 
   injectCSS('.section.parallax-move-up-fast::after { animation: none; }');
 
-  // When the page is zoomed in, vh (captured at load) is tiny, so the dimming
-  // overlay reaches full opacity after only a few px of scroll and blacks out
-  // the content a low-vision user is trying to read. Only in that zoomed case
-  // do we spread the fade over a longer scroll distance and cap its peak
-  // opacity so text stays legible. Unzoomed pages keep the exact original
-  // (dimDist === vh80px, maxDim === 0.75 → opacity === 0.75 * t).
+  // When the page is zoomed in, vh (captured at load) is tiny, so the fade
+  // completes after only a few px of scroll. For a low-vision user reading the
+  // router-marquee that is a problem: .rm-slide.is-active has a transform, so it
+  // is its own stacking context and the section overlay paints *above* the text,
+  // dimming it to grey. In that zoomed case we cap the overlay's peak opacity so
+  // the text stays readable, and stretch the fade over more scroll. Unzoomed
+  // pages are untouched (dimDist === vh80px, maxDim === 0.75 → opacity 0.75 * t).
   const zoom = getZoomFactor();
   const zoomed = zoom >= MOVE_UP_FAST_ZOOM_THRESHOLD;
   const dimDist = zoomed ? vh80px * zoom : vh80px;
-  const maxDim = zoomed ? 0.3 : 0.75;
+  const maxDim = zoomed ? 0.2 : 0.75;
 
   sections.forEach((section) => {
     section.style.position = 'sticky';
@@ -109,6 +110,7 @@ function initMoveUpFast() {
       + 'opacity:0;pointer-events:none;z-index:1;';
     section.appendChild(overlay);
     const sectionTop = getDocTop(section);
+
     scrollTasks.push((scroll) => {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
       const newTop = `${-Math.round(topMaxPx * t)}px`;
