@@ -1183,11 +1183,18 @@ const Configurator = ({ rootEl, isV2 }) => {
     setIsPanelCollapsed(document.body.classList.toggle('panel-collapsed'));
   };
 
+  const alternateUiUrl = new URL(window.location.href);
+  if (isV2) {
+    alternateUiUrl.searchParams.delete('version');
+  } else {
+    alternateUiUrl.searchParams.set('version', 'v2');
+  }
+
   return html`
     <${ConfiguratorContext.Provider} value=${{ state, dispatch }}>
     <div class="tool-header">
       ${isV2 && html`<div class="config-brand" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+        <svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="currentColor" stroke-width="1.6">
           <rect x="3" y="3" width="7" height="7" rx="1.5" />
           <rect x="14" y="3" width="7" height="7" rx="1.5" />
           <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -1197,10 +1204,20 @@ const Configurator = ({ rootEl, isV2 }) => {
       <div class="tool-title">
           ${isV2 && html`<p class="config-eyebrow">CaaS / Collection builder</p>`}
           ${/* c8 ignore next */''}
-          <h1>${title ? title.textContent : 'CaaS Configurator'}</h1>
+          <h1>
+            ${title ? title.textContent : 'CaaS Configurator'}
+            ${isV2 && html` <span class="beta">(Beta)</span>`}
+          </h1>
           ${isV2 && html`<p class="config-description">Build your collection. Make it yours.</p>`}
         </div>
-        <${CopyBtn} isV2=${isV2} />
+        <div class="config-header-actions">
+          <a
+            class="config-ui-switch"
+            href=${alternateUiUrl.href}
+            onClick=${() => saveStateToLocalStorage(state)}
+          >${isV2 ? 'Classic' : 'Try Modern'} UI</a>
+          <${CopyBtn} isV2=${isV2} />
+        </div>
       </div>
       <div class="tool-content ${state.showIds ? 'show-ids' : ''} ${isPanelCollapsed ? 'settings-hidden' : ''}">
         <div id="caas-settings" class="config-panel" hidden=${isV2 && isPanelCollapsed}>
@@ -1229,7 +1246,7 @@ const Configurator = ({ rootEl, isV2 }) => {
                 aria-checked=${isDarkTheme}
                 onClick=${() => setIsDarkTheme(!isDarkTheme)}
               >
-                <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                <svg aria-hidden="true" width="16" height="16"  viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
                   ${isDarkTheme
     ? html`<path d="M16.5 11.8A7 7 0 0 1 8.2 3.5a7 7 0 1 0 8.3 8.3Z" />`
     : html`<circle cx="10" cy="10" r="3" /><path d="M10 1v2m0 14v2M1 10h2m14 0h2M3.6 3.6 5 5m10 10 1.4 1.4M3.6 16.4 5 15M15 5l1.4-1.4" />`}
