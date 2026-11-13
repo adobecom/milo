@@ -4,6 +4,7 @@ import {
   findFragmentElements,
   checkFragmentPublished,
   checkUnpublishedFragments,
+  findStaticPrices,
   runChecks,
 } from '../../../../libs/blocks/preflight/checks/merch.js';
 import { SEVERITY } from '../../../../libs/blocks/preflight/checks/constants.js';
@@ -100,5 +101,121 @@ describe('Preflight M@S Unpublished Fragments check', () => {
     expect(url).to.include('api_key=wcms-commerce-ims-ro-user-milo');
     expect(url).to.include('locale=en_US');
     expect(url).to.include(`id=${UUID_PUBLISHED}`);
+  });
+
+  it('treats a failed request as unpublished, never as published', async () => {
+    fetchStub.rejects(new Error('offline'));
+    expect(await checkFragmentPublished(UUID_PUBLISHED, 'en_US'))
+      .to.deep.equal({ uuid: UUID_PUBLISHED, httpStatus: 0, published: false });
+  });
+});
+
+describe('Preflight static prices check', () => {
+  let area;
+
+  const pricesIn = (markup) => {
+    area.innerHTML = markup;
+    return findStaticPrices(area).map(({ text }) => text);
+  };
+
+  beforeEach(() => {
+    area = document.createElement('div');
+    document.body.append(area);
+  });
+
+  afterEach(() => {
+    area.remove();
+  });
+
+  it('finds static prices across locales and formats', () => {
+    expect(pricesIn(`
+      <p>学生以外の方の価格は9,080 円/月です</p>
+      <p>月々¥2,380でご利用いただけます</p>
+      <p>또는 에₩30,300/월</p>
+      <p>Assine por R$ 109,99/mês</p>
+      <p>Only A$21.99/mo</p>
+      <p>Ab CHF 26.75 pro Monat</p>
+      <p>Nur 17,99 €/Monat</p>
+      <p>Previously US$20.99, now US$22.99 per month</p>
+      <p>Save with USD 599.88/yr</p>
+      <p>Get it for 22.99/mo</p>
+    `)).to.deep.equal([
+      '9,080 円/月',
+      '¥2,380',
+      '₩30,300/월',
+      'R$ 109,99/mês',
+      'A$21.99/mo',
+      'CHF 26.75',
+      '17,99 €/Monat',
+      'US$20.99',
+      'US$22.99 per month',
+      'USD 599.88/yr',
+      '22.99/mo',
+    ]);
+  });
+
+  it('ignores dynamic prices, magnitudes, non-prices and script text', () => {
+    expect(pricesIn(`
+      <p>Now <span is="inline-price" data-wcs-osi="a"><span>US$22.99/mo</span></span></p>
+      <p><a is="checkout-link" data-wcs-osi="b" href="#">Buy for $9.99</a></p>
+      <merch-card><p slot="body-xs">$4.99/mo</p></merch-card>
+      <mas-field><span>€12,09</span></mas-field>
+      <p>A $54 billion market, a $15K prize, a 5万円 budget</p>
+      <p>Save 40% with version 2025, call 800-833-6687</p>
+      <script>const price = '$9.99';</script>
+      <style>.x::after { content: '$9.99'; }</style>
+      <noscript>$9.99/mo</noscript>
+      <template><p>$9.99/mo</p></template>
+      <p>Support Mo–Fr. 9–17 Uhr, Mo-Fr. 8:00</p>
+      <p>A ratio of 1.5/mo and the code ABCUSD 5</p>
+    `)).to.deep.equal([]);
+  });
+
+  it('marks static prices in hidden content and keeps a short snippet', () => {
+    area.innerHTML = `
+      <p>Visible plan from $9.99/mo for everyone.</p>
+      <div style="display: none"><p>Hidden tab price ¥1,078/月</p></div>`;
+    const [visible, hidden] = findStaticPrices(area);
+    expect(visible).to.include({ text: '$9.99/mo', snippet: 'Visible plan from $9.99/mo for everyone.', hidden: false });
+    expect(hidden).to.include({ text: '¥1,078/月', hidden: true });
+    expect(hidden.element.tagName).to.equal('P');
+  });
+
+  it('still tells hidden from visible when the browser lacks checkVisibility', () => {
+    const { checkVisibility } = Element.prototype;
+    delete Element.prototype.checkVisibility;
+    try {
+      area.innerHTML = '<p>From $9.99/mo</p><div style="display: none"><p>Only $5.99/mo</p></div>';
+      expect(findStaticPrices(area).map(({ hidden }) => hidden)).to.deep.equal([false, true]);
+    } finally {
+      Element.prototype.checkVisibility = checkVisibility;
+    }
+  });
+
+  it('only scans main when the area contains it', () => {
+    area.innerHTML = '<header>$5.99/mo</header><main><p>$7.99/mo</p></main>';
+    expect(findStaticPrices(area).map(({ text }) => text)).to.deep.equal(['$7.99/mo']);
+  });
+
+  it('runChecks fails with CRITICAL severity when static prices are found', async () => {
+    area.innerHTML = '<p>Only $9.99/mo</p>';
+    const [, promise] = runChecks({ area, delayMs: 0 });
+    const result = await promise;
+    expect(result).to.include({ checkId: 'static-prices', title: 'Static prices', status: 'fail', severity: SEVERITY.CRITICAL });
+    expect(result.details.prices.map(({ text }) => text)).to.deep.equal(['$9.99/mo']);
+  });
+
+  it('reports limbo, not a clean pass, when the browser cannot build the price pattern', async () => {
+    const NativeRegExp = window.RegExp;
+    window.RegExp = function noLookbehind() { throw new SyntaxError('invalid group'); };
+    try {
+      const merchWithoutLookbehindPath = '../../../../libs/blocks/preflight/checks/merch.js?no-lookbehind';
+      const merchWithoutLookbehind = await import(merchWithoutLookbehindPath);
+      area.innerHTML = '<p>Only $9.99/mo</p>';
+      const [, promise] = merchWithoutLookbehind.runChecks({ area, delayMs: 0 });
+      expect(await promise).to.include({ checkId: 'static-prices', status: 'limbo' });
+    } finally {
+      window.RegExp = NativeRegExp;
+    }
   });
 });

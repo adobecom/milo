@@ -25,16 +25,54 @@ export function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-export async function getPageStatus(url) {
+const MAX_CONCURRENT_ADMIN_CALLS = 3;
+const statusCache = new Map();
+const waiting = [];
+let active = 0;
+
+function acquire() {
+  if (active < MAX_CONCURRENT_ADMIN_CALLS) {
+    active += 1;
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => { waiting.push(resolve); });
+}
+
+function release() {
+  const next = waiting.shift();
+  if (next) next();
+  else active -= 1;
+}
+
+export function clearPageStatusCache() {
+  statusCache.clear();
+}
+
+async function fetchPageStatus(adminUrl) {
+  await acquire();
+  try {
+    const resp = await fetch(adminUrl, { cache: 'no-store', credentials: 'include' });
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    const pick = (o) => ({
+      lastModified: o?.lastModified || null,
+      lastModifiedBy: o?.lastModifiedBy || null,
+    });
+    return { preview: pick(json.preview), live: pick(json.live) };
+  } finally {
+    release();
+  }
+}
+
+function cacheSuccessfulStatus(adminUrl, request) {
+  const forget = () => statusCache.delete(adminUrl);
+  request.then((status) => status || forget(), forget);
+  statusCache.set(adminUrl, request);
+}
+
+export function getPageStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
-  if (!adminUrl) return null;
-  // no-store: the skip / new-page decision depends on current publish state, not a cached one.
-  const resp = await fetch(adminUrl, { cache: 'no-store' });
-  if (!resp.ok) return null;
-  const json = await resp.json();
-  const pick = (o) => ({
-    lastModified: o?.lastModified || null,
-    lastModifiedBy: o?.lastModifiedBy || null,
-  });
-  return { preview: pick(json.preview), live: pick(json.live) };
+  if (!adminUrl) return Promise.resolve(null);
+  if (!statusCache.has(adminUrl)) cacheSuccessfulStatus(adminUrl, fetchPageStatus(adminUrl));
+  return statusCache.get(adminUrl);
 }

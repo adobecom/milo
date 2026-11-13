@@ -106,6 +106,43 @@ describe('preflight panels general', () => {
     });
   });
 
+  describe('Fragments and placeholders', () => {
+    let container;
+    let main;
+
+    beforeEach(() => {
+      setConfig({ georouting: { enabled: 'off' }, locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      main = document.createElement('main');
+      main.innerHTML = '<div class="fragment" data-path="/fragments/draft"><p>Draft</p></div>';
+      container = document.createElement('div');
+      document.body.append(main, container);
+      sinon.stub(window, 'fetch').callsFake(async (url) => {
+        if (String(url).includes('admin.hlx.page/status/')) {
+          return { ok: true, json: async () => ({ preview: { lastModified: 'x' }, live: {} }) };
+        }
+        if (String(url).endsWith('.plain.html')) return { ok: true, text: async () => '<p>{{not-in-sheet}}</p>' };
+        return { ok: true, status: 200, json: async () => ({ data: [] }) };
+      });
+    });
+
+    afterEach(() => {
+      render(null, container);
+      container.remove();
+      main.remove();
+      sinon.restore();
+    });
+
+    it('lists unpublished fragments as links and unresolved placeholder keys as code', async () => {
+      render(html`<${General} />`, container);
+      await waitFor(() => container.querySelector('.preflight-item code'));
+      const headings = [...container.querySelectorAll('.preflight-structure-title')].map((p) => p.textContent);
+      expect(headings).to.include('Fragments and placeholders');
+      const link = container.querySelector('.preflight-item li a[href="/fragments/draft"]');
+      expect(link.closest('li').textContent).to.include('not published');
+      expect(container.querySelector('.preflight-item code').textContent).to.equal('not-in-sheet');
+    });
+  });
+
   describe('getStatus', () => {
     afterEach(() => sinon.restore());
 
