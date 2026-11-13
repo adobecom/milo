@@ -267,7 +267,7 @@ function moveSlides(carouselEls, direction, e) {
   activeSlide.classList.add('active');
   activeClone?.classList.add('active-clone');
   activeSlideIndicator.classList.add('active');
-  activeSlideIndicator.setAttribute('aria-current', 'location');
+  activeSlideIndicator.setAttribute('aria-current', 'true');
   carouselEls.activeClone = activeClone;
   carouselEls.activeSlide = activeSlide;
 
@@ -379,7 +379,8 @@ export default function init(el) {
   slides.forEach((slide, index) => {
     slide.setAttribute('role', 'group');
     slide.setAttribute('aria-roledescription', 'slide');
-    const indicator = createTag('li', { class: 'slide-indicator', 'aria-label': `Slide ${index + 1} of ${slides.length}` });
+    const label = createTag('span', { class: 'sr-only' }, `Slide ${index + 1} of ${slides.length}`);
+    const indicator = createTag('li', { class: 'slide-indicator' }, label);
     indicatorsContainer.appendChild(indicator);
   });
 
@@ -395,7 +396,7 @@ export default function init(el) {
   slides.unshift(lastSlide);
   slides[1].classList.add('active');
   indicatorsContainer.children[0]?.classList.add('active');
-  indicatorsContainer.children[0]?.setAttribute('aria-current', 'location');
+  indicatorsContainer.children[0]?.setAttribute('aria-current', 'true');
 
   el.textContent = '';
   wrapper.append(...slides);

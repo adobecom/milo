@@ -76,9 +76,10 @@ describe('Carousel C2', () => {
 
     const indicators = block.querySelectorAll('.indicators-container .slide-indicator');
     expect(indicators.length).to.equal(3);
-    expect(indicators[0].getAttribute('aria-label')).to.equal('Slide 1 of 3');
+    expect(indicators[0].querySelector('.sr-only').textContent).to.equal('Slide 1 of 3');
+    expect(indicators[0].hasAttribute('aria-label')).to.be.false;
     expect(indicators[0].classList.contains('active')).to.be.true;
-    expect(indicators[0].getAttribute('aria-current')).to.equal('location');
+    expect(indicators[0].getAttribute('aria-current')).to.equal('true');
     expect(indicators[1].classList.contains('active')).to.be.false;
   });
 
@@ -118,7 +119,9 @@ describe('Carousel C2', () => {
 
     const indicators = block.querySelectorAll('.indicators-container .slide-indicator');
     expect(indicators[0].classList.contains('active')).to.be.false;
+    expect(indicators[0].hasAttribute('aria-current')).to.be.false;
     expect(indicators[1].classList.contains('active')).to.be.true;
+    expect(indicators[1].getAttribute('aria-current')).to.equal('true');
     expect(block.querySelector('.aria-live-container').textContent).to.contain('Slide 2 of 3');
   });
 
@@ -158,7 +161,7 @@ describe('Carousel C2', () => {
 
       const indicators = block.querySelectorAll('.indicators-container .slide-indicator');
       expect(indicators.length).to.equal(2);
-      expect(indicators[0].getAttribute('aria-label')).to.equal('Slide 1 of 2');
+      expect(indicators[0].querySelector('.sr-only').textContent).to.equal('Slide 1 of 2');
     });
 
     it('hides the padded clone from assistive tech and removes it from the tab order', async () => {
