@@ -55,6 +55,11 @@
   object-fit: cover;
 }
 
+.rm-background video {
+  background-position: center;
+  background-size: cover;
+}
+
 .rm-content-wrapper {
   width: 100%;
   max-width: 1920px;

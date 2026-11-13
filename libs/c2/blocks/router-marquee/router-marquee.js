@@ -262,6 +262,9 @@ const getActiveViewport = () => {
 const promotePoster = (video) => {
   if (video?.dataset.rmPoster && !video.getAttribute('poster')) {
     video.setAttribute('poster', video.dataset.rmPoster);
+    // Firefox drops the poster a frame before the first video frame paints;
+    // the background keeps the poster visible through that gap.
+    video.style.backgroundImage = `url("${video.dataset.rmPoster}")`;
   }
 };
 
