@@ -1,0 +1,481 @@
+# How the harness turns a branch + page into a live preview URL for Milo.
+#
+# Milo runs on Adobe Edge Delivery Services, where any branch is served at
+# `<branch>--milo--<owner>.aem.page`. The visual gate substitutes {branch} and
+# {page} into pin_pattern, then captures screenshots of the result. The owner
+# is `adobecom`; `martech=off` keeps analytics out of the shot.
+mechanism: aem-branch-preview
+pin_pattern: 'https://{branch}--milo--adobecom.aem.page{page}?martech=off'
+# Content-bus pages (most real Milo pages) can't be served from a git branch;
+# the milolibs overlay renders the consumer page with THIS branch's code.
+# Used by visual targets that declare mechanism: overlay. Captures are
+# read-only against the consumer host.
+overlay_pattern: 'https://stage--milo--adobecom.aem.page{page}?milolibs={branch}--milo--adobecom&martech=off'
+
+# Local-serve preview (preferred): run Milo's own AEM CLI dev server on the
+# materialized worktree and capture localhost, instead of a remote branch
+# preview. Serves the diff-applied CODE locally + proxies content from the
+# content bus — so the visual gate verifies the actual change with no code-sync
+# wait and no code-bus CORS/CDN races. `cmd` runs in the worktree;
+# `--stop-other` reclaims the port across runs. NOTE: serves Milo's OWN pages
+# (main--milo--adobecom paths render here); a foreign consumer page pasted in a
+# ticket (da-dc/cc/bacom) has no path on this server and escalates honestly —
+# multi-repo local compose for those is a separate capability.
+# --url is the content origin the local server proxies. Milo's preview
+# is public and read-only, and its pages carry real content.
+local:
+  cmd: 'aem up --port=6456 --no-open --stop-other --url https://main--milo--adobecom.aem.page'
+  url: 'http://localhost:6456{page}'
+  # Foreign consumer pages (da-dc/bacom/cc/upp — anything that CONSUMES Milo via
+  # ?milolibs=): keep the page REMOTE on its public content host and source THIS
+  # branch's libs from the local dev server via milolibs=local (the consumer's
+  # own setLibs maps `local` → localhost:6456). No code-bus, no CDN races.
+  # own_hosts identifies Milo's OWN hosts (any '--milo--' host): those are served
+  # by the local server directly instead — milolibs=local is a no-op on Milo's
+  # own host, so serving locally is what shows the diff. This path needs the
+  # engine to relax browser web security (remote HTTPS importing http://localhost).
+  consumer_overlay:
+    own_hosts: ['--milo--']
+    params: 'milolibs=local&martech=off'
+
+# Hosts that carry Milo's pages when a requester pastes a URL in the ticket.
+# Milo ships as a library: real repro URLs usually live on CONSUMER sites that
+# load milo via ?milolibs= — the harness renders such a URL as itself with the
+# harness branch merged into its milolibs query (the page only exists on its
+# own host). Entries starting with '--' are host suffixes: any branch label of
+# that site (main--, stage--, …). URLs on hosts not listed here (and not on the
+# pin/overlay hosts above) are treated as reference links and ignored.
+#
+# POLICY (operator, 2026-07-10): verification evidence comes from .aem.page,
+# never .aem.live. The .live edge caches code per encoding variant for 2h
+# (vs 60s on .page), so a .live capture can photograph up-to-2h-stale code —
+# two MWPW-198935 runs blanked on exactly that (poisoned br variants). Pasted
+# .live URLs are swapped BACK to the preview host at capture time. Gated
+# previews (da-dc / da-bacom) are captured on the real host now, with an
+# injected site-token header via auth: on capture_hosts.
+capture_hosts:
+  - '--milo--adobecom.aem.page'    # milo's own upstream previews
+  - host: '--da-dc--adobecom.aem.page'    # DC consumer pages (MWPW-198935 class)
+    auth: da-dc-token
+  # bacom consumer pages (MWPW-193755 class; pasted query params like
+  # country= survive the milolibs merge).
+  - host: '--da-bacom--adobecom.aem.page'
+    auth: da-bacom-token
+  - host: '--da-dc--adobecom.aem.live'     # pasted publish-host URLs
+    capture_on: '--da-dc--adobecom.aem.page'
+  - host: '--da-bacom--adobecom.aem.live'
+    capture_on: '--da-bacom--adobecom.aem.page'
+
+# Login flows for auth-gated capture hosts, executed generically by the
+# harness. Credentials are referenced by env var NAME — values live only in
+# the engine environment, never in this repo. The `ims` flow is dormant until
+# a capture_hosts entry attaches it via `auth: ims`. Do that only after its
+# account is allowlisted for the site's preview access.
+#
+# The da-dc and da-bacom token profiles have no `mint:` on purpose. The
+# automation account gets a 403 on POST admin.hlx.page/config/adobecom/sites/<site>/secrets.json,
+# so it cannot create site tokens, and a mint that cannot succeed turns a clear
+# "token not set" error into a 180 s wait. Set the tokens by hand in the engine
+# environment (MWPW-215332).
+auth_profiles:
+  da-dc-token:
+    token_env: AEM_SITE_TOKEN_DA_DC
+    header: 'authorization: token {token}'
+  da-bacom-token:
+    token_env: AEM_SITE_TOKEN_DA_BACOM
+    header: 'authorization: token {token}'
+  ims:
+    # The test account this profile signs in with. It is the shared account
+    # adobecom/mas uses (the engine has one IMS_PASS). `username` is declared in
+    # the clear — it is the identity a site admin must add to the da-dc /
+    # da-bacom PREVIEW access allowlist.
+    # The password is read from the IMS_PASS engine env var; never in this repo.
+    # Need a different/second account? Declare another profile (one each).
+    account:
+      username: pinata+masautomation@adobetest.com
+      password_env: IMS_PASS
+      note: >-
+        Allowlist pinata+masautomation@adobetest.com for PREVIEW on adobecom
+        sites da-dc and da-bacom (tools.aem.live / helix config service). Verify:
+        admin.hlx.page/status/adobecom/da-dc/main/ returns preview.status 200
+        (not 403) when signed in as this user.
+    idp_hosts: [auth.services.adobe.com, ims-na1.adobelogin.com]
+    steps:
+      - fill: '#EmailPage-EmailField'
+        value_from: username
+        timeout_ms: 45000
+      - click: '[data-id=EmailPage-ContinueButton]'
+      # IMS sometimes ignores Continue: redo email+Continue until the password page shows; toaster = account rejected.
+      - fill: '#PasswordPage-PasswordField'
+        value_from: password
+        timeout_ms: 60000
+        retry_previous: 2
+        retry_interval_ms: 1000
+        retry_max_replays: 4
+        abort_on: ['[data-id=EmailPage-Toaster]']
+      - click: '[data-id=PasswordPage-ContinueButton]'
+      # Multi-profile accounts land on an IMS profile chooser after password
+      # (measured 2026-07-10) — pick the personal/authoring profile. Optional:
+      # single-profile accounts skip straight past it.
+      - click: '[data-id="PP-ProfileChooser-AuthAccount"]'
+        optional: true
+        timeout_ms: 8000
+      - click: 'button:has-text("Skip"), [data-id="PasskeyNudgePage-SkipButton"]'
+        optional: true
+        timeout_ms: 8000
+    settle_ms: 5000
+
+# Known-good capture surfaces. When a ticket declares no visual_targets, the
+# harness reads ONLY these ids + descriptions (progressive disclosure) and asks
+# a small model which surface best exercises the change — it can only pick from
+# this list, and "none fit" skips the gate honestly. Add an entry per block or
+# area you want visually verifiable; `match` is an optional changed-files hint.
+surfaces:
+  - id: preflight
+    # Locally this is the real milo homepage: real gnav, footer, and images.
+    page: /
+    mechanism: pin
+    description: >-
+      The Preflight modal (pre-publish quality checks) opened over the milo
+      documentation homepage, a real page with images. Exercises
+      libs/blocks/preflight — the modal chrome, nav rail / tab panels, check
+      cards, asset rows, and their spacing, typography, and design-token
+      styling. Its checks may show "Checking..." while running.
+    match: 'libs/blocks/preflight/**'
+    # Preflight opens only via the Sidekick extension's element + events; these steps
+    # simulate that companion contract so milo's own wiring renders the modal (no demo page).
+    # The homepage carries no c2 token sheets — the surface still catches a tokenless modal.
+    interact:
+      - append_element: aem-sidekick
+      - dispatch_event: sidekick-ready
+      # async sidekick.js import + 500ms listener debounce — give both a beat
+      - wait_ms: 2000
+      - dispatch_event: 'custom:preflight'
+        at: aem-sidekick
+      - wait_for: '#preflight'
+    # Each tab is a distinct UI state judged as its own still; text= selectors survive
+    # redesigns (tab labels are product terms, class names are not). Panels load async — give them a beat.
+    states:
+      - name: Assets tab open
+        steps:
+          - click: '#preflight >> text=Assets'
+          - wait_ms: 2500
+          # Asset rows appear when the async check finishes; skip the wait when the page has none.
+          - wait_for: '#preflight >> text=Upload size'
+            optional: true
+      - name: Martech tab open
+        steps:
+          - click: '#preflight >> text=Martech'
+          - wait_ms: 2500
+    # Evidence only with its style context (checked at capture time; preflight.css loads with the modal).
+    requires:
+      - /libs/styles/styles.css
+      - /libs/blocks/preflight/preflight.css
+
+  # ── Mined from adobecom/milo merged-PR test URLs (two rounds, ~1,600 PRs back
+  # to 2025-06 plus targeted all-history searches; every url probed HTTP 200 at
+  # mining time; official pages only, no /drafts/). url-surfaces render via the
+  # request-URL machinery: the page as declared, with the harness branch merged
+  # into its milolibs query.
+  # navigation (standalone gnav), email-collection, quiz and text carry no
+  # surface on purpose: draft-only or gated test pages across the full history.
+  - id: utils
+    url: https://main--milo--adobecom.aem.page/?martech=off
+    description: >-
+      Milo core runtime (utils.js decoration, placeholders, LCP path) on the
+      milo preview homepage with martech off. Generic render-smoke — pick ONLY
+      when no more specific scenario or feature surface covers the change.
+    match: 'libs/utils/**'
+  - id: blocks-merch
+    url: https://main--milo--adobecom.aem.page/merch/kitchen-sink?martech=off
+    description: >-
+      Merch price/CTA blocks and merch cards, every card variant on one page
+      with real fragments, on milo's own merch kitchen-sink page. Pick for
+      merch block internals: inline prices, buy CTAs, merch modals, card chrome.
+    match: 'libs/blocks/merch/**'
+  - id: c2
+    url: https://main--upp--adobecom.aem.live/upp-shared/fragments/tests/2026/q2/ace1201/sr-homepage?martech=off
+    description: >-
+      Spectrum-2 (s2a token) site-redesign C2 blocks and styles on the official
+      UPP homepage-redesign test fragment. Pick for C2 homepage/hero layout
+      work; product-page C2 blocks go to c2-dc-product.
+    match: 'libs/c2/**'
+  - id: c2-dc-product
+    url: https://main--da-dc--adobecom.aem.live/dc-shared/fragments/tests/2026/q2/ace1205/fragments/ace1205-product?martech=off
+    description: >-
+      C2 product-page blocks (FAQ, masonry, rich content, sticky CTA) on the
+      DC ace1205 redesign product fragment. Pick for C2 block work beyond the
+      homepage/hero layout that c2 covers.
+    match: 'libs/c2/**'
+  - id: mep
+    url: https://www.stage.adobe.com/dc-shared/fragments/tests/2026/q2/ace1205/fragments/ace1205-bizpro-hub?mep=%2Fdc-shared%2Ffragments%2Ftests%2F2026%2Fq2%2Face1205%2Fdc1205-base-page-dc.json--all&martech=off
+    description: >-
+      MEP campaign fragment bundles (libs/mep/<campaign>) rendered via a
+      dc-shared campaign fragment on stage with an explicit ?mep= manifest.
+      Pick for campaign bundle code, not the personalization engine itself.
+    match: 'libs/mep/**'
+  - id: blocks-global-navigation
+    url: https://main--dc--adobecom.aem.live/acrobat?martech=off
+    description: >-
+      Global navigation (gnav) header chrome (brand, menus, profile, search)
+      on the Acrobat consumer page from milo's gnav regression matrix. Not for
+      geo banners (features-georoutingv2); RTL nav goes to gnav-rtl.
+    match: 'libs/blocks/global-navigation/**'
+  - id: features-personalization
+    url: https://main--homepage--adobecom.aem.live/homepage/index-loggedout?martech=off
+    description: >-
+      MEP personalization engine (manifest fetch, resolution, application) on
+      the production logged-out Adobe homepage, a manifest-heavy real page.
+      Pick for engine changes; campaign bundles go to mep, the footer region
+      picker goes to blocks-region-nav.
+    match: 'libs/features/personalization/**'
+  - id: deps
+    url: https://www.stage.adobe.com/acrobat/online/sign-pdf.html?martech=off
+    description: >-
+      Vendored dependencies (imslib, mas web components) exercised by the Acrobat online sign-pdf funnel page
+    match: 'libs/deps/**'
+  - id: blocks-caas
+    url: https://main--milo--adobecom.aem.page/tools/caas
+    description: >-
+      The CaaS cards collection block itself (card fetch and grid render)
+      shown live in the preview pane of the /tools/caas configurator. Pick for
+      card rendering changes, not the configurator form (blocks-caas-config).
+    match: 'libs/blocks/caas/**'
+  - id: features-mas
+    url: https://main--cc--adobecom.aem.live/products/catalog?martech=off
+    description: >-
+      M@S catalog (merch-at-scale cards, filters, PZN / 3-in-1 modals) on the
+      production CC products catalog page
+    match: 'libs/features/mas/**'
+  - id: blocks-brand-concierge
+    url: https://main--cc--adobecom.aem.live/cc-shared/fragments/tests/2025/q3/ace1082/brand-concierge?martech=off
+    description: >-
+      Brand Concierge chat block (entry UI, prompt cards, SUSI hand-off) on
+      the official CC ace1082 test fragment page
+    match: 'libs/blocks/brand-concierge/**'
+  - id: tools
+    url: https://milo.adobe.com/tools/send-to-caas/bulkpublisher.html
+    description: >-
+      Repo tools pages, e.g. the send-to-CaaS bulk publisher UI on milo.adobe.com
+    match: 'tools/**'
+  - id: blocks-merch-card-collection-autoblock
+    url: https://main--cc--adobecom.aem.live/creativecloud/plans
+    description: >-
+      Merch card collection autoblock (authored card-grid assembly, sorting,
+      badges) on the CC Creative Cloud plans page. Pick for collection
+      assembly; individual card and price internals go to blocks-merch.
+    match: 'libs/blocks/merch-card-collection-autoblock/**'
+  - id: features-georoutingv2
+    url: https://main--dc--adobecom.aem.live/acrobat?martech=off
+    description: >-
+      Geo-routing v2, the geo-mismatch banner and locale redirect logic, on
+      the Acrobat consumer page. Not for the nav header itself
+      (blocks-global-navigation).
+    match: 'libs/features/georoutingv2/**'
+  - id: blocks-carousel
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/carousel
+    description: >-
+      Carousel block variants on the milo kitchen-sink carousel page
+    match: 'libs/blocks/carousel/**'
+  - id: blocks-section-metadata
+    url: https://www.stage.adobe.com/genuine-shared/fragments/ic-ses-experience/all-apps/individual?martech=off
+    description: >-
+      Section-metadata driven layout (grids, gaps, backgrounds) on a
+      production stage fragment page built from section-metadata sections.
+      Weakest official surface; prefer a ticket-supplied page when one exists.
+    match: 'libs/blocks/section-metadata/**'
+  - id: blocks-ost
+    url: https://main--milo--adobecom.aem.page/tools/ost
+    description: >-
+      Offer Selector Tool (OST) authoring UI page
+    match: 'libs/blocks/ost/**'
+  - id: blocks-caas-config
+    url: https://main--milo--adobecom.aem.page/tools/caas
+    description: >-
+      The CaaS configurator authoring form at /tools/caas: field panels,
+      options, config-to-URL wiring. Pick for configurator UI changes, not the
+      rendered card grid (blocks-caas).
+    match: 'libs/blocks/caas-config/**'
+  - id: blocks-region-nav
+    url: https://main--homepage--adobecom.aem.live/homepage/index-loggedout
+    description: >-
+      Region picker / region-nav modal via the homepage logged-out page footer
+    match: 'libs/blocks/region-nav/**'
+  - id: blocks-hero-marquee
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/hero-marquee?martech=off
+    description: >-
+      Hero marquee block variants on the milo kitchen-sink page
+    match: 'libs/blocks/hero-marquee/**'
+  - id: blocks-video
+    url: https://main--da-dc--adobecom.aem.live/dc-shared/fragments/tests/2026/q2/ace1205/fragments/ace1205-bizpro-hub?martech=off
+    description: >-
+      Video embed block (in-page video, autoplay/controls variants) as used on
+      the DC ace1205 redesign hub fragment. Pick for libs/blocks/video changes,
+      not C2 layout (c2-dc-product) or MEP bundles (mep).
+    match: 'libs/blocks/video/**'
+  - id: blocks-marketo
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/marketo
+    description: >-
+      Marketo form block (a real embedded form with fields and styling) on
+      the milo kitchen-sink marketo page. The rendered form, not the
+      /tools/marketo configurator (blocks-marketo-config).
+    match: 'libs/blocks/marketo/**'
+  - id: blocks-marketo-config
+    url: https://main--milo--adobecom.aem.page/tools/marketo
+    description: >-
+      The Marketo configurator tool UI at /tools/marketo (form-config
+      authoring). Not the rendered form block itself (blocks-marketo).
+    match: 'libs/blocks/marketo-config/**'
+  - id: blocks-nps-csat-form
+    url: https://main--milo--adobecom.aem.page/nps-csat/illustrator/ai-nps-csat-5
+    description: >-
+      NPS/CSAT survey form block on a production nps-csat page (illustrator);
+      per-product sibling pages exist under /nps-csat/.
+    match: 'libs/blocks/nps-csat-form/**'
+  - id: blocks-locui-create
+    url: https://main--milo--adobecom.aem.page/tools/locui-create
+    description: >-
+      LocUI project-create tool UI at /tools/locui-create (localization
+      workflow configuration)
+    match: 'libs/blocks/locui-create/**'
+  - id: blocks-bulk-publish-v2
+    url: https://main--milo--adobecom.aem.page/tools/bulk-publish-v2
+    description: >-
+      Bulk publish v2 tool UI (URL list input, action select, results table)
+    match: 'libs/blocks/bulk-publish-v2/**'
+  - id: blocks-mmm
+    url: https://main--milo--adobecom.aem.page/docs/authoring/features/mmm
+    description: >-
+      MMM (milo manifest manager, MEP target-testing UI) on its authoring docs
+      page
+    match: 'libs/blocks/mmm/**'
+  - id: blocks-article-feed
+    url: https://main--da-blog--adobecom.aem.live/de/topics/creativity?martech=off
+    description: >-
+      Article feed block (article card list with load-more) on a blog topics
+      page
+    match: 'libs/blocks/article-feed/**'
+  - id: blocks-article-header
+    url: https://main--da-blog--adobecom.aem.live/en/publish/2026/02/09/adobe-partners-openai-test-ads-chatgpt?martech=off
+    description: >-
+      Article header block (title, hero image, author byline, sharing icon
+      links) on a da-blog EN article whose byline carries a real author-page
+      link. Pick for author-link treatments — the focused state below tabs
+      onto the author link, so :focus twins of :hover styling are captured —
+      and for byline layout, typography, and sharing-link changes.
+    match: 'libs/blocks/article-header/**'
+    states:
+      - name: Author link focused
+        steps:
+          - press: Tab
+            until_focused: '.article-author a'
+            max_presses: 120
+  - id: blocks-global-footer
+    url: https://main--da-express-milo--adobecom.aem.live/express/create/card?martech=off
+    description: >-
+      Global footer chrome (link columns, legal, social icons) on an Express
+      consumer page. Footer only; the region picker modal is
+      blocks-region-nav, the header is blocks-global-navigation.
+    match: 'libs/blocks/global-footer/**'
+  # Per-block kitchen-sink / docs-library pages: milo's own official demo page
+  # for the block, stable and public.
+  - id: blocks-table
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/table
+    description: >-
+      Table block variants (pricing/comparison tables, sticky headers,
+      highlight rows) on the kitchen-sink table page
+    match: 'libs/blocks/table/**'
+  - id: blocks-notification
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/notification-pill
+    description: >-
+      Notification pill/ribbon block variants on the kitchen-sink page. Not
+      the language/geo suggestion banner (language-banner-geo).
+    match: 'libs/blocks/notification/**'
+  - id: blocks-tabs
+    url: https://main--milo--adobecom.aem.page/docs/library/blocks/tabs
+    description: >-
+      Tabs block variants on its docs library page
+    match: 'libs/blocks/tabs/**'
+  - id: blocks-market-selector
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/market-selector
+    description: >-
+      Market selector block (in-page market/language switch UI) on its
+      kitchen-sink page. Not the footer region modal (blocks-region-nav).
+    match: 'libs/blocks/market-selector/**'
+  - id: blocks-mobile-app-banner
+    url: https://main--milo--adobecom.aem.page/docs/authoring/blocks/mobile-app-banner
+    description: >-
+      Mobile app banner block on its authoring docs page (renders at mobile
+      breakpoints)
+    match: 'libs/blocks/mobile-app-banner/**'
+  - id: blocks-share
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/share
+    description: >-
+      Share block (social share icon links) on the milo kitchen-sink page
+    match: 'libs/blocks/share/**'
+  - id: blocks-chart
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/chart
+    description: >-
+      Chart block variants (bar, donut, list charts) on the milo kitchen-sink
+      page
+    match: 'libs/blocks/chart/**'
+  - id: blocks-brick
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/brick
+    description: >-
+      Brick block variants on the milo kitchen-sink page
+    match: 'libs/blocks/brick/**'
+  - id: blocks-icon-block
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/icon-block
+    description: >-
+      Icon block variants on the milo kitchen-sink page
+    match: 'libs/blocks/icon-block/**'
+  - id: blocks-action-item
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/action-items
+    description: >-
+      Action item cards on the milo kitchen-sink action-items page
+    match: 'libs/blocks/action-item/**'
+  - id: blocks-figure
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/figure
+    description: >-
+      Figure block (image with caption treatments) on the milo kitchen-sink
+      page
+    match: 'libs/blocks/figure/**'
+  - id: blocks-accordion
+    url: https://main--milo--adobecom.aem.page/docs/library/kitchen-sink/accordion
+    description: >-
+      Accordion block variants (incl. seo/faq schema) on the milo kitchen-sink
+      page
+    match: 'libs/blocks/accordion/**'
+
+  # ── Scenario surfaces: a page PLUS the query params that put it in a specific
+  # state worth verifying. Query params declared here survive the milolibs
+  # overlay merge, so the before/after pair renders the scenario itself.
+  - id: utils-locale-geo
+    url: https://main--da-bacom--adobecom.aem.live/?country=fr&martech=off
+    description: >-
+      Locale/geo-simulation scenario: a bacom consumer homepage rendered as a
+      simulated French visitor via ?country=fr. Pick for changes to country or
+      locale DETECTION in the core runtime — getCountry, the ?country= /
+      ?akamaiLocale= geo-simulation query params, lingo cross-site content, or
+      market/locale resolution — the page's localized content resolves against
+      the simulated country, so a before/after pair shows whether the parameter
+      is honoured. Not for the georouting banner block (it has its own surface)
+      or utils changes unrelated to locale (rendering, LCP, decoration).
+    match: 'libs/utils/**'
+  - id: gnav-rtl
+    url: https://main--homepage--adobecom.aem.live/mena_ar/homepage/index-loggedout?martech=off
+    description: >-
+      RTL scenario: the Arabic logged-out homepage from milo's gnav regression
+      matrix, right-to-left gnav header, menus and footer. Pick for
+      direction-sensitive nav or layout changes; LTR gnav chrome stays on
+      blocks-global-navigation.
+    match: 'libs/blocks/global-navigation/**'
+  - id: language-banner-geo
+    url: https://www.stage.adobe.com/creativecloud.html?languageBanner=on&langfirst=on&marketsSource=cctest1&mas-geo-detection=on&akamaiLocale=es&martech=off
+    description: >-
+      Language/geo banner scenario: the stage Creative Cloud page with
+      languageBanner=on, langfirst=on and a simulated Spanish visitor
+      (akamaiLocale=es) forcing the language-suggestion banner to render. Pick
+      for language-banner feature changes; the region modal it can open is
+      interaction-gated and not covered here.
+    match: 'libs/features/language-banner/**'

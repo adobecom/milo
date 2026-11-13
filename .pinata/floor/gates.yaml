@@ -1,0 +1,52 @@
+# acom org floor (INV-3, R-8) — the verification minimum every acom product
+# must meet. A tenant's .pinata/gates.yaml may add gates or tighten these,
+# never weaken them: run_gates and the gate.run handler enforce this at run
+# time (packages/verification/gate_strictness.py), and each tenant repo lints
+# its contract against its vendored floor snapshot (.pinata/floor/gates.yaml)
+# in CI.
+#
+# This file is org POLICY and part of the TCB (see .pinata/gates.yaml
+# tcb-guard): the platform team changes it; the self-improvement loop may not.
+regeneration:
+  # Ceiling on total producer candidates, including the initial candidate.
+  # Tenants inherit this value or may tighten it downward (1 = no regeneration).
+  max_candidates: 5
+
+gates:
+  adversary:
+    template: adversary
+    name: Adversarial review — independent merge gate (INV-4)
+    description: >-
+      A change merges on an independent adversary's verdict (different model
+      class, no producer context), never the producer's self-assessment.
+      Binds every acom product; tenants may tighten but not drop it. Skips
+      honestly when no adversary model is reachable in dev.
+    blocking: true
+    # TODO(operator, temporary — 2026-07-06): loosened from `escalate_to_human`
+    # to `regenerate` so an adversary failure re-enters codegen for a bounded
+    # producer rebuild (regeneration.max_candidates) with the concerns as feedback,
+    # escalating to a human only at round exhaustion — instead of stopping on the
+    # first failure. This is an INV-6 TCB change made under explicit operator
+    # authority (the loop itself may not make it). It only RELAXES the floor
+    # (tenants may still tighten to escalate_to_human); revisit the round budget
+    # and re-tighten as the loop earns trust.
+    #
+    # Scope of that loosening (adversary_template): `regenerate` applies ONLY to a
+    # REVIEWED rejection — the adversary read the change and rejected it, which is
+    # the one outcome a producer rebuild can act on. An outcome that reached no
+    # verdict keeps `escalate_to_human` on the FIRST failure and never consumes a
+    # candidate: a pre-flight budget refusal, an unreachable model, and (since
+    # Stage run 1c4ceb69) a reply nothing could be parsed from — truncated,
+    # malformed, or ambiguous. Rebuilding code against a review that never
+    # happened burns the round budget and changes nothing.
+    #
+    # "Rejection" is likewise narrow (since Stage run d61cc0eb): an acceptance
+    # FAIL, or CONCERNS at blocking confidence. A verdict whose only blockers
+    # are UNCERTAIN acceptance criteria is an evidence gap — the reviewer could
+    # not verify, most often because the spec demands an evidence class no
+    # declared gate produces (d61cc0eb: "unit-test suite passes" while the
+    # tenant's unit-test gate was disabled) — and a traceability mismatch is a
+    # defect in the review's shape. Neither is fixable by another candidate, so
+    # both escalate on the first failure, where a person can read "no such
+    # evidence exists" and authorize the override once.
+    failure_route: regenerate
