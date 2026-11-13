@@ -26,13 +26,58 @@ export const pauseMpcPlayer = (iframe) => {
   iframe.contentWindow?.postMessage({ type: 'mpcAction', action: 'pause' }, iframe.src);
 };
 
+// MWPW-208836 (C2): same 80% line as #_viewportplay, but a paused video stays paused until Play.
+const VISIBLE_SHARE = 0.8;
+const SHARE_STEPS = Array.from({ length: 21 }, (_, i) => i / 20);
+
+// Tall players can't reach 80% of their own height, so screen coverage counts too.
+const visibleShare = ({ intersectionRatio, intersectionRect, rootBounds }) => Math.max(
+  intersectionRatio,
+  rootBounds?.height ? intersectionRect.height / rootBounds.height : 0,
+);
+
+// Only while scrolling out, so playing a partly visible video isn't undone.
+const isScrolledOff = (entry, share, prevShare) => !entry.isIntersecting
+  || (share < VISIBLE_SHARE && share < prevShare);
+
+const playerShares = new WeakMap();
 let playerObserver;
 const getPlayerObserver = () => {
   playerObserver ??= new IntersectionObserver((entries) => {
-    entries.forEach(({ isIntersecting, target }) => {
-      if (!isIntersecting && target.getAttribute('data-playing') === 'true') pauseMpcPlayer(target);
+    entries.forEach((entry) => {
+      const { target } = entry;
+      const playing = target.getAttribute('data-playing') === 'true';
+      if (getMetadata('foundation') !== 'c2') {
+        if (!entry.isIntersecting && playing) pauseMpcPlayer(target);
+        return;
+      }
+      const share = visibleShare(entry);
+      const prevShare = playerShares.get(target) ?? 1;
+      playerShares.set(target, share);
+      const { recheck } = target.dataset;
+      delete target.dataset.recheck;
+      if (target.dataset.autoplayPending) {
+        if (share >= VISIBLE_SHARE) {
+          delete target.dataset.autoplayPending;
+          if (target.dataset.deferred && !target.closest('[aria-hidden="true"]')) {
+            target.contentWindow?.postMessage({ type: 'mpcAction', action: 'play' }, target.src);
+          }
+          delete target.dataset.deferred;
+        } else if (playing && target.dataset.deferred) {
+          // Playing again while held means the reader started it.
+          delete target.dataset.autoplayPending;
+          delete target.dataset.deferred;
+        } else if (playing) {
+          pauseMpcPlayer(target);
+          target.dataset.deferred = 'true';
+        }
+        return;
+      }
+      if (!playing) return;
+      const scrolledOff = recheck ? !entry.isIntersecting : isScrolledOff(entry, share, prevShare);
+      if (scrolledOff) pauseMpcPlayer(target);
     });
-  }, { rootMargin: '0px' });
+  }, { threshold: SHARE_STEPS });
   return playerObserver;
 };
 
@@ -45,34 +90,67 @@ const onPlayerMessage = (event) => {
     .find((f) => f.contentWindow === event.source);
   if (!iframe) return;
   iframe.setAttribute('data-playing', state === 'play');
-  if (state !== 'play') return;
+  if (state !== 'play' || getMetadata('foundation') !== 'c2') return;
   // A player can finish loading after its C2 carousel slide was hidden.
-  if (getMetadata('foundation') === 'c2' && iframe.closest('[aria-hidden="true"]')) {
+  if (iframe.closest('[aria-hidden="true"]')) {
     pauseMpcPlayer(iframe);
     return;
   }
   // Re-observing delivers a fresh entry, so a player that starts offscreen is paused.
+  iframe.dataset.recheck = 'true';
   const observer = getPlayerObserver();
   observer.unobserve(iframe);
   observer.observe(iframe);
 };
 let playerListenerAdded = false;
 
-// MWPW-208836: stays paused until the user resumes it.
+// Autoplay waits for 80% visible; a scrolled-off video stays paused until the user resumes it.
 const pauseOffscreen = (video) => {
-  let inView = true;
-  const pause = () => {
-    if (inView || video.paused) return;
+  let pending = true;
+  let deferred = false;
+  let share = 1;
+  let intersecting = true;
+  const hold = () => {
+    video.pause();
+    deferred = true;
+  };
+  const stop = () => {
     video.pause();
     video.setAttribute(USER_PAUSED_ATTR, '');
     if (video.closest('.video-holder')?.querySelector('.offset-filler.is-playing')) syncPausePlayIcon(video);
   };
-  new IntersectionObserver(([{ isIntersecting }]) => {
-    inView = isIntersecting;
-    pause();
-  }).observe(video);
-  // Delayed media can start after the video has already left the viewport.
-  video.addEventListener('playing', pause);
+  const release = (e) => {
+    if (e.type === 'click' || ['Enter', 'Space'].includes(e.code)) pending = false;
+  };
+  video.closest('.video-holder')?.addEventListener('click', release, true);
+  video.closest('.video-holder')?.addEventListener('keydown', release, true);
+  new IntersectionObserver(([entry]) => {
+    const prevShare = share;
+    share = visibleShare(entry);
+    intersecting = entry.isIntersecting;
+    if (pending) {
+      if (share >= VISIBLE_SHARE) {
+        pending = false;
+        if (deferred && video.paused) video.play();
+      } else if (!video.paused) hold();
+      return;
+    }
+    if (!video.paused && isScrolledOff(entry, share, prevShare)) stop();
+  }, { threshold: SHARE_STEPS }).observe(video);
+  // Delayed media can start after the reader has moved away from it.
+  video.addEventListener('playing', () => {
+    if (pending && share < VISIBLE_SHARE) hold();
+    else if (!pending && !intersecting) stop();
+  });
+};
+
+const pauseWhenScrolledOff = (video) => {
+  let share = 1;
+  new IntersectionObserver(([entry]) => {
+    const prevShare = share;
+    share = visibleShare(entry);
+    if (!video.paused && isScrolledOff(entry, share, prevShare)) video.pause();
+  }, { threshold: SHARE_STEPS }).observe(video);
 };
 
 const isInViewport = (el) => {
@@ -96,6 +174,9 @@ const createIframe = (a, href, opts = {}) => {
   a.insertAdjacentElement('afterend', embed);
   // Containers like carousel-c2 hide inactive content before autoblocks load.
   if (isC2Page && embed.closest('[aria-hidden="true"]')) iframe.setAttribute('tabindex', '-1');
+  if (isC2Page && !autoplay && new URL(videoHref).searchParams.get('autoplay') === 'true') {
+    iframe.dataset.autoplayPending = 'true';
+  }
 
   const idMatch = videoHref.match(/\/v\/(\d+)/);
   const videoId = idMatch ? idMatch[1] : null;
@@ -214,6 +295,7 @@ export default function init(a) {
     });
     const video = parentElement.querySelector('video');
     if (isC2Page && video?.autoplay && !video.controls) pauseOffscreen(video);
+    else if (isC2Page && video?.controls) pauseWhenScrolledOff(video);
   } else if (isC2Page && a.dataset.videoPoster && isMpcPlayerUrl(a.href)
     && new URL(a.href).searchParams.get('autoplay') !== 'true') {
     createPosterPlayer(a);

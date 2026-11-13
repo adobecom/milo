@@ -306,33 +306,94 @@ describe('adobetv autoblock', () => {
       dupe.remove();
     });
 
-    it('pauses a player that starts playing after it was scrolled offscreen', async () => {
-      const nextFrames = () => new Promise((r) => {
-        requestAnimationFrame(() => requestAnimationFrame(r));
-      });
-      const wrapper = document.querySelector('#mpcPlayerPlain');
-      wrapper.style.cssText = 'position: absolute; top: 5000px;';
+    const nextFrames = () => new Promise((r) => {
+      requestAnimationFrame(() => requestAnimationFrame(r));
+    });
+    // Positions the wrapper so `fraction` of `el` shows at the bottom of the viewport.
+    const showFraction = async (wrapper, el, fraction) => {
+      const offset = el.getBoundingClientRect().top - wrapper.getBoundingClientRect().top;
+      const { height } = el.getBoundingClientRect();
+      wrapper.style.top = `${window.innerHeight - offset - height * fraction}px`;
+      await nextFrames();
+    };
+    const sendPlay = (iframe, state = 'play') => window.dispatchEvent(new MessageEvent('message', {
+      origin: 'https://video.tv.adobe.com',
+      source: iframe.contentWindow,
+      data: { type: 'mpcStatus', state },
+    }));
+
+    it('holds an authored autoplay player until 80% of it is visible', async () => {
+      const wrapper = document.querySelector('#mpcPlayerQueryAutoplay');
+      wrapper.style.cssText = 'position: absolute; top: 5000px; width: 300px;';
       await init(wrapper.querySelector('a'));
       const iframe = wrapper.querySelector('iframe');
       const sent = [];
-      iframe.contentWindow.postMessage = (msg) => sent.push(msg);
+      // Like the real player, report the new state back.
+      iframe.contentWindow.postMessage = (msg) => {
+        sent.push(msg.action);
+        sendPlay(iframe, msg.action);
+      };
       await nextFrames();
 
+      sendPlay(iframe);
+      await nextFrames();
+      expect(sent.join(), 'held offscreen').to.equal('pause');
+
+      await showFraction(wrapper, iframe, 0.7);
+      expect(sent.join(), 'still held at 70%').to.equal('pause');
+
+      await showFraction(wrapper, iframe, 0.9);
+      expect(sent.join(), 'plays at 80%+').to.equal('pause,play');
+      wrapper.style.cssText = '';
+    });
+
+    it('pauses a reader-started player once it drops below 80% visible', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      wrapper.style.cssText = 'position: absolute; top: 0; width: 300px;';
+      await init(wrapper.querySelector('a'));
+      wrapper.querySelector('.mpc-poster button').click();
+      const iframe = wrapper.querySelector('iframe');
+      const sent = [];
+      iframe.contentWindow.postMessage = (msg) => sent.push(msg.action);
+      await nextFrames();
+      sendPlay(iframe);
+      await nextFrames();
+
+      await showFraction(wrapper, iframe, 0.85);
+      expect(sent.join(), 'keeps playing at 85%').to.equal('');
+
+      await showFraction(wrapper, iframe, 0.7);
+      expect(sent.join(), 'paused below 80%').to.equal('pause');
+      wrapper.style.cssText = '';
+    });
+
+    it('keeps a started poster player paused when it was scrolled away before it loaded', async () => {
+      const wrapper = document.querySelector('#mpcPlayerPoster');
+      wrapper.style.cssText = 'position: absolute; top: 0; width: 300px;';
+      await init(wrapper.querySelector('a'));
+      wrapper.querySelector('.mpc-poster button').click();
+      const iframe = wrapper.querySelector('iframe');
+      const sent = [];
+      iframe.contentWindow.postMessage = (msg) => sent.push(msg.action);
+      await nextFrames();
+
+      wrapper.style.top = '5000px';
+      await nextFrames();
       window.dispatchEvent(new MessageEvent('message', {
         origin: 'https://video.tv.adobe.com',
         source: iframe.contentWindow,
-        data: { type: 'mpcStatus', state: 'play', id: '888888' },
+        data: { type: 'mpcStatus', state: 'play', id: '111111' },
       }));
       await nextFrames();
+      expect(sent.join(), 'paused offscreen').to.equal('pause');
 
-      expect(sent.some((msg) => msg.action === 'pause'), 'pause sent').to.be.true;
+      wrapper.style.top = '0px';
+      await nextFrames();
+      expect(sent.join(), 'stays paused until the user resumes').to.equal('pause');
       wrapper.style.cssText = '';
     });
 
     it('pauses an autoplay MPC MP4 offscreen and keeps it paused until the user resumes', async () => {
-      const nextFrames = () => new Promise((r) => {
-        requestAnimationFrame(() => requestAnimationFrame(r));
-      });
       const wrapper = document.querySelector('#mpcMp4Autoplay');
       wrapper.style.cssText = 'position: absolute; top: 0; width: 300px; height: 200px;';
       const parent = wrapper.querySelector('a').parentElement;
@@ -361,9 +422,6 @@ describe('adobetv autoblock', () => {
     });
 
     it('pauses an autoplay MPC MP4 whose media starts after it was scrolled offscreen', async () => {
-      const nextFrames = () => new Promise((r) => {
-        requestAnimationFrame(() => requestAnimationFrame(r));
-      });
       const wrapper = document.querySelector('#mpcMp4Autoplay');
       wrapper.style.cssText = 'position: absolute; top: 0; width: 300px; height: 200px;';
       const parent = wrapper.querySelector('a').parentElement;
@@ -392,6 +450,104 @@ describe('adobetv autoblock', () => {
       video.dispatchEvent(new Event('playing'));
       expect(calls.join(), 'explicit resume plays').to.equal('pause,play');
       expect(control.getAttribute('aria-pressed')).to.equal('true');
+      wrapper.style.cssText = '';
+    });
+
+    it('starts an autoplay MPC MP4 that began below the fold when it first scrolls into view', async () => {
+      const wrapper = document.querySelector('#mpcMp4Autoplay');
+      wrapper.style.cssText = 'position: absolute; top: 5000px; width: 300px; height: 200px;';
+      const parent = wrapper.querySelector('a').parentElement;
+      await init(wrapper.querySelector('a'));
+      const video = parent.querySelector('video');
+      const calls = [];
+      let paused = true;
+      Object.defineProperty(video, 'paused', { get: () => paused });
+      video.pause = () => { paused = true; calls.push('pause'); };
+      video.play = () => { paused = false; calls.push('play'); };
+      await nextFrames();
+
+      paused = false;
+      video.dispatchEvent(new Event('playing'));
+      expect(calls.join(), 'held offscreen').to.equal('pause');
+      expect(video.hasAttribute('data-user-paused'), 'not a user pause').to.be.false;
+
+      wrapper.style.top = '0px';
+      await nextFrames();
+      expect(calls.join(), 'plays on first view').to.equal('pause,play');
+
+      wrapper.style.top = '5000px';
+      await nextFrames();
+      expect(calls.join(), 'paused after being seen').to.equal('pause,play,pause');
+      expect(video.hasAttribute('data-user-paused'), 'stays paused').to.be.true;
+      wrapper.style.cssText = '';
+    });
+
+    it('starts an autoplay MPC MP4 at 80% visible and pauses it once it drops below 80%', async () => {
+      const wrapper = document.querySelector('#mpcMp4Autoplay');
+      wrapper.style.cssText = 'position: absolute; top: 5000px; width: 300px;';
+      const parent = wrapper.querySelector('a').parentElement;
+      await init(wrapper.querySelector('a'));
+      const video = parent.querySelector('video');
+      const calls = [];
+      let paused = true;
+      Object.defineProperty(video, 'paused', { get: () => paused });
+      video.pause = () => { paused = true; calls.push('pause'); };
+      video.play = () => { paused = false; calls.push('play'); };
+      await nextFrames();
+      paused = false;
+      video.dispatchEvent(new Event('playing'));
+      expect(calls.join(), 'held offscreen').to.equal('pause');
+
+      await showFraction(wrapper, video, 0.7);
+      expect(calls.join(), 'still held at 70%').to.equal('pause');
+      await showFraction(wrapper, video, 0.9);
+      expect(calls.join(), 'plays at 80%+').to.equal('pause,play');
+      await showFraction(wrapper, video, 0.85);
+      expect(calls.join(), 'keeps playing at 85%').to.equal('pause,play');
+      await showFraction(wrapper, video, 0.7);
+      expect(calls.join(), 'paused below 80%').to.equal('pause,play,pause');
+      expect(video.hasAttribute('data-user-paused'), 'stays paused').to.be.true;
+      wrapper.style.cssText = '';
+    });
+
+    it('plays a held autoplay MPC MP4 right away when the reader presses Play', async () => {
+      const wrapper = document.querySelector('#mpcMp4Autoplay');
+      wrapper.style.cssText = 'position: absolute; top: 5000px; width: 300px;';
+      const parent = wrapper.querySelector('a').parentElement;
+      await init(wrapper.querySelector('a'));
+      const video = parent.querySelector('video');
+      const calls = [];
+      let paused = true;
+      Object.defineProperty(video, 'paused', { get: () => paused });
+      Object.defineProperty(video, 'readyState', { get: () => 4 });
+      video.pause = () => { paused = true; calls.push('pause'); };
+      video.play = () => { paused = false; calls.push('play'); };
+      await showFraction(wrapper, video, 0.5);
+      paused = false;
+      video.dispatchEvent(new Event('playing'));
+      expect(calls.join(), 'held at 50%').to.equal('pause');
+
+      parent.querySelector('.pause-play-wrapper, .play-pause-button').click();
+      video.dispatchEvent(new Event('playing'));
+      expect(calls.join(), 'reader Play is not held').to.equal('pause,play');
+      wrapper.style.cssText = '';
+    });
+
+    it('pauses an MPC MP4 with controls once it drops below 80% visible', async () => {
+      const wrapper = document.querySelector('#mpcMp4Plain');
+      wrapper.style.cssText = 'position: absolute; top: 0; width: 300px;';
+      await init(wrapper.querySelector('a'));
+      const video = wrapper.querySelector('video');
+      const calls = [];
+      let paused = false;
+      Object.defineProperty(video, 'paused', { get: () => paused });
+      video.pause = () => { paused = true; calls.push('pause'); };
+      await nextFrames();
+
+      await showFraction(wrapper, video, 0.85);
+      expect(calls.join(), 'keeps playing at 85%').to.equal('');
+      await showFraction(wrapper, video, 0.7);
+      expect(calls.join(), 'paused below 80%').to.equal('pause');
       wrapper.style.cssText = '';
     });
 
@@ -465,6 +621,31 @@ describe('adobetv autoblock', () => {
       await init(wrapper.querySelector('a'));
       expect(!!wrapper.querySelector('.mpc-poster'), 'poster').to.be.false;
       expect(wrapper.querySelector('iframe')?.src).to.equal('https://video.tv.adobe.com/v/111111');
+    });
+
+    it('leaves a player that starts offscreen playing, as on stage', async () => {
+      const nextFrames = () => new Promise((r) => {
+        requestAnimationFrame(() => requestAnimationFrame(r));
+      });
+      const wrapper = document.querySelector('#mpcPlayerPlain');
+      wrapper.style.cssText = 'position: absolute; top: 5000px;';
+      await init(wrapper.querySelector('a'));
+      const iframe = wrapper.querySelector('iframe');
+      const sent = [];
+      iframe.contentWindow.postMessage = (msg) => sent.push(msg.action);
+      await nextFrames();
+
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://video.tv.adobe.com',
+        source: iframe.contentWindow,
+        data: { type: 'mpcStatus', state: 'play', id: '888888' },
+      }));
+      await nextFrames();
+      wrapper.style.top = '0px';
+      await nextFrames();
+
+      expect(sent.join(), 'no pause or play sent').to.equal('');
+      wrapper.style.cssText = '';
     });
   });
 });
