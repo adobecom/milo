@@ -119,8 +119,12 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'ai-summary',
   'aside-c2',
   'base-card',
+  'blog-header',
+  'blog-related-content',
+  'blog-side-navigation',
   'brand-concierge',
   'brand-concierge-global',
   'card-metadata',
@@ -151,6 +155,7 @@ const C2_BLOCKS = [
   'quick-actions',
   'quote',
   'region-nav',
+  'related-content-card',
   'rich-content',
   'roller-carousel',
   'router-marquee',
@@ -160,6 +165,7 @@ const C2_BLOCKS = [
   'split-aside-grid',
   'split-hero',
   'tabs',
+  'tag-cta',
   'tour',
   'visually-hidden',
 ];
