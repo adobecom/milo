@@ -2298,12 +2298,14 @@ export function isSignedOut() {
 
 /**
  * Enables personalization (V2) for the page.
+ * Signed-in users get V2 only when the page also sets personalization-v2-signed-in to on.
  *
  * @returns {boolean} True if personalization is enabled, otherwise false.
  */
 export function enablePersonalizationV2() {
   const enablePersV2 = getMepEnablement('personalization-v2');
-  return !!enablePersV2 && isSignedOut();
+  if (!enablePersV2) return false;
+  return isSignedOut() || getMepEnablement('personalization-v2-signed-in') === true;
 }
 
 export function loadMepAddons() {
