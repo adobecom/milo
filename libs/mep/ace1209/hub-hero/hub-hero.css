@@ -591,7 +591,7 @@
   }
 }
 
-@supports (not (animation-timeline: view())) or (-moz-appearance: none) {
+@supports not (animation-timeline: view()) {
   .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
     display: revert;
   }
@@ -2005,7 +2005,12 @@
   }
 }
 
-@supports (not (animation-timeline: view())) or (-moz-appearance: none) {
+@supports not (animation-timeline: view()) {
+  /* Override more-specific three-slide animations in unsupported browsers. */
+  .hub-hero,
+  .hub-hero * {
+    animation: none !important;
+  }
 
   .hub-hero {
     --carousel-items-top: 15%;

@@ -6,6 +6,7 @@ import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
 import init from '../../../libs/c2/blocks/hub-hero/hub-hero.js';
+import initAce1209 from '../../../libs/mep/ace1209/hub-hero/hub-hero.js';
 
 const settleLayout = async () => {
   for (let frame = 0; frame < 3; frame += 1) {
@@ -21,6 +22,84 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('scroll-timeline browser compatibility', () => {
+    let originalViewport;
+    let styles;
+    let baseCSS;
+    let overrideCSS;
+
+    before(async () => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      const tokens = await readFile({ path: '../../../libs/c2/styles/styles.css' });
+      baseCSS = tokens + await readFile({ path: '../../../libs/c2/blocks/hub-hero/hub-hero.css' });
+      overrideCSS = await readFile({ path: '../../../libs/mep/ace1209/hub-hero/hub-hero.css' });
+    });
+
+    afterEach(async () => {
+      document.body.replaceChildren();
+      styles.remove();
+      window.scrollTo(0, 0);
+      await settleLayout();
+      sinon.restore();
+      await setViewport(originalViewport);
+    });
+
+    [
+      { name: 'C2', decorate: init },
+      { name: 'ace1209', decorate: initAce1209 },
+    ].forEach(({ name, decorate }) => {
+      const loadFirefoxBlock = async (supported, width) => {
+        await setViewport({ width, height: 800 });
+        const emulateSupport = (value) => value
+          .replaceAll('(-moz-appearance: none)', '(display: block)')
+          .replaceAll('(animation-timeline: view())', `(display: ${supported ? 'block' : 'unsupported'})`);
+        const supports = CSS.supports.bind(CSS);
+        sinon.stub(CSS, 'supports').callsFake((value) => supports(emulateSupport(`(${value})`)));
+        styles = document.createElement('style');
+        // Stubbing CSS.supports does not affect stylesheet @supports evaluation.
+        styles.textContent = emulateSupport(baseCSS + (name === 'ace1209' ? overrideCSS : ''));
+        document.head.append(styles);
+        document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+        const block = document.querySelector('.hub-hero');
+        block.classList.add('slides-3');
+        block.insertBefore(block.children[2].cloneNode(true), block.children[3]);
+        block.lastElementChild.remove();
+        await decorate(block);
+        await settleLayout();
+        return block;
+      };
+
+      [390, 767, 768].forEach((width) => {
+        it(`${name} animates the image grid in supported Firefox at ${width}px`, async () => {
+          const block = await loadFirefoxBlock(true, width);
+          const column = block.querySelector('.hub-hero-image-grid-container-col');
+          expect(getComputedStyle(column).animationName).to.include('hubHeroGridCol1');
+        });
+      });
+
+      [390, 1440].forEach((width) => {
+        it(`${name} disables every animation in unsupported Firefox at ${width}px`, async () => {
+          const block = await loadFirefoxBlock(false, width);
+          [block, ...block.querySelectorAll('*')].forEach((element) => {
+            expect(getComputedStyle(element).animationName).to.equal('none');
+          });
+        });
+      });
+
+      [true, false].forEach((supported) => {
+        it(`${name} ${supported ? 'pins' : 'does not pin'} the header with ${supported ? 'supported' : 'unsupported'} timelines`, async () => {
+          const block = await loadFirefoxBlock(supported, 1280);
+          sinon.stub(block, 'offsetHeight').get(() => 4000);
+          sinon.stub(block, 'getBoundingClientRect').returns({ top: 0, bottom: 4000 });
+          window.dispatchEvent(new Event('scroll'));
+          await settleLayout();
+          expect(block.querySelector('.hub-hero-header').classList.contains('pinned'))
+            .to.equal(supported);
+        });
+      });
+    });
+  });
+
   describe('promo CTA colors', () => {
     let stylesheet;
 
