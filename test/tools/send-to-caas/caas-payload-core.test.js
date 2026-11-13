@@ -5,6 +5,7 @@ import getUuid from '../../../libs/utils/getUuid.js';
 const {
   buildCaasXdmPayload,
   getBulkPublishLangAttr,
+  getCaasIds,
   getProdUrl,
   initBulkPublisherLingoMapping,
 } = await import('../../../tools/send-to-caas/caas-payload-core.js');
@@ -151,5 +152,204 @@ describe('caas-payload-core: getBulkPublishLangAttr with a BACOM /ara base-site 
     });
 
     expect(result).to.equal('ar-xx');
+  });
+});
+
+describe('caas-payload-core: forced-.html card identity', () => {
+  const BACOM = 'business.adobe.com';
+  let fetchStub;
+
+  beforeEach(() => {
+    // Same reason as the sibling describe above: never depend on live internet.
+    fetchStub = stub(window, 'fetch').rejects(new Error('network disabled in test'));
+  });
+
+  afterEach(() => {
+    fetchStub.restore();
+  });
+
+  const dom = () => buildDom([['CardTitle', 'Test card'], ['CardImage', 'https://example.com/img.jpg']]);
+
+  const build = async ({ path, htmlIdentity, floodgatecolor, htmlIdentitySections }) => {
+    const { caasMetadata } = await buildCaasXdmPayload({
+      dom: dom(),
+      pageUrl: getProdUrl({ host: BACOM, path }),
+      host: BACOM,
+      repo: 'bacom',
+      htmlIdentity,
+      htmlIdentitySections,
+      floodgatecolor,
+    });
+    return caasMetadata;
+  };
+
+  it('hashes the .html form while publishing the extensionless url', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: true });
+    expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x.html`));
+    // The public url and uci must stay extensionless: only identity is forced.
+    expect(md.url).to.equal(`https://${BACOM}/resources/x`);
+    expect(md.uci).to.equal(`${BACOM}/resources/x`);
+  });
+
+  it('produces the same ids whether or not the source path carried .html', async () => {
+    const withExt = await build({ path: '/resources/x.html', htmlIdentity: true });
+    const withoutExt = await build({ path: '/resources/x', htmlIdentity: true });
+    expect(withoutExt.contentid).to.equal(withExt.contentid);
+    expect(withoutExt.entityid).to.equal(withExt.entityid);
+  });
+
+  it('keeps the legacy ids when the flag is off', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: false });
+    expect(md.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('carves out a configured section wherever it appears, but nothing adjacent', async () => {
+    // A site declares the sections it publishes without the extension, so
+    // there is no `.html` form to force. Matched as a whole path segment, so
+    // `/blogging/y` is untouched while `/resources/blog/post` -- genuinely in
+    // the section -- is exempt.
+    const exempt = ['/blog/post', '/fr/blog/post', '/blog', '/resources/blog/post'];
+    const forced = ['/products/y', '/blogging/y'];
+    // Sequential, not Promise.all: buildCaasXdmPayload is NOT reentrant (it
+    // threads module-global config/tag state), as documented at its definition.
+    // The concurrent form passes here only incidentally, because contentid is
+    // computed from the per-call prodUrl closure and so happens to survive the
+    // interleaving -- every other resolved prop would not. This is also the
+    // place a future reader looks for the house style on calling it.
+    for (const path of exempt) {
+      // eslint-disable-next-line no-await-in-loop
+      const md = await build({ path, htmlIdentity: true, htmlIdentitySections: 'blog' });
+      // eslint-disable-next-line no-await-in-loop
+      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}`));
+    }
+    for (const path of forced) {
+      // eslint-disable-next-line no-await-in-loop
+      const md = await build({ path, htmlIdentity: true, htmlIdentitySections: 'blog' });
+      // eslint-disable-next-line no-await-in-loop
+      expect(md.contentid, path).to.equal(await getUuid(`${BACOM}${path}.html`));
+    }
+  });
+
+  it('accepts the string flag form config sheets store', async () => {
+    const enabled = await build({ path: '/resources/x', htmlIdentity: 'true' });
+    expect(enabled.contentid).to.equal(await getUuid(`${BACOM}/resources/x.html`));
+    // A sheet cell reading 'false' must not enable the policy.
+    const disabled = await build({ path: '/resources/x', htmlIdentity: 'false' });
+    expect(disabled.contentid).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('leaves other production hostnames unchanged', async () => {
+    const host = 'www.adobe.com';
+    const { caasMetadata } = await buildCaasXdmPayload({
+      dom: dom(),
+      pageUrl: getProdUrl({ host, path: '/resources/x' }),
+      host,
+      repo: 'milo',
+      htmlIdentity: true,
+    });
+    expect(caasMetadata.contentid).to.equal(await getUuid(`${host}/resources/x`));
+  });
+
+  it('applies the forced .html before the floodgate salt', async () => {
+    const md = await build({ path: '/resources/x', htmlIdentity: true, floodgatecolor: 'pink' });
+    expect(md.entityid).to.equal(await getUuid(`${BACOM}/resources/x.htmlpink`));
+    expect(md.entityid).to.not.equal(md.contentid);
+  });
+
+  it('getCaasIds reproduces the published identity so removal matches', async () => {
+    const published = await build({ path: '/resources/x', htmlIdentity: true });
+    const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+    expect(ids.contentId).to.equal(published.contentid);
+    expect(ids.entityId).to.equal(published.entityid);
+  });
+
+  it('getCaasIds leaves the legacy ids alone when the flag is off', async () => {
+    const ids = await getCaasIds(`https://${BACOM}/resources/x`, 'default');
+    expect(ids.contentId).to.equal(await getUuid(`${BACOM}/resources/x`));
+  });
+
+  it('warns when removal omits htmlIdentity for an in-scope url', async () => {
+    // Removal is matched by id, so an omitted flag does not throw -- it just
+    // computes ids that match no card and leaves the real one live in CaaS
+    // forever. A log is the only way that surfaces.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default');
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('without htmlIdentity');
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('does not warn when the full policy is passed, or when the url is out of scope', async () => {
+    const log = stub();
+    window.lana = { log };
+    try {
+      // Flag AND qualifier both supplied. An explicit '' is a site declaring
+      // it publishes nothing extensionless -- legitimate, and the common case.
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true, '');
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false, '');
+      // Another host is not covered by the policy, so the flag cannot change
+      // the answer and the warning would be pure noise.
+      await getCaasIds('https://www.adobe.com/resources/x', 'default');
+      // An already-`.html` url hashes the same either way too.
+      await getCaasIds(`https://${BACOM}/resources/x.html`, 'default');
+      // An exempt section hashes the same either way, so the omission is
+      // harmless and a warning here would crowd out a real one.
+      await getCaasIds(`https://${BACOM}/blog/post`, 'default', undefined, 'blog');
+      expect(log.called).to.be.false;
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('warns when the flag is on but the section list was never supplied', async () => {
+    // The qualifier decides whether an in-scope url keeps its bare id or gets
+    // `.html` forced onto it. A caller that supplies the flag alone -- the
+    // external milo-caas service, until it learns to read the new column --
+    // orphans every card in a section the site publishes extensionless, with
+    // nothing in-process able to detect it. Omission must therefore be
+    // distinguishable from an explicit empty list.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', true);
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('no htmlIdentitySections');
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('does not warn about a missing section list when the flag is off', async () => {
+    // With the policy off nothing is forced, so there is nothing to carve out
+    // and the qualifier cannot change any id.
+    const log = stub();
+    window.lana = { log };
+    try {
+      await getCaasIds(`https://${BACOM}/resources/x`, 'default', false);
+      expect(log.called).to.be.false;
+    } finally {
+      delete window.lana;
+    }
+  });
+
+  it('still warns for an exempt section authored WITH the extension', async () => {
+    // The carve-out strips `.html`, so for this shape the omission really does
+    // change the ids -- exempting the whole section from the warning would
+    // silence the one case that most needs it.
+    const log = stub();
+    window.lana = { log };
+    try {
+      const omitted = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default', undefined, 'blog');
+      const passed = await getCaasIds(`https://${BACOM}/blog/post.html`, 'default', true, 'blog');
+      expect(omitted.contentId).to.not.equal(passed.contentId);
+      expect(log.calledOnce).to.be.true;
+      expect(log.firstCall.args[0]).to.contain('without htmlIdentity');
+    } finally {
+      delete window.lana;
+    }
   });
 });

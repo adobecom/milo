@@ -14,14 +14,13 @@ import {
   getConfig,
   parseEncodedConfig,
   loadStyle,
-  isValidHtmlUrl,
 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import {
   decodeCompressedString,
   defaultState,
   initCaas,
-  isValidUuid,
+  isResolvableCardReference,
   loadCaasFiles,
   loadCaasTags,
   loadStrings,
@@ -575,6 +574,10 @@ const TagsPanel = ({ tagsData }) => {
   `;
 };
 
+// Authoring contract for all three reference lists; the reasoning, including
+// why a legacy short id is marked, lives with isResolvableCardReference in
+// ../caas/utils.js rather than being restated here.
+
 const CardsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
 
@@ -594,27 +597,27 @@ const CardsPanel = ({ tagsData }) => {
       className="featuredCards"
       values=${context.state.featuredCards}
       title="Featured Cards"
-      subTitle="URLS or UUIDs for featured cards"
+      subTitle="URLs or UUIDs for featured cards"
     >
-      <${FormInput} name="contentId" onValidate=${(value) => isValidHtmlUrl(value) || isValidUuid(value)} />
+      <${FormInput} name="contentId" onValidate=${isResolvableCardReference} />
     <//>
     <${MultiField}
       onChange=${onChange('excludedCards')}
       className="excludedCards"
       values=${context.state.excludedCards}
       title="Excluded Cards"
-      subTitle="UUIDs for excluded cards"
+      subTitle="URLs or UUIDs for excluded cards"
     >
-      <${FormInput} name="contentId" onValidate=${isValidUuid} />
+      <${FormInput} name="contentId" onValidate=${isResolvableCardReference} />
     <//>
     <${MultiField}
       onChange=${onChange('hideCtaIds')}
       className="hideCtaIds"
       values=${context.state.hideCtaIds}
       title="Hidden CTAs"
-      subTitle="UUIDs for cards no CTAs"
+      subTitle="URLs or UUIDs for cards that should hide CTAs (a legacy short id still works here, but is flagged because it does nothing in the lists above)"
     >
-      <${FormInput} name="contentId" onValidate${isValidUuid} />
+      <${FormInput} name="contentId" onValidate=${isResolvableCardReference} />
     <//>
     <hr class="divider"/>
     <${DropdownSelect} options=${allTags} prop="hideCtaTags" label="Tags that should hide CTAS" />

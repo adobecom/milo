@@ -11,6 +11,72 @@ import {
 import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
+import { isHtmlIdentityEnabled } from '../../utils/caasIdentity.js';
+import { isCollectionIdentityPolicyMiss, toCollectionIdentityUrl } from './collectionIdentity.js';
+
+// A site whose cards are published under forced-`.html` identities must resolve
+// authored url references the same way, or a collection's lookups would hash
+// the extensionless url and miss every card. This applies to every authored
+// reference list -- featuredCards, excludedCards and hideCtaIds -- plus the
+// current-page id, because all of them are matched against the published
+// contentId. The three lists share getCardsString, so a url and a uuid are
+// interchangeable in any of them and the lists cannot drift apart; the
+// current-page id is hashed on its own and shares only toCollectionIdentityUrl.
+// Only a url-shaped value is resolved; any other authored value keeps its
+// long-standing verbatim passthrough (see resolvableUrl).
+//
+// Opt in via the `caas-identity-html` metadata property. This is the CONSUMER
+// side only, and it is NOT a single site-wide switch: the publishers carry
+// their own flag (the `htmlIdentity` column in /.milo/caas/config.json and the
+// bulk-publisher preset column), and every site that renders these cards by url
+// needs this metadata -- including a site that merely features another site's
+// cards in a collection. Believing it is one switch is what causes the silent
+// miss described below.
+//
+// The metadata turns the policy on for the PAGE; whether it applies to a given
+// url is then decided per url, because a single collection legitimately mixes
+// sections that are hashed differently. Which sections those are is configured
+// per site via the `caas-identity-extensionless-sections` metadata, and must
+// match what the publishing side was given (see collectionIdentity.js). Both
+// call sites that hash a url go through toCollectionIdentityUrl, which reads
+// that configuration itself, so neither can apply the flag without it.
+const htmlIdentityEnabled = () => isHtmlIdentityEnabled(getMetadata('caas-identity-html'));
+
+// A missing opt-in produces no error: the lookup just silently returns a card
+// that is not in the collection, which authors experience as "my featured card
+// vanished" with nothing to correlate it to. This runs on a real Milo page, so
+// lana is loaded here. Logged once per page
+// because a collection can reference many in-scope links and they would all
+// report the same single root cause.
+let identityPolicyMissLogged = false;
+const cardResolveFailuresLogged = new Set();
+
+// Test-only. Both latches above are module-level by design, matching
+// resetIdentityNoticesForTesting in tools/send-to-caas/auto-publish.js: that
+// makes the "reports once, then stays quiet" behaviour untestable from a known
+// state, because the first test to trip a given notice trips it for the rest
+// of the file. Without this the once-per-list assertions silently become
+// order-dependent and start passing against zero logs.
+export const resetIdentityNoticesForTesting = () => {
+  identityPolicyMissLogged = false;
+  cardResolveFailuresLogged.clear();
+};
+
+const warnOnIdentityPolicyMiss = (link) => {
+  if (identityPolicyMissLogged) return;
+  // isCollectionIdentityPolicyMiss is given the site's extensionless sections,
+  // so a link in one of them -- extensionless by design rather than by
+  // omission -- is not reported. Otherwise the warning would fire on every
+  // correctly authored blog link and train readers to ignore it.
+  if (!isCollectionIdentityPolicyMiss(link, htmlIdentityEnabled())) return;
+  identityPolicyMissLogged = true;
+  window.lana?.log(
+    `CaaS: card link whose id depends on the .html identity policy resolved with the policy off; set the 'caas-identity-html' metadata to 'true' or these cards will not resolve. Example: ${link}`,
+    // sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
+    // calls; this is a rare per-page diagnostic, not volume telemetry.
+    { tags: 'caas,htmlIdentity', severity: 'warning', sampleRate: 100 },
+  );
+};
 
 // CaaS deep-link URL per wrapper element, keyed off-DOM for MEP preview (URL too large for data-*).
 export const mepCaasConfigUrls = new WeakMap();
@@ -333,13 +399,6 @@ const getTags = (() => {
     return tags;
   });
 })();
-
-const getContentIdStr = (cardStr, card) => {
-  if (card.contentId) {
-    return cardStr.length ? `${cardStr}%2C${card.contentId}` : card.contentId;
-  }
-  return cardStr;
-};
 
 const wrapInParens = (s) => `(${s})`;
 
@@ -975,25 +1034,117 @@ const addMissingStateProps = (state) => {
   return state;
 };
 
-const fetchUuidForCard = async (card) => {
-  if (!card.contentId) {
+// Only a url is resolved to an id. Anything else is passed through verbatim,
+// which is what getContentIdStr did for every value before url support
+// existed. This matters beyond tidiness: the collection bundle matches
+// hideCtaIds against both the authored value and its rolling hash
+// (`hideCtaIds.concat(hideCtaIds.map((id) => rollingHash(id, ...)))`), so an
+// authored short id works there today. Hashing it would turn it into a
+// different string that matches neither form, silently un-hiding a CTA on
+// every tenant -- a change this per-url work has no reason to make.
+//
+// A scheme is NOT required of the author. Card identity is a hash of the
+// SCHEME-LESS url, so `business.adobe.com/resources/x` is a perfectly ordinary
+// authored value; requiring `https://` would stop resolving it and regress
+// featured cards. A host-shaped first segment is the discriminator, which no
+// legacy short id has.
+//
+// The value is TRIMMED before anything else, because the trimmed value is also
+// what must be hashed: deciding on one string and hashing another leaves stray
+// whitespace in the hash input, which matches nothing.
+// A SCHEME is always returned, even though the authored value need not carry
+// one. localizeLinkCore opens with `new URL(href)` and has a blanket
+// `catch { return href; }`, so a scheme-less value throws there and comes back
+// UNLOCALIZED while a schemed one gets the page prefix prepended -- on a /de
+// page the two shapes of one authored link resolve different cards. This file
+// routes excludedCards and hideCtaIds through here, where a miss fails open and
+// the content the author removed comes back. The scheme is
+// stripped again in toCollectionIdentityUrl before hashing.
+const resolvableUrl = (value) => {
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+  // The host test runs on the post-scheme remainder rather than being
+  // short-circuited by it: `https://` alone would otherwise be classified
+  // resolvable, hash the empty string and inject a deterministic garbage id.
+  const bare = trimmed.replace(/^https?:\/\//i, '');
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(bare)) return null;
+  return `https://${bare}`;
+};
+
+// The authoring contract for the three reference lists, exported so the
+// configurator validates against the resolver itself rather than restating it.
+// featuredCards, excludedCards and hideCtaIds all resolve through the same
+// getCardsString helper, so a url and a uuid are interchangeable in each.
+//
+// Deliberately narrower than what the block TOLERATES. A legacy short id is
+// passed through verbatim and does work in hideCtaIds, which the collection
+// bundle matches against both the authored value and its rolling hash -- but
+// it does nothing in featuredCards or excludedCards, because Chimera ignores a
+// non-uuid id. One validator serves all three, so it marks the value that only
+// works in one of them. Advisory only: FormInput styles an invalid value, it
+// does not reject it, and the hideCtaIds subTitle says so.
+export const isResolvableCardReference = (value) => {
+  const trimmed = typeof value === 'string' ? value.trim() : value;
+  return isValidUuid(trimmed) || !!resolvableUrl(trimmed);
+};
+
+const fetchUuidForCard = async (card, listName = 'cards') => {
+  // Trimmed up front so that every branch agrees. resolvableUrl trims, but the
+  // uuid test and the verbatim passthrough did not: a pasted uuid with stray
+  // whitespace failed the anchored uuid regex, failed the host test, and was
+  // then returned RAW into excludeIds, where it matches nothing -- so the
+  // exclusion silently does not apply and the removed card comes back.
+  const contentId = typeof card.contentId === 'string' ? card.contentId.trim() : card.contentId;
+  if (!contentId) {
     return null;
   }
-  if (isValidUuid(card.contentId)) {
-    return card.contentId;
+  const url = resolvableUrl(contentId);
+  if (isValidUuid(contentId) || !url) {
+    return contentId;
   }
   try {
-    const localizedLink = await localizeLinkAsync(card.contentId, null, true);
-    const substr = String(localizedLink).split('https://').pop();
-    return await getUuid(substr);
+    const localizedLink = await localizeLinkAsync(url, null, true);
+    const link = String(localizedLink);
+    warnOnIdentityPolicyMiss(link);
+    // toCollectionIdentityUrl strips the scheme the same way the publishers do.
+    // The old split('https://') missed http:// entirely, leaving the scheme on
+    // the hash input so the id could never match the published card.
+    return await getUuid(toCollectionIdentityUrl(link, htmlIdentityEnabled()));
   } catch (error) {
+    // A dropped reference is otherwise invisible: the id simply never reaches
+    // Chimera, so an excluded card reappears or a featured card does not
+    // surface, with nothing for an author or an operator to correlate against.
+    //
+    // The list is named because the consequences are not comparable: a dropped
+    // featuredCards id is cosmetic, while a dropped excludedCards or hideCtaIds
+    // id FAILS OPEN -- content the author deliberately removed comes back. The
+    // cause is included because an unavailable crypto.subtle (insecure context)
+    // and a localization failure are otherwise indistinguishable here, and the
+    // first fails every reference on the page rather than one.
+    //
+    // Logged once per LIST, not once per page: these failures are systemic
+    // rather than per-card, so sampling every reference would report one root
+    // cause many times -- but a single page-wide latch is worse. The lists
+    // resolve in a fixed order with featuredCards first, so a page-wide latch
+    // lets the cosmetic failure permanently suppress the fail-open one, which
+    // is the signal that actually matters.
+    if (!cardResolveFailuresLogged.has(listName)) {
+      cardResolveFailuresLogged.add(listName);
+      window.lana?.log(
+        `CaaS: could not resolve an authored ${listName} reference to an id: ${card.contentId} | ${error?.message || error}`,
+        {
+          tags: 'caas,card-resolve',
+          severity: listName === 'featuredCards' ? 'warning' : 'error',
+          sampleRate: 100,
+        },
+      );
+    }
     return null;
   }
 };
 
-const getCardsString = async (cards = []) => {
+const getCardsString = async (cards = [], listName = 'cards') => {
   const uuids = await Promise.all(cards.map(async (card) => {
-    const uuid = await fetchUuidForCard(card);
+    const uuid = await fetchUuidForCard(card, listName);
     return uuid !== null ? uuid : undefined;
   }));
   return uuids.filter(Boolean).join('%2C');
@@ -1093,9 +1244,9 @@ export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
   const { country, language, locales, geoCountry } = await getCountryAndLang(state);
-  const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards) : '';
-  const excludedCards = state.excludedCards && state.excludedCards.reduce(getContentIdStr, '');
-  const hideCtaIds = state.hideCtaIds ? state.hideCtaIds.reduce(getContentIdStr, '') : '';
+  const featuredCards = state.featuredCards ? await getCardsString(state.featuredCards, 'featuredCards') : '';
+  const excludedCards = state.excludedCards ? await getCardsString(state.excludedCards, 'excludedCards') : '';
+  const hideCtaIds = state.hideCtaIds ? await getCardsString(state.hideCtaIds, 'hideCtaIds') : '';
   const hideCtaTags = state.hideCtaTags ? state.hideCtaTags : [];
   const targetActivity = state.targetEnabled
   && state.targetActivity ? `/${encodeURIComponent(state.targetActivity)}.json` : '';
@@ -1136,9 +1287,18 @@ export const getConfig = async (originalState, strs = {}) => {
   const currentPage = `${window.location.hostname}${window.location.pathname}`;
   let currentPageUuid = null;
   try {
-    currentPageUuid = await getUuid(currentPage);
+    const identityUrl = toCollectionIdentityUrl(currentPage, htmlIdentityEnabled());
+    currentPageUuid = await getUuid(identityUrl);
   } catch (error) {
-    window.lana?.log(`Could not get UUID for current page: ${currentPage}`, error);
+    // The cause and the options are separate arguments: passing the Error as
+    // the second argument gave lana an options object with no sampleRate, and
+    // its default of 1 drops ~99% of calls -- so this almost never arrived.
+    window.lana?.log(
+      `Could not get UUID for current page: ${currentPage} | ${error?.message || error}`,
+      // A distinct tag from the authored-reference failures: this is the
+      // page's OWN identity, so it fails alone rather than per reference.
+      { tags: 'caas,page-identity', severity: 'error', sampleRate: 100 },
+    );
   }
 
   let excludedCardsWithCurrent;

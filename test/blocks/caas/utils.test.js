@@ -16,6 +16,8 @@ import {
   isLingoLangFirstPath,
   getLanguageFirstCountryAndLang,
   getRequestSize,
+  isResolvableCardReference,
+  resetIdentityNoticesForTesting,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -77,6 +79,40 @@ function htmlResponse() {
     });
   });
 }
+
+describe('isResolvableCardReference', () => {
+  // The configurator now validates all three reference lists against the
+  // resolver itself rather than restating its rules, so these cases pin the
+  // authoring contract the three MultiFields advertise.
+  it('accepts a uuid, with or without stray whitespace', () => {
+    expect(isResolvableCardReference('b1b1b1b1-2c2c-4d4d-8e8e-f0f0f0f0f0f0')).to.be.true;
+    expect(isResolvableCardReference('  b1b1b1b1-2c2c-4d4d-8e8e-f0f0f0f0f0f0  ')).to.be.true;
+  });
+
+  it('accepts a url whether or not it carries a scheme', () => {
+    expect(isResolvableCardReference('business.adobe.com/blog/post')).to.be.true;
+    expect(isResolvableCardReference('https://business.adobe.com/blog/post')).to.be.true;
+    expect(isResolvableCardReference('http://business.adobe.com/blog/post')).to.be.true;
+  });
+
+  it('rejects a bare scheme, which would otherwise hash the empty string', () => {
+    // The host test deliberately runs on the post-scheme remainder. Were it
+    // short-circuited by the scheme, `https://` would classify as resolvable
+    // and mint a deterministic garbage id that matches no card.
+    expect(isResolvableCardReference('https://')).to.be.false;
+  });
+
+  it('rejects values that are neither a uuid nor a host', () => {
+    expect(isResolvableCardReference('not a reference')).to.be.false;
+    expect(isResolvableCardReference('')).to.be.false;
+    expect(isResolvableCardReference(undefined)).to.be.false;
+    expect(isResolvableCardReference(null)).to.be.false;
+    // A legacy short id works in hideCtaIds but not in the other two lists,
+    // so one shared validator marks it. Advisory only: FormInput styles an
+    // invalid value, it does not reject it.
+    expect(isResolvableCardReference('abc123')).to.be.false;
+  });
+});
 
 describe('arrayToObj', () => {
   it('should convert array to object', () => {
@@ -1810,5 +1846,339 @@ describe('getRequestSize', () => {
         expect(getRequestSize({ ...threeFeatured, ...override })).to.equal('150');
       });
     });
+  });
+});
+
+describe('caas consumer: htmlIdentity', () => {
+  // The publisher half of this feature keeps minting `.html`-based ids. This is
+  // the half that has to RESOLVE them: once bacom's authored links go
+  // extensionless, an authored featured-card link reads `/resources/x` while
+  // the card it points at is still identified by `/resources/x.html`. Without
+  // the flag the lookup hashes the extensionless string, misses, and the
+  // featured card silently disappears from the collection.
+  const BACOM = 'https://business.adobe.com';
+  const ARTICLE = '/resources/articles/4-pieces-of-social-media-real-estate-you-shouldnt-ignore';
+  // Same id the existing `.html` fixture above resolves to.
+  const HTML_ID = 'c94ec235-50c2-595e-9fa8-0b4602c08712';
+  // The id the SAME bacom article hashes to without the terminal `.html` --
+  // i.e. the miss the flag exists to prevent. Pinned exactly so that a
+  // regression which stops applying the policy fails loudly here instead of
+  // merely resolving to "something that isn't HTML_ID".
+  const EXTENSIONLESS_ID = 'b9630808-7828-5767-9dab-d02dda39e475';
+  // The `.html` ids for two paths the exemption must NOT match. Pinned because
+  // comparing the bare and .html forms to each other cannot discriminate: both
+  // land on the same value whether the exemption is right or wrong.
+  const RESOURCES_BLOG_ID = '2510050f-4cc1-5b8c-a4a8-d50f5b14559b';
+  const BLOG_SUBSTRING_ID = '2dab309e-898a-5cee-b48d-c79048636bfc';
+  // Same path under a host the policy does not cover.
+  const OTHER_HOST_ID = 'd54536b8-c7c4-5799-a890-0b441f0dd8a3';
+
+  let meta;
+  // The locale prefixes come from the CONSUMING SITE's config, so this models a
+  // real one rather than relying on a Milo default. `ara` is included because
+  // it is a live bacom prefix that Milo's own static table does not carry.
+  beforeEach(() => {
+    // Both identity notices latch at module level, so without this the first
+    // test to trip one silences it for every test after it -- and the
+    // once-per-list assertions below would quietly start passing against zero
+    // logs instead of verifying the latch.
+    resetIdentityNoticesForTesting();
+    setConfig({
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+        africa: { ietf: 'en', tk: 'hah7vzn.css' },
+        ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css' },
+        ara: { ietf: 'ar', tk: 'qxw8hzm.css' },
+      },
+    });
+  });
+  const setFlag = (content) => {
+    meta = document.createElement('meta');
+    meta.name = 'caas-identity-html';
+    meta.content = content;
+    document.head.append(meta);
+  };
+  // The section list is configured per site, exactly like the flag, so a test
+  // exercising the carve-out has to declare it the way a project does.
+  const setSections = (content) => {
+    const el = document.createElement('meta');
+    el.name = 'caas-identity-extensionless-sections';
+    el.content = content;
+    document.head.append(el);
+  };
+  afterEach(() => {
+    meta?.remove();
+    meta = null;
+    document.head.querySelectorAll('meta[name="caas-identity-extensionless-sections"]')
+      .forEach((el) => el.remove());
+  });
+
+  const featuredIds = async (contentId) => {
+    const state = { ...defaultState, featuredCards: [{ contentId }] };
+    const { featuredCards } = await getConfig(state);
+    return featuredCards;
+  };
+
+  it('passes a non-url, non-uuid reference through verbatim', async () => {
+    // The collection bundle matches hideCtaIds against both the authored value
+    // and its rolling hash, so a legacy short id works there today. Resolving
+    // only urls keeps that intact; hashing every value would quietly break it
+    // on every tenant, flag or no flag.
+    setFlag('true');
+    expect(await featuredIds('2gye5uy')).to.eql(['2gye5uy']);
+    const { hideCtaIds } = await getConfig({ ...defaultState, hideCtaIds: [{ contentId: '2gye5uy' }] });
+    expect(hideCtaIds).to.eql(['2gye5uy']);
+  });
+
+  it('resolves an extensionless link to the id the card was published under', async () => {
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${ARTICLE}`)).to.eql([HTML_ID]);
+  });
+
+  it('still resolves an authored .html link to the same id', async () => {
+    // Mid-migration both link shapes coexist in authored collections.
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${ARTICLE}.html`)).to.eql([HTML_ID]);
+  });
+
+  it('is a no-op for a host the policy does not cover', async () => {
+    setFlag('true');
+    const ids = await featuredIds(`https://www.adobe.com${ARTICLE}`);
+    expect(ids).to.eql([OTHER_HOST_ID]);
+  });
+
+  it('leaves resolution unchanged when the flag is off', async () => {
+    const ids = await featuredIds(`${BACOM}${ARTICLE}`);
+    expect(ids).to.eql([EXTENSIONLESS_ID]);
+  });
+
+  // excludedCards and hideCtaIds used to be concatenated verbatim, so an
+  // authored url was handed to Chimera as a url and matched nothing. They now
+  // share getCardsString with featuredCards, which is what makes a url and a
+  // uuid interchangeable in all three lists.
+  const excludeIds = async (excludedCards) => {
+    const { endpoint } = (await getConfig({ ...defaultState, excludedCards })).collection;
+    const raw = endpoint.match(/excludeIds=([^&]*)/)?.[1] ?? '';
+    return decodeURIComponent(raw).split(',');
+  };
+
+  it('trims a pasted uuid in excludedCards', async () => {
+    // A uuid pasted with stray whitespace fails the anchored uuid regex and the
+    // host test, so without the trim it reaches excludeIds RAW, matches no card
+    // and the exclusion silently does not apply. The url path has its own trim,
+    // so this is the only case that pins the uuid one.
+    setFlag('true');
+    const authored = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    expect(await excludeIds([{ contentId: `  ${authored}  ` }])).to.include(authored);
+  });
+
+  it('resolves an extensionless excluded-card url to the published id', async () => {
+    setFlag('true');
+    expect(await excludeIds([{ contentId: `${BACOM}${ARTICLE}` }])).to.include(HTML_ID);
+  });
+
+  it('passes an explicit uuid in excludedCards through untouched', async () => {
+    setFlag('true');
+    const authored = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    expect(await excludeIds([{ contentId: authored }])).to.include(authored);
+  });
+
+  it('resolves a mixed excludedCards list of uuids and urls', async () => {
+    setFlag('true');
+    const authored = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    const ids = await excludeIds([
+      { contentId: authored },
+      { contentId: `${BACOM}${ARTICLE}` },
+    ]);
+    expect(ids).to.include(authored);
+    expect(ids).to.include(HTML_ID);
+  });
+
+  it('resolves an extensionless url in hideCtaIds', async () => {
+    setFlag('true');
+    const state = { ...defaultState, hideCtaIds: [{ contentId: `${BACOM}${ARTICLE}` }] };
+    expect((await getConfig(state)).hideCtaIds).to.eql([HTML_ID]);
+  });
+
+  it('preserves authored order in a mixed featuredCards list', async () => {
+    // Featured order is the authored ranking, so resolving urls asynchronously
+    // must not reorder the list.
+    setFlag('true');
+    const authored = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    const state = {
+      ...defaultState,
+      featuredCards: [
+        { contentId: authored },
+        { contentId: `${BACOM}${ARTICLE}` },
+      ],
+    };
+    expect((await getConfig(state)).featuredCards).to.eql([authored, HTML_ID]);
+  });
+
+  // The blog is published extensionless and its cards are hashed from the bare
+  // url, while every other bacom section is hashed with `.html`. The flag is
+  // per page but a collection references both, so the policy is resolved per
+  // url. Ids are pinned rather than compared to "not the .html id" so that a
+  // carve-out which stops matching fails here instead of passing vacuously.
+  const BLOG = '/blog/perspectives/the-future-of-work';
+  const BLOG_ID = 'c63cbac8-d47e-5989-9c68-8d2f9edf3eaf';
+  const DE_BLOG_ID = '88407f2f-338e-5f6c-be0b-9f7dbf83440f';
+  // A locale a two-letter shape rule could never have matched.
+  const AFRICA_BLOG_ID = '8785abc1-94fd-5ffd-b2fa-0dfce4d68cbe';
+
+  it('leaves a blog url extensionless with the flag on', async () => {
+    setSections('blog');
+    setFlag('true');
+    const ids = await featuredIds(`${BACOM}${BLOG}`);
+    expect(ids).to.eql([BLOG_ID]);
+  });
+
+  it('reports a resolution failure once per list, not once per page', async () => {
+    // The failure is systemic, so it is latched -- but a PAGE-WIDE latch meant
+    // featuredCards, which resolves first and whose failure is merely cosmetic,
+    // permanently suppressed the excludedCards report, which FAILS OPEN and is
+    // the one that matters. Both must be reported, at different severities.
+    setFlag('true');
+    const entries = [];
+    const priorLana = window.lana;
+    window.lana = { log: (message, options) => entries.push({ message, options }) };
+    const digest = stub(window.crypto.subtle, 'digest').rejects(new Error('boom'));
+    try {
+      const state = {
+        ...defaultState,
+        featuredCards: [{ contentId: `${BACOM}${ARTICLE}` }, { contentId: `${BACOM}/x` }],
+        excludedCards: [{ contentId: `${BACOM}${ARTICLE}` }],
+      };
+      await getConfig(state);
+    } finally {
+      digest.restore();
+      window.lana = priorLana;
+    }
+    const resolveLogs = entries.filter((e) => e.options?.tags === 'caas,card-resolve');
+    expect(resolveLogs.length).to.equal(2);
+    expect(resolveLogs[0].message).to.contain('featuredCards');
+    expect(resolveLogs[0].options.severity).to.equal('warning');
+    expect(resolveLogs[1].message).to.contain('excludedCards');
+    expect(resolveLogs[1].options.severity).to.equal('error');
+    // lana drops ~99% of calls at its default sampleRate of 1.
+    expect(resolveLogs.every((e) => e.options.sampleRate === 100)).to.be.true;
+    // The page's own identity fails alone, so it is tagged separately rather
+    // than being counted among the authored-reference failures.
+    const pageLogs = entries.filter((e) => e.options?.tags === 'caas,page-identity');
+    expect(pageLogs.length).to.equal(1);
+    expect(pageLogs[0].message).to.contain('boom');
+  });
+
+  it('hashes an http:// url to the same id as https://', async () => {
+    // The old split('https://') left the scheme on the hash input for http://
+    // links specifically, so they could never match a published card. Ids are
+    // a uuid v5 of the SCHEME-LESS url, so both shapes must converge. Pinned
+    // end-to-end rather than only at the validator boolean, which cannot show
+    // that the resulting ids agree.
+    setFlag('true');
+    expect(await featuredIds(`http://business.adobe.com${ARTICLE}`)).to.eql([HTML_ID]);
+  });
+
+  it('resolves an authored .html blog link to the same bare id', async () => {
+    setSections('blog');
+    // Mid-migration the same page is linked both ways. The exemption has to
+    // canonicalize, not merely skip the policy, or a pasted legacy blog link
+    // hashes to an id no card holds and the card silently disappears.
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${BLOG}.html`)).to.eql([BLOG_ID]);
+  });
+
+  it('exempts a locale-prefixed blog url', async () => {
+    setSections('blog');
+    // Locale prefixes need no special handling and there is no locale table:
+    // the exemption matches any whole path segment, so whatever sits in front
+    // of `blog` is irrelevant by construction. Pinned here against a
+    // regression to a shape rule, which silently missed africa, sea, mena_en
+    // and ph_fil.
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}/de${BLOG}`)).to.eql([DE_BLOG_ID]);
+    expect(await featuredIds(`${BACOM}/africa${BLOG}`)).to.eql([AFRICA_BLOG_ID]);
+    expect(await featuredIds(`${BACOM}/africa${BLOG}.html`)).to.eql([AFRICA_BLOG_ID]);
+  });
+
+  it('resolves a scheme-less and a schemed url to the SAME card on a localized page', async () => {
+    setSections('blog');
+    // localizeLinkCore opens with `new URL(href)` and swallows the throw with
+    // `catch { return href; }`, so a scheme-less value used to come back
+    // UNLOCALIZED while the schemed form got the page prefix prepended. On a
+    // /de page the two forms of one authored link then resolved different
+    // cards -- and for excludedCards and hideCtaIds that fails OPEN, putting
+    // back the content the author removed.
+    setFlag('true');
+    setConfig({
+      locales: { '': { ietf: 'en-US', tk: 'x' }, de: { ietf: 'de-DE', tk: 'x' } },
+      pathname: '/de/some/page',
+    });
+    expect(await featuredIds(`https://business.adobe.com${BLOG}`)).to.eql([DE_BLOG_ID]);
+    expect(await featuredIds(`business.adobe.com${BLOG}`)).to.eql([DE_BLOG_ID]);
+  });
+
+  it('resolves a scheme-less authored url', async () => {
+    // Card identity is a hash of the scheme-less url, so this is an ordinary
+    // authored value and the exact shape this file builds for the current
+    // page. Requiring a scheme would stop resolving it.
+    setFlag('true');
+    expect(await featuredIds(`business.adobe.com${ARTICLE}`)).to.eql([HTML_ID]);
+  });
+
+  it('resolves a url with stray surrounding whitespace', async () => {
+    // Easy to produce by copy-paste into the configurator. Deciding on the
+    // trimmed value but hashing the untrimmed one leaves the whitespace in the
+    // hash input, which matches nothing.
+    setFlag('true');
+    expect(await featuredIds(`  ${BACOM}${ARTICLE}  `)).to.eql([HTML_ID]);
+  });
+
+  it('still applies the policy to a blog segment below the section root', async () => {
+    // /resources/blog belongs to the .html-publishing repo. Exempting it would
+    // orphan the card, so it must resolve exactly like any other section.
+    // Pinned, not compared to each other: if the exemption wrongly matched
+    // here, the bare url would stay bare and the .html one would be stripped
+    // to the same bare value, so an equality check between them still passes.
+    // A mutation that matched `blog` in ANY segment left that assertion green.
+    setFlag('true');
+    const slug = '/resources/blog/q3-report';
+    expect(await featuredIds(`${BACOM}${slug}`)).to.eql([RESOURCES_BLOG_ID]);
+    expect(await featuredIds(`${BACOM}${slug}.html`)).to.eql([RESOURCES_BLOG_ID]);
+  });
+
+  it('still applies the policy to a path that merely contains "blog"', async () => {
+    // A substring match would wrongly exempt these, orphaning the card.
+    setFlag('true');
+    const slug = '/resources/blog-post-roundup';
+    expect(await featuredIds(`${BACOM}${slug}`)).to.eql([BLOG_SUBSTRING_ID]);
+    expect(await featuredIds(`${BACOM}${slug}.html`)).to.eql([BLOG_SUBSTRING_ID]);
+  });
+
+  it('resolves a blog url and a .html-section url in one collection', async () => {
+    setSections('blog');
+    // The case a single page-level boolean cannot express.
+    setFlag('true');
+    const state = {
+      ...defaultState,
+      featuredCards: [{ contentId: `${BACOM}${BLOG}` }, { contentId: `${BACOM}${ARTICLE}` }],
+    };
+    expect((await getConfig(state)).featuredCards).to.eql([BLOG_ID, HTML_ID]);
+  });
+
+  it('exempts a blog url in excludedCards', async () => {
+    setSections('blog');
+    setFlag('true');
+    expect(await excludeIds([{ contentId: `${BACOM}${BLOG}` }])).to.include(BLOG_ID);
+  });
+
+  it('resolves a blog url identically with the flag off', async () => {
+    setSections('blog');
+    // The blog never used `.html` ids, so the exemption must be a true no-op
+    // rather than a second behaviour switched on by the flag.
+    const off = await featuredIds(`${BACOM}${BLOG}`);
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${BLOG}`)).to.eql(off);
   });
 });
