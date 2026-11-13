@@ -2321,13 +2321,8 @@ export function loadMepAddons() {
   return promises;
 }
 
-// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
-function isMepNextOverlay() {
-  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
-}
-
 function initMepOverlay() {
-  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  if (!getConfig().mep?.preview) return;
   import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
     .then(({ default: init }) => init());
 }
@@ -2825,14 +2820,9 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    if (isMepNextOverlay()) {
-      // The overlay itself is initialized once via initMepOverlay() in loadArea.
-      import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-    } else {
-      import('../features/personalization/preview.js')
-        .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
-    }
+    // The overlay itself is initialized once via initMepOverlay() in loadArea.
+    import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
+      .then(({ default: init }) => init());
   }
   if (config?.env?.name !== 'prod' && (getMetadata('dynamic-nav') || config?.dynamicNavKey)) {
     const { miloLibs } = config;

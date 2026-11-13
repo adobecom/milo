@@ -1,18 +1,3 @@
-.mep-preview-overlay {
-  z-index: 101;
-  position: fixed;
-  inset: auto auto 16px 32px;
-  color: #eee;
-  font-size: 24px;
-  display: block !important;
-  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  overflow: visible;
-}
-
 .mep-badge {
   border: 2px solid white;
   border-radius: 32px;
@@ -987,7 +972,7 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-action
 }
 
 /* Offer surface — every [data-wcs-osi] element. Stamped by annotateOffers().
-   CSS-only ::before badge; the capture-phase click handler in preview.js
+   CSS-only ::before badge; the capture-phase click handler in mep-mas.js
    opens the OST URL on hits inside the badge box. */
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
   outline: 1px dashed #0d6efd;

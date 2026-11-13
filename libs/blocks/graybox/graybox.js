@@ -227,7 +227,8 @@ const setIframeUA = (isMobile, isTablet) => {
 
 const setupIframe = (isMobile, isTablet) => {
   const cssRules = `
-    body > .mep-preview-overlay {
+    body > .mep-fab,
+    body > #mep-drawer {
       display: none !important;
     }
   `;

@@ -612,10 +612,13 @@ describe('init (default export)', () => {
     fragment.remove();
   });
 
-  it('setBadgeHandlers: does not open window when click is inside .mep-preview-overlay', () => {
+  it('setBadgeHandlers: does not open window when click is inside #mep-drawer', () => {
     document.body.dataset.mepHighlight = 'true';
     const overlay = document.createElement('div');
-    overlay.className = 'mep-preview-overlay';
+    overlay.id = 'mep-drawer';
+    overlay.setAttribute('data-manifest-id', 'drawer-guard');
+    overlay.setAttribute('data-path', '/drawer-guard-path');
+    overlay.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
     const btn = document.createElement('button');
     overlay.append(btn);
     document.body.append(overlay);
