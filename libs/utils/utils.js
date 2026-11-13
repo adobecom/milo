@@ -3274,6 +3274,20 @@ async function processSection(section, config, {
   return section.blocks;
 }
 
+function rushSectionsAfter(lcpIdx, { htmlSections, parallelCount, parallelSections, config }) {
+  htmlSections.slice(lcpIdx + 1, parallelCount).forEach((el, offset) => {
+    const idx = lcpIdx + 1 + offset;
+    const revealAfter = parallelSections[idx - 1];
+    parallelSections[idx] = decorateSection(el, idx)
+      .then((section) => processSection(section, config, { revealAfter }))
+      .catch(async (e) => {
+        window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
+        await revealAfter;
+        return [];
+      });
+  });
+}
+
 function loadLingoIndexes(area = document) {
   const config = getConfig();
   const { locale } = config || {};
@@ -3362,20 +3376,6 @@ export async function loadArea(area = document) {
   let lcpSectionId = null;
   let postLcpPromise;
   const parallelSections = [];
-  // The LCP section loads alone; the sections after it, up to parallelCount, then load together.
-  const rushSectionsAfter = (lcpIdx) => {
-    htmlSections.slice(lcpIdx + 1, parallelCount).forEach((el, offset) => {
-      const idx = lcpIdx + 1 + offset;
-      const revealAfter = parallelSections[idx - 1];
-      parallelSections[idx] = decorateSection(el, idx)
-        .then((section) => processSection(section, config, { revealAfter }))
-        .catch(async (e) => {
-          window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
-          await revealAfter;
-          return [];
-        });
-    });
-  };
 
   for (const [idx, htmlSection] of htmlSections.entries()) {
     let sectionBlocks = await parallelSections[idx];
@@ -3393,7 +3393,7 @@ export async function loadArea(area = document) {
         loadsPostLCP: isDoc && isLcpSection && !rushesNext,
       });
       if (rushesNext) {
-        rushSectionsAfter(idx);
+        rushSectionsAfter(idx, { htmlSections, parallelCount, parallelSections, config });
         postLcpPromise = loadPostLCP(config);
       }
     }
