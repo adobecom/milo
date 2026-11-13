@@ -95,6 +95,9 @@
   gap: var(--spacing-m);
   padding: var(--spacing-xl) 0;
   box-sizing: border-box;
+  width: 100%;
+  max-width: var(--grid-container-width, 83.4%);
+  margin-inline: auto;
 }
 
 .aside .foreground.container .text {
