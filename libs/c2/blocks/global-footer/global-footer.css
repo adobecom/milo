@@ -11,6 +11,22 @@
   list-style-type: none;
 }
 
+/* The c2 utility classes the footer markup uses. A C1 page with
+   footer-foundation: c2 does not load c2/styles/styles.css, where they live.
+   :where() keeps them at that file's specificity, so every footer rule wins. */
+.global-footer :where(.body-md) {
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+}
+
+.global-footer :where(.caption) {
+  font-weight: var(--s2a-font-weight-caption);
+  font-size: var(--s2a-typography-font-size-caption);
+  line-height: var(--s2a-typography-line-height-caption);
+  letter-spacing: var(--s2a-typography-letter-spacing-caption);
+}
+
 .global-footer a {
   text-decoration: unset;
 }
