@@ -204,6 +204,34 @@ a.blog-header-author-name:hover {
   }
 }
 
+/* Authored body copy: small vertical rhythm and a smaller in-body heading. */
+.blog-article-content > .section > .content > * + * {
+  margin-block-start: 8px;
+}
+
+.blog-article-content > .section > .content > p,
+.blog-article-content > .section > .content > ul,
+.blog-article-content > .section > .content > ol,
+.blog-article-content > .section > .content > ul li,
+.blog-article-content > .section > .content > ol li {
+  font-size: 18px;
+}
+
+.blog-article-content > .section > .content > h2 {
+  margin-block: 42px 16px;
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+/* In-body related-content cards get extra breathing room beneath them. */
+.blog-article-content > .section > .related-content-card {
+  margin-block-end: 28px;
+}
+
+.blog-article-content > .section > .tag-cta {
+  margin-block: 38px;
+}
+
 /* Section dividers: decorative rules that never take up layout space. */
 .blog-divider-frame,
 .blog-divider-frame + .blog-article-layout {
