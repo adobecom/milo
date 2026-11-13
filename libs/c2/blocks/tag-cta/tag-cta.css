@@ -4,6 +4,7 @@
   max-width: 800px;
   margin: 0 auto;
   color: var(--s2a-color-content-default);
+  letter-spacing: 0;
 }
 
 .blog-article-content .tag-cta {

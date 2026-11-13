@@ -593,7 +593,7 @@ function decorateDividers(el) {
 }
 
 const BAR_HEIGHT = 8;
-const PROGRESS_BAR_OFFSET = 10;
+const PROGRESS_BAR_OFFSET = -4;
 
 function findArticleCopy(headerSection) {
   const layout = headerSection.nextElementSibling;
