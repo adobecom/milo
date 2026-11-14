@@ -1,4 +1,5 @@
 import { getMetadata, isAcomAssistantEnabled } from '../utils/utils.js';
+import { sendRenderEvent } from '../blocks/brand-concierge/bc-analytics.js';
 
 const GNAV_FAB_STATES = new Set(['collapsed', 'hidden']);
 
@@ -34,6 +35,28 @@ export async function loadAcomAssistantGnav() {
 
 export const getAuthoredGnavCards = () => authoredCards;
 
+const observedMounts = new WeakSet();
+// The client renders .acomAssistantGnavRoot > .acomAssistantGnavInput (the entry point).
+const GNAV_ENTRY_SELECTOR = '.acomAssistantGnavInput';
+
+/** In acom-assistant mode the client renders the GNav entry point after the page view
+ *  has been sent, so a page-load property would never reach analytics. Send a separate
+ *  event once the entry point actually exists. */
+export function trackAcomAssistantGnavShown(mount) {
+  if (!mount || observedMounts.has(mount) || getAcomAssistantGnavFabState() === 'hidden') return;
+  observedMounts.add(mount);
+  if (mount.querySelector(GNAV_ENTRY_SELECTOR)) {
+    sendRenderEvent('BC-GNav-shown');
+    return;
+  }
+  const observer = new MutationObserver(() => {
+    if (!mount.querySelector(GNAV_ENTRY_SELECTOR)) return;
+    observer.disconnect();
+    sendRenderEvent('BC-GNav-shown');
+  });
+  observer.observe(mount, { childList: true, subtree: true });
+}
+
 /** Per the wiki, the client discovers this mount point and builds its own GNav
  *  icon/expanded-input/minimized states into it.
  *  https://wiki.corp.adobe.com/spaces/Infinity/pages/4028260009/BC+Milo+Integration */
@@ -54,11 +77,13 @@ export function decorateAcomAssistantGnav(el, cards, block) {
     wrapper.append(mount);
     loadAcomAssistantGnav().catch(logInitializationError);
   }
+  trackAcomAssistantGnavShown(mount);
   return mount;
 }
 
 export function decorateNavWithAssistant(cards, topNav, block) {
-  if (!decorateAcomAssistantGnav(topNav, cards, block)) return;
+  const mount = decorateAcomAssistantGnav(topNav, cards, block);
+  if (!mount) return;
   window.milo ||= {};
   window.milo.brandConcierge = { brandConciergeGlobal: true };
 }
