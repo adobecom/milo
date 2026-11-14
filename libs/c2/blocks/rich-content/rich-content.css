@@ -45,6 +45,10 @@
       text-wrap: balance;
     }
 
+    .heading-2 {
+      font-size: 34px;
+    }
+
     [class*="body-"]:not(.action-area) {
       text-wrap: pretty;
       max-width: 680px;
