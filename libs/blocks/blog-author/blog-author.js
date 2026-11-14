@@ -8,8 +8,102 @@ const SOCIAL_PLATFORMS = {
   'instagram.com': { name: 'Instagram', icon: 'instagram' },
 };
 
-function resolvePlatform(href) {
-  return Object.keys(SOCIAL_PLATFORMS).find((domain) => href?.includes(domain));
+function logSchemaError(message) {
+  window.lana?.log(`Blog schema: ${message}`, { tags: 'blog-schema', severity: 'warning' });
+}
+
+function httpUrl(value, base) {
+  try {
+    const url = new URL(value, base);
+    if (url.protocol === 'https:' || url.protocol === 'http:') return url;
+  } catch (error) {
+    logSchemaError(`invalid URL: ${value}`);
+    return null;
+  }
+  logSchemaError(`unsupported URL protocol: ${value}`);
+  return null;
+}
+
+function resolveSocialPlatform(value) {
+  const url = httpUrl(value);
+  if (!url) return undefined;
+  const domain = Object.keys(SOCIAL_PLATFORMS).find((host) => (
+    url.hostname === host || url.hostname.endsWith(`.${host}`)
+  ));
+  return SOCIAL_PLATFORMS[domain];
+}
+
+function getSchemaUrl(value, doc = document, base = window.location.href) {
+  const canonical = doc.head.querySelector('link[rel="canonical"]')?.getAttribute('href')
+    || doc.head.querySelector('meta[property="og:url"]')?.content;
+  const canonicalUrl = httpUrl(canonical || base, base);
+  if (!canonicalUrl) return null;
+  const url = httpUrl(value || canonicalUrl.href, base);
+  if (!url) return null;
+  // Relative author links on previews must identify the production author.
+  if (url.origin === new URL(base).origin) {
+    url.protocol = canonicalUrl.protocol;
+    url.host = canonicalUrl.host;
+    url.port = canonicalUrl.port;
+  }
+  url.search = '';
+  url.hash = '';
+  return url.href;
+}
+
+function getPersonSchema(author, pageUrl) {
+  if (!pageUrl) return null;
+  const decorated = author.querySelector('.blog-author-name');
+  const rows = [...author.querySelectorAll(':scope > div > div')].filter((row) => (
+    !row.querySelector('picture, img')
+    && !/^#[0-9a-fA-F]{3,6}(?:\s*,\s*#[0-9a-fA-F]{3,6})?$/.test(row.textContent.trim())
+  ));
+  const socialIndex = rows.findIndex((row) => [...row.querySelectorAll('a')]
+    .some((link) => resolveSocialPlatform(link.href)));
+  const textRows = socialIndex < 0 ? rows : rows.slice(0, socialIndex);
+  const name = (decorated || textRows[0])?.textContent.trim();
+  if (!name) {
+    logSchemaError(`author profile has no name: ${pageUrl}`);
+    return null;
+  }
+  if (/\s(?:and|&)\s/i.test(name) || /-and-/i.test(new URL(pageUrl).pathname)) {
+    logSchemaError(`combined author profile requires individual author pages: ${pageUrl}`);
+    return null;
+  }
+  const schema = {
+    '@type': 'Person',
+    name,
+    url: pageUrl,
+    '@id': `${pageUrl}#person`,
+    worksFor: { '@type': 'Organization', name: 'Adobe' },
+  };
+  const title = (decorated ? author.querySelector('.blog-author-title') : textRows[1])
+    ?.textContent.trim();
+  if (title) schema.jobTitle = title;
+  const description = (decorated ? [...author.querySelectorAll('.blog-author-description')]
+    : textRows.slice(2)).map((row) => row.textContent.trim()).filter(Boolean).join(' ');
+  if (description) schema.description = description;
+  const image = author.querySelector('picture img, img')?.getAttribute('src');
+  const imageUrl = image && httpUrl(image, pageUrl);
+  if (imageUrl) schema.image = imageUrl.href;
+  const socialLinks = decorated
+    ? author.querySelectorAll('.blog-author-social a:not([hidden])')
+    : rows.slice(Math.max(socialIndex, 0)).flatMap((row) => [...row.querySelectorAll('a')]);
+  const sameAs = [...new Set([...socialLinks].filter((link) => resolveSocialPlatform(link.href))
+    .map((link) => link.href))];
+  if (sameAs.length) schema.sameAs = sameAs;
+  return schema;
+}
+
+function injectBlogSchema(type, schema) {
+  let script = document.head.querySelector(`script[data-blog-schema="${type}"]`);
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.blogSchema = type;
+    document.head.append(script);
+  }
+  script.textContent = JSON.stringify({ '@context': 'https://schema.org', ...schema });
 }
 
 function decorateSocial(row) {
@@ -17,9 +111,9 @@ function decorateSocial(row) {
   row.replaceChildren(...links);
   row.className = 'blog-author-social';
   links.forEach((a) => {
-    const domain = resolvePlatform(a.href);
-    if (!domain) { a.hidden = true; return; }
-    const { name, icon } = SOCIAL_PLATFORMS[domain];
+    const platform = resolveSocialPlatform(a.href);
+    if (!platform) { a.hidden = true; return; }
+    const { name, icon } = platform;
     a.setAttribute('aria-label', name);
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
@@ -30,46 +124,9 @@ function decorateSocial(row) {
   loadIcons(row.querySelectorAll('span.icon'));
 }
 
-function injectSchema(el, company) {
-  const name = el.querySelector('.blog-author-name')?.textContent.trim();
-  if (!name) return;
-
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name,
-    url: window.location.href,
-    '@id': `${window.location.origin}${window.location.pathname}#person`,
-  };
-
-  if (company) {
-    schema.worksFor = { '@type': 'Organization', name: company };
-  }
-
-  const title = el.querySelector('.blog-author-title')?.textContent.trim();
-  if (title) schema.jobTitle = title;
-
-  const desc = [...el.querySelectorAll('.blog-author-description')]
-    .map((p) => p.textContent).join(' ');
-  if (desc) schema.description = desc;
-
-  const img = el.querySelector('picture img')?.src;
-  if (img) schema.image = img;
-
-  const sameAs = [...el.querySelectorAll('.blog-author-social a:not([hidden])')]
-    .map((a) => a.getAttribute('aria-label') && a.href).filter(Boolean);
-  if (sameAs.length) schema.sameAs = sameAs;
-
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.textContent = JSON.stringify(schema);
-  document.head.append(script);
-}
-
 export default async function init(el) {
   let socialContainer = null;
   let textIdx = 0;
-  let company = null;
   const HEX = '#[0-9a-fA-F]{3,6}';
   const TEXT_CLASSES = ['blog-author-name', 'blog-author-title', 'blog-author-description'];
 
@@ -94,7 +151,7 @@ export default async function init(el) {
       return;
     }
 
-    if ([...row.querySelectorAll('a')].some((a) => resolvePlatform(a.href))) {
+    if ([...row.querySelectorAll('a')].some((a) => resolveSocialPlatform(a.href))) {
       if (!socialContainer) {
         socialContainer = row;
       } else {
@@ -105,7 +162,6 @@ export default async function init(el) {
     }
 
     if (socialContainer) {
-      company = text;
       row.parentElement.remove();
       return;
     }
@@ -125,5 +181,6 @@ export default async function init(el) {
   el.querySelectorAll(':scope > div:not(:has(*))').forEach((d) => d.remove());
   el.append(content);
 
-  injectSchema(el, company);
+  const schema = getPersonSchema(el, getSchemaUrl());
+  if (schema) injectBlogSchema('person', schema);
 }
