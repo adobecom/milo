@@ -36,8 +36,13 @@ import merch, {
   isFallbackStepUsed,
   getWorkflowStep,
   getMasComponentUrl,
+  getMerchCardTemplateBundles,
+  loadMerchCardWithTemplates,
+  MERCH_CARD_TEMPLATE_BUNDLES,
   getMasLibsBaseUrl,
   getMasLibs,
+  getFragmentClientUrl,
+  isPreviewHost,
   shouldHideStPriceLabels,
   isMasErrorEnv,
   createFragmentErrorEl,
@@ -2963,6 +2968,190 @@ describe('Merch Block', () => {
     });
   });
 
+  describe('getMerchCardTemplateBundles', () => {
+    let lanaLog;
+
+    beforeEach(() => {
+      lanaLog = sinon.stub();
+      window.lana = { log: lanaLog };
+    });
+
+    afterEach(() => {
+      delete window.lana;
+    });
+
+    it('matches all-locale rules with and without locale prefix, .html optional', () => {
+      expect(getMerchCardTemplateBundles('/acrobat/plans.html')).to.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/acrobat/plans')).to.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/fr/acrobat/plans.html', '/fr')).to.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/ae_ar/acrobat/plans', '/ae_ar')).to.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/express/pricing', '')).to.deep.equal(['express']);
+      expect(lanaLog.called).to.be.false;
+    });
+
+    it('matches exact pages without trailing slash and every sub page with it', () => {
+      expect(getMerchCardTemplateBundles('/acrobat/plans/business.html')).to.not.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/products/photoshop.html')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/de/creativecloud/plans.html', '/de')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/products/firefly/features/generate.html')).to.deep.equal(['firefly']);
+      expect(getMerchCardTemplateBundles('/products/firefly.html')).to.deep.equal(['cc']);
+    });
+
+    it('matches the creativecloud landing page itself, not only the pages under it', () => {
+      expect(getMerchCardTemplateBundles('/creativecloud.html')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/creativecloud')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/de/creativecloud.html', '/de')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/creativecloud/business.html')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/creativecloud-plans.html')).to.not.deep.equal(['cc']);
+    });
+
+    it('prefers the longest matching rule', () => {
+      expect(getMerchCardTemplateBundles('/products/catalog.html')).to.deep.equal(['catalog']);
+      expect(getMerchCardTemplateBundles('/jp/products/catalog', '/jp')).to.deep.equal(['catalog']);
+      expect(getMerchCardTemplateBundles('/products/catalog/extra.html')).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/products/firefly/plans.html')).to.deep.equal(['firefly']);
+    });
+
+    it('matches locale-specific rules only on that exact path and prefers them', () => {
+      const rules = { 'acrobat/plans': 'dc', '/fr/acrobat/plans': 'cc', '/de/products/': 'express', 'products/catalog': 'catalog' };
+      expect(getMerchCardTemplateBundles('/fr/acrobat/plans.html', '/fr', rules)).to.deep.equal(['cc']);
+      expect(getMerchCardTemplateBundles('/acrobat/plans.html', '', rules)).to.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/de/acrobat/plans.html', '/de', rules)).to.deep.equal(['dc']);
+      expect(getMerchCardTemplateBundles('/de/products/catalog.html', '/de', rules)).to.deep.equal(['express']);
+      expect(getMerchCardTemplateBundles('/fr/products/catalog.html', '/fr', rules)).to.deep.equal(['catalog']);
+    });
+
+    it('does not strip a locale prefix that is only a partial path segment', () => {
+      expect(getMerchCardTemplateBundles('/fresh/acrobat/plans.html', '/fr')).to.deep.equal(MERCH_CARD_TEMPLATE_BUNDLES);
+    });
+
+    it('returns every web bundle when no rule matches, without logging (the loader logs)', () => {
+      expect(getMerchCardTemplateBundles('/unknown/page.html', ''))
+        .to.deep.equal(['dc', 'catalog', 'cc', 'firefly', 'express']);
+      expect(lanaLog.called).to.be.false;
+    });
+  });
+
+  describe('loadMerchCardWithTemplates', () => {
+    const CARD_URL = 'https://main--mas--adobecom.aem.live/web-components/dist/merch-card.js';
+    let lanaLog;
+    let customElementsGet;
+
+    const deferred = () => {
+      let resolve;
+      let reject;
+      const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+      return { promise, resolve, reject };
+    };
+
+    const stubMerchCard = (MerchCard) => {
+      const originalGet = customElements.get.bind(customElements);
+      customElementsGet = sinon.stub(customElements, 'get')
+        .callsFake((name) => (name === 'merch-card' ? MerchCard : originalGet(name)));
+    };
+
+    beforeEach(() => {
+      lanaLog = sinon.stub();
+      window.lana = { log: lanaLog };
+    });
+
+    afterEach(() => {
+      customElementsGet?.restore();
+      customElementsGet = undefined;
+      delete window.lana;
+    });
+
+    it('loads the matched bundle next to merch-card.js (non-prod, prod, masLibs)', async () => {
+      const load = sinon.stub().resolves({});
+      await loadMerchCardWithTemplates(CARD_URL, null, { hostname: 'main--cc--adobecom.aem.live', pathname: '/acrobat/plans.html', load });
+      expect(load.args.map(([url]) => url)).to.have.members([
+        CARD_URL,
+        'https://main--mas--adobecom.aem.live/web-components/dist/templates/dc.js',
+      ]);
+
+      load.resetHistory();
+      await loadMerchCardWithTemplates('https://www.adobe.com/mas/libs/merch-card.js', null, { hostname: 'www.adobe.com', pathname: '/products/catalog.html', load });
+      expect(load.args.map(([url]) => url)).to.have.members([
+        'https://www.adobe.com/mas/libs/merch-card.js',
+        'https://www.adobe.com/mas/libs/templates/catalog.js',
+      ]);
+
+      load.resetHistory();
+      const masLibsBase = 'https://feature--mas--adobecom.aem.live/web-components/dist';
+      await loadMerchCardWithTemplates(`${masLibsBase}/merch-card.js`, masLibsBase, { hostname: 'www.stage.adobe.com', pathname: '/express/pricing', load });
+      expect(load.args.map(([url]) => url)).to.have.members([
+        `${masLibsBase}/merch-card.js`,
+        `${masLibsBase}/templates/express.js`,
+      ]);
+    });
+
+    it('loads every web bundle when no rule matches', async () => {
+      const load = sinon.stub().resolves({});
+      await loadMerchCardWithTemplates(CARD_URL, null, { hostname: 'localhost', pathname: '/no/rule.html', load });
+      expect(load.args.map(([url]) => url)).to.have.members([
+        CARD_URL,
+        ...MERCH_CARD_TEMPLATE_BUNDLES.map((bundle) => `https://main--mas--adobecom.aem.live/web-components/dist/templates/${bundle}.js`),
+      ]);
+      expect(lanaLog.calledOnce).to.be.true;
+      expect(lanaLog.firstCall.args[0]).to.include('/no/rule.html');
+      expect(lanaLog.firstCall.args[1]).to.deep.include({ tags: 'merch' });
+    });
+
+    it('starts merch-card.js and the bundle in parallel and resolves when both are done', async () => {
+      const card = deferred();
+      const bundle = deferred();
+      const cardModule = { name: 'merch-card' };
+      const load = sinon.stub();
+      load.withArgs(CARD_URL).returns(card.promise);
+      load.returns(bundle.promise);
+      let resolved = false;
+      const promise = loadMerchCardWithTemplates(CARD_URL, null, { hostname: 'localhost', pathname: '/acrobat/plans', load })
+        .then((module) => { resolved = true; return module; });
+      expect(load.callCount).to.equal(2);
+      card.resolve(cardModule);
+      await delay(0);
+      expect(resolved).to.be.false;
+      bundle.resolve({});
+      expect(await promise).to.equal(cardModule);
+    });
+
+    it('ignores bundle failures silently with MAS without registerTemplates', async () => {
+      stubMerchCard({});
+      const cardModule = {};
+      const load = sinon.stub();
+      load.withArgs(CARD_URL).resolves(cardModule);
+      load.rejects(new Error('404'));
+      expect(await loadMerchCardWithTemplates(CARD_URL, null, { hostname: 'localhost', pathname: '/acrobat/plans', load }))
+        .to.equal(cardModule);
+      expect(lanaLog.called).to.be.false;
+    });
+
+    it('logs bundle failures to LANA with MAS that has registerTemplates, without rejecting', async () => {
+      stubMerchCard({ registerTemplates: () => {} });
+      const cardModule = {};
+      const load = sinon.stub();
+      load.withArgs(CARD_URL).resolves(cardModule);
+      load.rejects(new Error('404'));
+      expect(await loadMerchCardWithTemplates(CARD_URL, null, { hostname: 'localhost', pathname: '/acrobat/plans', load }))
+        .to.equal(cardModule);
+      expect(lanaLog.calledOnce).to.be.true;
+      expect(lanaLog.firstCall.args[0]).to.include('dc').and.include('404');
+    });
+
+    it('rejects when merch-card.js itself fails', async () => {
+      const load = sinon.stub();
+      load.withArgs(CARD_URL).rejects(new Error('card failed'));
+      load.resolves({});
+      let error;
+      try {
+        await loadMerchCardWithTemplates(CARD_URL, null, { hostname: 'localhost', pathname: '/acrobat/plans', load });
+      } catch (e) {
+        error = e;
+      }
+      expect(error?.message).to.equal('card failed');
+    });
+  });
+
   describe('getMasLibsBaseUrl', () => {
     const originalHref = window.location.href;
 
@@ -3068,6 +3257,36 @@ describe('Merch Block', () => {
       // Feature branch
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
+    });
+  });
+
+  describe('getFragmentClientUrl', () => {
+    const originalHref = window.location.href;
+    const FRAGMENT_CLIENT = 'https://feature-branch--mas--adobecom.aem.live/studio/libs/fragment-client.js';
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('loads fragment-client.js only with maslibs on a preview host', () => {
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.page')).to.equal(FRAGMENT_CLIENT);
+      expect(getFragmentClientUrl('www.stage.adobe.com')).to.equal(FRAGMENT_CLIENT);
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.live')).to.be.null;
+      expect(getFragmentClientUrl('localhost:2000')).to.be.null;
+    });
+
+    it('does not load fragment-client.js without maslibs', () => {
+      window.history.pushState({}, '', '/');
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.page')).to.be.null;
+      expect(getFragmentClientUrl('main--cc--adobecom.aem.live')).to.be.null;
+    });
+
+    it('detects preview hosts', () => {
+      expect(isPreviewHost('main--cc--adobecom.aem.page')).to.be.true;
+      expect(isPreviewHost('www.stage.adobe.com')).to.be.true;
+      expect(isPreviewHost('main--cc--adobecom.aem.live')).to.be.false;
+      expect(isPreviewHost('www.adobe.com')).to.be.false;
     });
   });
 });
