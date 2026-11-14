@@ -1221,8 +1221,24 @@ describe('blog-header section dividers', () => {
       expect(rects([...main.children])).to.deep.equal(before);
     });
 
-    it('clamps both frame offsets at the viewport edge when the gutters are narrower than 56px', async () => {
-      await setViewport({ width: 768, height: 900 });
+    [600, 768, 1199].forEach((width) => {
+      it(`insets both outer dividers 40px without changing tablet layout at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const { main, headerSection, block } = buildStyledSections();
+        await init(block);
+        const frame = getComputedStyle(headerSection, '::before');
+        expect(frame.content).to.equal('""');
+        expect(frame.insetInlineStart).to.equal('40px');
+        expect(frame.insetInlineEnd).to.equal('40px');
+
+        const before = rects([...main.children]);
+        disableRule('.blog-divider-frame::before');
+        expect(rects([...main.children])).to.deep.equal(before);
+      });
+    });
+
+    it('clamps desktop frame offsets at the viewport edge when the gutters are narrower than 56px', async () => {
+      await setViewport({ width: 1200, height: 900 });
       const { main, headerSection, block } = buildStyledSections();
       main.style.setProperty('--grid-margins-width', '40px');
       await init(block);
