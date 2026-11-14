@@ -142,6 +142,11 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
   letter-spacing: -0.8px;
 }
 
+.caas-config .tool-header h1 span.beta {
+  color: #bababa;
+  font-weight: 400;
+}
+
 .caas-config .config-description {
   margin: 8px 0 0;
   color: var(--config-muted);

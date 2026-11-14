@@ -1215,7 +1215,7 @@ const Configurator = ({ rootEl, isV2 }) => {
             class="config-ui-switch"
             href=${alternateUiUrl.href}
             onClick=${() => saveStateToLocalStorage(state)}
-          >${isV2 ? 'Classic' : 'Try Modern'} UI</a>
+          >${isV2 ? 'Classic' : 'NEW Modern'} UI</a>
           <${CopyBtn} isV2=${isV2} />
         </div>
       </div>
