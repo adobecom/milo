@@ -306,6 +306,18 @@ a.blog-header-author-name:hover {
   }
 }
 
+/* Reading progress: positioned and filled by JS; never takes up layout space. */
+.blog-progress-bar {
+  position: fixed;
+  inset-inline: 0;
+  block-size: 8px;
+  background: #1473e6;
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .blog-share-modal.dialog-modal {
   width: fit-content;
   max-width: calc(100% - 2em);

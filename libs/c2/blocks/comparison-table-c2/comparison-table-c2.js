@@ -542,6 +542,33 @@ function setAccessibilityLabels(el) {
   });
 }
 
+// All tables share one header ResizeObserver. Its callback runs after layout, when reading
+// window.scrollY and the header height is free, so tables decorated in different frames never
+// force a style recalc for the initial nav-height/scroll sync (a rAF read lands on a dirty tree).
+const topSyncs = new Set();
+const pendingInits = [];
+let headerObserver = null;
+
+function onHeaderResize() {
+  const { scrollY } = window;
+  const navHeight = `${getGnavHeight()}px`;
+  pendingInits.splice(0).forEach((initFn) => initFn(scrollY));
+  topSyncs.forEach((applyTop) => applyTop(navHeight));
+}
+
+function requestInitialSync(initTable) {
+  pendingInits.push(initTable);
+  const header = document.querySelector('header');
+  if (!header) {
+    requestAnimationFrame(onHeaderResize);
+    return;
+  }
+  if (headerObserver) headerObserver.unobserve(header);
+  else headerObserver = new ResizeObserver(onHeaderResize);
+  // (Re)observing delivers a fresh initial notification after the next layout.
+  headerObserver.observe(header);
+}
+
 function setupCollapsingHeader(el) {
   if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
@@ -551,19 +578,23 @@ function setupCollapsingHeader(el) {
 
   let wasCollapsed = false;
   let isExpanding = false;
-  let lastScrollY = window.scrollY;
+  let lastScrollY = 0;
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
-  let stickyTopCache = 0;
+  // Read lazily by the scroll handler, which already reads layout, so syncTop() never has to
+  // force a style recalc right after writing --ct-nav-height.
+  let stickyTopCache = null;
 
-  const syncTop = () => {
-    cardsContainer.style.setProperty('--ct-nav-height', `${getGnavHeight()}px`);
-    stickyTopCache = getStickyTop();
+  const applyTop = (navHeight) => {
+    cardsContainer.style.setProperty('--ct-nav-height', navHeight);
+    stickyTopCache = null;
   };
-  syncTop();
+  const syncTop = () => applyTop(`${getGnavHeight()}px`);
+  topSyncs.add(applyTop);
+  requestInitialSync((scrollY) => { lastScrollY = scrollY; });
 
   const syncHeaderHeight = () => {
     if (isMobile()) {
@@ -616,15 +647,13 @@ function setupCollapsingHeader(el) {
       const y = window.scrollY;
       const goingDown = y > lastScrollY;
       lastScrollY = y;
+      if (stickyTopCache === null) stickyTopCache = getStickyTop();
       const isStuck = cardsContainer.getBoundingClientRect().top <= stickyTopCache;
       if (!isStuck) { removeCollapsed(); return; }
       if (goingDown && !wasCollapsed) applyCollapsed();
       if (!goingDown && wasCollapsed) removeCollapsed();
     });
   }, { passive: true });
-
-  const header = document.querySelector('header');
-  if (header) new ResizeObserver(syncTop).observe(header);
 
   new ResizeObserver(() => {
     if (!isExpanding) syncHeaderHeight();

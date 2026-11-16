@@ -230,7 +230,7 @@ export async function getModal(details, custom) {
   }
 
   dialogLoadingSet.add(id);
-  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
+  const dialog = createTag('div', { class: 'dialog-modal', role: 'dialog', 'aria-modal': true });
   const loadedEvent = new CustomEvent(
     'milo:modal:loaded',
     { detail: { id, hash: window.location.hash } },
@@ -240,7 +240,22 @@ export async function getModal(details, custom) {
     custom.title = (await findDetails(window.location.hash, null))?.title;
   }
   if (custom) getCustomModal(custom, dialog);
-  if (details) await getPathModal(details.path, dialog);
+  if (details) {
+    // Load inside a hidden, connected wrapper: aem-fragment / mas-field only fetch once
+    // connected, and blocks resolve their modal via el.closest('.dialog-modal') at init.
+    // The id is set on attach, so #id lookups (hashchange, dedupe, close) skip it until then.
+    const staging = createTag('div', { hidden: '' }, dialog);
+    document.body.append(staging);
+    try {
+      await getPathModal(details.path, dialog);
+    } catch (e) {
+      window.lana?.log(`Modal fragment failed to load: ${e?.message}`, { tags: 'modal' });
+      dialogLoadingSet.delete(id);
+      return null;
+    } finally {
+      staging.remove();
+    }
+  }
   if (custom?.signal?.aborted) {
     dialogLoadingSet.delete(id);
     return null;
@@ -309,6 +324,7 @@ export async function getModal(details, custom) {
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.prepend(close);
   dialog.append(focusPlaceholder);
+  dialog.id = id;
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
   firstFocusable?.focus({ preventScroll: true, focusVisible: openedViaKeyboard });

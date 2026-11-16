@@ -32,7 +32,7 @@ const updateFragMap = async (fragment, a, href) => {
   if (!fragLinksWithLocalizations.length) return;
 
   const parentHref = a.closest('[data-path]')?.getAttribute('data-path');
-  if (document.body.contains(a) && !a.parentElement?.closest('.fragment') && !parentHref) {
+  if (document.body.contains(a) && !a.closest('.dialog-modal') && !a.parentElement?.closest('.fragment') && !parentHref) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinksWithLocalizations.forEach((localizedHref) => {

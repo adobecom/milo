@@ -223,3 +223,81 @@ describe('Modal (c2)', () => {
     });
   });
 });
+
+const origFetch = window.fetch;
+const fragmentHtml = '<body><div><button class="frag-btn">Go</button></div></body>';
+const waitFor = async (check) => {
+  const start = Date.now();
+  while (!check() && Date.now() - start < 3000) {
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((r) => { setTimeout(r, 20); });
+  }
+};
+const bounded = (p) => Promise.race([p, new Promise((r) => { setTimeout(() => r('TIMEOUT'), 3000); })]);
+
+const pathModalSuites = [
+  ['Modal (c2)', getModal],
+  ['Modal (milo)', async (...args) => (await import('../../../libs/blocks/modal/modal.js')).getModal(...args)],
+];
+
+let seq = 0;
+pathModalSuites.forEach(([label, open]) => {
+  describe(`${label} path modal pre-attach`, () => {
+    let release = () => {};
+
+    afterEach(() => {
+      release();
+      sinon.restore();
+      document.querySelectorAll('.dialog-modal, .modal-curtain').forEach((n) => n.remove());
+      document.documentElement.classList.remove('disable-scroll');
+      document.body.classList.remove('disable-scroll');
+    });
+
+    it('loads the fragment connected, inside the dialog, hidden until ready', async () => {
+      seq += 1;
+      const id = `pa-${seq}`;
+      const path = `/test/blocks/modal/mocks/${id}`;
+      const gate = new Promise((r) => { release = r; });
+      let hit = false;
+      sinon.stub(window, 'fetch').callsFake((u, o) => {
+        if (String(u).includes(id)) {
+          hit = true;
+          return gate.then(() => new Response(fragmentHtml, { status: 200 }));
+        }
+        return origFetch.call(window, u, o);
+      });
+      const p = open({ id, path });
+      await waitFor(() => hit);
+      expect(document.getElementById(id)).to.be.null;
+      const link = document.querySelector(`body > div[hidden] > .dialog-modal > a[href$="${id}"]`);
+      expect(link?.isConnected).to.be.true;
+      release();
+      const modal = await bounded(p);
+      expect(modal.id).to.equal(id);
+      expect(modal.querySelector('.frag-btn')).to.exist;
+      expect(document.querySelectorAll(`.dialog-modal#${id}`).length).to.equal(1);
+      expect(document.querySelector('body > div[hidden]')).to.be.null;
+      expect(document.querySelector('.modal-curtain')).to.exist;
+    });
+
+    it('removes the hidden container and clears the loading guard when the fragment load fails', async () => {
+      seq += 1;
+      const id = `pa-${seq}`;
+      const path = `/test/blocks/modal/mocks/${id}`;
+      let bad = true;
+      sinon.stub(window, 'fetch').callsFake((u, o) => {
+        if (!String(u).includes(id)) return origFetch.call(window, u, o);
+        return Promise.resolve(bad
+          ? { ok: true, status: 200, text: () => Promise.reject(new Error('boom')) }
+          : new Response(fragmentHtml, { status: 200 }));
+      });
+      expect(await bounded(open({ id, path }))).to.be.null;
+      expect(document.querySelector(`.dialog-modal#${id}`)).to.be.null;
+      expect(document.querySelector('body > div[hidden]')).to.be.null;
+      bad = false;
+      const reopened = await bounded(open({ id, path }));
+      expect(reopened).to.exist;
+      expect(reopened).to.not.equal('TIMEOUT');
+    });
+  });
+});
