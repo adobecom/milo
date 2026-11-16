@@ -10,10 +10,14 @@ function stringToHTML(str) {
   }
 }
 
-function removeScripts(html) {
-  const scripts = html.querySelectorAll('script');
-  scripts.forEach((script) => script.remove());
-}
+// these can navigate the page or rewrite URLs after sanitizing
+const UNSAFE_SELECTOR = [
+  'script',
+  'base',
+  'meta[http-equiv]',
+  'animate[attributeName*="href" i]',
+  'set[attributeName*="href" i]',
+].join(',');
 
 const URL_ATTRS = ['src', 'href', 'xlink:href', 'data', 'action', 'formaction'];
 const SAFE_SCHEMES = ['http:', 'https:', 'mailto:', 'tel:', 'bookmark:'];
@@ -56,7 +60,7 @@ function isSafeUrlValue(value) {
 }
 
 function isPossiblyDangerous(name, value) {
-  if (name.startsWith('on')) return true;
+  if (name.startsWith('on') || name === 'srcdoc') return true;
   if (URL_ATTRS.includes(name)) return !isSafeUrlValue(value);
   return false;
 }
@@ -69,10 +73,19 @@ function removeAttributes(elem) {
   });
 }
 
+function cleanTree(root) {
+  root.querySelectorAll(UNSAFE_SELECTOR).forEach((el) => el.remove());
+  root.querySelectorAll('*').forEach((el) => {
+    removeAttributes(el);
+    // querySelectorAll doesn't descend into template contents
+    if (el.tagName === 'TEMPLATE') cleanTree(el.content);
+  });
+}
+
 function sanitize(html) {
   const htmlElem = stringToHTML(html);
-  removeScripts(htmlElem);
-  [htmlElem, ...htmlElem.querySelectorAll('*')].forEach(removeAttributes);
+  removeAttributes(htmlElem);
+  cleanTree(htmlElem);
   return htmlElem;
 }
 

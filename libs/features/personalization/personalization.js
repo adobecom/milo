@@ -244,7 +244,8 @@ const createFrag = async (el, action, content, manifestId, targetManifestId) => 
   } catch {
     // ignore
   }
-  const a = createTag('a', { href }, content);
+  const a = createTag('a', { href });
+  a.textContent = content;
   addIds(a, manifestId, targetManifestId);
   let containerType = 'other';
   const parent = el.parentElement;
@@ -284,10 +285,11 @@ export const createContent = async (
     return el;
   }
   if (getSelectorType(content) !== SELECTOR_TYPES.fragment) {
-    const newContent = replacePlaceholders(content);
+    // without <body>, DOMParser hoists leading <style>/<link> into <head> and they'd be dropped
+    const newContent = [...sanitizeHtmlBody(`<body>${replacePlaceholders(content)}</body>`).childNodes];
 
     if (action === 'replace') {
-      el.innerHTML = newContent;
+      el.replaceChildren(...newContent);
 
       return el;
     }
@@ -306,11 +308,12 @@ export const handleTwpButtons = (el, selector) => {
   if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
     const secondaryButton = el.closest('p')?.querySelector('em') || el.closest('div')?.querySelector('em');
     if (secondaryButton) {
-      const wrapper = secondaryButton.parentElement;
-      const html = wrapper.innerHTML;
-      let result = html.replace(/<em/g, '<strong');
-      result = result.replace(/<\/em/g, '</strong');
-      wrapper.innerHTML = result;
+      secondaryButton.parentElement.querySelectorAll('em').forEach((em) => {
+        const strong = createTag('strong');
+        [...em.attributes].forEach(({ name, value }) => strong.setAttribute(name, value));
+        strong.append(...em.childNodes);
+        em.replaceWith(strong);
+      });
     }
   }
 };
