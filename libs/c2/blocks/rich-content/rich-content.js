@@ -1,16 +1,15 @@
 import { decorateBlockText, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
-import { debounce } from '../../../utils/action.js';
-import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 const NAV_HEIGHT_PROP = '--rc-nav-height';
 
 // Lets focused links clear the sticky header when tabbing back into the section.
-function initNavHeight(el) {
+async function initNavHeight(el) {
   const section = el.closest('.section');
   const header = document.querySelector('header');
   if (!section || !header) return;
+  const { getGnavHeight } = await import('../../../blocks/global-navigation/utilities/utilities.js');
   const observer = new ResizeObserver(() => {
     if (!section.isConnected) {
       observer.disconnect();
@@ -212,7 +211,9 @@ export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
 
   if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
-    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+    import('../../../utils/action.js').then(({ debounce }) => {
+      window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+    });
   }
 
   applyHeroOverlay(el);

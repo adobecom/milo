@@ -157,6 +157,7 @@ const C2_BLOCKS = [
   'side-by-side',
   'social-proof',
   'split-aside-grid',
+  'split-hero',
   'tabs',
   'tour',
   'visually-hidden',
@@ -1919,11 +1920,11 @@ function decorateDefaults(el) {
 }
 
 export async function getGnavSource() {
-  const { locale, dynamicNavKey } = getConfig();
+  const { locale } = getConfig();
   let url = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
-  if (dynamicNavKey) {
+  if (getMetadata('dynamic-nav')) {
     const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
+    url = dynamicNav(url);
   }
   return url;
 }
@@ -1934,6 +1935,15 @@ export function isLocalNav() {
   let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
   newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
+}
+
+export function isC2GnavOnC1Host() {
+  return getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+}
+
+function syncC2GnavHost(header) {
+  const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
+  header.classList.toggle('c2-gnav-c1-host', isHost);
 }
 
 async function decorateHeader() {
@@ -1948,15 +1958,20 @@ async function decorateHeader() {
     return;
   }
   header.className = headerMeta || 'global-navigation';
+  syncC2GnavHost(header);
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
     || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
-    && window.sessionStorage.getItem('gnavSource') !== null;
-  if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
+  const wantsBreadcrumbs = baseBreadcrumbs || breadcrumbs || autoBreadcrumbs;
+  let dynamicNavActive = false;
+  if (wantsBreadcrumbs && getMetadata('dynamic-nav') === 'on') {
+    const { getDynamicNavState } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    dynamicNavActive = getDynamicNavState().active;
+  }
+  if (!dynamicNavActive && wantsBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (isLocalNav()) {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
@@ -2083,9 +2098,72 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
+export const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+// TODO: make `-viewport` required post-rollout (drop the bare-keyword fallback)
+const VIEWPORT_DELIMITER = /^(mobile|tablet|desktop)(-viewport)?\s*(\(.*\))?$/s;
+
+function isEmptyCell(cell) {
+  return !cell || (!cell.children.length && !cell.textContent.trim());
+}
+
+function isEmptyRow(row) {
+  return !row.textContent.trim() && [...row.children].every(isEmptyCell);
+}
+
+function getDelimiterKeyword(row) {
+  return row.children.length === 1
+    && VIEWPORT_DELIMITER.exec(row.children[0].textContent.trim().toLowerCase())?.[1];
+}
+
+export function getViewportContent(allRows, viewport, index) {
+  const delimiterIdx = allRows.findIndex((row) => getDelimiterKeyword(row) === viewport);
+  if (delimiterIdx < 0) return { delimiterIdx, viewportRows: [] };
+
+  const nextIdx = allRows
+    .findIndex((row, i) => i > delimiterIdx && VIEWPORT_KEYWORDS
+      .indexOf(getDelimiterKeyword(row)) > index);
+  const viewportRows = allRows.slice(delimiterIdx + 1, nextIdx < 0 ? allRows.length : nextIdx);
+  return { delimiterIdx, viewportRows };
+}
+
+function inheritRowCells(row, prevRow) {
+  if (!prevRow) return;
+  // Copied MEP placeholders expand like the source, keeping later rows/cells aligned
+  if (prevRow.dataset.mepReplaceType === 'row') {
+    if (!isEmptyRow(row)) return;
+    row.dataset.mepReplaceType = 'row';
+    row.replaceChildren(...prevRow.cloneNode(true).childNodes);
+    return;
+  }
+
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (!isEmptyCell(col) || isEmptyCell(prevCol)) return;
+    if (prevCol.dataset.mepReplaceType === 'cell') col.dataset.mepReplaceType = 'cell';
+    col.replaceChildren(...prevCol.cloneNode(true).childNodes);
+  });
+}
+
+export function inheritViewportContent(section) {
+  if (getMetadata('foundation') !== 'c2') return;
+  section.querySelectorAll(':scope > div[class]').forEach((block) => {
+    const rows = [...block.children]
+      .filter((row) => row.children[0]?.textContent.trim().toLowerCase() !== 'mep-lingo');
+    if (!rows.length || getDelimiterKeyword(rows[0]) !== 'mobile') return;
+    let prevRows = [];
+    VIEWPORT_KEYWORDS.forEach((viewport, index) => {
+      const { viewportRows, delimiterIdx } = getViewportContent(rows, viewport, index);
+      if (delimiterIdx < 0) return;
+      viewportRows.forEach((row, i) => inheritRowCells(row, prevRows[i]));
+      prevRows = viewportRows;
+    });
+  });
+}
+
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  inheritViewportContent(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -2219,8 +2297,6 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          enableGuestBotDetection: true,
-          guestBotDetectionProvider: 'bfp',
         }),
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
@@ -2354,6 +2430,11 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('lit-all.min.js'),
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
+  ],
+  'merch-card-collection-autoblock': [
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('merch-card-collection.js'),
   ],
   merch: [
     getMasDepUrl('commerce.js'),
@@ -2659,6 +2740,7 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
+    syncC2GnavHost(header);
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
 
@@ -2815,7 +2897,7 @@ export async function loadDeferred(area, blocks, config) {
         .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
     }
   }
-  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
+  if (config?.env?.name !== 'prod' && (getMetadata('dynamic-nav') || config?.dynamicNavKey)) {
     const { miloLibs } = config;
     loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
@@ -2866,12 +2948,24 @@ export const norm = normCountryCode;
 export async function getMarketConfig() {
   try {
     const config = getConfig();
-    if (!config.marketsConfig) {
-      const resp = await fetch(getMarketsUrl());
-      if (!resp.ok) throw new Error('Failed to load market config');
-      config.marketsConfig = await resp.json();
+    let { marketsConfig } = config;
+    if (!marketsConfig) {
+      config.marketsConfigPromise ||= fetch(getMarketsUrl())
+        .then((resp) => {
+          if (!resp.ok) throw new Error('Failed to load market config');
+          return resp.json();
+        });
+      const request = config.marketsConfigPromise;
+      try {
+        marketsConfig = await request;
+        if (config.marketsConfigPromise === request && !config.marketsConfig) {
+          config.marketsConfig = marketsConfig;
+        }
+      } finally {
+        if (config.marketsConfigPromise === request) delete config.marketsConfigPromise;
+      }
     }
-    const languages = config.marketsConfig.languages?.data ?? config.marketsConfig.data ?? [];
+    const languages = marketsConfig.languages?.data ?? marketsConfig.data ?? [];
     return { languages };
   } catch (e) {
     window.lana?.log(`Market Utils Error: ${e.message}`);
@@ -2976,14 +3070,11 @@ export async function decorateLanguageBanner() {
 
   const [geoIpCode, marketsConfig] = await Promise.all([
     getCountry(),
-    fetch(getMarketsUrl())
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
+    getMarketConfig(),
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
-  getConfig().marketsConfig = marketsConfig;
-  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  const rawEntries = marketsConfig.languages;
   if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
   const languageEntries = rawEntries.map((entry) => ({

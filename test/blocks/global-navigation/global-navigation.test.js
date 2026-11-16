@@ -26,7 +26,6 @@ import globalNavigationMock from './mocks/global-navigation.plain.js';
 import gnavWithlocalNav from './mocks/gnav-with-localnav.plain.js';
 import noDropdownNav from './mocks/global-navigation-no-dropdown.plain.js';
 import productEntryCTA from './mocks/global-navigation-product-entry-cta.plain.js';
-import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 // TODO
 // - test localization
@@ -650,6 +649,8 @@ describe('global navigation', () => {
     afterEach(() => {
       fetchStub = null;
       sinon.restore();
+      document.cookie = 'dynamicNav=; Max-Age=0; Path=/';
+      document.cookie = 'OptanonConsent=; Max-Age=0; Path=/';
       document.head.replaceChildren();
       document.body.replaceChildren();
       document.head.innerHTML = '<script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>';
@@ -681,29 +682,39 @@ describe('global navigation', () => {
       ).to.be.true;
     });
 
-    it('fetches navigation saved in sessionStorage', async () => {
-      const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
-      const conf = getConfig();
-      setConfig({ dynamicNavKey: 'milo', ...conf });
-      document.head.append(dynamicNavOn);
-      window.sessionStorage.setItem('dynamicNavKey', 'milo');
-      window.sessionStorage.setItem('gnavSource', '/some-path');
-      await initGnav(document.body.querySelector('header'));
-      expect(
-        fetchStub.calledOnceWith('/some-path.plain.html'),
-      ).to.be.true;
-    });
-
-    it('does not fetch from sessionStorage url when dyanmicNavKey is not present', async () => {
+    it('fetches navigation saved in the dynamic nav cookie', async () => {
+      document.cookie = 'OptanonConsent=groups=C0003%3A1; Path=/';
       const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
       document.head.append(dynamicNavOn);
       document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-      window.sessionStorage.setItem('dynamicNavKey', 'milo');
+      document.cookie = `dynamicNav=${encodeURIComponent(JSON.stringify({ s: 'http://localhost:2000/some-path' }))}; Path=/`;
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('http://localhost:2000/some-path.plain.html'),
+      ).to.be.true;
+    });
+
+    it('fetches authored navigation when functional cookie consent is denied', async () => {
+      document.cookie = 'OptanonConsent=groups=C0003%3A0; Path=/';
+      document.head.append(toFragment`<meta name="dynamic-nav" content="on">`);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
+      document.cookie = `dynamicNav=${encodeURIComponent(JSON.stringify({ s: 'http://localhost:2000/some-path' }))}; Path=/`;
+      await initGnav(document.body.querySelector('header'));
+      expect(
+        fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
+      ).to.be.true;
+    });
+
+    it('ignores a legacy sessionStorage value and does not use it as a fallback', async () => {
+      const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
+      document.head.append(dynamicNavOn);
+      document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
       window.sessionStorage.setItem('gnavSource', '/some-path');
       await initGnav(document.body.querySelector('header'));
       expect(
         fetchStub.calledOnceWith('http://localhost:2000/gnav.plain.html'),
       ).to.be.true;
+      window.sessionStorage.removeItem('gnavSource');
     });
 
     it('disable AED(Active Element Detetction) if gnav-souce used with hash "#_noActiveItem" modifier', async () => {
@@ -718,12 +729,17 @@ describe('global navigation', () => {
 
   describe('Dynamic nav', () => {
     describe('Breadcrumbs', () => {
+      afterEach(() => {
+        document.cookie = 'dynamicNav=; Max-Age=0; Path=/';
+        document.cookie = 'OptanonConsent=; Max-Age=0; Path=/';
+      });
+
       it('should not decorate breadcrumbs when dynamic nav is active', async () => {
+        document.cookie = 'OptanonConsent=groups=C0003%3A1; Path=/';
         const dynamicNavOn = toFragment`<meta name="dynamic-nav" content="on">`;
         document.head.append(dynamicNavOn);
         document.body.replaceChildren(toFragment`<header class="global-navigation"></header>`);
-        window.sessionStorage.setItem('dynamicNavKey', 'milo');
-        window.sessionStorage.setItem('gnavSource', '/some-path');
+        document.cookie = `dynamicNav=${encodeURIComponent(JSON.stringify({ s: 'http://localhost:2000/some-path' }))}; Path=/`;
         await initGnav(document.body.querySelector('header'));
         const breadcrumbs = document.querySelector('.feds-breadcrumbs');
         expect(breadcrumbs).to.be.null;

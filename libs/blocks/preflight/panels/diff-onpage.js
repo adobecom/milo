@@ -1,6 +1,6 @@
 import { createTag } from '../../../utils/utils.js';
 import { normalizeText } from '../checks/diff/nodePath.js';
-import { SIMILARITY_THRESHOLD, textSimilarity } from '../checks/diff/diffContent.js';
+import { SIMILARITY_THRESHOLD, textSimilarity, diffWords } from '../checks/diff/diffContent.js';
 
 const OVERLAY_CLASS = 'preflight-diff-overlay';
 const ADDED_MODIFIER = 'is-added';
@@ -10,6 +10,8 @@ const RELATIVE_CLASS = 'preflight-diff-highlight-relative';
 const ISOLATE_CLASS = 'preflight-diff-highlight-isolate';
 const CONTROL_CLASS = 'preflight-diff-highlight-control';
 const SR_ONLY_CLASS = 'preflight-diff-sr-only';
+const INS_CLASS = 'preflight-diff-ins';
+const DEL_CLASS = 'preflight-diff-del';
 
 const SR_LABEL = {
   [ADDED_MODIFIER]: 'Unpublished — new',
@@ -20,6 +22,7 @@ const CONTROL_LABEL_ON = 'Unpublished changes highlighted';
 const CONTROL_LABEL_OFF = 'Unpublished changes not highlighted';
 
 const VOID_HOST_TAGS = new Set(['IMG', 'VIDEO', 'IFRAME', 'AUDIO', 'EMBED', 'OBJECT', 'CANVAS', 'INPUT']);
+const INLINE_TAGS = new Set(['A', 'ABBR', 'B', 'CODE', 'EM', 'I', 'MARK', 'S', 'SMALL', 'SPAN', 'STRONG', 'SUB', 'SUP', 'U']);
 
 function parsePath(path) {
   if (!path) return [];
@@ -91,6 +94,16 @@ function logUnmapped(change) {
   );
 }
 
+const wordMarkUndos = new Set();
+
+function undoWordMarks(matches) {
+  [...wordMarkUndos].filter(matches).forEach((undo) => {
+    undo.originalText.forEach((data, node) => { node.data = data; });
+    undo.originalChildren.forEach((children, parent) => parent.replaceChildren(...children));
+    wordMarkUndos.delete(undo);
+  });
+}
+
 function clearOverlays(root) {
   root.querySelectorAll(`.${OVERLAY_CLASS}`).forEach((overlay) => overlay.remove());
   root.querySelectorAll(`.${SR_ONLY_CLASS}`).forEach((el) => el.remove());
@@ -101,6 +114,7 @@ function clearOverlays(root) {
     if (original) wrapper.replaceWith(original);
     else wrapper.remove();
   });
+  undoWordMarks((undo) => root.contains(undo.el) || !undo.el.isConnected);
 }
 
 export function clearHighlights(root) {
@@ -122,6 +136,117 @@ function ensureOverlayHost(el) {
   }
   el.classList.add(ISOLATE_CLASS);
   return el;
+}
+
+function wordSpots(el) {
+  const spots = [];
+  let current = null;
+  const blockOf = (node) => {
+    let block = node.parentElement;
+    while (block !== el && INLINE_TAGS.has(block.tagName)) block = block.parentElement;
+    return block;
+  };
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      [...node.data.matchAll(/\S+|\s+/g)].forEach(({ 0: text, index }) => {
+        if (!text.trim()) {
+          current = null;
+          return;
+        }
+        if (!current) {
+          current = { text: '', pieces: [], block: blockOf(node) };
+          spots.push(current);
+        }
+        current.text += text;
+        current.pieces.push({ node, start: index, end: index + text.length });
+      });
+      return;
+    }
+    const inline = INLINE_TAGS.has(node.tagName);
+    if (!inline) current = null;
+    node.childNodes.forEach(walk);
+    if (!inline) current = null;
+  };
+  el.childNodes.forEach(walk);
+  return spots;
+}
+
+const textOf = (spots) => spots.map(({ text }) => text).join(' ');
+const firstPiece = ({ pieces }) => pieces[0];
+const lastPiece = ({ pieces }) => pieces[pieces.length - 1];
+
+function markWords(el, liveEl, previewEl) {
+  const spots = wordSpots(el);
+  const previewWords = textOf(wordSpots(previewEl));
+  if (!previewWords || previewWords !== textOf(spots)) return;
+  const liveSpots = wordSpots(liveEl);
+  const wordDiff = diffWords(textOf(liveSpots), previewWords);
+  if (!wordDiff) return;
+
+  const edits = [];
+  let removed = [];
+  let removedBeforeNext;
+  let removedBlock;
+  let ins = null;
+  let spot = 0;
+  let live = 0;
+  const pushRemoved = (beforeNext) => {
+    if (!removed.length) return;
+    const removedText = removed.join(' ');
+    removed = [];
+    if (beforeNext ? spot < spots.length : spot === 0) {
+      const { node, start } = firstPiece(spots[spot]);
+      const textWithSpaceAfter = `${removedText} `;
+      edits.push({ node, start, end: start, del: textWithSpaceAfter });
+    } else {
+      const { node, end } = lastPiece(spots[spot - 1]);
+      const textWithSpaceBefore = ` ${removedText}`;
+      edits.push({ node, start: end, end, del: textWithSpaceBefore });
+    }
+  };
+  wordDiff.forEach(({ type, text }) => {
+    if (type === 'removed') {
+      const word = liveSpots[live];
+      if (removed.length && word.block !== removedBlock) pushRemoved(removedBeforeNext);
+      if (!removed.length) {
+        removedBlock = word.block;
+        removedBeforeNext = !live || lastPiece(liveSpots[live - 1]).node !== firstPiece(word).node;
+      }
+      removed.push(text);
+      live += 1;
+      return;
+    }
+    pushRemoved(removedBeforeNext);
+    if (type === 'same') {
+      ins = null;
+      live += 1;
+    } else {
+      spots[spot].pieces.forEach(({ node, start, end }) => {
+        if (ins?.node === node) {
+          ins.end = end;
+        } else {
+          ins = { node, start, end };
+          edits.push(ins);
+        }
+      });
+    }
+    spot += 1;
+  });
+  pushRemoved(removedBeforeNext);
+
+  const undo = { el, originalText: new Map(), originalChildren: new Map() };
+  edits.forEach(({ node }) => {
+    undo.originalText.set(node, node.data);
+    undo.originalChildren.set(node.parentNode, [...node.parentNode.childNodes]);
+  });
+  wordMarkUndos.add(undo);
+  edits.reverse().forEach(({ node, start, end, del }) => {
+    const range = document.createRange();
+    range.setStart(node, start);
+    range.setEnd(node, end);
+    if (del) range.insertNode(createTag('del', { class: DEL_CLASS }, [del]));
+    else range.surroundContents(createTag('ins', { class: INS_CLASS }));
+  });
 }
 
 const DISMISS_KEY = 'preflight-diff-hidden';
@@ -183,6 +308,14 @@ export function highlightOnPage(diff, root, forceHighlights) {
       if (!el) {
         logUnmapped(change);
         return;
+      }
+      if (change.liveEl) {
+        try {
+          markWords(el, change.liveEl, change.previewEl);
+        } catch (e) {
+          undoWordMarks((undo) => undo.el === el);
+          window.lana?.log?.(`[preflight][diff-onpage] word marks failed: ${e.message}`, { tags: 'preflight', errorType: 'i' });
+        }
       }
       const host = ensureOverlayHost(el);
       const kindClass = change.kind === 'block' ? ' is-block' : '';

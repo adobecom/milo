@@ -33,6 +33,12 @@ import { SEVERITY } from './constants.js';
 let checksSuite = null;
 
 const globalPreflightCache = new Map();
+let cacheGeneration = 0;
+
+export function clearPreflightCache() {
+  cacheGeneration += 1;
+  globalPreflightCache.clear();
+}
 
 export default {
   accessibility: { runChecks: runChecksAccessibility },
@@ -87,8 +93,8 @@ export const getChecksSuite = () => {
   });
 };
 
-const isUrlExcluded = (url, exclusionPatterns = {}) => {
-  if (!exclusionPatterns.data) return false;
+const isUrlExcluded = (url, exclusionPatterns) => {
+  if (!exclusionPatterns?.data) return false;
 
   return exclusionPatterns.data.some((item) => {
     const pattern = item.path;
@@ -103,7 +109,7 @@ const isUrlExcluded = (url, exclusionPatterns = {}) => {
   });
 };
 
-const runChecks = async (url, area, injectVisualMetadata = false) => {
+const runChecks = async (url, area, injectVisualMetadata, merchDelayMs) => {
   const isASO = (await getChecksSuite()) === 'ASO';
   const accessibility = await Promise.all(runChecksAccessibility({ area }));
   const assets = await Promise.all(runChecksAssets(url, area, injectVisualMetadata));
@@ -111,7 +117,7 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
   const [merch, content] = await Promise.all([
-    Promise.all(runChecksMerch({ area })),
+    Promise.all(runChecksMerch({ area, delayMs: merchDelayMs })),
     Promise.all(runChecksContent({ area })),
   ]);
   return {
@@ -135,7 +141,9 @@ export async function getPreflightResults(options = {}) {
     area = document,
     useCache = true,
     injectVisualMetadata = false,
+    merchDelayMs,
   } = options;
+  const generation = cacheGeneration;
 
   const excludedURLS = await fetch(`${getFederatedContentRoot()}/federal/preflight/preflight-config.json?sheet=preflight-exclusions`)
     .then((res) => (res.ok ? res.json() : null))
@@ -151,7 +159,7 @@ export async function getPreflightResults(options = {}) {
     return globalPreflightCache.get(cacheKey);
   }
 
-  const res = await runChecks(url, area, injectVisualMetadata);
+  const res = await runChecks(url, area, injectVisualMetadata, merchDelayMs);
   const allResults = [
     ...(res.accessibility || []),
     ...(res.assets || []),
@@ -168,7 +176,7 @@ export async function getPreflightResults(options = {}) {
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
 
-  if (useCache) globalPreflightCache.set(cacheKey, result);
+  if (useCache && generation === cacheGeneration) globalPreflightCache.set(cacheKey, result);
 
   return result;
 }

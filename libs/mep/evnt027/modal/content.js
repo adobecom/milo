@@ -53,6 +53,7 @@ function decorate(block) {
 
   signIn.classList.remove('blue', 'outline');
   signIn.classList.add('con-button', 'fill', 'button-md', 'max26-login-prompt-sign-in');
+  signIn.setAttribute('daa-ll', guest ? 'Register/Sign in|Login Modal' : 'Sign up|Login Modal');
   if (guest) {
     const guestAttributes = Object.fromEntries([...guest.attributes]
       .filter(({ name }) => name.startsWith('aria-') || name.startsWith('daa-'))
@@ -61,6 +62,7 @@ function decorate(block) {
       ...guestAttributes,
       type: 'button',
       class: 'max26-login-prompt-guest',
+      'daa-ll': 'Continue as guest|Login Modal',
     });
     guestButton.append(...guest.childNodes);
     guestRow.replaceChildren(guestButton);
