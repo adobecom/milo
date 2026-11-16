@@ -107,6 +107,7 @@ function initTabDropdown(dropdown) {
   const list = dropdown.querySelector('.tab-dropdown-list');
   const options = [...list.querySelectorAll('[role="option"]')];
   let highlightedIndex = 0;
+  let outsideClickHandler = null;
 
   const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
   const getSelectedIndex = () => Math.max(options.findIndex((o) => o.getAttribute('aria-selected') === 'true'), 0);
@@ -129,6 +130,9 @@ function initTabDropdown(dropdown) {
     trigger.setAttribute('aria-expanded', 'false');
     trigger.removeAttribute('aria-activedescendant');
     options.forEach((o) => o.classList.remove('highlighted'));
+    // Stop listening for outside taps once closed
+    document.removeEventListener('pointerdown', outsideClickHandler);
+    outsideClickHandler = null;
   };
 
   const open = () => {
@@ -141,6 +145,11 @@ function initTabDropdown(dropdown) {
       dropdown.setAttribute('data-placement', 'top');
     }
     highlight(getSelectedIndex());
+    // Only listen for outside taps while the list is open
+    outsideClickHandler = (e) => {
+      if (!dropdown.contains(e.target)) close();
+    };
+    document.addEventListener('pointerdown', outsideClickHandler);
   };
 
   const select = (index) => {
@@ -204,9 +213,6 @@ function initTabDropdown(dropdown) {
     });
   });
 
-  document.addEventListener('pointerdown', (e) => {
-    if (!dropdown.contains(e.target)) close();
-  });
   dropdown.addEventListener('focusout', (e) => {
     if (!dropdown.contains(e.relatedTarget)) close();
   });
