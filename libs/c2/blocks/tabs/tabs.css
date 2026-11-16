@@ -296,7 +296,7 @@
     border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
     border-top-width: 0;
     border-radius: 0 0 var(--s2a-border-radius-8) var(--s2a-border-radius-8);
-    box-shadow: 0 4px 6px rgb(0 0 0 / 10%);
+    box-shadow: 0 4px 6px var(--s2a-color-transparent-black-08);
   }
 
   .tab-dropdown[data-placement='top'] {
