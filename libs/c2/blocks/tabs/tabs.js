@@ -228,7 +228,7 @@ function createTabDropdown(tabListContainer, tabId, labelEl, ariaLabel) {
   const dropdown = createTag('div', { class: 'tab-dropdown' });
   const triggerAttrs = {
     type: 'button',
-    class: 'tab-dropdown-trigger',
+    class: 'tab-dropdown-trigger label',
     role: 'combobox',
     'aria-haspopup': 'listbox',
     'aria-expanded': 'false',
