@@ -3323,6 +3323,8 @@ export async function loadArea(area = document) {
   };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    // TEMP POC (promo CLS): remove before merging
+    if (new URLSearchParams(window.location.search).has('promo-poc')) import('../features/promo-poc/promo-poc.js');
     if (getMetadata('foundation') === 'c2') {
       warmTypekit();
       importFonts();
