@@ -158,6 +158,10 @@ let drawerCount = 0;
 
 const hashParams = () => new URLSearchParams(window.location.hash.slice(1));
 
+// A filter state always has a key=value; a bare id (e.g. #mini-plans-web-cta-creative-cloud-card)
+// is a modal deeplink, which must not reset the bar.
+export const isModalHash = (hash) => hash.length > 1 && !hash.includes('=');
+
 // Sorted so a given filter set always produces the same hash.
 function writeHash(params) {
   params.sort();
@@ -735,7 +739,13 @@ export function mountProductPricingFilter(collection, container) {
     render(hashParams());
     collection.toggleAttribute('data-edu-only', eduOnly(loadedCards(collection)));
   });
-  window.addEventListener('hashchange', sync);
+  const syncUnlessModal = () => {
+    if (!isModalHash(window.location.hash)) sync();
+  };
+  window.addEventListener('hashchange', syncUnlessModal);
+  // Closing a modal restores the filter hash with pushState, which fires no hashchange.
+  // modal.js restores it right after this event, so read the hash on the next task.
+  window.addEventListener('milo:modal:closed', () => setTimeout(syncUnlessModal));
   const initial = hashParams();
   const missing = seedParams(initial, groups);
   if (missing.length) {

@@ -34,6 +34,7 @@ import init, {
   derivedSelections,
   selectCategory,
   mountProductPricingFilter,
+  isModalHash,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { getFedsPlaceholderConfig, setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
@@ -1335,6 +1336,67 @@ describe('merch-card-collection autoblock', () => {
       expect([...counts.children].map((el) => el.firstChild)).to.deep.equal([applied, results]);
       emit(7);
       expect(counts.textContent).to.equal('1 Applied7 Results');
+    });
+
+    describe('modal hash handling', () => {
+      const trigger = (container) => container.querySelector('.product-pricing-trigger-label').textContent;
+      const closeModalTo = async (hash) => {
+        window.history.pushState(window.history.state, '', `${window.location.pathname}${window.location.search}${hash}`);
+        window.dispatchEvent(new CustomEvent('milo:modal:closed'));
+        await delay(50);
+      };
+
+      it('tells a modal id from a filter state', () => {
+        expect(isModalHash('#mini-plans-web-cta-creative-cloud-card')).to.be.true;
+        expect(isModalHash('#filter=featured&pricing=individuals')).to.be.false;
+        expect(isModalHash('#')).to.be.false;
+        expect(isModalHash('')).to.be.false;
+      });
+
+      it('keeps the count while a modal hash is active', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        expect(trigger(container)).to.contain('(2)');
+        window.location.hash = 'mini-plans-web-cta-creative-cloud-card';
+        await delay(50);
+        expect(trigger(container)).to.contain('(2)');
+      });
+
+      it('keeps the count and pills once the pre-modal hash is restored', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        window.location.hash = 'mini-plans-web-cta-creative-cloud-card';
+        await delay(50);
+        await closeModalTo('#filter=featured&pricing=individuals');
+        expect(trigger(container)).to.contain('(2)');
+        expect(window.location.hash).to.equal('#filter=featured&pricing=individuals');
+        const checked = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:checked')]
+          .map((i) => i.value);
+        expect(checked).to.include('featured');
+        expect(checked).to.include('individuals');
+      });
+
+      it('re-syncs when the restored hash differs from what the bar shows', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        window.location.hash = 'mini-plans-web-cta-creative-cloud-card';
+        await delay(50);
+        await closeModalTo('#filter=photo');
+        expect(trigger(container)).to.contain('(1)');
+      });
+
+      it('still syncs on a real filter hash change', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        expect(trigger(container)).to.contain('(2)');
+        window.location.hash = 'filter=photo';
+        await delay(50);
+        expect(trigger(container)).to.contain('(1)');
+      });
     });
 
     describe('accessibility', () => {
