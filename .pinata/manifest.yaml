@@ -1,0 +1,16 @@
+# Fiesta tenant contract — Milo's identity and references.
+#
+# The harness reads this at the pinned commit and holds no Milo-specific
+# knowledge of its own. Identity ladder: adobe (company) > acom (org) >
+# milo (product) > … . Unknown keys are rejected, so a typo fails loudly.
+org: acom
+product: milo
+repo: adobecom/milo
+owners_from: CODEOWNERS
+
+# Which shared mental models the planner should consult for Milo work.
+# Selection is tenant-owned; the model *content* is resolved from the shared
+# registry at run time (see .pinata/README.md).
+mental_models:
+  use:
+    - milo-core
