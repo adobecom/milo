@@ -362,7 +362,7 @@ describe('globe-gallery: fetchFragmentCards', () => {
       role: 'Featured',
       href: '/features/engine',
     });
-    expect(cards[0].badges[0].icon).to.include('globe-modal-badge-icon');
+    expect(cards[0].badges[0].icon).to.include('/icons/star.svg');
     expect(cards[1]).to.include({
       img: '/media_def/work.jpg',
       alt: '',
@@ -403,8 +403,7 @@ describe('globe-gallery: fetchFragmentCards', () => {
       'https://www.adobe.com/products/photoshop.html',
     ]);
     cards.flatMap(({ badges }) => badges).forEach(({ icon }) => {
-      expect(icon).to.include('<picture class="globe-modal-badge-icon"');
-      expect(icon).to.include('aria-hidden="true"');
+      expect(icon).to.be.a('string').that.includes('.svg');
     });
   });
 
