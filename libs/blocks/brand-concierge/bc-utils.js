@@ -316,12 +316,8 @@ export function decorateInput(el, input, inputEvents, iconPrefix = '', analytics
   const fieldLabel = createTag('label', {
     for: inputId,
     class: 'bc-input-field-label',
-    'aria-describedby': 'bc-label-tooltip',
     tabindex: 0,
   }, `${aiIcon(`${iconPrefix}ai-icon-input`, 'input-icon', chatLabelText, 20)}`);
-  const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
-
-  fieldLabel.append(fieldLabelToolTip);
 
   const fieldInput = createTag('textarea', {
     id: inputId,
@@ -335,7 +331,7 @@ export function decorateInput(el, input, inputEvents, iconPrefix = '', analytics
     'daa-ll': getAnalyticsLabel(analyticsType),
   }, submitIcon);
   const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
-  const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
+  const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, textareaWrapper, fieldButton]);
 
   fieldSection.append(fieldContainer);
   el.append(fieldSection);

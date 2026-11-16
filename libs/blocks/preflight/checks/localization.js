@@ -30,7 +30,7 @@ function normalizePath(path) {
 async function computeChecks(area) {
   const { locales } = getConfig();
   const locale = getLocale(locales, window.location.pathname);
-  const links = Array.from(area.querySelectorAll('a[href]'));
+  const links = [...area.querySelectorAll('a[href]')].filter((a) => !a.closest('#preflight'));
   const seen = new Set();
   const violations = (await Promise.all(links.map(async (linkEl) => {
     const href = linkEl.getAttribute('href');
@@ -81,6 +81,10 @@ let cachedRun;
 export function runChecks({ area = document } = {}) {
   if (!cachedRun) cachedRun = computeChecks(area);
   return cachedRun;
+}
+
+export function clearLocalizationCache() {
+  cachedRun = undefined;
 }
 
 export default { runChecks };

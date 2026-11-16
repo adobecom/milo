@@ -235,6 +235,12 @@ a.blog-header-author-name:hover {
   }
 }
 
+@media (min-width: 600px) and (max-width: 1199px) {
+  .blog-divider-frame::before {
+    inset-inline: 40px;
+  }
+}
+
 .blog-divider-frame::after {
   content: "";
   position: absolute;
@@ -304,6 +310,18 @@ a.blog-header-author-name:hover {
   .blog-divider-frame + .blog-article-layout {
     --blog-divider-inline-space: 56px;
   }
+}
+
+/* Reading progress: positioned and filled by JS; never takes up layout space. */
+.blog-progress-bar {
+  position: fixed;
+  inset-inline: 0;
+  block-size: 8px;
+  background: #1473e6;
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .blog-share-modal.dialog-modal {

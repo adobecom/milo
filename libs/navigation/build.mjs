@@ -176,6 +176,7 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
+  define: { 'import.meta.standaloneNavBundle': 'true' },
   plugins: [LitResolver, StyleLoader, DeadWeightResolver],
 });
 

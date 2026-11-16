@@ -8,14 +8,12 @@ import {
   setInternational,
   setMarket,
   pageExist,
-} from '../../utils/utils.js';
-import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
-import {
   getMarketConfig,
   getValidatedMarket,
   marketsLangForLocale,
   norm,
-} from '../../utils/market.js';
+} from '../../utils/utils.js';
+import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 
 // reload the page to avoid bfcache issues.
 window.addEventListener('pageshow', (event) => {
@@ -247,11 +245,11 @@ function createDropdown(
   showGlobe,
   analyticsLabel,
   getAnalyticsSelectEventName,
+  { focusOnPointerOpen = true, routeWheelToList = false } = {},
 ) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
-  const GLOBE_IMG = `<img class="market-selector-globe" src="${base}/ui/img/globe.svg" alt="globe">`;
-  const CHECKMARK_IMG = `<img class="check-icon" src="${base}/ui/img/checkmark.svg" alt="selected">`;
+  const createIcon = (cls, file, alt) => createTag('img', { class: cls, src: `${base}/ui/img/${file}`, alt });
 
   const container = createTag('div', { class: 'market-selector-dropdown' });
   const button = createTag('button', {
@@ -261,7 +259,10 @@ function createDropdown(
     type: 'button',
     tabindex: '0',
   });
-  button.innerHTML = `${showGlobe ? GLOBE_IMG : ''}<span>${label}</span>`;
+  if (showGlobe) button.append(createIcon('market-selector-globe', 'globe.svg', 'globe'));
+  const labelSpan = createTag('span');
+  labelSpan.textContent = label;
+  button.append(labelSpan);
 
   const popover = createTag('div', { class: 'market-selector-popover' });
   const dragHandle = createTag('div', { class: 'market-selector-drag-handle' });
@@ -298,6 +299,19 @@ function createDropdown(
 
   popover.append(dragHandle, searchContainer, list);
   container.append(button, popover);
+
+  function onPopoverWheel(e) {
+    if (e.ctrlKey || popover.dataset.open !== 'true') return;
+    e.stopPropagation();
+    if (list.contains(e.target)) return;
+    e.preventDefault();
+    let delta = e.deltaY;
+    if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) delta *= 16;
+    else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) delta *= list.clientHeight;
+    list.scrollTop += delta;
+  }
+
+  if (routeWheelToList) popover.addEventListener('wheel', onPopoverWheel, { passive: false });
 
   const closePopoverElement = (popoverEl) => {
     popoverEl.style.display = 'none';
@@ -340,7 +354,7 @@ function createDropdown(
       const span = createTag('span', { class: 'market-selector-item-text' });
       span.textContent = item.label;
       a.append(span);
-      if (selected) a.insertAdjacentHTML('beforeend', CHECKMARK_IMG);
+      if (selected) a.append(createIcon('check-icon', 'checkmark.svg', 'selected'));
 
       a.addEventListener('mouseenter', () => {
         if (item.url && item.url !== '#' && item.value) {
@@ -390,7 +404,9 @@ function createDropdown(
       button.setAttribute('aria-expanded', 'true');
       searchInput.value = '';
       renderItems(items);
+      const focusActiveLink = focusOnPointerOpen || e.detail === 0;
       requestAnimationFrame(() => {
+        if (popover.dataset.open !== 'true') return;
         const popoverHeight = popover.offsetHeight;
         popover.style.setProperty('--dropdown-initial-height', `${popoverHeight}px`);
         popover.classList.add('fixed-height');
@@ -400,7 +416,7 @@ function createDropdown(
         const activeLi = selectedLi || firstLi;
         const activeLink = activeLi?.querySelector('.market-selector-link');
         list.setAttribute('aria-activedescendant', activeLi?.id || '');
-        if (activeLink) activeLink.focus();
+        if (activeLink && focusActiveLink) activeLink.focus();
       });
     }
   });
@@ -459,11 +475,12 @@ function createDropdown(
     }
   });
 
-  document.addEventListener('click', (e) => {
+  const onOutsideClick = (e) => {
     if (!e.target.closest('.market-selector-dropdown')) {
       document.querySelectorAll('.market-selector-popover[data-open="true"]').forEach(closePopoverElement);
     }
-  });
+  };
+  document.addEventListener('click', onOutsideClick);
 
   popover.addEventListener('focusout', (e) => {
     const nextFocused = e.relatedTarget;
@@ -479,6 +496,20 @@ function createDropdown(
       button.focus();
     }
   });
+  const onEscapeFromButton = (e) => {
+    if (e.key !== 'Escape' || popover.dataset.open !== 'true') return;
+    e.preventDefault();
+    e.stopPropagation();
+    closePopoverElement(popover);
+    button.focus();
+  };
+  const onEscapeOutside = (e) => {
+    if (!container.contains(e.target)) onEscapeFromButton(e);
+  };
+  if (!focusOnPointerOpen) {
+    button.addEventListener('keydown', onEscapeFromButton);
+    document.addEventListener('keydown', onEscapeOutside, true);
+  }
   // Mobile: drag handle or list-at-top swipe down to close; popover follows finger, then animates
   const MIN_DRAG_PX = 5;
   const SWIPE_DOWN_THRESHOLD = 100;
@@ -630,18 +661,37 @@ function createDropdown(
   list.addEventListener('touchend', onListTouchEnd, { passive: true });
   list.addEventListener('touchcancel', onListTouchEnd, { passive: true });
 
-  return { container, updateItems: renderItems, button };
+  return {
+    container,
+    updateItems: renderItems,
+    button,
+    cleanup: () => {
+      document.removeEventListener('click', onOutsideClick);
+      if (!focusOnPointerOpen) {
+        button.removeEventListener('keydown', onEscapeFromButton);
+        document.removeEventListener('keydown', onEscapeOutside, true);
+      }
+      removeDragListeners();
+      if (routeWheelToList) popover.removeEventListener('wheel', onPopoverWheel);
+    },
+  };
 }
 
-export default async function init(block) {
+export default async function init(block, {
+  onCleanup,
+  focusOnPointerOpen = true,
+  routeWheelToList = false,
+} = {}) {
   const config = await getMarketConfig();
   if (!config || !config.languages?.length) {
+    if (onCleanup) throw new Error('Market selector configuration is missing languages');
     block.innerHTML = '';
     return;
   }
 
   const markets = await loadMarketsData();
   if (!markets?.length) {
+    if (onCleanup) throw new Error('Market selector configuration is missing markets');
     block.innerHTML = '';
     return;
   }
@@ -688,6 +738,7 @@ export default async function init(block) {
     true,
     'language-selector',
     (item) => `language-switch:${item.value || 'us'}`,
+    { focusOnPointerOpen, routeWheelToList },
   );
 
   const marketDropdown = createDropdown(
@@ -701,6 +752,7 @@ export default async function init(block) {
     false,
     'market-selector',
     (item) => `market-switch:${item.value}`,
+    { focusOnPointerOpen, routeWheelToList },
   );
 
   const wrapper = createTag('div', { class: 'market-selector-wrapper' });
@@ -708,4 +760,8 @@ export default async function init(block) {
   block.innerHTML = '';
   block.classList.add('feds-regionPicker-wrapper');
   block.append(wrapper);
+  onCleanup?.(() => {
+    langDropdown.cleanup();
+    marketDropdown.cleanup();
+  });
 }

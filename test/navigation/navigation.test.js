@@ -33,12 +33,16 @@ describe('Navigation component', async () => {
     await loadBlock(withTestLocales({ authoringPath: '/federal/dev', footer: { privacyId: '12343', onReady: 'dede' }, env: 'qa' }), 'http://localhost:2000');
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
+    expect(document.querySelector(`link[rel="stylesheet"][href="${miloLibs}/navigation/base.css"]`)).to.exist;
+    expect(document.querySelector(`link[rel="stylesheet"][href="${miloLibs}/navigation/navigation.css"]`)).to.exist;
+    expect(document.querySelector(`link[rel="stylesheet"][href="${miloLibs}/navigation/footer.css"]`)).to.exist;
   });
 
   it('Renders the localnav if isLocalNav key is passed', async () => {
     await loadBlock(withTestLocales({ authoringPath: '/federal/localnav', header: { imsClientId: 'fedsmilo', mobileGnavV2: 'on', isLocalNav: true, jarvis: { id: '1.2' } }, env: 'stage', theme: 'dark' }), 'http://localhost:2000');
     const el = document.querySelector('.feds-localnav');
     expect(el).to.exist;
+    expect(document.querySelector(`link[rel="stylesheet"][href="${miloLibs}/navigation/dark-nav.css"]`)).to.exist;
   });
 
   it('Renders the header block', async () => {
@@ -147,5 +151,13 @@ describe('Navigation component', async () => {
     await loadBlock(withTestLocales({ footer: { privacyId: '12343', authoringPath: '/federal/dev' }, env: 'qa' }), 'http://localhost:2000');
     const el = document.getElementsByTagName('footer');
     expect(el).to.exist;
+  });
+
+  it('Does not request standalone stylesheets as JavaScript modules', async () => {
+    await loadBlock(withTestLocales({ authoringPath: '/federal/dev', footer: {}, env: 'qa' }), 'http://localhost:2000');
+    const stylesheetModules = performance.getEntriesByType('resource')
+      .filter(({ name, initiatorType }) => initiatorType === 'script'
+        && /\/libs\/navigation\/[^/]+\.css$/.test(new URL(name).pathname));
+    expect(stylesheetModules.map(({ name }) => name)).to.be.empty;
   });
 });

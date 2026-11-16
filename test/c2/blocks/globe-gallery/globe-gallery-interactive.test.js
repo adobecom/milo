@@ -2,22 +2,14 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import * as THREE from '../../../../libs/deps/three.js';
-import createInteraction from '../../../../libs/c2/blocks/globe-gallery/src/interaction.js';
-import createCursor from '../../../../libs/c2/blocks/globe-gallery/src/cursor.js';
-import createGlobeModal from '../../../../libs/c2/blocks/globe-gallery/src/modal.js';
+import createInteraction, { createCursor } from '../../../../libs/utils/globe/interaction.js';
+import { renderModalContent, fetchFragmentCards } from '../../../../libs/c2/blocks/globe-gallery/globe-gallery.js';
+import createGlobeModal from '../../../../libs/utils/globe/modal.js';
+import { createDisposer } from '../../../../libs/utils/globe/core.js';
 import {
-  createCardMaterial,
-  createModalMaterial,
-  createTextMaterial,
-  createPlaceholderTexture,
-  loadCardTextures,
-  loadModalTexture,
-  createClickDragTexture,
-} from '../../../../libs/c2/blocks/globe-gallery/src/materials.js';
-import {
-  fetchFragmentCards,
-  layoutQuote,
-} from '../../../../libs/c2/blocks/globe-gallery/src/authoring.js';
+  createCardMaterial, createModalMaterial, createTextMaterial, createPlaceholderTexture,
+  loadCardTextures, loadModalTexture, createClickDragTexture,
+} from '../../../../libs/utils/globe/gl.js';
 
 function dispatch(target, type, props = {}) {
   const event = new Event(type, { bubbles: true, cancelable: true });
@@ -34,6 +26,8 @@ function nextFrame() {
   });
 }
 
+let disposer;
+
 describe('globe-gallery: interaction', () => {
   let canvas;
   let camera;
@@ -42,7 +36,6 @@ describe('globe-gallery: interaction', () => {
   let drag;
   let live;
   let yawOnly;
-  let cursorActive;
   let openModal;
   let onDrag;
   let interaction;
@@ -80,27 +73,23 @@ describe('globe-gallery: interaction', () => {
     };
     live = true;
     yawOnly = false;
-    cursorActive = false;
     openModal = sinon.spy();
     onDrag = sinon.spy();
+    disposer = createDisposer();
     interaction = createInteraction({
-      getRenderer: () => ({ domElement: canvas }),
-      getCamera: () => camera,
-      getCards: () => [card],
-      openModal,
-      getDragSensitivity: () => 0.01,
-      isGlobeLive: () => live,
-      maxVel: 0.08,
+      renderer: { domElement: canvas },
+      camera,
+      cards: [card],
       drag,
-      getYawOnly: () => yawOnly,
-      isCursorActive: () => cursorActive,
-      onDrag,
-    });
+      disposer,
+      dragSensitivity: 0.01,
+      bp: { get CYLINDER() { return yawOnly; } },
+    }, { openModal, isGlobeLive: () => live, onDrag });
     interaction.setup(canvas);
   });
 
   afterEach(() => {
-    interaction.teardown();
+    disposer.dispose();
     mesh.geometry.dispose();
     mesh.material.dispose();
   });
@@ -286,18 +275,14 @@ describe('globe-gallery: interaction', () => {
     expect(openModal.called).to.be.false;
   });
 
-  it('applies native or custom cursor states and clears them on teardown', () => {
+  it('applies native cursor states and clears them on teardown', () => {
     interaction.applyCursor();
     expect(canvas.style.cursor).to.equal('grab');
-    cursorActive = true;
-    interaction.applyCursor();
-    expect(canvas.style.cursor).to.equal('none');
-    cursorActive = false;
     drag.isDragging = true;
     interaction.applyCursor();
     expect(canvas.style.cursor).to.equal('grabbing');
 
-    interaction.teardown();
+    disposer.dispose();
     expect(canvas.style.cursor).to.equal('');
   });
 });
@@ -307,8 +292,9 @@ describe('globe-gallery: custom cursor', () => {
   let canvas;
   let live;
   let retired;
-  let drag;
   let cursor;
+  const active = () => document.querySelector('.globe-cursor').classList
+    .contains('globe-cursor-active');
 
   beforeEach(() => {
     originalMatchMedia = window.matchMedia;
@@ -316,67 +302,60 @@ describe('globe-gallery: custom cursor', () => {
     document.body.appendChild(canvas);
     live = true;
     retired = false;
-    drag = { isDragging: false };
   });
 
   afterEach(() => {
-    cursor?.teardown();
+    disposer?.dispose();
     canvas.remove();
-    document.querySelectorAll('.globe-gallery-cursor, .globe-gallery-cursor-disc')
-      .forEach((el) => el.remove());
+    document.querySelectorAll('.globe-cursor').forEach((el) => el.remove());
     window.matchMedia = originalMatchMedia;
     document.documentElement.removeAttribute('dir');
   });
 
   function create(matches = true) {
     window.matchMedia = sinon.stub().returns({ matches });
-    cursor = createCursor({
+    disposer = createDisposer();
+    cursor = createCursor({ disposer }, {
       getGlobeLive: () => live,
       getCursorRetired: () => retired,
       labelText: 'Explore',
-      drag,
     });
     cursor.setup(canvas);
   }
 
   it('does not initialize for a coarse pointer', () => {
     create(false);
-    expect(document.querySelector('.globe-gallery-cursor')).to.be.null;
+    expect(document.querySelector('.globe-cursor')).to.be.null;
   });
 
-  it('activates only over a live canvas and positions all cursor pieces', () => {
+  it('activates only over a live canvas and places the label beside the pointer', () => {
     create();
     dispatch(canvas, 'mouseenter', { clientX: 100, clientY: 80 });
     cursor.update();
 
-    expect(cursor.isActive()).to.be.true;
-    expect(document.querySelector('.globe-gallery-cursor').classList
-      .contains('globe-gallery-cursor-active')).to.be.true;
-    expect(document.querySelector('.globe-gallery-cursor-text').textContent).to.equal('Explore');
-    expect(document.querySelector('.globe-gallery-cursor-disc').style.left).to.equal('100px');
-    expect(document.querySelector('.globe-gallery-cursor-ring-wrap').style.transform)
-      .to.equal('translate(100px, 80px)');
+    expect(active()).to.be.true;
+    expect(document.querySelector('.globe-cursor-text').textContent).to.equal('Explore');
+    expect(document.querySelector('.globe-cursor-text-wrap').style.transform)
+      .to.equal('translate(132px, 69px)');
 
     live = false;
     cursor.update();
-    expect(cursor.isActive()).to.be.false;
+    expect(active()).to.be.false;
   });
 
-  it('tracks dragging, keyboard suppression, and pointer reactivation', () => {
+  it('tracks keyboard suppression and pointer reactivation', () => {
     create();
     dispatch(canvas, 'mouseenter', { clientX: 20, clientY: 30 });
-    drag.isDragging = true;
     cursor.update();
-    expect(document.querySelector('.globe-gallery-cursor').classList
-      .contains('globe-gallery-cursor-dragging')).to.be.true;
+    expect(active()).to.be.true;
 
     document.dispatchEvent(new Event('focusin'));
     cursor.update();
-    expect(cursor.isActive()).to.be.false;
+    expect(active()).to.be.false;
 
     dispatch(canvas, 'mousemove', { clientX: 22, clientY: 32 });
     cursor.update();
-    expect(cursor.isActive()).to.be.true;
+    expect(active()).to.be.true;
   });
 
   it('retires after the fade delay and can become active again', () => {
@@ -387,13 +366,13 @@ describe('globe-gallery: custom cursor', () => {
       cursor.update();
       retired = true;
       cursor.update();
-      expect(cursor.isActive()).to.be.true;
+      expect(active()).to.be.true;
       clock.tick(421);
       cursor.update();
-      expect(cursor.isActive()).to.be.false;
+      expect(active()).to.be.false;
       retired = false;
       cursor.update();
-      expect(cursor.isActive()).to.be.true;
+      expect(active()).to.be.true;
     } finally {
       clock.restore();
     }
@@ -402,19 +381,18 @@ describe('globe-gallery: custom cursor', () => {
   it('places the label on the left in RTL and removes generated DOM on teardown', () => {
     document.documentElement.dir = 'rtl';
     create();
-    const text = document.querySelector('.globe-gallery-cursor-text-wrap');
+    const text = document.querySelector('.globe-cursor-text-wrap');
     Object.defineProperty(text, 'offsetWidth', { configurable: true, value: 40 });
-    cursor.teardown();
+    disposer.dispose();
     cursor = null;
     create();
     dispatch(canvas, 'mouseenter', { clientX: 100, clientY: 50 });
     cursor.update();
 
-    expect(document.querySelector('.globe-gallery-cursor-text-wrap').style.transform)
+    expect(document.querySelector('.globe-cursor-text-wrap').style.transform)
       .to.include('translate(');
-    cursor.teardown();
-    expect(document.querySelector('.globe-gallery-cursor')).to.be.null;
-    expect(document.querySelector('.globe-gallery-cursor-disc')).to.be.null;
+    disposer.dispose();
+    expect(document.querySelector('.globe-cursor')).to.be.null;
   });
 });
 
@@ -453,7 +431,7 @@ describe('globe-gallery: materials', () => {
 
   it('initializes modal and text material uniforms', () => {
     const texture = new THREE.Texture();
-    const modal = createModalMaterial(texture, 2);
+    const modal = createModalMaterial({ texture, aspect: 2 });
     const text = createTextMaterial({
       texture,
       aspect: 1.25,
@@ -484,19 +462,18 @@ describe('globe-gallery: materials', () => {
       }
     };
     const each = sinon.spy();
-    let result;
+    const done = sinon.spy();
     loadCardTextures({
       count: 2,
       getSrc: (i) => `/missing-${i}.jpg`,
       maxTexH: 100,
-    }, each, (textures, aspects) => {
-      result = { textures, aspects };
-    });
+      getCrossOrigin: () => null,
+    }, each, done);
     await Promise.resolve();
 
     expect(each.callCount).to.equal(2);
-    expect(result.textures).to.have.length(2);
-    expect(result.aspects).to.deep.equal([4 / 6, 4 / 6]);
+    expect(done.calledOnce).to.be.true;
+    expect(each.args.map(([, , aspect]) => aspect)).to.deep.equal([4 / 6, 4 / 6]);
     expect(log.callCount).to.equal(2);
   });
 
@@ -513,14 +490,14 @@ describe('globe-gallery: materials', () => {
       }
     };
     window.createImageBitmap = sinon.stub().resolves({ width: 500, height: 250 });
-    let result;
+    const each = sinon.spy();
+    const done = sinon.spy();
     loadCardTextures({
       count: 1,
       getSrc: () => '/wide.jpg',
       maxTexH: 200,
-    }, null, (textures, aspects) => {
-      result = { textures, aspects };
-    });
+      getCrossOrigin: () => null,
+    }, each, done);
     await Promise.resolve();
     await Promise.resolve();
     await nextFrame();
@@ -531,7 +508,8 @@ describe('globe-gallery: materials', () => {
       resizeHeight: 200,
       imageOrientation: 'flipY',
     });
-    expect(result.aspects).to.deep.equal([2]);
+    expect(done.calledOnce).to.be.true;
+    expect(each.firstCall.args[2]).to.equal(2);
   });
 
   it('returns a cancellable modal image and calls its error callback', async () => {
@@ -542,7 +520,7 @@ describe('globe-gallery: materials', () => {
         if (value) queueMicrotask(() => this.onerror());
       }
     };
-    const image = loadModalTexture('/missing.jpg', 1000, sinon.spy(), error);
+    const image = loadModalTexture({ src: '/missing.jpg', maxTex: 1000 }, sinon.spy(), error);
     await Promise.resolve();
 
     expect(image.currentSrc).to.equal('/missing.jpg');
@@ -572,29 +550,52 @@ describe('globe-gallery: modal DOM behavior', () => {
   let upgrade;
   let modal;
 
+  const modalCtx = () => ({
+    q: (selector) => (selector === '.globe-modal-canvas' ? null : root.querySelector(selector)),
+    scene,
+    camera,
+    sphereGroup,
+    cards,
+    count: cards.length,
+    authoredNo: (i) => i + 1,
+    W: 1000,
+    H: 800,
+    bp: { name: 'md', CARD_W_SPHERE: 10, CARD_H_SPHERE: 10, ANTIALIAS: false },
+    reducedMotion: true,
+    field: {
+      slotPose: (card, rotated, pos, quat) => {
+        pos.copy(card.spherePos);
+        quat.copy(card.sphereQuat);
+      },
+      snapCardToSphereSlot: sinon.spy(),
+      applySphereFacing: sinon.spy(),
+      applyMotionCA: sinon.spy(),
+    },
+  });
+
   beforeEach(() => {
     root = document.createElement('div');
     root.innerHTML = `
-      <canvas class="globe-gallery-canvas"></canvas>
-      <div class="globe-gallery-modal" aria-hidden="true"></div>
-      <dialog class="globe-gallery-modal-chrome">
-        <div class="globe-gallery-modal-info">
-          <h2 class="globe-gallery-modal-name"></h2>
-          <p class="globe-gallery-modal-role-label"></p>
-          <div class="globe-gallery-modal-description"></div>
-          <ul class="globe-gallery-modal-badges"></ul>
+      <canvas class="globe-canvas"></canvas>
+      <div class="globe-modal" aria-hidden="true"></div>
+      <dialog class="globe-modal-chrome">
+        <div class="globe-modal-info">
+          <h2 class="globe-modal-name"></h2>
+          <p class="globe-modal-role-label"></p>
+          <div class="globe-modal-description"></div>
+          <ul class="globe-modal-badges"></ul>
         </div>
-        <span class="globe-gallery-modal-image"></span>
-        <button class="globe-gallery-modal-nav globe-gallery-modal-nav-prev"></button>
-        <div class="globe-gallery-modal-counter"></div>
-        <span class="globe-gallery-modal-position"></span>
-        <button class="globe-gallery-modal-nav globe-gallery-modal-nav-next"></button>
-        <button class="globe-gallery-modal-close"></button>
-        <span class="globe-gallery-modal-announce"></span>
+        <span class="globe-modal-image"></span>
+        <button class="globe-modal-nav globe-modal-nav-prev"></button>
+        <div class="globe-modal-counter"></div>
+        <span class="globe-modal-position"></span>
+        <button class="globe-modal-nav globe-modal-nav-next"></button>
+        <button class="globe-modal-close"></button>
+        <span class="globe-modal-announce"></span>
       </dialog>
     `;
     document.body.appendChild(root);
-    mainCanvas = root.querySelector('.globe-gallery-canvas');
+    mainCanvas = root.querySelector('.globe-canvas');
     scene = new THREE.Scene();
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
@@ -639,31 +640,16 @@ describe('globe-gallery: modal DOM behavior', () => {
     upgrade = sinon.spy(() => ({ src: '/upgrade' }));
     window.lenis = lenis;
     modal = createGlobeModal({
-      q: (selector) => (selector === '.globe-gallery-modal-canvas'
-        ? null : root.querySelector(selector)),
-      getScene: () => scene,
-      getCamera: () => camera,
-      getSphereGroup: () => sphereGroup,
-      getRenderer: () => ({ domElement: mainCanvas }),
-      getCards: () => cards,
-      getCount: () => cards.length,
-      getCardMetadata: (i) => metadata[i],
-      authoredNo: (i) => i + 1,
+      ...modalCtx(),
+      renderer: { domElement: mainCanvas },
+      cardMeta: (i) => metadata[i],
       stepCard: (i, direction) => (i + direction + cards.length) % cards.length,
+    }, {
+      bodyOpenClass: true,
+      renderContent: renderModalContent,
       loadModalUpgrade: upgrade,
-      getViewport: () => ({ W: 1000, H: 800 }),
-      getBP: () => 'md',
-      getCardDims: () => ({ w: 10, h: 10 }),
-      cardAspect: 1,
-      getAntialias: () => false,
-      caEnabled: false,
       cardLabel: (i, count) => `${i} of ${count}`,
-      getReducedMotion: () => true,
-      sphereRotQuat: new THREE.Quaternion(),
-      snapToSphereSlot: sinon.spy(),
-      applySphereFacing: sinon.spy(),
       requestNavNudge: sinon.spy(),
-      applyMotionCA: sinon.spy(),
       restoreFocusOnClose: sinon.spy(),
     });
     modal.setup();
@@ -677,36 +663,35 @@ describe('globe-gallery: modal DOM behavior', () => {
     });
     root.remove();
     delete window.lenis;
-    document.documentElement.classList.remove('globe-gallery-modal-open');
-    document.body.classList.remove('globe-gallery-modal-open');
+    document.documentElement.classList.remove('globe-modal-open');
+    document.body.classList.remove('globe-modal-open');
   });
 
   it('opens and populates accessible metadata, badges, and position', () => {
     modal.open(0, 100, 200);
-    const chrome = root.querySelector('.globe-gallery-modal-chrome');
+    const chrome = root.querySelector('.globe-modal-chrome');
 
     expect(modal.getModalIdx()).to.equal(0);
-    expect(root.querySelector('.globe-gallery-modal-name').textContent).to.equal('Ada');
-    expect(root.querySelector('.globe-gallery-modal-role-label').textContent).to.equal('Designer');
-    expect(root.querySelector('.globe-gallery-modal-description').textContent)
+    expect(root.querySelector('.globe-modal-name').textContent).to.equal('Ada');
+    expect(root.querySelector('.globe-modal-role-label').textContent).to.equal('Designer');
+    expect(root.querySelector('.globe-modal-description').textContent)
       .to.equal('A detailed description.');
-    expect(root.querySelector('.globe-gallery-modal-image').getAttribute('aria-label'))
+    expect(root.querySelector('.globe-modal-image').getAttribute('aria-label'))
       .to.equal('Artwork alt');
-    expect(root.querySelector('.globe-gallery-modal-counter').textContent).to.equal('01 / 02');
-    expect(root.querySelector('.globe-gallery-modal-position').textContent).to.equal('1 of 2');
-    expect(chrome.querySelector('.globe-gallery-modal-badge-app').textContent)
+    expect(root.querySelector('.globe-modal-counter').textContent).to.equal('01 / 02');
+    expect(root.querySelector('.globe-modal-position').textContent).to.equal('1 of 2');
+    expect(chrome.querySelector('.globe-modal-badge-app').textContent)
       .to.equal('<Photoshop>');
-    expect(chrome.querySelector('.globe-gallery-modal-badge-app').getAttribute('href'))
+    expect(chrome.querySelector('.globe-modal-badge-app').getAttribute('href'))
       .to.equal('https://example.com/?a=1&b=2');
-    expect(mainCanvas.classList.contains('is-modal-active')).to.be.true;
-    expect(document.documentElement.classList.contains('globe-gallery-modal-open')).to.be.true;
+    expect(document.documentElement.classList.contains('globe-modal-open')).to.be.true;
     expect(lenis.stop.calledOnce).to.be.true;
     expect(modal.isCardManaged(cards[0])).to.be.true;
   });
 
   it('marks the canvas image decorative when no alt is authored', () => {
     modal.open(1);
-    const image = root.querySelector('.globe-gallery-modal-image');
+    const image = root.querySelector('.globe-modal-image');
     expect(image.getAttribute('aria-hidden')).to.equal('true');
     expect(image.hasAttribute('aria-label')).to.be.false;
   });
@@ -727,8 +712,7 @@ describe('globe-gallery: modal DOM behavior', () => {
       clock.tick(700);
 
       expect(modal.getModalIdx()).to.equal(-1);
-      expect(mainCanvas.classList.contains('is-modal-active')).to.be.false;
-      expect(document.documentElement.classList.contains('globe-gallery-modal-open')).to.be.false;
+      expect(document.documentElement.classList.contains('globe-modal-open')).to.be.false;
       expect(lenis.start.called).to.be.true;
     } finally {
       clock.restore();
@@ -739,35 +723,20 @@ describe('globe-gallery: modal DOM behavior', () => {
     modal.destroy();
     cards.length = 1;
     modal = createGlobeModal({
-      q: (selector) => (selector === '.globe-gallery-modal-canvas'
-        ? null : root.querySelector(selector)),
-      getScene: () => scene,
-      getCamera: () => camera,
-      getSphereGroup: () => sphereGroup,
-      getRenderer: () => null,
-      getCards: () => cards,
-      getCount: () => 1,
-      getCardMetadata: () => metadata[0],
-      authoredNo: () => 1,
+      ...modalCtx(),
+      renderer: null,
+      cardMeta: () => metadata[0],
       stepCard: () => 0,
-      getViewport: () => ({ W: 1000, H: 800 }),
-      getBP: () => 'md',
-      getCardDims: () => ({ w: 10, h: 10 }),
-      cardAspect: 1,
-      getAntialias: () => false,
-      caEnabled: false,
+    }, {
+      bodyOpenClass: true,
+      renderContent: renderModalContent,
       cardLabel: () => '1 of 1',
-      getReducedMotion: () => true,
-      sphereRotQuat: new THREE.Quaternion(),
-      snapToSphereSlot: () => {},
-      applySphereFacing: () => {},
       requestNavNudge: () => {},
-      applyMotionCA: () => {},
     });
     modal.setup();
 
-    expect(root.querySelector('.globe-gallery-modal-nav-prev').hidden).to.be.true;
-    expect(root.querySelector('.globe-gallery-modal-nav-next').hidden).to.be.true;
+    expect(root.querySelector('.globe-modal-nav-prev').hidden).to.be.true;
+    expect(root.querySelector('.globe-modal-nav-next').hidden).to.be.true;
   });
 
   it('destroy synchronously resets modal classes and scrolling state', () => {
@@ -775,9 +744,8 @@ describe('globe-gallery: modal DOM behavior', () => {
     modal.destroy();
 
     expect(modal.getModalIdx()).to.equal(-1);
-    expect(root.querySelector('.globe-gallery-modal').classList.contains('is-visible')).to.be.false;
-    expect(mainCanvas.classList.contains('is-modal-active')).to.be.false;
-    expect(document.documentElement.classList.contains('globe-gallery-modal-open')).to.be.false;
+    expect(root.querySelector('.globe-modal').classList.contains('is-visible')).to.be.false;
+    expect(document.documentElement.classList.contains('globe-modal-open')).to.be.false;
     expect(lenis.start.called).to.be.true;
   });
 
@@ -811,7 +779,7 @@ describe('globe-gallery: modal DOM behavior', () => {
     try {
       modal.open(0);
       const cancel = new Event('cancel', { cancelable: true });
-      root.querySelector('.globe-gallery-modal-chrome').dispatchEvent(cancel);
+      root.querySelector('.globe-modal-chrome').dispatchEvent(cancel);
       expect(cancel.defaultPrevented).to.be.true;
       modal.updateAnimation(false);
       clock.tick(700);
@@ -823,7 +791,7 @@ describe('globe-gallery: modal DOM behavior', () => {
 
   it('makes overflowing descriptions focusable and updates edge fades on scroll', () => {
     modal.open(0);
-    const description = root.querySelector('.globe-gallery-modal-description');
+    const description = root.querySelector('.globe-modal-description');
     Object.defineProperties(description, {
       scrollHeight: { configurable: true, value: 300 },
       clientHeight: { configurable: true, value: 100 },
@@ -845,34 +813,6 @@ describe('globe-gallery: quote layout and fragment edge cases', () => {
 
   afterEach(() => {
     fetchStub?.restore();
-  });
-
-  it('re-typesets from the authored quote and preserves accessible full text', () => {
-    const quote = document.createElement('blockquote');
-    quote.textContent = 'One two three four';
-    Object.defineProperty(HTMLElement.prototype, 'offsetTop', {
-      configurable: true,
-      get() {
-        const index = [...this.parentNode?.children || []].indexOf(this);
-        return index >= 2 ? 20 : 0;
-      },
-    });
-
-    const first = layoutQuote(quote);
-    const second = layoutQuote(quote);
-    expect(first).to.have.length.above(1);
-    expect(second).to.have.length(first.length);
-    expect(quote.querySelector('.globe-gallery-pullquote-sr').textContent)
-      .to.equal('One two three four');
-    expect([...quote.querySelectorAll('.globe-gallery-pullquote-line-inner')]
-      .map((line) => line.textContent).join(' ')).to.equal('One two three four');
-  });
-
-  it('returns an empty layout for missing or blank quotes', () => {
-    const blank = document.createElement('blockquote');
-    expect(layoutQuote(null)).to.deep.equal([]);
-    expect(layoutQuote(blank)).to.deep.equal([]);
-    expect(blank.classList.contains('globe-gallery-pullquote-lines')).to.be.false;
   });
 
   it('parses image badges, unlinked badges, nested wrappers, and image-first cards', async () => {

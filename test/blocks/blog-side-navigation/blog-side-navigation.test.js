@@ -1,8 +1,9 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { spy, stub } from 'sinon';
+import { getConfig, MILO_EVENTS, setConfig } from '../../../libs/utils/utils.js';
 import init from '../../../libs/blocks/blog-side-navigation/blog-side-navigation.js';
+import { waitFor } from '../../helpers/waitfor.js';
 
 setConfig({
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
@@ -48,7 +49,7 @@ describe('blog-side-navigation section list', () => {
     await new Promise(requestAnimationFrame);
   });
 
-  it('uses H2 labels and numbered targets without replacing inline content', async () => {
+  it('uses H2 labels and heading-based targets without replacing inline content', async () => {
     const { main, block } = buildArticle(
       '<h2 id="original">Key <em>takeaways</em></h2><p>Article</p><h2>Next section</h2>',
     );
@@ -56,19 +57,367 @@ describe('blog-side-navigation section list', () => {
     expect(block.querySelector('nav').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
     const links = [...block.querySelectorAll('a')];
     expect(links.map((link) => link.textContent)).to.deep.equal(['Key takeaways', 'Next section']);
-    expect(links.map((link) => link.getAttribute('href'))).to.deep.equal(['#section-1', '#section-2']);
+    expect(links.map((link) => link.getAttribute('href')))
+      .to.deep.equal(['#key-takeaways', '#next-section']);
     expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
-      .to.deep.equal(['section-1', 'section-2']);
+      .to.deep.equal(['key-takeaways', 'next-section']);
     expect(main.querySelector('h2 em')).to.exist;
   });
 
-  it('uses language-independent targets for translated and repeated headings', async () => {
+  it('uses translated headings and unique targets for repeated titles', async () => {
     const { block } = buildArticle('<h2>はじめに</h2><h2>はじめに</h2>');
     await init(block);
     expect([...block.querySelectorAll('a')].map((link) => link.getAttribute('href')))
-      .to.deep.equal(['#section-1', '#section-2']);
+      .to.deep.equal(['#はじめに', '#はじめに-1']);
     expect([...block.querySelectorAll('a')].map((link) => link.textContent))
       .to.deep.equal(['はじめに', 'はじめに']);
+  });
+
+  ['हिन्दी', 'เรียนรู้', 'مَرْحَبًا'].forEach((label) => {
+    it(`preserves combining marks and deep links for ${label}`, async () => {
+      mockTablet();
+      window.history.replaceState(null, '', `#${encodeURIComponent(label)}`);
+      const { main, block } = buildArticle(`<h2>${label}</h2><h2>${label}</h2>`);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal([`#${label}`, `#${label}-1`]);
+      expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
+        .to.deep.equal([label, `${label}-1`]);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal([label, label]);
+      expect(scrollStub.calledOnce).to.equal(true);
+    });
+  });
+
+  describe('authored jump labels', () => {
+    let previousLana;
+
+    function authoredBlock(labels, content = '<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>') {
+      const article = buildArticle(content);
+      article.block.classList.add('collapsed');
+      article.block.innerHTML = '<div><div>Explore this article</div></div>'
+        + `<div><div><ol>${labels.map((label) => `<li>${label}</li>`).join('')}</ol></div></div>`;
+      return article;
+    }
+
+    beforeEach(() => {
+      previousLana = window.lana;
+      window.lana = { log: stub() };
+    });
+
+    afterEach(() => {
+      window.lana = previousLana;
+    });
+
+    it('uses custom labels for anchors while preserving blank slots and the heading', async () => {
+      mockTablet();
+      const { main, block } = authoredBlock(['Overview', '', '<p>&nbsp;</p>', 'Next steps']);
+      await init(block);
+      const expectedLabels = ['Overview', 'Second', 'Third', 'Next steps'];
+      const expectedTargets = ['#overview', '#second', '#third', '#next-steps'];
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(expectedLabels);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(expectedTargets);
+      expect([...main.querySelectorAll('h2')].map((heading) => heading.textContent))
+        .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
+      expect(block.querySelector(':scope > p').textContent).to.equal('Explore this article');
+      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+      expect(window.lana.log.called).to.equal(false);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(expectedLabels);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(expectedTargets);
+      expect(block.querySelector(':scope > p').textContent).to.equal('Explore this article');
+      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('treats former setting names as labels and renders labels as plain text', async () => {
+      const { block } = authoredBlock(['heading', 'collapsed', '&lt;em&gt;Text&lt;/em&gt;', '']);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['heading', 'collapsed', '<em>Text</em>', 'Fourth']);
+      expect(block.querySelector('nav em')).not.to.exist;
+      expect(window.lana.log.called).to.equal(false);
+    });
+
+    [
+      { format: 'editor list', render: (items) => `<ol>${items.map((item) => `<li>${item}</li>`).join('')}</ol>` },
+      { format: 'editor bullet list', render: (items) => `<ul>${items.map((item) => `<li>${item}</li>`).join('')}</ul>` },
+      { format: 'typed lines', render: (items) => items.map((item, index) => `${index + 1}. ${item}`).join('\n') },
+      { format: 'typed paragraphs', render: (items) => items.map((item, index) => `<p>${index + 1}. ${item}</p>`).join('') },
+      { format: 'typed line breaks', render: (items) => items.map((item, index) => `${index + 1}. ${item}`).join('<br>') },
+    ].forEach(({ format, render }) => {
+      ['no change', ' No Change ', '&nbsp;'].forEach((unchanged) => {
+        it(`preserves automatic labels and URLs for "${unchanged}" in ${format}`, async () => {
+          const { main, block } = authoredBlock([]);
+          block.children[1].firstElementChild.innerHTML = render([
+            'Overview', 'Details', unchanged, 'Next steps',
+          ]);
+          await init(block);
+          const labels = ['Overview', 'Details', 'Third', 'Next steps'];
+          const targets = ['#overview', '#details', '#third', '#next-steps'];
+          expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+            .to.deep.equal(labels);
+          expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+            .to.deep.equal(targets);
+          expect([...main.querySelectorAll('h2')].map((heading) => heading.textContent))
+            .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
+          expect(window.lana.log.called).to.equal(false);
+          await init(block);
+          expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+            .to.deep.equal(labels);
+          expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+            .to.deep.equal(targets);
+        });
+      });
+    });
+
+    [
+      '<ol><li>Overview</li><li>no change</li><li></li><li>Next steps</li></ol>',
+      '<ul><li>Overview</li><li>no change</li><li></li><li>Next steps</li></ul>',
+      '1. Overview\n2. no change\n3.   \n4. Next steps',
+      '<p>1. Overview</p><p>2. no change</p><p>3.   </p><p>4. Next steps</p>',
+      '1. Overview<br>2. no change<br>3.   <br>4. Next steps',
+    ].forEach((list, index) => {
+      ['empty', 'omitted'].forEach((heading) => {
+        it(`handles list format ${index + 1} with an ${heading} heading row`, async () => {
+          const { block } = authoredBlock([]);
+          if (heading === 'empty') {
+            block.firstElementChild.firstElementChild.innerHTML = '<p>&nbsp;</p>';
+          } else {
+            block.firstElementChild.remove();
+          }
+          block.lastElementChild.firstElementChild.innerHTML = list;
+          await init(block);
+          const labels = ['Overview', 'Second', 'Third', 'Next steps'];
+          const targets = ['#overview', '#second', '#third', '#next-steps'];
+          expect(block.querySelector(':scope > p > strong').textContent).to.equal('JUMP TO SECTION');
+          expect(block.querySelector('nav').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
+          expect(block.querySelector('button').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
+          expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+            .to.deep.equal(labels);
+          expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+            .to.deep.equal(targets);
+          expect(window.lana.log.called).to.equal(false);
+          await init(block);
+          expect(block.querySelector(':scope > p > strong').textContent).to.equal('JUMP TO SECTION');
+          expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+            .to.deep.equal(labels);
+        });
+      });
+    });
+
+    it('recognizes a single typed list item without a heading row', async () => {
+      const { block } = authoredBlock([]);
+      block.firstElementChild.remove();
+      block.firstElementChild.firstElementChild.textContent = '1. Overview';
+      await init(block);
+      expect(block.querySelector(':scope > p > strong').textContent).to.equal('JUMP TO SECTION');
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['Overview', 'Second', 'Third', 'Fourth']);
+    });
+
+    it('keeps an unnumbered heading when no list is authored', async () => {
+      const { block } = authoredBlock([]);
+      block.lastElementChild.remove();
+      await init(block);
+      expect(block.querySelector(':scope > p > strong').textContent).to.equal('Explore this article');
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
+    });
+
+    it('keeps an empty trailing numbered item without shifting earlier labels', async () => {
+      const { block } = authoredBlock([]);
+      block.children[1].firstElementChild.textContent = '1. Overview\n2.   \n3. Details\n4.   ';
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['Overview', 'Second', 'Details', 'Fourth']);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(['#overview', '#second', '#details', '#fourth']);
+    });
+
+    it('only treats the complete phrase "no change" as a placeholder', async () => {
+      const { block } = authoredBlock(['No change needed', '2026. Outlook', 'no change', '']);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['No change needed', '2026. Outlook', 'Third', 'Fourth']);
+    });
+
+    it('renders the first-row heading as text rather than HTML', async () => {
+      const { block } = authoredBlock(['Overview']);
+      const heading = '<em>Explore</em> & learn';
+      block.firstElementChild.firstElementChild.textContent = heading;
+      await init(block);
+      const title = block.querySelector(':scope > p > strong');
+      expect(title.textContent).to.equal(heading);
+      expect(title.children.length).to.equal(0);
+      expect(block.querySelector('nav').getAttribute('aria-label')).to.equal(heading);
+    });
+
+    [[], ['', '', '', ''], ['<p>&nbsp;</p>']].forEach((labels) => {
+      it(`keeps automatic labels without a warning for ${labels.length} empty list items`, async () => {
+        const { block } = authoredBlock(labels);
+        await init(block);
+        expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+          .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
+        expect(block.dataset.failed).to.be.undefined;
+        expect(window.lana.log.called).to.equal(false);
+      });
+    });
+
+    [['Overview'], ['Overview', 'Details']].forEach((labels) => {
+      it(`allows ${labels.length} custom labels without requiring trailing blank items`, async () => {
+        const { block } = authoredBlock(labels);
+        await init(block);
+        expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+          .to.deep.equal([...labels, ...['First', 'Second', 'Third', 'Fourth'].slice(labels.length)]);
+        expect(block.dataset.failed).to.be.undefined;
+        expect(block.dataset.reason).to.be.undefined;
+        expect(window.lana.log.called).to.equal(false);
+        expect(block.hidden).to.equal(false);
+      });
+    });
+
+    it('preserves intermediate blank items and automatically labels remaining headings', async () => {
+      const { block } = authoredBlock(
+        ['Overview', '', 'Details', 'Next steps'],
+        '<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2><h2>Fifth</h2><h2>Sixth</h2>',
+      );
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['Overview', 'Second', 'Details', 'Next steps', 'Fifth', 'Sixth']);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(['#overview', '#second', '#details', '#next-steps', '#fifth', '#sixth']);
+      expect(block.dataset.failed).to.be.undefined;
+      expect(window.lana.log.called).to.equal(false);
+    });
+
+    it('reports extra list items without breaking navigation', async () => {
+      const { block } = authoredBlock(['One', 'Two', '', 'Four', 'Extra']);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['One', 'Two', 'Third', 'Four']);
+      expect(block.dataset.failed).to.equal('true');
+      expect(block.dataset.reason).to.contain('5 list items for 4 headings');
+      expect(block.dataset.reason).to.contain('Extra items have no destination heading');
+      expect(window.lana.log.calledOnce).to.equal(true);
+      expect(window.lana.log.firstCall.args[1])
+        .to.deep.equal({ tags: 'blog-side-navigation', severity: 'warning' });
+      expect(block.hidden).to.equal(false);
+    });
+
+    it('logs extra list items but never displays an authoring error in production', async () => {
+      const environment = stub(getConfig().env, 'name').value('prod');
+      try {
+        const { block } = authoredBlock(['Overview', '', '', '', 'Extra']);
+        await init(block);
+        expect(block.dataset.failed).to.be.undefined;
+        expect(block.dataset.reason).to.be.undefined;
+        expect(window.lana.log.calledOnce).to.equal(true);
+        expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+          .to.deep.equal(['Overview', 'Second', 'Third', 'Fourth']);
+      } finally {
+        environment.restore();
+      }
+    });
+
+    it('shows a preview error when labels have no eligible destination headings', async () => {
+      const { block } = authoredBlock(['Overview'], '<p>No headings yet.</p>');
+      await init(block);
+      expect(block.hidden).to.equal(false);
+      expect(block.dataset.reason).to.contain('1 list items for 0 headings');
+      expect(block.querySelector('nav')).not.to.exist;
+      expect(window.lana.log.calledOnce).to.equal(true);
+    });
+
+    it('clears a mismatch warning when the heading count becomes aligned', async () => {
+      const { main, block } = authoredBlock(['Overview', '', '', '', 'Extra']);
+      await init(block);
+      expect(block.dataset.failed).to.equal('true');
+      main.querySelector('.blog-article-content .content')
+        .insertAdjacentHTML('beforeend', '<h2>Fifth</h2>');
+      await init(block);
+      expect(block.dataset.failed).to.be.undefined;
+      expect(block.dataset.reason).to.be.undefined;
+      expect(block.querySelectorAll('nav a').length).to.equal(5);
+    });
+
+    it('uses custom labels for mobile navigation URLs while retaining heading focus', async () => {
+      mockTablet(false);
+      const { main, block } = authoredBlock(['Overview', '', '', 'Next steps']);
+      await init(block);
+      const links = [...block.querySelectorAll('nav a')];
+      const button = block.querySelector('button');
+      expect(links[0].textContent).to.equal('Overview');
+      button.click();
+      links[3].focus();
+      links[3].click();
+      await Promise.resolve();
+      expect(window.location.hash).to.equal('#next-steps');
+      expect(document.activeElement).to.equal(main.querySelectorAll('h2')[3]);
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+      expect(button.parentElement).to.equal(links[3].parentElement);
+      expect(links[3].textContent).to.equal('Next steps');
+      expect(links[3].getAttribute('aria-current')).to.equal('location');
+    });
+
+    it('deduplicates custom-label anchors and supports opening a custom fragment directly', async () => {
+      mockTablet();
+      window.history.replaceState(null, '', '#overview-1');
+      const { main, block } = authoredBlock(['Overview', 'Overview', '', '2026 outlook']);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(['#overview', '#overview-1', '#third', '#section-2026-outlook']);
+      expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
+        .to.deep.equal(['overview', 'overview-1', 'third', 'section-2026-outlook']);
+      expect(scrollStub.calledOnce).to.equal(true);
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(['#overview', '#overview-1', '#third', '#section-2026-outlook']);
+    });
+  });
+
+  it('normalizes punctuation and spaces while keeping accented and numeric titles navigable', async () => {
+    mockTablet();
+    const { main, block } = buildArticle(
+      '<h2> When to use <em>API automation</em>. </h2>'
+      + '<h2>API &amp; no-code: Next steps?</h2>'
+      + '<h2>Cafe\u0301</h2><h2>2026 trends</h2><h2>!!!</h2>',
+    );
+    await init(block);
+    const links = [...block.querySelectorAll('nav a')];
+    expect(links.map((link) => link.getAttribute('href'))).to.deep.equal([
+      '#when-to-use-api-automation', '#api-no-code-next-steps',
+      '#café', '#section-2026-trends', '#section-5',
+    ]);
+    const headings = [...main.querySelectorAll('h2')];
+    for (const [index, link] of links.entries()) {
+      link.click();
+      await Promise.resolve();
+      expect(document.activeElement).to.equal(headings[index]);
+      expect(window.location.hash).to.equal(link.hash);
+    }
+  });
+
+  it('keeps existing section URLs stable when another heading is inserted above them', async () => {
+    const { main, block } = buildArticle('<h2>First section</h2><h2>Next section</h2>');
+    await init(block);
+    main.querySelector('.blog-article-content .content')
+      .insertAdjacentHTML('afterbegin', '<h2>New introduction</h2>');
+    await init(block);
+    expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+      .to.deep.equal(['#new-introduction', '#first-section', '#next-section']);
+  });
+
+  it('scrolls to an encoded translated heading fragment on initial load', async () => {
+    mediaStub = stub(window, 'matchMedia').returns({ matches: true });
+    window.history.replaceState(null, '', `#${encodeURIComponent('はじめに')}`);
+    const { block } = buildArticle('<h2>はじめに</h2>');
+    await init(block);
+    expect(scrollStub.calledOnce).to.equal(true);
+    expect(scrollStub.firstCall.args[0].behavior).to.equal('instant');
   });
 
   it('limits long jump labels to two lines except in collapsed mobile navigation', async () => {
@@ -90,11 +439,6 @@ describe('blog-side-navigation section list', () => {
           const links = [...block.querySelectorAll('nav > ul > li > a')];
           for (const expanded of [true, false]) {
             if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
-            if (expanded && width < 600) {
-              const current = block.querySelector('.blog-side-navigation-current > span');
-              expect(current.getBoundingClientRect().height)
-                .to.be.closeTo(parseFloat(getComputedStyle(current).lineHeight), 1);
-            }
             for (const link of links.filter((item) => !item.parentElement.hidden)) {
               const text = link.querySelector('.blog-side-navigation-label');
               const textStyle = getComputedStyle(text);
@@ -102,6 +446,8 @@ describe('blog-side-navigation section list', () => {
               const lines = !expanded && width < 600 ? 1 : 2;
               expect(textStyle.webkitLineClamp).to.equal(String(lines));
               expect(textStyle.overflow).to.equal('hidden');
+              expect(link.getBoundingClientRect().height)
+                .to.be.closeTo(text.getBoundingClientRect().height + 24, 1);
               if (text.textContent === longTitle) {
                 expect(text.getBoundingClientRect().height).to.be.closeTo(lineHeight * lines, 1);
                 expect(text.scrollHeight).to.be.greaterThan(text.clientHeight);
@@ -111,7 +457,7 @@ describe('blog-side-navigation section list', () => {
             }
             expect(links[0].textContent).to.equal(longTitle);
             expect(links[1].textContent).to.equal(longTitle);
-            expect(links[0].getAttribute('href')).to.equal('#section-1');
+            expect(links[0].getAttribute('href')).to.equal(`#${main.querySelector('h2').id}`);
           }
           main.remove();
         }
@@ -136,24 +482,25 @@ describe('blog-side-navigation section list', () => {
         const icon = button.querySelector('span');
         const list = block.querySelector('ul');
         const mobile = width < 600;
+        expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight)
+          .to.equal(mobile ? '400' : '700');
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(mobile ? '700' : '400');
+          .to.equal('800');
         expect(list.querySelector('[aria-current="location"]').getBoundingClientRect().height)
-          .to.equal(mobile ? 48 : 78);
+          .to.equal(48);
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
           .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         if (mobile) {
           expect(getComputedStyle(block.querySelector(':scope > p')).fontSize).to.equal('16px');
-          expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight).to.equal('400');
           expect(getComputedStyle(list).borderRadius).to.equal('0px');
           expect(getComputedStyle(list).boxShadow).to.equal('none');
           expect(getComputedStyle(button).borderWidth).to.equal('1px');
           expect(getComputedStyle(button).borderRadius).to.equal('6px');
           expect(getComputedStyle(button).backgroundColor).to.equal('rgb(248, 248, 248)');
           expect(getComputedStyle(button.parentElement).backgroundColor).to.equal('rgba(0, 0, 0, 0)');
-          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('700');
+          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('800');
         }
         expect(getComputedStyle(icon, '::before').width).to.equal('12px');
         expect(getComputedStyle(icon, '::before').height).to.equal('2px');
@@ -179,9 +526,8 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(icon).borderRadius).to.equal('50%');
         expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
         expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
-        const expandedWeight = width >= 1200 ? '700' : '600';
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal(mobile ? '700' : expandedWeight);
+          .to.equal('800');
         if (!mobile) {
           expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
             .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
@@ -191,7 +537,7 @@ describe('blog-side-navigation section list', () => {
           expect(getComputedStyle(item).borderWidth).to.equal('0px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineStart).to.equal('8px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineEnd).to.equal('8px');
-          expect(item.querySelector('a').getBoundingClientRect().height).to.equal(mobile ? 48 : 78);
+          expect(item.querySelector('a').getBoundingClientRect().height).to.equal(48);
           if (width < 600) {
             expect(item.getBoundingClientRect().width).to.be.closeTo(list.clientWidth, 1);
           }
@@ -204,7 +550,7 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('shows the current section above all mobile options only when the dropdown is open', async () => {
+  it('shows mobile links once in order with the active link highlighted when open', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     style.textContent = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
@@ -217,38 +563,33 @@ describe('blog-side-navigation section list', () => {
           const { main, block } = buildArticle(titles.map((title) => `<h2>${title}</h2>`).join(''));
           await init(block);
           const button = block.querySelector('button');
-          const current = block.querySelector('.blog-side-navigation-current');
           const list = block.querySelector('ul');
           const links = [...list.querySelectorAll('a')];
-          expect(current.hidden).to.equal(true);
+          expect(block.querySelector('nav').children.length).to.equal(1);
+          expect(block.querySelector('.blog-side-navigation-current')).not.to.exist;
           if (count > 3) {
             button.focus();
             button.click();
-            expect(current.hidden).to.equal(false);
-            expect(current.nextElementSibling).to.equal(list);
-            expect(current.querySelector('.blog-side-navigation-label').textContent).to.equal('First');
-            expect(current.contains(button)).to.equal(true);
-            expect(getComputedStyle(current).fontWeight).to.equal('700');
-            expect(getComputedStyle(current).borderBottomWidth).to.equal('1px');
-            expect(getComputedStyle(current.querySelector('.blog-side-navigation-label'))
-              .webkitLineClamp).to.equal('1');
-            expect(links.map((link) => link.textContent)).to.deep.equal(titles);
-            expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
-            expect(getComputedStyle(links[0]).fontWeight).to.equal('700');
-            expect(getComputedStyle(links[0].parentElement).backgroundColor)
-              .to.equal('rgb(242, 242, 242)');
-            expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
+          }
+          expect(button.parentElement).to.equal(links[0].parentElement);
+          expect(links.map((link) => link.textContent)).to.deep.equal(titles);
+          expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
+          expect(getComputedStyle(links[0]).fontWeight).to.equal('800');
+          expect(getComputedStyle(links[0].parentElement).backgroundColor)
+            .to.equal('rgb(242, 242, 242)');
+          expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
+          if (count > 3) {
             expect(document.activeElement).to.equal(button);
             await setViewport({ width: 768, height: 1000 });
             await new Promise(requestAnimationFrame);
-            expect(current.hidden).to.equal(true);
             expect(button.parentElement).to.equal(links[0].parentElement);
             await setViewport({ width, height: 1000 });
             await new Promise(requestAnimationFrame);
-            expect(current.hidden).to.equal(false);
-            expect(current.contains(button)).to.equal(true);
+            expect(button.parentElement).to.equal(links[0].parentElement);
+            expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
+            expect(block.querySelector('nav').children.length).to.equal(1);
             button.click();
-            expect(current.hidden).to.equal(true);
+            expect(button.getAttribute('aria-expanded')).to.equal('false');
             expect(button.parentElement).to.equal(links[0].parentElement);
           }
           main.remove();
@@ -666,7 +1007,7 @@ describe('blog-side-navigation section list', () => {
         expect(margin).to.be.closeTo(64 + nav.getBoundingClientRect().height + 24, 1);
         scrollStub.resetHistory();
         scrollStub.callsFake(() => {});
-        block.querySelector('a[href="#section-2"]').click();
+        block.querySelector('nav > ul > li:nth-child(2) > a').click();
         await Promise.resolve();
         await new Promise(requestAnimationFrame);
         await new Promise(requestAnimationFrame);
@@ -701,7 +1042,7 @@ describe('blog-side-navigation section list', () => {
     expect(scrollStub.calledOnce).to.equal(true);
     expect(scrollStub.firstCall.args[0].behavior).to.equal('smooth');
     expect(scrollStub.firstCall.args[0].top).to.equal(expectedTop);
-    expect(window.location.hash).to.equal('#section-1');
+    expect(window.location.hash).to.equal('#section');
     expect(heading.getAttribute('tabindex')).to.equal('-1');
     expect(document.activeElement).to.equal(heading);
     link.click();
@@ -721,7 +1062,7 @@ describe('blog-side-navigation section list', () => {
     await Promise.resolve();
     expect(mediaStub.firstCall.args[0]).to.equal('(prefers-reduced-motion: reduce)');
     expect(scrollStub.firstCall.args[0]).to.deep.equal({ top: expectedTop, behavior: 'instant' });
-    expect(window.location.hash).to.equal('#section-1');
+    expect(window.location.hash).to.equal('#section');
     expect(document.activeElement).to.equal(heading);
     preference.matches = false;
     block.querySelector('a').click();
@@ -730,7 +1071,7 @@ describe('blog-side-navigation section list', () => {
 
   it('scrolls immediately when loading an existing section fragment with reduced motion', async () => {
     mediaStub = stub(window, 'matchMedia').returns({ matches: true });
-    window.history.replaceState(null, '', '#section-1');
+    window.history.replaceState(null, '', '#section');
     const { block } = buildArticle('<h2>Section</h2>');
     await init(block);
     expect(scrollStub.calledOnce).to.equal(true);
@@ -739,7 +1080,7 @@ describe('blog-side-navigation section list', () => {
 
   it('scrolls smoothly when loading an existing section fragment without reduced motion', async () => {
     mediaStub = stub(window, 'matchMedia').returns({ matches: false });
-    window.history.replaceState(null, '', '#section-1');
+    window.history.replaceState(null, '', '#section');
     const { block } = buildArticle('<h2>Section</h2>');
     await init(block);
     expect(scrollStub.calledOnce).to.equal(true);
@@ -788,7 +1129,7 @@ describe('blog-side-navigation section list', () => {
         expect(button.getAttribute('aria-expanded')).to.equal(String(desktop));
         expect(block.querySelectorAll('li[hidden]').length).to.equal(desktop ? 0 : 3);
         expect(document.activeElement === heading).to.equal(true);
-        expect(window.location.hash).to.equal('#section-4');
+        expect(window.location.hash).to.equal(links[3].hash);
         if (!desktop) {
           expect(links[3].parentElement.hidden).to.equal(false);
           expect(button.parentElement === links[3].parentElement).to.equal(true);
@@ -873,6 +1214,135 @@ describe('blog-side-navigation section list', () => {
     } finally {
       await setViewport(originalViewport);
     }
+  });
+
+  ['On this page', '  Explore this article  ', '', '   '].forEach((heading) => {
+    it(`uses the authored heading "${heading}" or the default for navigation labels`, async () => {
+      mockTablet();
+      const { block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
+      block.classList.add('collapsed');
+      block.innerHTML = `<div><div><p>${heading}</p></div></div>`;
+      await init(block);
+      const label = heading.trim() || 'JUMP TO SECTION';
+      expect(block.querySelector(':scope > p > strong').textContent).to.equal(label);
+      expect(block.querySelector('nav').getAttribute('aria-label')).to.equal(label);
+      const button = block.querySelector('button');
+      expect(button.getAttribute('aria-label')).to.equal(label);
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
+      button.click();
+      expect(button.getAttribute('aria-expanded')).to.equal('true');
+      expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+    });
+  });
+
+  [true, false].forEach((collapsed) => {
+    it(`supports the collapsed variant ${collapsed} without changing short lists or mobile defaults`, async () => {
+      const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      try {
+        for (const width of [390, 768, 1440]) {
+          await setViewport({ width, height: 1000 });
+          for (const count of [3, 4]) {
+            const { main, block } = buildArticle(
+              Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`).join(''),
+            );
+            block.classList.toggle('collapsed', collapsed);
+            await init(block);
+            const button = block.querySelector('button');
+            const items = [...block.querySelectorAll('li')];
+            const open = count <= 3 || (width >= 600 && !collapsed);
+            expect(button.hidden).to.equal(count <= 3);
+            expect(button.getAttribute('aria-expanded')).to.equal(String(open));
+            expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
+            expect(block.querySelectorAll('nav a').length).to.equal(count);
+            expect(block.textContent).not.to.contain('Collapsed');
+            if (count > 3) {
+              button.focus();
+              button.click();
+              expect(button.getAttribute('aria-expanded')).to.equal(String(!open));
+              expect(items.filter((item) => !item.hidden).length).to.equal(open ? 1 : count);
+              expect(document.activeElement).to.equal(button);
+            }
+            main.remove();
+          }
+        }
+      } finally {
+        await setViewport(originalViewport);
+      }
+    });
+  });
+
+  it('waits for later sections to be decorated before initializing an authored navigation block', async () => {
+    mockTablet();
+    const { main, block } = buildArticle(
+      '<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>',
+    );
+    const navigationSection = document.createElement('div');
+    navigationSection.className = 'section';
+    main.firstElementChild.after(navigationSection);
+    navigationSection.append(block);
+    block.classList.add('collapsed');
+    block.innerHTML = '<div><div>On this page</div></div>';
+    const articleSection = main.lastElementChild;
+    const content = articleSection.querySelector('.content');
+    content.replaceWith(...content.childNodes);
+    articleSection.dataset.status = 'pending';
+    await init(block);
+    expect(block.hidden).to.equal(true);
+    expect(block.querySelector('nav')).not.to.exist;
+    expect(main.querySelector('.blog-article-layout')).not.to.exist;
+
+    content.append(...articleSection.childNodes);
+    articleSection.append(content);
+    delete articleSection.dataset.status;
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => block.querySelectorAll('nav a').length === 4);
+    expect(block.hidden).to.equal(false);
+    expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+    expect(block.querySelector(':scope > p > strong').textContent).to.equal('On this page');
+    expect(block.querySelector('nav').getAttribute('aria-label')).to.equal('On this page');
+    expect(block.closest('.blog-article-layout')).to.exist;
+    expect(block.querySelector('nav').textContent).not.to.contain('collapsed');
+  });
+
+  it('registers only one deferred retry and scroll tracker after repeated pending initialization', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2>');
+    const articleSection = main.lastElementChild;
+    articleSection.dataset.status = 'pending';
+    const documentEvents = spy(document, 'addEventListener');
+    const windowEvents = spy(window, 'addEventListener');
+    try {
+      await init(block);
+      await init(block);
+      expect(documentEvents.withArgs(MILO_EVENTS.DEFERRED).callCount).to.equal(1);
+      delete articleSection.dataset.status;
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+      await waitFor(() => block.querySelectorAll('nav a').length === 2);
+      expect(windowEvents.withArgs('scroll').callCount).to.equal(1);
+      expect(block.querySelectorAll('nav').length).to.equal(1);
+      expect(block.hidden).to.equal(false);
+    } finally {
+      documentEvents.restore();
+      windowEvents.restore();
+    }
+  });
+
+  it('cancels a pending retry when the block is initialized before the deferred event', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2>');
+    const articleSection = main.lastElementChild;
+    articleSection.dataset.status = 'pending';
+    await init(block);
+    delete articleSection.dataset.status;
+    await init(block);
+    const navigation = block.querySelector('nav');
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await new Promise(requestAnimationFrame);
+    expect(block.querySelector('nav')).to.equal(navigation);
+    expect(block.querySelectorAll('nav a').length).to.equal(2);
   });
 
   it('keeps short mobile lists open and only collapses lists with four or more links', async () => {
@@ -1075,7 +1545,7 @@ describe('blog-side-navigation section list', () => {
             .to.equal('rgba(0, 0, 0, 0)');
           expect(getComputedStyle(link).borderInlineStartWidth).to.equal('0px');
           expect(getComputedStyle(link).paddingInlineStart).to.equal('8px');
-          expect(getComputedStyle(link).fontWeight).to.equal(index === activeIndex ? '700' : '400');
+          expect(getComputedStyle(link).fontWeight).to.equal(index === activeIndex ? '800' : '400');
         });
         expect(document.activeElement).to.equal(links[0]);
         expect(window.location.href).to.equal(url);
@@ -1126,9 +1596,10 @@ describe('blog-side-navigation section list', () => {
           expect(visible.length).to.equal(1);
           expect(visible[0] === items[activeIndex]).to.equal(true);
           expect(visible[0].querySelector('a').textContent).to.equal(titles[activeIndex]);
-          expect(visible[0].querySelector('a').getAttribute('href')).to.equal(`#section-${activeIndex + 1}`);
+          expect(visible[0].querySelector('a').getAttribute('href'))
+            .to.equal(`#${titles[activeIndex].toLowerCase()}`);
           expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
-          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal(tablet ? '400' : '700');
+          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal('800');
           expect(button.parentElement === visible[0]).to.equal(true);
           expect(button.getAttribute('aria-expanded')).to.equal('false');
           expect(getComputedStyle(visible[0]).display).to.equal('flex');
@@ -1143,18 +1614,20 @@ describe('blog-side-navigation section list', () => {
         button.click();
         expect(items.every((item) => !item.hidden)).to.equal(true);
         expect(links.map((link) => link.textContent)).to.deep.equal(titles);
-        const expandedControl = tablet ? items[0] : block.querySelector('.blog-side-navigation-current');
+        const expandedControl = items[0];
         expect(button.parentElement === expandedControl).to.equal(true);
         expect(document.activeElement === button).to.equal(true);
         if (!tablet) {
           expect(expandedControl.querySelector('.blog-side-navigation-label').textContent)
-            .to.equal(titles[1]);
+            .to.equal(titles[0]);
           scrollTop = positions[2] + 10;
           window.dispatchEvent(new Event('scroll'));
           await new Promise(requestAnimationFrame);
           expect(expandedControl.querySelector('.blog-side-navigation-label').textContent)
-            .to.equal(titles[2]);
-          expect(getComputedStyle(links[2]).fontWeight).to.equal('700');
+            .to.equal(titles[0]);
+          expect(links[2].getAttribute('aria-current')).to.equal('location');
+          expect(getComputedStyle(links[2]).fontWeight).to.equal('800');
+          expect(getComputedStyle(items[2]).backgroundColor).to.equal('rgb(242, 242, 242)');
           expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
           scrollTop = positions[1] + 10;
           window.dispatchEvent(new Event('scroll'));
@@ -1264,13 +1737,14 @@ describe('blog-side-navigation section list', () => {
 
   it('avoids duplicate IDs and does not duplicate the list on reinitialization', async () => {
     const { main, block } = buildArticle('<h2>Section</h2>');
-    main.insertAdjacentHTML('beforeend', '<div id="section-1"></div>');
+    main.insertAdjacentHTML('beforeend', '<div id="section"></div>');
     await init(block);
-    expect(block.querySelector('a').getAttribute('href')).to.equal('#section-1-1');
+    expect(block.querySelector('a').getAttribute('href')).to.equal('#section-1');
     await init(block);
     expect(block.querySelectorAll('nav').length).to.equal(1);
     expect(block.querySelectorAll('a').length).to.equal(1);
     expect(main.querySelectorAll('.blog-article-layout').length).to.equal(1);
+    expect(block.querySelector('a').getAttribute('href')).to.equal('#section-1');
   });
 
   it('requires the new blog header and reports an invalid standalone placement', async () => {

@@ -154,9 +154,11 @@ const normCountryCode = (country) => {
 const resolveDetectedMarketCountry = () => Promise.resolve(undefined);
 
 // Unused by ost.js itself; only needed because merch.js statically imports
-// decorate.js, autoblock.js and market.js, which import these from utils.js.
+// decorate.js and autoblock.js, which import these from utils.js.
 const isBot = () => false;
 const getMarketsUrl = () => '';
+const getValidatedMarket = () => Promise.resolve(null);
+const isSupportedMarket = () => Promise.resolve(false);
 const createIntersectionObserver = () => {};
 const getFederatedContentRoot = () => '';
 const getFedsPlaceholderConfig = () => ({});
@@ -166,6 +168,8 @@ const getAupSelectValue = () => null;
 const whenTargetReady = () => Promise.resolve();
 const decorateLinksAsync = () => Promise.resolve();
 const loadBlock = () => Promise.resolve();
+const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+const getViewportContent = () => ({ delimiterIdx: -1, viewportRows: [] });
 
 const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
 const MASLIBS_MAX_LENGTH = 100;
@@ -216,6 +220,8 @@ export {
   getValidatedMasLibsUrl,
   isBot,
   getMarketsUrl,
+  getValidatedMarket,
+  isSupportedMarket,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
@@ -225,4 +231,6 @@ export {
   whenTargetReady,
   decorateLinksAsync,
   loadBlock,
+  VIEWPORT_KEYWORDS,
+  getViewportContent,
 };

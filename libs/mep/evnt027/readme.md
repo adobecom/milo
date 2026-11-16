@@ -17,7 +17,7 @@ Set parent-page metadata `foundation: c2` and configure these treatment actions:
 
 Author the library-relative `useBlockCode` path above. MEP resolves it against
 the selected library base; do not hardcode a feature-branch URL for production.
-For branch QA, use `?milolibs=max-login-modal-hash` on the parent page.
+For branch QA, use `?milolibs=<feature-branch>` on the parent page.
 
 Replace the old `max26-login-prompt` block mapping with this `modal` override.
 Move trigger settings from query parameters into the hash. Remove any previous
@@ -44,7 +44,7 @@ The primary CTA is the last content link, or the link immediately before the
 explicit guest link. Author Continue as guest with destination `#guest`.
 Only that explicit hash creates a guest close button; body-copy links remain
 links. Separate action paragraphs and DA's merged paragraphs, with or without
-`<br>` separators, are supported. Guest accessibility and analytics attributes
+`<br>` separators, are supported. Guest accessibility and other analytics attributes
 are preserved; primary links retain the shared link handling, including IMS
 sign-in actions.
 
@@ -52,6 +52,22 @@ The post-event fragment ends with one primary link and no guest link.
 Content and CTA destinations stay authored. The override decorates this markup
 directly rather than loading it as a registered block; preview it through the
 treatment page, not as a standalone decorated MAX block.
+
+### CTA analytics
+
+The override sets these exact `daa-ll` values independently of visible copy or
+previously authored labels. The existing two-action live layout is identified
+by its explicit `#guest` link; the single-action layout is the post-event variant.
+
+| CTA | `daa-ll` |
+| --- | --- |
+| Close X, both variants | `Close\|Login Modal` |
+| Live primary | `Register/Sign in\|Login Modal` |
+| Live guest | `Continue as guest\|Login Modal` |
+| Post-event primary | `Sign up\|Login Modal` |
+
+These labels do not change CTA destinations or modal closing behavior.
+Unrelated modals and shared Escape/backdrop analytics remain unchanged.
 
 ## Hash settings
 
@@ -134,4 +150,4 @@ key for repeated dismissal-sensitive QA. If dismissal storage cannot be read,
 the trigger stays disabled and reports the error to Lana; content and later
 storage failures are also reported.
 
-Inactivity triggering and final AA tracking identifiers remain pending.
+Inactivity triggering remains pending.

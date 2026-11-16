@@ -304,10 +304,12 @@ function renderLanguages({
           'aria-selected': lang.name === currentLang.name ? 'true' : 'false',
           tabindex: '-1',
         });
-        langLink.innerHTML = `
-          <span class="language-name">${lang.name}</span>
-          ${lang.name === currentLang.name ? CHECKMARK_SVG : ''}
-        `;
+        const langName = createTag('span', { class: 'language-name' });
+        langName.textContent = lang.name;
+        langLink.appendChild(langName);
+        if (lang.name === currentLang.name) {
+          langLink.insertAdjacentHTML('beforeend', CHECKMARK_SVG);
+        }
         langLink.addEventListener('click', async (e) => {
           sendAnalyticsEvent(`language-switch:${lang.prefix || 'us'}`);
           const config = getConfig();

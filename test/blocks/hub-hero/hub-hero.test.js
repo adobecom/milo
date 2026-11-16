@@ -21,6 +21,46 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('promo CTA colors', () => {
+    let stylesheet;
+
+    before(async () => {
+      stylesheet = document.createElement('style');
+      stylesheet.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' });
+      document.head.append(stylesheet);
+    });
+
+    after(() => stylesheet.remove());
+    afterEach(() => document.body.replaceChildren());
+
+    ['light', 'dark'].forEach((theme) => {
+      it(`preserves ${theme} promo CTA contrast while inline links inherit body color`, async () => {
+        document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+        const block = document.querySelector('.hub-hero');
+        if (theme === 'dark') block.classList.add('dark');
+        await init(block);
+        block.classList.remove('heading-1');
+
+        const cta = block.querySelector('.promo-cta');
+        const reference = cta.cloneNode(true);
+        const referenceContainer = document.createElement('div');
+        referenceContainer.className = theme;
+        referenceContainer.append(reference);
+        document.body.append(referenceContainer);
+        const expected = getComputedStyle(reference);
+        expect(expected.color).not.to.equal(expected.backgroundColor);
+        expect(getComputedStyle(cta).color).to.equal(expected.color);
+
+        const copy = document.createElement('p');
+        copy.className = 'copy body-md';
+        copy.style.color = 'rgb(100, 110, 120)';
+        copy.innerHTML = 'Read <a href="/terms">terms</a>.';
+        block.querySelector('.hub-hero-header').append(copy);
+        expect(getComputedStyle(copy.querySelector('a')).color).to.equal(getComputedStyle(copy).color);
+      });
+    });
+  });
+
   describe('MEP inline MAS editing', () => {
     afterEach(() => {
       unwatchForMasContent();

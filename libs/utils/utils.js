@@ -157,6 +157,7 @@ const C2_BLOCKS = [
   'side-by-side',
   'social-proof',
   'split-aside-grid',
+  'split-hero',
   'tabs',
   'tour',
   'visually-hidden',
@@ -1919,11 +1920,11 @@ function decorateDefaults(el) {
 }
 
 export async function getGnavSource() {
-  const { locale, dynamicNavKey } = getConfig();
+  const { locale } = getConfig();
   let url = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
-  if (dynamicNavKey) {
+  if (getMetadata('dynamic-nav')) {
     const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
-    url = dynamicNav(url, dynamicNavKey);
+    url = dynamicNav(url);
   }
   return url;
 }
@@ -1934,6 +1935,15 @@ export function isLocalNav() {
   let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
   newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
+}
+
+export function isC2GnavOnC1Host() {
+  return getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+}
+
+function syncC2GnavHost(header) {
+  const isHost = header.classList[0] === 'global-navigation' && isC2GnavOnC1Host();
+  header.classList.toggle('c2-gnav-c1-host', isHost);
 }
 
 async function decorateHeader() {
@@ -1948,15 +1958,20 @@ async function decorateHeader() {
     return;
   }
   header.className = headerMeta || 'global-navigation';
+  syncC2GnavHost(header);
   const metadataConfig = getMetadata('breadcrumbs')?.toLowerCase()
     || getConfig().breadcrumbs;
   if (metadataConfig === 'off') return;
   const baseBreadcrumbs = getMetadata('breadcrumbs-base')?.length;
 
   const autoBreadcrumbs = getMetadata('breadcrumbs-from-url') === 'on';
-  const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
-    && window.sessionStorage.getItem('gnavSource') !== null;
-  if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
+  const wantsBreadcrumbs = baseBreadcrumbs || breadcrumbs || autoBreadcrumbs;
+  let dynamicNavActive = false;
+  if (wantsBreadcrumbs && getMetadata('dynamic-nav') === 'on') {
+    const { getDynamicNavState } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    dynamicNavActive = getDynamicNavState().active;
+  }
+  if (!dynamicNavActive && wantsBreadcrumbs) header.classList.add('has-breadcrumbs');
   if (isLocalNav()) {
     // Preserving space to avoid CLS issue
     const localNavWrapper = createTag('div', { class: 'feds-localnav' });
@@ -2083,9 +2098,72 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
+export const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+// TODO: make `-viewport` required post-rollout (drop the bare-keyword fallback)
+const VIEWPORT_DELIMITER = /^(mobile|tablet|desktop)(-viewport)?\s*(\(.*\))?$/s;
+
+function isEmptyCell(cell) {
+  return !cell || (!cell.children.length && !cell.textContent.trim());
+}
+
+function isEmptyRow(row) {
+  return !row.textContent.trim() && [...row.children].every(isEmptyCell);
+}
+
+function getDelimiterKeyword(row) {
+  return row.children.length === 1
+    && VIEWPORT_DELIMITER.exec(row.children[0].textContent.trim().toLowerCase())?.[1];
+}
+
+export function getViewportContent(allRows, viewport, index) {
+  const delimiterIdx = allRows.findIndex((row) => getDelimiterKeyword(row) === viewport);
+  if (delimiterIdx < 0) return { delimiterIdx, viewportRows: [] };
+
+  const nextIdx = allRows
+    .findIndex((row, i) => i > delimiterIdx && VIEWPORT_KEYWORDS
+      .indexOf(getDelimiterKeyword(row)) > index);
+  const viewportRows = allRows.slice(delimiterIdx + 1, nextIdx < 0 ? allRows.length : nextIdx);
+  return { delimiterIdx, viewportRows };
+}
+
+function inheritRowCells(row, prevRow) {
+  if (!prevRow) return;
+  // Copied MEP placeholders expand like the source, keeping later rows/cells aligned
+  if (prevRow.dataset.mepReplaceType === 'row') {
+    if (!isEmptyRow(row)) return;
+    row.dataset.mepReplaceType = 'row';
+    row.replaceChildren(...prevRow.cloneNode(true).childNodes);
+    return;
+  }
+
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (!isEmptyCell(col) || isEmptyCell(prevCol)) return;
+    if (prevCol.dataset.mepReplaceType === 'cell') col.dataset.mepReplaceType = 'cell';
+    col.replaceChildren(...prevCol.cloneNode(true).childNodes);
+  });
+}
+
+export function inheritViewportContent(section) {
+  if (getMetadata('foundation') !== 'c2') return;
+  section.querySelectorAll(':scope > div[class]').forEach((block) => {
+    const rows = [...block.children]
+      .filter((row) => row.children[0]?.textContent.trim().toLowerCase() !== 'mep-lingo');
+    if (!rows.length || getDelimiterKeyword(rows[0]) !== 'mobile') return;
+    let prevRows = [];
+    VIEWPORT_KEYWORDS.forEach((viewport, index) => {
+      const { viewportRows, delimiterIdx } = getViewportContent(rows, viewport, index);
+      if (delimiterIdx < 0) return;
+      viewportRows.forEach((row, i) => inheritRowCells(row, prevRows[i]));
+      prevRows = viewportRows;
+    });
+  });
+}
+
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  inheritViewportContent(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -2219,8 +2297,6 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          enableGuestBotDetection: true,
-          guestBotDetectionProvider: 'bfp',
         }),
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
@@ -2355,6 +2431,11 @@ const STATIC_BLOCK_DEPS = {
     getMasDepUrl('merch-card.js'),
     getMasDepUrl('merch-quantity-select.js'),
   ],
+  'merch-card-collection-autoblock': [
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('merch-card-collection.js'),
+  ],
   merch: [
     getMasDepUrl('commerce.js'),
     (blockPath) => `${blockPath.slice(0, blockPath.lastIndexOf('/'))}/autoblock.js`,
@@ -2363,6 +2444,7 @@ const STATIC_BLOCK_DEPS = {
     () => `${getConfig().base}/martech/attributes.js`,
     () => `${getConfig().base}/utils/action.js`,
   ],
+  tabs: [() => `${getConfig().base}/martech/attributes.js`],
 };
 
 const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
@@ -2404,41 +2486,62 @@ const warmGeoIpSheet = (config, section, isDoc = true) => {
     .catch(() => null);
 };
 
+const MAX_PARALLEL_SECTIONS = 5;
+
+const getParallelSectionCount = () => {
+  const value = (PAGE_URL.searchParams.get('parallel-sections')
+    ?? getMetadata('parallel-sections'))?.trim() ?? '';
+  if (!/^\d+$/.test(value)) return 0;
+  return Math.min(Number(value), MAX_PARALLEL_SECTIONS);
+};
+
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
-  const [firstSection] = area.querySelectorAll('body > main > div');
-  if (!firstSection) return;
+  const sections = [...area.querySelectorAll('body > main > div')]
+    .slice(0, Math.max(1, getParallelSectionCount()));
+  if (!sections.length) return;
+  const queryAll = (selector) => sections
+    .flatMap((section) => [...section.querySelectorAll(selector)]);
   const config = getConfig();
   const { base, iconsExcludeBlocks, autoBlocks = AUTO_BLOCKS, externalLibs } = config;
   const isMediaVideo = (str) => /media_.*\.mp4/.test(str);
-  const autoNames = new Set();
-  firstSection.querySelectorAll('a[href]').forEach((a) => {
-    let url;
-    try { url = new URL(a.href); } catch { return; }
-    const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
-    if (!match) return;
-    const name = Object.keys(match)[0];
-    if (name === 'video' && !isMediaVideo(a.textContent)) return;
-    autoNames.add(name);
-  });
-  if ([...firstSection.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
-    autoNames.add('video');
-  }
+  const getAutoNames = (section) => {
+    const names = new Set();
+    section.querySelectorAll('a[href]').forEach((a) => {
+      let url;
+      try { url = new URL(a.href); } catch { return; }
+      const match = autoBlocks.find((c) => isTrustedAutoBlock(c[Object.keys(c)[0]], url));
+      if (!match) return;
+      const name = Object.keys(match)[0];
+      if (name === 'video' && !isMediaVideo(a.textContent)) return;
+      names.add(name);
+    });
+    if ([...section.querySelectorAll('img[alt]')].some((img) => isMediaVideo(img.alt))) {
+      names.add('video');
+    }
+    return names;
+  };
+  const sectionData = sections.map((section) => ({
+    blockEls: [...section.querySelectorAll(':scope > div[class]:not(.content)')],
+    autoNames: getAutoNames(section),
+    hasOst: !!section.querySelector(':scope > .ost'),
+  }));
+  const autoNames = new Set(sectionData.flatMap((data) => [...data.autoNames]));
   const isCommerceBlock = (name) => /^merch|^mas-/.test(name);
   const knownBlocks = new Set(getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS);
   [].concat(externalLibs ?? []).forEach((lib) => {
     if (Array.isArray(lib?.blocks)) lib.blocks.forEach((name) => knownBlocks.add(name));
   });
-  const sectionBlockEls = [...firstSection.querySelectorAll(':scope > div[class]:not(.content)')];
+  const sectionBlockEls = sectionData.flatMap((data) => data.blockEls);
   const blocks = sectionBlockEls
     .filter((el) => knownBlocks.has(el.classList[0]) && !isCommerceBlock(el.classList[0]));
   const autoBlockEls = [...autoNames].filter((name) => !isCommerceBlock(name)).map((name) => createTag('div', { class: name }));
   const allBlocks = [...blocks, ...autoBlockEls];
   if (allBlocks.length) preloadBlockResources(allBlocks, { warmStyles: true });
 
-  const hasCommerceContent = !firstSection.querySelector(':scope > .ost')
-    && (sectionBlockEls.some((el) => isCommerceBlock(el.classList[0]))
-      || [...autoNames].some(isCommerceBlock));
+  const hasCommerceContent = sectionData.some((data) => !data.hasOst
+    && (data.blockEls.some((el) => isCommerceBlock(el.classList[0]))
+      || [...data.autoNames].some(isCommerceBlock)));
   if (hasCommerceContent) {
     // Target previews must apply their AUP config before the service initializes.
     const skipInit = new URLSearchParams(window.location.search).has('at_preview_token');
@@ -2456,14 +2559,14 @@ export function preloadLcpCodeFiles(area = document) {
       .catch(() => {});
   }
 
-  if (/{{|%7B%7B/.test(firstSection.innerHTML) && config.locale?.contentRoot) {
+  if (sections.some((section) => /{{|%7B%7B/.test(section.innerHTML)) && config.locale?.contentRoot) {
     loadLink(`${base}/features/placeholders.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
     getPlaceholderPaths(config).forEach((path) => loadLink(path, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' }));
   }
 
-  warmGeoIpSheet(config, firstSection);
+  sections.forEach((section) => warmGeoIpSheet(config, section));
 
-  const icons = [...firstSection.querySelectorAll('span.icon')];
+  const icons = queryAll('span.icon');
   const willDecorateIcons = icons.length && (!iconsExcludeBlocks
     || icons.some((icon) => !iconsExcludeBlocks.some((b) => icon.closest(`div.${b}`))));
   if (willDecorateIcons) {
@@ -2637,6 +2740,7 @@ async function loadPostLCP(config) {
   }
   const header = document.querySelector('header');
   if (header) {
+    syncC2GnavHost(header);
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
 
@@ -2793,7 +2897,7 @@ export async function loadDeferred(area, blocks, config) {
         .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
     }
   }
-  if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
+  if (config?.env?.name !== 'prod' && (getMetadata('dynamic-nav') || config?.dynamicNavKey)) {
     const { miloLibs } = config;
     loadStyle(`${miloLibs}/features/dynamic-navigation/status.css`);
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
@@ -2835,6 +2939,74 @@ export function getMarketsUrl() {
   const marketsSourceKey = getMarketsSourceKey();
   if (marketsSourceKey) return `${contentRoot ?? ''}/assets/supported-markets/supported-markets-${marketsSourceKey}.json`;
   return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
+}
+
+const DEFAULT_MARKET = 'us';
+
+export const norm = normCountryCode;
+
+export async function getMarketConfig() {
+  try {
+    const config = getConfig();
+    let { marketsConfig } = config;
+    if (!marketsConfig) {
+      config.marketsConfigPromise ||= fetch(getMarketsUrl())
+        .then((resp) => {
+          if (!resp.ok) throw new Error('Failed to load market config');
+          return resp.json();
+        });
+      const request = config.marketsConfigPromise;
+      try {
+        marketsConfig = await request;
+        if (config.marketsConfigPromise === request && !config.marketsConfig) {
+          config.marketsConfig = marketsConfig;
+        }
+      } finally {
+        if (config.marketsConfigPromise === request) delete config.marketsConfigPromise;
+      }
+    }
+    const languages = marketsConfig.languages?.data ?? marketsConfig.data ?? [];
+    return { languages };
+  } catch (e) {
+    window.lana?.log(`Market Utils Error: ${e.message}`);
+    return null;
+  }
+}
+
+export function marketsLangForLocale(marketsConfig, locale) {
+  if (!marketsConfig?.languages?.length) return undefined;
+  const { languages } = marketsConfig;
+  const pagePrefix = locale?.prefix?.replace(/^\//, '') || '';
+  let languageEntry = languages.find((lang) => (lang.prefix || '') === pagePrefix);
+  if (!languageEntry && locale?.base) {
+    languageEntry = languages.find((lang) => (lang.prefix || '') === locale.base);
+  }
+  return languageEntry || languages[0];
+}
+
+export async function isSupportedMarket(country) {
+  if (!country) return false;
+  const config = await getMarketConfig();
+  if (!config) return false;
+  const { locale } = getConfig();
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return false;
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  return supported.includes(country.toLowerCase());
+}
+
+export async function getValidatedMarket() {
+  if (isBot()) return null;
+  const config = await getMarketConfig();
+  const detectedMarket = await resolveDetectedMarketCountry();
+  if (!config) return detectedMarket || DEFAULT_MARKET;
+  const { locale } = getConfig();
+  const currLang = marketsLangForLocale(config, locale);
+  if (!currLang) return detectedMarket || DEFAULT_MARKET;
+  const market = detectedMarket || currLang.defaultMarket || DEFAULT_MARKET;
+  const supported = currLang.supportedRegions?.split(',').map((m) => m.trim().toLowerCase()) || [];
+  const validated = supported.includes(market.toLowerCase()) ? market : currLang.defaultMarket;
+  return validated || DEFAULT_MARKET;
 }
 
 const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
@@ -2898,14 +3070,11 @@ export async function decorateLanguageBanner() {
 
   const [geoIpCode, marketsConfig] = await Promise.all([
     getCountry(),
-    fetch(getMarketsUrl())
-      .then((res) => (res.ok ? res.json() : null))
-      .catch(() => null),
+    getMarketConfig(),
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
-  getConfig().marketsConfig = marketsConfig;
-  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  const rawEntries = marketsConfig.languages;
   if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
   const languageEntries = rawEntries.map((entry) => ({
@@ -2916,7 +3085,7 @@ export async function decorateLanguageBanner() {
   const pagePrefix = locale.prefix?.replace('/', '') || '';
   const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
     ?? languageEntries.find((m) => m.prefix === locale.base);
-  const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
+  const isGeoSupported = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
   const addAndShow = (...ms) => {
@@ -2926,7 +3095,7 @@ export async function decorateLanguageBanner() {
 
   const useBannerFlow = usesBannerFlow();
   // Supported Market Path
-  if (isSupportedMarket) {
+  if (isGeoSupported) {
     if (!prefLang || pageLang === prefLang) return;
     const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
     const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
@@ -2970,7 +3139,7 @@ export async function decorateLanguageBanner() {
 
   if (!showBanner) return;
 
-  if (!useBannerFlow && !isSupportedMarket) {
+  if (!useBannerFlow && !isGeoSupported) {
     setLangRoutingConfig({
       showBanner: false,
       showModal: true,
@@ -3147,9 +3316,12 @@ async function resolveHighPriorityFragments(section) {
   }
 }
 
-async function processSection(section, config, isDoc, lcpSectionId) {
+async function processSection(section, config, {
+  isLcpSection = false,
+  loadsPostLCP = false,
+  revealAfter,
+} = {}) {
   await resolveHighPriorityFragments(section);
-  const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
@@ -3170,8 +3342,9 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
+  await revealAfter;
   delete section.el.dataset.status;
-  if (isDoc && isLcpSection) await loadPostLCP(config);
+  if (loadsPostLCP) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -3260,17 +3433,40 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  let lcpSectionId = null;
+  const parallelCount = isDoc ? getParallelSectionCount() : 0;
+  let lcpSectionId = parallelCount > 0 ? Math.min(parallelCount, htmlSections.length) - 1 : null;
+  const parallelSections = [];
+  htmlSections.slice(0, parallelCount).forEach((el, idx) => {
+    const revealAfter = parallelSections[idx - 1];
+    parallelSections[idx] = decorateSection(el, idx)
+      .then((section) => processSection(section, config, { isLcpSection: true, revealAfter }))
+      .catch(async (e) => {
+        window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
+        await revealAfter;
+        return [];
+      })
+      .then(async (sectionBlocks) => {
+        if (idx === lcpSectionId) await loadPostLCP(config);
+        return sectionBlocks;
+      });
+  });
 
-  for (const htmlSection of htmlSections) {
-    const section = await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
-    const isLastSection = section.idx === htmlSections.length - 1;
-    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx;
+  for (const [idx, htmlSection] of htmlSections.entries()) {
+    let sectionBlocks = await parallelSections[idx];
+    if (!sectionBlocks) {
+      const section = await decorateSection(htmlSection, idx);
+      const isLastSection = section.idx === htmlSections.length - 1;
+      if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
+        lcpSectionId = section.idx;
+      }
+      const isLcpSection = section.idx === lcpSectionId;
+      sectionBlocks = await processSection(section, config, {
+        isLcpSection,
+        loadsPostLCP: isDoc && isLcpSection,
+      });
     }
-    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
-    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
+    if (isDoc && idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';

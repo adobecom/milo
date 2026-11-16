@@ -3,7 +3,15 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, overrideCardHeadingLevel } from '../../../libs/blocks/merch/autoblock.js';
+import { waitFor } from '../../helpers/waitfor.js';
+import {
+  handleCustomAnalyticsEvent,
+  cleanupTabsAnalytics,
+  enableAnalytics,
+  localizePreviewLinks,
+  postProcessAutoblock,
+  overrideCardHeadingLevel,
+} from '../../../libs/blocks/merch/autoblock.js';
 import { getMerchCardHeadingLevel } from '../../../libs/blocks/merch/merch.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -19,6 +27,173 @@ describe('autoblock', () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  describe('modal link localization', () => {
+    const modalPath = '/test/fragments/modals/test-modal';
+    const modalHash = '#test-modal';
+    const previewOrigin = 'https://main--test--adobecom.aem.page';
+
+    afterEach(() => {
+      setConfig({ locales, miloLibs: '/libs' });
+    });
+
+    ['aemxpage', 'hlxxlive'].forEach((hostSuffix) => {
+      it(`does not localize a non-preview hostname ending in ${hostSuffix}`, async () => {
+        setConfig({
+          locales: { ...locales, de: { ietf: 'de-DE' } },
+          pathname: '/de/test-page.html',
+          miloLibs: '/libs',
+        });
+        const card = document.createElement('merch-card');
+        const link = document.createElement('a');
+        const href = `https://main--test--adobecom.${hostSuffix}${modalPath}${modalHash}`;
+        link.href = href;
+        card.append(link);
+
+        await localizePreviewLinks(card);
+
+        expect(link.href).to.equal(href);
+      });
+    });
+
+    [
+      { locale: 'de', origin: previewOrigin },
+      { locale: 'br', origin: previewOrigin },
+      { locale: '', origin: previewOrigin },
+      { locale: 'de', origin: '' },
+      { locale: 'br', origin: '' },
+      { locale: 'de', origin: '', dnt: true },
+      { locale: 'de', origin: previewOrigin, authoredPrefix: '/de' },
+      { locale: 'de', origin: previewOrigin, dnt: true },
+      { locale: 'br', origin: previewOrigin, dnt: true },
+      { locale: 'de', origin: previewOrigin, storedDnt: true },
+    ].forEach(({ locale, origin, authoredPrefix = '', dnt = false, storedDnt = false }) => {
+      it(`${dnt || storedDnt ? 'does not localize' : 'localizes'} ${origin ? 'absolute' : 'relative'} modal links for ${locale || 'US'}${authoredPrefix ? ' without duplicating the locale' : ''}${dnt ? ' with #_dnt' : ''}${storedDnt ? ' with data-has-dnt' : ''}`, async () => {
+        setConfig({
+          locales: { ...locales, de: { ietf: 'de-DE' }, br: { ietf: 'pt-BR' } },
+          pathname: locale ? `/${locale}/test-page.html` : '/test-page.html',
+          codeRoot: '/libs',
+          miloLibs: '/libs',
+        });
+        const card = document.createElement('merch-card');
+        const link = document.createElement('a');
+        link.href = `${origin}${authoredPrefix}${modalPath}${modalHash}${dnt ? '#_dnt' : ''}`;
+        if (storedDnt) link.dataset.hasDnt = 'true';
+        link.textContent = 'Test modal';
+        card.append(link);
+        card.checkReady = sinon.stub().resolves(true);
+
+        await postProcessAutoblock(card, true);
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.dataset.blockStatus === 'loaded');
+
+        const expectedPrefix = locale && !dnt && !storedDnt ? `/${locale}` : '';
+        expect(link.dataset.modalPath).to.equal(`${expectedPrefix}${modalPath}`);
+        expect(link.getAttribute('href')).to.equal(modalHash);
+        if (dnt || storedDnt) expect(link.dataset.hasDnt).to.equal('true');
+      });
+    });
+
+    it('preserves the localized modal link when mas:ready fires twice for the same card', async () => {
+      setConfig({
+        locales: { ...locales, de: { ietf: 'de-DE' } },
+        pathname: '/de/test-page.html',
+        codeRoot: '/libs',
+        miloLibs: '/libs',
+      });
+      const card = document.createElement('merch-card');
+      const link = document.createElement('a');
+      link.href = `${previewOrigin}${modalPath}${modalHash}`;
+      link.textContent = 'Test modal';
+      card.append(link);
+      card.checkReady = sinon.stub().resolves(false);
+      await postProcessAutoblock(card, true);
+
+      for (let i = 0; i < 2; i += 1) {
+        card.removeAttribute('data-analytics-id');
+        card.dispatchEvent(new CustomEvent('mas:ready'));
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.dataset.blockStatus === 'loaded');
+
+        expect(link.dataset.modalPath).to.equal(`/de${modalPath}`);
+        expect(link.getAttribute('href')).to.equal(modalHash);
+      }
+    });
+
+    [
+      { marker: '#_mep-lingo', flag: 'mepLingo' },
+      { marker: '#_mep-lingo-insert', flag: 'mepLingoInsert' },
+      { marker: '#_mep-lingo-remove', flag: 'mepLingoRemove' },
+    ].forEach(({ marker, flag }) => {
+      it(`preserves ${marker} metadata when localizing a preview modal link`, async () => {
+        setConfig({
+          locales: { ...locales, de: { ietf: 'de-DE' } },
+          pathname: '/de/test-page.html',
+          codeRoot: '/libs',
+          miloLibs: '/libs',
+        });
+        const card = document.createElement('merch-card');
+        const link = document.createElement('a');
+        const originalHref = `${previewOrigin}${modalPath}${modalHash}`;
+        link.href = `${originalHref}${marker}`;
+        link.textContent = 'Test modal';
+        card.append(link);
+        card.checkReady = sinon.stub().resolves(true);
+
+        await postProcessAutoblock(card, true);
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.dataset.blockStatus === 'loaded');
+
+        expect({ ...link.dataset }).to.include({ mepLingo: 'true', originalHref, [flag]: 'true' });
+        expect(link.dataset.modalPath).to.equal(`/de${modalPath}`);
+        expect(link.getAttribute('href')).to.equal(modalHash);
+      });
+    });
+  });
+
+  describe('Lingo preview link localization', () => {
+    it('uses the regional locale for a non-modal preview link on a Lingo regional page', async () => {
+      const meta = document.createElement('meta');
+      meta.name = 'langfirst';
+      meta.content = 'on';
+      document.head.append(meta);
+      setConfig({
+        locales: { ...locales, ca: { ietf: 'en-CA', base: '' } },
+        pathname: '/ca/test-page.html',
+        uniqueSiteId: 'merch-lingo',
+        codeRoot: '/libs',
+        miloLibs: '/libs',
+        useDotHtml: false,
+      });
+      const fetchStub = sinon.stub(window, 'fetch');
+      fetchStub.withArgs(sinon.match('query-index')).callsFake(async (url) => new Response(JSON.stringify({ data: [{ path: `${url.includes('/ca/') ? '/ca' : ''}/products/photoshop` }] })));
+      fetchStub.withArgs(sinon.match('lingo-site-mapping')).callsFake(async () => new Response(JSON.stringify({
+        'site-query-index-map': {
+          data: [{
+            uniqueSiteId: 'merch-lingo',
+            queryIndexWebPath: 'main--test--adobecom.aem.page/*/assets/lingo/query-index.json',
+          }],
+        },
+      })));
+      const card = document.createElement('merch-card');
+      const link = document.createElement('a');
+      link.href = 'https://main--test--adobecom.aem.page/products/photoshop?promoid=test#features';
+      link.textContent = 'Photoshop features';
+      card.append(link);
+      card.checkReady = sinon.stub().resolves(true);
+      document.body.append(card);
+
+      try {
+        await postProcessAutoblock(card, true);
+        await waitFor(() => card.hasAttribute('data-analytics-id') && link.pathname === '/ca/products/photoshop');
+
+        expect(link.href).to.equal(`${window.location.origin}/ca/products/photoshop?promoid=test#features`);
+        expect(link.dataset.modalPath).to.be.undefined;
+        expect(fetchStub.calledWithMatch('/ca/assets/lingo/query-index')).to.be.true;
+      } finally {
+        card.remove();
+        meta.remove();
+        setConfig({ locales, miloLibs: '/libs' });
+      }
+    });
   });
 
   describe('handleCustomAnalyticsEvent', () => {
@@ -360,6 +535,108 @@ describe('autoblock', () => {
         style.remove();
         card.remove();
         await setViewport(viewport);
+      }
+    });
+
+    // Records the inline style of every heading each time a probe's computed style is read, so a
+    // write landing between two reads (a forced style recalc per read) can be detected.
+    const recordProbeReads = () => {
+      const reads = [];
+      const realGetComputedStyle = window.getComputedStyle.bind(window);
+      const stub = sinon.stub(window, 'getComputedStyle').callsFake((el, ...args) => {
+        const computed = realGetComputedStyle(el, ...args);
+        if (!el.hasAttribute?.('data-mas-orig-level') || el.style.position !== 'absolute') return computed;
+        return new Proxy(computed, {
+          get(target, prop) {
+            if (typeof prop === 'string') {
+              reads.push([...document.querySelectorAll('[data-mas-orig-level]')]
+                .filter((h) => !h.style.position)
+                .map((h) => h.style.cssText));
+            }
+            const value = Reflect.get(target, prop, target);
+            return typeof value === 'function' ? value.bind(target) : value;
+          },
+        });
+      });
+      return { reads, restore: () => stub.restore() };
+    };
+
+    it('reads every heading probe before writing any heading style', () => {
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 20px; }
+        merch-card h4 { font-size: 14px; }
+        merch-card h5 { font-size: 12px; }
+      `;
+      const card = makeCard(['h3', 'h4', 'h5']);
+      document.head.appendChild(style);
+      document.body.appendChild(card);
+      const recorder = recordProbeReads();
+      try {
+        overrideCardHeadingLevel(card, 2);
+        expect(recorder.reads.length).to.be.greaterThan(0);
+        recorder.reads.forEach((inlineStyles) => {
+          expect(inlineStyles).to.deep.equal(['', '', '']);
+        });
+        const headings = [...card.querySelectorAll('h1,h2,h3,h4,h5,h6')];
+        expect(headings.map((h) => h.tagName)).to.deep.equal(['H2', 'H3', 'H4']);
+        expect(headings.map((h) => h.style.fontSize)).to.deep.equal(['20px', '14px', '12px']);
+        expect(card.children.length).to.equal(3);
+      } finally {
+        recorder.restore();
+        style.remove();
+        card.remove();
+      }
+    });
+
+    it('resyncs the headings of every card in a single read-then-write pass on resize', async () => {
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+      const style = document.createElement('style');
+      style.textContent = `
+        merch-card h3 { font-size: 24px; }
+        @media (max-width: 767px) { merch-card h3 { font-size: 18px; } }
+      `;
+      const cards = [makeCard(['h3', 'h3']), makeCard(['h3'])];
+      document.head.appendChild(style);
+      cards.forEach((card) => document.body.appendChild(card));
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      let recorder;
+      try {
+        await setViewport({ width: 1200, height: 800 });
+        cards.forEach((card) => overrideCardHeadingLevel(card, 2));
+        const headings = cards.flatMap((card) => [...card.querySelectorAll('h2')]);
+        expect(headings.length).to.equal(3);
+        const before = headings.map((h) => h.style.cssText);
+        expect(headings.map((h) => h.style.fontSize)).to.deep.equal(['24px', '24px', '24px']);
+        await setViewport({ width: 600, height: 800 });
+        recorder = recordProbeReads();
+        window.dispatchEvent(new Event('resize'));
+        clock.tick(150);
+        expect(recorder.reads.length).to.be.greaterThan(0);
+        recorder.reads.forEach((inlineStyles) => {
+          expect(inlineStyles).to.deep.equal(before);
+        });
+        expect(headings.map((h) => h.style.fontSize)).to.deep.equal(['18px', '18px', '18px']);
+        cards.forEach((card) => expect(card.children.length).to.equal(card.querySelectorAll('h2').length));
+      } finally {
+        recorder?.restore();
+        clock.restore();
+        style.remove();
+        cards.forEach((card) => card.remove());
+        await setViewport(viewport);
+      }
+    });
+
+    it('removes every probe even when measuring fails', () => {
+      const card = makeCard(['h3', 'h4']);
+      document.body.appendChild(card);
+      const stub = sinon.stub(window, 'getComputedStyle').throws(new Error('measure failed'));
+      try {
+        expect(() => overrideCardHeadingLevel(card, 2)).to.throw('measure failed');
+        expect(card.children.length).to.equal(2);
+      } finally {
+        stub.restore();
+        card.remove();
       }
     });
 
