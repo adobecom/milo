@@ -245,6 +245,15 @@ export default async function init(el) {
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
 
+  if (useAcomAssistant) {
+    acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
+    acomAssistantModulePromise.then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards))
+      .catch((error) => {
+        window.lana?.log?.(`AcomAssistant: failed to preload client (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+      });
+    return;
+  }
+
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
     sideOverlayTop();
