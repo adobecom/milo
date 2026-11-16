@@ -627,10 +627,6 @@ body:has(header.local-nav) .section.bento.stack-mobile {
       & [class*='heading-'] {
         margin-top: 0;
       }
-
-      .content-aux {
-        aspect-ratio: 1 / 0.88;
-      }
     }
 
     & .grid-full-width {
@@ -639,6 +635,10 @@ body:has(header.local-nav) .section.bento.stack-mobile {
           aspect-ratio: 4 / 1.65;
         }
       }
+    }
+
+    & > :where(:not(.grid-span-4)) .explore-card-content .content-aux {
+      aspect-ratio: 1 / 0.88;
     }
   }
 
