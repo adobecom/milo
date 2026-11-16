@@ -181,7 +181,7 @@ function initTabDropdown(dropdown) {
       case ' ':
         // Prevent the native button click from toggling twice
         e.preventDefault();
-        if (expanded) select(highlightedIndex);
+        if (expanded) options[highlightedIndex].click();
         else open();
         break;
       case 'Escape':
@@ -191,7 +191,7 @@ function initTabDropdown(dropdown) {
         }
         break;
       case 'Tab':
-        if (expanded) select(highlightedIndex);
+        if (expanded) options[highlightedIndex].click();
         break;
       default:
         break;
