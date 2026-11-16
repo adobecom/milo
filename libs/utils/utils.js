@@ -2390,19 +2390,26 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
+function preloadModule(href) {
+  // WebKit can refetch a module when modulepreload is added after its import.
+  const url = new URL(href, document.baseURI).href;
+  if (performance.getEntriesByName(url).some(({ initiatorType }) => initiatorType === 'script')) return;
+  loadLink(href, { rel: 'modulepreload', crossorigin: 'anonymous' });
+}
+
 const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    preloadModule(`${base}/utils/decorate.js`);
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  loadLink(`${blockPath}.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  preloadModule(`${blockPath}.js`);
   (blockDeps.get(name) ?? []).forEach((dep) => {
     const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'modulepreload', crossorigin: 'anonymous' });
+    if (typeof url === 'string') preloadModule(url);
   });
   if (!hasStyles) return null;
   if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }

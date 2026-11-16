@@ -259,6 +259,12 @@ describe('Utils', () => {
   });
 
   describe('core-functionality', () => {
+    let resourceEntries;
+    beforeEach(() => {
+      resourceEntries = sinon.stub(performance, 'getEntriesByName').returns([]);
+    });
+    afterEach(() => resourceEntries.restore());
+
     it('preloads blocks for performance reasons', async () => {
       document.head.innerHTML = head;
       document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
@@ -293,12 +299,16 @@ describe('Utils', () => {
 
   describe('preloadLcpCodeFiles', () => {
     const preloadSel = 'link[rel="preload"], link[rel="modulepreload"]';
+    let resourceEntries;
 
     beforeEach(() => {
+      resourceEntries = sinon.stub(performance, 'getEntriesByName').returns([]);
       document.head.innerHTML = '';
       document.body.innerHTML = '';
       utils.setConfig(config);
     });
+
+    afterEach(() => resourceEntries.restore());
 
     it('does nothing when the disable-mep-perf-optimization kill switch is on', () => {
       document.head.innerHTML = '<meta name="disable-mep-perf-optimization" content="on">';
@@ -313,6 +323,31 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
       expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/libs/blocks/marquee/marquee.css"]')).to.exist;
       expect(document.head.querySelector('link[rel="stylesheet"][href*="/libs/blocks/marquee/marquee.css"]')).to.not.exist;
+    });
+
+    [
+      ['marquee', ['/libs/blocks/marquee/marquee.js', '/libs/utils/decorate.js']],
+      ['tabs', ['/libs/blocks/tabs/tabs.js', '/libs/martech/attributes.js']],
+    ].forEach(([name, paths]) => {
+      it(`does not preload imported ${name} modules, but still warms styles`, () => {
+        document.body.innerHTML = `<main><div><div class="${name}"></div></div></main>`;
+        const imported = paths.map((path) => new URL(path, window.location.href).href);
+        resourceEntries.callsFake((url) => (
+          imported.includes(url) ? [{ initiatorType: 'script' }] : []
+        ));
+        utils.preloadLcpCodeFiles();
+        imported.forEach((url) => {
+          expect(document.head.querySelector(`link[href="${url}"]`)).to.not.exist;
+        });
+        expect(document.head.querySelector(`link[rel="preload"][as="style"][href$="/${name}.css"]`)).to.exist;
+      });
+    });
+
+    it('still preloads a module previously fetched without importing it', () => {
+      document.body.innerHTML = '<main><div><div class="marquee"></div></div></main>';
+      resourceEntries.returns([{ initiatorType: 'fetch' }]);
+      utils.preloadLcpCodeFiles();
+      expect(document.head.querySelector('link[rel="modulepreload"][href$="/marquee.js"]')).to.exist;
     });
 
     it('preloads router-marquee imports alongside the block without evaluating it', () => {
