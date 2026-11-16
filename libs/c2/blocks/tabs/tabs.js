@@ -131,7 +131,7 @@ function initTabDropdown(dropdown) {
     options.forEach((o) => o.classList.remove('highlighted'));
   };
 
-  const open = (index = getSelectedIndex()) => {
+  const open = () => {
     list.hidden = false;
     trigger.setAttribute('aria-expanded', 'true');
     dropdown.removeAttribute('data-placement');
@@ -140,7 +140,7 @@ function initTabDropdown(dropdown) {
     if (listRect.bottom > window.innerHeight && roomAbove > listRect.height) {
       dropdown.setAttribute('data-placement', 'top');
     }
-    highlight(index);
+    highlight(getSelectedIndex());
   };
 
   const select = (index) => {
@@ -166,16 +166,6 @@ function initTabDropdown(dropdown) {
         e.preventDefault();
         if (expanded) highlight(highlightedIndex - 1);
         else open();
-        break;
-      case 'Home':
-        e.preventDefault();
-        if (expanded) highlight(0);
-        else open(0);
-        break;
-      case 'End':
-        e.preventDefault();
-        if (expanded) highlight(options.length - 1);
-        else open(options.length - 1);
         break;
       case 'Enter':
       case ' ':
