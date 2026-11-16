@@ -139,6 +139,9 @@
 /libs/blocks/youtube/ @adobecom/milo-core
 /libs/blocks/z-pattern/ @adobecom/milo-core
 
+# C2 Blocks
+/libs/c2/blocks/aside-c2/ @adobecom/milo-core
+
 # Standalone Gnav
 /libs/navigation/ @adobecom/feds
 /libs/martech/attributes.js @adobecom/mep-squad
