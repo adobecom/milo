@@ -608,7 +608,7 @@ body {
 }
 
 header.global-navigation {
-  min-height: var(--c2-global-height-nav);
+  min-height: var(--global-height-nav);
 }
 
 body:has(.global-navigation) main {
