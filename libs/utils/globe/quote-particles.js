@@ -1,10 +1,10 @@
-import * as THREE from '../../../../deps/three.js';
+import * as THREE from '../../deps/three.js';
 import {
-  TRAVEL_EASE_POW, FRAME_MS, clamp01, capDpr,
-  camZAtTravelT, travelTAtCamZ, travelSpanPx, scrollYAtTravelT,
-} from './utils.js';
-import { plainQuote } from './authoring.js';
-import { RR_SDF, HASH21, glf } from './shaders.js';
+  FRAME_MS, camZAtT, capDpr, clamp, clamp01, cssNumber, nextFrame, scrollYAtTravelT, seededRandom,
+  smoothstep01, tAtCamZ, travelSpanPx,
+} from './core.js';
+import { RR_SDF, HASH21, TO_SRGB, createCanvas, glf } from './gl.js';
+import { cssFont, plainQuote } from './authoring.js';
 
 const PULL_BP = {
   sm: { startR: 0.5, expand: 0.5, count: 15000 },
@@ -21,7 +21,7 @@ const INK_ALPHA = 128;
 const PROBE = 24;
 const TILE_MAX_K = 1.5;
 const OFF_VIEW_K = 0.25;
-const SEED = 20240611;
+const PARTICLE_SEED = "You talkin' to me?";
 const RULE_WEIGHT = 3;
 const RASTER_PAD = 6;
 const DST_SPACING = 1.25;
@@ -55,6 +55,9 @@ const TILE_CAP = 256;
 const DETACH_P = 0.01;
 const EDGE_LEAD = 0.2;
 const SCATTER_SPAN = 0.08;
+const SLOT = 2 ** 20;
+
+const TEXT_SEL = '.globe-pullquote-quote, .globe-pullquote-name, .globe-pullquote-role';
 
 const CURL_NOISE = [
   'float vnoise(vec2 p) {',
@@ -78,7 +81,7 @@ const PX_TO_CLIP = [
   '}',
 ];
 
-const POINTS_VERT = [
+const pointsVert = (easePow) => [
   'uniform float uP;',
   'uniform vec2 uView;',
   'uniform float uDpr;',
@@ -108,7 +111,7 @@ const POINTS_VERT = [
   ...CURL_NOISE,
   'float camZAt(float p) {',
   '  float z = clamp(uZoomT.x + p * uZoomT.y, 0.0, 1.0);',
-  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(TRAVEL_EASE_POW)}));`,
+  `  return uCamZ.x - uCamZ.y * (1.0 - pow(1.0 - z, ${glf(easePow)}));`,
   '}',
   'vec2 toPx(vec3 w, float camZ) {',
   '  vec4 c = projectionMatrix * vec4(w.xy, w.z - camZ, 1.0);',
@@ -200,6 +203,7 @@ const POINTS_FRAG = [
   'varying float vInkK;',
   'varying float vFade;',
   ...RR_SDF,
+  ...TO_SRGB,
   'void main() {',
   '  vec2 pc = gl_PointCoord - 0.5;',
   '  float dotA = 1.0 - smoothstep(0.16, 0.25, dot(pc, pc));',
@@ -221,7 +225,7 @@ const POINTS_FRAG = [
   '    float aa = fwidth(pos.y);',
   '    alpha *= uCardAlpha * (1.0 - smoothstep(-aa, aa, rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius)));',
   '    vec3 tex = texture2D(uMap, fUv * uRepeat + uOffset).rgb;',
-  '    col = mix(pow(max(tex, 0.0), vec3(1.0 / 2.2)), vInk, vInkK);',
+  '    col = mix(toSrgb(tex), vInk, vInkK);',
   '  }',
   '  if (alpha < 0.004) discard;',
   '  gl_FragColor = vec4(col, alpha);',
@@ -256,13 +260,11 @@ const idle = () => new Promise((res) => {
   else window.requestIdleCallback(() => res(), { timeout: IDLE_TIMEOUT_MS });
 });
 
-const fontOf = (cs) => `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-
 function textLines(el, ox, oy) {
   const cs = getComputedStyle(el);
   const style = {
-    font: fontOf(cs),
-    color: cs.getPropertyValue('--fg-pq-ink').trim() || '#fafafa',
+    font: cssFont(cs),
+    color: cs.getPropertyValue('--globe-pq-ink').trim() || '#fafafa',
     rtl: cs.direction === 'rtl',
     letterSpacing: cs.letterSpacing,
   };
@@ -280,45 +282,64 @@ function textLines(el, ox, oy) {
   nodes.forEach((node) => {
     const { data } = node;
     let line = null;
+    let word = null;
+    let gap = false;
     let i = 0;
-    Array.from(data).forEach((ch) => {
+    [...data].forEach((ch) => {
       const start = i;
       i += ch.length;
-      if (/\s/.test(ch)) return;
+      if (/\s/.test(ch)) {
+        gap = true;
+        return;
+      }
       range.setStart(node, start);
       range.setEnd(node, i);
       const r = range.getBoundingClientRect();
       if (!r.width || !r.height) return;
       ascent ??= baseY - r.top;
-      if (!line || Math.abs(r.top - line.top) > r.height * 0.5) {
+      const newLine = !line || Math.abs(r.top - line.top) > r.height * 0.5;
+      if (newLine) {
         line = {
-          ...style, node, start, end: i, top: r.top, left: r.left, right: r.right,
+          node, start, end: i, top: r.top, left: r.left, right: r.right, words: [],
         };
         lines.push(line);
-        return;
+      } else {
+        line.end = i;
+        line.top = Math.min(line.top, r.top);
+        line.left = Math.min(line.left, r.left);
+        line.right = Math.max(line.right, r.right);
       }
-      line.end = i;
-      line.top = Math.min(line.top, r.top);
-      line.left = Math.min(line.left, r.left);
-      line.right = Math.max(line.right, r.right);
+      if (newLine || gap) {
+        word = { start, end: i, left: r.left, right: r.right };
+        line.words.push(word);
+        gap = false;
+      } else {
+        word.end = i;
+        word.left = Math.min(word.left, r.left);
+        word.right = Math.max(word.right, r.right);
+      }
     });
   });
   return lines.map((l) => ({
-    ...l,
+    ...style,
     ascent,
     text: l.node.data.slice(l.start, l.end),
-    node: null,
     top: l.top - oy,
     left: l.left - ox,
     right: l.right - ox,
+    words: l.words.map((w) => ({
+      text: l.node.data.slice(w.start, w.end),
+      left: w.left - ox,
+      right: w.right - ox,
+    })),
   }));
 }
 
-const TEXT_SEL = '.firefly-globe-pullquote-quote, .firefly-globe-pullquote-name, .firefly-globe-pullquote-role';
+const textEls = (figureEl) => [...figureEl.querySelectorAll(TEXT_SEL)];
 
 function fontsFor(figureEl) {
-  return [...figureEl.querySelectorAll(TEXT_SEL)]
-    .map((el) => ({ font: fontOf(getComputedStyle(el)), text: el.textContent }));
+  return textEls(figureEl)
+    .map((el) => ({ font: cssFont(getComputedStyle(el)), text: el.textContent }));
 }
 
 function measure(figureEl, railEl) {
@@ -328,7 +349,7 @@ function measure(figureEl, railEl) {
   const cs = getComputedStyle(figureEl);
   const fx = fig.left - origin.left;
   const fy = fig.top - origin.top;
-  const rw = parseFloat(cs.getPropertyValue('--fg-crosshair-width')) || 1;
+  const rw = parseFloat(cs.getPropertyValue('--globe-crosshair-width')) || 1;
   const pad = (side) => parseFloat(cs[`padding${side}`]) || 0;
   const rules = [
     [fx, fy + pad('Top'), fig.width, rw],
@@ -344,10 +365,10 @@ function measure(figureEl, railEl) {
       w: fig.width + 2 * RASTER_PAD,
       h: fig.height + 2 * RASTER_PAD,
     },
-    runs: [...figureEl.querySelectorAll(TEXT_SEL)]
+    runs: textEls(figureEl)
       .flatMap((el) => textLines(el, origin.left, origin.top)),
     rules,
-    ruleColor: cs.getPropertyValue('--fg-pq-rule-color').trim() || '#3a3a3a',
+    ruleColor: cs.getPropertyValue('--globe-pq-rule-color').trim() || '#3a3a3a',
     rtl: cs.direction === 'rtl',
   };
 }
@@ -357,9 +378,7 @@ function rasterize(m, dpr) {
   const y0 = Math.floor(m.box.y * dpr);
   const w = Math.max(1, Math.ceil((m.box.x + m.box.w) * dpr) - x0);
   const h = Math.max(1, Math.ceil((m.box.y + m.box.h) * dpr) - y0);
-  const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
+  const canvas = createCanvas(w, h);
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   ctx.fillStyle = m.ruleColor;
   m.rules.forEach(([rx, ry, rw, rh]) => {
@@ -368,24 +387,42 @@ function rasterize(m, dpr) {
     ctx.fillRect(px, py, Math.max(1, Math.round(rw * dpr)), Math.max(1, Math.round(rh * dpr)));
   });
   ctx.setTransform(dpr, 0, 0, dpr, -x0, -y0);
+  const snap = (v) => Math.round(v * dpr) / dpr;
   m.runs.forEach((run) => {
     ctx.font = run.font;
     ctx.fillStyle = run.color;
     ctx.direction = run.rtl ? 'rtl' : 'ltr';
     ctx.textAlign = run.rtl ? 'right' : 'left';
     ctx.textBaseline = 'alphabetic';
-    if ('letterSpacing' in ctx) ctx.letterSpacing = run.letterSpacing === 'normal' ? '0px' : run.letterSpacing;
-    const tm = ctx.measureText(run.text);
-    const ascent = run.ascent ?? tm.fontBoundingBoxAscent ?? tm.actualBoundingBoxAscent;
-    const domW = run.right - run.left;
-    const sx = tm.width > 0 ? Math.min(1.1, Math.max(0.9, domW / tm.width)) : 1;
-    ctx.save();
-    const snap = (v) => Math.round(v * dpr) / dpr;
-    const base = snap(m.figTop) + snap(run.top + ascent - m.figTop);
-    ctx.translate(run.rtl ? run.right : run.left, base);
-    if (Math.abs(sx - 1) > 0.004) ctx.scale(sx, 1);
-    ctx.fillText(run.text, 0, 0);
-    ctx.restore();
+    const spacings = run.letterSpacing === 'normal' ? ['0px'] : [run.letterSpacing, '0px'];
+    const fit = (text, domW) => {
+      let best = null;
+      spacings.forEach((spacing) => {
+        if ('letterSpacing' in ctx) ctx.letterSpacing = spacing;
+        const metrics = ctx.measureText(text);
+        if (!best || Math.abs(metrics.width - domW) < Math.abs(best.metrics.width - domW)) {
+          best = { metrics, spacing };
+        }
+      });
+      return { ...best, ratio: best.metrics.width > 0 ? domW / best.metrics.width : 1 };
+    };
+    const whole = fit(run.text, run.right - run.left);
+    const split = Math.abs(whole.ratio - 1) > 0.004 && run.words.length > 1;
+    const parts = split
+      ? run.words.map((word) => ({ ...word, fit: fit(word.text, word.right - word.left) }))
+      : [{ text: run.text, left: run.left, right: run.right, fit: whole }];
+    parts.forEach((part) => {
+      const { metrics, spacing, ratio } = part.fit;
+      if ('letterSpacing' in ctx) ctx.letterSpacing = spacing;
+      const ascent = run.ascent ?? metrics.fontBoundingBoxAscent ?? metrics.actualBoundingBoxAscent;
+      const sx = clamp(ratio, 0.9, 1.1);
+      ctx.save();
+      const base = snap(m.figTop) + snap(run.top + ascent - m.figTop);
+      ctx.translate(run.rtl ? part.right : part.left, base);
+      if (Math.abs(sx - 1) > 0.004) ctx.scale(sx, 1);
+      ctx.fillText(part.text, 0, 0);
+      ctx.restore();
+    });
   });
   return {
     canvas, ctx, x0, y0, w, h,
@@ -445,7 +482,7 @@ function compileShown(renderer, camera, root, shown) {
   shown.forEach((o, i) => { o.visible = was[i]; });
 }
 
-function createCardPointsMaterial(shared, scatterP = -1) {
+function createCardPointsMaterial(shared, easePow, scatterP = -1) {
   return new THREE.ShaderMaterial({
     uniforms: {
       ...shared,
@@ -462,7 +499,7 @@ function createCardPointsMaterial(shared, scatterP = -1) {
       uScreenSrc: { value: 0 },
       uScatterP: { value: scatterP },
     },
-    vertexShader: POINTS_VERT,
+    vertexShader: pointsVert(easePow),
     fragmentShader: POINTS_FRAG,
     transparent: true,
     depthTest: false,
@@ -495,23 +532,21 @@ function setCardUniforms(u, card) {
   u.uAxisV.value.copy(card.axisV);
 }
 
-function seededRandom(seed) {
-  let a = (Math.abs(Math.floor(seed)) % 2147483646) + 1;
-  return () => {
-    a = (a * 16807) % 2147483647;
-    return (a - 1) / 2147483646;
-  };
-}
+const camZAt = (zoom, p, easePow) => camZAtT(
+  zoom[0] + p * zoom[1],
+  zoom[2],
+  zoom[2] - zoom[3],
+  easePow,
+);
 
-const camZAt = (zoom, p) => camZAtTravelT(zoom[0] + p * zoom[1], zoom[2], zoom[2] - zoom[3]);
-
-function pAtCamZ(zoom, cz) {
+function pAtCamZ(zoom, cz, easePow) {
   if (!(zoom[1] > 0) || !(zoom[3] > 0)) return Infinity;
-  return (travelTAtCamZ(cz, zoom[2], zoom[2] - zoom[3]) - zoom[0]) / zoom[1];
+  return (tAtCamZ(cz, zoom[2], zoom[2] - zoom[3], easePow) - zoom[0]) / zoom[1];
 }
 
 function bounds(n, at) {
-  let lo = Infinity; let hi = -Infinity;
+  let lo = Infinity;
+  let hi = -Infinity;
   for (let j = 0; j < n; j += 1) {
     const v = at(j);
     if (v < lo) lo = v;
@@ -521,7 +556,6 @@ function bounds(n, at) {
 }
 
 function sortBy(key, idx) {
-  const SLOT = 2 ** 20;
   const m = idx.length;
   const [lo, span] = bounds(m, (j) => key[idx[j]]);
   const scale = (SLOT - 1) / span;
@@ -534,9 +568,7 @@ function sortBy(key, idx) {
 }
 
 export function coherentOrder(xs, ys, count = xs.length) {
-  const all = new Uint32Array(count);
-  for (let i = 0; i < count; i += 1) all[i] = i;
-  const byX = sortBy(xs, all);
+  const byX = sortBy(xs, Uint32Array.from({ length: count }, (unused, i) => i));
   const out = new Uint32Array(count);
   for (let b = 0; b < PAIR_BANDS; b += 1) {
     const from = Math.floor((b * count) / PAIR_BANDS);
@@ -546,8 +578,7 @@ export function coherentOrder(xs, ys, count = xs.length) {
   return out;
 }
 
-export default function createQuoteParticles({ figureEl, railEl, count }) {
-  const n = count;
+export default function createQuoteParticles({ figureEl, railEl, count: n, easePow }) {
   const group = new THREE.Group();
   group.visible = false;
 
@@ -616,26 +647,31 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     if (!total) return null;
     const pick = new Uint32Array(total);
     let c = 0;
-    eachCell((i) => { for (let k = repsAt(i); k > 0; k -= 1) { pick[c] = i; c += 1; } });
+    eachCell((i) => {
+      const reps = repsAt(i);
+      pick.fill(i, c, c + reps);
+      c += reps;
+    });
     const take = Math.min(n, pick.length);
-    const rnd = seededRandom(SEED);
+    const rnd = seededRandom(PARTICLE_SEED);
     for (let i = 0; i < take; i += 1) {
       const j = i + Math.floor(rnd() * (pick.length - i));
       [pick[i], pick[j]] = [pick[j], pick[i]];
     }
     const spacing = Math.sqrt(total / n);
-    shared.uDstSize.value = Math.min(4, Math.max(1.6, DST_SPACING * spacing));
+    shared.uDstSize.value = clamp(DST_SPACING * spacing, 1.6, 4);
     const jitter = pick.length < n ? 0.6 : 0;
+    const xs = new Float32Array(n);
+    const ys = new Float32Array(n);
     for (let i = 0; i < n; i += 1) {
       const p = pick[i % take];
-      tDst[i * 2] = (r.x0 + (p % r.w) + 0.5) / dpr + (rnd() - 0.5) * jitter;
-      tDst[i * 2 + 1] = (r.y0 + Math.floor(p / r.w) + 0.5) / dpr + (rnd() - 0.5) * jitter;
+      xs[i] = (r.x0 + (p % r.w) + 0.5) / dpr + (rnd() - 0.5) * jitter;
+      ys[i] = (r.y0 + Math.floor(p / r.w) + 0.5) / dpr + (rnd() - 0.5) * jitter;
+      tDst[i * 2] = xs[i];
+      tDst[i * 2 + 1] = ys[i];
       for (let ch = 0; ch < 3; ch += 1) tCol[i * 3 + ch] = data[p * 4 + ch] / 255;
       tOrder[i] = orders.bytes[p] / 255;
     }
-    const xs = new Float32Array(n);
-    const ys = new Float32Array(n);
-    for (let i = 0; i < n; i += 1) { xs[i] = tDst[i * 2]; ys[i] = tDst[i * 2 + 1]; }
     tSorted = coherentOrder(xs, ys);
     return orders.bytes;
   }
@@ -655,9 +691,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const y1 = (r.y0 + r.h) / dpr;
     planeGeo.attributes.position.array.set([x0, y0, 0, x1, y0, 0, x0, y1, 0, x1, y1, 0]);
     planeGeo.attributes.position.needsUpdate = true;
-    const orderCanvas = document.createElement('canvas');
-    orderCanvas.width = r.w;
-    orderCanvas.height = r.h;
+    const orderCanvas = createCanvas(r.w, r.h);
     const img = new ImageData(r.w, r.h);
     for (let i = 0; i < orderBytes.length; i += 1) {
       img.data[i * 4] = orderBytes[i];
@@ -672,7 +706,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
 
   function disposeDraws(list) {
     list.forEach(({ points, mat, geo }) => {
-      group.remove(points);
+      points.removeFromParent();
       geo.dispose();
       mat.dispose();
     });
@@ -694,7 +728,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const rand = new Float32Array(k * 4);
     for (let j = 0; j < k; j += 1) rand[j * 4 + 1] = release[j];
     const geo = pointsGeometry(uvs, cells, rand);
-    const mat = createCardPointsMaterial(shared);
+    const mat = createCardPointsMaterial(shared, easePow);
     if (card) setCardUniforms(mat.uniforms, card);
     else mat.uniforms.uScreenSrc.value = 1;
     const points = new THREE.Points(geo, mat);
@@ -716,7 +750,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const arrive = FLIGHT.arriveStart + FLIGHT.arriveSpan * order
         + (rnd() * 2 - 1) * ARRIVE_JITTER;
       const leave = FLIGHT.depart[0] + FLIGHT.depart[1] * (0.6 * order + 0.4 * edge[j]);
-      aRand.array[j * 4] = Math.min(arrive - FLIGHT.minFly, Math.max(release[j] + 0.01, leave));
+      aRand.array[j * 4] = clamp(leave, release[j] + 0.01, arrive - FLIGHT.minFly);
       aRand.array[j * 4 + 3] = arrive;
     }
     [position, aDstCol, aRand].forEach((a) => { a.needsUpdate = true; });
@@ -742,7 +776,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     const span = Math.max(1, Math.round(SOFT_SWAP_SPAN * k));
     for (let r = 0; r < k; r += 1) {
       if (rnd() < SOFT_SWAP) {
-        const q = Math.min(k - 1, Math.max(0, r + Math.round((rnd() * 2 - 1) * span)));
+        const q = clamp(r + Math.round((rnd() * 2 - 1) * span), 0, k - 1);
         const [a, b] = [order[r], order[q]];
         [ranks[a], ranks[b]] = [ranks[b], ranks[a]];
       }
@@ -751,17 +785,17 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   }
 
   function setSources(cards, view) {
-    pairing = null;
-    disposeDraws(pending);
-    pending = [];
     if (!ready) {
       clearSources();
       return Promise.resolve(false);
     }
+    pairing = null;
+    disposeDraws(pending);
+    pending = [];
     const { W, H, zoom, proj: [P00, P11, P02, P12] } = view;
-    const rnd = seededRandom(SEED);
-    const z0 = camZAt(zoom, 0);
-    const zPair = camZAt(zoom, FLIGHT.depart[0] + 0.5 * FLIGHT.depart[1]);
+    const rnd = seededRandom(PARTICLE_SEED);
+    const z0 = camZAt(zoom, 0, easePow);
+    const zPair = camZAt(zoom, FLIGHT.depart[0] + 0.5 * FLIGHT.depart[1], easePow);
     const pxX = (x, D) => ((P00 * x) / D - P02 + 1) * 0.5 * W;
     const pxY = (y, D) => (1 - ((P11 * y) / D - P12)) * 0.5 * H;
     const toPx = (x, y, z, cz) => (cz - z < 0.05 ? null : [pxX(x, cz - z), pxY(y, cz - z)]);
@@ -781,9 +815,12 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
           if (inView(project(card, (a + 0.5) / PROBE, (b + 0.5) / PROBE, cz))) hits += 1;
         }
       }
-      let a2 = 0;
-      pts.forEach(([x, y], k) => { const [nx, ny] = pts[(k + 1) % 4]; a2 += x * ny - nx * y; });
-      return [Math.abs(a2) / 2, (Math.abs(a2) / 2) * (hits / PROBE ** 2)];
+      const a2 = pts.reduce((sum, [x, y], k) => {
+        const [nx, ny] = pts[(k + 1) % 4];
+        return sum + x * ny - nx * y;
+      }, 0);
+      const area = Math.abs(a2) / 2;
+      return [area, area * (hits / PROBE ** 2)];
     };
     const plans = [];
     cards.forEach((card) => {
@@ -803,7 +840,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const edge = new Float32Array(n).map(() => rnd());
       const sx = new Float32Array(n);
       const sy = new Float32Array(n);
-      for (let j = 0; j < n; j += 1) { sx[j] = uvs[j * 2] * W; sy[j] = uvs[j * 2 + 1] * H; }
+      for (let j = 0; j < n; j += 1) {
+        sx[j] = uvs[j * 2] * W;
+        sy[j] = uvs[j * 2 + 1] * H;
+      }
       grids.push({
         card: null, uvs, cells: new Float32Array(n * 2), edge, release: edge.map(releaseAt), sx, sy,
       });
@@ -822,7 +862,6 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       const release = new Float32Array(k);
       const sx = new Float32Array(k);
       const sy = new Float32Array(k);
-      const { origin: o, axisU: au, axisV: av } = card;
       cells.fill(1 / cols);
       for (let j = 1; j < k * 2; j += 2) cells[j] = 1 / rows;
       for (let j = 0; j < k; j += 1) {
@@ -832,12 +871,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
         uvs[j * 2 + 1] = v;
         const inner = Math.min(1, 2 * Math.min(u, 1 - u, v, 1 - v));
         edge[j] = EDGE_LEAD * inner + (1 - EDGE_LEAD) * rnd();
-        const x = o.x + au.x * u + av.x * v;
-        const y = o.y + au.y * u + av.y * v;
-        const z = o.z + au.z * u + av.z * v;
-        const due = Math.min(releaseAt(edge[j]), pAtCamZ(zoom, z + tileD));
+        const [x, y, z] = at(card, u, v);
+        const due = Math.min(releaseAt(edge[j]), pAtCamZ(zoom, z + tileD, easePow));
         release[j] = Math.max(FLIGHT.release[0], due);
-        const zDep = camZAt(zoom, release[j]);
+        const zDep = camZAt(zoom, release[j], easePow);
         const d = RELEASE_REACH * Math.max(0.001, zDep - z - MIN_DEPTH);
         const D = zDep - d * (1 - Math.exp(-Math.max(0, zDep - zPair) / d)) - z;
         sx[j] = D < 0.05 ? W / 2 : pxX(x, D);
@@ -855,13 +892,12 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       addDraw(g.card, g);
       sx.set(g.sx, o);
       sy.set(g.sy, o);
-      const slice = [o, o + g.edge.length];
-      [, o] = slice;
-      return slice;
+      const start = o;
+      o += g.edge.length;
+      return [start, o];
     });
     const token = {};
     pairing = token;
-    const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
     const live = () => pairing === token;
     return nextFrame().then(() => {
       if (!live()) return false;
@@ -889,7 +925,10 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
     await idle();
     if (gen !== generation || !figureEl.isConnected) return false;
     const m = measure(figureEl, railEl);
-    if (!m || !m.runs.length) { ready = false; return false; }
+    if (!m?.runs.length) {
+      ready = false;
+      return false;
+    }
     const r = rasterize(m, dpr);
     const orderBytes = writeTargets(r, m, dpr);
     ready = !!orderBytes;
@@ -925,7 +964,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
       generation += 1;
       ready = false;
       clearSources();
-      if (group.parent) group.parent.remove(group);
+      group.removeFromParent();
       planeGeo.dispose();
       disposePlaneTextures();
       planeMat.dispose();
@@ -933,7 +972,7 @@ export default function createQuoteParticles({ figureEl, railEl, count }) {
   };
 }
 
-export function createCardScatter({ expand }) {
+export function createCardScatter({ expand, easePow }) {
   const group = new THREE.Group();
   const shared = {
     uScatterExpand: { value: expand },
@@ -962,13 +1001,13 @@ export function createCardScatter({ expand }) {
     }
     const next = pointsGeometry(uvs, cells);
     slots.forEach(({ points }) => { points.geometry = next; });
-    if (geo) geo.dispose();
+    geo?.dispose();
     geo = next;
   }
 
   function slot(i) {
     if (slots[i]) return slots[i];
-    const mat = createCardPointsMaterial(shared, 0);
+    const mat = createCardPointsMaterial(shared, easePow, 0);
     const points = new THREE.Points(geo, mat);
     points.frustumCulled = false;
     points.visible = false;
@@ -1003,26 +1042,31 @@ export function createCardScatter({ expand }) {
     setGrid,
     update,
     dispose() {
-      slots.forEach(({ points, mat }) => { group.remove(points); mat.dispose(); });
+      slots.forEach(({ points, mat }) => {
+        points.removeFromParent();
+        mat.dispose();
+      });
       slots.length = 0;
-      if (geo) geo.dispose();
+      geo?.dispose();
       geo = null;
-      if (group.parent) group.parent.remove(group);
+      group.removeFromParent();
     },
   };
 }
 
-export function createPullQuote({
-  root, getBp, getView, getSpan, getCards, getSphereGroup, isCardManaged, onHeightChange,
+export function createPullQuote(ctx, {
+  easePow, isCardManaged, onHeightChange,
+  requireOnSphere = false,
+  manageCanvas = false,
 }) {
-  const figureEl = root.querySelector('.firefly-globe-pullquote');
-  const quoteEl = root.querySelector('.firefly-globe-pullquote-quote');
-  const railEl = root.querySelector('.firefly-globe-pullquote-rail');
-  const forcedColors = window.matchMedia?.('(forced-colors: active)') ?? null;
+  const { root } = ctx;
+  const figureEl = root.querySelector('.globe-pullquote');
+  const quoteEl = root.querySelector('.globe-pullquote-quote');
+  const railEl = root.querySelector('.globe-pullquote-rail');
+  const forcedColors = window.matchMedia?.('(forced-colors: active)');
   const near = [];
   let fx = null;
   let scatter = null;
-  let camera = null;
   let rasterTimer = 0;
   const s = { appearT: 0.5, startT: 0.5 };
   const reset = () => Object.assign(s, {
@@ -1035,6 +1079,7 @@ export function createPullQuote({
     viewKey: '',
     nextKey: '',
     nextAt: 0,
+    canvasPos: '',
     layoutKey: '',
     on: false,
     swapT: 0,
@@ -1044,37 +1089,36 @@ export function createPullQuote({
 
   const isOn = () => s.on;
   const ownsCards = () => s.p > 0 && isOn();
-  const travelPx = () => (s.travelVh / 100) * getView().H;
+  const travelPx = () => (s.travelVh / 100) * ctx.H;
 
   function syncHeight() {
-    const travelVh = parseFloat(getComputedStyle(root).getPropertyValue('--fg-travel-vh'));
+    const travelVh = cssNumber(root, '--globe-travel-vh', 0);
     s.travelVh = fx && travelVh > 0 ? travelVh : 0;
     if (!s.travelVh) return;
-    const at = (travelT, vh) => travelT * s.travelVh + vh;
+    const at = (travelT, vh) => ctx.formationVh + travelT * s.travelVh + vh;
     const quoteDone = Math.max(at(s.startT, QUOTE_LIVE_P * FLY_VH * 100), at(s.appearT, 0));
     const next = Math.round((quoteDone + READ_VH * 100 + 100) * 10) / 10;
     if (next === s.heightVh) return;
     s.heightVh = next;
-    root.style.setProperty('--fg-pq-height', `${next}vh`);
+    root.style.setProperty('--globe-pq-height', `${next}vh`);
     onHeightChange();
   }
 
   function setCue(appearT) {
-    const bp = getBp();
+    const { bp } = ctx;
     const startZ = PULL_BP[bp.name].startR * bp.SPHERE_R;
     s.appearT = appearT;
-    s.startT = Math.min(appearT, travelTAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END));
+    s.startT = Math.min(appearT, tAtCamZ(startZ, bp.CAM_Z_SPHERE, bp.CAM_Z_END, easePow));
     syncHeight();
   }
 
   function handoffEase(travelT) {
     if (!isOn()) return 1;
-    const t = clamp01((s.startT - travelT) / HANDOFF_EASE_T);
-    return t * t * (3 - 2 * t);
+    return smoothstep01(clamp01((s.startT - travelT) / HANDOFF_EASE_T));
   }
 
   function fitQuote() {
-    const { H, navH } = getView();
+    const { H, navH } = ctx;
     const bandH = H - navH;
     if (!(bandH > 0) || figureEl.scrollHeight <= bandH) return;
     const cs = getComputedStyle(quoteEl);
@@ -1094,8 +1138,8 @@ export function createPullQuote({
   }
 
   function layout(force) {
-    if (!figureEl || !figureEl.isConnected || !quoteEl) return;
-    const { H, navH } = getView();
+    if (!figureEl?.isConnected) return;
+    const { H, navH } = ctx;
     const key = `${figureEl.clientWidth}x${H}|${navH}|${capDpr()}`;
     if (!force && key === s.layoutKey) return;
     s.layoutKey = key;
@@ -1104,7 +1148,7 @@ export function createPullQuote({
     if (!fx) return;
     fitQuote();
     const railH = figureEl.getBoundingClientRect().bottom - railEl.getBoundingClientRect().top;
-    root.style.setProperty('--fg-pq-rail-h', `${railH.toFixed(1)}px`);
+    root.style.setProperty('--globe-pq-rail-h', `${railH.toFixed(1)}px`);
     clearTimeout(rasterTimer);
     rasterTimer = setTimeout(() => {
       fx?.layout({ dpr: capDpr() }).then(() => { s.viewKey = ''; });
@@ -1117,25 +1161,36 @@ export function createPullQuote({
   }
 
   const worldReleased = (scrollY) => {
-    const { blockDocTop, blockHeight } = getSpan();
-    return scrollY >= blockDocTop + blockHeight - getView().H;
+    const { blockDocTop, blockHeight } = ctx.frameInput;
+    return scrollY >= blockDocTop + blockHeight - ctx.H;
   };
 
-  function update({ scrollY, dtScale }) {
+  function placeCanvas() {
+    if (!manageCanvas) return;
+    const pos = s.p > 0 ? 'absolute' : 'fixed';
+    if (pos === s.canvasPos) return;
+    s.canvasPos = pos;
+    ctx.renderer.domElement.style.position = pos;
+  }
+
+  function update({ scrollVel, dtScale }, scrollY) {
     if (!fx) return;
     s.on = fx.isReady() && !forcedColors?.matches;
-    const startY = scrollYAtTravelT(s.startT, getSpan());
-    s.p = clamp01((scrollY - startY) / Math.max(1, FLY_VH * getView().H));
+    const startY = scrollYAtTravelT(s.startT, ctx.frameInput);
+    s.p = clamp01((scrollY - startY) / Math.max(1, FLY_VH * ctx.H));
     const live = s.p >= QUOTE_LIVE_P;
     const want = isOn() && live;
     const step = (dtScale * FRAME_MS) / SWAP_MS;
-    s.swapT = want && worldReleased(scrollY) ? 1 : clamp01(s.swapT + (want ? step : -step));
+    const jumped = scrollVel * dtScale >= ctx.H;
+    s.swapT = jumped || (want && worldReleased(scrollY))
+      ? Number(want) : clamp01(s.swapT + (want ? step : -step));
     const str = s.swapT.toFixed(3);
     if (str !== s.swapStr) {
       s.swapStr = str;
-      figureEl.style.setProperty('--fg-pq-dom', str);
+      figureEl.style.setProperty('--globe-pq-dom', str);
     }
     figureEl.classList.toggle('is-dom', !s.on);
+    placeCanvas();
     if (live === s.live) return;
     s.live = live;
     if (!live) dropSelection();
@@ -1154,7 +1209,7 @@ export function createPullQuote({
 
   function cardPlane(card) {
     const { mesh } = card;
-    const { CARD_W_SPHERE, CARD_H_SPHERE } = getBp();
+    const { CARD_W_SPHERE, CARD_H_SPHERE } = ctx.bp;
     const u = mesh.material.uniforms;
     const world = (cu, cv) => new THREE.Vector3(
       (cu - 0.5) * CARD_W_SPHERE,
@@ -1176,28 +1231,25 @@ export function createPullQuote({
     };
   }
 
-  function cardPlanes() {
-    const out = [];
-    getCards().forEach((card) => {
-      if (isCardManaged(card)) return;
-      const plane = cardPlane(card);
-      if (plane.alpha > 0.002) out.push(plane);
-    });
-    return out;
-  }
+  const cardPlanes = () => ctx.cards
+    .filter((card) => (card.onSphere || !requireOnSphere) && !isCardManaged(card))
+    .map(cardPlane)
+    .filter((plane) => plane.alpha > 0.002);
 
   function updateScatter(W, H) {
-    const { CARD_W_SPHERE, CARD_H_SPHERE, NEAR_FADE_START } = getBp();
+    const { CARD_W_SPHERE, CARD_H_SPHERE, NEAR_FADE_START } = ctx.bp;
+    const { camera } = ctx;
     const hPx = (camera.projectionMatrix.elements[5] * H) / 2 / NEAR_FADE_START;
     const cols = Math.ceil((hPx * CARD_W_SPHERE) / CARD_H_SPHERE / NEAR_TILE_PX);
     scatter.setGrid(cols, Math.ceil(hPx / NEAR_TILE_PX));
     camera.updateMatrixWorld();
     const list = near.map(({ card, d }) => {
       const plane = cardPlane(card);
-      const pts = [plane.origin, plane.origin.clone().add(plane.axisU),
-        plane.origin.clone().add(plane.axisV)].map((v) => v.clone().project(camera));
-      const cross = (pts[1].x - pts[0].x) * (pts[2].y - pts[0].y)
-        - (pts[1].y - pts[0].y) * (pts[2].x - pts[0].x);
+      const at = (axis) => plane.origin.clone().add(axis).project(camera);
+      const o = plane.origin.clone().project(camera);
+      const u = at(plane.axisU);
+      const v = at(plane.axisV);
+      const cross = (u.x - o.x) * (v.y - o.y) - (u.y - o.y) * (v.x - o.x);
       return { ...plane, d, mirror: cross > 0 };
     });
     near.length = 0;
@@ -1206,11 +1258,11 @@ export function createPullQuote({
 
   function updateParticles(W, H) {
     const owns = ownsCards();
-    const { CAM_Z_SPHERE, CAM_Z_END } = getBp();
-    const flyT = (FLY_VH * H) / travelSpanPx(getSpan());
+    const { CAM_Z_SPHERE, CAM_Z_END } = ctx.bp;
+    const flyT = (FLY_VH * H) / travelSpanPx(ctx.frameInput);
     const zoom = [s.startT, flyT, CAM_Z_SPHERE, CAM_Z_SPHERE - CAM_Z_END];
     if (owns) {
-      const e = camera.projectionMatrix.elements;
+      const e = ctx.camera.projectionMatrix.elements;
       const view = { W, H, zoom, proj: [e[0], e[5], e[8], e[9]] };
       const key = JSON.stringify(view);
       if (key !== s.nextKey) Object.assign(s, { nextKey: key, nextAt: performance.now() });
@@ -1222,7 +1274,7 @@ export function createPullQuote({
         s.viewKey = key;
       }
       if (fx.isPaired() || s.p >= QUOTE_LIVE_P) {
-        getCards().forEach((card) => {
+        ctx.cards.forEach((card) => {
           if (!isCardManaged(card)) card.mesh.visible = false;
         });
       }
@@ -1235,24 +1287,10 @@ export function createPullQuote({
 
   function afterCards() {
     if (!scatter) return;
-    const { W, H } = getView();
-    if (near.length || (ownsCards() && !s.sourced)) getSphereGroup().updateMatrixWorld(true);
+    const { W, H } = ctx;
+    if (near.length || (ownsCards() && !s.sourced)) ctx.sphereGroup.updateMatrixWorld(true);
     updateScatter(W, H);
     if (fx) updateParticles(W, H);
-  }
-
-  function build(ctx) {
-    ({ camera } = ctx);
-    const cfg = PULL_BP[getBp().name];
-    scatter = createCardScatter({ expand: cfg.expand });
-    ctx.scene.add(scatter.object);
-    scatter.warm(ctx.renderer, camera);
-    if (figureEl && railEl && figureEl.textContent.trim()) {
-      fx = createQuoteParticles({ figureEl, railEl, count: cfg.count });
-      ctx.scene.add(fx.object);
-      fx.warm(ctx.renderer, camera);
-    }
-    root.classList.toggle('firefly-globe-pq-particles', !!fx);
   }
 
   function teardown() {
@@ -1261,11 +1299,10 @@ export function createPullQuote({
     scatter?.dispose();
     fx = null;
     scatter = null;
-    camera = null;
     near.length = 0;
-    root.classList.remove('firefly-globe-pq-particles');
-    root.style.removeProperty('--fg-pq-height');
-    root.style.removeProperty('--fg-pq-rail-h');
+    root.classList.remove('globe-pq-particles');
+    root.style.removeProperty('--globe-pq-height');
+    root.style.removeProperty('--globe-pq-rail-h');
     if (figureEl) {
       figureEl.style.cssText = '';
       figureEl.classList.remove('is-live', 'is-dom');
@@ -1273,9 +1310,24 @@ export function createPullQuote({
     reset();
   }
 
+  function setup() {
+    ctx.disposer.add(teardown);
+    if (ctx.reducedMotion) return;
+    const { scene, renderer, camera } = ctx;
+    const cfg = PULL_BP[ctx.bp.name];
+    scatter = createCardScatter({ expand: cfg.expand, easePow });
+    scene.add(scatter.object);
+    scatter.warm(renderer, camera);
+    if (figureEl?.textContent.trim()) {
+      fx = createQuoteParticles({ figureEl, railEl, count: cfg.count, easePow });
+      scene.add(fx.object);
+      fx.warm(renderer, camera);
+    }
+    root.classList.toggle('globe-pq-particles', !!fx);
+  }
+
   return {
-    build,
-    teardown,
+    setup,
     layout,
     syncHeight,
     setCue,
