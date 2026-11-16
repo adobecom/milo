@@ -60,15 +60,14 @@ body:has(.caas-config.is-dark) #tagselect-modal-container {
 
 .caas-config {
   --field-max-size: 100%;
-
   color: var(--config-text);
   background: var(--config-background);
   font-family: var(--body-font-family, adobe-clean, sans-serif);
   font-size: 14px;
   line-height: 1.5;
-  padding: 32px;
-  border-radius: 20px;
-  margin: 24px auto 48px;
+  padding: 24px;
+  border-radius: 0 0 20px;
+  margin: 0 auto 48px;
   max-width: 1800px;
   box-sizing: border-box;
 }

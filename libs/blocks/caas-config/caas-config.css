@@ -15,14 +15,14 @@
   /* Shared CaaS styles hide authoring links containing this page's URL. */
   visibility: visible !important;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
   text-decoration: none;
   border: solid 1px #999;
   padding: 4px 10px 10px;
   border-radius: 8px;
   height: 20px;
-  color: #999;
-  background: #fff;
+  color: #000;
+  background: #eeedff;
 }
 
 .caas-config .tool-header a.config-ui-switch:hover {
