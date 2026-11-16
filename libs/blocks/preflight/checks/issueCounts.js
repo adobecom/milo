@@ -24,10 +24,11 @@ export function countIssues(checks, linkErrors = 0) {
   const { criticalAssetFailures = [], warningAssetFailures = [] } = assets?.details || {};
   const general = countChecks(checks.structure);
   const content = countContent(checks.content);
+  const taxonomy = countChecks(checks.taxonomy);
   return {
     General: issues(
-      general.errors + content.errors + linkErrors,
-      general.warnings + content.warnings,
+      general.errors + content.errors + taxonomy.errors + linkErrors,
+      general.warnings + content.warnings + taxonomy.warnings,
     ),
     SEO: countChecks(checks.seo),
     'M@S': issues((checks.merch || []).filter(isFail)

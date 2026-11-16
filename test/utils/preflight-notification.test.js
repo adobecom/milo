@@ -54,6 +54,12 @@ describe('hasSettledIssues', () => {
     expect(await hasSettledIssues({ seo: [{ status: 'pass' }, never] })).to.be.false;
     expect(await hasSettledIssues()).to.be.false;
   });
+
+  it('does not open the pop-up for taxonomy warnings, which only show in the panel', async () => {
+    const taxonomy = [{ id: 'taxonomy-naming', status: 'fail', severity: 'warning' }];
+    expect(await hasSettledIssues({ taxonomy })).to.be.false;
+    expect(groupByPriority({ taxonomy })).to.deep.equal([]);
+  });
 });
 
 describe('groupByPriority', () => {

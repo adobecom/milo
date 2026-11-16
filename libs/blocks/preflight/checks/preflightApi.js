@@ -28,6 +28,7 @@ import {
 import { runChecks as runChecksStructure } from './structure.js';
 import { runChecks as runChecksMerch } from './merch.js';
 import { runChecks as runChecksContent } from './content.js';
+import { runChecks as runChecksTaxonomy } from './taxonomy.js';
 import { SEVERITY } from './constants.js';
 
 let checksSuite = null;
@@ -114,6 +115,8 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
     Promise.all(runChecksMerch({ area })),
     Promise.all(runChecksContent({ area })),
   ]);
+  const { pathname } = new URL(url, window.location.origin);
+  const taxonomy = runChecksTaxonomy({ area, pathname });
   return {
     accessibility,
     assets,
@@ -122,6 +125,7 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
     structure,
     merch,
     content,
+    taxonomy,
   };
 };
 
@@ -160,6 +164,7 @@ export async function getPreflightResults(options = {}) {
     ...(res.structure || []),
     ...(res.merch || []),
     ...(res.content || []),
+    ...(res.taxonomy || []),
   ];
 
   const result = {

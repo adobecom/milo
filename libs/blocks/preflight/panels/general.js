@@ -4,6 +4,7 @@ import { runChecks as runStructureChecks } from '../checks/structure.js';
 import userCanPublishPage from '../../../tools/utils/publish.js';
 import { runChecks as runLocalizationChecks } from '../checks/localization.js';
 import { runChecks as runContentChecks } from '../checks/content.js';
+import { runChecks as runTaxonomyChecks } from '../checks/taxonomy.js';
 import { clearPageStatusCache, getAdminUrl } from '../checks/adminStatus.js';
 
 const DEF_NOT_FOUND = 'Not found';
@@ -28,6 +29,7 @@ const localizationIssues = signal([]);
 const localizationClosed = signal(false);
 const fragmentsResult = signal({ icon: 'purple', title: 'Unpublished fragments', description: 'Checking...' });
 const placeholdersResult = signal({ icon: 'purple', title: 'Unresolved placeholders', description: 'Checking...' });
+const taxonomyResults = signal([]);
 
 const FRAGMENT_REASONS = {
   unpublished: 'not published',
@@ -43,6 +45,24 @@ const listFragments = ({ items = [], unchecked = [] }) => [
 
 const listPlaceholders = ({ items = [] }) => items
   .map(({ key, where }) => html`<li><code>${key}</code> (${where})</li>`);
+
+const listTaxonomy = ({ items = [] }) => items.map((item) => {
+  if (typeof item === 'string') return html`<li><code>${item}</code></li>`;
+  const reasons = ` (${item.reasons.join(', ')})`;
+  if (item.path) return html`<li><a href=${item.path} target=_blank>${item.path}</a>${reasons}</li>`;
+  const fix = item.suggestion && html`, try <code>${item.suggestion}</code>`;
+  return html`<li><code>${item.segment}</code>${reasons}${fix}</li>`;
+});
+
+function getTaxonomyResults() {
+  taxonomyResults.value = runTaxonomyChecks({ area: document }).map((res) => ({
+    // Advisory only: a failing taxonomy check is a warning, never a red error.
+    icon: res.status === 'fail' ? 'orange' : STATUS_TO_ICON_MAP[res.status],
+    title: res.title,
+    description: res.description,
+    list: listTaxonomy(res.details ?? {}),
+  }));
+}
 
 async function getContentResults() {
   const [fragments, placeholders] = runContentChecks({ area: document });
@@ -359,6 +379,7 @@ function LocalizationIssuesList({ issues }) {
 export default function General() {
   useEffect(() => {
     setContent(); getStructureResults(); getLocalizationResults(); getContentResults();
+    getTaxonomyResults();
   }, []);
 
   const allChecked = Object.values(content.value)
@@ -403,6 +424,16 @@ export default function General() {
           <${StructureItem} ...${placeholdersResult.value} />
         </div>
       </div>
+      ${taxonomyResults.value.length > 0 && html`
+        <p class="preflight-structure-title">Page naming and placement</p>
+        <div class=preflight-structure-columns>
+          <div class=preflight-column>
+            ${taxonomyResults.value.slice(0, 2).map((res) => html`<${StructureItem} ...${res} />`)}
+          </div>
+          <div class=preflight-column>
+            ${taxonomyResults.value.slice(2).map((res) => html`<${StructureItem} ...${res} />`)}
+          </div>
+        </div>`}
       <p class="preflight-structure-title">Content</p>
       ${Object.keys(content.value).map((key) => html`<${ContentGroup} name=${key} group=${content.value[key]} />`)}
     </div>
