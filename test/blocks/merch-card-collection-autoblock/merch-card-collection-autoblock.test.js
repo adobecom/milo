@@ -34,6 +34,7 @@ import init, {
   derivedSelections,
   selectCategory,
   mountProductPricingFilter,
+  isModalHash,
 } from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { getFedsPlaceholderConfig, setConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
@@ -991,12 +992,70 @@ describe('merch-card-collection autoblock', () => {
     };
 
     // The clear button's label comes from the gnav placeholders; no fetch in tests.
-    before(() => setConfig({ ...conf, placeholders: { 'clear-results': 'Clear results' } }));
+    before(() => setConfig({ ...conf, placeholders: { 'clear-results': 'Clear results', 'filter-pill-suffix': 'filter' } }));
     after(() => setConfig(conf));
 
     afterEach(() => {
       window.location.hash = '';
       document.body.innerHTML = '';
+    });
+
+    it('every bar-filter radio has accessible name "<label> filter"', async () => {
+      const { container } = mount();
+      const inputs = [...container.querySelectorAll('.product-pricing-filter-bar input[name="bar-filter"]')];
+      expect(inputs.length).to.be.greaterThan(1);
+      const check = () => inputs.forEach((input) => {
+        expect(input.getAttribute('aria-label')).to.equal(`${input.parentElement.textContent.trim()} filter`);
+      });
+      check();
+      await delay(0);
+      check();
+      expect(inputs.map((i) => i.parentElement.textContent.trim())).to.deep.equal(['Featured', 'Photo']);
+    });
+
+    it('filter word comes from replaceKey and falls back to English "filter"', async () => {
+      const { placeholders } = getFedsPlaceholderConfig();
+      try {
+        placeholders['filter-pill-suffix'] = 'Filtro';
+        let { container } = mount();
+        await delay(0);
+        expect(container.querySelector('input[name="bar-filter"]').getAttribute('aria-label')).to.equal('Featured Filtro');
+        document.body.innerHTML = '';
+        // An unresolved key comes back as its de-hyphenated text: keep English.
+        placeholders['filter-pill-suffix'] = 'filter pill suffix';
+        ({ container } = mount());
+        await delay(0);
+        expect(container.querySelector('.product-pricing-filter-bar')).to.exist;
+        expect(container.querySelector('input[name="bar-filter"]').getAttribute('aria-label')).to.equal('Featured filter');
+      } finally {
+        placeholders['filter-pill-suffix'] = 'filter';
+      }
+    });
+
+    it('bar-pricing and drawer pills get no added aria-label', async () => {
+      const { container } = mount();
+      await delay(0);
+      const others = [
+        ...container.querySelectorAll('input[name="bar-pricing"]'),
+        ...container.querySelectorAll('.product-pricing-drawer .product-pricing-pill input'),
+      ];
+      expect(others.length).to.be.greaterThan(0);
+      others.forEach((input) => expect(input.hasAttribute('aria-label')).to.be.false);
+    });
+
+    it('toggling a bar-filter pill filters cards as before', async () => {
+      const { container } = mount();
+      const params = () => new URLSearchParams(window.location.hash.slice(1));
+      const radio = (value) => container.querySelector(`.product-pricing-filter-bar input[name="bar-filter"][value="${value}"]`);
+      radio('photo').click();
+      expect(params().get('filter')).to.equal('photo');
+      // The drawer mirrors the hash on hashchange, which fires asynchronously.
+      await delay(50);
+      expect(container.querySelector('.product-pricing-drawer input[value="photo"]').checked).to.be.true;
+      radio('featured').click();
+      expect(params().get('filter')).to.equal('featured');
+      await delay(50);
+      expect(container.querySelector('.product-pricing-drawer input[value="featured"]').checked).to.be.true;
     });
 
     it('seeds the defaults and renders both surfaces', () => {
@@ -1335,6 +1394,67 @@ describe('merch-card-collection autoblock', () => {
       expect([...counts.children].map((el) => el.firstChild)).to.deep.equal([applied, results]);
       emit(7);
       expect(counts.textContent).to.equal('1 Applied7 Results');
+    });
+
+    describe('modal hash handling', () => {
+      const trigger = (container) => container.querySelector('.product-pricing-trigger-label').textContent;
+      const closeModalTo = async (hash) => {
+        window.history.pushState(window.history.state, '', `${window.location.pathname}${window.location.search}${hash}`);
+        window.dispatchEvent(new CustomEvent('milo:modal:closed'));
+        await delay(50);
+      };
+
+      it('tells a modal id from a filter state', () => {
+        expect(isModalHash('#mini-plans-web-cta-creative-cloud-card')).to.be.true;
+        expect(isModalHash('#filter=featured&pricing=individuals')).to.be.false;
+        expect(isModalHash('#')).to.be.false;
+        expect(isModalHash('')).to.be.false;
+      });
+
+      it('keeps the count while a modal hash is active', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        expect(trigger(container)).to.contain('(2)');
+        window.location.hash = 'mini-plans-web-cta-creative-cloud-card';
+        await delay(50);
+        expect(trigger(container)).to.contain('(2)');
+      });
+
+      it('keeps the count and pills once the pre-modal hash is restored', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        window.location.hash = 'mini-plans-web-cta-creative-cloud-card';
+        await delay(50);
+        await closeModalTo('#filter=featured&pricing=individuals');
+        expect(trigger(container)).to.contain('(2)');
+        expect(window.location.hash).to.equal('#filter=featured&pricing=individuals');
+        const checked = [...container.querySelectorAll('.product-pricing-filter-bar .product-pricing-pill input:checked')]
+          .map((i) => i.value);
+        expect(checked).to.include('featured');
+        expect(checked).to.include('individuals');
+      });
+
+      it('re-syncs when the restored hash differs from what the bar shows', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        window.location.hash = 'mini-plans-web-cta-creative-cloud-card';
+        await delay(50);
+        await closeModalTo('#filter=photo');
+        expect(trigger(container)).to.contain('(1)');
+      });
+
+      it('still syncs on a real filter hash change', async () => {
+        const { container } = mount();
+        window.location.hash = 'filter=featured&pricing=individuals';
+        await delay(50);
+        expect(trigger(container)).to.contain('(2)');
+        window.location.hash = 'filter=photo';
+        await delay(50);
+        expect(trigger(container)).to.contain('(1)');
+      });
     });
 
     describe('accessibility', () => {

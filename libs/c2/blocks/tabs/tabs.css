@@ -104,6 +104,14 @@
         outline: var(--s2a-border-width-sm) solid var(--s2a-color-focus-ring-default);
         outline-offset: -2px;
       }
+
+      /* two-tone inset ring: blue-900 clears 3:1 on both the pill and the bar, in light and dark */
+      &[aria-selected="true"]:focus-visible {
+        outline: var(--s2a-border-width-md) solid transparent;
+        box-shadow:
+          inset 0 0 0 var(--s2a-border-width-md) var(--s2a-color-blue-900),
+          inset 0 0 0 var(--s2a-border-width-lg) var(--s2a-color-background-default);
+      }
     }
   }
 
