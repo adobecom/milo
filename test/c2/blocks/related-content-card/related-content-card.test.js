@@ -1,10 +1,10 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
+import { getConfig, loadBlock, setConfig } from '../../../../libs/utils/utils.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-setConfig({ locales });
+setConfig({ locales, codeRoot: '/libs', miloLibs: '/libs' });
 const config = getConfig();
 // Resolve reading-time placeholders locally so tests never hit the network.
 config.placeholders = { '1-min-read': '1 min read', '5-min-read': '5 min read' };
@@ -345,5 +345,27 @@ describe('related-content-card', () => {
     expect(anchor).to.exist;
     expect(anchor.getAttribute('href')).to.contain('/mock/missing');
     expect(block.querySelector('h3')).to.be.null;
+  });
+});
+
+describe('related-content-card C2 routing', () => {
+  it('loads from the C2 directory on a foundation=c2 page', async () => {
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    document.head.append(foundation);
+    const block = document.createElement('div');
+    block.className = 'related-content-card';
+    document.body.append(block);
+    try {
+      await loadBlock(block);
+
+      expect(block.dataset.reason).to.be.undefined;
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(document.head.querySelector('link[href$="/c2/blocks/related-content-card/related-content-card.css"]')).to.exist;
+    } finally {
+      block.remove();
+      foundation.remove();
+    }
   });
 });

@@ -1,7 +1,9 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
-import { getConfig, setConfig, MILO_EVENTS } from '../../../../libs/utils/utils.js';
+import {
+  getConfig, setConfig, loadBlock, MILO_EVENTS,
+} from '../../../../libs/utils/utils.js';
 import { closeModal } from '../../../../libs/blocks/modal/modal.js';
 import initAuthor from '../../../../libs/blocks/blog-author/blog-author.js';
 import initSideNavigation from '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.js';
@@ -28,17 +30,20 @@ const placeholders = {
   'jump-to-section': 'JUMP TO SECTION',
 };
 
-setConfig({
+const suiteConfig = {
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
   miloLibs: '/libs',
   codeRoot: '/libs',
   placeholders,
-});
+};
+setConfig(suiteConfig);
 window.lana = { log: stub() };
 
 const svgText = await readFile({ path: '../../../../libs/c2/blocks/blog-header/blog-header.svg' });
 const blogHeaderCss = await readFile({ path: '../../../../libs/c2/blocks/blog-header/blog-header.css' });
 const sideNavigationCss = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+// C2 pages load the C2 styles.css (S2A tokens, grid margins, nav height) instead of core styles.
+const c2StylesCss = await readFile({ path: '../../../../libs/c2/styles/styles.css' });
 
 function buildProfile({
   name = 'Profile Name',
@@ -916,10 +921,7 @@ describe('blog-header author layout', () => {
   let originalLang;
 
   before(async () => {
-    css = (await Promise.all([
-      readFile({ path: '../../../../libs/styles/styles.css' }),
-      readFile({ path: '../../../../libs/c2/blocks/blog-header/blog-header.css' }),
-    ])).join('\n');
+    css = `${c2StylesCss}\n${blogHeaderCss}`;
   });
 
   beforeEach(() => {
@@ -948,7 +950,7 @@ describe('blog-header author layout', () => {
   };
 
   Object.entries(longTitles).forEach(([language, title]) => {
-    [600, 768, 1024, 1199, 1200, 1440].forEach((width) => {
+    [768, 1024, 1279, 1280, 1440].forEach((width) => {
       it(`uses the responsive author layout with a long ${language} title at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
         document.documentElement.lang = language === 'Japanese' ? 'ja' : 'en';
@@ -964,7 +966,7 @@ describe('blog-header author layout', () => {
         const share = block.querySelector('.blog-header-share').getBoundingClientRect();
         const byline = block.querySelector('.blog-header-byline');
 
-        if (width < 1200) {
+        if (width < 1280) {
           expect(first.width).to.be.closeTo(second.width, 0.5);
           expect(second.top).to.be.greaterThan(first.bottom);
           expect(first.left).to.be.closeTo(second.left, 0.5);
@@ -985,11 +987,11 @@ describe('blog-header author layout', () => {
         authors.forEach((author) => {
           expect(getComputedStyle(author).maxWidth).to.equal('none');
           expect(author.querySelector('.blog-header-author-avatar').getBoundingClientRect().width)
-            .to.equal(width < 1200 ? 48 : 64);
+            .to.equal(width < 1280 ? 48 : 64);
           expect(author.scrollWidth).to.be.at.most(author.clientWidth);
         });
         expect(block.querySelector('.blog-header-share svg').getBoundingClientRect().width)
-          .to.equal(width < 1200 ? 16 : 22);
+          .to.equal(width < 1280 ? 16 : 22);
       });
     });
   });
@@ -1020,7 +1022,7 @@ describe('blog-header author layout', () => {
     expect(author.width).to.be.closeTo(group.width, 0.5);
   });
 
-  [375, 599, 600, 1199].forEach((width) => {
+  [375, 767, 768, 1279].forEach((width) => {
     it(`preserves stacked authors and the share button at ${width}px`, async () => {
       await setViewport({ width, height: 900 });
       const { block } = buildBlock({ authors: 2, link: false });
@@ -1229,8 +1231,8 @@ describe('blog-header section dividers', () => {
     beforeEach(() => {
       fetchStub = mockFetch();
       style = document.createElement('style');
-      // Core styles.css positions every top-level section.
-      style.textContent = `main > .section { position: relative; }\n${blogHeaderCss}\n${sideNavigationCss}`;
+      // C2 styles.css supplies the S2A tokens and grid margins and positions every section.
+      style.textContent = `${c2StylesCss}\n${blogHeaderCss}\n${sideNavigationCss}`;
       document.head.append(style);
     });
 
@@ -1239,14 +1241,17 @@ describe('blog-header section dividers', () => {
       await setViewport(originalViewport);
     });
 
-    function buildStyledSections(options) {
-      const fixture = buildSections(options);
-      fixture.main.style.cssText = '--grid-margins-width: 120px; '
-        + '--grid-container-width: calc(100% - 240px); --color-gray-400: #B6B6B6;';
-      return fixture;
-    }
-
     const rects = (elements) => elements.map((element) => element.getBoundingClientRect().toJSON());
+
+    // C2 gutters are layout padding, so the rail's grid-column-1 area starts inside them.
+    function contentBox(element) {
+      const rect = element.getBoundingClientRect();
+      const { paddingLeft, paddingRight } = getComputedStyle(element);
+      return {
+        left: rect.left + parseFloat(paddingLeft),
+        right: rect.right - parseFloat(paddingRight),
+      };
+    }
 
     function disableRule(selector) {
       style.sheet.insertRule(`${selector} { content: none !important; }`, style.sheet.cssRules.length);
@@ -1254,7 +1259,7 @@ describe('blog-header section dividers', () => {
 
     it('reserves the header gap before the sidenav loads and keeps it after', async () => {
       await setViewport({ width: 1440, height: 900 });
-      const fixture = buildStyledSections();
+      const fixture = buildSections();
       const { main, headerSection, block } = fixture;
       await init(block);
       const firstArticle = main.children[1];
@@ -1270,7 +1275,7 @@ describe('blog-header section dividers', () => {
 
     it('draws the sidenav rule midway through the gap from the header rule to the article end', async () => {
       await setViewport({ width: 1440, height: 900 });
-      const fixture = buildStyledSections();
+      const fixture = buildSections();
       await init(fixture.block);
       const { layout, article, navigation } = await addSideNavigation(fixture);
       const gap = parseFloat(getComputedStyle(layout).columnGap);
@@ -1278,13 +1283,12 @@ describe('blog-header section dividers', () => {
       const layoutRect = layout.getBoundingClientRect();
       expect(frame.content).to.equal('""');
       expect(frame.pointerEvents).to.equal('none');
-      expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
+      expect(frame.backgroundImage).to.include('rgb(198, 198, 198)');
       expect(gap).to.equal(112);
       expect(navigation.getBoundingClientRect().width).to.equal(280);
-      expect(layoutRect.left + parseFloat(frame.left) - navigation.getBoundingClientRect().right)
-        .to.be.closeTo(56, 0.5);
-      expect(layoutRect.left + parseFloat(frame.left) + gap / 2)
-        .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
+      const ruleLeft = contentBox(layout).left + parseFloat(frame.left);
+      expect(ruleLeft - navigation.getBoundingClientRect().right).to.be.closeTo(56, 0.5);
+      expect(ruleLeft + gap / 2).to.be.closeTo(article.getBoundingClientRect().left, 0.5);
       expect(layoutRect.top + parseFloat(frame.top))
         .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
       expect(layoutRect.top + parseFloat(frame.top) + parseFloat(frame.height))
@@ -1298,20 +1302,20 @@ describe('blog-header section dividers', () => {
 
     it('mirrors the sidenav rule in right-to-left layouts', async () => {
       await setViewport({ width: 1440, height: 900 });
-      const fixture = buildStyledSections();
+      const fixture = buildSections();
       fixture.main.dir = 'rtl';
       await init(fixture.block);
       const { layout, article } = await addSideNavigation(fixture);
       const gap = parseFloat(getComputedStyle(layout).columnGap);
       const frame = getComputedStyle(layout, '::before');
       expect(gap).to.equal(112);
-      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap / 2)
+      expect(contentBox(layout).right - parseFloat(frame.right) - gap / 2)
         .to.be.closeTo(article.getBoundingClientRect().right, 0.5);
     });
 
     it('leaves the sidenav layout unchanged when no-dividers is set', async () => {
       await setViewport({ width: 1440, height: 900 });
-      const fixture = buildStyledSections({ noDividers: true });
+      const fixture = buildSections({ noDividers: true });
       await init(fixture.block);
       const { layout, article, navigation } = await addSideNavigation(fixture);
       const { top } = layout.getBoundingClientRect();
@@ -1323,10 +1327,10 @@ describe('blog-header section dividers', () => {
       expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
     });
 
-    [599, 375].forEach((width) => {
+    [767, 375].forEach((width) => {
       it(`moves the header rule below the sidenav in the stacked layout at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
-        const fixture = buildStyledSections();
+        const fixture = buildSections();
         await init(fixture.block);
         expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('""');
         const { layout, article, navigation } = await addSideNavigation(fixture);
@@ -1340,9 +1344,9 @@ describe('blog-header section dividers', () => {
         const ruleTop = article.getBoundingClientRect().top + parseFloat(rule.top);
         expect(rule.content).to.equal('""');
         expect(rule.pointerEvents).to.equal('none');
-        expect(rule.blockSize).to.equal(width < 600 ? '1.5px' : '2px');
-        expect(rule.borderImageSource).to.include(width < 600
-          ? 'linear-gradient(rgb(192, 192, 192), rgb(192, 192, 192))'
+        expect(rule.blockSize).to.equal(width < 768 ? '1.5px' : '2px');
+        expect(rule.borderImageSource).to.include(width < 768
+          ? 'linear-gradient(rgb(198, 198, 198), rgb(198, 198, 198))'
           : 'repeating-linear-gradient');
         expect(rule.borderImageOutset).to.equal(`0 ${width}px`);
         expect(ruleTop - navRect.bottom).to.equal(56);
@@ -1351,10 +1355,10 @@ describe('blog-header section dividers', () => {
       });
     });
 
-    [600, 768, 1199].forEach((width) => {
+    [768, 1024, 1279].forEach((width) => {
       it(`keeps header and vertical sidenav rules in the tablet rail layout at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
-        const fixture = buildStyledSections();
+        const fixture = buildSections();
         await init(fixture.block);
         const { layout, article, navigation } = await addSideNavigation(fixture);
         const gap = parseFloat(getComputedStyle(layout).columnGap);
@@ -1364,10 +1368,9 @@ describe('blog-header section dividers', () => {
         expect(getComputedStyle(article, '::before').content).to.equal('none');
         expect(getComputedStyle(navigation).position).to.equal('sticky');
         expect(gap).to.equal(64);
-        expect(layout.getBoundingClientRect().left + parseFloat(rule.left)
-          - navigation.getBoundingClientRect().right).to.be.closeTo(32, 0.5);
-        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap / 2)
-          .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
+        const ruleLeft = contentBox(layout).left + parseFloat(rule.left);
+        expect(ruleLeft - navigation.getBoundingClientRect().right).to.be.closeTo(32, 0.5);
+        expect(ruleLeft + gap / 2).to.be.closeTo(article.getBoundingClientRect().left, 0.5);
         expect(layout.getBoundingClientRect().top + parseFloat(rule.top))
           .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
       });
@@ -1375,18 +1378,21 @@ describe('blog-header section dividers', () => {
 
     it('positions the frame 56px into the gutters above section backgrounds without changing layout', async () => {
       await setViewport({ width: 1440, height: 900 });
-      const { main, headerSection, block } = buildStyledSections();
+      const { main, headerSection, block } = buildSections();
       const tableSection = main.children[1];
       tableSection.style.cssText = 'position: relative; display: grid; background: white';
       await init(block);
 
       const frame = getComputedStyle(headerSection, '::before');
+      // --grid-margin-width is 8.333% (~120px at 1440px), so the frame sits ~64px in.
+      const gutter = parseFloat(getComputedStyle(block).paddingInlineStart);
       expect(frame.content).to.equal('""');
-      expect(frame.insetInlineStart).to.equal('64px');
-      expect(frame.insetInlineEnd).to.equal('64px');
+      expect(gutter).to.be.closeTo(120, 0.5);
+      expect(parseFloat(frame.insetInlineStart)).to.be.closeTo(gutter - 56, 0.01);
+      expect(parseFloat(frame.insetInlineEnd)).to.be.closeTo(gutter - 56, 0.01);
       expect(frame.zIndex).to.equal('1');
       expect(frame.pointerEvents).to.equal('none');
-      expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
+      expect(frame.backgroundImage).to.include('rgb(198, 198, 198)');
       expect(parseFloat(frame.blockSize)).to.be.closeTo(frameHeight(headerSection), 0.01);
       expect(getComputedStyle(tableSection).display).to.equal('grid');
 
@@ -1395,10 +1401,10 @@ describe('blog-header section dividers', () => {
       expect(rects([...main.children])).to.deep.equal(before);
     });
 
-    [600, 768, 1199].forEach((width) => {
+    [768, 1024, 1279].forEach((width) => {
       it(`insets both outer dividers 40px without changing tablet layout at ${width}px`, async () => {
         await setViewport({ width, height: 900 });
-        const { main, headerSection, block } = buildStyledSections();
+        const { main, headerSection, block } = buildSections();
         await init(block);
         const frame = getComputedStyle(headerSection, '::before');
         expect(frame.content).to.equal('""');
@@ -1412,9 +1418,9 @@ describe('blog-header section dividers', () => {
     });
 
     it('clamps desktop frame offsets at the viewport edge when the gutters are narrower than 56px', async () => {
-      await setViewport({ width: 1200, height: 900 });
-      const { main, headerSection, block } = buildStyledSections();
-      main.style.setProperty('--grid-margins-width', '40px');
+      await setViewport({ width: 1280, height: 900 });
+      const { main, headerSection, block } = buildSections();
+      main.style.setProperty('--grid-margin-width', '40px');
       await init(block);
       const frame = getComputedStyle(headerSection, '::before');
       expect(frame.insetInlineStart).to.equal('0px');
@@ -1423,7 +1429,7 @@ describe('blog-header section dividers', () => {
 
     it('hides vertical framing on mobile while retaining the full-width header rule', async () => {
       await setViewport({ width: 375, height: 900 });
-      const { headerSection, block } = buildStyledSections();
+      const { headerSection, block } = buildSections();
       await init(block);
       expect(getComputedStyle(headerSection, '::before').content).to.equal('none');
       const bottom = getComputedStyle(headerSection, '::after');
@@ -1432,7 +1438,7 @@ describe('blog-header section dividers', () => {
         .to.be.closeTo(headerSection.getBoundingClientRect().width, 0.01);
       expect(bottom.blockSize).to.equal('1.5px');
       expect(bottom.backgroundImage)
-        .to.equal('linear-gradient(rgb(192, 192, 192), rgb(192, 192, 192))');
+        .to.equal('linear-gradient(rgb(198, 198, 198), rgb(198, 198, 198))');
     });
   });
 });
@@ -1493,7 +1499,7 @@ describe('blog-header reading progress', () => {
     scrollStub = stub(window, 'scrollY').get(() => scrollTop);
     heightStub = stub(window, 'innerHeight').get(() => viewportHeight);
     style = document.createElement('style');
-    style.textContent = blogHeaderCss;
+    style.textContent = `${c2StylesCss}\n${blogHeaderCss}`;
     document.head.append(style);
   });
 
@@ -1671,7 +1677,7 @@ describe('blog-header reading progress', () => {
 
   [false, true].forEach((noDividers) => {
     it(`follows stage's mobile divider and tablet rail with no-dividers=${noDividers}`, async () => {
-      await setViewport({ width: 599, height: 900 });
+      await setViewport({ width: 767, height: 900 });
       scrollTop = 0;
       style.textContent += sideNavigationCss;
       const { main, block, headerSection } = buildArticle();
@@ -1687,16 +1693,18 @@ describe('blog-header reading progress', () => {
       const bar = block.querySelector('.blog-progress-bar');
       expect(getComputedStyle(navigation).display).to.equal('contents');
       const gap = noDividers ? 32 : 113.5;
-      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 - 4);
+      // Half the 8px bar centers it on the divider; C2's PROGRESS_BAR_OFFSET lifts it 4px.
+      const offset = -4 - 4;
+      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 + offset);
       expect(progress(bar)).to.equal(0);
       await scrollTo(600);
-      expect(parseFloat(bar.style.top)).to.equal(64);
+      expect(parseFloat(bar.style.top)).to.equal(64 - 4);
       await scrollTo(0);
-      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 - 4);
-      for (const width of [600, 1199, 1440]) {
+      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 + offset);
+      for (const width of [768, 1279, 1440]) {
         await setViewport({ width, height: 900 });
         await nextFrame();
-        expect(parseFloat(bar.style.top)).to.equal(395);
+        expect(parseFloat(bar.style.top)).to.equal(400 - 1 + offset);
       }
     });
   });
@@ -2027,5 +2035,43 @@ describe('blog-header share modal', () => {
     expect(button.classList.contains('blog-share-copied')).to.equal(false);
     await clock.tickAsync(3000);
     expect(feedback.textContent).to.equal('');
+  });
+});
+
+describe('blog-header C2 routing', () => {
+  let fetchStub;
+
+  beforeEach(() => {
+    fetchStub = mockFetch();
+  });
+
+  afterEach(async () => {
+    await cleanup();
+    fetchStub.restore();
+    setConfig(suiteConfig);
+  });
+
+  it('loads the block from the Milo C2 directory on a foundation=c2 page', async () => {
+    setConfig({
+      codeRoot: '/libs',
+      miloLibs: '/libs',
+      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+    });
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    document.head.append(foundation);
+    const { block } = buildBlock();
+    const cssHref = '/libs/c2/blocks/blog-header/blog-header.css';
+    try {
+      await loadBlock(block);
+
+      expect(block.dataset.reason).to.be.undefined;
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(document.querySelector(`link[href="${cssHref}"]`)).to.exist;
+    } finally {
+      foundation.remove();
+      document.querySelector(`link[href="${cssHref}"]`)?.remove();
+    }
   });
 });
