@@ -11,6 +11,7 @@ foundation.name = 'foundation';
 foundation.content = 'c2';
 document.head.append(foundation);
 const { default: init } = await import('../../../libs/c2/blocks/aside-c2/aside-c2.js');
+const { inheritViewportContent } = await import('../../../libs/utils/utils.js');
 
 const loadStyle = (path) => new Promise((resolve) => {
   const link = document.createElement('link');
@@ -29,6 +30,7 @@ describe('aside-c2', () => {
   beforeEach(async () => {
     await setViewport(DESKTOP);
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    inheritViewportContent(document.body);
     document.querySelectorAll('.aside-c2').forEach(init);
   });
 
