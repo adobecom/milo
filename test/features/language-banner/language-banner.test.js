@@ -3,6 +3,8 @@ import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import {
   setConfig,
+  getConfig,
+  getMarketConfig,
   setLangRoutingConfig,
   decorateLanguageBanner,
   getLangRoutingConfig,
@@ -376,14 +378,20 @@ describe('Language Banner', () => {
     });
 
     it('sets banner routing when supported market and browser prefers another language available for geo', async () => {
-      fetchStub.callsFake(defaultFetchForLanguageBanner(marketsWithFrSupportedInDe, true));
+      fetchStub.callsFake(
+        defaultFetchForLanguageBanner({ languages: marketsWithFrSupportedInDe }, true),
+      );
       setPathConfig('/de/page');
       Object.defineProperty(navigator, 'language', { value: 'fr-FR', configurable: true });
+      await getMarketConfig();
+      const cached = getConfig().marketsConfig;
       await decorateLanguageBanner();
       const cfg = getLangRoutingConfig();
       expect(cfg?.showBanner).to.equal(true);
       expect(cfg?.showModal).to.equal(false);
       expect(cfg?.markets?.some((m) => m.prefix === 'fr')).to.equal(true);
+      expect(fetchStub.withArgs(sinon.match('supported-markets')).calledOnce).to.be.true;
+      expect(getConfig().marketsConfig).to.equal(cached);
     });
 
     it('onlybanner flow sets single-market banner when a candidate page exists', async () => {

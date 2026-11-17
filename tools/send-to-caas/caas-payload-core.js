@@ -3,8 +3,9 @@
 // This is a LEAF module: it intentionally does NOT import libs/utils/utils.js or
 // libs/blocks/caas/utils.js, so it can be bundled into a single self-contained
 // file (those two files drag in Milo's entire bootstrap + lazy chunks, which
-// breaks bundling). The only libs/ import allowed here is getUuid.js, which is
-// itself leaf-safe (only uses crypto.subtle / TextEncoder).
+// breaks bundling). The only libs/ imports allowed here are getUuid.js and
+// caasIdentity.js, which are themselves leaf-safe (getUuid only uses
+// crypto.subtle / TextEncoder; caasIdentity is pure string logic).
 //
 // The functions inlined below (getMetadata, lingoActive, getLocale, LOCALES,
 // LANGS, getPageLocale, getGrayboxExperienceId and the lang-first subsystem) are
@@ -17,6 +18,13 @@
 /* eslint-disable compat/compat */
 /* eslint-disable no-underscore-dangle */
 import getUuid from '../../libs/utils/getUuid.js';
+import {
+  toIdentityUrl,
+  policyAltersIdentity,
+  isForcedHtmlIdentityUrl,
+  isHtmlIdentityEnabled,
+  isLegacyHtmlExtEnabled,
+} from '../../libs/utils/caasIdentity.js';
 // The 706KB caas-tags.js taxonomy is NOT imported here. It is only needed as a
 // fallback when the network tag fetch fails, so the host injects it lazily via
 // setConfig({ getCaasTagsFallback }). Keeping it out of the leaf means: (a) the
@@ -1073,6 +1081,14 @@ function localizeCtaUrl(val, options = {}) {
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
  */
+// The hash input for contentId/entityId. Deliberately separate from
+// options.prodUrl, which continues to drive the public url, uci and CTA urls:
+// BACOM publishes extensionless public urls while keeping its existing
+// `.html`-derived card identities, so the two must not be coupled.
+const getIdentityUrl = (options = {}) => (
+  toIdentityUrl(options.prodUrl, options.htmlIdentity, options.htmlIdentitySections)
+);
+
 const props = {
   arbitrary: (s) => getKeyValPairs(s).map((pair) => (pair)),
   badgeimage: () => getImagePathMd('badgeimage'),
@@ -1092,7 +1108,7 @@ const props = {
   cardtitle: 0,
   cardimage: () => getCardImageUrl(),
   cardimagealttext: (s) => s || getCardImageAltText(),
-  contentid: (_, options) => getUuid(options.prodUrl),
+  contentid: (_, options) => getUuid(getIdentityUrl(options)),
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
@@ -1131,7 +1147,7 @@ const props = {
   entityid: (_, options) => {
     const floodGateColor = options.floodgatecolor || getMetadata('floodgatecolor') || '';
     const salt = floodGateColor === 'default' || floodGateColor === '' ? '' : floodGateColor;
-    return getUuid(`${options.prodUrl}${salt}`);
+    return getUuid(`${getIdentityUrl(options)}${salt}`);
   },
   env: (s) => s || '',
   eventduration: 0,
@@ -1313,10 +1329,77 @@ const isDisabledOnPage = (dom) => {
   });
 };
 
+// Tagged `caas,htmlIdentity` to match the consumer-side diagnostics in
+// libs/blocks/caas/utils.js and send-to-caas.js. These must share a tag: the
+// whole point of this path is that one lana query retrieves every identity
+// diagnostic, and `caas` alone buries them under unrelated CaaS logging.
+//
+// `tags` is overridable because this is also the only diagnostic channel the
+// auto-publish module has, and some of its messages are not about identity at
+// all (an unrecognized `enabled` value, the rule-disabled kill switch, an
+// unknown caasEnv). Shipping those under `htmlIdentity` means that when the
+// rollout finishes and someone mutes or retires that tag, they silence the
+// message telling them a site has stopped publishing. Those call sites pass
+// `caas,autoPublish` instead.
+export const createIdentityLogger = (prefix, tags = 'caas,htmlIdentity') => (message, severity = 'error') => {
+  const msg = `${prefix}: ${message}`;
+  if (typeof window !== 'undefined' && window.lana?.log) {
+    window.lana.log(msg, { tags, severity, sampleRate: 100 });
+    return;
+  }
+  // `console` is not guaranteed: the poller runs this bundle in a Node `vm`
+  // whose sandbox is an explicit allowlist, so a future context that omits it
+  // would turn a diagnostic into a ReferenceError on the removal path.
+  // eslint-disable-next-line no-console
+  if (typeof console !== 'undefined') console[severity === 'warning' ? 'warn' : 'error'](msg);
+};
+
+const logIdentity = createIdentityLogger('caas-identity');
+
+// Companion sentinel to HTML_IDENTITY_UNSET below, for the qualifier rather
+// than the flag. An omitted section list is NOT the same fact as an explicitly
+// empty one: empty means "this site publishes nothing extensionless", while
+// omitted means "this caller does not know". Collapsing the two is what lets a
+// caller supply half the policy and get silence -- it forces `.html` onto a
+// section the site publishes bare, orphaning every card in it.
+//
+// This matters across the repo boundary: the bundled payload builder is called
+// by the external milo-caas service, which resolves its own config. Until that
+// service learns to read htmlIdentitySections it passes the flag alone, and
+// nothing in-process can detect the divergence -- the convergence guard in
+// auto-publish.js compares variants within one runtime, not across runtimes.
+const SECTIONS_UNSET = Symbol('htmlIdentitySections-unset');
+
+// Warns on the one combination that silently orphans a section: the policy ON,
+// the url in scope, and the qualifier never supplied (SECTIONS_UNSET). An
+// explicit '' is left alone -- that is a site declaring it has no
+// extensionless sections, which is both legitimate and the common case.
+const resolveSections = (sections, htmlIdentity, prodUrl, caller) => {
+  if (sections !== SECTIONS_UNSET) return sections;
+  if (isHtmlIdentityEnabled(htmlIdentity) && isForcedHtmlIdentityUrl(prodUrl)) {
+    logIdentity(
+      `${caller} called with htmlIdentity on but no htmlIdentitySections for in-scope url `
+      + `'${prodUrl}'. If this site publishes any section without the extension (e.g. `
+      + '/blog), those cards are being minted under ids no card holds. Callers (notably '
+      + 'the milo-caas poller) should pass the resolved htmlIdentitySections explicitly.',
+      'warning',
+    );
+  }
+  return '';
+};
+
 // Public payload builder: runs the full card -> XDM transform but stops before
 // posting, so non-browser hosts (e.g. the milo-caas scheduled service) can reuse
 // the exact business logic. The caller supplies the parsed DOM and decides what
 // to do with the result (post, skip on errors, skip when there are no tags, etc.).
+//
+// PRECONDITION -- NOT REENTRANT. This mutates module-global state (notably the
+// resolved `tags` accumulator and getConfig()-backed values), so concurrent
+// invocations interleave and can attribute one page's tags to another. This
+// matters because the function is bundled and handed to batch callers, for whom
+// `await Promise.all(pages.map(buildCaasXdmPayload))` is the obvious shape and
+// fails silently -- wrong tags on a valid-looking payload, not an exception.
+// Await each call in sequence; see the `for`-loop in auto-publish.js.
 const buildCaasXdmPayload = async ({
   dom,
   pageUrl,
@@ -1326,6 +1409,8 @@ const buildCaasXdmPayload = async ({
   floodgatecolor = 'default',
   languageFirst,
   autoDetectLingo,
+  htmlIdentity = false,
+  htmlIdentitySections = SECTIONS_UNSET,
 } = {}) => {
   setConfig({
     bulkPublish: true,
@@ -1336,15 +1421,25 @@ const buildCaasXdmPayload = async ({
     repo,
   });
   await loadCaasTags();
-  // Card identity (contentId/entityId, hashed from options.prodUrl) must be
+  // Card identity (contentId/entityId) is derived from this prodUrl via
+  // getIdentityUrl(), which applies the htmlIdentity policy before hashing --
+  // it is no longer hashed from prodUrl directly. prodUrl must still be
   // scheme-less to match the untouched legacy bulk-publish-to-caas.js tool's
   // own prodUrl convention, or the same page hashes to two different uuids
   // depending on which publisher touched it. `pageUrl` itself stays schemed
   // above (config.pageUrl) since getCaasProps' graybox lookup and the image
   // resolution in getImagePathMd both need to parse it as a real URL.
   const prodUrl = pageUrl?.replace(/^https?:\/\//, '') ?? pageUrl;
+  const sections = resolveSections(
+    htmlIdentitySections,
+    htmlIdentity,
+    prodUrl,
+    'buildCaasXdmPayload',
+  );
   const { caasMetadata, errors, tags, tagErrors } = await getCardMetadata({
     prodUrl,
+    htmlIdentity,
+    htmlIdentitySections: sections,
     host,
     repo,
     floodgatecolor,
@@ -1364,39 +1459,105 @@ const buildCaasXdmPayload = async ({
 const hasContentTypeTag = (tags) => Array.isArray(tags)
   && tags.some((id) => typeof id === 'string' && id.startsWith('caas:content-type'));
 
-// Canonical production-URL builder — the single source of how a card's identity
+// Canonical production-URL builder — the single source of how a card's PUBLIC
 // URL is formed, shared by every publisher (the browser bulk-publish hook, the
 // milo-caas poller, and the manual send-to-caas tool). Returns a scheme-qualified
 // URL (needed so callers can also use it as a real, parseable/fetchable URL —
 // e.g. buildCaasXdmPayload's graybox-experience-ID lookup via getCaasProps, or
-// getConfig().pageUrl-based image resolution). The exact PATHNAME portion is
-// what matters for card identity; buildCaasXdmPayload strips the scheme before
-// hashing it into contentId/entityId, to match the (untouched) legacy tool's
-// own scheme-less `${prodHost}${pathname}${useHtml ? '.html' : ''}` exactly.
-// `htmlExt` accepts a boolean or the string 'true' (config sheets store strings).
+// getConfig().pageUrl-based image resolution). buildCaasXdmPayload strips the
+// scheme before hashing, to match the (untouched) legacy tool's own scheme-less
+// `${prodHost}${pathname}${useHtml ? '.html' : ''}` exactly.
+// NOTE: this is no longer necessarily the string that gets hashed. When the
+// htmlIdentity policy is on, libs/utils/caasIdentity.js derives the identity URL
+// from this one so the public URL can go extensionless without changing ids.
+// `htmlExt` accepts a boolean or an authored string. It deliberately does NOT
+// use the canonical isFlagEnabled: this is a pre-existing live config column,
+// and both runtimes that read it -- resolveHtmlExt in the browser publisher and
+// this function in the poller bundle -- must parse it identically, or the two
+// publishers mint two contentIds for one page. See isLegacyHtmlExtEnabled.
 const getProdUrl = ({ host, path, htmlExt = false } = {}) => {
   if (!host || !path) return '';
   const bareHost = host.replace(/^https?:\/\//, '').replace(/\/$/, '');
   let cleanPath = path.startsWith('/') ? path : `/${path}`;
-  const wantHtml = htmlExt === true || htmlExt === 'true';
+  const wantHtml = isLegacyHtmlExtEnabled(htmlExt);
   if (wantHtml && !cleanPath.endsWith('.html')) cleanPath = `${cleanPath}.html`;
   if (!wantHtml && cleanPath.endsWith('.html')) cleanPath = cleanPath.slice(0, -'.html'.length);
   return `https://${bareHost}${cleanPath}`;
 };
 
+// `window.lana` only exists on pages that ran the Milo bootstrap (loadLana()).
+// The runtimes on this path differ, so this falls back to console rather than
+// assuming either way: the standalone bulk publisher page loads a single module
+// and no Milo scripts, da-live is not a Milo page, and the poller has no
+// `window` at all. bulk-publish-v2, by contrast, IS a Milo block -- it only
+// renders inside a Milo page, where scripts.js:103 ran loadLana -- so on that
+// host these messages DO reach lana. That is why the site-wide notice in
+// auto-publish.js is deduped: on the one runtime with lana, an unsuppressed
+// per-url notice is thousands of real warnings. Console remains the poller's
+// only channel, and the poller is where removal mismatches happen.
+// sampleRate is explicit because lana defaults to 1, i.e. it drops ~99% of
+// calls; these are rare per-page diagnostics, not volume telemetry.
+
+// Sentinel so an omitted htmlIdentity stays distinguishable from an explicit
+// `false` while keeping the parameter positional and last (eslint
+// default-param-last). An explicitly passed `undefined` resolves to the
+// sentinel too, which is what we want: a caller forwarding an unset variable
+// has also, in effect, omitted it.
+const HTML_IDENTITY_UNSET = Symbol('htmlIdentity-unset');
+
 // Compute the CaaS identifiers for a page from its prodUrl alone (no DOM needed).
 // Used for removal: a deactivated/deleted page's HTML is gone, but its card
-// identity is fully determined by the prodUrl, exactly as on publish
-// (contentId = uuid(prodUrl); entityId = uuid(prodUrl + floodgate salt)).
-const getCaasIds = async (prodUrl, floodgatecolor = 'default') => {
-  // Strip the scheme the same way buildCaasXdmPayload does before hashing, so a
-  // schemed prodUrl (e.g. from getProdUrl()) hashes to the same contentId/entityId
-  // as the one computed at publish time, instead of a different, unmatched id.
-  const bareProdUrl = prodUrl?.replace(/^https?:\/\//, '') ?? prodUrl;
+// identity is fully determined by the prodUrl, exactly as on publish:
+//   identityUrl = toIdentityUrl(prodUrl, htmlIdentity, sections)
+//   contentId   = uuid(identityUrl); entityId = uuid(identityUrl + floodgate salt)
+// IMPORTANT: callers MUST pass the same `htmlIdentity` AND the same
+// `htmlIdentitySections` the page was published under. Removal is matched by
+// id, so a mismatch does not error — it computes ids that match no card and
+// leaves the real one live in CaaS forever.
+
+const getCaasIds = async (
+  prodUrl,
+  floodgatecolor = 'default',
+  htmlIdentity = HTML_IDENTITY_UNSET,
+  htmlIdentitySections = SECTIONS_UNSET,
+) => {
+  const omitted = htmlIdentity === HTML_IDENTITY_UNSET;
+  const sections = resolveSections(htmlIdentitySections, htmlIdentity, prodUrl, 'getCaasIds');
+  // Removal has to reproduce the identity the page was published under, so it
+  // applies the same forced-`.html` policy as publish, including the site's
+  // extensionless sections. toIdentityUrl also strips the
+  // scheme the way buildCaasXdmPayload does before hashing, so a schemed
+  // prodUrl (e.g. straight from getProdUrl()) hashes to the same ids.
+  const identityUrl = toIdentityUrl(
+    prodUrl,
+    omitted ? false : htmlIdentity,
+    sections,
+  );
+  // A caller that omits htmlIdentity gets no error, just ids that match no
+  // card -- so the only symptom is a card nobody can delete. Warn only where
+  // the omission actually changes the answer: an out-of-scope url, an already
+  // `.html` url and an exempt section all hash the same either way, and a
+  // warning on those would be noise on the one signal that catches an
+  // undeletable card. policyAltersIdentity accepts schemed input (it splits
+  // the url itself), so this needs no separate scheme strip.
+  if (omitted && policyAltersIdentity(prodUrl, sections)) {
+    logIdentity(
+      `getCaasIds called without htmlIdentity for in-scope url '${identityUrl}'. `
+      + 'If the page was published with htmlIdentity on, these ids will not match '
+      + 'its card and removal will silently leave it live. Callers (notably the '
+      + 'milo-caas poller) should pass the rule\'s htmlIdentity explicitly.',
+      // 'warning', not the default 'error': the poller omits this argument by
+      // construction, so until it is updated EVERY in-scope removal trips this,
+      // including the majority where the policy is legitimately off and the ids
+      // are correct. Logged at error level it would be alarm fatigue on exactly
+      // the signal meant to catch an undeletable card.
+      'warning',
+    );
+  }
   const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
   const [contentId, entityId] = await Promise.all([
-    getUuid(bareProdUrl),
-    getUuid(`${bareProdUrl}${salt}`),
+    getUuid(identityUrl),
+    getUuid(`${identityUrl}${salt}`),
   ]);
   return { contentId, entityId };
 };

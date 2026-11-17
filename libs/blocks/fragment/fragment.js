@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import {
   createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix, isTrustedUrl,
+  inheritViewportContent,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -32,7 +33,7 @@ const updateFragMap = async (fragment, a, href) => {
   if (!fragLinksWithLocalizations.length) return;
 
   const parentHref = a.closest('[data-path]')?.getAttribute('data-path');
-  if (document.body.contains(a) && !a.parentElement?.closest('.fragment') && !parentHref) {
+  if (document.body.contains(a) && !a.closest('.dialog-modal') && !a.parentElement?.closest('.fragment') && !parentHref) {
     // eslint-disable-next-line no-use-before-define
     fragMap[href] = new Tree(href);
     fragLinksWithLocalizations.forEach((localizedHref) => {
@@ -69,6 +70,8 @@ const insertInlineFrag = async (sections, a, relHref) => {
   } else if (rowOrCellInsertValue === 'cell' && fragmentBlock) {
     fragChildren = fragmentBlock?.querySelector(':scope > div')?.querySelectorAll(':scope > div') || [];
   } else {
+    // Inherit while still raw: nested fragments below decorate the content before the 2nd pass
+    inheritViewportContent(section);
     fragChildren = [...section.children];
   }
   if (!fragChildren.length) return;

@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { isWithinFirewall, onSidekickAuth } from '../../sidekick-auth.js';
+import { onSidekickAuth } from '../../sidekick-auth.js';
 import { NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../../personalization/personalization.js';
 import {
   CARD_STORAGE_KEY,
@@ -496,6 +496,7 @@ function buildCard(card, pageId, defaultExpanded = true) {
 function buildFAB(gnavOffset) {
   const fab = createTag('button', {
     class: 'mep-fab',
+    hidden: '',
     style: `top: ${gnavOffset + 16}px`,
     popovertarget: 'mep-drawer',
   });
@@ -594,35 +595,19 @@ async function setDefaultValues() {
   selectEl.value = mepAkamaiLocale;
 }
 
-async function refreshFirewallAuth(refreshAuth) {
-  if (await isWithinFirewall()) await refreshAuth();
-}
-
-function buildLoginCard(onRefresh) {
-  const refreshButton = createTag('a', { href: '#', class: 'con-button button-l fill' }, 'Refresh');
-  refreshButton.addEventListener('click', async (event) => {
-    event.preventDefault();
-    await refreshFirewallAuth(onRefresh);
-  });
-  return createTag('div', { class: 'mep-card expanded center' }, [
-    createTag('h1', {}, 'Content Unavailable'),
-    createTag('div', { class: 'mep-card-body' }, [
-      createTag('p', {}, 'Sign into AEM Sidekick or be inside the Adobe firewall for options.'),
-      refreshButton,
-    ]),
-  ]);
-}
-
 async function renderAuthState(pageId, isAuthed) {
   const drawerEl = document.querySelector('#mep-drawer');
   const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
   if (!contentEl) return;
+  if (!isAuthed && drawerEl.matches(':popover-open')) drawerEl.hidePopover();
+  drawerEl.hidden = !isAuthed;
+  const fabEl = document.querySelector('.mep-fab');
+  if (fabEl) fabEl.hidden = !isAuthed;
   if (isAuthed === authenticated && authStateRendered) return;
   authenticated = isAuthed;
   authStateRendered = true;
 
   if (!authenticated) {
-    contentEl.replaceChildren(buildLoginCard(() => renderAuthState(pageId, true)));
     drawerEl.querySelector('.mep-footer')?.remove();
     return;
   }
@@ -669,6 +654,7 @@ function buildDrawer(gnavOffset, pageId) {
   return createTag('div', {
     id: 'mep-drawer',
     class: 'mep-drawer',
+    hidden: '',
     popover: 'manual',
     'data-lenis-prevent': '',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
@@ -843,6 +829,8 @@ function setSummaryObserver() {
 }
 
 async function buildOverlay() {
+  authenticated = false;
+  authStateRendered = false;
   const gnavOffset = await getGnavOffset();
   lastGnavOffset = gnavOffset;
 

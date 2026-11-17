@@ -148,6 +148,7 @@ async function getAutoDefaults() {
     language: language || 'en',
     region,
     clientId: window.adobeid?.client_id,
+    checkoutClientId: getMetadata('bc-checkout-client-id') || 'acom_bc',
     accessToken: window.adobeIMS?.isSignedInUser()
       ? `Bearer ${window.adobeIMS.getAccessToken()?.token}` : undefined,
     // Match BC's own consent gate (bc-utils handleConsent): functional cookies (C0002).

@@ -16,6 +16,10 @@ own pin and release (`--sh-d-next-*`), then covers both; above
 `--sh-d-fit-width` its start is delayed by `--sh-d-next-wide-delay` px per
 extra px of viewport width. Mobile uses subtle layer drift without pinning or
 scaling.
+The desktop hold is `position: sticky`, with the section's `::after` as the
+travel (`--sh-end`), and the next section's pin keyframes subtract that
+height. Don't move the hold to a scroll-driven transform: Safari applies
+those a frame after Lenis scrolls, which makes the hero jitter.
 On load, the copy text, merch card and supporting text fade and rise in turn,
 with the media after the copy text from 900px and last below that. Copy text
 and media start at
