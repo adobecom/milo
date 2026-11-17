@@ -223,6 +223,15 @@ a.blog-header-author-name:hover {
   letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
 }
 
+/* Cap in-body H2s at 36px; the heading-2 token grows to 48/56px at desktop. */
+@media (width >= 1024px) {
+  .blog-article-content > .section > .content > h2 {
+    font-size: var(--s2a-font-size-4xl);
+    line-height: var(--s2a-font-line-height-xl);
+    letter-spacing: var(--s2a-font-letter-spacing-2xl);
+  }
+}
+
 /* In-body related-content cards get extra breathing room beneath them. */
 .blog-article-content > .section > .related-content-card {
   margin-block-end: var(--s2a-spacing-xl);
@@ -411,6 +420,7 @@ a.blog-header-author-name:hover {
   font-weight: 800;
   font-size: 16px;
   line-height: 1.4;
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
   color: var(--s2a-color-gray-1000);
 }
 
