@@ -128,7 +128,7 @@ function addCollapseControl(list, label) {
   }, icon);
   const items = [...list.children];
   items[0].append(button);
-  const tablet = window.matchMedia('(min-width: 600px)');
+  const tablet = window.matchMedia('(width >= 768px)');
   const expanded = { tablet: false, mobile: false };
   let activeIndex = 0;
   const render = () => {
@@ -298,7 +298,7 @@ export default async function init(block) {
       if (event.button !== 0 || event.metaKey || event.ctrlKey
         || event.shiftKey || event.altKey) return;
       event.preventDefault();
-      if (collapseControls && !window.matchMedia('(min-width: 600px)').matches) {
+      if (collapseControls && !window.matchMedia('(width >= 768px)').matches) {
         sectionTracker.setActiveIndex(index);
         collapseControls.collapse();
       }
