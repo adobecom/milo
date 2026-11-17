@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import * as utils from '../../../../libs/utils/utils.js';
+import { waitFor } from '../../../helpers/waitfor.js';
 import initAiSummary from '../../../../libs/c2/blocks/ai-summary/ai-summary.js';
 import initTagCta from '../../../../libs/c2/blocks/tag-cta/tag-cta.js';
 import initRelatedCard from '../../../../libs/c2/blocks/related-content-card/related-content-card.js';
@@ -120,6 +121,94 @@ describe('blog C2 migration: retained behavior', () => {
     expect(block.querySelector('.blog-header-eyebrow')).to.exist;
     expect(block.querySelector('.blog-header-byline')).to.exist;
     main.remove();
+  });
+
+  describe('blog-header schema', () => {
+    const production = 'https://business.adobe.com';
+    let fetchStub;
+    let canonical;
+    let main;
+    let profileId = 0;
+
+    const posting = () => {
+      const script = document.head.querySelector('script[data-blog-schema="posting"]');
+      return script ? JSON.parse(script.textContent) : null;
+    };
+
+    const profile = (social) => '<div class="blog-author">'
+      + '<div><div><picture><img src="./media_jane.png" alt=""></picture></div></div>'
+      + '<div><div><h1>Jane Doe</h1></div></div>'
+      + '<div><div>Staff Writer</div></div>'
+      + '<div><div>Jane writes about automation.</div></div>'
+      + `<div><div>${social}</div></div>`
+      + '<div><div>Adobe</div></div></div>';
+
+    const buildHeader = (author) => {
+      main = document.createElement('main');
+      main.innerHTML = '<div class="section"><div class="blog-header">'
+        + '<div><div><h1>Blog Title</h1></div></div>'
+        + '<div><div><p>A short summary.</p></div></div>'
+        + `<div><div><p>${author}</p></div></div></div></div>`;
+      document.body.append(main);
+      return main.querySelector('.blog-header');
+    };
+
+    beforeEach(() => {
+      profileId += 1;
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      canonical.href = `${production}/blog/article?milolibs=preview#section`;
+      document.head.append(canonical);
+      fetchStub = stub(window, 'fetch').resolves({ ok: false, status: 404, text: async () => '' });
+    });
+
+    afterEach(() => {
+      fetchStub.restore();
+      canonical.remove();
+      main?.remove();
+      document.head.querySelectorAll('script[data-blog-schema]').forEach((el) => el.remove());
+    });
+
+    it('injects BlogPosting with a Person sourced from the author profile', async () => {
+      const path = `/blog/authors/jane-doe-${profileId}`;
+      fetchStub.withArgs(`${window.location.origin}${path}.plain.html`).resolves({
+        ok: true,
+        text: async () => profile('<a href="https://www.linkedin.com/in/jane">LinkedIn</a>'),
+      });
+      await initBlogHeader(buildHeader(`<a href="${path}">Jane Doe</a>`));
+      await waitFor(() => posting()?.author.length === 1);
+
+      expect(posting()['@type']).to.equal('BlogPosting');
+      expect(posting().headline).to.equal('Blog Title');
+      expect(posting().url).to.equal(`${production}/blog/article`);
+      expect(posting().author[0]).to.deep.include({
+        '@type': 'Person',
+        name: 'Jane Doe',
+        url: `${production}${path}`,
+        '@id': `${production}${path}#person`,
+        jobTitle: 'Staff Writer',
+        sameAs: ['https://www.linkedin.com/in/jane'],
+      });
+    });
+
+    it('omits non-social profile links from sameAs', async () => {
+      const path = `/blog/authors/jane-doe-${profileId}`;
+      fetchStub.withArgs(`${window.location.origin}${path}.plain.html`).resolves({
+        ok: true,
+        text: async () => profile('<a href="https://example.com/jane">Site</a>'),
+      });
+      await initBlogHeader(buildHeader(`<a href="${path}">Jane Doe</a>`));
+      await waitFor(() => posting()?.author.length === 1);
+
+      expect(posting().author[0]).not.to.have.property('sameAs');
+    });
+
+    it('injects BlogPosting without authors when no author page is linked', async () => {
+      await initBlogHeader(buildHeader('Jane Doe'));
+      await waitFor(() => posting() !== null);
+
+      expect(posting().author).to.deep.equal([]);
+    });
   });
 
   it('blog-side-navigation hides itself without a blog header', async () => {
