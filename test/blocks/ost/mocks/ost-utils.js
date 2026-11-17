@@ -234,3 +234,6 @@ export {
   VIEWPORT_KEYWORDS,
   getViewportContent,
 };
+export const MERCH_CARD_TEMPLATE_BUNDLES = ['dc', 'catalog', 'cc', 'firefly', 'express'];
+export const MERCH_CARD_TEMPLATE_RULES = {};
+export const getMerchCardTemplateBundles = () => MERCH_CARD_TEMPLATE_BUNDLES;

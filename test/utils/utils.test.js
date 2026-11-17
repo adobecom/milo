@@ -284,6 +284,93 @@ describe('Utils', () => {
         expect(link.crossOrigin).to.equal('anonymous');
       });
     });
+
+    it('preloads the merch-card template bundles next to merch-card.js', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = '<main><div><div class="merch-card-autoblock"></div></div></main>';
+
+      await utils.loadArea();
+      // the test page matches no rule, so every web bundle is preloaded
+      utils.MERCH_CARD_TEMPLATE_BUNDLES.forEach((bundle) => {
+        const link = document.head.querySelector(`link[rel="preload"][href="https://main--mas--adobecom.aem.live/web-components/dist/templates/${bundle}.js"]`);
+        expect(link, bundle).to.exist;
+        expect(link.as).to.equal('script');
+        expect(link.crossOrigin).to.equal('anonymous');
+      });
+    });
+  });
+
+  describe('getMerchCardTemplateUrls', () => {
+    const originalHref = window.location.href;
+    const NON_PROD = 'https://main--mas--adobecom.aem.live/web-components/dist';
+
+    describe('isMerchSidenavPage', () => {
+      it('matches products/catalog and creativecloud/plans in every locale, .html optional', () => {
+        expect(utils.isMerchSidenavPage('/products/catalog.html', '')).to.be.true;
+        expect(utils.isMerchSidenavPage('/fr/products/catalog', '/fr')).to.be.true;
+        expect(utils.isMerchSidenavPage('/creativecloud/plans', '')).to.be.true;
+        expect(utils.isMerchSidenavPage('/de/creativecloud/plans.html', '/de')).to.be.true;
+      });
+
+      it('matches only those exact pages', () => {
+        expect(utils.isMerchSidenavPage('/products/catalog/extra.html', '')).to.be.false;
+        expect(utils.isMerchSidenavPage('/creativecloud/plans/business.html', '')).to.be.false;
+        expect(utils.isMerchSidenavPage('/acrobat/plans.html', '')).to.be.false;
+        expect(utils.isMerchSidenavPage('/products/photoshop.html', '')).to.be.false;
+      });
+    });
+
+    describe('preloads', () => {
+      afterEach(() => window.history.pushState({}, '', originalHref));
+
+      const loadCollection = async (pathname) => {
+        window.history.pushState({}, '', pathname);
+        document.head.innerHTML = head;
+        document.body.innerHTML = '<main><div><div class="merch-card-collection-autoblock"></div></div></main>';
+        await utils.loadArea();
+        return document.head.querySelector('link[rel="preload"][href$="/merch-sidenav.js"]');
+      };
+
+      it('preloads merch-sidenav.js eagerly on the sidenav pages, with the import URL', async () => {
+        const link = await loadCollection('/products/catalog.html');
+        expect(link).to.exist;
+        expect(link.href).to.equal(`${NON_PROD}/merch-sidenav.js`);
+        expect(link.as).to.equal('script');
+        expect(link.crossOrigin).to.equal('anonymous');
+        expect(document.head.querySelector(`link[rel="preload"][href="${NON_PROD}/templates/catalog.js"]`)).to.exist;
+      });
+
+      it('does not preload merch-sidenav.js on other pages', async () => {
+        expect(await loadCollection('/acrobat/plans.html')).to.not.exist;
+      });
+    });
+
+    afterEach(() => {
+      window.history.pushState({}, '', originalHref);
+    });
+
+    it('returns the bundle of the matching rule', () => {
+      expect(utils.getMerchCardTemplateUrls('/acrobat/plans.html', '')).to.deep.equal([`${NON_PROD}/templates/dc.js`]);
+      expect(utils.getMerchCardTemplateUrls('/products/catalog.html', '')).to.deep.equal([`${NON_PROD}/templates/catalog.js`]);
+      expect(utils.getMerchCardTemplateUrls('/products/photoshop.html', '')).to.deep.equal([`${NON_PROD}/templates/cc.js`]);
+    });
+
+    it('strips the Milo locale prefix', () => {
+      expect(utils.getMerchCardTemplateUrls('/fr/acrobat/plans.html', '/fr')).to.deep.equal([`${NON_PROD}/templates/dc.js`]);
+    });
+
+    it('returns every web bundle when no rule matches', () => {
+      expect(utils.getMerchCardTemplateUrls('/no/rule.html', '')).to.deep.equal(
+        ['dc', 'catalog', 'cc', 'firefly', 'express'].map((bundle) => `${NON_PROD}/templates/${bundle}.js`),
+      );
+    });
+
+    it('uses the maslibs base', () => {
+      window.history.pushState({}, '', `${window.location.pathname}?maslibs=feature`);
+      expect(utils.getMerchCardTemplateUrls('/express/pricing', '')).to.deep.equal(
+        ['https://feature--mas--adobecom.aem.live/web-components/dist/templates/express.js'],
+      );
+    });
   });
 
   describe('preloadLcpCodeFiles', () => {

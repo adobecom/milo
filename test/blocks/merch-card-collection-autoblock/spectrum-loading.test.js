@@ -86,6 +86,17 @@ describe('merch-card-collection autoblock Spectrum loading', () => {
       expect(spectrumRequests()).to.deep.equal([]);
       expect(definedSpectrumElements()).to.deep.equal([]);
     });
+
+    it('starts merch-sidenav.js up front with an authored sidenav=true, but renders nothing', async () => {
+      const sidenavRequests = () => performance.getEntriesByType('resource')
+        .filter(({ name }) => name.endsWith('/merch-sidenav.js'));
+      expect(sidenavRequests()).to.have.lengthOf(0);
+      await mount(BLADE, '&sidenav=true');
+      expect(sidenavRequests()).to.have.lengthOf(1);
+      expect(document.querySelector('merch-sidenav')).to.not.exist;
+      expect(spectrumRequests()).to.deep.equal([]);
+      expect(definedSpectrumElements()).to.deep.equal([]);
+    });
   });
 
   describe('collection with a hierarchy', () => {

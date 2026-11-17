@@ -2,10 +2,13 @@ import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
   getAupSelectValue, whenTargetReady, getValidatedMarket, isSupportedMarket,
+  getMerchCardTemplateBundles, MERCH_CARD_TEMPLATE_BUNDLES,
 } from '../../utils/utils.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
+
+export { getMerchCardTemplateBundles, MERCH_CARD_TEMPLATE_BUNDLES, MERCH_CARD_TEMPLATE_RULES } from '../../utils/utils.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -30,7 +33,8 @@ export const PRICE_TEMPLATE_PROMO_STRIKETHROUGH = 'promo-strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
 export const PRICE_TEMPLATE_LEGAL = 'legal';
 
-const isPreview = window.location.host.includes('aem.page') || window.location.host === 'www.stage.adobe.com';
+export const isPreviewHost = (host) => host.includes('aem.page') || host === 'www.stage.adobe.com';
+const isPreview = isPreviewHost(window.location.host);
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
   [PRICE_TEMPLATE_DISCOUNT, PRICE_TEMPLATE_DISCOUNT],
@@ -428,10 +432,13 @@ export function getMasLibs() {
 }
 
 /**
- * Gets the URL for loading fragment-client.js based on maslibs parameter
- * @returns {string|null} URL for fragment-client.js or null if maslibs not present
+ * Gets the URL for loading fragment-client.js based on maslibs parameter.
+ * MAS only uses it to render previews, so it loads only on preview hosts.
+ * @param {string} [host] host to evaluate the preview check against
+ * @returns {string|null} URL for fragment-client.js or null if maslibs not present or not preview
  */
-function getFragmentClientUrl() {
+export function getFragmentClientUrl(host = window.location.host) {
+  if (!isPreviewHost(host)) return null;
   const baseUrl = getMasLibsBaseUrl();
   if (!baseUrl) return null;
   return `${baseUrl}/studio/libs/fragment-client.js`;
@@ -462,6 +469,35 @@ export function getMasComponentUrl(componentName, masLibsBase, hostname) {
 }
 
 /**
+ * Loads merch-card.js and the page's template bundles in parallel.
+ * Bundle failures never reject: they are ignored with MAS versions that still embed
+ * the templates in merch-card.js (no MerchCard.registerTemplates), logged otherwise.
+ * @param {string} cardUrl - merch-card.js URL
+ * @param {string|null} masLibsBase - Base URL from getMasLibs() if available
+ * @param {Object} [options] - hostname, pathname and load (module loader) overrides
+ * @returns {Promise} Promise resolving to the merch-card module
+ */
+export async function loadMerchCardWithTemplates(cardUrl, masLibsBase, {
+  hostname = window.location.hostname,
+  pathname = window.location.pathname,
+  load = (url) => import(url),
+} = {}) {
+  const bundles = getMerchCardTemplateBundles(pathname, getConfig().locale?.prefix);
+  if (bundles === MERCH_CARD_TEMPLATE_BUNDLES) {
+    window.lana?.log(`No merch-card template bundle rule for ${pathname}, loading all bundles`, { tags: 'merch', errorType: 'i' });
+  }
+  const templates = Promise.allSettled(bundles.map((bundle) => load(getMasComponentUrl(`templates/${bundle}`, masLibsBase, hostname))));
+  const [cardModule, results] = await Promise.all([load(cardUrl), templates]);
+  if (typeof customElements.get(MAS_MERCH_CARD)?.registerTemplates === 'function') {
+    results.forEach(({ status, reason }, i) => {
+      if (status !== 'rejected') return;
+      window.lana?.log(`Failed to load merch-card template bundle ${bundles[i]}: ${reason?.message}`, { tags: 'merch', errorType: 'e' });
+    });
+  }
+  return cardModule;
+}
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or from production CDN
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
@@ -487,6 +523,9 @@ export async function loadMasComponent(componentName) {
     }
 
     try {
+      if (componentName === MAS_MERCH_CARD) {
+        return await loadMerchCardWithTemplates(targetUrl, masLibsBase);
+      }
       return await import(targetUrl);
     } catch (error) {
       failedExternalLoads.add(targetUrl);
