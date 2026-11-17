@@ -612,7 +612,7 @@ header.global-navigation {
 }
 
 body:has(.global-navigation) main {
-  margin-top: calc(-1 * var(--c2-global-height-nav));
+  margin-top: calc(-1 * var(--global-height-nav));
 }
 
 main > div,
