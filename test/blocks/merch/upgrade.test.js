@@ -369,16 +369,48 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
     });
 
-    it('should open external url when origin is stage.plan.adobe.com', async () => {
+    it('should ignore messages from stage.plan.adobe.com', async () => {
       const message = { origin: 'https://stage.plan.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
-      expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
+      expect(window.open.notCalled).to.be.true;
     });
 
     it('should ignore messages from an untrusted origin', async () => {
       const message = { origin: 'https://evil.example.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
-      expect(window.open.calledOnce).to.be.false;
+      expect(window.open.notCalled).to.be.true;
+    });
+
+    it('should ignore look-alike, empty and missing origins', async () => {
+      const data = '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}';
+      [
+        { origin: 'https://commerce.adobe.com.evil.com', data },
+        { origin: 'https://evil.example', data },
+        { origin: '', data },
+        { data },
+      ].forEach((message) => handleIFrameEvents(message));
+      expect(window.open.notCalled).to.be.true;
+    });
+
+    it('should not process RETURN_BACK from an untrusted origin', async () => {
+      window.sessionStorage.removeItem('upgradeModalReturnUrl');
+      handleIFrameEvents({ origin: 'https://commerce.adobe.com.evil.com', data: '{"app":"ManagePlan","subType":"RETURN_BACK","data":{"externalUrl":"https://www.google.com/maps","target":"_blank","returnUrl":"https://www.adobe.com"}}' });
+      expect(window.sessionStorage.getItem('upgradeModalReturnUrl')).to.be.null;
+      expect(window.open.notCalled).to.be.true;
+    });
+
+    it('should not read data from an untrusted origin', async () => {
+      let dataRead = false;
+      const message = {
+        origin: 'https://commerce.adobe.com.evil.com',
+        get data() {
+          dataRead = true;
+          return '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}';
+        },
+      };
+      handleIFrameEvents(message);
+      expect(dataRead).to.be.false;
+      expect(window.open.notCalled).to.be.true;
     });
 
     it('should reject unsafe external URL (XSS payload)', async () => {

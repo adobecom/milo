@@ -58,11 +58,13 @@ function buildUrl(upgradeOffer, upgradable, env) {
   return url.toString();
 }
 
-export const handleIFrameEvents = ({ data: msgData, origin }) => {
-  if (!['https://commerce.adobe.com', 'https://commerce-stg.adobe.com', 'https://plan.adobe.com', 'https://stage.plan.adobe.com'].includes(origin)) return;
+const TRUSTED_ORIGINS = ['https://commerce.adobe.com', 'https://commerce-stg.adobe.com', 'https://plan.adobe.com'];
+
+export const handleIFrameEvents = (event) => {
+  if (!TRUSTED_ORIGINS.includes(event?.origin)) return;
   let parsedMsg = null;
   try {
-    parsedMsg = JSON.parse(msgData);
+    parsedMsg = JSON.parse(event.data);
   } catch (error) {
     return;
   }
