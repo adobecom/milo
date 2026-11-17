@@ -1,10 +1,19 @@
 /* Blog Header marquee */
+
+/* Caps the blog frame at the original 1200px design width; below that it is the C2 gutter. */
+.blog-header,
+.blog-divider-frame,
+.blog-article-layout {
+  --blog-max-width: 1200px;
+  --blog-gutter: max(var(--grid-margin-width), calc((100% - var(--blog-max-width)) / 2));
+}
+
 .blog-header {
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-md);
   box-sizing: border-box;
-  padding-inline: var(--grid-margin-width);
+  padding-inline: var(--blog-gutter);
 
   /* C2 pulls main up by the sticky global-nav height, so clear it here. */
   padding-block-start: var(--global-height-nav);
@@ -263,7 +272,7 @@ a.blog-header-author-name:hover {
     content: "";
     position: absolute;
     inset-block-start: 0;
-    inset-inline: max(0px, calc(var(--grid-margin-width) - 56px));
+    inset-inline: max(0px, calc(var(--blog-gutter) - 56px));
     block-size: var(--blog-divider-height, 100%);
     background-image:
       repeating-linear-gradient(to bottom, var(--blog-divider-dots)),

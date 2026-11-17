@@ -2,7 +2,7 @@
   display: grid;
   gap: var(--s2a-spacing-xl);
   box-sizing: border-box;
-  padding-inline: var(--grid-margin-width);
+  padding-inline: var(--blog-gutter, var(--grid-margin-width));
 }
 
 .blog-side-navigation {
