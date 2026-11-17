@@ -381,7 +381,6 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'productArrangementCode',
   'offerType',
   'marketSegment',
-  // Genuine NC checkout parameters (MWPW-207800)
   'closeWindow',
   'openBrowser',
   'static',
