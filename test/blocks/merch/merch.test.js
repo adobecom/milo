@@ -253,7 +253,7 @@ describe('Merch Block', () => {
     updateSearch();
   });
 
-  it('fetches checkout configs before commerce loads and reuses them for checkout actions', async () => {
+  it('fetches checkout configs after commerce loads and reuses them for checkout actions', async () => {
     const originalPolyfills = polyfills.promise;
     let releasePolyfills;
     polyfills.promise = new Promise((resolve) => { releasePolyfills = resolve; });
@@ -263,7 +263,9 @@ describe('Merch Block', () => {
     const servicePromise = initService(true);
 
     try {
-      expect(checkoutCalls()).to.equal(beforeCalls + 1);
+      expect(beforeCalls).to.equal(1);
+      fetchCheckoutLinkConfigs.promise = undefined;
+      await fetchCheckoutLinkConfigs('http://localhost:3000/libs');
       const configsPromise = fetchCheckoutLinkConfigs.promise;
       expect(configsPromise).to.exist;
       expect(document.head.querySelector('mas-commerce-service')).to.not.exist;
