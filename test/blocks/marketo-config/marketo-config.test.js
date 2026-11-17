@@ -209,14 +209,24 @@ describe('marketo-config', () => {
         copyButton.click();
         await waitFor(() => el.querySelector('.copy-content').value);
         const url = el.querySelector('.copy-content').value;
-        const copiedState = parseEncodedConfig(new URL(url).hash.slice(1));
+        const copiedUrl = new URL(url);
+        expect(copiedUrl.origin).to.equal('https://milo.adobe.com');
+        expect(copiedUrl.pathname).to.equal('/tools/marketo');
+        const copiedState = parseEncodedConfig(copiedUrl.hash.slice(1));
         expect(copiedState['form.id']).to.equal('1723');
         expect(copiedState['form id']).to.equal('1723');
 
         const block = document.createElement('div');
         block.className = 'marketo';
         block.hidden = true;
-        block.innerHTML = `<div><a href="${url}">Configuration</a></div>`;
+        const wrapper = document.createElement('div');
+        const link = document.createElement('a');
+        link.href = 'https://milo.adobe.com/tools/marketo';
+        link.hash = copiedUrl.hash;
+        expect(link.href).to.equal(copiedUrl.href);
+        link.textContent = 'Configuration';
+        wrapper.append(link);
+        block.append(wrapper);
         el.append(block);
         await initMarketo(block);
         expect(block.querySelector('form')?.id).to.equal('mktoForm_1723');
