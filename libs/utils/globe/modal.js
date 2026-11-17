@@ -1,9 +1,9 @@
 import * as THREE from '../../deps/three.js';
 import {
   easeInOutCubic, easeOutCubic, clamp01, cssNumber, decayToZero, coverFit, pxPerWorldAt, capDpr,
-  CARD_ASPECT, isCoarsePointer, isRtl, planeAspect,
+  CARD_ASPECT, isCoarsePointer, isRtl, logGlobe, planeAspect,
 } from './core.js';
-import { createModalMaterial } from './gl.js';
+import { createModalMaterial, createRenderer } from './gl.js';
 import { setLang } from './authoring.js';
 
 // Modal lifecycle phases. CLOSED is null so `if (modalPhase)` reads as "modal live".
@@ -51,6 +51,7 @@ export default function createGlobeModal(ctx, {
   loadModalUpgrade,
   requestNavNudge,
   restoreFocusOnClose,
+  name,
 }) {
   const { q } = ctx;
   const canvasTop = () => (tracksCanvasTop
@@ -423,15 +424,19 @@ export default function createGlobeModal(ctx, {
   }
 
   function ensureModalRenderer() {
-    if (modalRenderer || !modalCanvasEl) return;
-    const { W, H } = ctx;
-    const glOpts = { canvas: modalCanvasEl, antialias: ctx.bp.ANTIALIAS, alpha: true };
-    modalRenderer = new THREE.WebGLRenderer(glOpts);
-    appliedModalDpr = capDpr();
-    modalRenderer.setPixelRatio(appliedModalDpr);
-    modalRenderer.setSize(W, H);
-    modalRenderer.setClearColor(0x000000, 0);
-    modalScene = new THREE.Scene();
+    if (!modalCanvasEl) return;
+    if (!modalRenderer) {
+      try {
+        modalRenderer = createRenderer(modalCanvasEl, ctx.bp.ANTIALIAS);
+      } catch (e) {
+        logGlobe(name, `modal WebGL renderer creation failed: ${e?.message || e}`);
+        return;
+      }
+      appliedModalDpr = capDpr();
+      modalRenderer.setPixelRatio(appliedModalDpr);
+      modalRenderer.setSize(ctx.W, ctx.H);
+    }
+    modalScene ||= new THREE.Scene();
   }
 
   function open(i, originX, originY) {
@@ -630,7 +635,8 @@ export default function createGlobeModal(ctx, {
   }
 
   function render() {
-    if (modalRenderer && modalCard) modalRenderer.render(modalScene, ctx.camera);
+    if (!modalRenderer || !modalCard || modalRenderer.getContext().isContextLost()) return;
+    modalRenderer.render(modalScene, ctx.camera);
   }
 
   function resize(w, h) {
@@ -825,15 +831,19 @@ export default function createGlobeModal(ctx, {
     resetChromeReveal();
   }
 
-  function destroy(finalize) {
+  function reset() {
     cancelPendingClose();
     resetModalDom();
     releaseModalTexture();
-    modalRenderer?.dispose();
-    modalRenderer = null;
     modalScene = null;
     closeModalIdentity();
     crossNav = null;
+  }
+
+  function destroy(finalize) {
+    reset();
+    modalRenderer?.dispose();
+    modalRenderer = null;
     if (finalize) {
       modalCanvasEl?.remove();
       modalEl?.remove();
@@ -851,6 +861,7 @@ export default function createGlobeModal(ctx, {
     close,
     getModalIdx,
     isCardManaged,
+    reset,
     destroy,
   };
 }

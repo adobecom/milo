@@ -176,6 +176,137 @@ describe('globe-gallery: static-mode arc copy', () => {
   }));
 });
 
+describe('globe-gallery: WebGL context loss', () => {
+  let stylesheet;
+  let viewport;
+  let block;
+
+  const frames = () => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  const nextEvent = (target, type) => new Promise((resolve) => {
+    target.addEventListener(type, resolve, { once: true });
+  });
+  const loseContext = (canvas) => canvas.getContext('webgl2').getExtension('WEBGL_lose_context');
+  // Chrome only allows a restore once the lost event's dispatch has finished.
+  const afterTask = () => new Promise((resolve) => { setTimeout(resolve); });
+  const isBarrel = () => block.classList.contains('globe-barrel');
+  const webglRequests = (spy) => spy.getCalls().filter((c) => /webgl/.test(c.args[0]));
+
+  async function mount(width) {
+    await setViewport({ width, height: 800 });
+    const fetch = window.fetch.bind(window);
+    sinon.stub(window, 'fetch').callsFake((url, options) => (
+      url.endsWith('/ctx-loss-test.plain.html')
+        ? Promise.resolve(new Response(
+          '<div><img src="/libs/img/favicons/favicon.ico"><h2>Test artist</h2></div>',
+        ))
+        : fetch(url, options)
+    ));
+    document.body.innerHTML = `
+      <div class="globe-gallery">
+        <div><h2>Heading</h2></div>
+        <div><a href="/ctx-loss-test">Cards</a></div>
+        <div></div><div></div>
+      </div>`;
+    block = document.querySelector('.globe-gallery');
+    await init(block);
+    expect(block.globeRuntime).to.exist;
+  }
+
+  beforeEach(async () => {
+    viewport = { width: window.innerWidth, height: window.innerHeight };
+    stylesheet = document.createElement('style');
+    stylesheet.textContent = await readFile({ path: '../../../../libs/c2/blocks/globe-gallery/globe-gallery.css' });
+    document.head.append(stylesheet);
+  });
+
+  afterEach(async () => {
+    block?.globeRuntime?.destroy();
+    block = null;
+    document.body.innerHTML = '';
+    sinon.restore();
+    stylesheet.remove();
+    await setViewport(viewport);
+  });
+
+  it('pauses on loss and resumes on restore with the same renderer and build', async () => {
+    await mount(1024);
+    const canvas = block.querySelector('.globe-canvas');
+    const ext = loseContext(canvas);
+    const getContext = sinon.spy(HTMLCanvasElement.prototype, 'getContext');
+    const disposeMaterial = sinon.spy(THREE.ShaderMaterial.prototype, 'dispose');
+
+    const lost = nextEvent(canvas, 'webglcontextlost');
+    ext.loseContext();
+    await lost;
+    await afterTask();
+    const restored = nextEvent(canvas, 'webglcontextrestored');
+    ext.restoreContext();
+    await restored;
+    const renders = sinon.spy(WebGL2RenderingContext.prototype, 'clear');
+    await frames();
+
+    expect(webglRequests(getContext)).to.have.length(0);
+    expect(disposeMaterial.callCount).to.equal(0);
+    expect(renders.callCount).to.be.greaterThan(0);
+  });
+
+  it('defers a band-crossing rebuild until the context is restored', async () => {
+    await mount(1024);
+    expect(isBarrel()).to.be.false;
+    const canvas = block.querySelector('.globe-canvas');
+    const ext = loseContext(canvas);
+
+    const lost = nextEvent(canvas, 'webglcontextlost');
+    ext.loseContext();
+    await lost;
+    await setViewport({ width: 375, height: 800 });
+    await frames();
+    expect(isBarrel()).to.be.false;
+    await afterTask();
+
+    const restored = nextEvent(canvas, 'webglcontextrestored');
+    const getContext = sinon.spy(HTMLCanvasElement.prototype, 'getContext');
+    ext.restoreContext();
+    await restored;
+    await frames();
+    expect(isBarrel()).to.be.true;
+    expect(webglRequests(getContext)).to.have.length(0);
+  });
+
+  it('resumes when the modal canvas restores before the main one', async () => {
+    await mount(1024);
+    const widget = block.querySelector('.globe-a11y');
+    widget.focus();
+    await frames();
+    widget.click();
+    await sendKeys({ press: 'Enter' });
+    expect(block.querySelector('.globe-modal-chrome').open).to.be.true;
+
+    const main = block.querySelector('.globe-canvas');
+    const modalCanvas = document.querySelector('.globe-modal-canvas');
+    const [modalExt, mainExt] = [loseContext(modalCanvas), loseContext(main)];
+    const lost = Promise.all([main, modalCanvas].map((c) => nextEvent(c, 'webglcontextlost')));
+    modalExt.loseContext();
+    mainExt.loseContext();
+    await lost;
+    await afterTask();
+
+    let restored = nextEvent(modalCanvas, 'webglcontextrestored');
+    modalExt.restoreContext();
+    await restored;
+    await frames();
+    restored = nextEvent(main, 'webglcontextrestored');
+    mainExt.restoreContext();
+    await restored;
+    const renders = sinon.spy(WebGL2RenderingContext.prototype, 'clear');
+    await frames();
+    expect(block.classList.contains('globe-empty')).to.be.false;
+    expect(renders.callCount).to.be.greaterThan(0);
+  });
+});
+
 describe('globe-gallery: optimizeImgUrl', () => {
   it('optimizes Milo media URLs with a rounded dimension', () => {
     expect(optimizeImgUrl('https://example.com/media_abc123/image.png', 383.6))
@@ -451,7 +582,7 @@ describe('globe-gallery: fetchFragmentCards', () => {
 
     expect(await fetchFragmentCards('/empty')).to.be.null;
     expect(log.lastCall.args[0]).to.include('no usable cards').and.include('/empty.plain.html');
-    expect(log.lastCall.args[1]).to.deep.equal({ tags: 'globe-gallery', severity: 'warn' });
+    expect(log.lastCall.args[1]).to.deep.equal({ tags: 'globe-gallery', severity: 'warning' });
 
     expect(await fetchFragmentCards('/offline')).to.be.null;
     expect(log.lastCall.args[0]).to.include('offline').and.include('/offline.plain.html');

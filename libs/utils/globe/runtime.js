@@ -7,8 +7,8 @@ import {
   tAtCamZ, usesCylinderGeometry, wrapAngle,
 } from './core.js';
 import {
-  createCardMaterial, createClickDragTexture, createPlaceholderTexture, createTextMaterial,
-  loadCardTextures, loadHintFont, loadModalTexture,
+  createCardMaterial, createClickDragTexture, createPlaceholderTexture, createRenderer,
+  createTextMaterial, loadCardTextures, loadHintFont, loadModalTexture,
 } from './gl.js';
 import createGlobeModal from './modal.js';
 import createInteraction, { createCursor, createGalleryA11y, createGlobeControls } from './interaction.js';
@@ -92,9 +92,6 @@ const BAND_DEFAULTS = {
 const RM_GLOBE_SCALE_MD = 0.9; // sm stays at 1
 
 const CANVAS_HIDE_MARGIN_T = 0.05;
-
-const MAX_CONTEXT_REBUILDS = 4;
-const CONTEXT_STABLE_MS = 10000;
 
 export function createScrollReader() {
   let smoothY = window.scrollY;
@@ -812,6 +809,11 @@ function createGlobeRuntime(spec, {
 
   let build = null;
 
+  let renderer = null;
+  const rendererDisposer = createDisposer();
+  const contextLoss = { active: false, rebuildPending: false };
+  const contextLost = () => contextLoss.active || !!renderer?.getContext().isContextLost();
+
   let blockDocTop = 0;
   let blockHeight = 0;
   let formationVh = 0; // from --globe-formation-vh, where a block has one (see readCssVars)
@@ -836,7 +838,7 @@ function createGlobeRuntime(spec, {
     get navH() { return navH; },
     get cards() { return build.cards; },
     get scene() { return build.scene; },
-    get renderer() { return build.renderer; },
+    get renderer() { return renderer; },
     get camera() { return build.camera; },
     get sphereGroup() { return build.sphereGroup; },
     get field() { return build.field; },
@@ -883,7 +885,6 @@ function createGlobeRuntime(spec, {
     const hint = createHintText({ ctx, frame, text: hintText, getCueT: field.pqAppearT });
     return {
       disposer: createDisposer(),
-      renderer: null,
       scene: null,
       camera: null,
       sphereGroup: null,
@@ -953,6 +954,7 @@ function createGlobeRuntime(spec, {
 
   modal = createGlobeModal(ctx, {
     ...spec.modal,
+    name,
     cardLabel: labels.cardLabel,
     // Returns the pending Image (cancellable), or null when the base cap already meets it.
     loadModalUpgrade: (idx, onReady, onError) => {
@@ -1137,11 +1139,11 @@ function createGlobeRuntime(spec, {
       : scrollT >= build.field.pqAppearT() + CANVAS_HIDE_MARGIN_T;
     // The modal's backdrop blurs this canvas, so it stays shown while open.
     build.canvasHidden = !reducedMotion && modal.getModalIdx() < 0 && (beforeEntry || pastEnd);
-    build.renderer.domElement.style.display = build.canvasHidden ? 'none' : 'block';
+    renderer.domElement.style.display = build.canvasHidden ? 'none' : 'block';
   }
 
   function renderScene(activeCamera) {
-    if (!build.canvasHidden) build.renderer.render(build.scene, activeCamera);
+    if (!build.canvasHidden) renderer.render(build.scene, activeCamera);
     modal.render();
   }
 
@@ -1199,6 +1201,7 @@ function createGlobeRuntime(spec, {
   let rafId = 0;
   function rafLoop(now) {
     rafId = requestAnimationFrame(rafLoop);
+    if (contextLost()) return;
     tick(now);
   }
   function startTicker() {
@@ -1220,62 +1223,56 @@ function createGlobeRuntime(spec, {
       startTicker();
     } else {
       stopTicker();
-      if (build.renderer) build.renderer.domElement.style.display = 'none';
+      if (renderer) renderer.domElement.style.display = 'none';
     }
   }
-
-  const ctxLoss = { rebuilds: 0, stableTimer: 0, recovering: false, recoverTimer: 0 };
 
   function collapse() {
     root.classList.add('globe-empty');
     return false;
   }
 
-  // finalize also removes a modal hoisted out of the block.
-  function destroy(finalize = hoistToBody) {
+  function teardownBuild() {
     stopTicker();
-    clearTimeout(ctxLoss.stableTimer);
-    clearTimeout(ctxLoss.recoverTimer);
-    ctxLoss.recovering = false;
     build.disposer.dispose();
     build = createBuild();
-    modal.destroy(finalize);
     orientation.reset();
-    // `bp` survives: doLayout compares against it.
+  }
+
+  // finalize also removes a modal hoisted out of the block.
+  function destroy(finalize = hoistToBody) {
+    teardownBuild();
+    modal.destroy(finalize);
+    rendererDisposer.dispose();
   }
 
   function rebuild() {
-    destroy(false);
+    teardownBuild();
+    modal.reset();
+    // `bp` survives: doLayout compares against it.
     // eslint-disable-next-line no-use-before-define -- initRuntime closes over rebuild
     initRuntime();
   }
 
   function onContextLost(e) {
     e.preventDefault();
-    clearTimeout(ctxLoss.stableTimer);
-    stopTicker();
+    contextLoss.active = true;
     build.renderReady = false;
+    syncTicker();
     logGlobe(name, 'WebGL context lost');
   }
-  function recoverFromContextLoss() {
-    ctxLoss.recovering = false;
-    ctxLoss.rebuilds += 1;
-    if (ctxLoss.rebuilds > MAX_CONTEXT_REBUILDS) {
-      logGlobe(name, 'WebGL context keeps failing — collapsing', 'error');
-      destroy(false);
-      collapse();
+  function onContextRestored() {
+    contextLoss.active = false;
+    logGlobe(name, 'WebGL context restored', 'info');
+    if (contextLoss.rebuildPending) {
+      contextLoss.rebuildPending = false;
+      rebuild();
       return;
     }
-    logGlobe(name, 'WebGL context restored — rebuilding', 'info');
-    rebuild();
-    ctxLoss.stableTimer = setTimeout(() => { ctxLoss.rebuilds = 0; }, CONTEXT_STABLE_MS);
+    if (!build.scene) return;
+    build.renderReady = true;
+    syncTicker();
   }
-  function onContextRestored() {
-    if (ctxLoss.recovering) return; // coalesce the main + modal canvases' restore events (README)
-    ctxLoss.recovering = true;
-    ctxLoss.recoverTimer = setTimeout(recoverFromContextLoss, 0);
-  }
-  const contextCanvases = [q('.globe-canvas'), q('.globe-modal-canvas')];
 
   function doLayout({ fromResize = false } = {}) {
     readCssVars();
@@ -1298,7 +1295,7 @@ function createGlobeRuntime(spec, {
       rebuild();
       return;
     }
-    const { renderer, camera, hooks, hint } = build;
+    const { camera, hooks, hint } = build;
     const dpr = capDpr();
     if (dpr !== build.appliedDpr) {
       build.appliedDpr = dpr;
@@ -1315,7 +1312,7 @@ function createGlobeRuntime(spec, {
 
   function loadTextures() {
     const owner = build;
-    const { cards, renderer, textures, field } = owner;
+    const { cards, textures, field } = owner;
     const maxTexH = bp.CARD_TEX;
     loadCardTextures({
       count: CARD_CONTENT.length,
@@ -1332,7 +1329,7 @@ function createGlobeRuntime(spec, {
       textures[i] = tex;
       const card = cards[i];
       card.mesh.material.map = tex; // property proxy writes uMap
-      renderer.initTexture(tex);
+      if (!contextLost()) renderer.initTexture(tex);
       card.srcAspect = srcAspect; // every phase's fit derives from it; the modal falls back to it
       // md sizes per-card in place; sm re-solves its packing in onDone.
       if (!bp.CYLINDER) field.updateCardSphereSizing(card, srcAspect);
@@ -1344,10 +1341,34 @@ function createGlobeRuntime(spec, {
     });
   }
 
+  function ensureRenderer(canvas) {
+    if (renderer) return true;
+    try {
+      renderer = createRenderer(canvas, bp.ANTIALIAS);
+    } catch (e) {
+      logGlobe(name, `WebGL renderer creation failed: ${e?.message || e}`);
+      return false;
+    }
+    rendererDisposer.add(() => {
+      renderer.dispose();
+      renderer = null;
+      contextLoss.active = false;
+      contextLoss.rebuildPending = false;
+    });
+    rendererDisposer.listen(canvas, 'webglcontextlost', onContextLost);
+    rendererDisposer.listen(canvas, 'webglcontextrestored', onContextRestored);
+    return true;
+  }
+
   function initRuntime() {
     const canvas = q('.globe-canvas');
     if (!canvas) return collapse();
     const { disposer, field, hint, hooks } = build;
+
+    if (contextLost()) {
+      contextLoss.rebuildPending = true;
+      return undefined;
+    }
 
     // See README (Zero-box gate).
     if (root.offsetHeight <= 0) {
@@ -1372,26 +1393,8 @@ function createGlobeRuntime(spec, {
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
     field.publishCue();
 
-    let renderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: bp.ANTIALIAS, alpha: true });
-    } catch (e) {
-      logGlobe(name, `WebGL renderer creation failed: ${e?.message || e}`);
-      return collapse();
-    }
-    build.renderer = renderer;
-    disposer.add(() => {
-      // Do NOT forceContextLoss() here — the canvas is reused across rebuilds and a force-lost
-      // context never restores.
-      renderer.dispose();
-      canvas.style.display = 'none';
-    });
-    renderer.setClearColor(0x000000, 0);
-
-    contextCanvases.forEach((c) => {
-      disposer.listen(c, 'webglcontextlost', onContextLost, false);
-      disposer.listen(c, 'webglcontextrestored', onContextRestored, false);
-    });
+    if (!ensureRenderer(canvas)) return collapse();
+    disposer.add(() => { canvas.style.display = 'none'; });
 
     const scene = new THREE.Scene();
     build.scene = scene;
