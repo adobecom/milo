@@ -1680,13 +1680,9 @@ span.hang-opening-quote {
     to { opacity: var(--parallax-dim-max, 0.75); }
   }
 
-  /* At high browser zoom (a common low-vision aid) the viewport collapses to a
-     narrow width while the pointer stays fine/hover — unlike a real phone or
-     tablet. The move-up dim otherwise reaches full strength within a few px of
-     scroll and washes out the marquee text, so soften it to stay readable.
-     Normal desktop pages (wide) and touch devices (coarse pointer) are
-     unaffected. */
-  @media (hover: hover) and (pointer: fine) and (width <= 600px) {
+  /* Match pdf-space's short-viewport safeguard, including high-zoom layouts.
+     This can also match short, unzoomed windows on high-density displays. */
+  @media (max-height: 400px) and (min-resolution: 1.5dppx) {
     .section.parallax-move-up-fast {
       --parallax-dim-max: 0.15;
     }
