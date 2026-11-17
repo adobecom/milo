@@ -25,47 +25,51 @@ export function getAdminUrl(url, type) {
   return type === 'status' ? `${base}?editUrl=auto` : base;
 }
 
-const MAX_CONCURRENT_ADMIN_CALLS = 3;
+const MS_BETWEEN_ADMIN_CALLS = 125;
+const DEFAULT_RETRY_AFTER_SECONDS = 1;
+const MAX_RETRY_AFTER_SECONDS = 5;
 const statusCache = new Map();
-const waiting = [];
-let active = 0;
+let nextCallAt = 0;
 
-function acquire() {
-  if (active < MAX_CONCURRENT_ADMIN_CALLS) {
-    active += 1;
-    return Promise.resolve();
-  }
-  return new Promise((resolve) => { waiting.push(resolve); });
+const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+function waitForTurn() {
+  const now = Date.now();
+  const startAt = Math.max(now, nextCallAt);
+  nextCallAt = startAt + MS_BETWEEN_ADMIN_CALLS;
+  return wait(startAt - now);
 }
 
-function release() {
-  const next = waiting.shift();
-  if (next) next();
-  else active -= 1;
+function retryAfterMs(resp) {
+  const seconds = parseFloat(resp.headers?.get('retry-after'));
+  const waitSeconds = seconds >= 0 ? seconds : DEFAULT_RETRY_AFTER_SECONDS;
+  return Math.min(waitSeconds, MAX_RETRY_AFTER_SECONDS) * 1000;
 }
 
 export function clearPageStatusCache() {
   statusCache.clear();
 }
 
-async function fetchPageStatus(adminUrl) {
-  await acquire();
-  try {
-    const resp = await fetch(adminUrl, { cache: 'no-store', credentials: 'include' });
-    if (!resp.ok) return null;
-    const json = await resp.json();
-    const pick = (o) => ({
-      lastModified: o?.lastModified || null,
-      lastModifiedBy: o?.lastModifiedBy || null,
-    });
-    return { preview: pick(json.preview), live: pick(json.live) };
-  } finally {
-    release();
+async function fetchPageStatus(adminUrl, { retryIfRateLimited = true } = {}) {
+  await waitForTurn();
+  const resp = await fetch(adminUrl, { cache: 'no-store', credentials: 'include' });
+  if (resp.status === 429 && retryIfRateLimited) {
+    await wait(retryAfterMs(resp));
+    return fetchPageStatus(adminUrl, { retryIfRateLimited: false });
   }
+  if (!resp.ok) return null;
+  const json = await resp.json();
+  const pick = (o) => ({
+    lastModified: o?.lastModified || null,
+    lastModifiedBy: o?.lastModifiedBy || null,
+  });
+  return { preview: pick(json.preview), live: pick(json.live) };
 }
 
 function cacheSuccessfulStatus(adminUrl, request) {
-  const forget = () => statusCache.delete(adminUrl);
+  const forget = () => {
+    if (statusCache.get(adminUrl) === request) statusCache.delete(adminUrl);
+  };
   request.then((status) => status || forget(), forget);
   statusCache.set(adminUrl, request);
 }

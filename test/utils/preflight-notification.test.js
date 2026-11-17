@@ -73,14 +73,20 @@ describe('groupByPriority', () => {
       { level: 'Blocker', items: ['Lorem Ipsum', 'M@S Unpublished Fragments (2)', 'Static prices (1)'] },
       { level: 'Critical', items: ['Accessibility (5)'] },
       { level: 'Major', items: ['LCP'] },
-      { level: 'Normal', items: ['Footer', 'Icons'] },
+      { level: 'Normal', items: ["Footer (couldn't check)", 'Icons'] },
     ]);
   });
 
-  it('never ranks an undecided (limbo) check above Normal, like the panel shows it', () => {
+  it('never ranks an undecided (limbo) check above Normal, and says it could not check it', () => {
     const linkServiceDown = { checkId: 'broken-links', title: 'Links', status: 'limbo', severity: 'critical' };
     expect(groupByPriority({ seo: [linkServiceDown] }))
-      .to.deep.equal([{ level: 'Normal', items: ['Links'] }]);
+      .to.deep.equal([{ level: 'Normal', items: ["Links (couldn't check)"] }]);
+  });
+
+  it('lists an M@S fragment check that could not reach the server as Normal, not Blocker', () => {
+    const masServerDown = { name: 'M@S Unpublished Fragments', status: 'limbo', severity: 'critical', details: { unchecked: ['uuid'], scanned: 1 } };
+    expect(groupByPriority({ merch: [masServerDown] }))
+      .to.deep.equal([{ level: 'Normal', items: ["M@S Unpublished Fragments (couldn't check)"] }]);
   });
 
   it('ranks asset dimensions above the fold as Critical and below it as Normal', () => {
@@ -128,7 +134,7 @@ describe('groupByPriority', () => {
         { checkId: 'unpublished-fragments', title: 'Unpublished fragments', status: 'limbo', severity: 'critical', details: { items: [], unchecked: ['/a'] } },
         { checkId: 'unresolved-placeholders', title: 'Unresolved placeholders', status: 'pass', details: { items: [] } },
       ],
-    })).to.deep.equal([{ level: 'Normal', items: ['Unpublished fragments'] }]);
+    })).to.deep.equal([{ level: 'Normal', items: ["Unpublished fragments (couldn't check)"] }]);
   });
 
   it('ignores passing checks and accessibility runs that could not count issues', () => {

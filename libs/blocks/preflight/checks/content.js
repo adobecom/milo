@@ -1,5 +1,5 @@
 import { getConfig } from '../../../utils/utils.js';
-import { replaceText } from '../../../features/placeholders.js';
+import { fetchPlaceholders, replaceText } from '../../../features/placeholders.js';
 import { getPageStatus, isCrossRepo } from './adminStatus.js';
 import { isConfirmedUnpublished } from './diff/versionHelpers.js';
 import { SEVERITY, STATUS } from './constants.js';
@@ -92,16 +92,17 @@ async function fetchSourceKeys({ path, url }) {
 
 const fallbackTextOf = (key) => key.replaceAll('-', ' ');
 
-const isInLoadedSheet = (key, config) => typeof window.mph?.[key] === 'string'
+const getBodySheet = (config) => fetchPlaceholders({ config, sheet: 'default' }).catch(() => ({}));
+
+const isInBodySheet = (key, sheet, config) => typeof sheet[key] === 'string'
   || typeof config.placeholders?.[key] === 'string';
 
-const isAnySheetLoaded = (config) => Object.keys(window.mph ?? {}).length > 0
-  || Object.keys(config.placeholders ?? {}).length > 0;
+const isBodySheetEmpty = (sheet, config) => !Object.keys(sheet).length
+  && !Object.keys(config.placeholders ?? {}).length;
 
-async function isMissing(key) {
-  const config = getConfig();
+async function isMissing(key, sheet, config) {
   const shownText = await replaceText(`{{${key}}}`, config);
-  return shownText === fallbackTextOf(key) && !isInLoadedSheet(key, config);
+  return shownText === fallbackTextOf(key) && !isInBodySheet(key, sheet, config);
 }
 
 export async function checkUnresolvedPlaceholders(area) {
@@ -114,12 +115,14 @@ export async function checkUnresolvedPlaceholders(area) {
     .filter((key) => !key.endsWith('-geo-ip'))
     .map((key) => ({ key, where: path })));
   const unique = [...new Map(authored.map((item) => [`${item.key} ${item.where}`, item])).values()];
-  const missing = await Promise.all(unique.map(({ key }) => isMissing(key)));
+  const config = getConfig();
+  const sheet = await getBodySheet(config);
+  const missing = await Promise.all(unique.map(({ key }) => isMissing(key, sheet, config)));
   const items = unique.filter((_, i) => missing[i]);
   const unloaded = sources.filter(({ failed }) => failed).length;
   const details = { items };
 
-  if (items.length && !isAnySheetLoaded(getConfig())) {
+  if (items.length && isBodySheetEmpty(sheet, config)) {
     return result('placeholders', STATUS.LIMBO, "Couldn't load the placeholder sheet, so placeholders could not be checked. Try running Preflight again.", details);
   }
   if (items.length) {

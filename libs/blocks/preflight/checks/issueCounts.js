@@ -24,6 +24,12 @@ const countContent = (checks = []) => issues(
   checks.filter(isWarning).length,
 );
 
+const countMerch = (checks = []) => issues(
+  checks.filter(isFail)
+    .reduce((sum, { details: d }) => sum + (d?.unpublished ?? d?.prices ?? []).length, 0),
+  checks.filter(isWarning).length,
+);
+
 export function countIssues(checks, linkErrors = 0) {
   const [a11y] = checks.accessibility || [];
   const [assets] = checks.assets || [];
@@ -36,8 +42,7 @@ export function countIssues(checks, linkErrors = 0) {
       general.warnings + content.warnings,
     ),
     SEO: countChecks(checks.seo),
-    'M@S': issues((checks.merch || []).filter(isFail)
-      .reduce((sum, { details: d }) => sum + (d?.unpublished ?? d?.prices ?? []).length, 0)),
+    'M@S': countMerch(checks.merch),
     Accessibility: issues(isFail(a11y) ? a11y.details?.issuesCount : 0),
     Performance: countChecks(checks.performance),
     Assets: issues(criticalAssetFailures.length, warningAssetFailures.length),

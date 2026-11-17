@@ -95,6 +95,26 @@ describe('Preflight M@S Unpublished Fragments check', () => {
     expect(result.severity).to.equal(SEVERITY.CRITICAL);
   });
 
+  it('treats a network failure as unknown, not as unpublished', async () => {
+    fetchStub.rejects(new Error('offline'));
+    const { unpublished, unchecked } = await checkUnpublishedFragments({ area, locale: 'en_US' });
+    expect(unpublished).to.deep.equal([]);
+    expect(unchecked).to.have.length(2);
+  });
+
+  it('treats a server error or rate limit as unknown, not as unpublished', async () => {
+    fetchStub.callsFake((url) => {
+      const id = new URL(url).searchParams.get('id');
+      if (id === UUID_PUBLISHED) return Promise.resolve({ status: 504 });
+      return Promise.resolve({ status: 429 });
+    });
+    const { unpublished, unchecked } = await checkUnpublishedFragments({ area, locale: 'en_US' });
+    expect(unpublished).to.deep.equal([]);
+    expect(unchecked).to.have.members([UUID_PUBLISHED, UUID_UNPUBLISHED]);
+    const [promise] = runChecks({ area, locale: 'en_US', delayMs: 0 });
+    expect((await promise).status).to.equal('limbo');
+  });
+
   it('builds the API URL with api_key and underscore locale', async () => {
     await checkFragmentPublished(UUID_PUBLISHED, 'en_US');
     const url = fetchStub.firstCall.args[0];

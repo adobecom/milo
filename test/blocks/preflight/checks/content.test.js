@@ -37,6 +37,7 @@ function stubFetch() {
       const path = url.split(ADMIN_STATUS)[1].split('?')[0];
       return STATUSES[path] ?? { ok: false, status: 404 };
     }
+    if (url.endsWith('/no-sheet/placeholders.json')) return { ok: false, status: 404 };
     if (url.endsWith('/placeholders.json')) return { ok: true, json: async () => PLACEHOLDERS };
     const source = Object.keys(sources).find((path) => url.endsWith(path));
     if (!source) return { ok: false, status: 404 };
@@ -176,17 +177,23 @@ describe('Preflight content checks', () => {
       expect(result).to.include({ status: 'pass', description: 'Every placeholder resolves (1 checked).' });
     });
 
-    it('is undecided, not failing, when no placeholder sheet loaded at all', async () => {
-      const loaded = window.mph;
-      window.mph = {};
+    it('flags a key that only exists in another sheet, like the nav sheet', async () => {
+      window.mph['only-in-nav'] = 'Only in nav';
       try {
-        sources[PAGE_SOURCE] = html('<p>{{try-for-free}}</p>');
+        sources[PAGE_SOURCE] = html('<p>{{only-in-nav}}</p>');
         const result = await checkUnresolvedPlaceholders(area('no-content'));
-        expect(result.status).to.equal('limbo');
-        expect(result.description).to.include('placeholder sheet');
+        expect(result.details.items).to.deep.equal([{ key: 'only-in-nav', where: window.location.pathname }]);
       } finally {
-        window.mph = loaded;
+        delete window.mph['only-in-nav'];
       }
+    });
+
+    it('is undecided, not failing, when the placeholder sheet did not load', async () => {
+      setConfig({ contentRoot: '/no-sheet', locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+      sources[PAGE_SOURCE] = html('<p>{{try-for-free}}</p>');
+      const result = await checkUnresolvedPlaceholders(area('no-content'));
+      expect(result.status).to.equal('limbo');
+      expect(result.description).to.include('placeholder sheet');
     });
 
     it('does not fetch the source of cross-repo fragments', async () => {

@@ -34,6 +34,10 @@ function resolveLocale(locale) {
   return ietf.replace('-', '_');
 }
 
+const RATE_LIMITED = 429;
+const isUnreachable = ({ httpStatus }) => !httpStatus || httpStatus === RATE_LIMITED
+  || httpStatus >= 500;
+
 export async function checkUnpublishedFragments({ area = document, locale } = {}) {
   const resolvedLocale = resolveLocale(locale);
   const entries = findFragmentElements(area);
@@ -48,8 +52,9 @@ export async function checkUnpublishedFragments({ area = document, locale } = {}
     uuids.map((uuid) => checkFragmentPublished(uuid, resolvedLocale)),
   );
 
+  const unchecked = results.filter(isUnreachable).map(({ uuid }) => uuid);
   const unpublished = results
-    .filter((r) => !r.published)
+    .filter((r) => !r.published && !isUnreachable(r))
     .map((r) => {
       const group = byUuid.get(r.uuid);
       return {
@@ -64,7 +69,7 @@ export async function checkUnpublishedFragments({ area = document, locale } = {}
     window.lana?.log?.(`[preflight][mas] ${unpublished.length} unpublished fragment(s) out of ${uuids.length} scanned: ${unpublished.map((u) => u.uuid).join(', ')}`, { tags: 'preflight', errorType: 'i' });
   }
 
-  return { unpublished, scanned: uuids.length };
+  return { unpublished, unchecked, scanned: uuids.length };
 }
 
 const RENDERED_BY_OST_OR_MAS = '[data-wcs-osi], [is="inline-price"], [is="checkout-link"], [is="checkout-button"], merch-card, merch-card-collection, merch-offer, merch-offer-select, merch-quantity-select, mas-field, aem-fragment';
@@ -153,13 +158,16 @@ export function runChecks({ area = document, locale, delayMs = HYDRATION_DELAY_M
   const pricesRendered = new Promise((resolve) => { setTimeout(resolve, delayMs); });
   return [
     pricesRendered.then(async () => {
-      const { unpublished, scanned } = await checkUnpublishedFragments({ area, locale });
+      const { unpublished, unchecked, scanned } = await checkUnpublishedFragments({ area, locale });
       const failed = unpublished.length > 0;
+      let status = 'pass';
+      if (unchecked.length) status = 'limbo';
+      if (failed) status = 'fail';
       return {
         name: 'M@S Unpublished Fragments',
-        status: failed ? 'fail' : 'pass',
+        status,
         severity: SEVERITY.CRITICAL,
-        details: failed ? { unpublished, scanned } : { scanned },
+        details: failed ? { unpublished, unchecked, scanned } : { unchecked, scanned },
       };
     }),
     pricesRendered.then(() => checkStaticPrices(area)),

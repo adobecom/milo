@@ -11,6 +11,7 @@ import Merch, {
   checkMasFieldsMultipleFragments,
   checkWcsElements,
   checkStaticPricesForPanel,
+  checkUnpublishedFragmentsForPanel,
 } from '../../../../libs/blocks/preflight/panels/merch.js';
 
 const waitFor = async (fn, tries = 80) => {
@@ -391,6 +392,39 @@ describe('preflight panels merch', () => {
       items[0].querySelector('.merch-scroll-btn').click();
       expect(scrollStub.calledOnce).to.be.true;
       scrollStub.restore();
+    });
+  });
+
+  describe('Merch component - M@S fragments that could not be checked', () => {
+    let container;
+    let main;
+
+    beforeEach(() => {
+      main = document.createElement('main');
+      main.innerHTML = '<merch-card><aem-fragment fragment="server-down"></aem-fragment></merch-card>';
+      document.body.append(main);
+      container = document.createElement('div');
+      document.body.append(container);
+    });
+
+    afterEach(async () => {
+      render(null, container);
+      container.remove();
+      main.remove();
+      sinon.restore();
+      sinon.stub(window, 'fetch').resolves({ status: 200 });
+      await checkUnpublishedFragmentsForPanel();
+      sinon.restore();
+    });
+
+    it('shows how many fragments it could not check instead of hiding them', async () => {
+      sinon.stub(window, 'fetch').resolves({ status: 504 });
+      await checkUnpublishedFragmentsForPanel();
+      render(html`<${Merch} />`, container);
+      await waitFor(() => container.querySelector('.merch-summary-stat'));
+      const stat = [...container.querySelectorAll('.merch-summary-stat.has-warnings')]
+        .find((el) => el.textContent.includes("couldn't be checked"));
+      expect(stat.querySelector('.merch-stat-number').textContent).to.equal('1');
     });
   });
 });

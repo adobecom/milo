@@ -4,6 +4,7 @@ import { checkUnpublishedFragments, findStaticPrices } from '../checks/merch.js'
 const wcsElements = signal([]);
 const masFieldsMultipleFragmentWarnings = signal([]);
 const unpublishedFragments = signal([]);
+const uncheckedFragmentCount = signal(0);
 const staticPrices = signal([]);
 const loading = signal(true);
 
@@ -99,12 +100,13 @@ export function checkMasFieldsMultipleFragments() {
   masFieldsMultipleFragmentWarnings.value = warnings;
 }
 
-async function checkUnpublishedFragmentsForPanel() {
+export async function checkUnpublishedFragmentsForPanel() {
   const main = document.querySelector('main');
   main?.querySelectorAll(`.${MAS_UNPUBLISHED_HIGHLIGHT}`).forEach((el) => {
     el.classList.remove(MAS_UNPUBLISHED_HIGHLIGHT);
   });
-  const { unpublished } = await checkUnpublishedFragments({ area: document });
+  const { unpublished, unchecked } = await checkUnpublishedFragments({ area: document });
+  uncheckedFragmentCount.value = unchecked.length;
   unpublishedFragments.value = unpublished.map((u) => {
     u.cards?.forEach((c) => c.classList.add(MAS_UNPUBLISHED_HIGHLIGHT));
     const firstCard = u.cards?.[0];
@@ -576,10 +578,11 @@ function MerchSummary() {
   const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;
   const masWarningsCount = masFieldsMultipleFragmentWarnings.value.length;
   const unpublishedCount = unpublishedFragments.value.length;
+  const uncheckedCount = uncheckedFragmentCount.value;
   const staticPriceCount = staticPrices.value.length;
 
   if (totalElements === 0 && masWarningsCount === 0 && unpublishedCount === 0
-    && staticPriceCount === 0) {
+    && uncheckedCount === 0 && staticPriceCount === 0) {
     return html`
       <div class="merch-summary no-blocks">
         <h3>No Merch Elements Found</h3>
@@ -618,6 +621,12 @@ function MerchSummary() {
         <div class="merch-summary-stat has-errors">
           <span class="merch-stat-number">${unpublishedCount}</span>
           <span class="merch-stat-label">Unpublished M@S fragments</span>
+        </div>
+      `}
+      ${uncheckedCount > 0 && html`
+        <div class="merch-summary-stat has-warnings">
+          <span class="merch-stat-number">${uncheckedCount}</span>
+          <span class="merch-stat-label">M@S fragments couldn't be checked</span>
         </div>
       `}
       ${staticPriceCount > 0 && html`

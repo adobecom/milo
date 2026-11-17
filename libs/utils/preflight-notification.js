@@ -114,11 +114,11 @@ function listIssues({
     isFail(check) ? check.details?.items?.length : undefined,
   ));
   const aggregates = [
-    ...merch.filter(isFail).map((check) => issue(
+    ...merch.filter(isIssue).map((check) => issue(
       check,
       check.checkId ?? check.name,
       check.title ?? check.name,
-      (check.details?.unpublished ?? check.details?.prices)?.length,
+      isFail(check) ? (check.details?.unpublished ?? check.details?.prices)?.length : undefined,
     )),
     ...accessibility.filter((check) => isFail(check) && check.details?.issuesCount > 0)
       .map((check) => issue(check, check.checkId, check.title, check.details.issuesCount)),
@@ -140,12 +140,16 @@ const priorityOf = (found) => {
     ?? (found.severity === SEVERITY.CRITICAL ? PRIORITY.CRITICAL : PRIORITY.NORMAL);
 };
 
+const labelOf = (found) => {
+  if (isUndecided(found)) return `${found.title} (couldn't check)`;
+  return found.count ? `${found.title} (${found.count})` : found.title;
+};
+
 export function groupByPriority(runChecks) {
   const issues = listIssues(runChecks);
   return PRIORITY_ORDER.map((level) => ({
     level,
-    items: issues.filter((item) => priorityOf(item) === level)
-      .map(({ title, count }) => (count ? `${title} (${count})` : title)),
+    items: issues.filter((item) => priorityOf(item) === level).map(labelOf),
   })).filter(({ items }) => items.length);
 }
 
@@ -200,7 +204,7 @@ async function createPreflightNotification(results) {
 
   const snooze = createTag('label', { class: 'notification-snooze' }, [
     createTag('input', { type: 'checkbox' }),
-    "Don't show again for 24 hours on this page",
+    'Show a smaller reminder for 24 hours on this page',
   ]);
 
   const content = createTag('div', { class: 'notification-content' }, [

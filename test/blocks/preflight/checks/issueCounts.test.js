@@ -35,6 +35,11 @@ describe('Preflight issue counts', () => {
     }, 1).General).to.deep.equal({ errors: 5, warnings: 1 });
   });
 
+  it('counts an M@S check that could not run as a warning, not as a pass', () => {
+    expect(countIssues({ merch: [{ status: 'limbo', severity: 'critical', details: { unchecked: ['id'] } }] })['M@S'])
+      .to.deep.equal({ errors: 0, warnings: 1 });
+  });
+
   it('counts nothing for missing, passing, or detail-less categories', () => {
     const empty = Object.fromEntries(['General', 'SEO', 'M@S', 'Accessibility', 'Performance', 'Assets']
       .map((tab) => [tab, { errors: 0, warnings: 0 }]));
