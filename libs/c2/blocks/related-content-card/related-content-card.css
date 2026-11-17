@@ -80,6 +80,7 @@
   font-size: 16px;
   line-height: 1.35;
   font-weight: 800;
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
   /* stylelint-disable-next-line value-no-vendor-prefix */
   display: -webkit-box;
   -webkit-line-clamp: 2;

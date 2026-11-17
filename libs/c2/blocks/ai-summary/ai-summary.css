@@ -59,6 +59,7 @@
   font-style: normal;
   font-weight: 800;
   line-height: 125%;
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
 }
 
 .ai-summary ul,
