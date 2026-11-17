@@ -5,8 +5,12 @@ import {
   caasAutoPublish,
   isDisabledOnPage,
   matchesUrl,
+  resolveHtmlExt,
+  resolveHtmlIdentity,
+  resolveHtmlIdentitySections,
   resolveRule,
   resolveTargets,
+  resetIdentityNoticesForTesting,
 } from '../../../tools/send-to-caas/auto-publish.js';
 
 const POST_XDM_URL = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
@@ -98,6 +102,9 @@ afterEach(() => {
     fetchStub.restore();
     fetchStub = null;
   }
+  // Tests that capture identity diagnostics install a fake lana; leaving it in
+  // place would silently redirect every later test's logging.
+  delete window.lana;
 });
 
 describe('auto-publish: matchesUrl', () => {
@@ -166,6 +173,137 @@ describe('auto-publish: resolveRule', () => {
 
   it('skips rules without a url field', () => {
     expect(resolveRule([{ enabled: true }, { url: '/foo' }], '/foo').url).to.equal('/foo');
+  });
+});
+
+describe('auto-publish: resolveHtmlIdentitySections', () => {
+  it('is empty when no rule declares any section', () => {
+    // A site that has not opted in gets no carve-out at all -- `/blog` is not
+    // special-cased on its behalf.
+    expect(resolveHtmlIdentitySections([{ url: '/a' }], { url: '/a' })).to.equal('');
+  });
+
+  it('unions across rules, so a rule omitting the column does not narrow it', () => {
+    // Site-wide for the same reason htmlIdentity is: resolveRule returns only
+    // the most-specific match, so reading the column off that rule alone would
+    // let a narrow rule silently re-force `.html` for its whole subtree.
+    const rules = [
+      { url: '/a', htmlIdentitySections: 'blog' },
+      { url: '/a/b' },
+      { url: '/c', htmlIdentitySections: 'news' },
+    ];
+    expect(resolveHtmlIdentitySections(rules, rules[1])).to.equal('blog,news');
+  });
+
+  it('normalizes and de-duplicates authored cells', () => {
+    const rules = [
+      { url: '/a', htmlIdentitySections: ' Blog , blog ' },
+      { url: '/b', htmlIdentitySections: 'BLOG,news' },
+    ];
+    expect(resolveHtmlIdentitySections(rules, rules[0])).to.equal('blog,news');
+  });
+
+  it('includes the matched rule even when it is absent from the list', () => {
+    expect(resolveHtmlIdentitySections([], { url: '/a', htmlIdentitySections: 'blog' }))
+      .to.equal('blog');
+  });
+
+  it('does not throw on a malformed config', () => {
+    expect(resolveHtmlIdentitySections(undefined, undefined)).to.equal('');
+    expect(resolveHtmlIdentitySections(null, { htmlIdentitySections: null })).to.equal('');
+  });
+});
+
+describe('auto-publish: resolveHtmlIdentity', () => {
+  // Card identity is a site-level scheme. resolveRule returns only the single
+  // most-specific match, so reading the flag off that rule alone let a narrow
+  // rule that merely OMITS the column silently revert the policy for its whole
+  // subtree -- orphaning that section's cards with no error anywhere.
+  it('applies a site-wide opt-in to a matched rule that omits the column', () => {
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**' },
+    ];
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+  });
+
+  it('logs the site-wide notice once, then suppresses it', () => {
+    // The notice is informational: a broad opt-in plus narrower rules that omit
+    // the column is the documented-correct shape, so firing per url turned a
+    // 5,000-url bulk job into 5,000 lana warnings at sampleRate 100 and buried
+    // the genuinely actionable messages (the disagreement warning and the
+    // env-split refusal, neither of which is suppressed).
+    //
+    // Reset first so this asserts from a known state. Without the reset an
+    // earlier test in this file has already tripped the module-level flag, so
+    // `logged` would be empty and the test would pass even if the notice could
+    // never fire at all.
+    resetIdentityNoticesForTesting();
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**' },
+    ];
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(1);
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(1);
+  });
+
+  it('does not let one site suppress another site\'s notice', () => {
+    // One bulk submission spans one job per origin and this module reads a
+    // different config.json per origin, so a single module-level flag let the
+    // first site's notice through and silenced every other site's.
+    //
+    // Both sites deliberately use IDENTICAL rule patterns: rule urls are PATHS,
+    // not origins, and the live main-- and stage-- da-bacom configs carry
+    // byte-identical patterns. An earlier key omitted the origin and passed
+    // this test only because the two sites had been given different patterns,
+    // which proved the key was not a single global flag but not that it was
+    // per-site.
+    resetIdentityNoticesForTesting();
+    const siteA = [{ url: '/**', htmlIdentity: 'true' }, { url: '/products/**' }];
+    const siteB = [{ url: '/**', htmlIdentity: 'true' }, { url: '/products/**' }];
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    expect(resolveHtmlIdentity(siteA, siteA[1], 'https://main--da-bacom--adobecom.aem.live')).to.be.true;
+    expect(resolveHtmlIdentity(siteB, siteB[1], 'https://stage--da-bacom--adobecom.aem.live')).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(2);
+    // Same origin twice is still deduped.
+    expect(resolveHtmlIdentity(siteA, siteA[1], 'https://main--da-bacom--adobecom.aem.live')).to.be.true;
+    expect(logged.filter((m) => m.includes('applying it site-wide'))).to.have.lengthOf(2);
+  });
+
+  it('resolves to the matched rule when no rule opts in', () => {
+    const rules = [{ url: '/**' }, { url: '/products/**' }];
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.false;
+  });
+
+  it('resolves ON when rules disagree, because losing an id is unrecoverable', () => {
+    // A card that keeps its established `.html` id stays findable; one that
+    // loses it is orphaned with no way back, so ON is the safe direction.
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**', htmlIdentity: 'false' },
+    ];
+    expect(resolveHtmlIdentity(rules, rules[1])).to.be.true;
+  });
+
+  it('warns when it has to override a rule that disagrees', () => {
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    const rules = [
+      { url: '/**', htmlIdentity: 'true' },
+      { url: '/products/**', htmlIdentity: 'false' },
+    ];
+    resolveHtmlIdentity(rules, rules[1]);
+    expect(logged.some((m) => m.includes('disagrees across rules'))).to.be.true;
+  });
+
+  it('tolerates a missing or non-array rule list', () => {
+    expect(resolveHtmlIdentity(undefined, { htmlIdentity: 'true' })).to.be.true;
+    expect(resolveHtmlIdentity(null, undefined)).to.be.false;
   });
 });
 
@@ -331,6 +469,87 @@ describe('auto-publish: caasAutoPublish gating', () => {
     expect(result.reason).to.equal('rule-disabled');
   });
 
+  it('honors enabled:"false", the only form a config sheet can author', async () => {
+    // The check was a strict `=== false`, but this config is spreadsheet-backed
+    // and every cell is a string. A site that had explicitly turned autopublish
+    // off therefore kept publishing, with no error anywhere to say so.
+    const origin = uniqueOrigin();
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'false' }] } }));
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/old`,
+      path: '/products/old',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(result.skipped).to.be.true;
+    expect(result.reason).to.equal('rule-disabled');
+  });
+
+  it('tags the kill-switch diagnostic outside the htmlIdentity tag', async () => {
+    // This message says a site has STOPPED publishing. It is not an identity
+    // diagnostic, so it must not ship under the htmlIdentity tag -- otherwise
+    // muting or retiring that tag once the rollout finishes silently takes this
+    // with it. Nothing else asserts lana's tag argument, so a refactor dropping
+    // the second argument to createIdentityLogger would be invisible.
+    const origin = uniqueOrigin();
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'false' }] } }));
+    const calls = [];
+    window.lana = { log: (msg, opts) => calls.push({ msg, opts }) };
+    await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/x`,
+      path: '/products/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    const killSwitch = calls.find((c) => c.msg.includes('is disabled by its enabled column'));
+    expect(killSwitch, 'kill-switch diagnostic was not logged').to.exist;
+    expect(killSwitch.opts.tags).to.equal('caas,autoPublish');
+  });
+
+  it('warns when enabled holds a value that means neither true nor false', async () => {
+    // 'yes' is not a recognized flag, so it falls through to ENABLED -- the
+    // opposite of what an author typing it almost certainly intended. Silence
+    // here is how a typo becomes a site that keeps publishing forever.
+    const logged = [];
+    const origin = uniqueOrigin();
+    window.lana = { log: (msg) => logged.push(msg) };
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'yes' }] } }));
+    await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/old`,
+      path: '/products/old',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(logged.some((m) => m.includes("unrecognized enabled value 'yes'"))).to.be.true;
+  });
+
+  it('treats a non-false enabled value as enabled', async () => {
+    // Absent/true/empty must keep publishing; only an explicit opt-out stops it.
+    const origin = uniqueOrigin();
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async () => jsonResponse({ autoPublish: { data: [{ url: '/products/**', enabled: 'true' }] } }));
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/products/old`,
+      path: '/products/old',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(result.reason).to.not.equal('rule-disabled');
+  });
+
   it('returns fetch error when page fetch fails', async () => {
     const origin = uniqueOrigin();
     fetchStub = sinon.stub(window, 'fetch');
@@ -470,6 +689,25 @@ describe('auto-publish: caasAutoPublish posting', () => {
     });
     return postCalls;
   };
+
+  it('warns when htmlIdentity holds an unrecognized value', async () => {
+    // 'yes' is not a recognized flag so it falls through to OFF, meaning ids
+    // are NOT normalized -- the silent card-orphaning this feature prevents.
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    const origin = uniqueOrigin();
+    setupHappyPath(origin, { htmlIdentity: 'yes' });
+    await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'business.adobe.com',
+      repo: 'bacom',
+    });
+    expect(logged.some((m) => m.includes("unrecognized htmlIdentity value 'yes'"))).to.be.true;
+  });
 
   it('posts once with prod/live headers on publish action', async () => {
     const origin = uniqueOrigin();
@@ -871,5 +1109,400 @@ describe('auto-publish: caasAutoPublish — autoDetectLingo (fully Lingo-enabled
     // not lingo-site-mapping (news is excluded from the mapping index entirely).
     expect(postCalls[0].body.language).to.equal('es');
     expect(postCalls[0].body.country).to.equal('mx');
+  });
+});
+
+describe('auto-publish: resolveHtmlExt', () => {
+  it('falls back to the rule-wide value when no env override is authored', () => {
+    expect(resolveHtmlExt({ htmlExt: 'true' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'false' }, 'stage')).to.be.false;
+    expect(resolveHtmlExt({}, 'prod')).to.be.false;
+    expect(resolveHtmlExt(undefined, 'prod')).to.be.false;
+  });
+
+  it('lets an env override win over the rule-wide value', () => {
+    const rule = { htmlExt: 'true', htmlExtStage: 'false' };
+    expect(resolveHtmlExt(rule, 'stage')).to.be.false;
+    expect(resolveHtmlExt(rule, 'prod')).to.be.true;
+  });
+
+  it('treats an empty override cell as unauthored', () => {
+    // A spreadsheet emits '' for a column the row leaves blank; that must not
+    // read as `false` and silently strip .html from that environment.
+    expect(resolveHtmlExt({ htmlExt: 'true', htmlExtStage: '' }, 'stage')).to.be.true;
+  });
+
+  it('accepts booleans as well as sheet strings', () => {
+    expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'stage')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: true, htmlExtStage: false }, 'prod')).to.be.true;
+  });
+
+  it('pins every htmlExt column to its legacy strict reading', () => {
+    // htmlExt is a PRE-EXISTING live config column previously parsed as
+    // `=== true || === 'true'`. Honouring the canonical parser's wider set
+    // would flip those sites' public urls -- and prodUrl is the uuid hash
+    // input, so it would silently rehash every card they publish, at merge,
+    // with no rollback.
+    expect(resolveHtmlExt({ htmlExt: 'TRUE' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: ' true ' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'on' }, 'prod')).to.be.false;
+    // The exact lowercase value is unaffected, in both directions.
+    expect(resolveHtmlExt({ htmlExt: 'true' }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: true }, 'prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'true', htmlExtStage: 'FALSE' }, 'stage')).to.be.false;
+  });
+
+  it('pins the per-environment columns identically, so a uniform config cannot split', () => {
+    // Pinning the rule-wide column but not its siblings made these resolve to
+    // DIFFERENT values, so a config the author believes is uniform produced two
+    // htmlExt variants, two prodUrls, and tripped the env-split refusal -- which
+    // then blamed htmlIdentity, a cell that is not the cause.
+    expect(resolveHtmlExt({ htmlExt: 'on', htmlExtStage: 'on' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'on', htmlExtStage: 'on' }, 'stage')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'TRUE', htmlExtProd: 'TRUE' }, 'prod')).to.be.false;
+    expect(resolveHtmlExt({ htmlExt: 'TRUE', htmlExtProd: 'TRUE' }, 'stage')).to.be.false;
+  });
+
+  it('reports a pinned htmlExt cell once, not once per resolve', () => {
+    // resolveHtmlExt runs once per target AND again per ruleEnvs entry, so an
+    // undeduped error-severity message fired 3-4x per url.
+    resetIdentityNoticesForTesting();
+    const logged = [];
+    window.lana = { log: (msg) => logged.push(msg) };
+    const rule = { url: '/**', htmlExt: 'On' };
+    expect(resolveHtmlExt(rule, 'prod')).to.be.false;
+    expect(resolveHtmlExt(rule, 'prod')).to.be.false;
+    expect(resolveHtmlExt(rule, 'stage')).to.be.false;
+    const pins = logged.filter((m) => m.includes('was read as false before the parser was widened'));
+    expect(pins).to.have.lengthOf(1);
+  });
+
+  it('ignores an unknown env rather than reading an arbitrary rule property', () => {
+    // caasEnv is interpolated into the lookup key, so an unvalidated value
+    // would let a typo (or a caller-injected string) pull an unrelated field
+    // in as if it were a .html policy.
+    const rule = { htmlExt: 'true', htmlExtHost: 'false', host: 'false' };
+    expect(resolveHtmlExt(rule, 'host')).to.be.true;
+    expect(resolveHtmlExt(rule, 'Prod')).to.be.true;
+    expect(resolveHtmlExt({ htmlExt: 'false', htmlExtBogus: 'true' }, 'bogus')).to.be.false;
+  });
+});
+
+describe('auto-publish: resolveHtmlExt blank override cells', () => {
+  it('treats a whitespace-only override cell as unauthored', () => {
+    // An author clearing a cell by typing a space produces '  ', which is not
+    // '' and so was taken as a real override -- resolving to false WITHOUT
+    // tripping the unrecognized-value warning, silently flipping that
+    // environment's public urls with no diagnostic at all.
+    const rule = { url: '/**', htmlExt: 'true', htmlExtProd: '  ' };
+    expect(resolveHtmlExt(rule, 'prod')).to.be.true;
+  });
+
+  it('still honors a genuinely authored override', () => {
+    expect(resolveHtmlExt({ url: '/**', htmlExt: 'true', htmlExtProd: 'false' }, 'prod')).to.be.false;
+  });
+});
+
+describe('auto-publish: per-environment htmlExt', () => {
+  let envFetchStub;
+  afterEach(() => envFetchStub?.restore());
+
+  const setup = (origin, rule, rulePath = '/x') => {
+    const posts = [];
+    envFetchStub = sinon.stub(window, 'fetch');
+    envFetchStub.callsFake(async (input, init) => {
+      const u = typeof input === 'string' ? input : input.url;
+      if (u.includes('/.milo/caas/config.json')) {
+        return jsonResponse({ autoPublish: { data: [{ url: rulePath, enabled: true, ...rule }] } });
+      }
+      if (u.startsWith(POST_XDM_URL)) {
+        posts.push({ caasEnv: init?.headers?.['caas-env'], body: JSON.parse(init.body) });
+        return jsonResponse({ success: true, status: 201 });
+      }
+      if (u.includes('/chimera-api/tags')) return new Response('not found', { status: 404 });
+      if (u.startsWith(origin)) return htmlResponse(PAGE_HTML_WITH_METADATA);
+      return new Response('not found', { status: 404 });
+    });
+    return posts;
+  };
+
+  const setupPath = (origin, rulePath, rule) => setup(origin, rule, rulePath);
+
+  const run = (origin) => caasAutoPublish({
+    action: 'preview',
+    url: `${origin}/x`,
+    path: '/x',
+    origin,
+    getAuthToken: async () => 'tok',
+  });
+
+  it('serves an extensionless url to stage and .html to prod, with ONE identity', async () => {
+    // bacom's migration window: stage is extensionless before prod is. The
+    // public url must differ per environment, but contentId must NOT -- a DA
+    // collection holds one id and is promoted unchanged, so an id that varied
+    // per environment would resolve in only one of them.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await run(origin);
+
+    expect(result.skipped).to.be.false;
+    expect(posts).to.have.lengthOf(2);
+    const stage = posts.find((post) => post.caasEnv === 'stage');
+    const prod = posts.find((post) => post.caasEnv === 'prod');
+
+    expect(stage.body.url).to.equal('https://business.adobe.com/x');
+    expect(prod.body.url).to.equal('https://business.adobe.com/x.html');
+
+    const expectedId = await getUuid('business.adobe.com/x.html');
+    expect(stage.body.contentId).to.equal(expectedId);
+    expect(prod.body.contentId).to.equal(expectedId);
+  });
+
+  it('refuses an env split without htmlIdentity, which would fork the card id', async () => {
+    const origin = uniqueOrigin();
+    const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
+    const result = await run(origin);
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses the same env split on publish, not just preview', async () => {
+    // The invariant ("one page, one id") is a property of the RULE, but the two
+    // actions target different env sets: publish hits prod alone while preview
+    // hits prod and stage. Scoped to the action's own targets, this identical
+    // misconfiguration was refused on every preview and waved through on every
+    // publish -- minting prod cards and no stage ones, with no rule-level signal.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true', htmlExtStage: 'false' });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses a fork contributed by a target whose caasEnv is missing', async () => {
+    // A target with an absent or non-string caasEnv is filtered out of the
+    // guard's declared-env set, but the BUILD path does no such filtering:
+    // resolveHtmlExt falls back to the rule-wide htmlExt for it, so it still
+    // contributes a second variant, a second prodUrl and a second contentId.
+    // Narrowing the guard to the rule's well-formed envs therefore traded a
+    // false refusal for a false ACCEPTANCE -- two live cards for one page,
+    // which is the unrecoverable outcome this guard exists to prevent.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtProd: 'false',
+      targets: [{ caasEnv: 'prod', draftOnly: false }, { draftOnly: false }],
+    });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('does NOT refuse a rule whose declared targets cannot reach the split environment', async () => {
+    // The guard asks which environments the RULE can reach. `resolveTargets`
+    // returns `rule.targets` verbatim when the rule declares them, so a rule
+    // targeting prod alone never touches stage -- a leftover `htmlExtStage`
+    // cell on it describes no reachable fork and must not stop publishing.
+    // Deriving the guard set from `allowedHtmlExtEnvs` was wrong here: that is
+    // an allowlist for override COLUMN NAMES and is always a superset of
+    // {prod, stage} by construction, so it refused this normal rollout shape.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      targets: [{ caasEnv: 'prod', draftOnly: false }],
+    });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result.error).to.equal(undefined);
+    expect(posts).to.have.lengthOf(1);
+  });
+
+  it('still refuses when the rule declares targets that DO span the split', async () => {
+    // Converse of the above: narrowing the guard to the rule's declared targets
+    // must not let a genuine fork through.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      targets: [{ caasEnv: 'prod', draftOnly: false }, { caasEnv: 'stage', draftOnly: false }],
+    });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('refuses an env split the htmlIdentity policy does not actually cover', async () => {
+    // htmlIdentity only normalizes in-scope urls (the bacom prod host). On another
+    // host the policy is inert, so the flag being on does not prove the ids
+    // converge -- stage would hash `/x` and prod `/x.html`. Guarding on the
+    // flag instead of the real hash input would wave this through.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, {
+      host: 'www.adobe.com',
+      repo: 'milo',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await run(origin);
+    expect(result).to.deep.equal({ skipped: false, error: 'env-split-requires-html-identity' });
+    expect(posts).to.have.lengthOf(0);
+  });
+
+  it('names the real cause when htmlIdentity is set but the host is out of scope', async () => {
+    // The refusal fires for two different causes needing two different fixes.
+    // Telling an operator who already set htmlIdentity to "set htmlIdentity"
+    // sends them to re-check a correct cell, with nothing pointing at the
+    // hardcoded host scope that is the actual blocker.
+    const logs = [];
+    window.lana = { log: (msg) => logs.push(msg) };
+    const origin = uniqueOrigin();
+    setup(origin, {
+      host: 'www.adobe.com',
+      repo: 'milo',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    await run(origin);
+    const refusal = logs.find((m) => m.includes('refusing to publish'));
+    expect(refusal, 'no refusal was logged').to.exist;
+    expect(refusal).to.include('www.adobe.com');
+    expect(refusal).to.not.include('Set htmlIdentity on the rule');
+  });
+
+  it('still says to set htmlIdentity when the flag is genuinely absent', async () => {
+    const logs = [];
+    window.lana = { log: (msg) => logs.push(msg) };
+    const origin = uniqueOrigin();
+    setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+    });
+    await run(origin);
+    const refusal = logs.find((m) => m.includes('refusing to publish'));
+    expect(refusal, 'no refusal was logged').to.exist;
+    expect(refusal).to.include('Set htmlIdentity on the rule');
+  });
+
+  it('exempts a blog path from forced .html, and its env variants converge', async () => {
+    // The site declares `/blog` extensionless, so there is no `.html` form to
+    // force onto its identity. Forcing one would mint an id no card holds, and
+    // the collection consumer -- configured with the same section list -- would
+    // hash a different string for the same page.
+    const origin = uniqueOrigin();
+    const posts = setupPath(origin, '/blog/post', {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+      htmlIdentitySections: 'blog',
+    });
+    const result = await caasAutoPublish({
+      action: 'preview',
+      url: `${origin}/blog/post`,
+      path: '/blog/post',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(result.skipped).to.be.false;
+    expect(posts).to.have.lengthOf(2);
+    const stage = posts.find((post) => post.caasEnv === 'stage');
+    const prod = posts.find((post) => post.caasEnv === 'prod');
+
+    // The public urls still differ per environment; only identity converges.
+    expect(stage.body.url).to.equal('https://business.adobe.com/blog/post');
+    expect(prod.body.url).to.equal('https://business.adobe.com/blog/post.html');
+    const expectedId = await getUuid('business.adobe.com/blog/post');
+    expect(stage.body.contentId).to.equal(expectedId);
+    expect(prod.body.contentId).to.equal(expectedId);
+  });
+
+  it('still forces .html on a nested blog path, which is not exempt', async () => {
+    const origin = uniqueOrigin();
+    const posts = setupPath(origin, '/resources/blog/post', {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    await caasAutoPublish({
+      action: 'preview',
+      url: `${origin}/resources/blog/post`,
+      path: '/resources/blog/post',
+      origin,
+      getAuthToken: async () => 'tok',
+    });
+    expect(posts).to.have.lengthOf(2);
+    const expectedId = await getUuid('business.adobe.com/resources/blog/post.html');
+    posts.forEach((post) => expect(post.body.contentId).to.equal(expectedId));
+  });
+
+  it('reports the resolved htmlExt per target', async () => {
+    const origin = uniqueOrigin();
+    setup(origin, {
+      host: 'business.adobe.com',
+      repo: 'bacom',
+      htmlExt: 'true',
+      htmlExtStage: 'false',
+      htmlIdentity: 'true',
+    });
+    const result = await run(origin);
+    const byEnv = Object.fromEntries(result.results.map((r) => [r.caasEnv, r.htmlExt]));
+    expect(byEnv).to.deep.equal({ stage: false, prod: true });
+  });
+
+  it('sends one identical payload to every target when no override is authored', async () => {
+    // The pre-existing path for every other tenant: targets agree, so they
+    // collapse to a single build and byte-identical posts.
+    const origin = uniqueOrigin();
+    const posts = setup(origin, { host: 'business.adobe.com', repo: 'bacom', htmlExt: 'true' });
+    const result = await run(origin);
+
+    expect(result.skipped).to.be.false;
+    expect(posts).to.have.lengthOf(2);
+    expect(posts[0].body).to.deep.equal(posts[1].body);
+    expect(posts[0].body.url).to.equal('https://business.adobe.com/x.html');
+    expect(result.results.every((r) => r.htmlExt === true)).to.be.true;
   });
 });

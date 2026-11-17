@@ -1839,9 +1839,11 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
-      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
+      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid, caasIdentity}
+      // discovery chain
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      loadLink(`${config.base}/utils/caasIdentity.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       // TEMP: ?mepnext=off -> preview.js, else mep-next; gate + toLowerCase() hack die on removal.
       const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'off'
         ? './preview.js' : '../mep/mep-next/mep-next.js';

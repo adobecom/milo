@@ -184,6 +184,13 @@
   z-index: 10;
 }
 
+@media (max-height: 350px) {
+  .section.sticky-bottom.promo-sticky-section {
+    position: static;
+    bottom: auto;
+  }
+}
+
 .section.sticky-bottom.popup,
 .section.sticky-bottom:has(.notification.pill) {
   bottom: var(--spacing-xs);

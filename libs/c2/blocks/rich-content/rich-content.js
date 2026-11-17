@@ -1,16 +1,15 @@
 import { decorateBlockText, decorateViewportContent, normalizeMasFieldText } from '../../../utils/decorate.js';
-import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
-import { debounce } from '../../../utils/action.js';
-import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 const HERO_OVERLAY_PROP = '--rc-hero-overlay';
 const NAV_HEIGHT_PROP = '--rc-nav-height';
 
 // Lets focused links clear the sticky header when tabbing back into the section.
-function initNavHeight(el) {
+async function initNavHeight(el) {
   const section = el.closest('.section');
   const header = document.querySelector('header');
   if (!section || !header) return;
+  const { getGnavHeight } = await import('../../../blocks/global-navigation/utilities/utilities.js');
   const observer = new ResizeObserver(() => {
     if (!section.isConnected) {
       observer.disconnect();
@@ -71,6 +70,47 @@ function getSectionHash(anchor) {
   return id ? `#${id}` : '';
 }
 
+function getJumpTarget(hash) {
+  if (!hash) return null;
+  let id;
+  try {
+    id = decodeURIComponent(hash.slice(1));
+  } catch {
+    return null;
+  }
+  const target = document.getElementById(id);
+  return target?.classList.contains('dialog-modal') ? null : target;
+}
+
+// Scroll to the resolved element, not the hash: scrollToHashedElement skips
+// IDs with `=` or ones that aren't valid selectors (e.g. `#2024-plans`).
+async function scrollToJumpTarget(target) {
+  let navHeight;
+  try {
+    const { getGnavHeight } = await import('../../../blocks/global-navigation/utilities/utilities.js');
+    navHeight = getGnavHeight();
+  } catch {
+    navHeight = document.querySelector('header')?.offsetHeight || 0;
+  }
+  const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+  window.scrollTo({ top, behavior: 'smooth' });
+}
+
+const isVisible = (el) => (el.checkVisibility
+  ? el.checkVisibility({ visibilityProperty: true })
+  : el.getClientRects().length > 0);
+
+// Focus the first visible heading so screen readers announce only the title;
+// hidden headings (viewport variants, visibility:hidden) can't take focus.
+function focusJumpTarget(target) {
+  const el = [...target.querySelectorAll('h1, h2, h3, h4, h5, h6')].find(isVisible) ?? target;
+  if (!el.hasAttribute('tabindex')) {
+    el.setAttribute('tabindex', '-1');
+    el.addEventListener('blur', () => el.removeAttribute('tabindex'), { once: true });
+  }
+  el.focus({ preventScroll: true });
+}
+
 function decorateJumpLinks(content, foreground) {
   const jumpRow = [...content?.querySelectorAll(':is(p, div):has(a)') ?? []].find(isJumpLinkRow);
   if (!jumpRow) return;
@@ -88,14 +128,15 @@ function decorateJumpLinks(content, foreground) {
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
       const hash = getSectionHash(anchor);
+      const target = getJumpTarget(hash);
+      if (!target) return;
       if (window.lenis?.scrollTo) {
-        const target = document.querySelector(`#${hash.slice(1)}:not(.dialog-modal)`);
-        if (!target) return;
         const offset = -(document.querySelector('.global-navigation')?.offsetHeight || 0);
         window.lenis.scrollTo(target, { offset, force: true });
-        return;
+      } else {
+        scrollToJumpTarget(target);
       }
-      scrollToHashedElement(hash);
+      focusJumpTarget(target);
     });
     list.append(createTag('li', {}, anchor));
   });
@@ -212,7 +253,9 @@ export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
 
   if (el.classList.contains('media') && [...el.classList].some((cls) => SPACING_CLASS_RE.test(cls))) {
-    window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+    import('../../../utils/action.js').then(({ debounce }) => {
+      window.addEventListener('resize', debounce(() => applyMediaSpacing(el)));
+    });
   }
 
   applyHeroOverlay(el);

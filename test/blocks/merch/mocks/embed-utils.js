@@ -84,6 +84,8 @@ export const getAupSelectValue = () => null;
 export const whenTargetReady = () => Promise.resolve();
 export const decorateLinksAsync = stub().resolves();
 export const loadBlock = stub().resolves();
+export const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+export const getViewportContent = () => ({ delimiterIdx: -1, viewportRows: [] });
 export const getMepEnablement = () => false;
 export const isSignedOut = () => true;
 

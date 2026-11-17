@@ -22,6 +22,11 @@ libs/navigation/dist/
 mcp-server.log
 .playwright-stamp
 .scout/*
+.pinata/docs/*
+.pinata/logs/
+.pinata/specs/
+.pinata/state/
+.pinata/scripts/__pycache__/
 
 # Font files should not be committed due to copyright & branding reasons. Use Typekit instead.
 *.otf
