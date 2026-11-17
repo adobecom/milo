@@ -1,9 +1,15 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { spy, stub } from 'sinon';
-import { getConfig, MILO_EVENTS, setConfig } from '../../../../libs/utils/utils.js';
+import { getConfig, loadBlock, MILO_EVENTS, setConfig } from '../../../../libs/utils/utils.js';
 import init from '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.js';
 import { waitFor } from '../../../helpers/waitfor.js';
+
+// C2 pages load the C2 core stylesheet, which defines the S2A tokens and grid margins.
+const SIDE_NAV_CSS = (await Promise.all([
+  readFile({ path: '../../../../libs/c2/styles/styles.css' }),
+  readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' }),
+])).join('\n');
 
 setConfig({
   locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
@@ -31,7 +37,7 @@ describe('blog-side-navigation section list', () => {
     const query = new EventTarget();
     query.matches = matches;
     mediaStub = stub(window, 'matchMedia').callsFake((mediaQuery) => (
-      mediaQuery === '(min-width: 600px)' ? query : { matches: false }
+      mediaQuery === '(width >= 768px)' ? query : { matches: false }
     ));
     return query;
   }
@@ -423,7 +429,7 @@ describe('blog-side-navigation section list', () => {
   it('limits long jump labels to two lines except in collapsed mobile navigation', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     const longTitle = 'A long section title that must remain fully accessible. '.repeat(12).trim();
     try {
@@ -443,7 +449,7 @@ describe('blog-side-navigation section list', () => {
               const text = link.querySelector('.blog-side-navigation-label');
               const textStyle = getComputedStyle(text);
               const lineHeight = parseFloat(textStyle.lineHeight);
-              const lines = !expanded && width < 600 ? 1 : 2;
+              const lines = !expanded && width < 768 ? 1 : 2;
               expect(textStyle.webkitLineClamp).to.equal(String(lines));
               expect(textStyle.overflow).to.equal('hidden');
               expect(link.getBoundingClientRect().height)
@@ -471,17 +477,17 @@ describe('blog-side-navigation section list', () => {
   it('uses plus and minus controls with an outer border and no link dividers at every viewport', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     try {
-      for (const width of [390, 599, 600, 768, 1199, 1200, 1440]) {
+      for (const width of [390, 767, 768, 1024, 1279, 1280, 1440]) {
         await setViewport({ width, height: 1000 });
         const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
         await init(block);
         const button = block.querySelector('button');
         const icon = button.querySelector('span');
         const list = block.querySelector('ul');
-        const mobile = width < 600;
+        const mobile = width < 768;
         expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight)
           .to.equal(mobile ? '400' : '700');
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
@@ -507,8 +513,8 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(icon, '::after').width).to.equal('2px');
         expect(getComputedStyle(icon, '::after').height).to.equal('12px');
         expect(getComputedStyle(icon, '::after').display).not.to.equal('none');
-        expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
-        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
+        expect(getComputedStyle(list).borderTopWidth).to.equal(width < 768 ? '0px' : '1px');
+        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(218, 218, 218)');
         button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
         if (mobile) {
@@ -517,15 +523,15 @@ describe('blog-side-navigation section list', () => {
         }
         expect(getComputedStyle(button).backgroundColor).to.equal('rgb(0, 0, 0)');
         expect(getComputedStyle(button).color).to.equal('rgb(255, 255, 255)');
-        expect(getComputedStyle(button).borderColor).to.equal('rgb(68, 68, 68)');
+        expect(getComputedStyle(button).borderColor).to.equal('rgb(80, 80, 80)');
         expect(getComputedStyle(icon, '::before').width).to.equal('6px');
         expect(getComputedStyle(icon, '::before').height).to.equal('1.5px');
         expect(getComputedStyle(icon, '::after').display).to.equal('none');
         expect(getComputedStyle(icon).borderStyle).to.equal('solid');
         expect(getComputedStyle(icon).borderColor).to.equal('rgb(255, 255, 255)');
         expect(getComputedStyle(icon).borderRadius).to.equal('50%');
-        expect(getComputedStyle(list).borderTopWidth).to.equal(width < 600 ? '0px' : '1px');
-        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(221, 221, 221)');
+        expect(getComputedStyle(list).borderTopWidth).to.equal(width < 768 ? '0px' : '1px');
+        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(218, 218, 218)');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
           .to.equal('800');
         if (!mobile) {
@@ -538,7 +544,7 @@ describe('blog-side-navigation section list', () => {
           expect(getComputedStyle(item.querySelector('a')).paddingInlineStart).to.equal('8px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineEnd).to.equal('8px');
           expect(item.querySelector('a').getBoundingClientRect().height).to.equal(48);
-          if (width < 600) {
+          if (width < 768) {
             expect(item.getBoundingClientRect().width).to.be.closeTo(list.clientWidth, 1);
           }
         }
@@ -553,10 +559,10 @@ describe('blog-side-navigation section list', () => {
   it('shows mobile links once in order with the active link highlighted when open', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     try {
-      for (const width of [390, 599]) {
+      for (const width of [390, 767]) {
         await setViewport({ width, height: 1000 });
         for (const count of [3, 4]) {
           const titles = ['First', 'Second', 'Third', 'Fourth'].slice(0, count);
@@ -576,7 +582,7 @@ describe('blog-side-navigation section list', () => {
           expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
           expect(getComputedStyle(links[0]).fontWeight).to.equal('800');
           expect(getComputedStyle(links[0].parentElement).backgroundColor)
-            .to.equal('rgb(242, 242, 242)');
+            .to.equal('rgb(243, 243, 243)');
           expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
           if (count > 3) {
             expect(document.activeElement).to.equal(button);
@@ -723,11 +729,10 @@ describe('blog-side-navigation section list', () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     const footer = document.createElement('footer');
-    style.textContent = `${await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' })}
+    style.textContent = `${SIDE_NAV_CSS}
       body { margin: 0; } .content p { margin: 0 0 18px; }`;
     document.head.append(style);
     const { main, block } = buildArticle('<h2>Article section</h2><p>Final paragraph.</p>');
-    main.style.setProperty('--grid-container-width', '80%');
     footer.style.height = '20px';
     main.after(footer);
     try {
@@ -748,12 +753,9 @@ describe('blog-side-navigation section list', () => {
   it('uses a compact sticky rail on tablet, a wider desktop layout, and full-width jump links only on mobile', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    const css = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
-    style.textContent = `:root { --grid-container-width: 83.4%; }
-      @media (min-width: 1440px) { :root { --grid-container-width: 1200px; } }
-      body { margin: 0; }
-      .blog-header { min-height: 200px; width: var(--grid-container-width); margin-inline: auto; }
-      ${css}`;
+    style.textContent = `body { margin: 0; }
+      .blog-header { min-height: 200px; }
+      ${SIDE_NAV_CSS}`;
     document.head.append(style);
     try {
       await setViewport({ width: 1440, height: 1000 });
@@ -765,13 +767,13 @@ describe('blog-side-navigation section list', () => {
       const article = main.querySelector('.blog-article-content');
       const listStyle = getComputedStyle(block.querySelector('nav > ul'));
       expect(listStyle.borderRadius).to.equal('4px');
-      expect(listStyle.border).to.equal('1px solid rgb(221, 221, 221)');
+      expect(listStyle.border).to.equal('1px solid rgb(218, 218, 218)');
       expect(listStyle.backgroundColor).to.equal('rgb(255, 255, 255)');
       expect(listStyle.boxShadow).to.equal('rgba(0, 0, 0, 0.08) 1px 1px 4px 0px');
       expect(getComputedStyle(layout).columnGap).to.equal('56px');
       expect(getComputedStyle(layout).marginBottom).to.equal('0px');
       expect(getComputedStyle(block).position).to.equal('sticky');
-      expect(getComputedStyle(block).top).to.equal('88px');
+      expect(getComputedStyle(block).top).to.equal('104px');
       expect(getComputedStyle(block).overflowY).to.equal('auto');
       expect(getComputedStyle(block.querySelector('[aria-current="location"]'))
         .borderInlineStartWidth).to.equal('0px');
@@ -787,21 +789,23 @@ describe('blog-side-navigation section list', () => {
         .to.equal(article.getBoundingClientRect().width);
       for (const width of [1440, 1600, 2000]) {
         await setViewport({ width, height: 1000 });
-        expect(layout.getBoundingClientRect().width).to.equal(1200);
-        expect(layout.getBoundingClientRect().left)
-          .to.equal(main.querySelector('.blog-header').getBoundingClientRect().left);
+        // C2 spans the viewport and insets the rail and article by the grid margin.
+        const gutter = parseFloat(getComputedStyle(layout).paddingInlineStart);
+        expect(gutter).to.be.greaterThan(0);
+        expect(layout.getBoundingClientRect().width).to.equal(document.documentElement.clientWidth);
+        expect(block.getBoundingClientRect().left).to.be.closeTo(gutter, 1);
         expect(article.getBoundingClientRect().left)
           .to.be.closeTo(block.getBoundingClientRect().right + 56, 1);
         expect(article.getBoundingClientRect().right)
-          .to.be.closeTo(layout.getBoundingClientRect().right, 1);
+          .to.be.closeTo(layout.getBoundingClientRect().right - gutter, 1);
       }
       block.insertAdjacentHTML('beforeend', '<div class="blog-related-content" style="height: 80px"></div>');
       article.style.minHeight = '1800px';
-      main.insertAdjacentHTML('beforeend', '<div style="height: 1000px"></div>');
+      main.insertAdjacentHTML('beforeend', '<div class="section" style="height: 1000px"></div>');
       scrollStub.callThrough();
       window.scrollTo({ top: 400, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      expect(block.getBoundingClientRect().top).to.be.closeTo(88, 1);
+      expect(block.getBoundingClientRect().top).to.be.closeTo(104, 1);
       const articleEnd = layout.getBoundingClientRect().bottom + window.scrollY;
       window.scrollTo({ top: articleEnd - 60, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
@@ -809,10 +813,10 @@ describe('blog-side-navigation section list', () => {
         .to.be.closeTo(layout.getBoundingClientRect().bottom, 1);
       window.scrollTo({ top: 0, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      for (const width of [1199, 1024, 768, 600, 599, 390, 458, 1440, 390]) {
+      for (const width of [1279, 1024, 768, 767, 390, 458, 1440, 390]) {
         await setViewport({ width, height: 1000 });
         const nav = block.querySelector('nav');
-        if (width < 600) {
+        if (width < 768) {
           expect(getComputedStyle(block).display).to.equal('contents');
           expect(getComputedStyle(nav).position).to.equal('sticky');
           expect(article.getBoundingClientRect().top)
@@ -821,7 +825,7 @@ describe('blog-side-navigation section list', () => {
           expect(nav.getBoundingClientRect().left).to.be.closeTo(0, 1);
           expect(nav.getBoundingClientRect().right).to.be.closeTo(width, 1);
           expect(nav.querySelector('ul').getBoundingClientRect().width).to.be.closeTo(width, 1);
-          expect(article.getBoundingClientRect().width)
+          expect(main.querySelector('.content').getBoundingClientRect().width)
             .to.be.lessThan(nav.getBoundingClientRect().width);
           const button = block.querySelector('button');
           for (const expanded of [false, true]) {
@@ -835,14 +839,15 @@ describe('blog-side-navigation section list', () => {
             const text = link.querySelector('span') || link;
             const textLeft = link.getBoundingClientRect().left
               + parseFloat(getComputedStyle(link).paddingInlineStart);
-            expect(textLeft).to.be.closeTo(block.querySelector(':scope > p')
-              .getBoundingClientRect().left, 1);
+            const title = block.querySelector(':scope > p');
+            expect(textLeft).to.be.closeTo(title.getBoundingClientRect().left
+              + parseFloat(getComputedStyle(title).paddingInlineStart), 1);
             expect(text.getBoundingClientRect().right)
               .to.be.at.most(button.getBoundingClientRect().left);
           }
         } else {
           expect(getComputedStyle(layout).display).to.equal('grid');
-          const gap = width < 1200 ? 32 : 56;
+          const gap = width < 1280 ? 32 : 56;
           expect(getComputedStyle(layout).columnGap).to.equal(`${gap}px`);
           expect(getComputedStyle(block).position).to.equal('sticky');
           expect(getComputedStyle(nav).position).to.equal('relative');
@@ -856,7 +861,7 @@ describe('blog-side-navigation section list', () => {
             .to.equal(block.getBoundingClientRect().width);
           window.scrollTo({ top: 400, behavior: 'instant' });
           await new Promise(requestAnimationFrame);
-          expect(block.getBoundingClientRect().top).to.be.closeTo(88, 1);
+          expect(block.getBoundingClientRect().top).to.be.closeTo(104, 1);
           window.scrollTo({ top: 0, behavior: 'instant' });
           await new Promise(requestAnimationFrame);
         }
@@ -871,7 +876,7 @@ describe('blog-side-navigation section list', () => {
   it('hides internal scrollbars without clipping long navigation or keyboard focus', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     try {
       for (const width of [390, 768, 1440]) {
@@ -883,7 +888,7 @@ describe('blog-side-navigation section list', () => {
         main.querySelector('.blog-article-content').style.minHeight = '2000px';
         const button = block.querySelector('button');
         if (button.getAttribute('aria-expanded') === 'false') button.click();
-        const scroller = width < 600 ? block.querySelector('nav') : block;
+        const scroller = width < 768 ? block.querySelector('nav') : block;
         expect(getComputedStyle(scroller).overflowY).to.equal('auto');
         expect(getComputedStyle(scroller).scrollbarWidth).to.equal('none');
         expect(getComputedStyle(scroller, '::-webkit-scrollbar').display).to.equal('none');
@@ -909,10 +914,9 @@ describe('blog-side-navigation section list', () => {
   it('keeps article and related-card layers beneath sticky navigation and the global header', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = `:root { --grid-container-width: calc(100% - 48px); }
-      .blog-header { min-height: 200px; }
+    style.textContent = `.blog-header { min-height: 200px; }
       .overlapping-content { position: fixed; inset: 0; z-index: 2147483647; background: red; }
-      ${await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' })}`;
+      ${SIDE_NAV_CSS}`;
     document.head.append(style);
     scrollStub.callThrough();
     try {
@@ -920,7 +924,7 @@ describe('blog-side-navigation section list', () => {
         await setViewport({ width, height: 800 });
         window.scrollTo({ top: 0, behavior: 'instant' });
         const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
-        main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="position: fixed; inset: 0 0 auto; height: 64px; z-index: 10; background: white"></div>');
+        main.insertAdjacentHTML('afterbegin', '<header class="global-navigation" style="position: fixed; inset: 0 0 auto; height: 80px; z-index: 10; background: white"></header>');
         await init(block);
         const article = main.querySelector('.blog-article-content');
         article.style.minHeight = '2400px';
@@ -944,7 +948,7 @@ describe('blog-side-navigation section list', () => {
         })).to.equal(true);
         expect(document.elementFromPoint(width / 2, 32).closest('.global-navigation')
           === main.querySelector('.global-navigation')).to.equal(true);
-        main.insertAdjacentHTML('beforeend', '<div class="page-dialog" style="position: fixed; inset: 0; z-index: 100; background: white"></div>');
+        main.insertAdjacentHTML('beforeend', '<aside class="page-dialog" style="position: fixed; inset: 0; z-index: 100; background: white"></aside>');
         expect(document.elementFromPoint(x, y)
           === main.querySelector('.page-dialog')).to.equal(true);
         main.remove();
@@ -959,17 +963,15 @@ describe('blog-side-navigation section list', () => {
   it('pins only jump links below the global header on mobile and clears section targets', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    const css = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
-    style.textContent = `:root { --grid-container-width: calc(100% - 48px); --global-height-nav: 64px; }
-      .blog-header { min-height: 200px; }${css}`;
+    style.textContent = `.blog-header { min-height: 200px; }${SIDE_NAV_CSS}`;
     document.head.append(style);
     scrollStub.callThrough();
     try {
-      for (const width of [390, 599]) {
+      for (const width of [390, 767]) {
         await setViewport({ width, height: 800 });
         window.scrollTo({ top: 0, behavior: 'instant' });
         const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
-        main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="position: fixed; top: 0; height: 64px"></div>');
+        main.insertAdjacentHTML('afterbegin', '<header class="global-navigation" style="position: fixed; top: 0; height: 80px"></header>');
         await init(block);
         const nav = block.querySelector('nav');
         const related = document.createElement('div');
@@ -979,20 +981,20 @@ describe('blog-side-navigation section list', () => {
         block.append(related);
         const article = main.querySelector('.blog-article-content');
         article.style.minHeight = '2400px';
-        main.insertAdjacentHTML('beforeend', '<div style="height: 1000px"></div>');
+        main.insertAdjacentHTML('beforeend', '<div class="section" style="height: 1000px"></div>');
         await new Promise(requestAnimationFrame);
         const relatedTop = related.getBoundingClientRect().top;
         const title = block.querySelector(':scope > p');
         const titleTop = title.getBoundingClientRect().top;
         expect(title.textContent).to.equal('JUMP TO SECTION');
-        expect(nav.getBoundingClientRect().top).to.be.greaterThan(64);
+        expect(nav.getBoundingClientRect().top).to.be.greaterThan(80);
         for (const top of [600, 900]) {
           window.scrollTo({ top, behavior: 'instant' });
           await new Promise(requestAnimationFrame);
-          expect(nav.getBoundingClientRect().top).to.be.closeTo(64, 1);
-          expect(nav.querySelector('ul').getBoundingClientRect().top).to.be.closeTo(64, 1);
+          expect(nav.getBoundingClientRect().top).to.be.closeTo(80, 1);
+          expect(nav.querySelector('ul').getBoundingClientRect().top).to.be.closeTo(80, 1);
           expect(title.getBoundingClientRect().top).to.be.closeTo(titleTop - top, 1);
-          expect(title.getBoundingClientRect().bottom).to.be.at.most(64);
+          expect(title.getBoundingClientRect().bottom).to.be.at.most(80);
           expect(related.getBoundingClientRect().top).to.be.closeTo(relatedTop - top, 1);
           expect(getComputedStyle(related).position).to.equal('static');
           expect(nav.getBoundingClientRect().height).to.be.at.most(736);
@@ -1004,7 +1006,7 @@ describe('blog-side-navigation section list', () => {
         await new Promise(requestAnimationFrame);
         const heading = main.querySelectorAll('h2')[1];
         const margin = parseFloat(getComputedStyle(heading).scrollMarginTop);
-        expect(margin).to.be.closeTo(64 + nav.getBoundingClientRect().height + 24, 1);
+        expect(margin).to.be.closeTo(80 + nav.getBoundingClientRect().height + 24, 1);
         scrollStub.resetHistory();
         scrollStub.callsFake(() => {});
         block.querySelector('nav > ul > li:nth-child(2) > a').click();
@@ -1105,17 +1107,16 @@ describe('blog-side-navigation section list', () => {
   it('closes only mobile dropdowns on selection and preserves open tablet and desktop rails', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = `:root { --grid-container-width: calc(100% - 48px); }
-      ${await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' })}`;
+    style.textContent = `${SIDE_NAV_CSS}`;
     document.head.append(style);
     try {
-      for (const width of [390, 768, 1199, 1200, 1440]) {
+      for (const width of [390, 768, 1279, 1280, 1440]) {
         await setViewport({ width, height: 1000 });
         const longTitle = 'A selected section title that wraps onto more than one line. '.repeat(8);
         const { main, block } = buildArticle(
           `<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>${longTitle}</h2>`,
         );
-        main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="height: 64px"></div>');
+        main.insertAdjacentHTML('afterbegin', '<header class="global-navigation" style="height: 80px"></header>');
         await init(block);
         const button = block.querySelector('button');
         if (button.getAttribute('aria-expanded') === 'false') button.click();
@@ -1125,7 +1126,7 @@ describe('blog-side-navigation section list', () => {
         scrollStub.resetHistory();
         links[3].click();
         await Promise.resolve();
-        const desktop = width >= 600;
+        const desktop = width >= 768;
         expect(button.getAttribute('aria-expanded')).to.equal(String(desktop));
         expect(block.querySelectorAll('li[hidden]').length).to.equal(desktop ? 0 : 3);
         expect(document.activeElement === heading).to.equal(true);
@@ -1137,7 +1138,7 @@ describe('blog-side-navigation section list', () => {
         }
         const nav = block.querySelector('nav');
         const extra = desktop ? 0 : nav.getBoundingClientRect().height + 24;
-        const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64 - extra;
+        const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 80 - extra;
         expect(scrollStub.firstCall.args[0].top).to.be.closeTo(expectedTop, 1);
         button.click();
         expect(button.getAttribute('aria-expanded')).to.equal(String(!desktop));
@@ -1166,7 +1167,7 @@ describe('blog-side-navigation section list', () => {
         expect(button.hidden).to.equal(true);
         expect(items.every((item) => !item.hidden)).to.equal(true);
       } else {
-        expect(mediaStub.firstCall.args[0]).to.equal('(min-width: 600px)');
+        expect(mediaStub.firstCall.args[0]).to.equal('(width >= 768px)');
         expect(button.hidden).to.equal(false);
         expect(button.getAttribute('aria-expanded')).to.equal('true');
         expect(button.querySelector('.blog-side-navigation-toggle-icon')
@@ -1188,7 +1189,7 @@ describe('blog-side-navigation section list', () => {
   it('defaults desktop and tablet navigation open while keeping collapsible mobile lists closed', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     try {
-      for (const width of [390, 599, 600, 1199, 1200, 1440]) {
+      for (const width of [390, 767, 768, 1279, 1280, 1440]) {
         await setViewport({ width, height: 1000 });
         for (const count of [3, 4]) {
           const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -1197,7 +1198,7 @@ describe('blog-side-navigation section list', () => {
           await init(block);
           const button = block.querySelector('button');
           const items = [...block.querySelectorAll('li')];
-          const open = count <= 3 || width >= 600;
+          const open = count <= 3 || width >= 768;
           expect(button.hidden).to.equal(count <= 3);
           expect(button.getAttribute('aria-expanded')).to.equal(String(open));
           expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
@@ -1251,7 +1252,7 @@ describe('blog-side-navigation section list', () => {
             await init(block);
             const button = block.querySelector('button');
             const items = [...block.querySelectorAll('li')];
-            const open = count <= 3 || (width >= 600 && !collapsed);
+            const open = count <= 3 || (width >= 768 && !collapsed);
             expect(button.hidden).to.equal(count <= 3);
             expect(button.getAttribute('aria-expanded')).to.equal(String(open));
             expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
@@ -1407,7 +1408,7 @@ describe('blog-side-navigation section list', () => {
     await setViewport({ width: 1440, height: 1000 });
     mockTablet();
     const style = document.createElement('style');
-    style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     try {
       const { block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
@@ -1515,7 +1516,7 @@ describe('blog-side-navigation section list', () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     await setViewport({ width: 1440, height: 1000 });
     const style = document.createElement('style');
-    style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+    style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2>');
     let positions = [20, 1000, 2000];
@@ -1578,7 +1579,7 @@ describe('blog-side-navigation section list', () => {
         stub(heading, 'getBoundingClientRect').callsFake(() => ({ top: positions[index] - scrollTop }))
       ));
       const style = document.createElement('style');
-      style.textContent = await readFile({ path: '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.css' });
+      style.textContent = SIDE_NAV_CSS;
       document.head.append(style);
       try {
         await init(block);
@@ -1627,7 +1628,7 @@ describe('blog-side-navigation section list', () => {
             .to.equal(titles[0]);
           expect(links[2].getAttribute('aria-current')).to.equal('location');
           expect(getComputedStyle(links[2]).fontWeight).to.equal('800');
-          expect(getComputedStyle(items[2]).backgroundColor).to.equal('rgb(242, 242, 242)');
+          expect(getComputedStyle(items[2]).backgroundColor).to.equal('rgb(243, 243, 243)');
           expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
           scrollTop = positions[1] + 10;
           window.dispatchEvent(new Event('scroll'));
@@ -1758,6 +1759,28 @@ describe('blog-side-navigation section list', () => {
       expect(log.calledOnce).to.equal(true);
     } finally {
       window.lana = previousLana;
+    }
+  });
+});
+
+describe('blog-side-navigation C2 routing', () => {
+  it('loads from the C2 directory on a foundation=c2 page', async () => {
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    document.head.append(foundation);
+    const block = document.createElement('div');
+    block.className = 'blog-side-navigation';
+    document.body.append(block);
+    try {
+      await loadBlock(block);
+
+      expect(block.dataset.reason).to.be.undefined;
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(document.head.querySelector('link[href$="/c2/blocks/blog-side-navigation/blog-side-navigation.css"]')).to.exist;
+    } finally {
+      block.remove();
+      foundation.remove();
     }
   });
 });

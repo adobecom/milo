@@ -43,19 +43,28 @@ describe('AI Summary', () => {
     expect(block.querySelector('.ai-summary-content p').textContent).to.equal('A paragraph-only summary.');
   });
 
-  it('loads the shared block from Milo on a consuming site', async () => {
+  it('loads the shared block from the Milo C2 directory on a foundation=c2 page', async () => {
     setConfig({
       codeRoot: '/consumer-site',
       miloLibs: '/libs',
       locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
     });
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    document.head.append(foundation);
     document.body.innerHTML = `
       <div class="ai-summary"><div><div><h2>Key takeaways</h2><p>Summary content.</p></div></div></div>`;
     const block = document.querySelector('.ai-summary');
-    await loadBlock(block);
+    try {
+      await loadBlock(block);
 
-    expect(block.dataset.blockStatus).to.equal('loaded');
-    expect(block.querySelector('.ai-summary-content h2')).to.exist;
-    expect(document.querySelector('link[href="/libs/c2/blocks/ai-summary/ai-summary.css"]')).to.exist;
+      expect(block.dataset.reason).to.be.undefined;
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(block.querySelector('.ai-summary-content h2')).to.exist;
+      expect(document.querySelector('link[href="/libs/c2/blocks/ai-summary/ai-summary.css"]')).to.exist;
+    } finally {
+      foundation.remove();
+    }
   });
 });
