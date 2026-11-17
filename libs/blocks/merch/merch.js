@@ -381,6 +381,12 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'productArrangementCode',
   'offerType',
   'marketSegment',
+  // Genuine NC checkout parameters (MWPW-207800)
+  'closeWindow',
+  'openBrowser',
+  'static',
+  'takeAction',
+  'exitApp',
 ];
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
