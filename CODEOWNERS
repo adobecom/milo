@@ -142,6 +142,7 @@
 
 # C2 Blocks
 /libs/c2/blocks/aside-c2/ @adobecom/milo-core
+/libs/c2/blocks/figure-c2/ @adobecom/milo-core
 
 # Standalone Gnav
 /libs/navigation/ @adobecom/feds

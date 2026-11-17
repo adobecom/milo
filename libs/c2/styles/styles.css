@@ -780,6 +780,7 @@ p {
   font-size: var(--s2a-typography-font-size-caption);
   line-height: var(--s2a-typography-line-height-caption);
   letter-spacing: var(--s2a-typography-letter-spacing-caption);
+  color: var(--s2a-color-content-caption);
 }
 
 .breadcrumbs {
