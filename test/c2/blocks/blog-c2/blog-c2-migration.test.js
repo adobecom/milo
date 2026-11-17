@@ -57,6 +57,7 @@ describe('blog C2 migration: routing', () => {
 
       // Registered as a C2 block, so it is not rejected as a C1-only block.
       expect(block.dataset.reason).to.be.undefined;
+      expect(block.dataset.blockStatus, `${name} should initialize successfully`).to.equal('loaded');
       const link = document.head.querySelector(
         `link[rel="stylesheet"][href$="/c2/blocks/${name}/${name}.css"]`,
       );
@@ -90,16 +91,22 @@ describe('blog C2 migration: retained behavior', () => {
     expect(items.length).to.equal(2);
   });
 
-  it('related-content-card builds a card from authored content', async () => {
+  it('related-content-card uses authored content when the linked article is unavailable', async () => {
+    const fetchStub = stub(window, 'fetch').resolves({ ok: false, status: 404 });
     const block = document.createElement('div');
     block.className = 'related-content-card';
     block.innerHTML = '<div><div><h3><a href="https://example.com/post">A Post</a></h3>'
       + '<p><strong>2024-01-02</strong></p><p>3 min read</p><p>Design</p></div></div>';
-    await initRelatedCard(block);
-    const link = block.querySelector('.related-content-card-link');
-    expect(link).to.exist;
-    expect(link.getAttribute('href')).to.equal('https://example.com/post');
-    expect(block.querySelector('.related-content-card-title').textContent).to.equal('A Post');
+    try {
+      await initRelatedCard(block);
+      expect(fetchStub.calledOnceWithExactly('https://example.com/post')).to.be.true;
+      const link = block.querySelector('.related-content-card-link');
+      expect(link).to.exist;
+      expect(link.getAttribute('href')).to.equal('https://example.com/post');
+      expect(block.querySelector('.related-content-card-title').textContent).to.equal('A Post');
+    } finally {
+      fetchStub.restore();
+    }
   });
 
   it('blog-header decorates the eyebrow and byline', async () => {
