@@ -3,12 +3,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-md);
-  width: var(--grid-container-width, 83.4%);
-  max-width: var(--grid-container-width, 83.4%);
-  margin-inline: auto;
+  box-sizing: border-box;
+  padding-inline: var(--grid-margin-width);
 
   /* C2 pulls main up by the sticky global-nav height, so clear it here. */
-  padding-block-start: var(--global-height-nav, 80px);
+  padding-block-start: var(--global-height-nav);
   padding-block-end: var(--s2a-spacing-xl);
   color: var(--s2a-color-content-default);
 }
@@ -123,7 +122,7 @@ a.blog-header-author-name:hover {
   align-items: center;
   gap: var(--s2a-spacing-xs);
   padding: 5px 18px;
-  border: 2px solid #2C2C2C;
+  border: 2px solid var(--s2a-color-border-default);
   border-radius: 90px;
   background: transparent;
   color: var(--s2a-color-content-default);
@@ -152,9 +151,9 @@ a.blog-header-author-name:hover {
   outline-offset: 2px;
 }
 
-@media (min-width: 600px) {
+@media (width >= 768px) {
   .blog-header {
-    gap: 16px;
+    gap: var(--s2a-spacing-md);
   }
 
   .blog-header-title h1 {
@@ -170,7 +169,7 @@ a.blog-header-author-name:hover {
   }
 }
 
-@media (min-width: 1200px) {
+@media (width >= 1280px) {
   .blog-header-title h1 {
     font-size: 64px;
   }
@@ -206,7 +205,7 @@ a.blog-header-author-name:hover {
 
 /* Authored body copy: small vertical rhythm and a smaller in-body heading. */
 .blog-article-content > .section > .content > * + * {
-  margin-block-start: 8px;
+  margin-block-start: var(--s2a-spacing-xs);
 }
 
 .blog-article-content > .section > .content > p,
@@ -214,22 +213,23 @@ a.blog-header-author-name:hover {
 .blog-article-content > .section > .content > ol,
 .blog-article-content > .section > .content > ul li,
 .blog-article-content > .section > .content > ol li {
-  font-size: 18px;
+  font-size: var(--s2a-typography-font-size-body-lg);
 }
 
 .blog-article-content > .section > .content > h2 {
-  margin-block: 42px 16px;
-  font-size: 2.5rem;
-  line-height: 1.1;
+  margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
+  font-size: var(--s2a-typography-font-size-heading-2);
+  line-height: var(--s2a-typography-line-height-heading-2);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
 }
 
 /* In-body related-content cards get extra breathing room beneath them. */
 .blog-article-content > .section > .related-content-card {
-  margin-block-end: 28px;
+  margin-block-end: var(--s2a-spacing-xl);
 }
 
 .blog-article-content > .section > .tag-cta {
-  margin-block: 38px;
+  margin-block: var(--s2a-spacing-2xl);
 }
 
 /* Section dividers: decorative rules that never take up layout space. */
@@ -241,20 +241,20 @@ a.blog-header-author-name:hover {
   --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
 }
 
-@media (max-width: 599px) {
+@media (width < 768px) {
   .blog-divider-frame,
   .blog-divider-frame + .blog-article-layout {
     --blog-divider-rule-size: 1.5px;
-    --blog-divider-rule-image: linear-gradient(#c0c0c0, #c0c0c0);
+    --blog-divider-rule-image: linear-gradient(var(--s2a-color-gray-400), var(--s2a-color-gray-400));
   }
 }
 
-@media (min-width: 600px) {
+@media (width >= 768px) {
   .blog-divider-frame::before {
     content: "";
     position: absolute;
     inset-block-start: 0;
-    inset-inline: max(0px, calc(var(--grid-margins-width, calc((100% - 83.4%) / 2)) - 56px));
+    inset-inline: max(0px, calc(var(--grid-margin-width) - 56px));
     block-size: var(--blog-divider-height, 100%);
     background-image:
       repeating-linear-gradient(to bottom, var(--blog-divider-dots)),
@@ -264,6 +264,12 @@ a.blog-header-author-name:hover {
     background-size: 2px 100%;
     pointer-events: none;
     z-index: 1;
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .blog-divider-frame::before {
+    inset-inline: var(--s2a-spacing-2xl);
   }
 }
 
@@ -277,7 +283,7 @@ a.blog-header-author-name:hover {
   pointer-events: none;
 }
 
-@media (max-width: 599px) {
+@media (width < 768px) {
   .blog-divider-frame:has(+ .blog-article-layout)::after {
     content: none;
   }
@@ -302,7 +308,7 @@ a.blog-header-author-name:hover {
   }
 }
 
-@media (min-width: 600px) {
+@media (width >= 768px) {
   /* Reserved on the header so the article doesn't shift when the deferred sidenav layout loads. */
   .blog-divider-frame {
     margin-block-end: var(--blog-divider-gap);
@@ -332,7 +338,7 @@ a.blog-header-author-name:hover {
   }
 }
 
-@media (min-width: 1200px) {
+@media (width >= 1280px) {
   .blog-divider-frame + .blog-article-layout {
     --blog-divider-inline-space: 56px;
   }
@@ -343,7 +349,7 @@ a.blog-header-author-name:hover {
   position: fixed;
   inset-inline: 0;
   block-size: 8px;
-  background: #1473e6;
+  background: #1473e6; /* Blog progress blue; no S2A token matches. */
   transform: scaleX(0);
   transform-origin: left;
   pointer-events: none;
@@ -355,7 +361,7 @@ a.blog-header-author-name:hover {
   max-width: calc(100% - 2em);
   padding: var(--s2a-spacing-lg) 20px;
   background: var(--s2a-color-gray-50);
-  border-radius: 12px;
+  border-radius: var(--s2a-border-radius-sm);
 }
 
 .blog-share-modal.dialog-modal button.dialog-close {
@@ -365,7 +371,7 @@ a.blog-header-author-name:hover {
   width: 28px;
   height: 28px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--s2a-border-radius-xs);
   background: var(--s2a-color-gray-100);
   top: 8px;
   right: 8px;
@@ -411,7 +417,7 @@ a.blog-header-author-name:hover {
 .blog-share-card {
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: var(--s2a-border-radius-sm);
   overflow: hidden;
   background: var(--s2a-color-gray-25);
   box-shadow: 4px 4px 4px rgb(0 0 0 / 5%);
@@ -469,7 +475,7 @@ a.blog-header-author-name:hover {
   aspect-ratio: 1;
   padding: 0;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--s2a-border-radius-sm);
   background: var(--s2a-color-gray-25);
   box-shadow: 4px 4px 4px rgb(0 0 0 / 5%);
   color: var(--s2a-color-gray-1000);
@@ -502,7 +508,7 @@ a.blog-header-author-name:hover {
   inset-inline-end: 0;
   padding: 4px 8px;
   border-radius: 6px;
-  background: #5c5ce0;
+  background: #5c5ce0; /* Copy-link feedback indigo; no S2A token matches. */
   color: var(--s2a-color-gray-25);
   font-size: 12px;
   line-height: 1.2;
@@ -513,7 +519,7 @@ a.blog-header-author-name:hover {
   display: none;
 }
 
-@media (min-width: 600px) {
+@media (width >= 768px) {
   .blog-share-modal.dialog-modal {
     padding: 37px 40px 40px;
   }

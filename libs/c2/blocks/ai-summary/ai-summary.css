@@ -2,20 +2,26 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--s2a-spacing-md);
   width: calc(100% - 40px);
   max-width: var(--body-max-width, 600px);
-  margin: 24px auto;
+  margin: var(--s2a-spacing-lg) auto;
   padding: 20px;
-  border: 3px solid rgb(0 0 0 / 20%);
-  border-radius: 12px;
-  color: #000;
-  font-family: var(--body-font-family, "Adobe Clean", sans-serif);
-  font-size: 18px;
+  border: 3px solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-sm);
+  color: var(--s2a-color-content-default);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-typography-font-size-body-lg);
   font-style: normal;
   font-weight: 400;
   line-height: 150%;
   overflow-wrap: anywhere;
+}
+
+/* The article layout already supplies the page gutter. */
+.blog-article-content .ai-summary {
+  width: 100%;
+  max-width: none;
 }
 
 .ai-summary p,
@@ -43,13 +49,13 @@
   width: 100%;
   height: auto;
   max-height: none;
-  border-radius: 12px;
+  border-radius: var(--s2a-border-radius-sm);
 }
 
 .ai-summary :is(h1, h2, h3, h4, h5, h6) {
   margin: 0 0 16px;
-  color: #000;
-  font-size: 20px;
+  color: var(--s2a-color-content-default);
+  font-size: var(--s2a-typography-font-size-heading-5);
   font-style: normal;
   font-weight: 800;
   line-height: 125%;
@@ -68,7 +74,7 @@
   margin-bottom: 0;
 }
 
-@media screen and (min-width: 600px) {
+@media (width >= 768px) {
   .ai-summary {
     width: 100%;
     padding: 24px;

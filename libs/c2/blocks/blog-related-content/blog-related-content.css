@@ -1,7 +1,7 @@
 /* stylelint-disable selector-class-pattern -- CaaS owns the mixed-case class names. */
 
 .blog-related-content {
-  margin-block-start: 40px;
+  margin-block-start: var(--s2a-spacing-2xl);
 }
 
 .blog-related-content[hidden] {
@@ -28,7 +28,7 @@
 .blog-related-content .consonant-CardsGrid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
+  gap: var(--s2a-spacing-md);
 }
 
 .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card {
@@ -40,7 +40,7 @@
   padding: 0;
   overflow: hidden;
   border: 1px solid var(--s2a-color-gray-100);
-  border-radius: 4px;
+  border-radius: var(--s2a-border-radius-4);
   background: var(--s2a-color-gray-25);
 }
 

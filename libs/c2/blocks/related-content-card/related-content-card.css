@@ -1,15 +1,21 @@
 .related-content-card {
-  max-width: var(--grid-container-width, 83.4%);
-  margin: 16px auto;
+  box-sizing: border-box;
+  margin: var(--s2a-spacing-md) auto;
+  padding-inline: var(--grid-margin-width);
+}
+
+/* The article layout already supplies the page gutter. */
+.blog-article-content .related-content-card {
+  padding-inline: 0;
 }
 
 .related-content-card .related-content-card-link {
   display: flex;
   align-items: center;
   max-width: 700px;
-  border: 1px solid #c6c6c6;
-  border-radius: 12px;
-  background: #fff;
+  border: 1px solid var(--s2a-color-gray-400);
+  border-radius: var(--s2a-border-radius-sm);
+  background: var(--s2a-color-background-default);
   overflow: hidden;
   color: inherit;
   text-decoration: none;
@@ -17,11 +23,11 @@
 
 .related-content-card .related-content-card-link:hover,
 .related-content-card .related-content-card-link:focus-visible {
-  border-color: #929292;
+  border-color: var(--s2a-color-gray-500);
 }
 
 .related-content-card .related-content-card-link:focus-visible {
-  outline: 2px solid #1473e6;
+  outline: 2px solid var(--s2a-color-focus-ring-default);
   outline-offset: 2px;
 }
 
@@ -59,7 +65,7 @@
 
 .related-content-card .related-content-card-eyebrow {
   margin: 0;
-  color: #6e6e6e;
+  color: var(--s2a-color-gray-600);
   font-size: 12px;
   font-weight: 500;
   line-height: 1.25;
@@ -88,15 +94,15 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: #6e6e6e;
+  color: var(--s2a-color-gray-600);
   font-size: 12px;
 }
 
 .related-content-card .related-content-card-separator {
-  color: #c6c6c6;
+  color: var(--s2a-color-gray-400);
 }
 
-@media (max-width: 600px) {
+@media (width < 768px) {
   .related-content-card .related-content-card-link {
     max-width: 404px;
   }
@@ -110,7 +116,7 @@
   }
 }
 
-@media (min-width: 600px) {
+@media (width >= 768px) {
   .related-content-card .related-content-card-eyebrow,
   .related-content-card .related-content-card-meta  {
     font-size: 16px;
