@@ -8,6 +8,7 @@ import init, {
   optimizeImgUrl,
   parseAuthoredContent,
   buildGlobeDom,
+  renderModalContent,
   arcCamZ,
   arcRotationEase,
   buildArcCtx,
@@ -523,6 +524,36 @@ describe('globe-gallery: buildGlobeDom', () => {
     const hint = el.querySelector('.globe-hint-text');
     expect(hint.textContent).to.equal('<Swipe safely>');
     expect(hint.querySelector('*')).to.be.null;
+  });
+});
+
+describe('globe-gallery: renderModalContent', () => {
+  it('renders badge icons as decorative images hidden from assistive technology', () => {
+    const el = document.createElement('div');
+    buildGlobeDom(el, {
+      labels: LABELS,
+      arcCopy: { title: '', body: [] },
+      pullQuote: null,
+      touchHint: { paras: [], text: '' },
+    });
+
+    renderModalContent(el, {
+      name: 'Ada Lovelace',
+      role: 'Mathematician',
+      description: [],
+      badges: [{
+        name: 'Engine',
+        role: 'Featured',
+        href: '/features/engine',
+        icon: '/icons/star.svg',
+      }],
+    });
+
+    const picture = el.querySelector('.globe-modal-badges picture');
+    expect(picture.classList.contains('globe-modal-badge-icon')).to.be.true;
+    expect(picture.getAttribute('aria-hidden')).to.equal('true');
+    expect(picture.querySelector('img').getAttribute('src')).to.equal('/icons/star.svg');
+    expect(picture.querySelector('img').getAttribute('alt')).to.equal('');
   });
 });
 
