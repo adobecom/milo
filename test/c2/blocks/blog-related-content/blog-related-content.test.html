@@ -13,7 +13,7 @@
       import { runTests } from '@web/test-runner-mocha';
       import { expect } from '@esm-bundle/chai';
       import { stub } from 'sinon';
-      import { decorateLinksAsync, setConfig } from '../../../../libs/utils/utils.js';
+      import { decorateLinksAsync, loadBlock, setConfig } from '../../../../libs/utils/utils.js';
       import { loadCaas } from './mocks/caas.js';
       import init from '../../../../libs/c2/blocks/blog-related-content/blog-related-content.js';
       import initNavigation from '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.js';
@@ -156,6 +156,28 @@
             await init(block);
             expect(block.hidden).to.equal(true);
             expect(log.firstCall.args[0]).to.contain('Collection unavailable');
+          });
+        });
+
+        describe('blog-related-content C2 routing', () => {
+          it('loads from the C2 directory on a foundation=c2 page', async () => {
+            const foundation = document.createElement('meta');
+            foundation.name = 'foundation';
+            foundation.content = 'c2';
+            document.head.append(foundation);
+            const block = document.createElement('div');
+            block.className = 'blog-related-content';
+            document.body.append(block);
+            try {
+              await loadBlock(block);
+
+              expect(block.dataset.reason).to.be.undefined;
+              expect(block.dataset.blockStatus).to.equal('loaded');
+              expect(document.head.querySelector('link[href$="/c2/blocks/blog-related-content/blog-related-content.css"]')).to.exist;
+            } finally {
+              block.remove();
+              foundation.remove();
+            }
           });
         });
       });
