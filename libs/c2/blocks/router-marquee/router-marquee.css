@@ -3,10 +3,11 @@
   overflow: hidden;
 }
 
+/* 0.1px short of the viewport so Chrome doesn't discard the hero as a full-viewport background for LCP */
 .rm-viewport {
   display: none;
   position: relative;
-  height: 100vh;
+  height: calc(100vh - 0.1px);
   overflow: hidden;
 }
 
@@ -387,8 +388,8 @@
 @media (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
-    height: 100vh;
-    height: 100svh;
+    height: calc(100vh - 0.1px);
+    height: calc(100svh - 0.1px);
   }
 
   .rm-content-wrapper {
@@ -462,8 +463,8 @@
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
-    height: 100vh;
-    height: 100svh;
+    height: calc(100vh - 0.1px);
+    height: calc(100svh - 0.1px);
   }
 
   .rm-content-wrapper {
@@ -504,7 +505,7 @@
 @media (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 0.1px);
   }
 
   .rm-overlay {
