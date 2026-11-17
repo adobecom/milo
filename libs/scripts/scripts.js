@@ -16,6 +16,7 @@ import {
   setConfig,
   getMetadata,
 } from '../utils/utils.js';
+import { sampleRUM } from '../utils/samplerum.js';
 import locales from '../utils/locales.js';
 
 // Production Domain
@@ -100,6 +101,7 @@ function loadStyles() {
   if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
   performance.mark('loadpage');
   setConfig(config);
+  sampleRUM();
   loadLana({ clientId: 'milo' });
   await loadArea();
 }());

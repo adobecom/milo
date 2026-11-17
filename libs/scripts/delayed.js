@@ -177,7 +177,6 @@ const loadDelayed = ([
     }
     loadPreflightResults();
     import('../utils/samplerum.js').then(({ sampleRUM }) => {
-      sampleRUM();
       addRUMCampaignTrackingParameters({ sampleRUM });
     });
   }, DELAY);
