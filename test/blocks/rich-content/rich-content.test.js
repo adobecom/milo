@@ -264,6 +264,83 @@ describe('Rich Content', () => {
     expect([...paragraph.classList].some((c) => c.startsWith('heading-'))).to.be.false;
   });
 
+  describe('jump links', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `<div class="section"><div class="rich-content jump-link"><div><div>
+        <h2>Heading</h2>
+        <p><a href="#get-insights">Get Insights</a> | <a href="#share">Share</a> | <a href="#missing">Missing</a></p>
+        </div></div></div></div>
+        <div class="section" id="get-insights"><a href="/x">First link</a></div>
+        <div class="section" id="share" tabindex="0"></div>
+        <div class="section" id="titled"><h2 style="display:none">Hidden title</h2><h3>Visible title</h3></div>
+        <div class="section" id="2024-plans"><h2 style="visibility:hidden">Invisible</h2><h3>Plans</h3></div>`;
+      init(document.querySelector('.rich-content'));
+    });
+    afterEach(() => {
+      sinon.restore();
+      delete window.lenis;
+    });
+
+    const click = (index) => document.querySelectorAll('.jump-link-anchor')[index].click();
+
+    it('moves focus to the target section and cleans up the temporary tabindex on blur', () => {
+      const target = document.getElementById('get-insights');
+      click(0);
+      expect(document.activeElement === target).to.be.true;
+      expect(target.getAttribute('tabindex')).to.equal('-1');
+      target.blur();
+      expect(target.hasAttribute('tabindex')).to.be.false;
+    });
+
+    it('keeps an authored tabindex on the target', () => {
+      const target = document.getElementById('share');
+      click(1);
+      expect(document.activeElement === target).to.be.true;
+      target.blur();
+      expect(target.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('focuses the first visible heading in the target section', () => {
+      document.querySelector('.jump-link-anchor').href = '#titled';
+      const heading = document.querySelector('#titled h3');
+      click(0);
+      expect(document.activeElement === heading).to.be.true;
+      heading.blur();
+      expect(heading.hasAttribute('tabindex')).to.be.false;
+    });
+
+    it('moves focus when scrolling with Lenis', () => {
+      window.lenis = { scrollTo: sinon.spy() };
+      const target = document.getElementById('get-insights');
+      click(0);
+      expect(window.lenis.scrollTo.calledOnceWith(target)).to.be.true;
+      expect(document.activeElement === target).to.be.true;
+    });
+
+    it('scrolls to non-selector ids and skips visibility:hidden headings', async () => {
+      const scrollTo = sinon.stub(window, 'scrollTo');
+      document.querySelector('.jump-link-anchor').href = '#2024-plans';
+      const target = document.getElementById('2024-plans');
+      const top = target.getBoundingClientRect().top + window.scrollY;
+      click(0);
+      // The gnav height helper is imported lazily, so the scroll lands asynchronously.
+      const isScrolled = () => scrollTo.calledWithMatch({ top });
+      const start = performance.now();
+      while (!isScrolled() && performance.now() - start < 1500) {
+        await new Promise((resolve) => { setTimeout(resolve, 20); });
+      }
+      expect(isScrolled()).to.be.true;
+      expect(document.activeElement === target.querySelector('h3')).to.be.true;
+    });
+
+    it('leaves focus on the link when the target does not exist', () => {
+      const anchor = document.querySelectorAll('.jump-link-anchor')[2];
+      anchor.focus();
+      anchor.click();
+      expect(document.activeElement === anchor).to.be.true;
+    });
+  });
+
   describe('lazily loaded dependencies', () => {
     const waitFor = async (check, timeout = 1500) => {
       const start = performance.now();
