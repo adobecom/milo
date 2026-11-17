@@ -183,10 +183,10 @@ describe('hub-hero block', () => {
       expect(kids[2].classList.contains('hub-hero-carousel')).to.be.true;
     });
 
-    it('decorates the hero header CTA as a promo-cta with an alias aria-label', () => {
+    it('decorates the hero header CTA as a promo-cta and keeps the authored aria-label', () => {
       const cta = block.querySelector('.hub-hero-header a.promo-cta');
       expect(cta).to.exist;
-      // text before the pipe is the label, text after is the aria-label
+      // decorateLinks has already moved the authored "Text | Label" into aria-label
       expect(cta.getAttribute('aria-label')).to.equal('Explore all Adobe products');
       expect(cta.textContent).to.contain('Explore now');
       expect(cta.textContent).to.not.contain('Explore all Adobe products');
@@ -1330,9 +1330,9 @@ describe('hub-hero block', () => {
       block = await loadBlock('./mocks/fallbacks.html');
     });
 
-    it('falls back to the CTA text for the aria-label when there is no alias', () => {
+    it('does not add an aria-label to the CTA when none is authored', () => {
       const cta = block.querySelector('.hub-hero-header a.promo-cta');
-      expect(cta.getAttribute('aria-label')).to.equal('Get started');
+      expect(cta.hasAttribute('aria-label')).to.be.false;
       expect(cta.textContent).to.contain('Get started');
     });
 

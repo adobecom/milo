@@ -1,7 +1,7 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { loadStyle } from '../../../libs/utils/utils.js';
+import { createTag, inheritViewportContent, loadStyle } from '../../../libs/utils/utils.js';
 
 import init from '../../../libs/c2/blocks/split-hero/split-hero.js';
 
@@ -17,6 +17,15 @@ async function initBlock(path) {
   await init(block);
   return block;
 }
+
+// Viewport inheritance runs at section level (utils.js), so tests must apply it before init
+const initWithInheritance = async (block) => {
+  const meta = createTag('meta', { name: 'foundation', content: 'c2' });
+  document.head.append(meta);
+  inheritViewportContent(block.parentElement);
+  meta.remove();
+  await init(block);
+};
 
 const row = (...cells) => `<div>${cells.map((cell) => `<div>${cell}</div>`).join('')}</div>`;
 
@@ -246,7 +255,7 @@ describe('Split Hero', () => {
     });
 
     it('inherits empty cells from the previous viewport', async () => {
-      await init(block);
+      await initWithInheritance(block);
 
       expect(block.querySelector('h1').textContent).to.equal('Mobile headline');
       expect(block.querySelector('.split-hero-text .eyebrow').textContent).to.equal('Photoshop');
@@ -271,14 +280,14 @@ describe('Split Hero', () => {
     it('drops the background when a later viewport omits the second-row right cell', async () => {
       const tabletOffer = block.children[6];
       tabletOffer.lastElementChild.remove();
-      await init(block);
+      await initWithInheritance(block);
 
       expect(block.querySelector('.split-hero-background')).to.be.null;
     });
 
     it('drops supporting text but keeps merch and background when a later viewport omits the third row', async () => {
       block.children[7].remove();
-      await init(block);
+      await initWithInheritance(block);
 
       expect(block.querySelector('.split-hero-merch-card')).to.exist;
       expect(block.querySelector('.split-hero-background')).to.exist;
@@ -289,7 +298,7 @@ describe('Split Hero', () => {
       block.children[6].children[0].innerHTML = '<p>Tablet offer</p>';
       block.children[6].children[1].textContent = 'rgb(255, 0, 0)';
       block.children[7].children[0].textContent = 'Tablet support';
-      await init(block);
+      await initWithInheritance(block);
 
       expect(block.querySelector('h1').textContent).to.equal('Mobile headline');
       expect(block.querySelector('.split-hero-media video')).to.exist;
