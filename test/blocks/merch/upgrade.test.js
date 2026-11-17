@@ -369,10 +369,10 @@ describe('Switch Modal (Upgrade Flow)', () => {
       expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
     });
 
-    it('should ignore messages from stage.plan.adobe.com', async () => {
+    it('should open external url when origin is stage.plan.adobe.com', async () => {
       const message = { origin: 'https://stage.plan.adobe.com', data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}' };
       handleIFrameEvents(message);
-      expect(window.open.notCalled).to.be.true;
+      expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
     });
 
     it('should ignore messages from an untrusted origin', async () => {
@@ -385,6 +385,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
       const data = '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}';
       [
         { origin: 'https://commerce.adobe.com.evil.com', data },
+        { origin: 'https://stage.plan.adobe.com.evil.com', data },
         { origin: 'https://evil.example', data },
         { origin: '', data },
         { data },

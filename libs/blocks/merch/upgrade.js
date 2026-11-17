@@ -58,7 +58,7 @@ function buildUrl(upgradeOffer, upgradable, env) {
   return url.toString();
 }
 
-const TRUSTED_ORIGINS = ['https://commerce.adobe.com', 'https://commerce-stg.adobe.com', 'https://plan.adobe.com'];
+const TRUSTED_ORIGINS = ['https://commerce.adobe.com', 'https://commerce-stg.adobe.com', 'https://plan.adobe.com', 'https://stage.plan.adobe.com'];
 
 export const handleIFrameEvents = (event) => {
   if (!TRUSTED_ORIGINS.includes(event?.origin)) return;
