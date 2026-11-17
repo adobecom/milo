@@ -2,6 +2,7 @@ import { STATUS, PERFORMANCE_TITLES, PERFORMANCE_IDS, PERFORMANCE_SEVERITIES } f
 import { getMetadata } from '../../../utils/utils.js';
 
 const lcpCache = new Map();
+let likelyLcpArea;
 
 export function defaultObserveLcp(area) {
   if (area !== document) {
@@ -18,7 +19,24 @@ export function defaultObserveLcp(area) {
   });
 }
 
+export function setLikelyLcp(area = document) {
+  likelyLcpArea = area;
+}
+
+function findLikelyLcp() {
+  const isLoaded = (media) => (media.tagName === 'VIDEO' ? media.currentSrc : media.naturalWidth);
+  const size = (media) => media.clientWidth * media.clientHeight;
+  const [element] = [...likelyLcpArea.querySelectorAll('main > div.section:first-of-type :is(img, video)')]
+    .filter(isLoaded)
+    .sort((a, b) => size(b) - size(a));
+  return element ? { element, url: element.currentSrc || element.src } : null;
+}
+
+const statusWhenLcpIsUnknown = () => (likelyLcpArea ? STATUS.EMPTY : STATUS.FAIL);
+const labelEstimate = (description) => (likelyLcpArea ? `${description} (Estimated in draft mode.)` : description);
+
 export async function getLcpEntry(url, area, observeLcp = defaultObserveLcp) {
+  if (likelyLcpArea) return findLikelyLcp();
   if (lcpCache.has(url)) {
     return lcpCache.get(url);
   }
@@ -64,7 +82,7 @@ export async function checkLcpEl(url, area, observeLcp) {
       severity: PERFORMANCE_SEVERITIES.lcpElement,
       title: PERFORMANCE_TITLES.Performance,
       status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const firstSection = area.querySelector('main > div.section');
@@ -74,9 +92,9 @@ export async function checkLcpEl(url, area, observeLcp) {
     severity: PERFORMANCE_SEVERITIES.lcpElement,
     title: PERFORMANCE_TITLES.LcpEl,
     status: validLcp ? STATUS.PASS : STATUS.FAIL,
-    description: validLcp
+    description: labelEstimate(validLcp
       ? 'Valid LCP in the first section detected.'
-      : 'No LCP image or video in the first section detected. Please check the page and make sure the first section is your marquee and all the fragments are working properly. If everything is good, ignore the error.',
+      : 'No LCP image or video in the first section detected. Please check the page and make sure the first section is your marquee and all the fragments are working properly. If everything is good, ignore the error.'),
   };
 }
 
@@ -148,8 +166,8 @@ export async function checkFragments(url, area, observeLcp) {
       checkId: PERFORMANCE_IDS.fragments,
       severity: PERFORMANCE_SEVERITIES.fragments,
       title: PERFORMANCE_TITLES.Performance,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      status: statusWhenLcpIsUnknown(),
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const hasFragments = lcp.element.closest('.fragment') || lcp.element.closest('.section')?.querySelector('[data-path*="fragment"]');
@@ -171,8 +189,8 @@ export async function checkPlaceholders(url, area, observeLcp) {
       checkId: PERFORMANCE_IDS.placeholders,
       severity: PERFORMANCE_SEVERITIES.placeholders,
       title: PERFORMANCE_TITLES.Placeholders,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      status: statusWhenLcpIsUnknown(),
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const section = lcp.element.closest('.section');
@@ -195,8 +213,8 @@ export async function checkIcons(url, area, observeLcp) {
       checkId: PERFORMANCE_IDS.icons,
       severity: PERFORMANCE_SEVERITIES.icons,
       title: PERFORMANCE_TITLES.Icons,
-      status: STATUS.FAIL,
-      description: 'No LCP element found.',
+      status: statusWhenLcpIsUnknown(),
+      description: labelEstimate('No LCP element found.'),
     };
   }
   const hasIcons = lcp.element.closest('.section')?.querySelector('.icon-milo');

@@ -1812,3 +1812,63 @@ describe('getRequestSize', () => {
     });
   });
 });
+
+describe('caas consumer: htmlIdentity', () => {
+  // The publisher half of this feature keeps minting `.html`-based ids. This is
+  // the half that has to RESOLVE them: once bacom's authored links go
+  // extensionless, an authored featured-card link reads `/resources/x` while
+  // the card it points at is still identified by `/resources/x.html`. Without
+  // the flag the lookup hashes the extensionless string, misses, and the
+  // featured card silently disappears from the collection.
+  const BACOM = 'https://business.adobe.com';
+  const ARTICLE = '/resources/articles/4-pieces-of-social-media-real-estate-you-shouldnt-ignore';
+  // Same id the existing `.html` fixture above resolves to.
+  const HTML_ID = 'c94ec235-50c2-595e-9fa8-0b4602c08712';
+  // The id the SAME bacom article hashes to without the terminal `.html` --
+  // i.e. the miss the flag exists to prevent. Pinned exactly so that a
+  // regression which stops applying the policy fails loudly here instead of
+  // merely resolving to "something that isn't HTML_ID".
+  const EXTENSIONLESS_ID = 'b9630808-7828-5767-9dab-d02dda39e475';
+  // Same path under a host the policy does not cover.
+  const OTHER_HOST_ID = 'd54536b8-c7c4-5799-a890-0b441f0dd8a3';
+
+  let meta;
+  const setFlag = (content) => {
+    meta = document.createElement('meta');
+    meta.name = 'caas-identity-html';
+    meta.content = content;
+    document.head.append(meta);
+  };
+  afterEach(() => {
+    meta?.remove();
+    meta = null;
+  });
+
+  const featuredIds = async (contentId) => {
+    const state = { ...defaultState, featuredCards: [{ contentId }] };
+    const { featuredCards } = await getConfig(state);
+    return featuredCards;
+  };
+
+  it('resolves an extensionless link to the id the card was published under', async () => {
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${ARTICLE}`)).to.eql([HTML_ID]);
+  });
+
+  it('still resolves an authored .html link to the same id', async () => {
+    // Mid-migration both link shapes coexist in authored collections.
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${ARTICLE}.html`)).to.eql([HTML_ID]);
+  });
+
+  it('is a no-op for a host the policy does not cover', async () => {
+    setFlag('true');
+    const ids = await featuredIds(`https://www.adobe.com${ARTICLE}`);
+    expect(ids).to.eql([OTHER_HOST_ID]);
+  });
+
+  it('leaves resolution unchanged when the flag is off', async () => {
+    const ids = await featuredIds(`${BACOM}${ARTICLE}`);
+    expect(ids).to.eql([EXTENSIONLESS_ID]);
+  });
+});

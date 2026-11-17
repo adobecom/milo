@@ -1,0 +1,143 @@
+# Milo's verification gates.
+#
+# When this file is present the harness runs THESE gates in place of its
+# built-in default set. Each gate binds to a platform-owned template
+# (command | coverage | visual) and supplies the parameters. The harness
+# substitutes typed file selectors into commands and runs them in the
+# worktree. `{test_files}` is resolved by Fiesta from the repository and the
+# change; tickets never provide test mappings.
+#
+# Note: Milo's block-structure check used to be hardcoded inside the harness.
+# It is re-declared here as a `command` gate so the harness can stay generic —
+# nothing Milo-specific needs to live in the harness anymore.
+
+# Shared producer-regeneration budget for every gate below that selects
+# failure_route: regenerate. Counts the initial candidate; the acom floor caps
+# this at 5, and Milo can tighten it downward without a platform deployment.
+regeneration:
+  max_candidates: 5
+
+# Toolchain provisioning — run once in the worktree before any gate. Milo's
+# command gates (`npx eslint`, `npx web-test-runner`) need node_modules present,
+# otherwise npx fetches the latest ESLint (v10), which rejects Milo's legacy
+# .eslintrc and exits 2 — a false failure. Installing the pinned devDependencies
+# (eslint 8.11.0 + airbnb-base + plugins) makes the gates lint the real code.
+provision: npm ci
+
+gates:
+  lockfiles:
+    template: protected_paths
+    name: Dependency lockfile
+    # `npm ci` or an install during a code change can rewrite it. Dependency
+    # bumps are their own ticket.
+    paths:
+      - 'package-lock.json'
+    blocking: true
+    failure_route: escalate_to_human
+
+  lint:
+    template: command
+    name: ESLint (changed files)
+    # Same bar as Milo's CI: errors fail, warnings do not. Old files carry
+    # no-console warnings that --fix cannot remove, so --max-warnings 0 would
+    # block any ticket that touches them.
+    cmd: npx eslint {js_files}
+    blocking: true
+    failure_route: repair_loop
+    repair:
+      cmd: npx eslint {js_files} --fix
+
+  # Milo's second eslint config flags browser APIs unsafe across its target
+  # browser matrix (e.g. Array.at on old Safari) — the standard lint run does
+  # not pick it up, and GitHub CI would red-x the PR after the fact.
+  compat-lint:
+    template: command
+    name: Browser-compat ESLint
+    cmd: npx --no-install eslint --no-eslintrc -c .eslintrc-code-compatibility.js {js_files} --quiet
+    blocking: true
+    failure_route: repair_loop
+    repair:
+      cmd: npx --no-install eslint --no-eslintrc -c .eslintrc-code-compatibility.js {js_files} --quiet --fix
+
+  stylelint:
+    template: command
+    name: Stylelint
+    cmd: npx stylelint {css_files}
+    blocking: true
+    failure_route: repair_loop
+    max_repair_attempts: 3
+    repair:
+      cmd: npx stylelint {css_files} --fix
+
+  unit-tests:
+    template: command
+    name: Web Test Runner unit tests
+    # Milo has multiple runnable test systems. This gate owns only the browser
+    # unit-test tree; Fiesta still derives the affected files within it.
+    test_globs: ["test/**/*.test.js"]
+    # Use Milo's canonical runner contract (config, Chromium, port 2000, and
+    # coverage). Several suites assert URLs against localhost:2000, so invoking
+    # web-test-runner directly on an auto-selected port creates false failures.
+    cmd: npm run test:file -- {test_files}
+    timeout_s: 900
+    blocking: true
+    failure_route: repair_loop
+
+  block-structure:
+    template: command
+    name: Block structure (.js + .css per changed block)
+    description: >-
+      Every changed libs/blocks/<name>/ must contain both <name>.js and
+      <name>.css. Catches a block shipped with only one of the pair, which
+      renders broken in production even when tests pass.
+    cmd: node .pinata/scripts/check-block-structure.mjs {changed_files}
+    blocking: true
+    failure_route: repair_loop
+
+  visual:
+    template: visual
+    name: Visual evidence (ticket-declared targets)
+    # ADVISORY for now (same posture as adobecom/mas#1263): the gate still
+    # captures stills and a clip for the PR and the dashboard and still asks
+    # the vision judge, but its verdict no longer stops a run, parks it on a
+    # person, or spends producer candidates. Re-tighten (on_missing_target:
+    # escalate, blocking: true, failure_route: regenerate) once the capture
+    # side is reliable for Milo's ticket-declared surfaces.
+    # No default page: the surface under review is ticket-scoped. Each ticket
+    # declares its capture targets (visual_targets: [{page, mechanism}]);
+    # mechanism `pin` serves the branch directly, `overlay` renders a
+    # content-bus page with this branch's code via preview.yaml's
+    # overlay_pattern.
+    # A change with no covering surface (no ticket targets, no catalog fit) is
+    # skipped instead of parking the run on a human. The gate still never
+    # invents a URL to screenshot.
+    on_missing_target: skip
+    breakpoints: [375, 1200]
+    # Record a short clip of each captured target (human evidence only; the
+    # vision judge stays on stills).
+    video: true
+    criteria: >-
+      The page renders without layout breakage or overlapping elements at each
+      breakpoint, and any restyled block matches the intended design (correct
+      spacing, colors, and typography). No visible error or empty states.
+      If the target is the preflight demo page, its checks legitimately show
+      in-progress "Checking..." states — treat those as expected, not errors.
+    # Machine verdict is recorded, not enforced: no human stop, and a judged
+    # failure neither blocks verification nor re-enters codegen.
+    require_human: false
+    blocking: false
+
+  # Keep the independent merge gate last so it reviews the code together with
+  # the results of every deterministic and visual gate.
+  adversary:
+    template: adversary
+    name: Adversarial review — independent merge gate (INV-4)
+    description: >-
+      An independent adversary (different model class, no producer context)
+      reviews the diff and prior gate results before merge — required by the
+      acom org floor (snapshot in .pinata/floor/). Skips honestly when no
+      adversary model is reachable in development.
+    blocking: true
+    # A genuine failure re-enters codegen for a bounded producer rebuild. The
+    # adversary re-adjudicates every round; the producer never self-approves.
+    failure_route: regenerate
