@@ -1259,11 +1259,9 @@ function createGlobeRuntime(spec, {
     contextLoss.active = true;
     build.renderReady = false;
     syncTicker();
-    logGlobe(name, 'WebGL context lost');
   }
   function onContextRestored() {
     contextLoss.active = false;
-    logGlobe(name, 'WebGL context restored', 'info');
     if (contextLoss.rebuildPending) {
       contextLoss.rebuildPending = false;
       rebuild();
