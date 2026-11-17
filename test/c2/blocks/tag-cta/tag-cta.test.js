@@ -2,7 +2,7 @@ import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init from '../../../../libs/c2/blocks/tag-cta/tag-cta.js';
-import { getConfig, loadStyle, setConfig } from '../../../../libs/utils/utils.js';
+import { getConfig, loadBlock, loadStyle, setConfig } from '../../../../libs/utils/utils.js';
 
 const body = await readFile({ path: './mocks/body.html' });
 const mapping = JSON.parse(await readFile({ path: './mocks/tag-mapping.json' }));
@@ -19,7 +19,7 @@ describe('Tag CTA', () => {
 
   before(async () => {
     await Promise.all([
-      new Promise((resolve) => { loadStyle('/libs/styles/styles.css', resolve); }),
+      new Promise((resolve) => { loadStyle('/libs/c2/styles/styles.css', resolve); }),
       new Promise((resolve) => { loadStyle('/libs/c2/blocks/tag-cta/tag-cta.css', resolve); }),
     ]);
   });
@@ -185,5 +185,30 @@ describe('Tag CTA', () => {
     expect([...block.querySelectorAll('li')].map((item) => item.textContent))
       .to.deep.equal(['Marketing', 'GenStudio', 'Personalization']);
     expect(block.querySelectorAll('ul').length).to.equal(1);
+  });
+
+  it('loads from the C2 directory on a foundation=c2 page', async () => {
+    setConfig({
+      ...getConfig(),
+      codeRoot: '/libs',
+      miloLibs: '/libs',
+      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+    });
+    const foundation = document.createElement('meta');
+    foundation.name = 'foundation';
+    foundation.content = 'c2';
+    document.head.append(foundation);
+    const block = document.querySelector('.tag-cta');
+    // Drop the suite's preloaded stylesheet so the assertion proves loadBlock fetched it.
+    document.head.querySelector('link[href$="/c2/blocks/tag-cta/tag-cta.css"]')?.remove();
+    try {
+      await loadBlock(block);
+
+      expect(block.dataset.reason).to.be.undefined;
+      expect(block.dataset.blockStatus).to.equal('loaded');
+      expect(document.head.querySelector('link[href$="/c2/blocks/tag-cta/tag-cta.css"]')).to.exist;
+    } finally {
+      foundation.remove();
+    }
   });
 });
