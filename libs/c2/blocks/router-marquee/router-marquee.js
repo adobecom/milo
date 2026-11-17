@@ -575,8 +575,7 @@ const updateContentSpacing = (el) => {
   vp.style.setProperty('--rm-controls-h', `${controlsH}px`);
   // Set min-height so the viewport never shrinks below what the content needs
   const needed = wrapperPadTop + foregroundH + contentH + 24 + controlsH;
-  // Mirrors the CSS 0.1px offset so the hero stays an LCP candidate (see router-marquee.css)
-  const minHeight = `${Math.max(window.innerHeight - 0.1, needed)}px`;
+  const minHeight = `max(calc(${window.innerHeight}px - var(--rm-lcp-height-offset)), ${needed}px)`;
   if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
   // Applied to all wrappers to handle slide changes

@@ -1,13 +1,15 @@
 .router-marquee {
+  /* used to make the hero slightly shorter than the viewport so Chrome doesn't discard the first slide background for LCP */
+  --rm-lcp-height-offset: 0.1px;
+
   position: relative;
   overflow: hidden;
 }
 
-/* 0.1px short of the viewport so Chrome doesn't discard the hero as a full-viewport background for LCP */
 .rm-viewport {
   display: none;
   position: relative;
-  height: calc(100vh - 0.1px);
+  height: calc(100vh - var(--rm-lcp-height-offset));
   overflow: hidden;
 }
 
@@ -388,8 +390,8 @@
 @media (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
-    height: calc(100vh - 0.1px);
-    height: calc(100svh - 0.1px);
+    height: calc(100vh - var(--rm-lcp-height-offset));
+    height: calc(100svh - var(--rm-lcp-height-offset));
   }
 
   .rm-content-wrapper {
@@ -463,8 +465,8 @@
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
-    height: calc(100vh - 0.1px);
-    height: calc(100svh - 0.1px);
+    height: calc(100vh - var(--rm-lcp-height-offset));
+    height: calc(100svh - var(--rm-lcp-height-offset));
   }
 
   .rm-content-wrapper {
@@ -505,7 +507,7 @@
 @media (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
-    height: calc(100vh - 0.1px);
+    height: calc(100vh - var(--rm-lcp-height-offset));
   }
 
   .rm-overlay {
