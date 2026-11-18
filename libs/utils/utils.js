@@ -2477,7 +2477,6 @@ const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => bloc
 
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 
-// One sheet per site at the site content root, not per locale folder.
 export const getGeoIpSheetUrl = (config) => `${config.origin || window.location.origin}${config.contentRoot ?? ''}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
 
 const geoIpWarm = {};
