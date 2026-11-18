@@ -895,6 +895,35 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
+  it('keeps the article in place on mobile while a collapsed list waits for its sections', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 390, height: 800 });
+      // Starts like a real article (no heading margin collapsing through the article column).
+      const content = `<div>Intro</div>${['One', 'Two', 'Three', 'Four'].map((title) => `<h2>${title}</h2>`).join('')}`;
+      const { main, block } = buildArticle(content);
+      block.innerHTML = '<div><div>On this page</div></div>'
+        + '<div><div><ol><li>One</li><li>Two</li><li>Three</li><li>Four</li></ol></div></div>';
+      const articleSection = main.lastElementChild;
+      articleSection.dataset.status = 'pending';
+      await init(block);
+      const article = main.querySelector('.blog-article-content');
+      const pendingTop = article.getBoundingClientRect().top;
+      delete articleSection.dataset.status;
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+      await waitFor(() => block.querySelectorAll('nav a').length === 4);
+      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+      expect(article.getBoundingClientRect().top).to.be.closeTo(pendingTop, 1);
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
   it('hides internal scrollbars without clipping long navigation or keyboard focus', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');

@@ -207,6 +207,13 @@
     display: contents;
   }
 
+  /* Holds the collapsed navigation's height (heading line + one link row) until it renders. */
+  .blog-side-navigation.is-pending:not([hidden]) {
+    display: block;
+    height: calc(3em + 2 * var(--s2a-spacing-sm) + var(--s2a-border-width-sm));
+    overflow: hidden;
+  }
+
   .blog-side-navigation > p,
   .blog-side-navigation > nav,
   .blog-side-navigation > .blog-related-content {
