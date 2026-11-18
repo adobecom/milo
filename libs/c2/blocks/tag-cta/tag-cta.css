@@ -26,7 +26,7 @@
 .tag-cta .tag-cta-list {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s2a-spacing-sm);
+  gap: 12px;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -45,9 +45,9 @@
   border-radius: 10px;
   background-color: var(--s2a-color-gray-100);
   color: var(--s2a-color-content-default);
-  font-size: var(--s2a-font-size-md);
-  font-weight: var(--s2a-font-weight-body);
-  line-height: var(--s2a-font-line-height-md);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
   overflow-wrap: anywhere;
   text-decoration: none;
 }
@@ -61,7 +61,7 @@
 }
 
 .tag-cta .tag-cta-list a:focus-visible {
-  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline: 2px solid var(--s2a-color-focus-ring-default);
   outline-offset: 3px;
 }
 

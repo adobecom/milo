@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   max-width: 700px;
-  border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-400);
+  border: 1px solid var(--s2a-color-gray-400);
   border-radius: var(--s2a-border-radius-sm);
   background: var(--s2a-color-background-default);
   overflow: hidden;
@@ -27,8 +27,8 @@
 }
 
 .related-content-card .related-content-card-link:focus-visible {
-  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
-  outline-offset: var(--s2a-border-width-md);
+  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
 }
 
 .related-content-card .related-content-card-image {
@@ -58,16 +58,16 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: var(--s2a-spacing-2xs);
-  padding: var(--s2a-spacing-md) var(--s2a-spacing-lg);
+  gap: 4px;
+  padding: 16px 24px;
   min-width: 0;
 }
 
 .related-content-card .related-content-card-eyebrow {
   margin: 0;
   color: var(--s2a-color-gray-600);
-  font-size: var(--s2a-font-size-xs);
-  font-weight: var(--s2a-font-weight-adobe-clean-medium);
+  font-size: 12px;
+  font-weight: 500;
   line-height: 1.25;
 }
 
@@ -76,10 +76,10 @@
 }
 
 .related-content-card .related-content-card-title {
-  margin: 0 0 var(--s2a-spacing-2xs);
-  font-size: var(--s2a-font-size-md);
+  margin: 0 0 4px;
+  font-size: 16px;
   line-height: 1.35;
-  font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+  font-weight: 800;
   letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
   /* stylelint-disable-next-line value-no-vendor-prefix */
   display: -webkit-box;
@@ -93,10 +93,10 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--s2a-spacing-xs);
+  gap: 8px;
   margin: 0;
   color: var(--s2a-color-gray-600);
-  font-size: var(--s2a-font-size-xs);
+  font-size: 12px;
 }
 
 .related-content-card .related-content-card-separator {
@@ -109,18 +109,18 @@
   }
 
   .related-content-card .related-content-card-copy {
-    padding: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+    padding: 8px 16px;
   }
 
   .related-content-card .related-content-card-eyebrow {
-    font-size: var(--s2a-font-size-md);
+    font-size: 16px;
   }
 }
 
 @media (width >= 768px) {
   .related-content-card .related-content-card-eyebrow,
   .related-content-card .related-content-card-meta  {
-    font-size: var(--s2a-font-size-md);
+    font-size: 16px;
   }
 
   .related-content-card {
@@ -128,6 +128,6 @@
   }
 
   .related-content-card .related-content-card-title {
-    font-size: var(--s2a-font-size-xl);
+    font-size: 20px;
   }
 }

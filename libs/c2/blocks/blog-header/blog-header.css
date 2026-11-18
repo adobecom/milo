@@ -17,13 +17,14 @@
   align-items: center;
   gap: var(--s2a-spacing-xs);
   margin: 0;
-  font-weight: var(--s2a-font-weight-eyebrow);
-  font-size: var(--s2a-typography-font-size-eyebrow);
+  font-weight: 700;
+  font-size: 16px;
   line-height: 1.25;
 }
 
+/* Departs from Figma #909090 (3.19:1) to meet WCAG AA 4.5:1 — #686868 is 5.57:1. */
 .blog-header-eyebrow-end {
-  color: var(--s2a-color-content-subtle);
+  color: var(--s2a-color-gray-600);
 }
 
 .blog-header-eyebrow-start + .blog-header-eyebrow-end::before {
@@ -34,20 +35,20 @@
 
 .blog-header-title h1 {
   margin: 0;
-  font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
-  font-size: var(--s2a-font-size-4xl);
+  font-weight: 800;
+  font-size: 36px;
   line-height: 1.25;
   color: var(--s2a-color-content-default);
 }
 
 .blog-header-summary {
-  font-size: var(--s2a-font-size-lg);
+  font-size: 18px;
   line-height: 1.5;
   color: var(--s2a-color-content-default);
 }
 
 .blog-header-summary p {
-  margin: 0 0 var(--s2a-spacing-lg);
+  margin: 0 0 24px;
 }
 
 .blog-header-byline {
@@ -96,8 +97,8 @@
 }
 
 .blog-header-author-name {
-  font-weight: var(--s2a-font-weight-label);
-  font-size: var(--s2a-font-size-md);
+  font-weight: 700;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--s2a-color-content-default);
   text-decoration: none;
@@ -109,8 +110,8 @@ a.blog-header-author-name:hover {
 }
 
 .blog-header-author-meta {
-  font-weight: var(--s2a-font-weight-body);
-  font-size: var(--s2a-font-size-md);
+  font-weight: 400;
+  font-size: 16px;
   line-height: 1.5;
   color: var(--s2a-color-content-default);
   overflow-wrap: anywhere;
@@ -121,13 +122,13 @@ a.blog-header-author-name:hover {
   align-items: center;
   gap: var(--s2a-spacing-xs);
   padding: 5px 18px;
-  border: var(--s2a-border-width-md) solid var(--s2a-color-border-default);
-  border-radius: var(--s2a-border-radius-round);
+  border: 2px solid var(--s2a-color-border-default);
+  border-radius: 90px;
   background: transparent;
   color: var(--s2a-color-content-default);
   font-family: var(--body-font-family);
-  font-weight: var(--s2a-font-weight-label);
-  font-size: var(--s2a-font-size-md);
+  font-weight: 700;
+  font-size: 16px;
   line-height: 1.2;
   cursor: pointer;
 }
@@ -146,8 +147,8 @@ a.blog-header-author-name:hover {
 }
 
 .blog-header-share:focus-visible {
-  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
-  outline-offset: var(--s2a-border-width-md);
+  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
 }
 
 @media (width >= 768px) {
@@ -170,7 +171,7 @@ a.blog-header-author-name:hover {
 
 @media (width >= 1280px) {
   .blog-header-title h1 {
-    font-size: var(--s2a-font-size-8xl);
+    font-size: 64px;
   }
 
   .blog-header-byline {
@@ -190,10 +191,10 @@ a.blog-header-author-name:hover {
 
   .blog-header-share {
     flex: none;
-    font-size: var(--s2a-font-size-lg);
+    font-size: 18px;
     margin-inline-start: auto;
-    padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
-    gap: var(--s2a-spacing-sm);
+    padding: 8px 12px;
+    gap: 12px;
   }
 
   .blog-header-share svg {
@@ -202,12 +203,50 @@ a.blog-header-author-name:hover {
   }
 }
 
+/* Authored body copy: small vertical rhythm and a smaller in-body heading. */
+.blog-article-content > .section > .content > * + * {
+  margin-block-start: var(--s2a-spacing-xs);
+}
+
+.blog-article-content > .section > .content > p,
+.blog-article-content > .section > .content > ul,
+.blog-article-content > .section > .content > ol,
+.blog-article-content > .section > .content > ul li,
+.blog-article-content > .section > .content > ol li {
+  font-size: var(--s2a-typography-font-size-body-lg);
+}
+
+.blog-article-content > .section > .content > h2 {
+  margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
+  font-size: var(--s2a-typography-font-size-heading-2);
+  line-height: var(--s2a-typography-line-height-heading-2);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
+}
+
+/* Cap in-body H2s at 36px; the heading-2 token grows to 48/56px at desktop. */
+@media (width >= 1024px) {
+  .blog-article-content > .section > .content > h2 {
+    font-size: var(--s2a-font-size-4xl);
+    line-height: var(--s2a-font-line-height-xl);
+    letter-spacing: var(--s2a-font-letter-spacing-2xl);
+  }
+}
+
+/* In-body related-content cards get extra breathing room beneath them. */
+.blog-article-content > .section > .related-content-card {
+  margin-block-end: var(--s2a-spacing-xl);
+}
+
+.blog-article-content > .section > .tag-cta {
+  margin-block: var(--s2a-spacing-2xl);
+}
+
 /* Section dividers: decorative rules that never take up layout space. */
 .blog-divider-frame,
 .blog-divider-frame + .blog-article-layout {
   --blog-divider-dots: var(--s2a-color-gray-400) 0 2px, transparent 2px 7px;
-  --blog-divider-gap: var(--s2a-spacing-3xl);
-  --blog-divider-rule-size: var(--s2a-border-width-md);
+  --blog-divider-gap: 48px;
+  --blog-divider-rule-size: 2px;
   --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
 }
 
@@ -285,7 +324,7 @@ a.blog-header-author-name:hover {
   }
 
   .blog-divider-frame + .blog-article-layout {
-    --blog-divider-inline-space: var(--s2a-spacing-xl);
+    --blog-divider-inline-space: 32px;
 
     position: relative;
     column-gap: calc(2 * var(--blog-divider-inline-space));
@@ -329,7 +368,7 @@ a.blog-header-author-name:hover {
 .blog-share-modal.dialog-modal {
   width: fit-content;
   max-width: calc(100% - 2em);
-  padding: var(--s2a-spacing-lg) var(--s2a-spacing-20);
+  padding: var(--s2a-spacing-lg) 20px;
   background: var(--s2a-color-gray-50);
   border-radius: var(--s2a-border-radius-sm);
 }
@@ -343,8 +382,8 @@ a.blog-header-author-name:hover {
   padding: 0;
   border-radius: var(--s2a-border-radius-xs);
   background: var(--s2a-color-gray-100);
-  top: var(--s2a-spacing-xs);
-  right: var(--s2a-spacing-xs);
+  top: 8px;
+  right: 8px;
 }
 
 .blog-share-modal.dialog-modal button.dialog-close:hover {
@@ -378,8 +417,8 @@ a.blog-header-author-name:hover {
 .blog-share-heading {
   margin: 0;
   padding-inline-end: var(--s2a-spacing-lg);
-  font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
-  font-size: var(--s2a-font-size-md);
+  font-weight: 800;
+  font-size: 16px;
   line-height: 1.4;
   letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
   color: var(--s2a-color-gray-1000);
@@ -403,8 +442,8 @@ a.blog-header-author-name:hover {
 
 .blog-share-card-text {
   padding: var(--s2a-spacing-md);
-  font-weight: var(--s2a-font-weight-body);
-  font-size: var(--s2a-font-size-sm);
+  font-weight: 400;
+  font-size: 14px;
   line-height: 1.4;
   color: var(--s2a-color-gray-1000);
 }
@@ -414,7 +453,7 @@ a.blog-header-author-name:hover {
 }
 
 .blog-share-card-title strong {
-  font-weight: var(--s2a-font-weight-label);
+  font-weight: 700;
 }
 
 .blog-share-card-desc {
@@ -469,19 +508,19 @@ a.blog-header-author-name:hover {
 }
 
 .blog-share-action:focus-visible {
-  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
-  outline-offset: var(--s2a-border-width-md);
+  outline: 2px solid var(--s2a-color-focus-ring-default);
+  outline-offset: 2px;
 }
 
 .blog-share-feedback {
   position: absolute;
   bottom: calc(100% + var(--s2a-spacing-xs));
   inset-inline-end: 0;
-  padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs);
-  border-radius: var(--s2a-border-radius-6);
+  padding: 4px 8px;
+  border-radius: 6px;
   background: #5c5ce0; /* Copy-link feedback indigo; no S2A token matches. */
   color: var(--s2a-color-gray-25);
-  font-size: var(--s2a-font-size-xs);
+  font-size: 12px;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -492,7 +531,7 @@ a.blog-header-author-name:hover {
 
 @media (width >= 768px) {
   .blog-share-modal.dialog-modal {
-    padding: 37px var(--s2a-spacing-2xl) var(--s2a-spacing-2xl);
+    padding: 37px 40px 40px;
   }
 
   .blog-share {
@@ -500,7 +539,7 @@ a.blog-header-author-name:hover {
   }
 
   .blog-share-heading {
-    font-size: var(--s2a-font-size-2xl);
+    font-size: 24px;
   }
 
   .blog-share-card-image {
@@ -508,7 +547,7 @@ a.blog-header-author-name:hover {
   }
 
   .blog-share-card-text {
-    font-size: var(--s2a-font-size-lg);
+    font-size: 18px;
   }
 
   .blog-share-action svg {
