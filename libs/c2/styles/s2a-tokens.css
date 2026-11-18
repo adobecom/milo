@@ -435,8 +435,8 @@
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
 }
 
-@media (width >= 1024px) {
-  :root {
+@container page (width >= 1024px) {
+  body > * {
     /* tokens.responsive.md */
     --s2a-section-spacing-2xs: var(--s2a-spacing-lg);
     --s2a-section-spacing-sm: var(--s2a-spacing-xl);
@@ -466,8 +466,8 @@
   }
 }
 
-@media (width >= 1280px) {
-  :root {
+@container page (width >= 1280px) {
+  body > * {
     /* tokens.responsive.lg */
     --s2a-section-spacing-xs: var(--s2a-spacing-xl);
     --s2a-section-spacing-sm: var(--s2a-spacing-2xl);
@@ -500,8 +500,8 @@
   }
 }
 
-@media (width >= 1440px) {
-  :root {
+@container page (width >= 1440px) {
+  body > * {
     /* tokens.responsive.xl */
     --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
   }

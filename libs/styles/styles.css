@@ -114,9 +114,9 @@
   --grid-container-width: 83.4%;
   --grid-column-width: calc(var(--grid-container-width) / 12);
   --grid-margins-width: calc((100% - var(--grid-container-width)) / 2);
-  --grid-margins-width-10: calc((100vw - (var(--grid-column-width) * 10)) / 2);
-  --grid-margins-width-8: calc((100vw - (var(--grid-column-width) * 8)) / 2);
-  --grid-margins-width-6: calc((100vw - (var(--grid-column-width) * 6)) / 2);
+  --grid-margins-width-10: calc((var(--page-width) - (var(--grid-column-width) * 10)) / 2);
+  --grid-margins-width-8: calc((var(--page-width) - (var(--grid-column-width) * 8)) / 2);
+  --grid-margins-width-6: calc((var(--page-width) - (var(--grid-column-width) * 6)) / 2);
 
   /* aspect ratios */
   --aspect-ratio-square: 1/1;
@@ -132,6 +132,31 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
+}
+
+/* BC drawer experiment: global breakpoints follow the page's content width (the body's content box, which the
+   drawer narrows) instead of the viewport. --page-width is that width as an absolute length for tokens. */
+@property --page-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 100vw;
+}
+
+body {
+  container: page / inline-size;
+}
+
+body > * {
+  --page-width: 100cqw;
+}
+
+/* Recompute derived tokens against the page container (BC drawer experiment). */
+body > * {
+  --grid-column-width: calc(var(--grid-container-width) / 12);
+  --grid-margins-width: calc((100% - var(--grid-container-width)) / 2);
+  --grid-margins-width-10: calc((var(--page-width) - (var(--grid-column-width) * 10)) / 2);
+  --grid-margins-width-8: calc((var(--page-width) - (var(--grid-column-width) * 8)) / 2);
+  --grid-margins-width-6: calc((var(--page-width) - (var(--grid-column-width) * 6)) / 2);
 }
 
 :root:lang(ar) {
@@ -187,14 +212,14 @@
   --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
 }
 
-@media (max-width: 1023px) {
+@container page (max-width: 1023px) {
   :root header.c2-gnav-c1-host:has(.feds-localnav-bar) {
     --global-height-nav: calc(80px + var(--global-height-breadcrumbs));
   }
 }
 
-@media (min-width: 1200px) {
-  :root {
+@container page (min-width: 1200px) {
+  body > * {
     --spacing-xl: 56px;
     --spacing-xxl: 80px;
     --spacing-xxxl: 104px;
@@ -215,8 +240,8 @@
   }
 }
 
-@media (min-width: 1440px) {
-  :root {
+@container page (min-width: 1440px) {
+  body > * {
     --grid-container-width: 1200px;
   }
 }
@@ -823,7 +848,7 @@ body.mweb-enabled {
   }
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   header.global-navigation.has-breadcrumbs:not(.c2-gnav-c1-host) {
     padding-bottom: var(--global-height-breadcrumbs);
   }
@@ -832,7 +857,7 @@ body.mweb-enabled {
     display: none;
   }
 }
-@media (min-width: 1204px) {
+@container page (min-width: 1204px) {
   header.global-navigation.has-breadcrumbs:not(.is-compact) {
     padding-bottom: var(--global-height-breadcrumbs);
   }
@@ -971,14 +996,14 @@ a.static:active  {
   scroll-margin-top: var(--global-height-nav);
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .global-navigation.has-breadcrumbs + main .section-anchor {
     scroll-margin-top: var(--feds-totalheight-nav);
   }
 }
 
 /* mobile only */
-@media (max-width: 599px) {
+@container page (max-width: 599px) {
   :root:not(:lang(ja-JP), :lang(ja)) :is(.heading-xxxl, .heading-xxl) {
     hyphens: auto;
     hyphenate-limit-chars: 15 5 5;
@@ -993,7 +1018,7 @@ a.static:active  {
 }
 
 /* Tablet up */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   dialog {
     width: 60vw;
   }
@@ -1055,7 +1080,7 @@ a.static:active  {
 }
 
 /* tablet large up */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   header.gnav {
     min-height: var(--global-height-nav);
     border-bottom: 1px solid #EAEAEA;
@@ -1080,7 +1105,7 @@ a.static:active  {
 }
 
 /* tablet down */
-@media screen and (max-width: 1199px) {
+@container page (max-width: 1199px) {
   /* Mweb specific changes for body typography */
   .mweb-enabled {
     --type-body-xxl-size: calc(var(--font-size-multiplier, 1) * 24px);
@@ -1097,7 +1122,7 @@ a.static:active  {
 }
 
 /* desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .con-block.max-width-6-desktop .foreground { max-width: 600px; }
   .con-block.max-width-8-desktop .foreground { max-width: 800px; }
   .con-block.max-width-10-desktop .foreground { max-width: 1000px; }
@@ -1151,7 +1176,7 @@ a.static:active  {
 }
 
 /* desktop large < 1440 */
-@media screen and (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
 

@@ -513,6 +513,28 @@
   }
 }
 
+/* BC drawer experiment: global breakpoints follow the page's content width (the body's content box, which the
+   drawer narrows) instead of the viewport. --page-width is that width as an absolute length for tokens. */
+@property --page-width {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 100vw;
+}
+
+body {
+  container: page / inline-size;
+}
+
+body > * {
+  --page-width: 100cqw;
+}
+
+/* Recompute derived tokens against the page container (BC drawer experiment). */
+body > * {
+  --grid-margin-width: var(--grid-margin-width-base);
+  --grid-margin-width-target: var(--grid-margin-width-base);
+}
+
 .dark {
   /* tokens.semantic.dark */
   --s2a-color-background-default: var(--s2a-color-gray-900);
@@ -1281,8 +1303,8 @@ span.hang-opening-quote {
   .parallax-scale-down-grid {
     --parallax-scale-grid-margin: var(--grid-margin-width);
     --grid-scale-angle: atan2(
-      min(var(--grid-max-width-fluid), 100vw),
-      min(var(--grid-max-width), calc(100vw - 2 * var(--parallax-scale-grid-margin)))
+      min(var(--grid-max-width-fluid), var(--page-width)),
+      min(var(--grid-max-width), calc(var(--page-width) - 2 * var(--parallax-scale-grid-margin)))
     );
     --grid-scale-multiplier: tan(var(--grid-scale-angle));
 
@@ -1291,10 +1313,10 @@ span.hang-opening-quote {
     overflow-x: clip;
     will-change: scale;
 
-    @media (width >= 768px) {
+    @container page (width >= 768px) {
       /* 8.333% grid margin as a length (a % can't resolve inside atan2)
       Keep value in sync with --grid-margin-width-base */
-      &:not(.fixed, .fluid) { --parallax-scale-grid-margin: 8.333vw; }
+      &:not(.fixed, .fluid) { --parallax-scale-grid-margin: calc(var(--page-width) * 0.08333); }
     }
 
     :has(> &) { overflow-x: clip; }
@@ -1381,7 +1403,7 @@ span.hang-opening-quote {
       --parallax-stagger-row-index: 4;
     }
 
-    @media (width >= 768px) {
+    @container page (width >= 768px) {
       animation-name: none;
 
       > :not([class*="section-"]) {
@@ -1449,11 +1471,11 @@ span.hang-opening-quote {
     animation-range: entry 0% cover 64%;
 
     /* Mobile/tablet: shallower cap, same viewport-relative curve */
-    @media (width < 1280px) {
+    @container page (width < 1280px) {
       --gd-section-shift: clamp(-60px, -16vh, -40px);
     }
 
-    @media (width < 768px) {
+    @container page (width < 768px) {
       --gd-content-drift: 24px;
     }
 
@@ -1521,7 +1543,7 @@ span.hang-opening-quote {
            parallax mid-cover reads as a visible stop. Run it across the full
            cover-length window, shifted earlier so it starts before the image
            enters and settles sooner. */
-        @media (width < 1280px) {
+        @container page (width < 1280px) {
           animation-range: cover -40% cover 60%;
         }
       }
@@ -1533,7 +1555,7 @@ span.hang-opening-quote {
      group lags the page at 15% of scroll speed, pivoting on the viewport
      centre, and items rise (20px steps) and fade in on a viewport-height
      timeline. */
-  @media (width < 768px) {
+  @container page (width < 768px) {
     .section.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
       --gd-content-rate: 0.15;
 
@@ -1722,8 +1744,8 @@ span.hang-opening-quote {
   visibility: hidden;
 }
 
-@media (width >= 768px) {
-  :root {
+@container page (width >= 768px) {
+  body > * {
     /* Grid definitions */
     --grid-columns: 12;
     --grid-margin-width-base: 8.333%;
@@ -1750,8 +1772,8 @@ span.hang-opening-quote {
   }
 }
 
-@media (width >= 1024px) {
-  :root {
+@container page (width >= 1024px) {
+  body > * {
     /* tokens.responsive.md */
     --s2a-section-spacing-2xs: var(--s2a-spacing-lg);
     --s2a-section-spacing-sm: var(--s2a-spacing-xl);
@@ -1781,8 +1803,8 @@ span.hang-opening-quote {
   }
 }
 
-@media (width >= 1280px) {
-  :root {
+@container page (width >= 1280px) {
+  body > * {
     /* tokens.responsive.lg */
     --s2a-section-spacing-xs: var(--s2a-spacing-xl);
     --s2a-section-spacing-sm: var(--s2a-spacing-2xl);
@@ -1815,8 +1837,8 @@ span.hang-opening-quote {
   }
 }
 
-@media (width >= 1440px) {
-  :root {
+@container page (width >= 1440px) {
+  body > * {
     /* tokens.responsive.xl */
     --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
   }
