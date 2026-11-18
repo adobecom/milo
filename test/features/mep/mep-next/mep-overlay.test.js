@@ -102,6 +102,13 @@ describe('init: DOM structure — stage env first call', () => {
     bodyEl = makeBody();
     headerEl = makeHeader(50);
     await init();
+    const stylesheet = document.querySelector('link[href$="/mep-overlay.css"]');
+    if (!stylesheet.sheet) {
+      await new Promise((resolve, reject) => {
+        stylesheet.addEventListener('load', resolve, { once: true });
+        stylesheet.addEventListener('error', () => reject(new Error('Failed to load MEP overlay styles')), { once: true });
+      });
+    }
     await wait(150);
   });
 
@@ -146,6 +153,41 @@ describe('init: DOM structure — stage env first call', () => {
 
   it('drawer has popover="manual"', () => {
     expect(bodyEl.querySelector('#mep-drawer').getAttribute('popover')).to.equal('manual');
+  });
+
+  it('hides the closed authorized drawer and its controls with CSS', () => {
+    const drawer = bodyEl.querySelector('#mep-drawer');
+    expect(drawer.hidden).to.be.false;
+    expect(drawer.matches(':popover-open')).to.be.false;
+    expect(getComputedStyle(drawer).display).to.equal('none');
+    expect(drawer.querySelector('.icon-close').getClientRects()).to.have.lengthOf(0);
+  });
+
+  [false, true].forEach((alignLeft) => {
+    it(`opens, closes and reopens the ${alignLeft ? 'left' : 'right'}-aligned drawer`, () => {
+      const drawer = bodyEl.querySelector('#mep-drawer');
+      const fab = bodyEl.querySelector('.mep-fab');
+      const wasAlignedLeft = bodyEl.classList.contains('mep-align-left');
+      bodyEl.classList.toggle('mep-align-left', alignLeft);
+      drawer.style.transition = 'none';
+      try {
+        expect(getComputedStyle(drawer).display).to.equal('none');
+        for (let cycle = 0; cycle < 2; cycle += 1) {
+          fab.click();
+          expect(drawer.matches(':popover-open')).to.be.true;
+          expect(getComputedStyle(drawer).display).to.equal('flex');
+          expect(drawer.querySelector('.icon-close').getClientRects().length).to.be.greaterThan(0);
+          drawer.querySelector('.icon-close').click();
+          expect(drawer.matches(':popover-open')).to.be.false;
+          expect(getComputedStyle(drawer).display).to.equal('none');
+          expect(drawer.querySelector('.icon-close').getClientRects()).to.have.lengthOf(0);
+        }
+      } finally {
+        if (drawer.matches(':popover-open')) drawer.hidePopover();
+        drawer.style.removeProperty('transition');
+        bodyEl.classList.toggle('mep-align-left', wasAlignedLeft);
+      }
+    });
   });
 
   it('drawer top style reflects gnav offset (50px)', () => {
