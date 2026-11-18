@@ -6,14 +6,14 @@
   width: calc(100% - 40px);
   max-width: var(--body-max-width, 600px);
   margin: var(--s2a-spacing-lg) auto;
-  padding: 20px;
+  padding: var(--s2a-spacing-20);
   border: 3px solid var(--s2a-color-border-subtle);
   border-radius: var(--s2a-border-radius-sm);
   color: var(--s2a-color-content-default);
   font-family: var(--body-font-family);
   font-size: var(--s2a-typography-font-size-body-lg);
   font-style: normal;
-  font-weight: 400;
+  font-weight: var(--s2a-font-weight-body);
   line-height: 150%;
   overflow-wrap: anywhere;
 }
@@ -27,7 +27,7 @@
 .ai-summary p,
 .ai-summary ul,
 .ai-summary ol {
-  margin: 0 0 16px;
+  margin: 0 0 var(--s2a-spacing-md);
   font-size: inherit;
   line-height: inherit;
 }
@@ -53,22 +53,22 @@
 }
 
 .ai-summary :is(h1, h2, h3, h4, h5, h6) {
-  margin: 0 0 16px;
+  margin: 0 0 var(--s2a-spacing-md);
   color: var(--s2a-color-content-default);
   font-size: var(--s2a-typography-font-size-heading-5);
   font-style: normal;
-  font-weight: 800;
+  font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
   line-height: 125%;
   letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
 }
 
 .ai-summary ul,
 .ai-summary ol {
-  padding-inline-start: 24px;
+  padding-inline-start: var(--s2a-spacing-lg);
 }
 
 .ai-summary li + li {
-  margin-top: 12px;
+  margin-top: var(--s2a-spacing-sm);
 }
 
 .ai-summary .ai-summary-content > div > :last-child {
@@ -78,7 +78,7 @@
 @media (width >= 768px) {
   .ai-summary {
     width: 100%;
-    padding: 24px;
+    padding: var(--s2a-spacing-lg);
   }
 
   .ai-summary .ai-summary-image {
