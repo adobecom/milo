@@ -9,9 +9,9 @@
 }
 
 .blog-related-content > h3 {
-  margin: 0 0 20px;
-  font-size: 16px;
-  font-weight: 700;
+  margin: 0 0 var(--s2a-spacing-20);
+  font-size: var(--s2a-font-size-md);
+  font-weight: var(--s2a-font-weight-label);
   line-height: 1.5;
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   text-transform: uppercase;
@@ -40,7 +40,7 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--s2a-color-gray-100);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
   border-radius: var(--s2a-border-radius-4);
   background: var(--s2a-color-gray-25);
 }
@@ -58,7 +58,7 @@
   flex: 1;
   min-width: 0;
   width: auto;
-  padding: 10px 12px;
+  padding: 10px var(--s2a-spacing-sm);
 }
 
 .blog-related-content .consonant-CardsGrid .consonant-Card.horizontal-card .consonant-Card-title {
@@ -66,9 +66,9 @@
   margin: 0;
   overflow: hidden;
   color: var(--s2a-color-content-default);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 20px;
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-label);
+  line-height: var(--s2a-font-line-height-sm);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
@@ -80,6 +80,6 @@
 }
 
 .blog-related-content a:focus-visible {
-  outline: 2px solid var(--s2a-color-focus-ring-default);
-  outline-offset: -2px;
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: calc(-1 * var(--s2a-border-width-md));
 }
