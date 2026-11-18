@@ -20,7 +20,7 @@
   --l-rounded-corners: 16px;
   --full-rounded-corners: 50%;
   --indicator-multiplier: 0;
-  --grid-container-view: 83.4vw;
+  --grid-container-view: calc(var(--page-width) * 0.834);
 
   position: relative;
   margin-bottom: 1.8rem;
@@ -592,7 +592,7 @@ html[dir="rtl"] .carousel .move-indicators {
   opacity: .3;
 }
 
-@media (max-width: 899px) {
+@container page (max-width: 899px) {
   .carousel.container.hinting-mobile,
   .carousel.container.hinting-center-mobile {
     width: 100%;
@@ -722,7 +722,7 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .carousel.lightbox-active.container .carousel-wrapper {
     width: 80.3333%;
   }
@@ -915,7 +915,7 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 :root:has(meta[name="theme"][content="max25"]) {
-  @media (min-width: 900px) {
+  @container page (min-width: 900px) {
     .carousel.show-2.ups-desktop.m-gap .carousel-slides {
       gap: 44px var(--spacing-s);
     }

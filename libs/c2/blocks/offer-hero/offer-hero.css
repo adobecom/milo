@@ -337,7 +337,7 @@
   }
 }
 
-@media (width > 768px) {
+@container page (width > 768px) {
   .offer-hero {
     .hero-content {
       padding-inline: 0;
@@ -374,7 +374,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
     > .section-background {
       border-radius: 0 0 var(--s2a-border-radius-xl) var(--s2a-border-radius-xl);

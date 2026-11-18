@@ -16,7 +16,7 @@
   flex: 1 1 100%;
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .up-2 > div:not(.section-metadata) {
     width: calc(50% - 8px);
     max-width: calc(50% - 8px);
@@ -79,7 +79,7 @@
   display: block;
 }
 
-@media only screen and (min-width: 75rem) {
+@container page (min-width: 75rem) {
   .chart [data-chart-type="area"] > div {
     height: 900px;
   }

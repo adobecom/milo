@@ -62,7 +62,7 @@
 }
 
 /* Desktop styles */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .feds--dark .feds-navLink {
     color: var(--feds-color-link--desktop);
   }
@@ -171,7 +171,7 @@ header.global-navigation.feds--dark,
 }
 
 /* Desktop styles */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   /* Popup */
   .feds--dark .feds-popup {
     background-color: var(--feds-background-popup);
@@ -299,7 +299,7 @@ header.global-navigation.feds--dark {
   visibility: visible;
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .global-footer.feds--dark {
     background: var(--feds-background-footer--desktop);
   }

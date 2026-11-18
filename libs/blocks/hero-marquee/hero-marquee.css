@@ -294,7 +294,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 }
 
 /* mobile ONLY */
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .hero-marquee .con-button {
     display: block;
     text-align: center;
@@ -372,7 +372,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 }
 
 /* Tablet ONLY */
-@media screen and (min-width: 600px) and (max-width: 1199px) {
+@container page (min-width: 600px) and (max-width: 1199px) {
   .hero-marquee.media-cover:not(.bg-bottom-mobile) {
     padding-bottom: 0;
   }
@@ -418,7 +418,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 }
 
 /* Tablet UP */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .hero-marquee,
   .hero-marquee .action-area {
     flex-direction: row;
@@ -446,7 +446,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee.l-min-height-tablet { min-height: var(--l-min-height);}
 }
 
-@media screen and (min-width: 920px) {
+@container page (min-width: 920px) {
   .hero-marquee .foreground.cols-1 {
     max-width: 800px;
     min-width: unset;
@@ -491,7 +491,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 }
 
 /* tablet down */
-@media screen and (max-width: 1199px) {
+@container page (max-width: 1199px) {
   /* Mweb specific changes for lockup */
   .mweb-enabled .hero-marquee .s-lockup .lockup-area {
     font-size: var(--type-lockup-xs-size);
@@ -502,7 +502,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
 }
 
 /* desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .hero-marquee {
     display: flex;
     flex-direction: row;
@@ -634,13 +634,13 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     line-height: 1.35;
   }
 
-  @media (max-width: 599px) {
+  @container page (max-width: 599px) {
     .hero-marquee.max25 .con-button.button-justified-mobile {
       align-self: flex-start;
     }
   }
 
-  @media (max-width: 1199px) {
+  @container page (max-width: 1199px) {
     .hero-marquee.max25 {
       padding: 56px 0;
       gap: 40px;
@@ -695,7 +695,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
   }
 
-  @media (min-width: 600px) {
+  @container page (min-width: 600px) {
     .hero-marquee.max25 .foreground .copy .detail-l {
       font-size: 18px;
       line-height: 1.5;
@@ -721,13 +721,13 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     }
   }
 
-  @media (max-width: 1199px) {
+  @container page (max-width: 1199px) {
     .hero-marquee.max25 {
       min-height: unset;
     }
   }
 
-  @media (min-width: 1200px) {
+  @container page (min-width: 1200px) {
     .hero-marquee.max25 {
       padding: 160px 0;
     }
@@ -784,7 +784,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     }
   }
 
-  @media (min-width: 1480px) {
+  @container page (min-width: 1480px) {
     --grid-container-width: 1440px;
 
     .hero-marquee.max25 > .foreground.cols-2 .copy {
@@ -837,7 +837,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     margin-top: var(--spacing-xl);
   }
 
-  @media (max-width: 599px) {
+  @container page (max-width: 599px) {
     .hero-marquee.northstar .main-copy {
       gap: 16px;
     }
@@ -848,7 +848,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     }
   }
 
-  @media (min-width: 600px) {
+  @container page (min-width: 600px) {
     .hero-marquee.northstar.left-mobile.center {
       text-align: center;
       align-items: center;
@@ -863,7 +863,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     }
   }
 
-  @media (min-width: 1200px) {
+  @container page (min-width: 1200px) {
     .hero-marquee.northstar.m-min-height {
       min-height: 909px;
     }
@@ -897,7 +897,7 @@ body.mweb-enabled .hero-marquee .con-block.row-text:has(.action-area) + .con-blo
     }
   }
 
-  @media (min-width: 1480px) {
+  @container page (min-width: 1480px) {
     .hero-marquee.northstar .foreground.cols-1 {
       max-width: 1200px;
     }

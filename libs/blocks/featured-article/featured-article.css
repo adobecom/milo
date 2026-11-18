@@ -96,7 +96,7 @@
   font-size: 0.875rem;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .featured-article-container > div {
     max-width: unset;
   }
@@ -145,7 +145,7 @@
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .featured-article-container div h1 {
     max-width: 1200px;
   }

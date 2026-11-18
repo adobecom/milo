@@ -93,7 +93,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 599px) {
+@container page (max-width: 599px) {
   .preflight-diff-control-label {
     display: none;
   }

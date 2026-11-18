@@ -304,7 +304,7 @@ html[dir="rtl"] .quiz-step::after {
 }
 
 /* Tablet up */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .quiz-foreground {
     margin: var(--spacing-xxl) 0 0
   }
@@ -430,7 +430,7 @@ html[dir="rtl"] .quiz-step::after {
 }
 
 /* Desktop */
-@media screen and (min-width: 1024px) {
+@container page (min-width: 1024px) {
   .quiz-option.has-image .quiz-option-icon {
     display: none;
   }
@@ -441,7 +441,7 @@ html[dir="rtl"] .quiz-step::after {
 }
 
 /* Desktop wide */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .quiz-step-container.wide {
     width: 360px;
   }   

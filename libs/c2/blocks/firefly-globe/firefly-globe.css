@@ -90,7 +90,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .firefly-globe {
     --fg-runway-height: 340vh;
     --fg-copy-pad: var(--s2a-spacing-3xl);
@@ -98,7 +98,7 @@
   }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   .firefly-globe { --fg-copy-pad: var(--s2a-spacing-4xl); }
 }
 
@@ -392,11 +392,11 @@
   margin: 0;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .firefly-globe-pullquote { --fg-pq-ideal-gap: var(--s2a-layout-xl); }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .firefly-globe-pullquote { --fg-pq-ideal-gap: var(--s2a-layout-2xl); }
 }
 
@@ -721,7 +721,7 @@ html.firefly-globe-modal-open { overflow: hidden; }
   outline-offset: 2px;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .firefly-globe-modal-chrome {
     --fg-modal-edge: var(--s2a-spacing-lg);
     --fg-counter-w: 138px;

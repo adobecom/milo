@@ -144,7 +144,7 @@ img.quick-actions-media {
   transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
 }
 
-@media (width < 768px) {
+@container page (width < 768px) {
   .quick-actions.center-mobile .quick-actions-header {
     flex-direction: column;
     justify-content: center;
@@ -198,7 +198,7 @@ img.quick-actions-media {
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .quick-actions {
     &.blur-background {
       --quick-actions-overlap-radius: var(--s2a-border-radius-xl);
@@ -214,7 +214,7 @@ img.quick-actions-media {
   }
 }
 
-@media (width >= 2560px) {
+@container page (width >= 2560px) {
   .quick-actions-tile {
     border-radius: var(--s2a-border-radius-24);
   }

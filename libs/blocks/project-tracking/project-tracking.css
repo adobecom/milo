@@ -370,7 +370,7 @@
     min-width: 160px;
   }
 
-  @media (max-width: 600px) {
+  @container page (max-width: 600px) {
     & .pt-search {
       flex-basis: 100%;
     }

@@ -695,7 +695,7 @@ body:has(.nps-csat-form.dark.match-background) {
   mask-size: 10px 10px;
 }
 
-@media (min-width: 480px) {
+@container page (min-width: 480px) {
   .nps-csat-form.eleven-point-nps {
     border-radius: 16px;
     padding: 32px;
@@ -723,7 +723,7 @@ body:has(.nps-csat-form.dark.match-background) {
   }
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .nps-csat-form.eleven-point-nps h2 {
     font-size: 22px;
     line-height: 26px;

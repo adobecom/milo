@@ -399,7 +399,7 @@
 }
 
 /* hover */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .table .col.hover {
     border-left: 1px solid var(--hover-border-color);
     border-right: 1px solid var(--hover-border-color);
@@ -601,7 +601,7 @@
   border-top-right-radius: 0;
 }
 
-@media (min-width: 769px) {
+@container page (min-width: 769px) {
   .table .col-heading:first-child {
     border-top-left-radius: var(--border-radius);
   }
@@ -625,7 +625,7 @@
 }
 
 /* table merch */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .table-merch-section .filters {
     display: none;
   }
@@ -682,7 +682,7 @@
 }
 
 /* Start tablet styles */
-@media (max-width: 899px) {
+@container page (max-width: 899px) {
   .table,
   .table.merch {
     margin: 0 30px;
@@ -779,7 +779,7 @@
   background: url("../../ui/img/chevron-wide-black.svg") no-repeat 100%;
 }
 
-@media (max-width: 768px) {
+@container page (max-width: 768px) {
   .table .col {
     border: 1px var(--border-color) solid;
   }
@@ -813,13 +813,13 @@
   }
 }
 
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .table.header-left .row-heading .col.col-heading {
     padding: var(--spacing-xs);
   }
 }
 
-@media (max-width: 480px) {
+@container page (max-width: 480px) {
   .table,
   .table.merch {
     min-width: 100%;

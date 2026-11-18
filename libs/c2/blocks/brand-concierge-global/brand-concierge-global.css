@@ -584,7 +584,7 @@
 }
 
 /* Tablet up */
-@media screen and (min-width: 768px) {
+@container page (min-width: 768px) {
   #brand-concierge-modal.dialog-modal,
   #brand-concierge-side.dialog-modal {
     height: calc(100dvh - 32px);
@@ -602,7 +602,7 @@
 }
 
 /* gnav collapse */
-@media screen and (min-width: 900px) {
+@container page (min-width: 900px) {
   .bc-gnav.has-chat-history .bc-gnav-button.no-gnav-mobile {
     display: flex;
   }
@@ -619,7 +619,7 @@
 
 
 /* tablet wide up */
-@media screen and (min-width: 960px) {
+@container page (min-width: 960px) {
   #brand-concierge-modal.dialog-modal,
   #brand-concierge-side.dialog-modal {
     max-width: 960px;
@@ -633,7 +633,7 @@
 }
 
 /* desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
   }

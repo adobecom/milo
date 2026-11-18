@@ -153,7 +153,7 @@
 }
 
 /* mobile only */
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .quiz-marquee .con-button {
     display: block;
     text-align: center;
@@ -161,7 +161,7 @@
 }
 
 /* desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .quiz-marquee {
     align-items: center;
     display: flex;

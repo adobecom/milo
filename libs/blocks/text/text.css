@@ -316,7 +316,7 @@
 }
 
 /* Mweb specific */
-@media screen and (max-width: 599px) {
+@container page (max-width: 599px) {
   .text.text-block.left-mobile {
     text-align: start;
   }
@@ -357,7 +357,7 @@
 }
 
 /* Tablet up */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .inset.text-block .foreground::before {
     display: none;
   }
@@ -397,7 +397,7 @@
 }
 
 /* tablet down */
-@media screen and (max-width: 1199px){
+@container page (max-width: 1199px) {
   /* Mweb specific changes for lockup and icon-area */
   .mweb-enabled .text-block.s-lockup .lockup-area {
     font-size: var(--type-lockup-xs-size);
@@ -410,7 +410,7 @@
 }
 
 /* Desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .text-block .foreground > .desktop-up,
   .text-block .foreground > .tablet-up.desktop-up {
     display: block;
@@ -451,7 +451,7 @@
     color: #5d5d5d;
   }
 
-  @media (max-width: 1199px) {
+  @container page (max-width: 1199px) {
     .text-block .title-l {
       font-size: 16px;
     }
@@ -507,13 +507,13 @@
     font-size: 16px;
   }
 
-  @media (max-width: 599px) {
+  @container page (max-width: 599px) {
     .text-block.no-spacing-top-mobile {
       padding-top: 0;
     }
   }
 
-  @media (min-width: 600px) {
+  @container page (min-width: 600px) {
     .text-block [class*="heading-xxxl"] {
       font-size: 72px;
       letter-spacing: -3px;
@@ -528,7 +528,7 @@
     }
   }
 
-  @media (min-width: 900px) {
+  @container page (min-width: 900px) {
     .text-block.ff-max-merch-spacing {
       padding-top: 160px;
       padding-bottom: 60px;
@@ -543,13 +543,13 @@
     }
   }
 
-  @media (min-width: 600px) and (max-width: 1199px) {
+  @container page (min-width: 600px) and (max-width: 1199px) {
     .text-block.no-spacing-top-tablet {
       padding-top: 0;
     }
   }
 
-  @media (min-width: 1200px) {
+  @container page (min-width: 1200px) {
     .text-block.xxl-spacing-top.no-spacing-top-tablet {
       padding-top: var(--spacing-xxl);
     }
@@ -592,7 +592,7 @@
     padding: 7px 16.5px 8px;
   }
 
-  @media (max-width: 599px) {
+  @container page (max-width: 599px) {
     .text-block.no-spacing-top-mobile {
       padding-top: 0;
     }
@@ -602,7 +602,7 @@
     }
   }
 
-  @media (min-width: 600px) and (max-width: 1199px) {
+  @container page (min-width: 600px) and (max-width: 1199px) {
     .text-block .heading-xxxl {
       font-size: 44px;
     }
@@ -612,13 +612,13 @@
     }
   }
 
-  @media (max-width: 1199px) {
+  @container page (max-width: 1199px) {
     .text-block.xs-spacing-bottom {
       padding-bottom: 0;
     }
   }
 
-  @media (min-width: 1200px) {
+  @container page (min-width: 1200px) {
     .text-block .heading-xxxl {
       font-size: 96px;
       line-height: 0.98;

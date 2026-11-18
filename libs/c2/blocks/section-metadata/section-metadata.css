@@ -478,7 +478,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 }
 
 /* mobile only */
-@media (width < 768px) {
+@container page (width < 768px) {
   .section.bento.stack-mobile {
     display: flex;
     flex-direction: column;
@@ -609,7 +609,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 }
 
 /* tablet up */
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .section.product-grid[class*='-up'] {
     grid-auto-rows: 1fr;
   }
@@ -652,14 +652,14 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   }
 }
 
-@media (768px <= width < 1280px) {
+@container page (768px <= width < 1280px) {
   .section-background .tablet-only,
   .background-controls > .tablet-only {
     display: block;
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .section-background .desktop-only,
   .background-controls > .desktop-only {
     display: block;
@@ -714,7 +714,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   .section.bento {
     .explore-card-content {
       padding-bottom: var(--s2a-spacing-xl);
@@ -732,7 +732,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   }
 }
 
-@media (width >= 1920px) {
+@container page (width >= 1920px) {
   :root:has(meta[name="foundation"][content="c2"]) .background-controls {
     &.container > button.play-pause-button {
         inset-inline-end: var(--grid-padding);

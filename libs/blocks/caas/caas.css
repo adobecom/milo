@@ -124,7 +124,7 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   align-items: flex-end
 }
 
-@media only screen and (min-width: 37.5rem) {
+@container page (min-width: 37.5rem) {
   .dexter-Modal_overlay.tablet-place-top {
       align-items:flex-start
   }
@@ -150,7 +150,7 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   }
 }
 
-@media only screen and (min-width: 75rem) {
+@container page (min-width: 75rem) {
   .dexter-Modal_overlay.closePlacement-outsideTopRight {
       padding-top:7.625rem
   }
@@ -259,7 +259,7 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   outline: none
 }
 
-@media only screen and (min-width: 37.5rem) {
+@container page (min-width: 37.5rem) {
   .dexter-Modal.tablet-width-100 {
       width:100%
   }
@@ -312,7 +312,7 @@ main > .section > .content .consonant-Wrapper--1600MaxWidth .consonant-Wrapper-i
   }
 }
 
-@media only screen and (min-width: 75rem) {
+@container page (min-width: 75rem) {
   .dexter-Modal.desktop-width-100 {
       width:100%
   }

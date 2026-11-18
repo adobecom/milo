@@ -1028,7 +1028,7 @@
 }
 
 /* large mobile up */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .brand-concierge {
     padding: 56px 32px 12px;
   }
@@ -1063,7 +1063,7 @@
 }
 
 /* Tablet up */
-@media screen and (min-width: 768px) {
+@container page (min-width: 768px) {
   .brand-concierge {
     padding: 56px 24px 12px;
   }
@@ -1178,14 +1178,14 @@
   }
 }
 
-@media screen and (min-width: 900px) {
+@container page (min-width: 900px) {
   .bc-mobile-only .bc-floating-element {
     display: none;
   }
 }
 
 /* tablet wide up */
-@media screen and (min-width: 960px) {
+@container page (min-width: 960px) {
   .brand-concierge.hero {
     padding: 80px 46px 24px;
   }
@@ -1208,7 +1208,7 @@
 }
 
 /* desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .brand-concierge {
     padding: 80px 48px 12px;
   }
@@ -1490,7 +1490,7 @@
   color: rgba(255 255 255 / 80%);
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .brand-concierge.marquee {
     min-height: 540px;
   }
@@ -1524,7 +1524,7 @@
   }
 }
 
-@media screen and (min-width: 768px) {
+@container page (min-width: 768px) {
   .brand-concierge.marquee .foreground.container {
     padding: 72px 0;
   }
@@ -1539,7 +1539,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .brand-concierge.marquee {
     min-height: 700px;
   }

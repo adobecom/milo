@@ -316,7 +316,7 @@ div[class*="-up"] .media .foreground > .media-row {
   height: 100%;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .media > .foreground .media-row {
     gap: var(--spacing-m);
     flex-direction: row;
@@ -398,7 +398,7 @@ div[class*="-up"] .media .foreground > .media-row {
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .media > .foreground .media-row {
     gap: var(--spacing-l);
   }
@@ -475,19 +475,19 @@ div[class*="-up"] .media .foreground > .media-row {
   }
 }
 
-@media (min-width: 768px) {
+@container page (min-width: 768px) {
   .media.in-modal:not(.full-bleed-image) > .container.foreground {
     width: 500px;
   }
 }
 
-@media (min-width: 829px) {
+@container page (min-width: 829px) {
   .media.in-modal:not(.full-bleed-image) > .container.foreground {
     width: 700px;
   }
 }
 
-@media (min-width: 1366px) {
+@container page (min-width: 1366px) {
   .media.in-modal > .container.foreground {
     width: 800px;
   }

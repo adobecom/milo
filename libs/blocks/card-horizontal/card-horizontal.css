@@ -184,7 +184,7 @@
   align-self: stretch;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .card-horizontal .foreground .card-block {
     gap: var(--spacing-m);
   }
@@ -267,7 +267,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .card-horizontal .foreground {
     max-width: 600px;
     margin: 0 auto;

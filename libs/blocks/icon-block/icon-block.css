@@ -371,7 +371,7 @@
   width: 100%;
 }
 
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .icon-block.container-mobile.left-mobile .foreground {
     text-align: start;
   }
@@ -397,7 +397,7 @@
 
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@container page (min-width: 600px) and (max-width: 1200px) {
   .icon-block .foreground .icon-area {
     max-width: 234px;
   }
@@ -433,12 +433,12 @@
 .mweb-enabled .icon-block.l-icon .icon-area img{ height: var(--icon-size-l); }
 
 /* tablet down */
-@media screen and (max-width: 1199px){
+@container page (max-width: 1199px) {
   /* Mweb specific changes for icon-area */
   .mweb-enabled .icon-block.l-icon .icon-area img { height: var(--icon-size-m); }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .icon-block.full-width .foreground,
   .icon-block.bio .foreground {
     max-width: 800px;

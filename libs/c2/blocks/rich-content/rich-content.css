@@ -286,10 +286,10 @@
     }
 
     &.has-background .section-background {
-      --merch-bg-img-h: calc(100vw * 434 / 375);
+      --merch-bg-img-h: calc(var(--page-width) * 434 / 375);
       --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.08);
 
-      @media (width >= 1280px) {
+      @container page (width >= 1280px) {
         --gd-bg-shift: calc((var(--merch-bg-img-h) + 100vh) * 0.06);
       }
 
@@ -350,9 +350,9 @@
   display: none;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .section:has(.rich-content.merch-moment).has-background .section-background {
-    --merch-bg-img-h: calc(min(100vw, 1612px) * 1361 / 1612);
+    --merch-bg-img-h: calc(min(var(--page-width), 1612px) * 1361 / 1612);
   }
 
   .section:has(.rich-content.merch-moment).has-background .section-background img {
@@ -435,7 +435,7 @@
   }
 }
 
-@media (width >= 1024px) {
+@container page (width >= 1024px) {
   .section:has(.rich-content.hero) {
     height: 1040px;
   }
@@ -495,13 +495,13 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .rich-content.jump-link.hero {
     padding-block: var(--s2a-layout-sm) var(--s2a-spacing-4xl);
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     height: auto;
@@ -513,7 +513,7 @@
   }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     max-width: 1612px;
   }
@@ -539,7 +539,7 @@
   }
 }
 
-@media (width >= 1920px) {
+@container page (width >= 1920px) {
   .section.has-background:has(.rich-content.hero) .section-background img {
     object-position: unset;
   }
@@ -624,7 +624,7 @@
       object-fit: cover;
     }
 
-    @media (width >= 768px) {
+    @container page (width >= 768px) {
       .video-container {
         max-width: unset;
       }
@@ -668,25 +668,25 @@
     border-radius: var(--s2a-border-radius-xs);
     overflow: hidden;
 
-    @media (width >= 768px) {
+    @container page (width >= 768px) {
       box-sizing: unset;
     }
 
-    @media (width >= 1280px) {
+    @container page (width >= 1280px) {
       border-radius: var(--s2a-border-radius-md);
     }
 
     :is(img, video) {
       border-radius: var(--s2a-border-radius-2xs);
 
-      @media (width >= 1280px) {
+      @container page (width >= 1280px) {
         border-radius: var(--s2a-border-radius-xs);
       }
     }
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   :where(.rich-content.media) {
     padding-block: var(--rc-media-spacing-top, var(--s2a-layout-sm)) var(--rc-media-spacing-bottom, var(--s2a-layout-sm));
   }
@@ -770,7 +770,7 @@
   100% { translate: 0 calc(-1 * var(--title-catchup)); }
 }
 
-@media (width < 768px) {
+@container page (width < 768px) {
   .section.bento.stack-mobile > .rich-content {
     position: static;
     transform: none;
@@ -817,7 +817,7 @@
   --rc-video-enter-y: 30px;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .section:has(+ .section.parallax-video-garage-door .rich-content.media),
   .section.parallax-video-garage-door:has(.rich-content.media),
   .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
@@ -825,7 +825,7 @@
   }
 }
 
-@media (width >= 1024px) {
+@container page (width >= 1024px) {
   :where(.rich-content.media) {
     padding-block: var(--rc-media-spacing-top, var(--s2a-layout-lg)) var(--rc-media-spacing-bottom, var(--s2a-layout-lg));
   }
@@ -853,7 +853,7 @@
   }
 }
 
-@media (width < 768px) {
+@container page (width < 768px) {
   .rich-content.media {
     &:not(.full-width) {
       .media-cell {
@@ -895,13 +895,13 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .rich-content.media.full-width {
     --grid-margin-width: var(--grid-margin-width-base);
   }
 }
 
-@media (width >= 1920px) {
+@container page (width >= 1920px) {
   .section:has(+ .section.parallax-video-garage-door .rich-content.media),
   .section.parallax-video-garage-door:has(.rich-content.media),
   .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
@@ -965,7 +965,7 @@
       animation-range: entry 0% exit 0%;
     }
 
-    @media (width >= 1440px) {
+    @container page (width >= 1440px) {
       .section.parallax-video-garage-door:has(.rich-content.media) {
         animation-range: entry 0% entry 70%, exit 50% exit 90%;
       }
@@ -973,7 +973,7 @@
 
     /* Mobile video is full-width at a fixed size — no scale-in-on-scroll,
        so the CTA that rides the same timeline stays put too. */
-    @media (width < 768px) {
+    @container page (width < 768px) {
       .section.parallax-video-garage-door .rich-content.media.full-width {
         :is(.cta-area, .media-cell .action-area) :is(a, button),
         .media-cell :is(.video-container, picture) {

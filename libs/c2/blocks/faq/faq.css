@@ -123,7 +123,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .faq-panel {
     max-inline-size: calc(548 / 16 * 1rem);
   }

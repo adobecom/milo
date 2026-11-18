@@ -41,7 +41,7 @@ header.global-navigation.c2-gnav-c1-host {
   margin-left: 0;
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .appPrompt {
     z-index: 10;
     top: 94%;

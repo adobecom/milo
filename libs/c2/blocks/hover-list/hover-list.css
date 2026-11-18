@@ -86,7 +86,7 @@
   object-fit: cover;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .hover-list {
     display: flex;
     gap: var(--s2a-spacing-xs);
@@ -135,14 +135,14 @@
   }
 }
 
-@media (768px <= width < 1280px) {
+@container page (768px <= width < 1280px) {
   .hover-list-desc {
     position: sticky;
     top: 180px;
   }
 }
 
-@media (width < 1280px) {
+@container page (width < 1280px) {
   .hover-list-media {
     background: transparent;
     border: 0;
@@ -154,7 +154,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .hover-list {
     padding-block: var(--s2a-layout-lg);
   }

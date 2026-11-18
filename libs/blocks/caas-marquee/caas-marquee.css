@@ -375,7 +375,7 @@
   object-fit: cover;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .marquee .action-area {
     display: flex;
     flex-direction: row;
@@ -556,7 +556,7 @@
 
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .marquee .text {
     padding: var(--spacing-xl) 0;
   }
@@ -780,7 +780,7 @@
   }
 }
 
-@media screen and (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }
@@ -793,7 +793,7 @@
   color: inherit;
 }
 
-@media screen and (min-width: 768px) {
+@container page (min-width: 768px) {
   .marquee.mnemonic-list .foreground .text {
     max-width: 800px;
   }
@@ -805,13 +805,13 @@
   color: #000;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .marquee.tablet-high-contrast {
     color: #000;
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .marquee.desktop-high-contrast {
     color: #000;
   }
@@ -887,7 +887,7 @@
   padding-top: var(--spacing-xs);
 }
 
-@media screen and (max-width: 599px) {
+@container page (max-width: 599px) {
   .homepage-brick.above-pods .foreground > div {
     display: flex;
     flex-direction: column;
@@ -907,7 +907,7 @@
   }
 }
 
-@media screen and (min-width: 600px) and (max-width: 1199px) {
+@container page (min-width: 600px) and (max-width: 1199px) {
   .section.masonry {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -917,7 +917,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .section.masonry {
     grid-template-columns: repeat(12, 1fr);
   }
@@ -1201,7 +1201,7 @@ body:not([data-mep-highlight="true"]) .section.masonry [data-removed-manifest-id
   text-decoration: none;
 }
 
-@media screen and (max-width: 1023px) {
+@container page (max-width: 1023px) {
   .section.masonry:not([class*="spacing"]) {
     padding: var(--spacing-s) var(--spacing-s);
   }
@@ -1211,13 +1211,13 @@ body:not([data-mep-highlight="true"]) .section.masonry [data-removed-manifest-id
   }
 }
 
-@media screen and (min-width: 600px) and (max-width: 1199px) {
+@container page (min-width: 600px) and (max-width: 1199px) {
   .homepage-brick .tabletOnly {
     display: block;
   }
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .masonry .homepage-brick {
     min-height: 500px;
   }
@@ -1228,7 +1228,7 @@ body:not([data-mep-highlight="true"]) .section.masonry [data-removed-manifest-id
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .homepage-brick .desktopOnly {
     display: block;
   }
@@ -1460,7 +1460,7 @@ main > .section[class*='-up'] > .content {
 }
 
 /* mobile only */
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {
     order: 2;
   }
@@ -1470,7 +1470,7 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@container page (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
@@ -1484,34 +1484,34 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-@media screen and (min-width: 720px) {
+@container page (min-width: 720px) {
   .section.grid-width-6 {
     padding-left: calc((100vw - 600px) / 2);
     padding-right: calc((100vw - 600px) / 2);
   }
 }
 
-@media screen and (min-width: 920px) {
+@container page (min-width: 920px) {
   .section.grid-width-8 {
     padding-left: calc((100vw - 800px) / 2);
     padding-right: calc((100vw - 800px) / 2);
   }
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .section.sticky-top {
     top: 64px;
   }
 }
 
-@media screen and (min-width: 1120px) {
+@container page (min-width: 1120px) {
   .section.grid-width-10 {
     padding-left: calc((100vw - 1000px) / 2);
     padding-right: calc((100vw - 1000px) / 2);
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .section.two-up {
     grid-template-columns: repeat(2, 1fr);
   }

@@ -519,7 +519,7 @@ label[for='urls'] i {
   display: none;
 }
 
-@media screen and (min-width: 640px) {
+@container page (min-width: 640px) {
   header h1 {
     margin: 80px 0 20px 10px;
   }

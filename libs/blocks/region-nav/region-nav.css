@@ -89,13 +89,13 @@
   text-decoration: none;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .region-nav > div:nth-of-type(2) {
     column-count: 3;
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .region-nav > div:nth-of-type(2) {
     column-count: 5;
   }

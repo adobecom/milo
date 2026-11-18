@@ -320,7 +320,7 @@
   font-size: var(--type-body-m-size);
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .marquee .action-area {
     display: flex;
     flex-direction: row;
@@ -497,7 +497,7 @@
 
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .marquee .text {
     padding: var(--spacing-xl) 0;
   }
@@ -708,7 +708,7 @@
   }
 }
 
-@media screen and (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .marquee.large .foreground.container {
     max-width: var(--grid-container-width);
   }

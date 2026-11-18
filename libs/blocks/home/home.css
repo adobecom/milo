@@ -321,7 +321,7 @@ picture.engage-gradient {
   z-index: -1;
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .home.hero .bg,
   .home.hero .fg {
     grid-template-columns: repeat(12, 1fr);

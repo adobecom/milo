@@ -280,7 +280,7 @@
 
 /* Below (--tour-modal-max-width) the modal is full-width,
   above it the width is fixed at (--tour-modal-max-width) */
-@media (max-width: 696px) {
+@container page (max-width: 696px) {
   .dialog-modal:has(.tour) {
     max-width: 100svw;
     .dialog-close {

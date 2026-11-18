@@ -124,14 +124,14 @@ html {
 }
 
 /* tablet up */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .marquee-anchors .links .links-group {
     grid-template-columns: minmax(0, 50%) minmax(50%, 1fr);
   }
 }
 
 /* desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .marquee-anchors .links .links-group {
     grid-template-columns: unset;
   }

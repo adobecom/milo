@@ -32,7 +32,7 @@
     color: var(--color-white);
 }
 
-@media (min-width: 700px) {
+@container page (min-width: 700px) {
     .walls-io {
         width: calc(100% - 64px);
         min-width: 568px;
@@ -40,7 +40,7 @@
     }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
     .walls-io {
         width: calc(100% - 64px);
         max-width: 1200px;

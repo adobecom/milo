@@ -60,7 +60,7 @@
   }
 }
 
-@media screen and (width < 768px) {
+@container page (width < 768px) {
   .news {
     display: flex;
     flex-direction: column;

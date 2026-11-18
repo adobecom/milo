@@ -181,14 +181,14 @@
   }
 }
 
-@media (width < 768px) {
+@container page (width < 768px) {
   /* TODO: Temp - set only side-by-side block to have 8px margin (gutters) */
   .section.container .side-by-side {
     margin-inline: calc(8px - var(--grid-margin-width));
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .side-by-side {
     grid-template-columns: 1.81fr 1fr;
     align-items: start;
@@ -251,7 +251,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .side-by-side {
     .card-overlay .foreground {
       --card-overlay-padding: var(--s2a-spacing-xl);
@@ -268,13 +268,13 @@
   }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   .side-by-side .card-stacked {
     --card-stacked-foreground-padding: var(--s2a-spacing-xl);
   }
 }
 
-@media (width < 768px) {
+@container page (width < 768px) {
   .side-by-side .card-overlay button.play-pause-button {
     inset-block-start: var(--s2a-spacing-md);
   }

@@ -402,12 +402,12 @@
 }
 
 /* Stacked tablet and up centres both rows. */
-@media (width >= 600px) {
+@container page (width >= 600px) {
   .product-pricing-filter-bar[data-stacked] .product-pricing-filter-row { justify-content: center; }
   .product-pricing-filter-bar[data-stacked] .product-pricing-filter-pills { flex: 0 1 auto; }
 }
 
-@media (width < 600px) {
+@container page (width < 600px) {
   .product-pricing-drawer { width: 100%; }
 
   /* The pill row bleeds to the viewport edges so the fades and chevrons sit
@@ -458,7 +458,7 @@
   .product-pricing-drawer-subrow { padding: 0 24px 24px; }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   .product-pricing-filter-bar { --pp-cols: 4; }
 }
 
@@ -476,11 +476,11 @@ merch-card-collection.product-pricing {
   grid-auto-flow: row dense;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   merch-card-collection.product-pricing { --pp-edu-span: 2; }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   merch-card-collection.product-pricing { --pp-edu-span: 3; }
 }
 

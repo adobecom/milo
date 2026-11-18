@@ -184,7 +184,7 @@
   }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   :root:has(meta[name="foundation"][content="c2"]) {
     .explore-card .explore-card-background .video-container button.play-pause-button {
       top: var(--s2a-spacing-xl);
@@ -197,7 +197,7 @@
   }
 }
 
-@media (width >= 1920px) {
+@container page (width >= 1920px) {
   .explore-card-content {
     min-height: 360px;
   }

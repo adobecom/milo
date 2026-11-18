@@ -105,7 +105,7 @@
 }
 
 /* Mobile Adjustment */
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .market-selector-wrapper {
     flex-direction: row;
     flex-wrap: wrap;

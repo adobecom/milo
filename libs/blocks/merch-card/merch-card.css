@@ -48,7 +48,7 @@ merch-card.special-offers del span[is="inline-price"] {
   text-decoration: none;
 }
 
-@media screen and (max-width: 1199px) {
+@container page (max-width: 1199px) {
   merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
     min-width: 66px; /* same as merch links */
     padding: 4px 18px 5px 21px;

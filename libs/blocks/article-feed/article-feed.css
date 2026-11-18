@@ -22,7 +22,7 @@ element {
   max-width: 1200px;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .article-cards {
     padding-left: 0;
     padding-right: 0;
@@ -74,7 +74,7 @@ element {
   overflow: hidden;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .filter {
     z-index: 2;
   }
@@ -181,7 +181,7 @@ element {
   z-index: 2;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .filter-dropdown {
     position: absolute;
     top: 2.3rem;
@@ -203,7 +203,7 @@ element {
   padding: 8px 0;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .filter-option {
     padding: 4px 0;
   }
@@ -417,7 +417,7 @@ element {
   margin-bottom: 24px;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .article-card {
     min-width: unset;
     width: calc(100% / 2 - 16px);
@@ -431,7 +431,7 @@ element {
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .article-card {
     width: calc(100% / 3 - 22px);
   }
@@ -509,7 +509,7 @@ main a.article-card:any-link {
   display: -webkit-box;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .article-card-body h3 {
     font-size: var(--heading-font-size-s);
     margin-bottom: 0.5rem;
@@ -530,7 +530,7 @@ main a.article-card:any-link {
   text-overflow: ellipsis;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .article-card .article-card-body .article-card-description {
     display: -webkit-box;
     min-height: 2.6rem;

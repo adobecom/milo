@@ -76,7 +76,7 @@
   transform: translateY(-2px);
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .blog-author {
     padding: 56px 32px;
   }
@@ -96,7 +96,7 @@
   }
 }
 
-@media (min-width: 768px) {
+@container page (min-width: 768px) {
   .blog-author {
     padding: 56px 48px;
   }
@@ -117,7 +117,7 @@
 
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .blog-author {
     display: grid;
     grid-template-columns: 328px minmax(0, 600px);

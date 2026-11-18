@@ -223,7 +223,7 @@
   text-align: center;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .form form {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -253,7 +253,7 @@
   }
 }
 
-@media screen and (min-width: 900px) { 
+@container page (min-width: 900px) { 
   .form .field-wrapper {
     display: flex;
   }

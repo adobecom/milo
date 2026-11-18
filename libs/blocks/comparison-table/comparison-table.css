@@ -442,7 +442,7 @@
   justify-content: flex-start;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 160px);
   }
@@ -460,7 +460,7 @@
   }
 }
 
-@media screen and (min-width: 900px) {
+@container page (min-width: 900px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(100% - 4*var(--spacing-s));
   }
@@ -528,7 +528,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .comparison-table .header-content-wrapper {
     max-width: calc(var(--comparison-desktop-max-width) - 2*var(--spacing-s) - 2px);
   }

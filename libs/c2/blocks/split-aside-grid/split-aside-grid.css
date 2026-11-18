@@ -100,7 +100,7 @@
 }
 
 .split-aside-grid.mobile-carousel {
-  @media (width < 768px) {
+  @container page (width < 768px) {
     --split-aside-grid-gap: var(--s2a-spacing-lg);
 
     overflow-x: clip;
@@ -275,7 +275,7 @@
   cursor: pointer;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .split-aside-grid {
     --dropdown-transition-duration: 400ms;
     --dropdown-transition: var(--dropdown-transition-duration) var(--parallax-easing);
@@ -475,7 +475,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .split-aside-grid-stack {
     grid-column: 5 / -1;
 
@@ -498,7 +498,7 @@
   }
 }
 
-@media (width >= 1600px) {
+@container page (width >= 1600px) {
   .split-aside-grid {
     overflow-x: visible;
   }
@@ -517,19 +517,19 @@
     }
   }
 
-  @media (width >= 768px) {
+  @container page (width >= 768px) {
     .split-aside-grid-stack {
       --btn-spacing: var(--s2a-spacing-lg);
     }
   }
 
-  @media (width >= 1280px) {
+  @container page (width >= 1280px) {
     .split-aside-grid-stack {
       --btn-spacing: var(--s2a-spacing-xl);
     }
   }
 
-  @media (width >= 1600px) {
+  @container page (width >= 1600px) {
     .split-aside-grid-stack {
       --btn-position: var(--btn-spacing);
     }
@@ -551,7 +551,7 @@
     }
   }
 
-  @media (width >= 768px) {
+  @container page (width >= 768px) {
     .split-aside-grid-stack .media :is(video, img) {
       object-position: right;
     }

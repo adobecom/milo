@@ -271,7 +271,7 @@
   display: none;
 }
 
-@media (width >= 600px) {
+@container page (width >= 600px) {
   .email-collection-c2 {
     width: 80vw;
   }
@@ -285,7 +285,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .email-collection-c2 .foreground {
     padding: var(--form-padding);
     padding-bottom: calc(var(--form-padding) - var(--focus-outline-margin));
@@ -363,7 +363,7 @@
   }
 }
 
-@media (width >= 1200px) {
+@container page (width >= 1200px) {
   .email-collection-c2 {
     width: 900px;
   }
@@ -479,7 +479,7 @@
   margin: 0;
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .email-collection-c2.mailing-list .foreground {
     padding: var(--s2a-spacing-xs) var(--s2a-spacing-2xl) var(--s2a-spacing-xs) var(--s2a-spacing-xs);
     gap: var(--s2a-spacing-2xl);

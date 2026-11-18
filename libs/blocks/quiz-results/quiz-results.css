@@ -25,7 +25,7 @@
   padding-bottom: 32px;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .quiz-results .tablet-portrait-up {
     display: block;
   }
@@ -38,7 +38,7 @@
   }
 }
 
-@media screen and (min-width: 900px) {
+@container page (min-width: 900px) {
   .quiz-results .tablet-landscape-up {
     display: block;
   }
@@ -54,7 +54,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .quiz-results .desktop-up {
     display: block;
   }
@@ -66,7 +66,7 @@
   }
 }
 
-@media screen and (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .quiz-results .big-desktop-up {
     display: block;
   }

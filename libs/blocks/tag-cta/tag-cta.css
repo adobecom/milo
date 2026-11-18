@@ -58,7 +58,7 @@
   outline-offset: 3px;
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .tag-cta .tag-cta-heading {
     margin-bottom: var(--spacing-m);
   }

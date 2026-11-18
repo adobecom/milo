@@ -128,7 +128,7 @@
   grid-template-areas: var(--grid-media-last);
  }
 
- @media screen and (min-width: 768px) {
+ @container page (min-width: 768px) {
   .how-to .foreground {
     grid-template-rows: 1fr;
     grid-template-areas: var(--grid-desktop-default);
@@ -163,7 +163,7 @@
   }
  }
 
- @media screen and (min-width: 960px) {
+ @container page (min-width: 960px) {
   .how-to ol {
     min-width: 380px;
   }
@@ -198,7 +198,7 @@
   }
  }
 
- @media screen and (min-width: 1200px) {
+ @container page (min-width: 1200px) {
   .how-to.large-image .foreground,
   .how-to.large-media .foreground {
     grid-template-columns: 1fr 500px;

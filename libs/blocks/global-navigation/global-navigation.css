@@ -175,7 +175,7 @@ header.global-navigation.feds-cta-overflow :is(.feds-pinned-cta, .feds-product-e
 }
 
 /* Toolbar right-alignment + condensed pill sizing at mobile/compact widths. */
-@media (max-width: 899px) {
+@container page (max-width: 899px) {
   .feds-product-entry-cta {
     margin-inline-start: auto;
     margin-inline-end: 12px;
@@ -718,7 +718,7 @@ header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .fe
   display: none;
 }
 
-@media (max-width: 320px) {
+@container page (max-width: 320px) {
   .feds-promo-aside-wrapper[aria-hidden="true"] {
     display: none;
   }
@@ -729,7 +729,7 @@ header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .fe
 }
 
 /* Desktop styles */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   header.global-navigation {
     contain: layout;
   }
@@ -882,7 +882,7 @@ header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .fe
   }
 
   @supports selector(:focus-visible) {
-  _::-webkit-full-page-media, _:future, :root {
+  _::-webkit-full-page-media, _:future, body > * {
       .feds-navItem--section > .feds-navLink,
       .feds-navItem > .feds-navLink,
       .feds-breadcrumbs a,
@@ -981,7 +981,7 @@ header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .fe
 }
 
 /* Small desktop styles */
-@media (min-width: 900px) and (max-width: 1199px) {
+@container page (min-width: 900px) and (max-width: 1199px) {
   :where(header.global-navigation:not(.is-compact)) .feds-brand-image + .feds-brand-label {
     display: none;
   }
@@ -992,7 +992,7 @@ header.global-navigation.is-compact + .feds-localnav .feds-navItem--active > .fe
 }
 
 /* Desktop styles */
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   :where(header.global-navigation:not(.is-compact)) .feds-logo {
     display: flex;
   }

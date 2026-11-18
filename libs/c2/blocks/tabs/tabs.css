@@ -261,7 +261,7 @@
     background: transparent;
   }
 
-  @media (width < 768px) {
+  @container page (width < 768px) {
     overflow-x: clip;
 
     .tabs-wrapper {
@@ -292,7 +292,7 @@
     }
   }
 
-  @media (width >= 768px) {
+  @container page (width >= 768px) {
     &.center .tabs-wrapper {
       justify-content: center;
     }
@@ -364,7 +364,7 @@
   }
 }
 
-@media (width >= 1920px) {
+@container page (width >= 1920px) {
   .tabpanel > .section[class*='-up'] > .content,
   .tabpanel > .section[class*='grid-width-'] > .content {
     width: auto;

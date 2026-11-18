@@ -101,7 +101,7 @@
   color: var(--s2a-color-content-subtle);
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .quote {
     --quote-pad: var(--s2a-spacing-3xl);
     --quote-gap: var(--s2a-layout-xl);
@@ -113,7 +113,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .quote {
     --quote-pad: var(--s2a-spacing-4xl);
     --quote-gap: var(--s2a-layout-2xl);

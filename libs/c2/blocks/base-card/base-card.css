@@ -98,14 +98,14 @@
   to { clip-path: inset(0 round var(--s2a-border-radius-md)); }
 }
 
-@media (width < 768px) {
+@container page (width < 768px) {
   div.section.base-card-section {
     grid-template-columns: 1fr;
     gap: var(--s2a-spacing-2xl);
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .base-card {
     &.featured {
       .foreground {
@@ -115,7 +115,7 @@
   }
 }
 
-@media (width >= 1024px) {
+@container page (width >= 1024px) {
   .base-card {
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
@@ -159,7 +159,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .base-card {
     &.featured .foreground {
       padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-4xl) var(--s2a-spacing-md);
@@ -171,7 +171,7 @@
   }
 }
 
-@media (width >= 2560px) {
+@container page (width >= 2560px) {
   .base-card.featured .parallax-featured-card-media {
     animation-name: none;
   }

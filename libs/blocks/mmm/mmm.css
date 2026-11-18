@@ -239,7 +239,7 @@ div.media-p {
 dd .mep-popup-header .mep-close {
   display: none;
 }
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .editorial {
     display: flex;
     gap: 54px;
@@ -392,7 +392,7 @@ dd .mep-popup-header .mep-close {
   top: 0;
   right: 0;
 }
-@media screen and (min-width: 1199px) {
+@container page (min-width: 1199px) {
   .mmm-form-container {
     flex-flow: row nowrap;
   }
@@ -543,7 +543,7 @@ main > .section > .inline-wrapper > .share-mmm.inline {
   margin: auto;
 }
 
-@media (max-width: 900px) {
+@container page (max-width: 900px) {
   .share-mmm {
     left: 0;
     right: 0 !important;
@@ -552,7 +552,7 @@ main > .section > .inline-wrapper > .share-mmm.inline {
   }
 }
 
-@media (max-width: 700px) {
+@container page (max-width: 700px) {
   #mmm-pagination {
     padding: 2rem 4rem;
   }
@@ -701,7 +701,7 @@ p.copySuccess:after {
   order: 4;
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .mmm-search-container {
     display: flex;
     flex-direction: row;
@@ -714,7 +714,7 @@ p.copySuccess:after {
   }
 }
 
-@media screen and (min-width: 599px) and (max-width: 1199px) {
+@container page (min-width: 599px) and (max-width: 1199px) {
   #mmm-search-row1 .mmm-dropdown-container {
     min-width: 44%;
   }
@@ -723,7 +723,7 @@ p.copySuccess:after {
   }
 }
 
-@media screen and (max-width: 599px) {
+@container page (max-width: 599px) {
   #mmm-search-row1 .mmm-dropdown-container, 
   #mmm-checkbox-filter-targetSetting{
     min-width: 100%;

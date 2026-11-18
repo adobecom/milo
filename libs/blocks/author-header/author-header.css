@@ -46,7 +46,7 @@
   text-decoration: underline;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .author-header {
     margin-bottom: 2rem;
     display: flex;

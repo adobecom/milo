@@ -44,7 +44,7 @@
 
 
 /* mobile */
-@media screen and (max-width: 600px) {
+@container page (max-width: 600px) {
   .link-farm.text-block .foreground {
     row-gap: 0;
   }
@@ -63,7 +63,7 @@
 }
 
 /* Tablet up */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .link-farm.text-block .heading-l {
     margin: 0 0 var(--spacing-xl-static);
   }
@@ -104,7 +104,7 @@
 }
 
 /* Desktop up */
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .link-farm.text-block .foreground {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

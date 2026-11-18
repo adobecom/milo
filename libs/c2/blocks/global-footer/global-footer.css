@@ -254,7 +254,7 @@
   );
 }
 
-@media (min-width: 1920px) {
+@container page (min-width: 1920px) {
   .global-footer .feds-footer-logo img {
     width: 100%;
   }
@@ -311,14 +311,14 @@ span.feds-footer-privacyLink-divider {
   padding: 0 0 var(--s2a-spacing-lg) 0;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   dialog.feds-dialog {
     max-width: 80vw;
     width: fit-content;
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   dialog.feds-dialog {
     width: 1200px;
     max-width: calc((100% - 6px) - 2em);
@@ -532,7 +532,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 768px) {
+@container page (min-width: 768px) {
   .global-footer.event .feds-footer-wrapper.has-authored-background {
     background-image: var(--footer-background-tablet);
   }
@@ -549,7 +549,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1024px) {
+@container page (min-width: 1024px) {
   .global-footer.event .feds-footer-wrapper.has-authored-background {
     --footer-background-offset: var(--s2a-layout-lg);
     background-image: var(--footer-background-desktop);
@@ -568,13 +568,13 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .global-footer.event .feds-footer-wrapper.has-authored-background {
     --footer-background-offset: var(--s2a-layout-xl);
   }
 }
 
-@media (min-width: 1920px) {
+@container page (min-width: 1920px) {
   .global-footer.event .feds-footer-logo img {
     width: 100%;
   }
@@ -614,7 +614,7 @@ span.feds-footer-privacyLink-divider {
   opacity: 0.6;
 }
 
-@media (min-width: 380px) {
+@container page (min-width: 380px) {
   .global-footer .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
     position: absolute;
     right: 0;
@@ -627,7 +627,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1024px) {
+@container page (min-width: 1024px) {
 
   .global-footer {
     padding-top: var(--s2a-layout-lg);
@@ -800,7 +800,7 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-@media (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .global-footer {
     padding-top: var(--s2a-layout-xl);
   }

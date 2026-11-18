@@ -178,7 +178,7 @@ header.global-navigation.ready {
 }
 
 /* Desktop styles */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   :where(header.global-navigation:not(.is-compact)) .feds-navLink,
   :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret,
   [dir = "rtl"] :where(header.global-navigation:not(.is-compact)) .feds-navLink--hoverCaret {

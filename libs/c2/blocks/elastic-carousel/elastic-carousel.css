@@ -159,7 +159,7 @@ html[dir="rtl"] {
 
 
 /** custom media rules */
-@media (768px <= width < 1700px) {
+@container page (768px <= width < 1700px) {
   .elastic-carousel-container {
     left: 50%;
     transform: translateX(-50%);
@@ -175,7 +175,7 @@ html[dir="rtl"] {
 }
 
 /** desktop only */
-@media (1280px <= width) {
+@container page (1280px <= width) {
   .elastic-carousel-container {
     max-height: var(--elastic-carousel-container-height-desktop);
 
@@ -186,7 +186,7 @@ html[dir="rtl"] {
 }
 
 /** tablet only */
-@media (768px <= width < 1280px) {
+@container page (768px <= width < 1280px) {
   .elastic-carousel {
     height: var(--elastic-carousel-container-height-tablet);
 
@@ -206,7 +206,7 @@ html[dir="rtl"] {
 }
 
 /** tablet up */
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .elastic-carousel {
     padding: 2px 0;
 
@@ -286,7 +286,7 @@ html[dir="rtl"] {
 }
 
 /* mobile only */
-@media (width < 768px) {
+@container page (width < 768px) {
   .elastic-carousel {
     --offset-adjuster: 50px;
     --offset-scale: .85;

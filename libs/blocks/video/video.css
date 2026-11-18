@@ -49,7 +49,7 @@ video {
   cursor: pointer;
 }
 
-@media (max-width: 599px) {
+@container page (max-width: 599px) {
   [dir="rtl"] .video-container .pause-play-wrapper {
     right: auto;
     left: 2%;
@@ -142,7 +142,7 @@ video {
   width: 100%;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .media:not(.media-reverse-mobile, .media-reversed) .video-container .pause-play-wrapper,
   :is(.marquee.row-reversed .asset, .marquee-anchors, .hero-marquee.asset-left) .video-container .pause-play-wrapper,
   :is(.aside:not(.split), .aside.split.split-right) .video-container .pause-play-wrapper {
@@ -163,7 +163,7 @@ video {
   }
 }
 
-@media (min-width: 600px) and (max-width: 1199px) {
+@container page (min-width: 600px) and (max-width: 1199px) {
   .hero-marquee.asset-left .video-container.video-holder .pause-play-wrapper,
   .aside:is(.media-top-tablet, .media-bottom-tablet) .video-container.video-holder .pause-play-wrapper {
     left: auto;
@@ -226,21 +226,21 @@ video {
     }
   }
 
-  @media (width >= 768px) {
+  @container page (width >= 768px) {
     button.play-pause-button {
       inset-inline-end: var(--s2a-spacing-lg);
       inset-block-end: var(--s2a-spacing-lg);
     }
   }
 
-  @media (width >= 1280px) {
+  @container page (width >= 1280px) {
     button.play-pause-button {
       inset-inline-end: var(--s2a-spacing-xl);
       inset-block-end: var(--s2a-spacing-xl);
     }
   }
 
-  @media (width >= 1440px) {
+  @container page (width >= 1440px) {
     .video-button {
       --play-pause-button-size: 48px;
     }

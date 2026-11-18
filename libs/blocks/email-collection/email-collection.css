@@ -265,7 +265,7 @@
   display: none;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .email-collection {
     width: 80vw;
   }
@@ -279,7 +279,7 @@
   }
 }
 
-@media (min-width: 700px) {
+@container page (min-width: 700px) {
   .email-collection .foreground {
     padding: var(--form-padding);
     padding-bottom: calc(var(--form-padding) - var(--focus-outline-margin));
@@ -356,7 +356,7 @@
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .email-collection {
     width: 900px;
   }

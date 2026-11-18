@@ -266,8 +266,8 @@
     }
   }
 
-  @media (width >= 768px) {
-    --desktop-mockup-width: clamp(680px, 68.6vw, 971px);
+  @container page (width >= 768px) {
+    --desktop-mockup-width: clamp(680px, calc(var(--page-width) * 0.686), 971px);
 
     & {
       padding-bottom: 44px;
@@ -309,16 +309,16 @@
 
   /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
 
-  @media (width >= 1280px) {
-    --desktop-mockup-width: min(68.6vw, 971px);
+  @container page (width >= 1280px) {
+    --desktop-mockup-width: min(calc(var(--page-width) * 0.686), 971px);
 
     .text-block {
       width: var(--text-block-width-desktop);
     }
   }
 
-  @media (width >= 1440px) {
-    --desktop-mockup-width: min(68.6vw, 1200px);
+  @container page (width >= 1440px) {
+    --desktop-mockup-width: min(calc(var(--page-width) * 0.686), 1200px);
   }
 
   &.no-motion {
@@ -436,7 +436,7 @@
       }
     }
 
-    @media (width >= 768px) {
+    @container page (width >= 768px) {
       .no-motion-card-grid {
         grid-template-columns: repeat(4, 1fr);
       }
@@ -455,7 +455,7 @@
       }
     }
 
-    @media (width >= 1280px) {
+    @container page (width >= 1280px) {
       .no-motion-grid-section {
         padding: var(--s2a-spacing-128) var(--s2a-spacing-64) 0;
       }

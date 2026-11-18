@@ -550,7 +550,7 @@
   width: 100%!important;
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .dialog-modal .marketo .mktoFormRow {
     width: 48%;
   }
@@ -620,7 +620,7 @@
   color: var(--marketo-form-text);
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .marketo .marketo-form-wrapper {
     padding: var(--spacing-xxl);
   }
@@ -688,7 +688,7 @@
   }
 }
 
-@media screen and (min-width: 900px) {
+@container page (min-width: 900px) {
   .marketo .marketo-form-wrapper {
     padding: 56px var(--spacing-l);
   }
@@ -731,14 +731,14 @@
   grid-template-columns: 1fr;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .resource-form.section.two-up .marketo {
     margin-left: 0;
     margin-right: 0;
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .marketo.loading form {
     min-height: var(--marketo-form-placeholder-height-desktop);
   }

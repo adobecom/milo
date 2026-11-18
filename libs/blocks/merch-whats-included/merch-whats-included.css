@@ -21,7 +21,7 @@
   margin-inline-start: var(--spacing-xxs);
 }
 
-@media screen and (max-width: 767px) {
+@container page (max-width: 767px) {
   .merch-whats-included-container {
     position: fixed;
     overflow: hidden scroll;

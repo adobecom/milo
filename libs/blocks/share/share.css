@@ -182,7 +182,7 @@ main > .section.center .share.inline ul.icon-container {
   justify-content: center;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .share .copy-to-clipboard::before,
   [dir="rtl"] .share .copy-to-clipboard::before {
     left: 50%;

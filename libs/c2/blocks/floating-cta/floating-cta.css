@@ -133,7 +133,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .floating-cta {
     .promo-cta {
       --floating-cta-radius: var(--s2a-border-radius-round);

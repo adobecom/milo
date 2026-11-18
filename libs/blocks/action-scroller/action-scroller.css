@@ -140,7 +140,7 @@
   gap: var(--spacing-xs);
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .action-scroller {
     width: var(--grid-container-width);
     margin: 0 auto;

@@ -8,7 +8,7 @@
 
   > div {
     --stretch-target: 100cqi;
-    --stretch-peak: min(2560px, 100vw);
+    --stretch-peak: min(2560px, var(--page-width));
     --stretch-from: calc(var(--stretch-peak) / var(--stretch-target));
     --stretch-scale: calc(var(--stretch-from) + (1 - var(--stretch-from)) * var(--social-proof-progress));
     view-timeline-name: --social-proof-view;
@@ -86,7 +86,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .social-proof {
     border-radius: var(--s2a-border-radius-xl);
 
@@ -120,19 +120,19 @@
   }
 }
 
-@media (width >= 1024px) {
+@container page (width >= 1024px) {
   .social-proof > div .foreground {
     padding: var(--s2a-spacing-2xl);
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .social-proof > div .foreground {
     padding: var(--s2a-spacing-4xl);
   }
 }
 
-@media (width >= 1920px) {
+@container page (width >= 1920px) {
   .social-proof > div .foreground {
     padding: var(--s2a-layout-md);
   }

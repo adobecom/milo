@@ -75,13 +75,13 @@
   border-bottom: solid 1px var(--s2a-color-transparent-white-12);
 }
 
-@media (max-width: 1023px) {
+@container page (max-width: 1023px) {
   .global-footer:not(.mobile) .feds-navLink-image, .global-footer:not(.mobile) .feds-navLink-image {
     display: none;
   }
 }
 
-@media (min-width: 1024px) {
+@container page (min-width: 1024px) {
   .feds-navItem--section .feds-menu-content {
     column-gap: 12px;
   }

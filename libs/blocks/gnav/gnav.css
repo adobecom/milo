@@ -905,7 +905,7 @@ header .app-launcher {
 
 /* END APP LAUNCHER */
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   header .gnav-wrapper {
     height: unset;
     grid-template-areas: 'main'
@@ -1225,7 +1225,7 @@ header .app-launcher {
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
   .gnav-search.is-open .gnav-search-field,
@@ -1234,7 +1234,7 @@ header .app-launcher {
   }
 }
 
-@media (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .gnav-wrapper nav.gnav,
   .gnav-wrapper .breadcrumbs ul,
   .gnav-search.is-open .gnav-search-field,

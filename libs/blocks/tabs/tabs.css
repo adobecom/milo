@@ -600,7 +600,7 @@
   border-bottom-color: var(--tabs-active-bg-color);
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .tabs.radio .tabList.tabList .tab-list-container {
     flex-direction: row;
     align-items: center;
@@ -641,7 +641,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   [role='tabpanel'] > .section[class*='-up'] > .content,
   [role='tabpanel'] > .section[class*='grid-width-'] > .content {
     width: auto;
@@ -674,7 +674,7 @@
   }
 }
 
-@media screen and (max-width: 599px) {
+@container page (max-width: 599px) {
   /* grid-width display:grid breaks tablist on mobile */
   .section[class*='grid-width-'][class*='tablist-'] {
     display: block;

@@ -276,7 +276,7 @@
 }
 
 /* mobile & tablet */
-@media (width < 1280px) {
+@container page (width < 1280px) {
   .rm-overlay {
     background: linear-gradient(108deg, rgba(0, 0, 0, 0.60) 0%, rgba(0, 0, 0, 0) 98.86%);
   }
@@ -384,7 +384,7 @@
 }
 
 /* mobile */
-@media (width <= 767px) {
+@container page (width <= 767px) {
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
     height: 100vh;
@@ -459,7 +459,7 @@
 }
 
 /* tablet */
-@media (767px < width < 1280px) {
+@container page (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
     height: 100vh;
@@ -501,7 +501,7 @@
 }
 
 /* desktop */
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
     display: flex;
     height: 100vh;

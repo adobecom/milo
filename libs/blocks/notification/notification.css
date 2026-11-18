@@ -487,7 +487,7 @@
   z-index: 101;
 }
 
-@media screen and (max-width: 600px) {
+@container page (max-width: 600px) {
   .notification.ribbon.inline p {
     margin: initial;
     inline-size: initial;
@@ -541,7 +541,7 @@
   }
 }
 
-@media screen and (max-width: 480px) {
+@container page (max-width: 480px) {
   .notification.ribbon.space-between .foreground {
     margin-inline: var(--margin-inline-ribbon-mobile);
   }
@@ -565,13 +565,13 @@
   }
 }
 
-@media screen and (max-width: 359px) {
+@container page (max-width: 359px) {
   .notification.ribbon.inline .action-area {
     flex-wrap: wrap;
   }
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .notification {
     --max-inline-size-image: 188px;
     --max-inline-size-banner: 800px;
@@ -737,7 +737,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .notification {
     --inline-size-image: 20%;
     --inline-size-image-10: 30%;

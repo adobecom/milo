@@ -158,7 +158,7 @@ options: dark, contained, *-spacing (xs-xl), alignment (left, right)
 }
 
 /* Tablet */
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .quote.inline figure {
     display: flex;
     gap: var(--spacing-s);

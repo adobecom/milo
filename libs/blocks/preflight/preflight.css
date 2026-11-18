@@ -1263,7 +1263,7 @@ img:hover ~ .asset-meta,
 }
 
 /* On small phones drop the label — the buttons are self-explanatory. */
-@media (max-width: 599px) {
+@container page (max-width: 599px) {
   .preflight-return-label {
     display: none;
   }
@@ -1840,7 +1840,7 @@ img:hover ~ .asset-meta,
 /* Responsive layout — mobile-first. */
 
 /* Medium and up: restore the sidebar rail and two-column layouts. */
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .preflight {
     grid-template-columns: 256px 1fr;
     grid-template-rows: 1fr;
@@ -1910,7 +1910,7 @@ img:hover ~ .asset-meta,
 }
 
 /* Large: two-up card layout. */
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .preflight-structure-columns,
   .preflight-columns,
   .accessibility-columns {

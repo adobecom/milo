@@ -77,7 +77,7 @@ a[data-hide-kr-free-trial] {
   cursor: pointer;
 }
 
-@media (max-width: 1199px) {
+@container page (max-width: 1199px) {
   #checkout-link-modal {
     height: 100vh;
     border-radius: 0;
@@ -95,7 +95,7 @@ a[data-hide-kr-free-trial] {
   height: auto;
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   #checkout-link-modal.twp,
   #checkout-link-modal.twp .milo-iframe,
   #checkout-link-modal.d2p,

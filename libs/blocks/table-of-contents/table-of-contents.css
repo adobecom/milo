@@ -95,7 +95,7 @@
   width: 100%;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .table-of-contents .toc-list {
     flex-flow: row wrap;
   }
@@ -113,7 +113,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .section.toc {
     display: flex;
     flex-direction: row;
@@ -160,7 +160,7 @@
   }
 }
 
-@media screen and (min-width: 1440px) {
+@container page (min-width: 1440px) {
   .section.toc .marquee .foreground.container {
     width: calc(var(--grid-container-width) - 400px);
   }

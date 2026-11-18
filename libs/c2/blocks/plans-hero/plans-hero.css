@@ -72,7 +72,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .plans-hero {
     --plans-hero-cols: 6;
 
@@ -87,13 +87,13 @@
   }
 }
 
-@media (width >= 1024px) {
+@container page (width >= 1024px) {
   .plans-hero {
     --plans-hero-cols: 5;
   }
 }
 
-@media (width >= 1440px) {
+@container page (width >= 1440px) {
   .plans-hero {
     align-items: flex-start;
   }

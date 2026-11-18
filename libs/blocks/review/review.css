@@ -263,7 +263,7 @@
   z-index: var(--tooltipZIndex);
 }
 
-@media only screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .hlx-ReviewWrapper {
     flex-direction: row;
     justify-content: center;

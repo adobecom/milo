@@ -265,7 +265,7 @@ main > .section[class*='-up'] > .content {
 }
 
 /* mobile only */
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .section.two-up.reverse-mobile > div:nth-child(1) {
     order: 2;
   }
@@ -291,7 +291,7 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-@media screen and (min-width: 600px) and (max-width: 1200px) {
+@container page (min-width: 600px) and (max-width: 1200px) {
   .section.five-up {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
@@ -313,7 +313,7 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-@media screen and (min-width: 720px) {
+@container page (min-width: 720px) {
   .section.grid-width-6 {
     padding-left: calc((100vw - 600px) / 2);
     padding-right: calc((100vw - 600px) / 2);
@@ -324,27 +324,27 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-@media screen and (min-width: 920px) {
+@container page (min-width: 920px) {
   .section.grid-width-8 {
     padding-left: calc((100vw - 800px) / 2);
     padding-right: calc((100vw - 800px) / 2);
   }
 }
 
-@media (min-width: 900px) {
+@container page (min-width: 900px) {
   .section.sticky-top {
     top: 64px;
   }
 }
 
-@media screen and (min-width: 1120px) {
+@container page (min-width: 1120px) {
   .section.grid-width-10 {
     padding-left: calc((100vw - 1000px) / 2);
     padding-right: calc((100vw - 1000px) / 2);
   }
 }
 
-@media screen and (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .section.two-up {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -422,13 +422,13 @@ main > .section[class*='-up'] > .content {
     padding-bottom: 50px;
   }
 
-  @media (max-width: 599px) {
+  @container page (max-width: 599px) {
     .section.no-spacing-bottom-mobile {
       padding-bottom: 0;
     }
   }
 
-  @media (min-width: 600px) {
+  @container page (min-width: 600px) {
     --xl-rounded-corners: 32px;
   }
 
@@ -440,13 +440,13 @@ main > .section[class*='-up'] > .content {
     border-radius: 0 0 var(--xl-rounded-corners) var(--xl-rounded-corners);
   }
 
-  @media (min-width: 600px) {
+  @container page (min-width: 600px) {
     .section.spacing-bottom-180 {
       padding-bottom: 160px;
     }
   }
 
-  @media (min-width: 600px) and (max-width: 1199px) {
+  @container page (min-width: 600px) and (max-width: 1199px) {
     .section.no-spacing-bottom-tablet {
       padding-bottom: 0;
     }

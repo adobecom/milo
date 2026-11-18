@@ -34,7 +34,7 @@ main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
   border-left: 1px solid #adadad;
 }
 
-@media screen and (max-width: 600px) {
+@container page (max-width: 600px) {
   main > .section > .inline-wrapper > .inline + .inline.reading-time,
   main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
     border-left: none;

@@ -147,7 +147,7 @@
   }
 }
 
-@media (width >= 768px) {
+@container page (width >= 768px) {
   .carousel-c2 {
     .carousel-wrapper {
       .carousel-slide {
@@ -207,7 +207,7 @@
       &.prev {
         --btn-inset: calc(var(--carousel-hint-slide) * 0.1);
         --btn-position: calc(var(--carousel-hint-slide) - var(--btn-dimension) - var(--carousel-slides-gap) - var(--btn-inset));
-        --btn-animation-start: calc(var(--btn-position) - 70vw);
+        --btn-animation-start: calc(var(--btn-position) - calc(var(--page-width) * 0.7));
         left: var(--btn-position);
         transform: translateY(-50%);
         z-index: 1;
@@ -224,7 +224,7 @@
       &.next {
         --btn-inset: calc(var(--carousel-hint-slide) * 0.1);
         --btn-position: calc(100% - var(--carousel-hint-slide) + var(--carousel-slides-gap) + var(--btn-inset));
-        --btn-animation-start: calc(var(--btn-position) + 70vw);
+        --btn-animation-start: calc(var(--btn-position) + calc(var(--page-width) * 0.7));
         left: var(--btn-position);
         transform: translateY(-50%);
 
@@ -272,7 +272,7 @@
   }
 }
 
-@media (width >= 1024px) {
+@container page (width >= 1024px) {
   .carousel-c2 button {
     &:is(.prev, .next) {
       --btn-inset: 20px;
@@ -280,7 +280,7 @@
   }
 }
 
-@media (width >= 1280px) {
+@container page (width >= 1280px) {
   .carousel-c2 {
     --carousel-hint-slide: calc((100% - min(var(--carousel-slide-width), var(--carousel-slide-max-width))) / 2);
     --carousel-wrapper-offset: calc(min(var(--carousel-slide-max-width), var(--carousel-slide-width)) - var(--carousel-hint-slide));
@@ -316,7 +316,7 @@
 
   button {
     &.prev {
-      --btn-animation-start: calc(var(--btn-position) + 70vw);
+      --btn-animation-start: calc(var(--btn-position) + calc(var(--page-width) * 0.7));
       left: unset;
       right: var(--btn-position);
 
@@ -328,7 +328,7 @@
     }
 
     &.next {
-      --btn-animation-start: calc(var(--btn-position) - 70vw);
+      --btn-animation-start: calc(var(--btn-position) - calc(var(--page-width) * 0.7));
       left: unset;
       right: var(--btn-position);
 

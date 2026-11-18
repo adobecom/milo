@@ -28,7 +28,7 @@
   padding-bottom: 0;
 }
 
-@media screen and (min-width: 600px) {
+@container page (min-width: 600px) {
   .z-pattern .heading-row {
     max-width: 1000px;
   }

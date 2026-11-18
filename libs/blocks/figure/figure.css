@@ -43,7 +43,7 @@
   min-width: unset;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .figure-list {
     flex-direction: row;
     margin-right: 32px;
@@ -75,7 +75,7 @@
   }
 }
 
-@media (min-width: 700px) {
+@container page (min-width: 700px) {
   .figure figure {
     margin: 0 auto;
     max-width: 800px;

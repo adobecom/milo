@@ -92,19 +92,19 @@
   }
 }
 
-@media (min-width: 768px) {
+@container page (min-width: 768px) {
   .dialog-modal.delayed-modal {
     width: 600px;
   }
 }
 
-@media (min-width: 829px) {
+@container page (min-width: 829px) {
   .dialog-modal.delayed-modal {
     width: 800px;
   }
 }
 
-@media (min-width: 1366px) {
+@container page (min-width: 1366px) {
   .dialog-modal.delayed-modal {
     width: 900px;
   }
@@ -277,7 +277,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
   min-width: 90vw;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .dialog-modal {
     max-width: 80vw;
     width: fit-content;
@@ -299,7 +299,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
   }
 
   .dialog-modal.tall-video {
-    --modal-width-var: 50vw;
+    --modal-width-var: calc(var(--page-width) * 0.5);
 
     max-width: var(--modal-width-var);
     padding: var(--tall-video-padding);
@@ -321,18 +321,18 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
 @media (min-width: 600px) and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 19vw;
+    --modal-width-var: calc(var(--page-width) * 0.19);
   }
 }
 
 @media (min-width: 600px) and (min-height: 431px)  and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 35vw;
+    --modal-width-var: calc(var(--page-width) * 0.35);
   }
 }
 
-@media (max-width: 1199px) {
+@container page (max-width: 1199px) {
   .dialog-modal.commerce-frame {
     width: 100%;
     max-width: 100%;
@@ -365,7 +365,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
   }
 }
 
-@media (min-width: 1280px) {
+@container page (min-width: 1280px) {
   .dialog-modal.s-size {
     max-width: 650px;
   }
@@ -438,7 +438,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
 
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 35vw;
+    --modal-width-var: calc(var(--page-width) * 0.35);
   }
 
   .dialog-modal.manage-plan-cancel {
@@ -450,32 +450,32 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
 @media (min-width: 1200px) and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 25vw;
+    --modal-width-var: calc(var(--page-width) * 0.25);
   }
 }
 
-@media (min-width: 1400px) {
+@container page (min-width: 1400px) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 25vw;
+    --modal-width-var: calc(var(--page-width) * 0.25);
   }
 }
 
 @media (min-width: 1400px) and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 20vw;
+    --modal-width-var: calc(var(--page-width) * 0.2);
   }
 }
 
-@media (min-width: 2000px) {
+@container page (min-width: 2000px) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 22vw;
+    --modal-width-var: calc(var(--page-width) * 0.22);
   }
 }
 
-@media (min-width: 1500px) {
+@container page (min-width: 1500px) {
   .dialog-modal.dynamic-height .milo-iframe {
     min-width: 1200px;
   }

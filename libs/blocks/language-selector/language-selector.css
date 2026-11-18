@@ -12,7 +12,7 @@
   margin-bottom: 4px;
 }
 
-@media (max-width: 600px) {
+@container page (max-width: 600px) {
   .language-dropdown {
     width: 100vw;
     max-width: 100vw;

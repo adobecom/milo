@@ -433,7 +433,7 @@ input[type="checkbox"] + label {
 }
 
 /* for mobile */
-@media (max-width:799.99px) {
+@container page (max-width:799.99px) {
   .faas-form label,
   .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
   .faas-form select,
@@ -462,7 +462,7 @@ input[type="checkbox"] + label {
   }
 }
 
-@media (min-width: 600px) and (max-width: 900px) {
+@container page (min-width: 600px) and (max-width: 900px) {
   .section.one-up-tablet .faas-form label,
   .section.one-up-tablet .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]),
   .section.one-up-tablet .faas-form select,

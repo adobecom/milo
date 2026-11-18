@@ -148,7 +148,7 @@ a.blog-header-author-name:hover {
   outline-offset: 2px;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .blog-header {
     gap: 16px;
   }
@@ -166,7 +166,7 @@ a.blog-header-author-name:hover {
   }
 }
 
-@media (min-width: 1200px) {
+@container page (min-width: 1200px) {
   .blog-header-title h1 {
     font-size: 64px;
   }
@@ -364,7 +364,7 @@ a.blog-header-author-name:hover {
   display: none;
 }
 
-@media (min-width: 600px) {
+@container page (min-width: 600px) {
   .blog-share-modal.dialog-modal {
     padding: 37px 40px 40px;
   }
