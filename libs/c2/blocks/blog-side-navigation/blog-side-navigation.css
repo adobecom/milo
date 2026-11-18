@@ -3,6 +3,7 @@
   gap: var(--s2a-spacing-xl);
   box-sizing: border-box;
   padding-inline: var(--grid-margin-width);
+  padding-block-end: var(--s2a-spacing-3xl);
 }
 
 .blog-side-navigation {
