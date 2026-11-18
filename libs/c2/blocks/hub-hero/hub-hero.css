@@ -1075,6 +1075,13 @@
     transition-timing-function: var(--card-expand-easing);
   }
 
+  /* Firefox only: the min-width ramp is driven by --slide-min-progress (see carouselSlideExpandSize). */
+  @supports (animation-timeline: view()) and (-moz-appearance: none) {
+    .hub-hero-carousel-item {
+      min-width: calc(var(--grid-img-width-min) + (var(--hub-hero-carousel-item-min-width) - var(--grid-img-width-min)) * var(--slide-min-progress, 1));
+    }
+  }
+
   @media (hover: hover) {
     .hub-hero-carousel-item.hovered,
     .hub-hero-carousel-item.focused {
@@ -2166,6 +2173,41 @@
     max-height: var(--slide-max-height, var(--hub-hero-carousel-container-height));
     max-width: var(--slide-max-width);
     min-width: var(--slide-min-w, var(--hub-hero-carousel-item-min-width));
+  }
+}
+
+/*
+ * Firefox mishandles min-width hover transitions on cards whose animations list min-width, even
+ * when idle, leaving cards at stale sizes until the next scroll. Animate the ramp through a number
+ * there instead. Safari snaps hover transitions when keyframes animate custom properties, so this
+ * is limited to Firefox.
+ */
+@property --slide-min-progress {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@supports (animation-timeline: view()) and (-moz-appearance: none) {
+  /* stylelint-disable-next-line keyframes-name-pattern -- Overrides the keyframes above by name. */
+  @keyframes carouselSlideExpandSize {
+    0% {
+      max-width: var(--grid-img-width);
+      max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
+
+      --slide-min-progress: 0;
+    }
+
+    40% {
+      --slide-min-progress: 0;
+    }
+
+    100% {
+      max-height: var(--slide-max-height, var(--hub-hero-carousel-container-height));
+      max-width: var(--slide-max-width);
+
+      --slide-min-progress: 1;
+    }
   }
 }
 
