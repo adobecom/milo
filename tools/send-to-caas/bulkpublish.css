@@ -196,7 +196,7 @@ body.advanced .preset-options {
 }
 
 body.advanced .advanced-options {
-  height: 440px;
+  height: auto;
 }
 
 body.advanced .preset-options {
