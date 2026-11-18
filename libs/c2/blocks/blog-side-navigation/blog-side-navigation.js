@@ -36,6 +36,14 @@ function getAuthoredConfig(block) {
   return authoredConfigs.get(block);
 }
 
+function isSelectableId(id, heading) {
+  try {
+    return document.querySelector(`#${id}`) === heading;
+  } catch {
+    return false;
+  }
+}
+
 function scrollToSection(hash, block) {
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? 'instant' : 'smooth';
@@ -265,17 +273,21 @@ export default async function init(block) {
 
   headings.forEach((heading, index) => {
     const title = labels[index] || heading.textContent.trim();
-    const slug = title.normalize('NFC').toLowerCase()
-      .replace(/[^\p{L}\p{N}\p{M}]+/gu, '-').replace(/^-|-$/g, '');
-    // The shared scroll helper uses CSS selectors, which cannot start with a digit.
-    const baseId = /^\d/.test(slug) ? `section-${slug}` : slug || `section-${index + 1}`;
-    let id = baseId;
-    let suffix = 1;
-    while (document.getElementById(id) && document.getElementById(id) !== heading) {
-      id = `${baseId}-${suffix}`;
-      suffix += 1;
+    let { id } = heading;
+    // Keep an existing anchor so deep links survive, unless the author chose a jump label
+    // for it. The shared scroll helper needs the id to work as a CSS selector.
+    if (labels[index] || !id || !isSelectableId(id, heading)) {
+      const slug = title.normalize('NFC').toLowerCase()
+        .replace(/[^\p{L}\p{N}\p{M}]+/gu, '-').replace(/^-|-$/g, '');
+      const baseId = /^\d/.test(slug) ? `section-${slug}` : slug || `section-${index + 1}`;
+      id = baseId;
+      let suffix = 1;
+      while (document.getElementById(id) && document.getElementById(id) !== heading) {
+        id = `${baseId}-${suffix}`;
+        suffix += 1;
+      }
+      heading.id = id;
     }
-    heading.id = id;
     const text = createTag('span', { class: 'blog-side-navigation-label' });
     text.textContent = title;
     const link = createTag('a', { href: `#${id}` }, text);
