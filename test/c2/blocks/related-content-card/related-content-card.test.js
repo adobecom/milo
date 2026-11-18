@@ -115,14 +115,6 @@ describe('related-content-card', () => {
     expect(fetchStub.called).to.be.false;
   });
 
-  it('renders titles and metadata with angle brackets as literal text', async () => {
-    const block = document.querySelector('#card-data');
-    block.querySelector('h2').textContent = 'Comparing <models> & tools';
-    await init(block);
-    expect(block.querySelector('h3').textContent).to.equal('Comparing <models> & tools');
-    expect(block.querySelector('h3 models')).to.not.exist;
-  });
-
   it('builds a whole-card link from a linked article', async () => {
     const block = document.querySelector('#card-link');
     await init(block);

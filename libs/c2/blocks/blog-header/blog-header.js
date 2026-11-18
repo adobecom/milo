@@ -702,13 +702,10 @@ function decorateDividers(el) {
   };
 
   let endpoint;
-  const disconnectAll = () => {
-    dividerObservers.get(headerSection)?.forEach((o) => o.disconnect());
-    dividerObservers.delete(headerSection);
-  };
   const updateFrame = (entries, observer) => {
     if (!headerSection.isConnected) {
-      disconnectAll();
+      observer.disconnect();
+      dividerObservers.delete(headerSection);
       return;
     }
     const nextEndpoint = findEndpoint();
@@ -722,19 +719,19 @@ function decorateDividers(el) {
     headerSection.style.setProperty('--blog-divider-height', `${height}px`);
   };
 
-  disconnectAll();
+  dividerObservers.get(headerSection)?.disconnect();
   const observer = new ResizeObserver(updateFrame);
+  dividerObservers.set(headerSection, observer);
+  [...sections, headerSection.parentElement]
+    .forEach((target) => observer.observe(target));
+  updateFrame([], observer);
+
   // The deferred side-navigation inserts .blog-article-layout as a new sibling and
   // moves the article sections into it, which the ResizeObserver can miss. Watch
   // direct children of main (childList only, so no attribute/style churn) and
   // recompute on load so the dividers span the full article quickly and reliably.
   const refresh = () => updateFrame([], observer);
-  const mutationObserver = new MutationObserver(refresh);
-  dividerObservers.set(headerSection, [observer, mutationObserver]);
-  [...sections, headerSection.parentElement]
-    .forEach((target) => observer.observe(target));
-  updateFrame([], observer);
-  mutationObserver.observe(headerSection.parentElement, { childList: true });
+  new MutationObserver(refresh).observe(headerSection.parentElement, { childList: true });
   window.addEventListener('load', refresh, { once: true });
 }
 
