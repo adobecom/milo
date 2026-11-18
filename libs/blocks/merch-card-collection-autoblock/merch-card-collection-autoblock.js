@@ -666,7 +666,6 @@ export function mountProductPricingFilter(collection, container) {
     else drawer.results.removeAttribute('aria-hidden');
     emptyEl.innerHTML = labels.empty;
     const emptyText = emptyEl.textContent.trim();
-    // Same text again would be re-announced.
     let announce = '';
     if (fresh) {
       if (resultCount === 0 && emptyText) announce = emptyText;
@@ -674,7 +673,6 @@ export function mountProductPricingFilter(collection, container) {
     }
     if (countEl.textContent !== announce) countEl.textContent = announce;
   };
-  // The selected pill stays live. Search is ignored.
   const renderAvailability = (params) => {
     const active = activeGroups(params);
     const unavailable = unavailablePills(loadedCards(collection), active, params);
