@@ -497,6 +497,7 @@ function buildFAB(gnavOffset) {
     hidden: '',
     style: `top: ${gnavOffset + 16}px`,
     popovertarget: 'mep-drawer',
+    'aria-label': 'MEP',
   });
   fab.appendChild(svgIcon('icon-mep'));
   return fab;

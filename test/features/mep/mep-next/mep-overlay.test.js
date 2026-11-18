@@ -119,6 +119,10 @@ describe('init: DOM structure — stage env first call', () => {
     expect(bodyEl.querySelector('.mep-fab').getAttribute('popovertarget')).to.equal('mep-drawer');
   });
 
+  it('FAB has accessible name "MEP"', () => {
+    expect(bodyEl.querySelector('.mep-fab').getAttribute('aria-label')).to.equal('MEP');
+  });
+
   it('FAB top style equals gnav bottom (50) + 16', () => {
     expect(parseFloat(bodyEl.querySelector('.mep-fab').style.top)).to.equal(66);
   });
