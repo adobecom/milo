@@ -9,8 +9,8 @@
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-900);
   background-color: transparent;
-  padding: var(--s2a-spacing-2xl) 0;
   position: relative;
+
   @supports (animation-timeline: view()) {
     view-timeline-name: --ct-table;
     view-timeline-axis: block;
@@ -333,18 +333,18 @@
     }
 
     &.btn-section p,
-    p:last-child:has(a) {
+    &:where(:not(.header-item-collapsible *)) p:last-child:has(a) {
       width: 100%;
     }
 
     &.btn-section p em,
-    p:last-child em {
+    &:where(:not(.header-item-collapsible *)) p:last-child em {
       display: flex;
       width: 100%;
     }
 
     &.btn-section a,
-    p:last-child a {
+    &:where(:not(.header-item-collapsible *)) p:last-child a {
       display: flex;
       width: 100%;
       justify-content: center;
@@ -365,7 +365,7 @@
     }
 
     &.btn-section strong a,
-    p:last-child strong a {
+    &:where(:not(.header-item-collapsible *)) p:last-child strong a {
       background-color: var(--s2a-color-blue-900);
       border: var(--s2a-border-width-md) solid var(--s2a-color-blue-900);
       color: var(--s2a-color-gray-25);
@@ -378,7 +378,7 @@
     }
 
     &.btn-section em a,
-    p:last-child em a {
+    &:where(:not(.header-item-collapsible *)) p:last-child em a {
       background-color: transparent;
       border: var(--s2a-border-width-md) solid var(--s2a-color-gray-900);
       color: var(--s2a-color-gray-900);
@@ -704,7 +704,6 @@
     column-gap: var(--s2a-spacing-md);
     width: var(--s2a-grid-container-width);
     margin-inline: auto;
-    padding: var(--s2a-layout-sm) 0;
 
     .header-content-wrapper {
       padding-inline: 0;
@@ -801,7 +800,7 @@
 
     .sub-header-item-container {
       &.btn-section a,
-      p:last-child a {
+      &:where(:not(.header-item-collapsible *)) p:last-child a {
         padding: 14px var(--s2a-spacing-lg);
       }
     }

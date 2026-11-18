@@ -1,7 +1,16 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters, loadPreflightResults } from '../../libs/scripts/delayed.js';
+import loadDelayed, {
+  loadPrivacy,
+  loadJarvisChat,
+  loadGoogleLogin,
+  addRUMCampaignTrackingParameters,
+  loadPreflightResults,
+  isDaPreview,
+  shouldAutoHighlight,
+} from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
+import { waitFor } from '../helpers/waitfor.js';
 
 describe('Delayed', () => {
   const loadScript = sinon.stub().returns(() => new Promise((resolve) => { resolve(); }));
@@ -107,8 +116,15 @@ describe('addRUMCampaignTrackingParameters', () => {
 
 describe('loadPreflightResults', () => {
   let fetchStub;
+  let originalUrl;
+  const setParam = (name, value) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set(name, value);
+    window.history.replaceState(null, '', url);
+  };
 
   beforeEach(() => {
+    originalUrl = window.location.href;
     fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
       status: 200,
@@ -119,18 +135,17 @@ describe('loadPreflightResults', () => {
 
   afterEach(() => {
     fetchStub.restore();
+    window.history.replaceState(null, '', originalUrl);
     document.querySelector('main')?.remove();
     document.querySelector('.milo-preflight-overlay')?.remove();
+    document.querySelector('.preflight-diff-highlight-control')?.remove();
   });
 
-  it('is exported as a function', () => {
-    expect(loadPreflightResults).to.be.a('function');
-  });
-
-  it('resolves without throwing on the test host', async () => {
+  it('does not fetch content or render highlights on localhost by default', async () => {
     document.body.insertAdjacentHTML('beforeend', '<main></main>');
     await loadPreflightResults();
-    expect(true).to.be.true;
+    expect(fetchStub.called).to.equal(false);
+    expect(document.querySelector('.preflight-diff-highlight-control')).to.be.null;
   });
 
   it('does not render the publish notification on local hosts', async () => {
@@ -142,24 +157,88 @@ describe('loadPreflightResults', () => {
   });
 
   it('waits for auto-highlight to finish before resolving', async () => {
+    setParam('autoHighlight', 'on');
     let resolveFetch;
+    let fetchStarted;
     const pendingFetch = new Promise((resolve) => { resolveFetch = resolve; });
+    const started = new Promise((resolve) => { fetchStarted = resolve; });
     fetchStub.resetBehavior();
-    fetchStub.returns(pendingFetch);
+    fetchStub.callsFake(() => { fetchStarted(); return pendingFetch; });
     document.body.insertAdjacentHTML('beforeend', '<main></main>');
 
     let settled = false;
     const loading = loadPreflightResults().then(() => { settled = true; });
-    for (let i = 0; i < 20 && !fetchStub.called; i += 1) {
-      await new Promise((resolve) => { setTimeout(resolve, 0); });
-    }
-    expect(fetchStub.called).to.equal(true);
+    await started;
     await Promise.resolve();
     const settledBeforeFetch = settled;
     resolveFetch({ ok: false, status: 500 });
     await loading;
     expect(settledBeforeFetch).to.equal(false);
     expect(settled).to.equal(true);
+    expect(fetchStub.calledWithMatch('.plain.html')).to.equal(true);
+  });
+
+  it('shows only the draft status bar in DA Live Preview', async function test() {
+    this.timeout(10000);
+    const url = window.location.href;
+    document.body.innerHTML = '<main></main>';
+    window.history.replaceState(null, '', '?dapreview=local');
+    await loadPreflightResults();
+    window.history.replaceState(null, '', url);
+    const bar = document.documentElement.querySelector(':scope > .draft-status');
+    const diffFetched = fetchStub.getCalls().some(({ args }) => String(args[0]).includes('.plain.html'));
+    expect(bar).to.exist;
+    expect(diffFetched).to.equal(false);
+    await waitFor(() => bar.dataset.status !== 'checking', 5000, 50);
+    bar.querySelector('.notification-close').click();
+  });
+});
+
+describe('shouldAutoHighlight', () => {
+  const hosts = {
+    preview: { isPreview: true, isLocal: false },
+    localhost: { isPreview: false, isLocal: true },
+    live: { isPreview: false, isLocal: false },
+  };
+
+  [
+    ['preview', '', true],
+    ['preview', 'autoHighlight=on', true],
+    ['preview', 'autoHighlight=off', false],
+    ['localhost', '', false],
+    ['localhost', 'autoHighlight=on', true],
+    ['localhost', 'autoHighlight=off', false],
+    ['localhost', 'autoHighlight=true', false],
+    ['live', 'autoHighlight=on', false],
+    ['preview', 'dapreview=on', false],
+    ['localhost', 'dapreview=local&autoHighlight=on', false],
+    ['preview', 'quick-edit=on&autoHighlight=on', false],
+    ['preview', 'quick-edit=', true],
+  ].forEach(([host, query, expected]) => {
+    it(`${expected ? 'highlights' : 'skips'} ${host} ${query ? `with ${query}` : 'without parameters'}`, () => {
+      const params = new URLSearchParams(query);
+      expect(shouldAutoHighlight({ ...hosts[host], params })).to.equal(expected);
+    });
+  });
+});
+
+describe('isDaPreview', () => {
+  [
+    ['main--da-bacom--adobecom.preview.da.live', '?quick-edit=on&controller=parent', true],
+    ['main--cc--adobecom.stage-preview.da.live', '?dapreview=on', true],
+    ['main--milo--adobecom.aem.page', '?quick-edit=on', true],
+    ['localhost', '?dapreview=local', true],
+    ['127.0.0.1', '?quick-edit=on', true],
+    ['main--milo--adobecom.aem.page', '', false],
+    ['localhost', '?quick-edit=', false],
+    ['main--milo--adobecom.aem.live', '?quick-edit=on', false],
+    ['www.adobe.com', '?dapreview=on', false],
+    ['main--milo--adobecom.preview.da.live.evil.com', '?quick-edit=on', false],
+    ['evil-preview.da.live', '?quick-edit=on', false],
+  ].forEach(([hostname, search, expected]) => {
+    it(`${expected ? 'detects' : 'ignores'} ${hostname}${search}`, () => {
+      expect(isDaPreview({ hostname, search })).to.equal(expected);
+    });
   });
 });
 

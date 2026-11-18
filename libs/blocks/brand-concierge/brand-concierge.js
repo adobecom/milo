@@ -12,6 +12,7 @@ import {
   updateReplicatedValue,
   handleConsent,
   hasChatCookie,
+  isC2,
 } from './bc-utils.js';
 import {
   loadWebclient,
@@ -90,6 +91,16 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+
+  window.addEventListener('bc:side-modal-open', () => {
+    document.body.classList.add('bc-side-open');
+    localStorage.setItem('bc-side-overlay', 'open');
+  });
+  window.addEventListener('bc:side-modal-close', () => {
+    document.body.classList.remove('bc-side-open');
+    localStorage.setItem('bc-side-overlay', 'closed');
+  });
+
   if (!useAcomAssistant) {
     window.addEventListener('feds:signOut', () => {
       if (!window.adobe?.concierge?.clearHistory) {
@@ -221,6 +232,8 @@ export default async function init(el) {
     const floatingInputEvents = { inputHandle: onInput, cardHandle: onPrompt };
     decorateFloatingInput(el, cards, input, floatingInputEvents, variants);
   }
+
+  if (isC2()) el.classList.add('is-c2');
 
   rows.forEach((row) => {
     el.removeChild(row);

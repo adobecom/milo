@@ -1,7 +1,7 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { getConfig, loadStyle } from '../../../libs/utils/utils.js';
+import { createTag, getConfig, inheritViewportContent, loadStyle } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import { watchForMasContent, unwatchForMasContent } from '../../../libs/features/mep/mep-next/mep-mas.js';
 
@@ -44,9 +44,14 @@ describe('Rich Content', () => {
         <div><div>desktop-viewport</div></div><div><div></div></div>
         </div>`;
       const block = document.querySelector('.rich-content');
+      const meta = createTag('meta', { name: 'foundation', content: 'c2' });
+      document.head.append(meta);
+      inheritViewportContent(block.parentElement);
+      meta.remove();
+      // Each inherited copy is hydrated on its own and gets the same Studio URL
       const fields = [...block.querySelectorAll('mas-field')];
       fields.forEach((field, index) => {
-        mepMasStudioUrls.set(field, `https://mas.adobe.com/studio.html#query=rich-content-${index}`);
+        mepMasStudioUrls.set(field, `https://mas.adobe.com/studio.html#query=rich-content-${index % 2}`);
       });
       const open = sinon.stub(window, 'open');
       document.body.dataset.mepMasHighlight = 'true';
@@ -257,5 +262,126 @@ describe('Rich Content', () => {
 
     const paragraph = block.querySelector('.content p');
     expect([...paragraph.classList].some((c) => c.startsWith('heading-'))).to.be.false;
+  });
+
+  describe('jump links', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `<div class="section"><div class="rich-content jump-link"><div><div>
+        <h2>Heading</h2>
+        <p><a href="#get-insights">Get Insights</a> | <a href="#share">Share</a> | <a href="#missing">Missing</a></p>
+        </div></div></div></div>
+        <div class="section" id="get-insights"><a href="/x">First link</a></div>
+        <div class="section" id="share" tabindex="0"></div>
+        <div class="section" id="titled"><h2 style="display:none">Hidden title</h2><h3>Visible title</h3></div>
+        <div class="section" id="2024-plans"><h2 style="visibility:hidden">Invisible</h2><h3>Plans</h3></div>`;
+      init(document.querySelector('.rich-content'));
+    });
+    afterEach(() => {
+      sinon.restore();
+      delete window.lenis;
+    });
+
+    const click = (index) => document.querySelectorAll('.jump-link-anchor')[index].click();
+
+    it('moves focus to the target section and cleans up the temporary tabindex on blur', () => {
+      const target = document.getElementById('get-insights');
+      click(0);
+      expect(document.activeElement === target).to.be.true;
+      expect(target.getAttribute('tabindex')).to.equal('-1');
+      target.blur();
+      expect(target.hasAttribute('tabindex')).to.be.false;
+    });
+
+    it('keeps an authored tabindex on the target', () => {
+      const target = document.getElementById('share');
+      click(1);
+      expect(document.activeElement === target).to.be.true;
+      target.blur();
+      expect(target.getAttribute('tabindex')).to.equal('0');
+    });
+
+    it('focuses the first visible heading in the target section', () => {
+      document.querySelector('.jump-link-anchor').href = '#titled';
+      const heading = document.querySelector('#titled h3');
+      click(0);
+      expect(document.activeElement === heading).to.be.true;
+      heading.blur();
+      expect(heading.hasAttribute('tabindex')).to.be.false;
+    });
+
+    it('moves focus when scrolling with Lenis', () => {
+      window.lenis = { scrollTo: sinon.spy() };
+      const target = document.getElementById('get-insights');
+      click(0);
+      expect(window.lenis.scrollTo.calledOnceWith(target)).to.be.true;
+      expect(document.activeElement === target).to.be.true;
+    });
+
+    it('scrolls to non-selector ids and skips visibility:hidden headings', async () => {
+      const scrollTo = sinon.stub(window, 'scrollTo');
+      document.querySelector('.jump-link-anchor').href = '#2024-plans';
+      const target = document.getElementById('2024-plans');
+      const top = target.getBoundingClientRect().top + window.scrollY;
+      click(0);
+      // The gnav height helper is imported lazily, so the scroll lands asynchronously.
+      const isScrolled = () => scrollTo.calledWithMatch({ top });
+      const start = performance.now();
+      while (!isScrolled() && performance.now() - start < 1500) {
+        await new Promise((resolve) => { setTimeout(resolve, 20); });
+      }
+      expect(isScrolled()).to.be.true;
+      expect(document.activeElement === target.querySelector('h3')).to.be.true;
+    });
+
+    it('leaves focus on the link when the target does not exist', () => {
+      const anchor = document.querySelectorAll('.jump-link-anchor')[2];
+      anchor.focus();
+      anchor.click();
+      expect(document.activeElement === anchor).to.be.true;
+    });
+  });
+
+  describe('lazily loaded dependencies', () => {
+    const waitFor = async (check, timeout = 1500) => {
+      const start = performance.now();
+      while (!check() && performance.now() - start < timeout) {
+        await new Promise((resolve) => { setTimeout(resolve, 20); });
+      }
+      return check();
+    };
+
+    it('keeps focused links clear of the sticky header on merch-moment sections', async () => {
+      await new Promise((resolve) => { loadStyle('/libs/c2/blocks/rich-content/rich-content.css', resolve); });
+      document.body.innerHTML = `<header style="display:block;height:64px"></header>
+        <div class="section" style="--s2a-spacing-lg: 16px"><div class="rich-content merch-moment">
+          <div><div><h2>Heading</h2><p>Body <a href="#x">Link</a></p></div></div>
+        </div></div>`;
+      const block = document.querySelector('.rich-content');
+      init(block);
+
+      const section = block.closest('.section');
+      const isSet = await waitFor(() => section.style.getPropertyValue('--rc-nav-height') === '64px');
+      expect(isSet).to.be.true;
+      // The CSS consumer of the variable: focused links scroll to below the header.
+      expect(getComputedStyle(block.querySelector('.foreground a')).scrollMarginTop).to.equal('80px');
+    });
+
+    it('re-applies media spacing on resize', async () => {
+      document.body.innerHTML = `<div class="section"><div class="rich-content media spacing-xl">
+          <div><div><picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt=""></picture></div>
+          <div><h2>Heading</h2><p>Body</p></div></div>
+        </div></div>`;
+      const block = document.querySelector('.rich-content');
+      init(block);
+      expect(block.style.getPropertyValue('--rc-media-spacing-top')).to.not.equal('');
+
+      block.style.removeProperty('--rc-media-spacing-top');
+      // Same module instance the block imports lazily; once resolved, its resize listener is set.
+      await import('../../../libs/utils/action.js');
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      window.dispatchEvent(new Event('resize'));
+      const isReapplied = await waitFor(() => block.style.getPropertyValue('--rc-media-spacing-top') !== '', 1500);
+      expect(isReapplied).to.be.true;
+    });
   });
 });

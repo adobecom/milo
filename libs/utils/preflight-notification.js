@@ -1,6 +1,6 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
-import { loadStyle, getConfig } from './utils.js';
+import { createTag, loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
 let sidekickObserver;
@@ -57,33 +57,24 @@ async function createPreflightNotification(masUnpublishedCount = 0) {
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
 
-  const masLine = masUnpublishedCount > 0
-    ? `<br/><span class="notification-mas-line">M@S: ${masUnpublishedCount} unpublished fragment${masUnpublishedCount === 1 ? '' : 's'} on this page.</span>`
-    : '';
+  const reviewLink = createTag('button', { class: 'preflight-review-link' }, 'review');
+  const closeBtn = createTag('button', { class: 'notification-close' }, '×');
+  const message = createTag('span', { class: 'notification-message' }, [
+    'Content quality checks are failing. Please ', reviewLink, ' before publishing.',
+  ]);
 
-  const overlay = document.createElement('div');
-  overlay.className = 'milo-preflight-overlay';
-  overlay.innerHTML = `
-    <div class="preflight-notification">
-      <div class="notification-content">
-        <span class="notification-message">
-          Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.${masLine}
-        </span>
-        <button class="notification-close">×</button>
-      </div>
-    </div>
-  `;
+  if (masUnpublishedCount > 0) {
+    const masLine = createTag('span', { class: 'notification-mas-line' });
+    masLine.textContent = `M@S: ${masUnpublishedCount} unpublished fragment${masUnpublishedCount === 1 ? '' : 's'} on this page.`;
+    message.append(createTag('br'), masLine);
+  }
 
-  const reviewLink = overlay.querySelector('.preflight-review-link');
-  reviewLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    openPreflightPanel();
-  });
-
-  const closeBtn = overlay.querySelector('.notification-close');
+  reviewLink.addEventListener('click', openPreflightPanel);
   closeBtn.addEventListener('click', dismissNotification);
 
-  document.body.appendChild(overlay);
+  const content = createTag('div', { class: 'notification-content' }, [message, closeBtn]);
+  const notification = createTag('div', { class: 'preflight-notification' }, content);
+  document.body.append(createTag('div', { class: 'milo-preflight-overlay' }, notification));
 }
 
 function setupLinkCheckListener() {

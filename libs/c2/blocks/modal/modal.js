@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
-import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../../utils/utils.js';
+import {
+  createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig, whenTargetReady, isTrustedUrl,
+} from '../../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../../martech/attributes.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 
@@ -17,10 +19,18 @@ const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" w
 let delayedModalId = null;
 let prevHash = '';
 let isDeepLink = false;
+let clickedTrigger = null;
 const dialogLoadingSet = new Set();
+
+function isUnsafeHash(id) {
+  let decoded = id;
+  try { decoded = decodeURIComponent(id); } catch (e) { /* keep raw */ }
+  return /[<>"'`\s]/.test(decoded);
+}
 
 export async function findDetails(hash, el) {
   const id = hash.replace('#', '');
+  if (isUnsafeHash(id)) return { id: '', path: undefined, isHash: hash === window.location.hash, title: null };
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || await localizeLinkAsync(getMetadata(`-${id}`));
   const ariaLabel = a?.getAttribute('aria-label') || document.querySelector(`a[data-modal-id="${id}"]`)?.getAttribute('aria-label');
@@ -50,7 +60,7 @@ function focusTriggerElement(modalId, shouldFocus) {
   );
 
   if (triggerElement) {
-    if (shouldFocus) triggerElement.focus();
+    if (shouldFocus) triggerElement.focus({ preventScroll: true });
     triggerElement.removeAttribute('data-is-modal-trigger');
     return;
   }
@@ -173,6 +183,10 @@ async function getPathModal(path, dialog) {
     const { getFederatedUrl } = await import('../../../utils/utils.js');
     href = getFederatedUrl(path);
   }
+  if (!isTrustedUrl(href)) {
+    window.lana?.log(`Modal path blocked, untrusted URL: ${href}`, { tags: 'modal' });
+    return;
+  }
   const block = createTag('a', { href });
   dialog.append(block);
 
@@ -197,27 +211,28 @@ function addIframeKeydownListener(iframe, dialog) {
 
 export async function getModal(details, custom) {
   if (custom?.signal?.aborted) return null;
-  if (!((details?.path && details?.id) || custom)) return null;
+  if (!(custom || (details?.path && details?.id && isTrustedUrl(details.path)))) return null;
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
-  const activeElementData = document.activeElement.dataset;
   const triggerId = custom?.hash?.slice(1) || id;
-  const isConfirmedTrigger = !isDeepLink
-    && (activeElementData.modalHash === `#${triggerId}` || activeElementData.modalId === triggerId);
-  if (isConfirmedTrigger) {
-    document.activeElement.dataset.isModalTrigger = 'true';
+  const isTrigger = (node) => node?.isConnected
+    && (node.dataset?.modalHash === `#${triggerId}` || node.dataset?.modalId === triggerId);
+  const trigger = isDeepLink ? null : [document.activeElement, clickedTrigger].find(isTrigger);
+  clickedTrigger = null;
+  if (trigger) {
+    trigger.dataset.isModalTrigger = 'true';
   }
   let openedViaKeyboard = true;
-  if (isConfirmedTrigger) {
+  if (trigger) {
     try {
-      openedViaKeyboard = document.activeElement.matches(':focus-visible');
+      openedViaKeyboard = trigger.matches(':focus-visible');
     } catch (e) {
       openedViaKeyboard = true;
     }
   }
 
   dialogLoadingSet.add(id);
-  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
+  const dialog = createTag('div', { class: 'dialog-modal', role: 'dialog', 'aria-modal': true });
   const loadedEvent = new CustomEvent(
     'milo:modal:loaded',
     { detail: { id, hash: window.location.hash } },
@@ -227,7 +242,22 @@ export async function getModal(details, custom) {
     custom.title = (await findDetails(window.location.hash, null))?.title;
   }
   if (custom) getCustomModal(custom, dialog);
-  if (details) await getPathModal(details.path, dialog);
+  if (details) {
+    // Load inside a hidden, connected wrapper: aem-fragment / mas-field only fetch once
+    // connected, and blocks resolve their modal via el.closest('.dialog-modal') at init.
+    // The id is set on attach, so #id lookups (hashchange, dedupe, close) skip it until then.
+    const staging = createTag('div', { hidden: '' }, dialog);
+    document.body.append(staging);
+    try {
+      await getPathModal(details.path, dialog);
+    } catch (e) {
+      window.lana?.log(`Modal fragment failed to load: ${e?.message}`, { tags: 'modal' });
+      dialogLoadingSet.delete(id);
+      return null;
+    } finally {
+      staging.remove();
+    }
+  }
   if (custom?.signal?.aborted) {
     dialogLoadingSet.delete(id);
     return null;
@@ -296,6 +326,7 @@ export async function getModal(details, custom) {
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.prepend(close);
   dialog.append(focusPlaceholder);
+  dialog.id = id;
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
   firstFocusable?.focus({ preventScroll: true, focusVisible: openedViaKeyboard });
@@ -406,6 +437,8 @@ export function delayedModal(el) {
 // Deep link-based
 export default async function init(el) {
   const { modalHash, modalPath } = el.dataset;
+  // Personalization may change the modal content or aup-select, so wait before opening.
+  if (window.location.hash === modalHash) await whenTargetReady();
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
@@ -421,6 +454,11 @@ function safeQuerySelector(selector) {
     return null;
   }
 }
+
+// Safari doesn't focus clicked links, so remember the clicked modal link
+document.addEventListener('click', (e) => {
+  clickedTrigger = e.target.closest?.('[data-modal-hash], [data-modal-id]') ?? null;
+}, true);
 
 // Click-based modal
 window.addEventListener('hashchange', async (e) => {

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>DA Tag Browser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" href="data:,">
+    <script src="./tag-browser.js" type="module"></script>
+    <style>
+      body {
+        margin: 0;
+      }
+      .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+      }
+      .spinner {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        border: 3px solid #e0e0e0;
+        border-top-color: #1473e6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .error-message {
+        padding: 16px;
+        color: #4b4b4b;
+        font-family: "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .error-message p {
+        margin: 0 0 12px;
+      }
+      .error-message button {
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #f5f5f5;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="spinner-overlay">
+        <div class="spinner"></div>
+      </div>
+    </main>
+  </body>
+</html>

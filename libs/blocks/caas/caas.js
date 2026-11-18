@@ -41,7 +41,7 @@ const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
   resolve({});
 });
 
-const loadCaas = async (a) => {
+export const loadCaas = async (a) => {
   const encodedConfig = a.href.split('#')[1];
   // ~~ indicates the new compressed string format
   const state = encodedConfig.startsWith('~~')

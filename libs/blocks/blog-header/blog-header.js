@@ -7,6 +7,14 @@ const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
 const ICON_PATH = 'blocks/blog-header/blog-header.svg';
 
+const SOCIAL_PLATFORMS = {
+  'linkedin.com': { name: 'LinkedIn', icon: 'linkedin' },
+  'twitter.com': { name: 'X', icon: 'twitter' },
+  'x.com': { name: 'X', icon: 'twitter' },
+  'facebook.com': { name: 'Facebook', icon: 'facebook' },
+  'instagram.com': { name: 'Instagram', icon: 'instagram' },
+};
+
 const SHARE_PLATFORMS = {
   x: {
     icon: 'x',
@@ -39,6 +47,104 @@ const SHARE_LABEL_KEYS = {
 
 function logError(message) {
   window.lana?.log(`Blog header: ${message}`, { tags: 'blog-header', errorType: 'e' });
+}
+
+function logSchemaError(message) {
+  window.lana?.log(`Blog schema: ${message}`, { tags: 'blog-schema', severity: 'warning' });
+}
+
+function httpUrl(value, base) {
+  try {
+    const url = new URL(value, base);
+    if (url.protocol === 'https:' || url.protocol === 'http:') return url;
+  } catch (error) {
+    logSchemaError(`invalid URL: ${value}`);
+    return null;
+  }
+  logSchemaError(`unsupported URL protocol: ${value}`);
+  return null;
+}
+
+function resolveSocialPlatform(value) {
+  const url = httpUrl(value);
+  if (!url) return undefined;
+  const domain = Object.keys(SOCIAL_PLATFORMS).find((host) => (
+    url.hostname === host || url.hostname.endsWith(`.${host}`)
+  ));
+  return SOCIAL_PLATFORMS[domain];
+}
+
+function getSchemaUrl(value, doc = document, base = window.location.href) {
+  const canonical = doc.head.querySelector('link[rel="canonical"]')?.getAttribute('href')
+    || doc.head.querySelector('meta[property="og:url"]')?.content;
+  const canonicalUrl = httpUrl(canonical || base, base);
+  if (!canonicalUrl) return null;
+  const url = httpUrl(value || canonicalUrl.href, base);
+  if (!url) return null;
+  // Relative author links on previews must identify the production author.
+  if (url.origin === new URL(base).origin) {
+    url.protocol = canonicalUrl.protocol;
+    url.host = canonicalUrl.host;
+    url.port = canonicalUrl.port;
+  }
+  url.search = '';
+  url.hash = '';
+  return url.href;
+}
+
+function getPersonSchema(author, pageUrl) {
+  if (!pageUrl) return null;
+  const decorated = author.querySelector('.blog-author-name');
+  const rows = [...author.querySelectorAll(':scope > div > div')].filter((row) => (
+    !row.querySelector('picture, img')
+    && !/^#[0-9a-fA-F]{3,6}(?:\s*,\s*#[0-9a-fA-F]{3,6})?$/.test(row.textContent.trim())
+  ));
+  const socialIndex = rows.findIndex((row) => [...row.querySelectorAll('a')]
+    .some((link) => resolveSocialPlatform(link.href)));
+  const textRows = socialIndex < 0 ? rows : rows.slice(0, socialIndex);
+  const name = (decorated || textRows[0])?.textContent.trim();
+  if (!name) {
+    logSchemaError(`author profile has no name: ${pageUrl}`);
+    return null;
+  }
+  if (/\s(?:and|&)\s/i.test(name) || /-and-/i.test(new URL(pageUrl).pathname)) {
+    logSchemaError(`combined author profile requires individual author pages: ${pageUrl}`);
+    return null;
+  }
+  const schema = {
+    '@type': 'Person',
+    name,
+    url: pageUrl,
+    '@id': `${pageUrl}#person`,
+    worksFor: { '@type': 'Organization', name: 'Adobe' },
+  };
+  const title = (decorated ? author.querySelector('.blog-author-title') : textRows[1])
+    ?.textContent.trim();
+  if (title) schema.jobTitle = title;
+  const description = (decorated ? [...author.querySelectorAll('.blog-author-description')]
+    : textRows.slice(2)).map((row) => row.textContent.trim()).filter(Boolean).join(' ');
+  if (description) schema.description = description;
+  const image = author.querySelector('picture img, img')?.getAttribute('src');
+  const imageUrl = image && httpUrl(image, pageUrl);
+  if (imageUrl) schema.image = imageUrl.href;
+  const socialLinks = decorated
+    ? author.querySelectorAll('.blog-author-social a:not([hidden])')
+    : rows.slice(Math.max(socialIndex, 0)).flatMap((row) => [...row.querySelectorAll('a')]);
+  const sameAs = [...new Set([...socialLinks].filter((link) => resolveSocialPlatform(link.href))
+    .map((link) => link.href))];
+  if (sameAs.length) schema.sameAs = sameAs;
+  return schema;
+}
+
+function injectBlogSchema(type, schema) {
+  let script = document.head.querySelector(`script[data-blog-schema="${type}"]`);
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.blogSchema = type;
+    document.head.append(script);
+  }
+  script.textContent = JSON.stringify({ '@context': 'https://schema.org', ...schema });
 }
 
 export function getReadingTime(main) {
@@ -85,7 +191,7 @@ function resolveMediaUrls(picture, base) {
   if (img?.getAttribute('srcset')) img.setAttribute('srcset', resolveSrcset(img.getAttribute('srcset'), base));
 }
 
-function getProfileData(doc) {
+function getProfileData(doc, profileUrl) {
   const author = doc.querySelector('.blog-author');
   if (!author) return null;
   const rows = [...author.querySelectorAll(':scope > div > div')].filter((row) => (
@@ -99,11 +205,18 @@ function getProfileData(doc) {
   const companyRow = socialIndex < 0
     ? rows[5] || rows[4]
     : rows.slice(socialIndex + 1).at(-1);
+  let schema = null;
+  if (doc.querySelectorAll('.blog-author').length === 1) {
+    schema = getPersonSchema(author, getSchemaUrl(new URL(profileUrl).pathname));
+  } else {
+    logError(`author profile must describe a single author: ${profileUrl}`);
+  }
   return {
     picture: author.querySelector('picture') || author.querySelector('img'),
     name: nameRow?.textContent.trim() || '',
     title: titleRow?.textContent.trim() || '',
     company: companyRow?.textContent.trim() || '',
+    schema,
   };
 }
 
@@ -111,13 +224,19 @@ function fetchAuthorProfile(profileUrl) {
   if (!profileCache.has(profileUrl)) {
     profileCache.set(profileUrl, (async () => {
       try {
-        const resp = await fetch(`${profileUrl}.plain.html`);
+        const url = new URL(profileUrl);
+        url.search = '';
+        url.hash = '';
+        url.pathname = `${url.pathname}.plain.html`;
+        const resp = await fetch(url.href);
         if (!resp.ok) {
           logError(`author profile responded ${resp.status} for ${profileUrl}`);
           return null;
         }
         const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-        return getProfileData(doc);
+        const profile = getProfileData(doc, profileUrl);
+        if (!profile) logError(`author profile has no blog-author block: ${profileUrl}`);
+        return profile;
       } catch (e) {
         logError(`author profile request failed for ${profileUrl}: ${e.message}`);
         return null;
@@ -149,9 +268,24 @@ function setAuthorMeta(info, details) {
 
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
-  return (href && name)
-    ? createTag('a', { class: 'blog-header-author-name', href }, name)
-    : createTag('span', { class: 'blog-header-author-name' }, name);
+  const el = (href && name)
+    ? createTag('a', { class: 'blog-header-author-name', href })
+    : createTag('span', { class: 'blog-header-author-name' });
+  el.textContent = name ?? '';
+  return el;
+}
+
+function getAuthorHref(href) {
+  if (!href) return null;
+  try {
+    const { protocol } = new URL(href, window.location.href);
+    if (protocol === 'https:' || protocol === 'http:') return href;
+  } catch (e) {
+    logError(`invalid author profile URL: ${e.message}`);
+    return null;
+  }
+  logError('unsupported author profile URL protocol');
+  return null;
 }
 
 function hideIcon(svg) {
@@ -195,7 +329,7 @@ function getAuthorData(row) {
   const nameP = paragraphs[nameIndex];
   const link = directLink || nameP?.querySelector('a');
   const name = (link || nameP)?.textContent.trim() || '';
-  const href = link?.getAttribute('href');
+  const href = getAuthorHref(link?.getAttribute('href'));
   const details = directLink ? paragraphs : paragraphs.slice(nameIndex + 1);
   const needsName = !!href
     && (!name || name === href || name === resolveUrl(href, window.location.href));
@@ -209,8 +343,7 @@ function getAuthorData(row) {
   };
 }
 
-function decorateAuthor(row, authorLinkEnabled, base) {
-  const data = getAuthorData(row);
+function decorateAuthor(data, authorLinkEnabled, base) {
   const { picture, name, href, details, needsName } = data;
   const author = createTag('div', { class: 'blog-header-author' });
   const avatar = createTag('div', { class: 'blog-header-author-avatar' });
@@ -257,17 +390,39 @@ async function buildEyebrow(config, readingTime) {
     endText = (await replaceKey(key, config)).replace(/[15]/g, readingTime);
   }
 
-  if (startText) eyebrow.append(createTag('span', { class: 'blog-header-eyebrow-start' }, startText));
-  if (endText) eyebrow.append(createTag('span', { class: 'blog-header-eyebrow-end' }, endText));
+  if (startText) {
+    const start = createTag('span', { class: 'blog-header-eyebrow-start' });
+    start.textContent = `Updated: ${startText}`;
+    eyebrow.append(start);
+  }
+  if (endText) {
+    const end = createTag('span', { class: 'blog-header-eyebrow-end' });
+    end.textContent = endText;
+    eyebrow.append(end);
+  }
   return eyebrow;
 }
 
 /* Social share modal */
 
+function parseShareUrl(value, base) {
+  try {
+    const url = new URL(value, base);
+    return ['https:', 'http:'].includes(url.protocol) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 export function getShareUrl() {
-  const canonical = document.querySelector('link[rel="canonical"]')?.href;
-  if (canonical) return canonical;
-  const url = new URL(window.location.href);
+  const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href');
+  if (canonical?.trim()) {
+    const url = parseShareUrl(canonical, document.baseURI);
+    if (url) return url.href;
+    logError('Rejected invalid or non-HTTP(S) canonical share URL');
+  }
+  const url = parseShareUrl(window.location.href);
+  if (!url) throw new Error('Cannot share a non-HTTP(S) page URL');
   PREVIEW_PARAMS.forEach((param) => url.searchParams.delete(param));
   url.hash = '';
   return url.href;
@@ -312,10 +467,13 @@ function buildShareCard(data) {
     }));
   }
   const text = createTag('div', { class: 'blog-share-card-text' });
-  const title = createTag('strong', null, data.title);
+  const title = createTag('strong');
+  title.textContent = data.title;
   text.append(createTag('p', { class: 'blog-share-card-title' }, title));
   if (data.description) {
-    text.append(createTag('p', { class: 'blog-share-card-desc' }, data.description));
+    const description = createTag('p', { class: 'blog-share-card-desc' });
+    description.textContent = data.description;
+    text.append(description);
   }
   card.append(text);
   return card;
@@ -325,10 +483,11 @@ function buildActionLink(platform, svg, label, data) {
   const { href, popup } = SHARE_PLATFORMS[platform];
   const link = createTag('a', {
     class: 'blog-share-action',
-    'aria-label': label,
-    href: href(encodeURIComponent(data.url), encodeURIComponent(data.title)),
     ...(popup ? { rel: 'noopener noreferrer' } : {}),
-  }, svg);
+  });
+  link.setAttribute('aria-label', label);
+  link.setAttribute('href', href(encodeURIComponent(data.url), encodeURIComponent(data.title)));
+  link.append(svg);
   if (popup) {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -412,7 +571,9 @@ async function createShareModal(trigger) {
   const data = getShareData();
 
   const content = createTag('div', { class: 'blog-share' });
-  content.append(createTag('h2', { class: 'blog-share-heading' }, labels.heading));
+  const heading = createTag('h2', { class: 'blog-share-heading' });
+  heading.textContent = labels.heading;
+  content.append(heading);
   content.append(buildShareCard(data));
   content.append(await buildShareActions(getPlatforms(), data, base, labels));
 
@@ -451,7 +612,8 @@ async function buildShareButton(config, base) {
     class: 'blog-header-share',
     'aria-haspopup': 'dialog',
     'data-modal-hash': `#${SHARE_MODAL_ID}`,
-  }, label);
+  });
+  button.textContent = label;
   const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, ['share']);
   const svg = svgs?.[0]?.svg;
   if (svg) button.append(hideIcon(svg));
@@ -471,12 +633,206 @@ function decorateSummary(row) {
   }
 }
 
-async function buildByline(authorRows, config, base) {
+async function buildByline(authorsData, config, base) {
   const authorLinkEnabled = getMetadata('article-author-link') !== 'off';
   const authors = createTag('div', { class: 'blog-header-authors' });
-  authorRows.forEach((row) => authors.append(decorateAuthor(row, authorLinkEnabled, base)));
+  authorsData.forEach((data) => authors.append(decorateAuthor(data, authorLinkEnabled, base)));
   const shareButton = await buildShareButton(config, base);
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
+}
+
+async function decorateArticleSchema(el, authorsData) {
+  const url = getSchemaUrl();
+  if (!url) return;
+  const profiles = await Promise.all(authorsData.slice(0, 2).map(({ href }) => (
+    href ? fetchAuthorProfile(resolveUrl(href, window.location.href)) : null
+  )));
+  if (!el.isConnected) return;
+  const authors = [];
+  profiles.forEach((profile) => {
+    if (!profile?.schema) return;
+    if (authors.some((person) => person['@id'] === profile.schema['@id'])) {
+      logError(`duplicate author profile omitted from schema: ${profile.schema.url}`);
+      return;
+    }
+    authors.push({ ...profile.schema });
+  });
+  if (authors[1]) delete authors[1].description;
+  injectBlogSchema('posting', {
+    '@type': 'BlogPosting',
+    headline: el.querySelector('h1')?.textContent.trim() || getMetadata('og:title') || document.title,
+    url,
+    author: authors,
+  });
+}
+
+const dividerObservers = new WeakMap();
+
+export function getBlogSections(headerSection) {
+  const sections = [];
+  let section = headerSection?.nextElementSibling;
+  while (section) {
+    // Header initialization can precede section-metadata decoration.
+    const styleRow = [...(section.querySelector(':scope > .section-metadata')?.children || [])]
+      .find((row) => row.firstElementChild?.textContent.trim().toLowerCase() === 'style');
+    const styles = styleRow?.lastElementChild?.textContent.toLowerCase()
+      .split(',').map((style) => style.trim().replace(/\s+/g, '-'));
+    if (section.matches('footer, [data-footer-promo], .footer-promo, .blog-layout-end')
+      || styles?.includes('blog-layout-end')) break;
+    if (section.matches('.section:not([hidden])') && [...section.children].some((child) => (
+      !child.matches('.metadata, .section-metadata, .card-metadata')
+    ))) sections.push(section);
+    section = section.nextElementSibling;
+  }
+  return sections;
+}
+
+function decorateDividers(el) {
+  if (el.classList.contains('no-dividers')) return;
+  const headerSection = el.closest('.section');
+  if (!headerSection) return;
+
+  headerSection.classList.add('blog-divider-frame');
+  const sections = [headerSection, ...getBlogSections(headerSection)];
+
+  const findEndpoint = () => {
+    const layout = headerSection.nextElementSibling;
+    if (layout?.classList.contains('blog-article-layout')) return layout;
+    return getBlogSections(headerSection).at(-1) || headerSection;
+  };
+
+  let endpoint;
+  const updateFrame = (entries, observer) => {
+    if (!headerSection.isConnected) {
+      observer.disconnect();
+      dividerObservers.delete(headerSection);
+      return;
+    }
+    const nextEndpoint = findEndpoint();
+    if (nextEndpoint !== endpoint) {
+      if (endpoint && !sections.includes(endpoint)) observer.unobserve(endpoint);
+      endpoint = nextEndpoint;
+      observer.observe(endpoint);
+    }
+    const height = endpoint.getBoundingClientRect().bottom
+      - headerSection.getBoundingClientRect().top;
+    headerSection.style.setProperty('--blog-divider-height', `${height}px`);
+  };
+
+  dividerObservers.get(headerSection)?.disconnect();
+  const observer = new ResizeObserver(updateFrame);
+  dividerObservers.set(headerSection, observer);
+  [...sections, headerSection.parentElement]
+    .forEach((target) => observer.observe(target));
+  updateFrame([], observer);
+}
+
+const BAR_HEIGHT = 8;
+
+function findArticleCopy(headerSection) {
+  const layout = headerSection.nextElementSibling;
+  const sections = layout?.classList.contains('blog-article-layout')
+    ? [...layout.querySelectorAll(':scope > .blog-article-content > .section:not([hidden])')]
+    : getBlogSections(headerSection);
+  const contents = [];
+  for (const section of sections) {
+    if (section.querySelector('.card-metadata')) {
+      let copy = section.firstElementChild;
+      while (copy?.matches('.content, .ai-summary')) {
+        contents.push(copy);
+        copy = copy.nextElementSibling;
+      }
+      break;
+    }
+    contents.push(...section.querySelectorAll(':scope > .content, :scope > .ai-summary'));
+  }
+  return { first: contents[0], last: contents.at(-1) };
+}
+
+function decorateProgressBar(el, main) {
+  const headerSection = el.closest('.section');
+  if (el.classList.contains('no-progress-bar') || !main || !headerSection) return;
+
+  const bar = createTag('div', { class: 'blog-progress-bar', 'aria-hidden': 'true' });
+  el.append(bar);
+  const stacked = window.matchMedia('(max-width: 599px)');
+  let frame = 0;
+  let discover = true;
+  let articleCopy;
+  let article;
+  let lastTop;
+  let lastProgress;
+
+  const update = () => {
+    frame = 0;
+    if (!el.isConnected) {
+      cleanup(); // eslint-disable-line no-use-before-define
+      return;
+    }
+    if (discover) {
+      articleCopy = findArticleCopy(headerSection);
+      article = main.querySelector('.blog-article-layout > .blog-article-content');
+      discover = false;
+    }
+    const first = articleCopy.first?.getBoundingClientRect();
+    const last = articleCopy.last?.getBoundingClientRect();
+    if (!first) {
+      if (!bar.hidden) bar.hidden = true;
+      return;
+    }
+
+    // The mobile nav is sticky and display: contents; the divider follows the article's gap.
+    const dividerY = stacked.matches && article
+      ? article.getBoundingClientRect().top
+        - parseFloat(getComputedStyle(article).marginBlockStart) / 2
+      : headerSection.getBoundingClientRect().bottom - 1;
+    const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
+    const dividerTop = dividerY - BAR_HEIGHT / 2;
+    const top = Math.max(globalNav, dividerTop);
+    // Start filling when the first article copy reaches the bar below the global nav.
+    const start = window.scrollY + first.top - globalNav;
+
+    const distance = last.bottom + window.scrollY - window.innerHeight - start;
+    const hidden = distance <= 0;
+    if (bar.hidden !== hidden) bar.hidden = hidden;
+    if (hidden) return;
+    const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
+    if (top !== lastTop) {
+      bar.style.top = `${top}px`;
+      lastTop = top;
+    }
+    if (progress !== lastProgress) {
+      bar.style.transform = `scaleX(${progress})`;
+      lastProgress = progress;
+    }
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  const invalidate = (records) => {
+    if (records.every((record) => record.target === bar)) return;
+    discover = true;
+    schedule();
+  };
+  const mutations = new MutationObserver(invalidate);
+  const observer = new ResizeObserver(schedule);
+  const cleanup = () => {
+    window.removeEventListener('scroll', schedule);
+    window.removeEventListener('resize', schedule);
+    observer.disconnect();
+    mutations.disconnect();
+    cancelAnimationFrame(frame);
+  };
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule);
+  observer.observe(main);
+  mutations.observe(main, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'hidden'],
+  });
+  update();
 }
 
 export default async function init(el) {
@@ -488,18 +844,22 @@ export default async function init(el) {
   const base = config.miloLibs || config.codeRoot;
 
   const [titleRow, summaryRow, ...authorRows] = el.children;
+  const authorsData = authorRows.map(getAuthorData);
   titleRow?.classList.add('blog-header-title');
   summaryRow?.classList.add('blog-header-summary');
   decorateSummary(summaryRow);
 
   const [eyebrow, byline] = await Promise.all([
     buildEyebrow(config, readingTime),
-    buildByline(authorRows, config, base),
+    buildByline(authorsData, config, base),
   ]);
 
   el.prepend(eyebrow);
   authorRows.forEach((row) => row.remove());
   el.append(byline);
+  decorateDividers(el);
+  decorateProgressBar(el, main);
+  decorateArticleSchema(el, authorsData).catch((error) => logError(`schema failed: ${error.message}`));
 
   document.addEventListener(MILO_EVENTS.DEFERRED, () => {
     if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;

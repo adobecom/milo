@@ -206,44 +206,6 @@
   height: 20px;
 }
 
-.bc-input-tooltip {
-  display: none;
-  background: var(--bc-button-color);
-  color: #fff;
-  border-radius: 7px;
-  box-shadow: 0 0 10px 0 rgba(0 0 0 / 25%);
-  font-size: var(--bc-tooltip-font-size);
-  line-height: var(--bc-tooltip-line-height);
-  left: 26px;
-  padding: 5px 10px;
-  position: absolute;
-  top: -26px;
-  transform: translateX(-50%);
-  user-select: none;
-  z-index: 4;
-}
-
-.bc-input-tooltip::before {
-  border-top: 5px solid var(--bc-button-color);
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-[dir="rtl"] .bc-input-tooltip {
-  left: unset;
-  right: -14px;
-}
-
-.bc-input-field-label:focus-visible + .bc-input-tooltip,
-.bc-input-field-label:hover + .bc-input-tooltip {
-  display: block;
-}
-
 .bc-textarea-grow-wrap {
   display: grid;
   flex: 1;
@@ -345,6 +307,10 @@
 
 .bc-floating-show {
   opacity: 1;
+}
+
+.floating-mobile-hide .bc-floating-element {
+    display: none;
 }
 
 /* floating-button */
@@ -597,14 +563,6 @@
 .floating-input .bc-floating-input .bc-input-field-container:hover,
 .floating-input .bc-floating-input .bc-input-field-container:has(textarea:focus-visible) {
   background: var(--bc-fi-input-bg);
-}
-
-.floating-input .bc-floating-input .bc-input-tooltip {
-  color: #000;
-}
-
-.floating-input .bc-floating-input.light .bc-input-tooltip {
-  color: #fff;
 }
 
 .floating-input .bc-floating-input .bc-input-field::before {
@@ -965,6 +923,7 @@
 
 .bc-modal-title {
   font-size: 16px;
+  letter-spacing: normal;
   line-height: 32px;
   font-weight: 900;
   color: #000;
@@ -1167,6 +1126,10 @@
   .floating-input .bc-floating-input .bc-input-field {
     min-width: 340px;
   }
+
+  .floating-mobile-hide .bc-floating-element {
+    display: flex;
+  }
 }
 
 @media screen and (min-width: 900px) {
@@ -1303,6 +1266,12 @@
   .bc-side-open .bc-floating-element {
     display: none;
   }
+}
+
+/* AcomAssistant window is open (windowStateCallback in features/acom-assistant.js).
+   Kept after the floating variant display rules so it wins at equal specificity. */
+.acom-assistant-open .bc-floating-element {
+  display: none;
 }
 
 /* marquee */

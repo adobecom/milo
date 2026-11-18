@@ -3,7 +3,7 @@ import { readFile, setViewport, sendKeys } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitForRemoval } from '../../helpers/waitfor.js';
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { setConfig, createTag, notifyTargetReady, resetTargetReady } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs' });
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
@@ -55,6 +55,26 @@ describe('Modal (c2)', () => {
       const details = await findDetails('#foo', null);
       expect(details.path).to.equal('/path/foo');
       expect(details.title).to.equal('Modal: Foo label');
+    });
+
+    it('ignores a hash containing markup', async () => {
+      const payload = '<img src=x onerror=window.__modalXss=true>';
+      const meta = document.createElement('meta');
+      meta.name = `-${payload}`;
+      meta.content = '/path/evil';
+      document.head.append(meta);
+      const details = await findDetails(`#${payload}`, null);
+      expect(details.id).to.equal('');
+      expect(details.path).to.be.undefined;
+      meta.remove();
+    });
+  });
+
+  describe('untrusted modal paths', () => {
+    it('does not open a modal for script-scheme or foreign-origin paths', async () => {
+      expect(await getModal({ id: 'a', path: ['java', 'script:alert(1)'].join('') })).to.be.null;
+      expect(await getModal({ id: 'b', path: 'https://example.com/modal' })).to.be.null;
+      expect(document.querySelector('.dialog-modal')).to.be.null;
     });
   });
 
@@ -148,13 +168,168 @@ describe('Modal (c2)', () => {
       expect(closeCallback.calledOnce).to.be.true;
       expect(document.querySelector('.modal-curtain')).to.be.null;
     });
+
+    it('marks the clicked link as trigger when focus is elsewhere (Safari)', async () => {
+      const link = createTag('a', { href: '#c2-trigger', 'data-modal-hash': '#c2-trigger' }, 'Open');
+      const input = createTag('input');
+      document.body.append(link, input);
+      input.focus();
+      link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+      link.click();
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, { id: 'c2-trigger', content, title: 'Modal: Trigger' });
+
+      expect(link.dataset.isModalTrigger).to.equal('true');
+      expect(input.dataset.isModalTrigger).to.be.undefined;
+
+      modal.querySelector('button.dialog-close').click();
+      await waitForRemoval('#c2-trigger');
+      expect(document.activeElement).to.equal(link);
+      link.remove();
+      input.remove();
+    });
+
+    it('ignores a clicked link that was removed before the modal opened', async () => {
+      const link = createTag('a', { href: '#c2-detached', 'data-modal-hash': '#c2-detached' }, 'Open');
+      document.body.append(link);
+      link.addEventListener('click', (e) => e.preventDefault(), { once: true });
+      link.click();
+      link.remove();
+      const content = createTag('div', {}, 'Body');
+      await getModal(null, { id: 'c2-detached', content, title: 'Modal: Detached' });
+
+      expect(link.dataset.isModalTrigger).to.be.undefined;
+    });
+
+    it('returns focus to the trigger on close without scrolling the page', async () => {
+      const trigger = createTag('a', { href: '#', 'data-modal-id': 'c2-trigger' }, 'Open');
+      document.body.append(trigger);
+      trigger.focus();
+      const content = createTag('div', {}, 'Body');
+      const modal = await getModal(null, { id: 'c2-trigger', content, title: 'Modal: Trigger' });
+
+      const focusSpy = sinon.spy(HTMLElement.prototype, 'focus');
+      modal.querySelector('button.dialog-close').click();
+      await waitForRemoval('#c2-trigger');
+
+      const triggerFocusCall = focusSpy.getCalls().find((call) => call.thisValue === trigger);
+      expect(triggerFocusCall).to.exist;
+      expect(triggerFocusCall.args[0]).to.include({ preventScroll: true });
+      expect(document.activeElement).to.equal(trigger);
+      expect(trigger.hasAttribute('data-is-modal-trigger')).to.be.false;
+      trigger.remove();
+    });
   });
 
   describe('init', () => {
     it('returns null when the page hash does not match the modal hash', async () => {
+      notifyTargetReady();
       const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
       const result = await init(anchor);
       expect(result).to.be.null;
+    });
+
+    it('waits for target before opening a deep-linked modal', async () => {
+      resetTargetReady();
+      const prevHash = window.location.hash;
+      window.location.hash = '#wait-open';
+      const existing = createTag('div', { id: 'wait-open', class: 'dialog-modal' });
+      document.body.append(existing);
+      const anchor = createTag('a', { 'data-modal-hash': '#wait-open', 'data-modal-path': '/path/x' });
+      let settled = false;
+      const pending = init(anchor).then(() => { settled = true; });
+      await new Promise((resolve) => { setTimeout(resolve, 20); });
+      expect(settled).to.be.false;
+      notifyTargetReady();
+      await pending;
+      expect(settled).to.be.true;
+      existing.remove();
+      window.location.hash = prevHash;
+    });
+
+    it('does not wait for target when the page hash does not match', async () => {
+      resetTargetReady();
+      const anchor = createTag('a', { 'data-modal-hash': '#not-open', 'data-modal-path': '/path/x' });
+      expect(await init(anchor)).to.be.null;
+      notifyTargetReady();
+    });
+  });
+});
+
+const origFetch = window.fetch;
+const fragmentHtml = '<body><div><button class="frag-btn">Go</button></div></body>';
+const waitFor = async (check) => {
+  const start = Date.now();
+  while (!check() && Date.now() - start < 3000) {
+    // eslint-disable-next-line no-await-in-loop
+    await new Promise((r) => { setTimeout(r, 20); });
+  }
+};
+const bounded = (p) => Promise.race([p, new Promise((r) => { setTimeout(() => r('TIMEOUT'), 3000); })]);
+
+const pathModalSuites = [
+  ['Modal (c2)', getModal],
+  ['Modal (milo)', async (...args) => (await import('../../../libs/blocks/modal/modal.js')).getModal(...args)],
+];
+
+let seq = 0;
+pathModalSuites.forEach(([label, open]) => {
+  describe(`${label} path modal pre-attach`, () => {
+    let release = () => {};
+
+    afterEach(() => {
+      release();
+      sinon.restore();
+      document.querySelectorAll('.dialog-modal, .modal-curtain').forEach((n) => n.remove());
+      document.documentElement.classList.remove('disable-scroll');
+      document.body.classList.remove('disable-scroll');
+    });
+
+    it('loads the fragment connected, inside the dialog, hidden until ready', async () => {
+      seq += 1;
+      const id = `pa-${seq}`;
+      const path = `/test/blocks/modal/mocks/${id}`;
+      const gate = new Promise((r) => { release = r; });
+      let hit = false;
+      sinon.stub(window, 'fetch').callsFake((u, o) => {
+        if (String(u).includes(id)) {
+          hit = true;
+          return gate.then(() => new Response(fragmentHtml, { status: 200 }));
+        }
+        return origFetch.call(window, u, o);
+      });
+      const p = open({ id, path });
+      await waitFor(() => hit);
+      expect(document.getElementById(id)).to.be.null;
+      const link = document.querySelector(`body > div[hidden] > .dialog-modal > a[href$="${id}"]`);
+      expect(link?.isConnected).to.be.true;
+      release();
+      const modal = await bounded(p);
+      expect(modal.id).to.equal(id);
+      expect(modal.querySelector('.frag-btn')).to.exist;
+      expect(document.querySelectorAll(`.dialog-modal#${id}`).length).to.equal(1);
+      expect(document.querySelector('body > div[hidden]')).to.be.null;
+      expect(document.querySelector('.modal-curtain')).to.exist;
+    });
+
+    it('removes the hidden container and clears the loading guard when the fragment load fails', async () => {
+      seq += 1;
+      const id = `pa-${seq}`;
+      const path = `/test/blocks/modal/mocks/${id}`;
+      let bad = true;
+      sinon.stub(window, 'fetch').callsFake((u, o) => {
+        if (!String(u).includes(id)) return origFetch.call(window, u, o);
+        return Promise.resolve(bad
+          ? { ok: true, status: 200, text: () => Promise.reject(new Error('boom')) }
+          : new Response(fragmentHtml, { status: 200 }));
+      });
+      expect(await bounded(open({ id, path }))).to.be.null;
+      expect(document.querySelector(`.dialog-modal#${id}`)).to.be.null;
+      expect(document.querySelector('body > div[hidden]')).to.be.null;
+      bad = false;
+      const reopened = await bounded(open({ id, path }));
+      expect(reopened).to.exist;
+      expect(reopened).to.not.equal('TIMEOUT');
     });
   });
 });

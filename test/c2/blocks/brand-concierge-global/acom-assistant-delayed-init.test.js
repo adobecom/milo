@@ -111,11 +111,11 @@ describe('C2 Brand Concierge navigation renderer selection', () => {
     foundation.content = 'c2';
     const script = document.createElement('script');
     script.type = 'javascript/blocked';
-    script.src = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+    script.src = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
     script.dataset.loaded = 'true';
     const style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
+    style.href = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.css';
     document.head.append(foundation, script, style);
 
     try {

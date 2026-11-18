@@ -15,6 +15,7 @@ import {
   initBulkPublisherLingoMapping,
   isLingoLangFirstPath,
   getLanguageFirstCountryAndLang,
+  getRequestSize,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -1741,5 +1742,133 @@ describe('initBulkPublisherLingoMapping', () => {
 
     expect(fetchedUrls).to.have.length(1);
     expect(fetchedUrls[0]).to.equal(`${LINGO_MAPPING_URL}?bulkpublisher`);
+  });
+});
+
+describe('getRequestSize', () => {
+  const pinnedOnly = {
+    collectionSize: '150',
+    totalCardsToShow: '3',
+    sortDefault: 'featured',
+    sortEnablePopup: false,
+    showFilters: false,
+    showSearch: false,
+    showBookmarksFilter: false,
+    onlyShowBookmarkedCards: false,
+    partialLoadEnabled: false,
+    filterEvent: [],
+    container: 'carousel',
+  };
+
+  it('uses totalCardsToShow when collectionSize is empty', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '', totalCardsToShow: 10 })).to.equal(10);
+  });
+
+  it('requests only totalCardsToShow when cards are shown in server order', () => {
+    expect(getRequestSize(pinnedOnly)).to.equal(3);
+  });
+
+  it('keeps collectionSize when it is not larger than totalCardsToShow', () => {
+    expect(getRequestSize({ ...pinnedOnly, collectionSize: '3' })).to.equal('3');
+    expect(getRequestSize({ ...pinnedOnly, totalCardsToShow: '' })).to.equal('150');
+  });
+
+  [
+    ['a non-featured default sort', { sortDefault: 'dateDesc' }],
+    ['the sort popup', { sortEnablePopup: true }],
+    ['filters', { showFilters: true }],
+    ['search', { showSearch: true }],
+    ['the bookmarks filter', { showBookmarksFilter: true }],
+    ['bookmark-only collections', { onlyShowBookmarkedCards: true }],
+    ['partial load', { partialLoadEnabled: true }],
+    ['event filters', { filterEvent: ['live'] }],
+    ['the categories container', { container: 'categories' }],
+  ].forEach(([name, override]) => {
+    it(`keeps collectionSize with ${name}`, () => {
+      expect(getRequestSize({ ...pinnedOnly, ...override })).to.equal('150');
+    });
+  });
+
+  describe('when featured cards fill every shown slot', () => {
+    const threeFeatured = {
+      ...pinnedOnly,
+      featuredCards: [{ contentId: 'a' }, { contentId: 'b' }, { contentId: 'c' }],
+    };
+
+    it('requests only the shown cards with the featured sort', () => {
+      expect(getRequestSize(threeFeatured)).to.equal(3);
+    });
+
+    // An unavailable featured card is backfilled by the default sort or event filter,
+    // which needs the full set of cards.
+    [
+      ['a non-featured default sort', { sortDefault: 'titleAsc' }],
+      ['the random sort', { sortDefault: 'random', sortReservoirSample: '2' }],
+      ['event filters', { filterEvent: ['live'] }],
+    ].forEach(([name, override]) => {
+      it(`keeps collectionSize with ${name}`, () => {
+        expect(getRequestSize({ ...threeFeatured, ...override })).to.equal('150');
+      });
+    });
+  });
+});
+
+describe('caas consumer: htmlIdentity', () => {
+  // The publisher half of this feature keeps minting `.html`-based ids. This is
+  // the half that has to RESOLVE them: once bacom's authored links go
+  // extensionless, an authored featured-card link reads `/resources/x` while
+  // the card it points at is still identified by `/resources/x.html`. Without
+  // the flag the lookup hashes the extensionless string, misses, and the
+  // featured card silently disappears from the collection.
+  const BACOM = 'https://business.adobe.com';
+  const ARTICLE = '/resources/articles/4-pieces-of-social-media-real-estate-you-shouldnt-ignore';
+  // Same id the existing `.html` fixture above resolves to.
+  const HTML_ID = 'c94ec235-50c2-595e-9fa8-0b4602c08712';
+  // The id the SAME bacom article hashes to without the terminal `.html` --
+  // i.e. the miss the flag exists to prevent. Pinned exactly so that a
+  // regression which stops applying the policy fails loudly here instead of
+  // merely resolving to "something that isn't HTML_ID".
+  const EXTENSIONLESS_ID = 'b9630808-7828-5767-9dab-d02dda39e475';
+  // Same path under a host the policy does not cover.
+  const OTHER_HOST_ID = 'd54536b8-c7c4-5799-a890-0b441f0dd8a3';
+
+  let meta;
+  const setFlag = (content) => {
+    meta = document.createElement('meta');
+    meta.name = 'caas-identity-html';
+    meta.content = content;
+    document.head.append(meta);
+  };
+  afterEach(() => {
+    meta?.remove();
+    meta = null;
+  });
+
+  const featuredIds = async (contentId) => {
+    const state = { ...defaultState, featuredCards: [{ contentId }] };
+    const { featuredCards } = await getConfig(state);
+    return featuredCards;
+  };
+
+  it('resolves an extensionless link to the id the card was published under', async () => {
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${ARTICLE}`)).to.eql([HTML_ID]);
+  });
+
+  it('still resolves an authored .html link to the same id', async () => {
+    // Mid-migration both link shapes coexist in authored collections.
+    setFlag('true');
+    expect(await featuredIds(`${BACOM}${ARTICLE}.html`)).to.eql([HTML_ID]);
+  });
+
+  it('is a no-op for a host the policy does not cover', async () => {
+    setFlag('true');
+    const ids = await featuredIds(`https://www.adobe.com${ARTICLE}`);
+    expect(ids).to.eql([OTHER_HOST_ID]);
+  });
+
+  it('leaves resolution unchanged when the flag is off', async () => {
+    const ids = await featuredIds(`${BACOM}${ARTICLE}`);
+    expect(ids).to.eql([EXTENSIONLESS_ID]);
   });
 });

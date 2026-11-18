@@ -1,8 +1,10 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
-import { setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
 import { closeModal } from '../../../libs/blocks/modal/modal.js';
+import initAuthor from '../../../libs/blocks/blog-author/blog-author.js';
+import initSideNavigation from '../../../libs/blocks/blog-side-navigation/blog-side-navigation.js';
 import { waitFor } from '../../helpers/waitfor.js';
 import init, {
   getReadingTime,
@@ -35,6 +37,8 @@ setConfig({
 window.lana = { log: stub() };
 
 const svgText = await readFile({ path: '../../../libs/blocks/blog-header/blog-header.svg' });
+const blogHeaderCss = await readFile({ path: '../../../libs/blocks/blog-header/blog-header.css' });
+const sideNavigationCss = await readFile({ path: '../../../libs/blocks/blog-side-navigation/blog-side-navigation.css' });
 
 function buildProfile({
   name = 'Profile Name',
@@ -59,6 +63,10 @@ function buildProfile({
 
 const profileHtml = buildProfile();
 
+function isProfileRequest(url) {
+  return /\/(?:authors\/[^/]+|author)\.plain\.html$/.test(new URL(url, window.location.href).pathname);
+}
+
 function mockFetch({
   profileStatus = 200,
   profileReject = false,
@@ -69,7 +77,7 @@ function mockFetch({
     if (url.includes('blog-header.svg')) {
       return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
     }
-    if (url.includes('.plain.html')) {
+    if (isProfileRequest(url)) {
       if (profileReject) return Promise.reject(new Error('network down'));
       return Promise.resolve({
         ok: profileStatus === 200,
@@ -133,8 +141,175 @@ async function cleanup() {
   );
   document.querySelectorAll('main, .blog-header-test-trigger, .blog-header-test-metadata')
     .forEach((el) => el.remove());
+  document.head.querySelectorAll('script[data-blog-schema]').forEach((el) => el.remove());
   window.lana.log.resetHistory();
 }
+
+describe('blog-header schema', () => {
+  const production = 'https://business.adobe.com';
+  let fetchStub;
+  let canonical;
+
+  function posting() {
+    const script = document.head.querySelector('script[data-blog-schema="posting"]');
+    return script ? JSON.parse(script.textContent) : null;
+  }
+
+  beforeEach(() => {
+    canonical = document.createElement('link');
+    canonical.rel = 'canonical';
+    canonical.href = `${production}/blog/article?milolibs=preview#section`;
+    canonical.className = 'blog-header-test-metadata';
+    document.head.append(canonical);
+    fetchStub = mockFetch();
+  });
+
+  afterEach(async () => {
+    await cleanup();
+    fetchStub.restore();
+  });
+
+  [1, 2, 3].forEach((count) => {
+    it(`outputs profile-sourced authors for ${count} byline rows, limited to two`, async () => {
+      const { block, profilePath } = buildBlock({ authors: count, picture: true });
+      [...block.querySelectorAll('a')].forEach((link, index) => {
+        link.href = `${profilePath}-${index}`;
+        fetchStub.withArgs(`${link.href}.plain.html`).resolves({
+          ok: true,
+          text: async () => buildProfile({ name: `Author ${index}` }),
+        });
+      });
+      await init(block);
+      await waitFor(() => posting()?.author.length === Math.min(count, 2));
+      expect(posting()['@context']).to.equal('https://schema.org');
+      expect(posting()['@type']).to.equal('BlogPosting');
+      expect(posting().headline).to.equal('Title of the article');
+      expect(posting().url).to.equal(`${production}/blog/article`);
+      expect(posting().author[0]).to.deep.equal({
+        '@type': 'Person',
+        name: 'Author 0',
+        url: `${production}${profilePath}-0`,
+        '@id': `${production}${profilePath}-0#person`,
+        worksFor: { '@type': 'Organization', name: 'Adobe' },
+        jobTitle: 'Profile Title',
+        image: `${production}/blog/authors/media_rachel.png`,
+        sameAs: ['https://linkedin.com/in/profile'],
+        description: 'Profile biography, not job metadata.',
+      });
+      if (count > 1) {
+        expect(posting().author[1].name).to.equal('Author 1');
+        expect(posting().author[1]['@id']).to.equal(`${production}${profilePath}-1#person`);
+        expect(posting().author[1]).not.to.have.property('description');
+      }
+      expect(fetchStub.getCalls().filter((call) => isProfileRequest(call.args[0])).length)
+        .to.equal(Math.min(count, 2));
+      expect(block.querySelectorAll('.blog-header-author').length).to.equal(count);
+    });
+  });
+
+  it('uses plain profile HTML and matches the author page production Person identity', async () => {
+    const { main, block, profilePath } = buildBlock({ picture: true });
+    const authorUrl = `${production}${profilePath}`;
+    const requestUrl = `${window.location.origin}${profilePath}.plain.html`;
+    fetchStub.withArgs(requestUrl).resolves({
+      ok: true,
+      text: async () => profileHtml,
+    });
+    await init(block);
+    await waitFor(() => posting()?.author.length === 1);
+    expect(fetchStub.calledWith(requestUrl)).to.equal(true);
+    expect(posting().author[0].url).to.equal(authorUrl);
+    canonical.href = `${authorUrl}?preview=true#bio`;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = profileHtml;
+    main.append(wrapper);
+    await initAuthor(wrapper.firstElementChild);
+    const person = JSON.parse(document.head.querySelector('script[data-blog-schema="person"]')
+      .textContent);
+    expect(person['@id']).to.equal(posting().author[0]['@id']);
+  });
+
+  ['page', 'live'].forEach((suffix) => {
+    it(`uses production identities for two authors linked on another aem.${suffix} branch`, async () => {
+      const { block, profilePath } = buildBlock({ authors: 2, picture: true });
+      const origin = `https://main--da-bacom-blog--adobecom.aem.${suffix}`;
+      const paths = [profilePath, `${profilePath}-second`];
+      paths.forEach((path, index) => {
+        block.children[index + 2].querySelector('a').href = `${origin}${path}?preview=true#bio`;
+        fetchStub.withArgs(`${origin}${path}.plain.html`).resolves({
+          ok: true,
+          text: async () => buildProfile({ name: `Author ${index}` }),
+        });
+      });
+      await init(block);
+      await waitFor(() => posting()?.author.length === 2);
+      expect(posting().author.map((author) => author.url))
+        .to.deep.equal(paths.map((path) => `${production}${path}`));
+      expect(posting().author.map((author) => author['@id']))
+        .to.deep.equal(paths.map((path) => `${production}${path}#person`));
+      const requests = fetchStub.getCalls().filter((call) => call.args[0].includes(profilePath));
+      expect(requests.map((call) => call.args[0]))
+        .to.deep.equal(paths.map((path) => `${origin}${path}.plain.html`));
+    });
+  });
+
+  [
+    { label: 'HTTP error', response: { ok: false, status: 404 } },
+    { label: 'missing profile block', response: { ok: true, text: async () => '<p>No profile</p>' } },
+    { label: 'combined profile', response: { ok: true, text: async () => buildProfile({ name: 'Kay Sin and Danial Kafeel' }) } },
+    { label: 'multiple profile blocks', response: { ok: true, text: async () => profileHtml + profileHtml } },
+    { label: 'network failure', error: new Error('Network unavailable') },
+    { label: 'missing author page' },
+  ].forEach(({ label, response, error }) => {
+    it(`preserves the remaining author and the byline after ${label}`, async () => {
+      const { block, profilePath } = buildBlock({ authors: 2, picture: true });
+      const first = block.children[2].querySelector('a');
+      if (error) fetchStub.withArgs(`${first.href}.plain.html`).rejects(error);
+      else if (response) fetchStub.withArgs(`${first.href}.plain.html`).resolves(response);
+      else first.replaceWith(first.textContent);
+      block.children[3].querySelector('a').href = `${profilePath}-second`;
+      await init(block);
+      await waitFor(() => posting()?.author.length === 1);
+      expect(posting().author[0].url).to.equal(`${production}${profilePath}-second`);
+      expect(block.querySelectorAll('.blog-header-author').length).to.equal(2);
+      if (response || error) expect(window.lana.log.called).to.equal(true);
+    });
+  });
+
+  it('omits unauthored optional fields instead of using byline values', async () => {
+    const { block, profilePath } = buildBlock({ picture: true });
+    fetchStub.withArgs(`${window.location.origin}${profilePath}.plain.html`).resolves({
+      ok: true,
+      text: async () => '<div class="blog-author"><div><div>Author</div></div></div>',
+    });
+    await init(block);
+    await waitFor(() => posting()?.author.length === 1);
+    expect(posting().author[0]).to.deep.equal({
+      '@type': 'Person',
+      name: 'Author',
+      url: `${production}${profilePath}`,
+      '@id': `${production}${profilePath}#person`,
+      worksFor: { '@type': 'Organization', name: 'Adobe' },
+    });
+  });
+
+  it('outputs no duplicate Person when both rows reference the same author page', async () => {
+    const { block } = buildBlock({ authors: 2, picture: true });
+    await init(block);
+    await waitFor(() => posting()?.author.length === 1);
+    expect(fetchStub.getCalls().filter((call) => isProfileRequest(call.args[0])).length)
+      .to.equal(1);
+  });
+
+  it('renders the article and its schema when no author has an individual page', async () => {
+    const { block } = buildBlock({ link: false });
+    await init(block);
+    await waitFor(() => posting() !== null);
+    expect(posting().author).to.deep.equal([]);
+    expect(block.querySelector('h1')).to.exist;
+    expect(block.querySelector('.blog-header-share')).to.exist;
+  });
+});
 
 describe('blog-header reading time', () => {
   let main;
@@ -212,6 +387,71 @@ describe('blog-header decoration', () => {
     expect(window.sessionStorage.getItem('blog-reading-time')).to.equal('2');
   });
 
+  [
+    { metadata: 'eyebrow-start', selector: '.blog-header-eyebrow-start' },
+    { metadata: 'eyebrow-end', selector: '.blog-header-eyebrow-end' },
+    { metadata: 'publication-date', selector: '.blog-header-eyebrow-start' },
+  ].forEach(({ metadata, selector }) => {
+    it(`renders ${metadata} as text rather than HTML`, async () => {
+      fetchStub = mockFetch();
+      const value = '<img src=x onerror="void 0"> & Article';
+      setMetadata(metadata, value);
+      const { block } = buildBlock();
+      await init(block);
+      const text = block.querySelector(selector);
+      expect(text.textContent).to.equal(selector === '.blog-header-eyebrow-start' ? `Updated: ${value}` : value);
+      expect(text.children.length).to.equal(0);
+    });
+  });
+
+  it('prefixes the authored eyebrow start with Updated', async () => {
+    fetchStub = mockFetch();
+    setMetadata('eyebrow-start', 'October 28, 2026');
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+      .to.equal('Updated: October 28, 2026');
+  });
+
+  it('prefixes generated dates without changing the existing date format', async () => {
+    fetchStub = mockFetch();
+    setMetadata('publication-date', '2026-10-01');
+    setMetadata('updated-date', '2026-10-28');
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+      .to.equal('Updated: October 1, 2026 [October 28, 2026]');
+  });
+
+  it('does not render the Updated prefix without eyebrow start text or dates', async () => {
+    fetchStub = mockFetch();
+    const { block } = buildBlock();
+    await init(block);
+    expect(block.querySelector('.blog-header-eyebrow-start')).not.to.exist;
+  });
+
+  it('renders share labels as text rather than HTML', async () => {
+    fetchStub = mockFetch();
+    const value = '<img src=x onerror="void 0"> & Share';
+    const buttonLabel = stub(getConfig().placeholders, 'blog-share').value(value);
+    const headingLabel = stub(getConfig().placeholders, 'blog-share-post').value(value);
+    try {
+      const { block } = buildBlock();
+      await init(block);
+      const button = block.querySelector('.blog-header-share');
+      expect(button.firstChild.textContent).to.equal(value);
+      expect(button.querySelector('img')).not.to.exist;
+      expect(button.querySelector('svg')).to.exist;
+      const dialog = await openShareModal(button);
+      const heading = dialog.querySelector('.blog-share-heading');
+      expect(heading.textContent).to.equal(value);
+      expect(heading.children.length).to.equal(0);
+    } finally {
+      buttonLabel.restore();
+      headingLabel.restore();
+    }
+  });
+
   it('automatically loads section navigation after article decoration without duplicating it', async () => {
     fetchStub = mockFetch();
     const { main, block } = buildBlock();
@@ -223,7 +463,7 @@ describe('blog-header decoration', () => {
     await waitFor(() => main.querySelector('.blog-side-navigation a'));
     const navigation = main.querySelector('.blog-side-navigation');
     expect([...navigation.querySelectorAll('a')].map((link) => link.getAttribute('href')))
-      .to.deep.equal(['#section-1', '#section-2']);
+      .to.deep.equal(['#first-section', '#second-section']);
     expect(navigation.querySelector('nav').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     expect(main.querySelectorAll('.blog-side-navigation').length).to.equal(1);
@@ -289,13 +529,80 @@ describe('blog-header decoration', () => {
     expect(block.querySelector('.blog-header-author-meta').textContent).to.equal('Author Title | Company');
   });
 
-  it('keeps an authored picture and does not fetch a profile', async () => {
+  it('keeps an authored picture while fetching the profile for schema', async () => {
     fetchStub = mockFetch();
     const { block } = buildBlock({ picture: true });
     await init(block);
     expect(block.querySelector('.blog-header-author-avatar img').getAttribute('src')).to.equal('/authored.png');
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(true);
   });
+
+  [
+    { link: true, enabled: true, tag: 'A' },
+    { link: true, enabled: false, tag: 'SPAN' },
+    { link: false, enabled: true, tag: 'SPAN' },
+  ].forEach(({ link, enabled, tag }) => {
+    it(`renders authored names as text with link=${link} and enabled=${enabled}`, async () => {
+      fetchStub = mockFetch();
+      if (!enabled) setMetadata('article-author-link', 'off');
+      const { block } = buildBlock({ link, picture: true });
+      const name = '<img src=x onerror="void 0"> & Author';
+      const cell = block.children[2].firstElementChild;
+      (cell.querySelector('a') || cell.querySelector('p:not(:has(picture))')).textContent = name;
+      await init(block);
+      const authorName = block.querySelector('.blog-header-author-name');
+      expect(authorName.tagName).to.equal(tag);
+      expect(authorName.textContent).to.equal(name);
+      expect(authorName.children.length).to.equal(0);
+    });
+  });
+
+  it('renders names fetched from author profiles as text', async () => {
+    fetchStub = mockFetch({ profileMarkup: buildProfile({ name: '&lt;img src=x onerror="void 0"&gt; &amp; Author' }) });
+    const { block } = buildBlock({ name: null });
+    await init(block);
+    await waitFor(() => block.querySelector('.blog-header-author-name').textContent
+      === '<img src=x onerror="void 0"> & Author');
+    const authorName = block.querySelector('.blog-header-author-name');
+    expect(authorName.tagName).to.equal('A');
+    expect(authorName.children.length).to.equal(0);
+  });
+
+  [
+    // eslint-disable-next-line no-script-url -- payload must prove script URLs are rejected
+    'javascript:void(0)',
+    ' \tJaVa\nScRiPt:void(0)',
+    'data:text/html,test',
+    'vbscript:msgbox(1)',
+    'file:///author.html',
+    'https://[invalid',
+  ].forEach((href) => {
+    it(`rejects an unsafe or invalid author URL ${JSON.stringify(href)}`, async () => {
+      fetchStub = mockFetch();
+      const { block } = buildBlock({ metadata: false });
+      block.querySelector('a').setAttribute('href', href);
+      await init(block);
+      const authorName = block.querySelector('.blog-header-author-name');
+      expect(authorName.tagName).to.equal('SPAN');
+      expect(authorName.textContent).to.equal('Rachel Thornton');
+      expect(authorName.hasAttribute('href')).to.equal(false);
+      expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(false);
+      expect(window.lana.log.calledOnce).to.equal(true);
+      expect(window.lana.log.firstCall.args[0]).to.contain('author profile URL');
+    });
+  });
+
+  ['https://example.com/author', 'http://example.com/author', '//example.com/author']
+    .forEach((href) => {
+      it(`preserves an HTTP(S) author URL ${href}`, async () => {
+        fetchStub = mockFetch();
+        const { block } = buildBlock({ picture: true });
+        block.querySelector('a').setAttribute('href', href);
+        await init(block);
+        expect(block.querySelector('a.blog-header-author-name').getAttribute('href')).to.equal(href);
+        expect(window.lana.log.called).to.equal(false);
+      });
+    });
 
   it('fills title and company for a linked name without replacing the authored name', async () => {
     fetchStub = mockFetch();
@@ -327,7 +634,7 @@ describe('blog-header decoration', () => {
     expect(authors[1].querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(authors[0].querySelector('.blog-header-author-meta').textContent)
       .to.equal('Author Title | Company');
-    expect(fetchStub.getCalls().filter((c) => c.args[0].includes('.plain.html')).length).to.equal(1);
+    expect(fetchStub.getCalls().filter((c) => isProfileRequest(c.args[0])).length).to.equal(1);
   });
 
   it('resolves a direct URL link and preserves following authored metadata', async () => {
@@ -363,7 +670,7 @@ describe('blog-header decoration', () => {
       if (url.includes('blog-header.svg')) {
         return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
       }
-      if (url.includes('.plain.html')) {
+      if (isProfileRequest(url)) {
         return pending.then(() => ({
           ok: true,
           status: 200,
@@ -433,7 +740,7 @@ describe('blog-header decoration', () => {
       .to.equal('/authored.png');
     expect(block.querySelector('.blog-header-author-meta').textContent)
       .to.equal('Profile Title | Profile Company');
-    expect(fetchStub.getCalls().filter((c) => c.args[0].includes('.plain.html')).length).to.equal(1);
+    expect(fetchStub.getCalls().filter((c) => isProfileRequest(c.args[0])).length).to.equal(1);
   });
 
   it('fills metadata even when the profile has no picture', async () => {
@@ -478,14 +785,14 @@ describe('blog-header decoration', () => {
     expect(window.lana.log.called).to.equal(false);
   });
 
-  it('does not fetch missing profile fields when author links are disabled', async () => {
+  it('fetches schema without enriching the byline when author links are disabled', async () => {
     setMetadata('article-author-link', 'off');
     fetchStub = mockFetch();
     const { block } = buildBlock({ picture: true, metadata: false });
     await init(block);
     expect(block.querySelector('.blog-header-author-name').tagName).to.equal('SPAN');
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(true);
   });
 
   it('does not fetch missing metadata without a profile link', async () => {
@@ -496,7 +803,7 @@ describe('blog-header decoration', () => {
     const avatar = block.querySelector('.blog-header-avatar');
     expect(avatar.getAttribute('src')).to.equal('/libs/blocks/article-header/adobe-logo.svg');
     expect(avatar.alt).to.equal('');
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(false);
   });
 
   it('uses the default avatar on a failed profile request and logs it', async () => {
@@ -542,7 +849,7 @@ describe('blog-header decoration', () => {
   });
 
   it('keeps the default avatar without logging when the profile has no picture', async () => {
-    fetchStub = mockFetch({ profileMarkup: '<div class="blog-author"><p>Author</p></div>' });
+    fetchStub = mockFetch({ profileMarkup: '<div class="blog-author"><div><div>Author</div></div></div>' });
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
@@ -569,8 +876,9 @@ describe('blog-header decoration', () => {
       expect(block.querySelector('.blog-header-author-name').getAttribute('href')).to.equal(profilePath);
       expect(block.querySelector('.blog-header-author-meta').textContent)
         .to.equal('Profile Title | Profile Company');
-      expect(window.lana.log.calledOnce).to.equal(true);
-      expect(window.lana.log.firstCall.args[0]).to.contain('author profile image is invalid');
+      expect(window.lana.log.getCalls().some((call) => (
+        call.args[0].includes('author profile image is invalid')
+      ))).to.equal(true);
     });
   });
 
@@ -579,7 +887,8 @@ describe('blog-header decoration', () => {
     const { block, profilePath } = buildBlock({ authors: 2, metadata: false });
     await init(block);
     await waitFor(() => block.querySelectorAll('.blog-header-author-avatar picture').length === 2);
-    const calls = fetchStub.getCalls().filter((c) => c.args[0].includes(`${profilePath}.plain.html`));
+    const calls = fetchStub.getCalls()
+      .filter((c) => c.args[0] === `${window.location.origin}${profilePath}.plain.html`);
     expect(calls.length).to.equal(1);
     const pictures = block.querySelectorAll('.blog-header-author-avatar picture');
     expect(pictures[0]).not.to.equal(pictures[1]);
@@ -588,14 +897,14 @@ describe('blog-header decoration', () => {
       .to.deep.equal(['Profile Title | Profile Company', 'Profile Title | Profile Company']);
   });
 
-  it('disables the author link and profile fetch when article-author-link is off', async () => {
+  it('disables the author link but still fetches schema when article-author-link is off', async () => {
     setMetadata('article-author-link', 'off');
     fetchStub = mockFetch();
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelectorAll('a.blog-header-author-name').length).to.equal(0);
     expect(block.querySelector('span.blog-header-author-name').textContent).to.equal('Rachel Thornton');
-    expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(true);
   });
 });
 
@@ -728,7 +1037,723 @@ describe('blog-header author layout', () => {
   });
 });
 
+describe('blog-header section dividers', () => {
+  let fetchStub;
+
+  /* Builds top-level authored sections and an optional metadata-only section. */
+  function buildSections({ noDividers = false, articleSections = 2, relatedContent = true } = {}) {
+    const main = document.createElement('main');
+    const headerSection = document.createElement('div');
+    headerSection.className = 'section';
+    const block = document.createElement('div');
+    block.className = noDividers ? 'blog-header no-dividers' : 'blog-header';
+    block.innerHTML = '<div><div><h1>Title of the article</h1></div></div>'
+      + '<div><div>Summary of the article</div></div>';
+    headerSection.append(block);
+    main.append(headerSection);
+
+    for (let i = 0; i < articleSections; i += 1) {
+      const section = document.createElement('div');
+      section.className = 'section';
+      section.innerHTML = `<div><p>Article paragraph ${i}</p></div>`;
+      main.append(section);
+    }
+
+    if (relatedContent) {
+      const section = document.createElement('div');
+      section.className = 'section';
+      section.innerHTML = '<div class="card-metadata" hidden></div>';
+      main.append(section);
+    }
+
+    document.body.append(main);
+    return { main, headerSection, block };
+  }
+
+  const frameHeight = (headerSection) => parseFloat(
+    headerSection.style.getPropertyValue('--blog-divider-height'),
+  );
+  const distance = (from, to) => to.getBoundingClientRect().bottom
+    - from.getBoundingClientRect().top;
+
+  async function addSideNavigation({ headerSection, main }) {
+    [...main.children].slice(1).forEach((section) => {
+      if (section.querySelector('.card-metadata')) return;
+      section.firstElementChild.classList.add('content');
+    });
+    main.querySelector('.content').insertAdjacentHTML('afterbegin', '<h2>Article section</h2>');
+    const navigation = document.createElement('div');
+    navigation.className = 'blog-side-navigation';
+    headerSection.append(navigation);
+    await initSideNavigation(navigation);
+    return {
+      navigation,
+      layout: main.querySelector('.blog-article-layout'),
+      article: main.querySelector('.blog-article-content'),
+    };
+  }
+
+  afterEach(async () => {
+    await cleanup();
+    fetchStub?.restore();
+  });
+
+  it('marks only the header section and ignores the metadata-only section', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    await init(block);
+    const sections = [...main.children];
+    expect(headerSection.classList.contains('blog-divider-frame')).to.equal(true);
+    expect(sections.slice(1).some((section) => section.classList.contains('blog-divider-frame')))
+      .to.equal(false);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, sections[2]), 0.01);
+  });
+
+  it('ends the frame at the last section when related content is absent', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections({ relatedContent: false });
+    await init(block);
+    expect(frameHeight(headerSection))
+      .to.be.closeTo(distance(headerSection, main.lastElementChild), 0.01);
+  });
+
+  it('spans collapsed margins without changing article geometry', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    const sections = [...main.children];
+    sections[1].firstElementChild.firstElementChild.style.marginBlock = '24px';
+    sections[2].firstElementChild.firstElementChild.style.marginBlock = '32px';
+    const original = sections.map((section) => section.getBoundingClientRect());
+    await init(block);
+    // Header decoration changes its height, so compare the divider with the final layout.
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, sections[2]), 0.01);
+    expect(sections[2].getBoundingClientRect().top - sections[1].getBoundingClientRect().bottom)
+      .to.equal(original[2].top - original[1].bottom);
+    expect(sections[1].getBoundingClientRect().height).to.equal(original[1].height);
+    expect(sections[2].getBoundingClientRect().height).to.equal(original[2].height);
+  });
+
+  it('updates the continuous frame when article content resizes', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    await init(block);
+    const height = frameHeight(headerSection);
+    const lastArticle = main.children[2];
+    lastArticle.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    await waitFor(() => frameHeight(headerSection) > height);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastArticle), 0.01);
+  });
+
+  it('includes the full final section and refreshes when authored cards grow', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    const relatedSection = main.lastElementChild;
+    relatedSection.insertAdjacentHTML('afterbegin', '<div class="content"><p>Final article paragraph.</p></div>'
+      + '<div class="text"><h2>Recommended for you</h2></div>'
+      + '<div class="related-content-card" style="height: 100px"></div>');
+    const articleEnd = relatedSection.firstElementChild;
+    await init(block);
+    const expectedHeight = distance(headerSection, relatedSection);
+    expect(frameHeight(headerSection)).to.be.closeTo(expectedHeight, 0.01);
+
+    relatedSection.querySelector('.related-content-card').style.height = '300px';
+    await waitFor(() => frameHeight(headerSection) > expectedHeight);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+
+    const afterCards = frameHeight(headerSection);
+    articleEnd.insertAdjacentHTML('beforeend', '<div style="height: 100px"></div>');
+    await waitFor(() => frameHeight(headerSection) > afterCards);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+  });
+
+  it('detects the final article wrapper created after header initialization', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    await init(block);
+    const height = frameHeight(headerSection);
+    const relatedSection = main.lastElementChild;
+    relatedSection.insertAdjacentHTML('afterbegin', '<div class="content"><p>Later decorated article text.</p></div>'
+      + '<div class="text"><h2>Recommended for you</h2></div>');
+    await waitFor(() => frameHeight(headerSection) > height);
+    expect(frameHeight(headerSection))
+      .to.be.closeTo(distance(headerSection, relatedSection), 0.01);
+  });
+
+  it('frames trailing blocks without a sidenav and excludes the footer promo', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections();
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="tag-cta" style="height: 100px">'
+      + 'Explore related resources</div></div>'
+      + '<div class="section" data-footer-promo><div style="height: 200px">Footer promo</div></div>');
+    const lastSection = main.querySelector('.tag-cta').parentElement;
+    await init(block);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastSection), 0.01);
+  });
+
+  it('recognizes an undecorated authorable layout boundary without a sidenav', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections({ relatedContent: false });
+    const lastSection = main.lastElementChild;
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="section-metadata" hidden>'
+      + '<div><div>Style</div><div>blog-layout-end</div></div></div></div>'
+      + '<div class="section"><div style="height: 200px">Outside the layout</div></div>');
+    await init(block);
+    expect(frameHeight(headerSection)).to.be.closeTo(distance(headerSection, lastSection), 0.01);
+  });
+
+  it('ends the frame with the side navigation layout once it wraps the article', async () => {
+    fetchStub = mockFetch();
+    const fixture = buildSections();
+    await init(fixture.block);
+    const { layout, article } = await addSideNavigation(fixture);
+    article.insertAdjacentHTML('beforeend', '<div style="height: 150px"></div>');
+    await waitFor(() => (
+      Math.abs(frameHeight(fixture.headerSection) - distance(fixture.headerSection, layout)) < 0.01
+    ));
+    expect(frameHeight(fixture.headerSection))
+      .to.be.closeTo(distance(fixture.headerSection, layout), 0.01);
+  });
+
+  it('disables every divider when no-dividers is set', async () => {
+    fetchStub = mockFetch();
+    const { main, headerSection, block } = buildSections({ noDividers: true });
+    await init(block);
+    expect(main.querySelector('.blog-divider-frame')).to.not.exist;
+    expect(headerSection.style.getPropertyValue('--blog-divider-height')).to.equal('');
+  });
+
+  describe('divider styling', () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    let style;
+
+    beforeEach(() => {
+      fetchStub = mockFetch();
+      style = document.createElement('style');
+      // Core styles.css positions every top-level section.
+      style.textContent = `main > .section { position: relative; }\n${blogHeaderCss}\n${sideNavigationCss}`;
+      document.head.append(style);
+    });
+
+    afterEach(async () => {
+      style.remove();
+      await setViewport(originalViewport);
+    });
+
+    function buildStyledSections(options) {
+      const fixture = buildSections(options);
+      fixture.main.style.cssText = '--grid-margins-width: 120px; '
+        + '--grid-container-width: calc(100% - 240px); --color-gray-400: #B6B6B6;';
+      return fixture;
+    }
+
+    const rects = (elements) => elements.map((element) => element.getBoundingClientRect().toJSON());
+
+    function disableRule(selector) {
+      style.sheet.insertRule(`${selector} { content: none !important; }`, style.sheet.cssRules.length);
+    }
+
+    it('reserves the header gap before the sidenav loads and keeps it after', async () => {
+      await setViewport({ width: 1440, height: 900 });
+      const fixture = buildStyledSections();
+      const { main, headerSection, block } = fixture;
+      await init(block);
+      const firstArticle = main.children[1];
+      const headerBottom = () => headerSection.getBoundingClientRect().bottom;
+      expect(firstArticle.getBoundingClientRect().top - headerBottom()).to.equal(48);
+      const articleTop = firstArticle.getBoundingClientRect().top;
+
+      const { layout, article, navigation } = await addSideNavigation(fixture);
+      expect(layout.getBoundingClientRect().top - headerBottom()).to.equal(48);
+      expect(article.getBoundingClientRect().top).to.equal(articleTop);
+      expect(navigation.getBoundingClientRect().top - headerBottom()).to.equal(76);
+    });
+
+    it('draws the sidenav rule midway through the gap from the header rule to the article end', async () => {
+      await setViewport({ width: 1440, height: 900 });
+      const fixture = buildStyledSections();
+      await init(fixture.block);
+      const { layout, article, navigation } = await addSideNavigation(fixture);
+      const gap = parseFloat(getComputedStyle(layout).columnGap);
+      const frame = getComputedStyle(layout, '::before');
+      const layoutRect = layout.getBoundingClientRect();
+      expect(frame.content).to.equal('""');
+      expect(frame.pointerEvents).to.equal('none');
+      expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
+      expect(gap).to.equal(112);
+      expect(navigation.getBoundingClientRect().width).to.equal(280);
+      expect(layoutRect.left + parseFloat(frame.left) - navigation.getBoundingClientRect().right)
+        .to.be.closeTo(56, 0.5);
+      expect(layoutRect.left + parseFloat(frame.left) + gap / 2)
+        .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
+      expect(layoutRect.top + parseFloat(frame.top))
+        .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
+      expect(layoutRect.top + parseFloat(frame.top) + parseFloat(frame.height))
+        .to.be.closeTo(layoutRect.bottom, 0.5);
+
+      const elements = [layout, navigation, article, ...article.children];
+      const before = rects(elements);
+      disableRule('.blog-divider-frame + .blog-article-layout::before');
+      expect(rects(elements)).to.deep.equal(before);
+    });
+
+    it('mirrors the sidenav rule in right-to-left layouts', async () => {
+      await setViewport({ width: 1440, height: 900 });
+      const fixture = buildStyledSections();
+      fixture.main.dir = 'rtl';
+      await init(fixture.block);
+      const { layout, article } = await addSideNavigation(fixture);
+      const gap = parseFloat(getComputedStyle(layout).columnGap);
+      const frame = getComputedStyle(layout, '::before');
+      expect(gap).to.equal(112);
+      expect(layout.getBoundingClientRect().right - parseFloat(frame.right) - gap / 2)
+        .to.be.closeTo(article.getBoundingClientRect().right, 0.5);
+    });
+
+    it('leaves the sidenav layout unchanged when no-dividers is set', async () => {
+      await setViewport({ width: 1440, height: 900 });
+      const fixture = buildStyledSections({ noDividers: true });
+      await init(fixture.block);
+      const { layout, article, navigation } = await addSideNavigation(fixture);
+      const { top } = layout.getBoundingClientRect();
+      expect(top).to.equal(fixture.headerSection.getBoundingClientRect().bottom);
+      expect(article.getBoundingClientRect().top).to.equal(top);
+      expect(navigation.getBoundingClientRect().top).to.equal(top);
+      expect(getComputedStyle(layout).columnGap).to.equal('56px');
+      expect(getComputedStyle(layout, '::before').content).to.equal('none');
+      expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
+    });
+
+    [599, 375].forEach((width) => {
+      it(`moves the header rule below the sidenav in the stacked layout at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const fixture = buildStyledSections();
+        await init(fixture.block);
+        expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('""');
+        const { layout, article, navigation } = await addSideNavigation(fixture);
+        expect(getComputedStyle(layout, '::before').content).to.equal('none');
+        expect(getComputedStyle(fixture.headerSection).marginBlockEnd).to.equal('0px');
+        expect(getComputedStyle(navigation).marginBlockStart).to.equal('0px');
+        expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('none');
+
+        const rule = getComputedStyle(article, '::before');
+        const navRect = navigation.querySelector('nav').getBoundingClientRect();
+        const ruleTop = article.getBoundingClientRect().top + parseFloat(rule.top);
+        expect(rule.content).to.equal('""');
+        expect(rule.pointerEvents).to.equal('none');
+        expect(rule.blockSize).to.equal(width < 600 ? '1.5px' : '2px');
+        expect(rule.borderImageSource).to.include(width < 600
+          ? 'linear-gradient(rgb(192, 192, 192), rgb(192, 192, 192))'
+          : 'repeating-linear-gradient');
+        expect(rule.borderImageOutset).to.equal(`0 ${width}px`);
+        expect(ruleTop - navRect.bottom).to.equal(56);
+        expect(article.getBoundingClientRect().top - (ruleTop + parseFloat(rule.height)))
+          .to.equal(56);
+      });
+    });
+
+    [600, 768, 1199].forEach((width) => {
+      it(`keeps header and vertical sidenav rules in the tablet rail layout at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const fixture = buildStyledSections();
+        await init(fixture.block);
+        const { layout, article, navigation } = await addSideNavigation(fixture);
+        const gap = parseFloat(getComputedStyle(layout).columnGap);
+        const rule = getComputedStyle(layout, '::before');
+        expect(getComputedStyle(fixture.headerSection, '::after').content).to.equal('""');
+        expect(rule.content).to.equal('""');
+        expect(getComputedStyle(article, '::before').content).to.equal('none');
+        expect(getComputedStyle(navigation).position).to.equal('sticky');
+        expect(gap).to.equal(64);
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left)
+          - navigation.getBoundingClientRect().right).to.be.closeTo(32, 0.5);
+        expect(layout.getBoundingClientRect().left + parseFloat(rule.left) + gap / 2)
+          .to.be.closeTo(article.getBoundingClientRect().left, 0.5);
+        expect(layout.getBoundingClientRect().top + parseFloat(rule.top))
+          .to.equal(fixture.headerSection.getBoundingClientRect().bottom);
+      });
+    });
+
+    it('positions the frame 56px into the gutters above section backgrounds without changing layout', async () => {
+      await setViewport({ width: 1440, height: 900 });
+      const { main, headerSection, block } = buildStyledSections();
+      const tableSection = main.children[1];
+      tableSection.style.cssText = 'position: relative; display: grid; background: white';
+      await init(block);
+
+      const frame = getComputedStyle(headerSection, '::before');
+      expect(frame.content).to.equal('""');
+      expect(frame.insetInlineStart).to.equal('64px');
+      expect(frame.insetInlineEnd).to.equal('64px');
+      expect(frame.zIndex).to.equal('1');
+      expect(frame.pointerEvents).to.equal('none');
+      expect(frame.backgroundImage).to.include('rgb(182, 182, 182)');
+      expect(parseFloat(frame.blockSize)).to.be.closeTo(frameHeight(headerSection), 0.01);
+      expect(getComputedStyle(tableSection).display).to.equal('grid');
+
+      const before = rects([...main.children]);
+      disableRule('.blog-divider-frame::before');
+      expect(rects([...main.children])).to.deep.equal(before);
+    });
+
+    [600, 768, 1199].forEach((width) => {
+      it(`insets both outer dividers 40px without changing tablet layout at ${width}px`, async () => {
+        await setViewport({ width, height: 900 });
+        const { main, headerSection, block } = buildStyledSections();
+        await init(block);
+        const frame = getComputedStyle(headerSection, '::before');
+        expect(frame.content).to.equal('""');
+        expect(frame.insetInlineStart).to.equal('40px');
+        expect(frame.insetInlineEnd).to.equal('40px');
+
+        const before = rects([...main.children]);
+        disableRule('.blog-divider-frame::before');
+        expect(rects([...main.children])).to.deep.equal(before);
+      });
+    });
+
+    it('clamps desktop frame offsets at the viewport edge when the gutters are narrower than 56px', async () => {
+      await setViewport({ width: 1200, height: 900 });
+      const { main, headerSection, block } = buildStyledSections();
+      main.style.setProperty('--grid-margins-width', '40px');
+      await init(block);
+      const frame = getComputedStyle(headerSection, '::before');
+      expect(frame.insetInlineStart).to.equal('0px');
+      expect(frame.insetInlineEnd).to.equal('0px');
+    });
+
+    it('hides vertical framing on mobile while retaining the full-width header rule', async () => {
+      await setViewport({ width: 375, height: 900 });
+      const { headerSection, block } = buildStyledSections();
+      await init(block);
+      expect(getComputedStyle(headerSection, '::before').content).to.equal('none');
+      const bottom = getComputedStyle(headerSection, '::after');
+      expect(bottom.content).to.equal('""');
+      expect(parseFloat(bottom.width))
+        .to.be.closeTo(headerSection.getBoundingClientRect().width, 0.01);
+      expect(bottom.blockSize).to.equal('1.5px');
+      expect(bottom.backgroundImage)
+        .to.equal('linear-gradient(rgb(192, 192, 192), rgb(192, 192, 192))');
+    });
+  });
+});
+
+describe('blog-header reading progress', () => {
+  const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+  let fetchStub;
+  let scrollStub;
+  let heightStub;
+  let style;
+  let styleObserver;
+  let scrollTop;
+  let viewportHeight;
+
+  const nextFrame = () => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  });
+  const progress = (bar) => new DOMMatrix(getComputedStyle(bar).transform).a;
+
+  function mockRect(element, top, bottom) {
+    stub(element, 'getBoundingClientRect').callsFake(
+      () => new DOMRect(0, top - scrollTop, 600, bottom - top),
+    );
+  }
+
+  function buildArticle() {
+    const { main, block } = buildBlock({ authors: 0 });
+    block.classList.add('no-dividers');
+    const headerSection = block.closest('.section');
+    mockRect(headerSection, 0, 400);
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="content">'
+      + '<h2>Article section</h2><p>First copy.</p></div></div>'
+      + '<div class="section"><div class="content"><p>Final copy.</p></div></div>'
+      + '<div class="section"><div class="text">Related articles</div>'
+      + '<div class="card-metadata"></div></div>');
+    const [first, last] = main.querySelectorAll('.content');
+    mockRect(first, 600, 1800);
+    mockRect(last, 1800, 2600);
+    const globalNav = document.createElement('header');
+    globalNav.className = 'global-navigation';
+    stub(globalNav, 'getBoundingClientRect').returns(new DOMRect(0, 0, 600, 64));
+    main.prepend(globalNav);
+    return {
+      main, block, headerSection, first, last, related: main.lastElementChild,
+    };
+  }
+
+  async function scrollTo(top) {
+    scrollTop = top;
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+  }
+
+  beforeEach(() => {
+    fetchStub = mockFetch();
+    scrollTop = 1000;
+    viewportHeight = 800;
+    scrollStub = stub(window, 'scrollY').get(() => scrollTop);
+    heightStub = stub(window, 'innerHeight').get(() => viewportHeight);
+    style = document.createElement('style');
+    style.textContent = blogHeaderCss;
+    document.head.append(style);
+  });
+
+  afterEach(async () => {
+    styleObserver?.disconnect();
+    styleObserver = undefined;
+    await cleanup();
+    window.dispatchEvent(new Event('scroll'));
+    await nextFrame();
+    style.remove();
+    scrollStub.restore();
+    heightStub.restore();
+    fetchStub.restore();
+    await setViewport(originalViewport);
+  });
+
+  it('fills between the article boundaries, clamps, and reverses without counting related cards', async () => {
+    const { block } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(bar.hidden).to.equal(false);
+    expect(bar.getAttribute('aria-hidden')).to.equal('true');
+    expect(block.closest('.section').classList.contains('blog-divider-frame')).to.equal(false);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    await scrollTo(1800);
+    expect(progress(bar)).to.equal(1);
+    await scrollTo(2200);
+    expect(progress(bar)).to.equal(1);
+    await scrollTo(536);
+    expect(progress(bar)).to.equal(0);
+    await scrollTo(400);
+    expect(progress(bar)).to.equal(0);
+    await scrollTo(1000);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+  });
+
+  it('counts final copy sharing the related-cards section without requiring side navigation', async () => {
+    const { block, last, related } = buildArticle();
+    const lastSection = last.parentElement;
+    related.prepend(last);
+    lastSection.remove();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    await scrollTo(1800);
+    expect(progress(bar)).to.equal(1);
+  });
+
+  ['same section', 'separate section', 'mixed related-cards section'].forEach((layout) => {
+    it(`starts at a leading AI summary in the ${layout}, including after reparenting`, async () => {
+      const { block, headerSection, first, last, related } = buildArticle();
+      if (layout === 'mixed related-cards section') {
+        const lastSection = last.parentElement;
+        first.parentElement.append(last, ...related.children);
+        lastSection.remove();
+        related.remove();
+      }
+      await init(block);
+      const bar = block.querySelector('.blog-progress-bar');
+      expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+      const summary = document.createElement('div');
+      summary.className = 'ai-summary';
+      summary.innerHTML = '<div><div><h2>Key takeaways</h2><p>Summary copy.</p></div></div>';
+      mockRect(summary, 400, 600);
+      if (layout === 'separate section') {
+        const section = document.createElement('div');
+        section.className = 'section';
+        section.append(summary);
+        first.parentElement.before(section);
+      } else {
+        first.before(summary);
+      }
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo((1000 - 336) / (1800 - 336), 0.000001);
+      await scrollTo(336);
+      expect(progress(bar)).to.equal(0);
+      await scrollTo(400);
+      expect(progress(bar)).to.be.closeTo((400 - 336) / (1800 - 336), 0.000001);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo((400 - 336) / (1800 - 336), 0.000001);
+      await scrollTo(1800);
+      expect(progress(bar)).to.equal(1);
+    });
+  });
+
+  it('omits the bar for short articles and restores it when the viewport gets smaller', async () => {
+    const { block } = buildArticle();
+    viewportHeight = 2200;
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(bar.hidden).to.equal(true);
+    viewportHeight = 2064;
+    window.dispatchEvent(new Event('resize'));
+    await nextFrame();
+    expect(bar.hidden).to.equal(true);
+    viewportHeight = 800;
+    window.dispatchEvent(new Event('resize'));
+    await nextFrame();
+    expect(bar.hidden).to.equal(false);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    viewportHeight = 2200;
+    window.dispatchEvent(new Event('resize'));
+    await nextFrame();
+    expect(bar.hidden).to.equal(true);
+  });
+
+  it('does not create a bar when no-progress-bar is authored', async () => {
+    const { block } = buildArticle();
+    block.classList.add('no-progress-bar');
+    await init(block);
+    expect(block.querySelector('.blog-progress-bar')).not.to.exist;
+  });
+
+  it('discovers article copy added after initialization', async () => {
+    const { main, block, first, last, related } = buildArticle();
+    const sections = [first.parentElement, last.parentElement];
+    sections.forEach((section) => section.remove());
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(bar.hidden).to.equal(true);
+    related.before(...sections);
+    await nextFrame();
+    expect(bar.hidden).to.equal(false);
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    expect(main.querySelector('.blog-article-layout')).not.to.exist;
+  });
+
+  it('refreshes cached boundaries when copy is replaced or decorated through a class change', async () => {
+    const { block, last } = buildArticle();
+    last.classList.remove('content');
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    expect(progress(bar)).to.equal(1);
+    last.classList.add('content');
+    await nextFrame();
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (1800 - 536), 0.000001);
+    const replacement = last.cloneNode(true);
+    mockRect(replacement, 1800, 3400);
+    last.replaceWith(replacement);
+    await nextFrame();
+    expect(progress(bar)).to.be.closeTo((1000 - 536) / (2600 - 536), 0.000001);
+  });
+
+  it('remeasures cached copy when its height changes without replacing the element', async () => {
+    const { block, last } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    last.getBoundingClientRect.callsFake(
+      () => new DOMRect(0, 1800 - scrollTop, 600, 1600),
+    );
+    last.style.height = '1600px';
+    await waitFor(() => Math.abs(progress(bar) - (1000 - 536) / (2600 - 536)) < 0.000001);
+    expect(bar.hidden).to.equal(false);
+  });
+
+  it('preserves progress after deferred side navigation reparents the article', async () => {
+    const { main, block, headerSection } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    const before = progress(bar);
+    const navigation = document.createElement('div');
+    navigation.className = 'blog-side-navigation';
+    headerSection.append(navigation);
+    await initSideNavigation(navigation);
+    await nextFrame();
+    expect(main.querySelector('.blog-article-layout')).to.exist;
+    expect(progress(bar)).to.equal(before);
+    await scrollTo(1800);
+    expect(progress(bar)).to.equal(1);
+  });
+
+  [false, true].forEach((noDividers) => {
+    it(`follows stage's mobile divider and tablet rail with no-dividers=${noDividers}`, async () => {
+      await setViewport({ width: 599, height: 900 });
+      scrollTop = 0;
+      style.textContent += sideNavigationCss;
+      const { main, block, headerSection } = buildArticle();
+      block.classList.toggle('no-dividers', noDividers);
+      await init(block);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      const article = main.querySelector('.blog-article-content');
+      mockRect(article, 600, 2600);
+      await nextFrame();
+      const bar = block.querySelector('.blog-progress-bar');
+      expect(getComputedStyle(navigation).display).to.equal('contents');
+      const gap = noDividers ? 32 : 113.5;
+      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 - 4);
+      expect(progress(bar)).to.equal(0);
+      await scrollTo(600);
+      expect(parseFloat(bar.style.top)).to.equal(64);
+      await scrollTo(0);
+      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 - 4);
+      for (const width of [600, 1199, 1440]) {
+        await setViewport({ width, height: 900 });
+        await nextFrame();
+        expect(parseFloat(bar.style.top)).to.equal(395);
+      }
+    });
+  });
+
+  [
+    ['blog-layout-end', '<div class="section blog-layout-end"></div>'],
+    ['footer promo', '<div class="section" data-footer-promo></div>'],
+    ['undecorated section metadata', '<div class="section"><div class="section-metadata" hidden>'
+      + '<div><div>Style</div><div>blog-layout-end</div></div></div></div>'],
+  ].forEach(([name, boundary]) => {
+    it(`respects hidden sections and ${name} before and after reparenting`, async () => {
+      const { main, block, headerSection, first, related } = buildArticle();
+      related.remove();
+      first.parentElement.insertAdjacentHTML(
+        'beforebegin',
+        '<div class="section" hidden><div class="content">Hidden copy</div></div>',
+      );
+      mockRect(main.querySelector('[hidden] > .content'), 100, 900);
+      main.insertAdjacentHTML(
+        'beforeend',
+        `${boundary}<div class="section"><div class="content">Footer copy</div></div>`,
+      );
+      mockRect(main.lastElementChild.firstElementChild, 3000, 5000);
+      await init(block);
+      const bar = block.querySelector('.blog-progress-bar');
+      const expected = (1000 - 536) / (1800 - 536);
+      expect(progress(bar)).to.be.closeTo(expected, 0.000001);
+      const navigation = document.createElement('div');
+      navigation.className = 'blog-side-navigation';
+      headerSection.append(navigation);
+      await initSideNavigation(navigation);
+      await nextFrame();
+      expect(progress(bar)).to.be.closeTo(expected, 0.000001);
+      await scrollTo(1800);
+      expect(progress(bar)).to.equal(1);
+    });
+  });
+
+  it('reuses article discovery and avoids unchanged style writes after completion', async () => {
+    const { block, last } = buildArticle();
+    await init(block);
+    const bar = block.querySelector('.blog-progress-bar');
+    await scrollTo(2000);
+    const queries = stub(last.parentElement, 'querySelectorAll').callThrough();
+    const changes = [];
+    styleObserver = new MutationObserver((records) => changes.push(...records));
+    styleObserver.observe(bar, { attributes: true, attributeFilter: ['style', 'hidden'] });
+    await scrollTo(2100);
+    await scrollTo(2200);
+    expect(queries.called).to.equal(false);
+    expect(changes).to.have.length(0);
+    expect(progress(bar)).to.equal(1);
+  });
+});
+
 describe('blog-header share modal', () => {
+  const originalUrl = window.location.href;
   let fetchStub;
   let clipboardStub;
   let writeText;
@@ -742,6 +1767,7 @@ describe('blog-header share modal', () => {
 
   afterEach(async () => {
     await cleanup();
+    window.history.replaceState(null, '', originalUrl);
     clock?.restore();
     clock = null;
     clipboardStub.restore();
@@ -756,6 +1782,72 @@ describe('blog-header share modal', () => {
     document.head.append(link);
     expect(getShareUrl()).to.equal('https://business.adobe.com/blog/post');
     expect(getShareData().url).to.equal('https://business.adobe.com/blog/post');
+  });
+
+  [
+    'https://business.adobe.com/blog/post?ref=article&lang=en#details',
+    'http://example.test/blog/post?ref=article#details',
+    '/blog/post?ref=article#details',
+    './post?ref=article#details',
+  ].forEach((canonical) => {
+    it(`preserves the valid canonical share URL ${canonical}`, () => {
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.setAttribute('href', canonical);
+      link.className = 'blog-header-test-metadata';
+      document.head.append(link);
+      expect(getShareUrl()).to.equal(new URL(canonical, document.baseURI).href);
+      expect(window.lana.log.called).to.equal(false);
+    });
+  });
+
+  // eslint-disable-next-line no-script-url -- Verify rejection of executable URL schemes.
+  ['javascript:void(0)', 'data:text/html,example', 'https://[invalid'].forEach((canonical) => {
+    it(`logs and rejects the invalid canonical share URL ${canonical}`, () => {
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.setAttribute('href', canonical);
+      link.className = 'blog-header-test-metadata';
+      document.head.append(link);
+      expect(getShareUrl()).to.equal(originalUrl);
+      expect(window.lana.log.calledOnce).to.equal(true);
+      expect(window.lana.log.firstCall.args[0]).to.contain('canonical share URL');
+    });
+  });
+
+  it('keeps location-derived share URLs out of HTML parsing', async () => {
+    const marker = 'blog-share-location-probe';
+    const payload = `"><img src=x data-probe="${marker}" onerror="void 0">`;
+    const url = new URL(originalUrl);
+    url.searchParams.set('article', payload);
+    const previewParams = ['milolibs', 'martech', 'mep', 'georouting'];
+    previewParams.forEach((param) => url.searchParams.set(param, 'preview'));
+    url.hash = payload;
+    window.history.replaceState(null, '', url.href);
+    previewParams.forEach((param) => url.searchParams.delete(param));
+    url.hash = '';
+    const shareUrl = url.href;
+    const { insertAdjacentHTML } = Element.prototype;
+    const htmlStub = stub(Element.prototype, 'insertAdjacentHTML').callsFake(function insert(position, html) {
+      return insertAdjacentHTML.call(this, position, html);
+    });
+    try {
+      const dialog = await openShareModal();
+      expect(getShareUrl()).to.equal(shareUrl);
+      expect(htmlStub.getCalls().some((call) => call.args[1].includes(marker))).to.equal(false);
+      expect(dialog.querySelector('[data-probe]')).not.to.exist;
+      const x = dialog.querySelector('a[aria-label="Share on X"]');
+      expect(new URL(x.href).searchParams.get('url')).to.equal(shareUrl);
+      const linkedin = dialog.querySelector('a[aria-label="Share on LinkedIn"]');
+      expect(new URL(linkedin.href).searchParams.get('url')).to.equal(shareUrl);
+      const email = dialog.querySelector('a[aria-label="Share via email"]');
+      expect(new URL(email.href).searchParams.get('body')).to.equal(shareUrl);
+      dialog.querySelector('.blog-share-copy').click();
+      await waitFor(() => writeText.calledOnce);
+      expect(writeText.firstCall.args[0]).to.equal(shareUrl);
+    } finally {
+      htmlStub.restore();
+    }
   });
 
   [
@@ -807,6 +1899,36 @@ describe('blog-header share modal', () => {
     expect(actions.length).to.equal(4);
     expect([...actions].map((action) => action.getAttribute('aria-label')))
       .to.deep.equal(['Share on X', 'Share via email', 'Share on LinkedIn', 'Copy link']);
+  });
+
+  [
+    { metadata: 'og:title', selector: '.blog-share-card-title strong' },
+    { metadata: 'og:description', selector: '.blog-share-card-desc' },
+    { metadata: 'description', selector: '.blog-share-card-desc' },
+  ].forEach(({ metadata, selector }) => {
+    it(`renders ${metadata} as text rather than HTML in the share card`, async () => {
+      const value = '<img src=x onerror="void 0"> & Article';
+      setMetadata(metadata, value);
+      const dialog = await openShareModal();
+      const element = dialog.querySelector(selector);
+      expect(element).to.exist;
+      expect(element.textContent).to.equal(value);
+      expect(element.children.length).to.equal(0);
+    });
+  });
+
+  it('renders the document title fallback as text rather than HTML in the share card', async () => {
+    const originalTitle = document.title;
+    const value = '<img src=x onerror="void 0"> & Article';
+    try {
+      document.title = value;
+      const dialog = await openShareModal();
+      const title = dialog.querySelector('.blog-share-card-title strong');
+      expect(title.textContent).to.equal(value);
+      expect(title.children.length).to.equal(0);
+    } finally {
+      document.title = originalTitle;
+    }
   });
 
   it('honors authored share order without duplicate actions', async () => {

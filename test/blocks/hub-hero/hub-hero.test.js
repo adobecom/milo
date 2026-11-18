@@ -21,6 +21,46 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('promo CTA colors', () => {
+    let stylesheet;
+
+    before(async () => {
+      stylesheet = document.createElement('style');
+      stylesheet.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' });
+      document.head.append(stylesheet);
+    });
+
+    after(() => stylesheet.remove());
+    afterEach(() => document.body.replaceChildren());
+
+    ['light', 'dark'].forEach((theme) => {
+      it(`preserves ${theme} promo CTA contrast while inline links inherit body color`, async () => {
+        document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+        const block = document.querySelector('.hub-hero');
+        if (theme === 'dark') block.classList.add('dark');
+        await init(block);
+        block.classList.remove('heading-1');
+
+        const cta = block.querySelector('.promo-cta');
+        const reference = cta.cloneNode(true);
+        const referenceContainer = document.createElement('div');
+        referenceContainer.className = theme;
+        referenceContainer.append(reference);
+        document.body.append(referenceContainer);
+        const expected = getComputedStyle(reference);
+        expect(expected.color).not.to.equal(expected.backgroundColor);
+        expect(getComputedStyle(cta).color).to.equal(expected.color);
+
+        const copy = document.createElement('p');
+        copy.className = 'copy body-md';
+        copy.style.color = 'rgb(100, 110, 120)';
+        copy.innerHTML = 'Read <a href="/terms">terms</a>.';
+        block.querySelector('.hub-hero-header').append(copy);
+        expect(getComputedStyle(copy.querySelector('a')).color).to.equal(getComputedStyle(copy).color);
+      });
+    });
+  });
+
   describe('MEP inline MAS editing', () => {
     afterEach(() => {
       unwatchForMasContent();
@@ -143,10 +183,10 @@ describe('hub-hero block', () => {
       expect(kids[2].classList.contains('hub-hero-carousel')).to.be.true;
     });
 
-    it('decorates the hero header CTA as a promo-cta with an alias aria-label', () => {
+    it('decorates the hero header CTA as a promo-cta and keeps the authored aria-label', () => {
       const cta = block.querySelector('.hub-hero-header a.promo-cta');
       expect(cta).to.exist;
-      // text before the pipe is the label, text after is the aria-label
+      // decorateLinks has already moved the authored "Text | Label" into aria-label
       expect(cta.getAttribute('aria-label')).to.equal('Explore all Adobe products');
       expect(cta.textContent).to.contain('Explore now');
       expect(cta.textContent).to.not.contain('Explore all Adobe products');
@@ -366,6 +406,7 @@ describe('hub-hero block', () => {
     it('marks a modal link slide with role="button" and modal data attributes', () => {
       const modal = slides[1];
       expect(modal.getAttribute('role')).to.equal('button');
+      expect(modal.getAttribute('aria-haspopup')).to.equal('dialog');
       expect(modal.dataset.modalHash).to.equal('#slide2-modal');
       expect(modal.dataset.modalPath).to.equal('/modals/slide2');
     });
@@ -505,10 +546,47 @@ describe('hub-hero block', () => {
     });
 
     it('uses the same rendered-width check for keyboard focus', () => {
-      slides[0].dispatchEvent(new FocusEvent('focus'));
+      slides[0].focus();
       expect(slides[0].classList.contains('focused')).to.be.true;
       expect(container.classList.contains('stick-left')).to.be.false;
       expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('collapses the focused card and releases its anchor when focus leaves the carousel', () => {
+      containerWidth = 1500;
+      slides[3].focus();
+      expect(container.classList.contains('stick-right')).to.be.true;
+      slides[3].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body }));
+      expect(slides[3].classList.contains('focused')).to.be.false;
+      expect(container.classList.contains('stick-right')).to.be.false;
+    });
+
+    it('keeps the focused card while focus stays in the carousel or its modal opens', () => {
+      slides[0].focus();
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: slides[1] }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+
+      const originalUrl = window.location.href;
+      slides[0].href = '#hub-hero-tour';
+      window.history.pushState(null, '', '#hub-hero-tour');
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      window.history.replaceState(null, '', originalUrl);
+
+      const curtain = document.createElement('div');
+      curtain.className = 'modal-curtain';
+      document.body.append(curtain);
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      curtain.remove();
+    });
+
+    it('keeps the focused card when the window loses focus', () => {
+      slides[0].focus();
+      const hasFocus = sinon.stub(document, 'hasFocus').returns(false);
+      slides[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      hasFocus.restore();
+      expect(slides[0].classList.contains('focused')).to.be.true;
     });
 
     it('does not anchor a carousel that is exactly as wide as the viewport', () => {
@@ -608,6 +686,53 @@ describe('hub-hero block', () => {
         enterCard(slides[index]);
         expect(slides[index].classList.contains('hovered')).to.be.false;
       }
+    });
+
+    it('keeps hover state while a modal curtain is open and clears it once closed', () => {
+      const curtain = document.body.appendChild(document.createElement('div'));
+      curtain.className = 'modal-curtain';
+      enterCard(slides[0]);
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      expect(slides[0].classList.contains('hovered')).to.be.true;
+      curtain.remove();
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      expect(slides[0].classList.contains('hovered')).to.be.false;
+    });
+
+    it('clears hover when the modal closes with the pointer off the cards', async () => {
+      const curtain = document.body.appendChild(document.createElement('div'));
+      curtain.className = 'modal-curtain';
+      enterCard(slides[0]);
+      window.dispatchEvent(new CustomEvent('milo:modal:closed'));
+      curtain.remove();
+      await new Promise((resolve) => { setTimeout(resolve); });
+      expect(slides[0].classList.contains('hovered')).to.be.false;
+    });
+
+    it('does not expand a card for mouse-initiated focus', () => {
+      sinon.stub(slides[0], 'matches').withArgs(':focus-visible').returns(false);
+      slides[0].dispatchEvent(new FocusEvent('focus'));
+      expect(slides[0].classList.contains('focused')).to.be.false;
+    });
+
+    it('keeps one active card and keeps keyboard focus through pointer clears', () => {
+      slides[0].focus();
+      window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 }));
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      enterCard(slides[3]);
+      expect(slides[0].classList.contains('focused')).to.be.false;
+      expect(slides[3].classList.contains('hovered')).to.be.true;
+    });
+
+    it('restores the keyboard-focused card once the pointer leaves the carousel', async () => {
+      slides[0].focus();
+      enterCard(slides[3]);
+      expect(slides[0].classList.contains('focused')).to.be.false;
+      container.dispatchEvent(new MouseEvent('mouseleave', { clientX: 1460, clientY: 900 }));
+      await new Promise((resolve) => { setTimeout(resolve, 30); });
+      expect(slides[3].classList.contains('hovered')).to.be.false;
+      expect(slides[0].classList.contains('focused')).to.be.true;
+      expect(container.querySelectorAll('.hovered, .focused').length).to.equal(1);
     });
 
     it('reuses carousel context instead of querying slide ancestors during hover and focus', () => {
@@ -1205,9 +1330,9 @@ describe('hub-hero block', () => {
       block = await loadBlock('./mocks/fallbacks.html');
     });
 
-    it('falls back to the CTA text for the aria-label when there is no alias', () => {
+    it('does not add an aria-label to the CTA when none is authored', () => {
       const cta = block.querySelector('.hub-hero-header a.promo-cta');
-      expect(cta.getAttribute('aria-label')).to.equal('Get started');
+      expect(cta.hasAttribute('aria-label')).to.be.false;
       expect(cta.textContent).to.contain('Get started');
     });
 

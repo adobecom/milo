@@ -122,7 +122,7 @@ ICONS.forEach((icon) => {
     bundle: true,
     banner: { js: BANNER },
     entryPoints: [
-      `./node_modules/@spectrum-web-components/icon/src/spectrum-icon-${icon}.css.js/`,
+      `./node_modules/@spectrum-web-components/icon/src/spectrum-icon-${icon}.css.js`,
     ],
     platform: 'browser',
     format: 'esm',

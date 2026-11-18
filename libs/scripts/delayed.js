@@ -118,17 +118,38 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
+const isLocalHost = (hostname) => hostname === 'localhost' || hostname === '127.0.0.1';
+
+const hasDaPreviewParam = (params) => ['dapreview', 'quick-edit'].some((name) => params.get(name));
+
+export const isDaPreview = ({ hostname, search }) => {
+  const isDaHost = isLocalHost(hostname) || hostname.endsWith('.aem.page')
+    || /\.(stage-)?preview\.da\.live$/.test(hostname);
+  return isDaHost && hasDaPreviewParam(new URLSearchParams(search));
+};
+
+export const shouldAutoHighlight = ({ isLocal, isPreview, params }) => {
+  const mode = params.get('autoHighlight');
+  return !hasDaPreviewParam(params) && ((isPreview && mode !== 'off') || (isLocal && mode === 'on'));
+};
+
 export const loadPreflightResults = async () => {
-  const { hostname } = window.location;
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+  if (isDaPreview(window.location)) {
+    const { default: showDraftStatus } = await import('../features/preflight/draft-status.js');
+    showDraftStatus();
+    return;
+  }
+  const { hostname, search } = window.location;
+  const isLocal = isLocalHost(hostname);
   const isPreview = hostname.endsWith('.aem.page');
   const isLive = hostname.endsWith('.aem.live');
   if (!isLocal && !isPreview && !isLive) return;
+  const params = new URLSearchParams(search);
 
   const run = async () => {
-    if (isLocal || isPreview) {
+    if (shouldAutoHighlight({ isLocal, isPreview, params })) {
       const { default: autoHighlightUnpublished } = await import('../blocks/preflight/checks/diff/autoHighlight.js');
-      await autoHighlightUnpublished();
+      await autoHighlightUnpublished(params.get('autoHighlight') === 'on');
     }
     if (!isLocal) {
       const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');

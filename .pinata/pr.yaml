@@ -1,0 +1,28 @@
+# How the harness (fiesta Close) renders this repo's PR body. Placeholders are
+# substituted by the harness; a line whose placeholder cannot be resolved is
+# replaced by its declared fallback, keeping the review-bot-required shape.
+issue_key_pattern: '[A-Z][A-Z0-9]+-\d+'
+# Branch naming for harness-authored branches, in order of preference: the
+# Jira key alone (e.g. mwpw-198875); when intake carries no Jira key (a plain
+# Slack ask), a kebab slug of the title. The harness lowercases,
+# kebab-sanitizes, and length-caps the result so the aem.page preview
+# hostname always resolves.
+branch_pattern: ['{issue_key}', '{title_slug}']
+page: /
+fallbacks:
+  issue_key: 'Resolves: <!-- link the Jira ticket, e.g. [PROJECT-0000](…) -->'
+  # No visual evidence this run (gate skipped or nothing capturable): keep the
+  # review-bot Before/After line shape with honest placeholders instead of a
+  # guessed pair that nobody verified.
+  test_urls: |-
+    - Before: https://main--milo--adobecom.aem.page/?martech=off
+    - After: <!-- no verified visual evidence this run — see the run dashboard -->
+template: |
+  <!-- Before submitting, please review all open PRs. -->
+
+  {summary_bullets}
+
+  Resolves: [{issue_key}](https://jira.corp.adobe.com/browse/{issue_key})
+
+  **Test URLs:**
+  {test_urls}

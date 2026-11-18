@@ -119,19 +119,33 @@
 }
 
 /* Typing swaps the magnifier for the clear button, as in the design. */
-.product-pricing-filter-search:has(input:not(:placeholder-shown)) .product-pricing-icon {
+.product-pricing-filter-search:has(input:not(:placeholder-shown)) > .product-pricing-icon {
   display: none;
 }
 
-/* The native clear button, redrawn as the drawer's close icon. */
+/* The native clear button can't be reached by keyboard; ours replaces it. */
 .product-pricing-filter-search-input::-webkit-search-cancel-button {
-  appearance: none;
-  opacity: 1; /* the UA shows it only on hover or focus */
-  pointer-events: auto;
-  width: 16px;
-  height: 16px;
-  background: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"%3E%3Cpath d="M3 3l10 10M13 3L3 13" stroke="%23000" stroke-width="1.5"/%3E%3C/svg%3E') center / contain no-repeat;
+  display: none;
+}
+
+.product-pricing-filter-search-clear {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-inline-end: -4px; /* the 16px icon stays 16px from the edge */
+  padding: 0;
+  border: none;
+  background: none;
+  color: #000;
   cursor: pointer;
+}
+
+/* Shown only once it has its translated name. */
+.product-pricing-filter-search:has(input:not(:placeholder-shown)) .product-pricing-filter-search-clear[aria-label]:not([aria-label=""]) {
+  display: inline-flex;
 }
 
 .product-pricing-drawer {
@@ -292,6 +306,7 @@
 
 /* One ring for every control. */
 .product-pricing-filter-trigger:focus-visible,
+.product-pricing-filter-search-clear:focus-visible,
 .product-pricing-drawer-close:focus-visible,
 .product-pricing-drawer-reset:focus-visible,
 .product-pricing-group-toggle:focus-visible,

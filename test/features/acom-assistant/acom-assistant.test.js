@@ -37,6 +37,7 @@ describe('AcomAssistant shared client lifecycle', () => {
     clock.restore();
     window.AdobeMessagingExperienceClient = originalClient;
     window.lana = originalLana;
+    document.body.classList.remove('acom-assistant-open');
     sinon.restore();
   });
 
@@ -44,14 +45,38 @@ describe('AcomAssistant shared client lifecycle', () => {
     await assistant.loadAcomAssistant({ appid: 'surface-one' }, deps);
   }
 
+  describe('checkout client ID', () => {
+    let meta;
+
+    afterEach(() => meta?.remove());
+
+    it('passes bc-checkout-client-id metadata to client initialization', async () => {
+      meta = Object.assign(document.createElement('meta'), {
+        name: 'bc-checkout-client-id',
+        content: 'host-checkout-client',
+      });
+      document.head.append(meta);
+
+      await start();
+
+      expect(client.initialize.firstCall.args[0].checkoutClientId).to.equal('host-checkout-client');
+    });
+
+    it('defaults to acom_bc when bc-checkout-client-id metadata is absent', async () => {
+      await start();
+
+      expect(client.initialize.firstCall.args[0].checkoutClientId).to.equal('acom_bc');
+    });
+  });
+
   it('loads integration client assets for stage', async () => {
     await start();
 
     expect(deps.loadScript.calledWith(
-      'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.js',
+      'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.js',
     )).to.be.true;
     expect(deps.loadStyle.calledWith(
-      'https://integration-client.messaging.adobe.com/latest/AdobeMessagingClient.css',
+      'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.css',
     )).to.be.true;
   });
 
@@ -113,6 +138,21 @@ describe('AcomAssistant shared client lifecycle', () => {
     expect(client.sendUserMessage.args).to.deep.equal([[{ label: 'first' }], [{ label: 'second' }]]);
     await assistant.sendAcomAssistantUserMessage({ label: 'live' });
     expect(client.sendUserMessage.lastCall.args[0]).to.deep.equal({ label: 'live' });
+  });
+
+  it('toggles acom-assistant-open on the body from the window state', async () => {
+    const windowStateCallback = sinon.spy();
+    await assistant.loadAcomAssistant({ appid: 'surface-one', callbacks: { windowStateCallback } }, deps);
+    const { classList } = document.body;
+
+    callbacks.windowStateCallback({ state: 'panel' });
+    expect(classList.contains('acom-assistant-open')).to.be.true;
+    callbacks.windowStateCallback({ state: 'maximised' });
+    expect(classList.contains('acom-assistant-open')).to.be.true;
+    callbacks.windowStateCallback({ state: 'hidden' });
+    expect(classList.contains('acom-assistant-open')).to.be.false;
+    expect(windowStateCallback.args.map(([arg]) => arg.state))
+      .to.deep.equal(['panel', 'maximised', 'hidden']);
   });
 
   it('does not reinitialize BC for a callback-only registration', async () => {
@@ -417,9 +457,17 @@ describe('AcomAssistant shared client lifecycle', () => {
     it('logs an error when there is no app ID', () => {
       setConfig({});
       expect(assistant.getAcomAssistantIdentity())
-        .to.deep.equal({ appid: undefined, appver: undefined });
+        .to.deep.equal({ appid: undefined, appver: '1.0' });
       expect(window.lana.log.calledOnce).to.be.true;
       expect(window.lana.log.firstCall.args[0]).to.include('no app ID');
+    });
+
+    it('defaults the app version to 1.0 when none is authored', () => {
+      setConfig({});
+      addMeta('jarvis-surface-id', 'page-id');
+      expect(assistant.getAcomAssistantIdentity())
+        .to.deep.equal({ appid: 'page-id', appver: '1.0' });
+      expect(window.lana.log.called).to.be.false;
     });
 
     it('reports footer section metadata for a single open', async () => {

@@ -538,6 +538,7 @@ function registerInBlockActions(command) {
         return {
           fragment: searchParams.get('fragment') || searchParams.get('query'),
           field: searchParams.get('field') || '',
+          ...(searchParams.get('pzn') && { pzn: searchParams.get('pzn') }),
         };
       };
       const { fragment: sourceFragment, field } = getFragmentParams(blockSelector);
@@ -545,7 +546,9 @@ function registerInBlockActions(command) {
       if (blockSelector) {
         config.mep.inBlock[blockName].fragments ??= {};
         const { fragments } = config.mep.inBlock[blockName];
-        command.content = getFragmentParams(command.content).fragment;
+        const { fragment: targetFragment, pzn } = getFragmentParams(command.content);
+        command.content = targetFragment;
+        if (pzn) command.pzn = pzn;
         fragments[blockSelector] ??= {};
         fragments[blockSelector][field] = command;
         let overridesParent = document.querySelector('div.mas-overrides');
@@ -553,8 +556,14 @@ function registerInBlockActions(command) {
           overridesParent = createTag('div', { style: 'display: none;', class: 'mas-overrides' });
           document.body.appendChild(overridesParent);
         }
-        if (!overridesParent.querySelector(`aem-fragment[fragment="${command.content}"]`)) {
-          overridesParent.appendChild(createTag('aem-fragment', { fragment: command.content }));
+        const preloadSelector = command.pzn
+          ? `aem-fragment[fragment="${command.content}"][pzn="${command.pzn}"]`
+          : `aem-fragment[fragment="${command.content}"]:not([pzn])`;
+        if (!overridesParent.querySelector(preloadSelector)) {
+          overridesParent.appendChild(createTag('aem-fragment', {
+            fragment: command.content,
+            ...(command.pzn && { pzn: command.pzn }),
+          }));
         }
       }
       return;
@@ -1536,6 +1545,7 @@ export async function applyPers({ manifests }) {
   experiments = await Promise.all(
     experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
   );
+  if (config.mep.lcpCheck) config.mep.lcpExperiments = experiments.map((exp) => exp && { ...exp });
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
@@ -1779,10 +1789,12 @@ export async function init(enablements = {}) {
     isPostLCP = true;
   } else {
     for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
+    const preview = mepButton !== 'off'
+      && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton);
     config.mep = {
       updateFragDataProps,
-      preview: (mepButton !== 'off'
-        && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
+      preview,
+      lcpCheck: preview && new URLSearchParams(window.location.search.toLowerCase()).has('meplcp'),
       variantOverride: parseMepParam(mepParam),
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
@@ -1795,6 +1807,8 @@ export async function init(enablements = {}) {
       akamaiCode: akamaiCode?.toLowerCase(),
       consentState: getMepConsentConfig(),
     };
+    const lcpEl = config.mep.lcpCheck && document.querySelector('body > main > div');
+    if (lcpEl) config.mep.lcpSection = { clone: lcpEl.cloneNode(true) };
 
     manifests = manifests.concat(await combineMepSources(
       pzn,
@@ -1825,17 +1839,19 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
-      loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
+      // Flatten mep-next → caas/utils.js → {lingo-active, getUuid, caasIdentity} discovery chain
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      // TEMP: ?mepnext=off -> preview.js, else mep-next; gate + toLowerCase() hack die on removal.
-      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'off'
-        ? './preview.js' : '../mep/mep-next/mep-next.js';
-      import(previewSrc).then(({ saveToMmm }) => saveToMmm()).catch((e) => {
+      loadLink(`${config.base}/utils/caasIdentity.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      import('../mep/mep-next/mep-next.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });
+      if (config.mep.lcpCheck) {
+        import('../mep/mep-next/mep-lcp-check.js')
+          .then(({ default: checkLcpImages }) => checkLcpImages())
+          .catch((e) => log(`MEP LCP check error: ${e.toString()}`));
+      }
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);

@@ -1,7 +1,5 @@
-import { sendAnalytics } from '../../../martech/helpers.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
+import { sendAnalytics, processTrackingLabels } from '../../../martech/helpers.js';
 import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
-import { debounce } from '../../../utils/action.js';
 import { cloneWithPreviewMetadata } from '../../../utils/decorate.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
@@ -577,7 +575,7 @@ const updateContentSpacing = (el) => {
   vp.style.setProperty('--rm-controls-h', `${controlsH}px`);
   // Set min-height so the viewport never shrinks below what the content needs
   const needed = wrapperPadTop + foregroundH + contentH + 24 + controlsH;
-  const minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  const minHeight = `max(calc(${window.innerHeight}px - var(--rm-lcp-height-offset)), ${needed}px)`;
   if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
   // Applied to all wrappers to handle slide changes
@@ -1123,7 +1121,9 @@ export default function init(el) {
   // video/timer keep running for the whole drag. It no-ops within a breakpoint, so resizes
   // (e.g. the mobile address bar showing/hiding) never restart a paused video.
   window.addEventListener('resize', syncViewportAutoplay);
-  window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
+  import('../../../utils/action.js').then(({ debounce }) => {
+    window.addEventListener('resize', debounce(() => dynamicLayoutUpdates(el), 100));
+  }).catch((e) => window.lana?.log(`router-marquee: failed to load debounce: ${e}`, { tags: 'router-marquee', severity: 'info' }));
 
   const nextSection = el.closest('.section')?.nextElementSibling;
   if (nextSection) {

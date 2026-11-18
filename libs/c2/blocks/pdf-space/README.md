@@ -189,6 +189,7 @@ the marketing text).
 | `baseColumnSpread` | 1.20 | Horizontal spread of the 4 columns, as fraction of vW. Higher = cards spaced wider apart. |
 | `baseRowGap` | 0.60 | Vertical gap between the 2 rows, as fraction of vH. |
 | `columnCompressionTarget` | 0.675 | Column spread the grid compresses toward during settle. Lower = stronger squeeze. |
+| `topRowPanLag` | 0.42 | Fraction of the settle pan-up the top row skips (desktop/tablet). Higher = tighter row gap. Capped so top-row labels keep clear of the row below. |
 | `cardScaleDesktop` | 1.035 | Base scale applied to cards on the desktop grid. |
 
 ### Mockup positioning (resize-time, not scroll-driven)

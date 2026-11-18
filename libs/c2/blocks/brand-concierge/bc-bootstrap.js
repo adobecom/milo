@@ -455,8 +455,6 @@ export async function openSideModal(initialMessage, bootstrap) {
     content: innerModal,
     closeCallback: async () => {
       window.dispatchEvent(new CustomEvent('bc:side-modal-close'));
-      localStorage.setItem('bc-side-overlay', 'closed');
-      document.body.classList.remove('bc-side-open');
       resizeObserver.disconnect();
       window.removeEventListener('scroll', scrollListener);
       modal.classList.add('closing');
@@ -483,10 +481,9 @@ export async function openSideModal(initialMessage, bootstrap) {
   handleLocalNav();
   sideOverlayTop();
 
+  if (isC2()) modal.classList.add('is-c2');
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  document.body.classList.add('bc-side-open');
-  localStorage.setItem('bc-side-overlay', 'open');
 
   expandButton.addEventListener('click', () => {
     const modalClasses = modal.classList;
