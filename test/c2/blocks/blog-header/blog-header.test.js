@@ -472,6 +472,26 @@ describe('blog-header decoration', () => {
     expect(main.querySelectorAll('.blog-side-navigation').length).to.equal(1);
   });
 
+  it('builds the article layout before pending sections reveal', async () => {
+    fetchStub = mockFetch();
+    setMetadata('foundation', 'c2');
+    const { main, block } = buildBlock();
+    main.insertAdjacentHTML('beforeend', '<div class="section" data-status="pending">'
+      + '<h2>First section</h2><h2>Second section</h2></div>');
+    const articleSection = main.lastElementChild;
+    await init(block);
+    await waitFor(() => articleSection.closest('.blog-article-content'));
+    const navigation = main.querySelector('.blog-side-navigation');
+    expect(navigation.classList.contains('is-pending')).to.equal(true);
+    articleSection.innerHTML = '<div class="content"><h2>First section</h2><h2>Second section</h2></div>';
+    delete articleSection.dataset.status;
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => navigation.querySelector('nav a'));
+    expect(main.querySelectorAll('.blog-side-navigation').length).to.equal(1);
+    expect(navigation.classList.contains('is-pending')).to.equal(false);
+    expect(navigation.closest('.blog-article-layout')).to.equal(articleSection.closest('.blog-article-layout'));
+  });
+
   it('does not duplicate an existing side navigation or initialize a removed header', async () => {
     fetchStub = mockFetch();
     const { main, block } = buildBlock();

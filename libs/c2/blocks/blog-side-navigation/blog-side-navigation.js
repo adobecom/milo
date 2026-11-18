@@ -121,7 +121,7 @@ function trackActiveSection(block, headings, collapseControls) {
   return { setActiveIndex };
 }
 
-function addCollapseControl(list, label, collapsed) {
+function addCollapseControl(list, label) {
   if (list.children.length <= 1) return undefined;
 
   list.id = 'blog-side-navigation-sections';
@@ -137,10 +137,10 @@ function addCollapseControl(list, label, collapsed) {
   const items = [...list.children];
   items[0].append(button);
   const tablet = window.matchMedia('(width >= 768px)');
-  const expanded = { tablet: !collapsed, mobile: false };
+  const expanded = { tablet: false, mobile: false };
   let activeIndex = 0;
   const render = () => {
-    const collapsible = items.length > 3;
+    const collapsible = !tablet.matches || items.length > 3;
     const open = !collapsible || expanded[tablet.matches ? 'tablet' : 'mobile'];
     const focusedElement = document.activeElement;
     const visibleItem = open ? items[0] : items[activeIndex];
@@ -303,7 +303,7 @@ export default async function init(block) {
     list.append(createTag('li', null, link));
   });
 
-  const collapseControls = addCollapseControl(list, label, block.classList.contains('collapsed'));
+  const collapseControls = addCollapseControl(list, label);
   const relatedContent = block.querySelector('.blog-related-content')
     || articleSections.map((section) => section.querySelector('.blog-related-content')).find(Boolean);
   nav.append(list);
