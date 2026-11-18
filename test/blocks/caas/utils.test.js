@@ -95,6 +95,10 @@ describe('isResolvableCardReference', () => {
     expect(isResolvableCardReference('http://business.adobe.com/blog/post')).to.be.true;
   });
 
+  it('accepts a url with an explicit default port', () => {
+    expect(isResolvableCardReference('https://business.adobe.com:443/blog/post')).to.be.true;
+  });
+
   it('rejects a bare scheme, which would otherwise hash the empty string', () => {
     // The host test deliberately runs on the post-scheme remainder. Were it
     // short-circuited by the scheme, `https://` would classify as resolvable
@@ -1976,6 +1980,34 @@ describe('caas consumer: htmlIdentity', () => {
   it('resolves an extensionless excluded-card url to the published id', async () => {
     setFlag('true');
     expect(await excludeIds([{ contentId: `${BACOM}${ARTICLE}` }])).to.include(HTML_ID);
+  });
+
+  ['?utm_source=email', '#details', '?utm_source=email#details'].forEach((suffix) => {
+    it(`resolves card references with ${suffix} to their pathname identity`, async () => {
+      setFlag('true');
+      const card = { contentId: `${BACOM}${ARTICLE}${suffix}` };
+      const config = await getConfig({
+        ...defaultState,
+        featuredCards: [card],
+        hideCtaIds: [card],
+      });
+      expect(config.featuredCards).to.eql([HTML_ID]);
+      expect(config.hideCtaIds).to.eql([HTML_ID]);
+      expect(await excludeIds([card])).to.include(HTML_ID);
+    });
+  });
+
+  it('resolves references with an explicit default port to the published id', async () => {
+    setFlag('true');
+    const card = { contentId: `https://business.adobe.com:443${ARTICLE}` };
+    const config = await getConfig({
+      ...defaultState,
+      featuredCards: [card],
+      hideCtaIds: [card],
+    });
+    expect(config.featuredCards).to.eql([HTML_ID]);
+    expect(config.hideCtaIds).to.eql([HTML_ID]);
+    expect(await excludeIds([card])).to.include(HTML_ID);
   });
 
   it('passes an explicit uuid in excludedCards through untouched', async () => {

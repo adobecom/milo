@@ -1066,7 +1066,7 @@ const resolvableUrl = (value) => {
   // short-circuited by it: `https://` alone would otherwise be classified
   // resolvable, hash the empty string and inject a deterministic garbage id.
   const bare = trimmed.replace(/^https?:\/\//i, '');
-  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(bare)) return null;
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+(?::\d+)?([/?#]|$)/i.test(bare)) return null;
   return `https://${bare}`;
 };
 
@@ -1103,7 +1103,9 @@ const fetchUuidForCard = async (card, listName = 'cards') => {
   }
   try {
     const localizedLink = await localizeLinkAsync(url, null, true);
-    const link = String(localizedLink);
+    const localizedUrl = new URL(String(localizedLink));
+    // Publishers identify pages by origin and pathname, not tracking or anchor suffixes.
+    const link = `${localizedUrl.origin}${localizedUrl.pathname}`;
     warnOnIdentityPolicyMiss(link);
     // toCollectionIdentityUrl strips the scheme the same way the publishers do.
     // The old split('https://') missed http:// entirely, leaving the scheme on
