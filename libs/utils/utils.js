@@ -119,6 +119,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'aside-c2',
   'base-card',
   'brand-concierge',
   'brand-concierge-global',
@@ -2384,13 +2385,8 @@ export function loadMepAddons() {
   return promises;
 }
 
-// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
-function isMepNextOverlay() {
-  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
-}
-
 function initMepOverlay() {
-  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  if (!getConfig().mep?.preview) return;
   import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
     .then(({ default: init }) => init());
 }
@@ -2453,19 +2449,26 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
+function preloadModule(href) {
+  // WebKit can refetch a module when modulepreload is added after its import.
+  const url = new URL(href, document.baseURI).href;
+  if (performance.getEntriesByName(url).some(({ initiatorType }) => initiatorType === 'script')) return;
+  loadLink(href, { rel: 'modulepreload', crossorigin: 'anonymous' });
+}
+
 const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    preloadModule(`${base}/utils/decorate.js`);
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  preloadModule(`${blockPath}.js`);
   (blockDeps.get(name) ?? []).forEach((dep) => {
     const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    if (typeof url === 'string') preloadModule(url);
   });
   if (!hasStyles) return null;
   if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
@@ -2888,14 +2891,9 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    if (isMepNextOverlay()) {
-      // The overlay itself is initialized once via initMepOverlay() in loadArea.
-      import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-    } else {
-      import('../features/personalization/preview.js')
-        .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
-    }
+    // The overlay itself is initialized once via initMepOverlay() in loadArea.
+    import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
+      .then(({ default: init }) => init());
   }
   if (config?.env?.name !== 'prod' && (getMetadata('dynamic-nav') || config?.dynamicNavKey)) {
     const { miloLibs } = config;

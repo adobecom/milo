@@ -14,6 +14,8 @@ import {
   isAcomAssistantEnabled,
   isAupEnabled,
   getValidatedMarket,
+  isTrustedAutoBlock,
+  loadBlock,
   isC2GnavOnC1Host,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
@@ -32,6 +34,49 @@ export async function localizeGnavLinks(body) {
     if (a.href.includes('#_dnt')) return;
     a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   }));
+}
+
+function decorateModalLink(a) {
+  let url;
+  try {
+    url = new URL(a.href);
+  } catch (e) {
+    window.lana?.log(`Cannot make URL from C2 Gnav modal link - ${a.href}: ${e.toString()}`, {
+      tags: 'global-navigation',
+      severity: 'error',
+    });
+    return false;
+  }
+  const isFragment = getConfig().autoBlocks.some(
+    (candidate) => candidate.fragment && isTrustedAutoBlock(candidate.fragment, url),
+  );
+  if (!isFragment
+    || a.hasAttribute('data-wcs-osi')
+    || a.href === window.location.href
+    || a.href.split('/').pop().includes('.')
+    || a.textContent.match('media_.*.mp4')
+    || a.dataset.mepLingoSectionSwap
+    || a.dataset.mepLingoBlockSwap
+    || !url.hash
+    || url.hash.includes('#_inline')
+    || url.hash.includes('#_replacecell')
+    || url.hash.includes('#_dnb')) return false;
+
+  a.dataset.modalPath = url.pathname;
+  a.dataset.modalHash = url.hash;
+  a.href = url.hash;
+  a.className = `modal link-block ${[...a.classList].join(' ')}`;
+  if (url.hash.startsWith('#transcript')) {
+    a.classList.add('video-transcript-source');
+    import('../../../features/video-transcript/video-transcript.js');
+  }
+  return true;
+}
+
+export async function decorateModalLinks(root) {
+  const modals = [...root.querySelectorAll('a[href]:not([data-modal-path])')]
+    .filter((link) => decorateModalLink(link));
+  await Promise.all(modals.map((link) => loadBlock(link)));
 }
 
 export function getFederalDomain(config) {
@@ -250,6 +295,7 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    decorateModalLinks,
     loadBrandConcierge,
     appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
