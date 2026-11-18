@@ -61,7 +61,7 @@
     "commander": "^12.1.0",
     "echarts": "^6.1.0",
     "eslint": "8.11.0",
-    "lighthouse": "^13.1.0",
+    "lighthouse": "^13.6.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-nibble": "^8.1.0",
     "eslint-plugin-chai-friendly": "^0.7.2",
@@ -80,5 +80,9 @@
     "stylelint-config-standard": "25.0.0",
     "tar": "^7.5.21",
     "three": "0.160.1"
+  },
+  "overrides": {
+    "basic-ftp": "^6.2.4",
+    "serialize-javascript": "^7.1.3"
   }
 }

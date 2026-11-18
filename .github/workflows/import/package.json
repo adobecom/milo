@@ -11,11 +11,11 @@
   "dependencies": {
     "@adobe/mdast-util-gridtables": "^4.0.9",
     "@adobe/remark-gridtables": "^3.0.8",
-    "form-data": "^4.0.1",
+    "form-data": "^4.0.6",
     "hast-util-raw": "^9.1.0",
     "hast-util-to-html": "^9.0.4",
     "jsdom": "^26.0.0",
-    "mdast-util-to-hast": "^13.2.0",
+    "mdast-util-to-hast": "^13.2.2",
     "node-fetch": "^3.3.2",
     "p-queue": "^8.1.0",
     "remark-parse": "^11.0.0",
