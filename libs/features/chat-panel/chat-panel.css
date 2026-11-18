@@ -28,7 +28,6 @@ body.chat-panel-open {
   height: 100vh;
   background: var(--chat-panel-bg);
   border-left: var(--chat-panel-border);
-  box-shadow: -4px 0 16px rgba(0 0 0 / 10%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -50,6 +49,10 @@ body.chat-panel-open #chat-panel {
 
   #chat-panel {
     width: min(var(--chat-panel-width), 100vw);
+  }
+
+  body.chat-panel-open #chat-panel {
+    box-shadow: -4px 0 16px rgba(0 0 0 / 10%);
   }
 }
 
