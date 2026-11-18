@@ -182,6 +182,29 @@ describe('marketo-config', () => {
       expect(loadStateFromLocalStorage(lsKey)).to.deep.equal(fieldMap.applyTemplate('demo', templateRules, 3));
     });
 
+    it('hides preference panels emptied by managed form fields', async () => {
+      window.fetch = stub().resolves({
+        ok: true,
+        json: async () => ({
+          ':names': ['metadata', 'core-preferences', 'field-preferences', 'template-rules'],
+          metadata: {
+            data: [
+              { sheet: 'core-preferences', title: 'Core Preferences' },
+              { sheet: 'field-preferences', title: 'Field Preferences' },
+            ],
+          },
+          'core-preferences': { data: [{ prop: 'marketo host', label: 'Host', default: 'engage.adobe.com' }] },
+          'field-preferences': { data: preferences },
+          'template-rules': { data: ruleRows },
+        }),
+      });
+      const el = document.querySelector('.marketo-config');
+      await init(el);
+      await waitForElement('#ai_Core_Preferences', { rootEl: el });
+      expect(el.querySelector('#ai_Field_Preferences')).to.equal(null);
+      expect(el.querySelector('#ai_Form_Fields')).not.to.equal(null);
+    });
+
     it('copies template IDs that load in the Marketo runtime with new and legacy preferences', async () => {
       const { default: initMarketo } = await import('../../../libs/blocks/marketo/marketo.js');
       stub(navigator.clipboard, 'write').resolves();
