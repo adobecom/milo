@@ -3,6 +3,7 @@
   gap: var(--s2a-spacing-xl);
   box-sizing: border-box;
   padding-inline: var(--grid-margin-width);
+  padding-block-end: var(--s2a-spacing-3xl);
 }
 
 .blog-side-navigation {
@@ -10,8 +11,12 @@
   max-width: var(--body-max-width, 600px);
   margin-inline: auto;
   color: var(--s2a-color-content-default);
-  font-size: 16px;
+  font-size: var(--s2a-font-size-md);
   line-height: 1.5;
+}
+
+.blog-side-navigation.is-pending {
+  visibility: hidden;
 }
 
 .blog-side-navigation,
@@ -35,8 +40,8 @@
 }
 
 .blog-side-navigation > p {
-  margin: 0 0 20px;
-  font-weight: 700;
+  margin: 0 0 var(--s2a-spacing-20);
+  font-weight: var(--s2a-font-weight-label);
   text-transform: uppercase;
 }
 
@@ -47,7 +52,7 @@
 .blog-side-navigation nav > ul {
   margin: 0;
   padding: 0;
-  border: 1px solid var(--s2a-color-border-subtle);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
   border-radius: var(--s2a-border-radius-4);
   background: var(--s2a-color-background-default);
   box-shadow: 1px 1px 4px 0 var(--s2a-color-transparent-black-08);
@@ -60,9 +65,9 @@
 
 .blog-side-navigation nav > ul > li > a {
   display: block;
-  padding: 12px 8px;
+  padding: var(--s2a-spacing-sm) var(--s2a-spacing-xs);
   color: inherit;
-  font-weight: 400;
+  font-weight: var(--s2a-font-weight-body);
   text-decoration: none;
   overflow-wrap: anywhere;
 }
@@ -94,10 +99,10 @@
   flex: none;
   width: 32px;
   height: 32px;
-  margin-inline-end: 8px;
+  margin-inline-end: var(--s2a-spacing-xs);
   padding: 0;
-  border: 1px solid var(--s2a-color-gray-100);
-  border-radius: 6px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+  border-radius: var(--s2a-border-radius-6);
   background: var(--s2a-color-gray-50);
   color: inherit;
   font: inherit;
@@ -161,8 +166,8 @@
 
 .blog-side-navigation nav > ul > li > a:focus-visible,
 .blog-side-navigation-toggle:focus-visible {
-  outline: 2px solid var(--s2a-color-focus-ring-default);
-  outline-offset: -2px;
+  outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+  outline-offset: calc(-1 * var(--s2a-border-width-md));
 }
 
 .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle) {
@@ -202,6 +207,13 @@
     display: contents;
   }
 
+  /* Holds the collapsed navigation's height (heading line + one link row) until it renders. */
+  .blog-side-navigation.is-pending:not([hidden]) {
+    display: block;
+    height: calc(3em + 2 * var(--s2a-spacing-sm) + var(--s2a-border-width-sm));
+    overflow: hidden;
+  }
+
   .blog-side-navigation > p,
   .blog-side-navigation > nav,
   .blog-side-navigation > .blog-related-content {
@@ -221,8 +233,8 @@
   .blog-side-navigation > p {
     margin-bottom: 0;
     color: var(--s2a-color-gray-700);
-    font-size: 16px;
-    font-weight: 400;
+    font-size: var(--s2a-font-size-md);
+    font-weight: var(--s2a-font-weight-body);
     line-height: 1.5;
   }
 
@@ -246,8 +258,8 @@
   }
 
   .blog-side-navigation-toggle {
-    border: 1px solid var(--s2a-color-gray-100);
-    border-radius: 6px;
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+    border-radius: var(--s2a-border-radius-6);
     background: var(--s2a-color-gray-50);
   }
 
@@ -267,11 +279,11 @@
   }
 
   .blog-side-navigation nav > ul > li > a[aria-current="location"] {
-    font-weight: 800;
+    font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
   }
 
   .blog-side-navigation nav > ul > li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) > a {
-    font-weight: 800;
+    font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
   }
 }
 
@@ -302,7 +314,7 @@
   }
 
   .blog-side-navigation nav > ul > li > a[aria-current="location"] {
-    font-weight: 800;
+    font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
   }
 }
 
@@ -311,4 +323,44 @@
     grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
     gap: 56px;
   }
+}
+
+/* Authored body copy: small vertical rhythm and a smaller in-body heading. */
+.blog-article-content > .section > .content > * + * {
+  margin-block-start: var(--s2a-spacing-xs);
+}
+
+/* stylelint-disable no-descending-specificity -- article copy, never the nav list */
+.blog-article-content > .section > .content > p,
+.blog-article-content > .section > .content > ul,
+.blog-article-content > .section > .content > ol,
+.blog-article-content > .section > .content > ul li,
+.blog-article-content > .section > .content > ol li {
+  font-size: var(--s2a-typography-font-size-body-lg);
+}
+/* stylelint-enable no-descending-specificity */
+
+.blog-article-content > .section > .content > h2 {
+  margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
+  font-size: var(--s2a-typography-font-size-heading-2);
+  line-height: var(--s2a-typography-line-height-heading-2);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
+}
+
+/* Cap in-body H2s at 36px; the heading-2 token grows to 48/56px at desktop. */
+@media (width >= 1024px) {
+  .blog-article-content > .section > .content > h2 {
+    font-size: var(--s2a-font-size-4xl);
+    line-height: var(--s2a-font-line-height-xl);
+    letter-spacing: var(--s2a-font-letter-spacing-2xl);
+  }
+}
+
+/* In-body related-content cards get extra breathing room beneath them. */
+.blog-article-content > .section > .related-content-card {
+  margin-block-end: var(--s2a-spacing-xl);
+}
+
+.blog-article-content > .section > .tag-cta {
+  margin-block: var(--s2a-spacing-2xl);
 }

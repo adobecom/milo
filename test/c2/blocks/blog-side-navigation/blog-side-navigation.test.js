@@ -64,10 +64,17 @@ describe('blog-side-navigation section list', () => {
     const links = [...block.querySelectorAll('a')];
     expect(links.map((link) => link.textContent)).to.deep.equal(['Key takeaways', 'Next section']);
     expect(links.map((link) => link.getAttribute('href')))
-      .to.deep.equal(['#key-takeaways', '#next-section']);
+      .to.deep.equal(['#original', '#next-section']);
     expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
-      .to.deep.equal(['key-takeaways', 'next-section']);
+      .to.deep.equal(['original', 'next-section']);
     expect(main.querySelector('h2 em')).to.exist;
+  });
+
+  it('replaces an existing id that cannot be used as a CSS selector', async () => {
+    const { main, block } = buildArticle('<h2 id="2026-trends">2026 trends</h2>');
+    await init(block);
+    expect(block.querySelector('nav a').getAttribute('href')).to.equal('#section-2026-trends');
+    expect(main.querySelector('h2').id).to.equal('section-2026-trends');
   });
 
   it('uses translated headings and unique targets for repeated titles', async () => {
@@ -137,6 +144,18 @@ describe('blog-side-navigation section list', () => {
         .to.deep.equal(expectedTargets);
       expect(block.querySelector(':scope > p').textContent).to.equal('Explore this article');
       expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('keeps existing heading ids unless an authored label replaces them', async () => {
+      const { main, block } = authoredBlock(
+        ['Overview', ''],
+        '<h2 id="first">First</h2><h2 id="second-deep-link">Second</h2>',
+      );
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(['#overview', '#second-deep-link']);
+      expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
+        .to.deep.equal(['overview', 'second-deep-link']);
     });
 
     it('treats former setting names as labels and renders labels as plain text', async () => {
@@ -809,8 +828,11 @@ describe('blog-side-navigation section list', () => {
       const articleEnd = layout.getBoundingClientRect().bottom + window.scrollY;
       window.scrollTo({ top: articleEnd - 60, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      expect(block.getBoundingClientRect().bottom)
-        .to.be.closeTo(layout.getBoundingClientRect().bottom, 1);
+      // The rail stops at the layout's content edge, above the space reserved for the footer.
+      expect(block.getBoundingClientRect().bottom).to.be.closeTo(
+        layout.getBoundingClientRect().bottom - parseFloat(getComputedStyle(layout).paddingBottom),
+        1,
+      );
       window.scrollTo({ top: 0, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
       for (const width of [1279, 1024, 768, 767, 390, 458, 1440, 390]) {
@@ -867,6 +889,35 @@ describe('blog-side-navigation section list', () => {
         }
         expect(document.documentElement.scrollWidth).to.be.at.most(width);
       }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('keeps the article in place on mobile while a collapsed list waits for its sections', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 390, height: 800 });
+      // Starts like a real article (no heading margin collapsing through the article column).
+      const content = `<div>Intro</div>${['One', 'Two', 'Three', 'Four'].map((title) => `<h2>${title}</h2>`).join('')}`;
+      const { main, block } = buildArticle(content);
+      block.innerHTML = '<div><div>On this page</div></div>'
+        + '<div><div><ol><li>One</li><li>Two</li><li>Three</li><li>Four</li></ol></div></div>';
+      const articleSection = main.lastElementChild;
+      articleSection.dataset.status = 'pending';
+      await init(block);
+      const article = main.querySelector('.blog-article-content');
+      const pendingTop = article.getBoundingClientRect().top;
+      delete articleSection.dataset.status;
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+      await waitFor(() => block.querySelectorAll('nav a').length === 4);
+      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+      expect(article.getBoundingClientRect().top).to.be.closeTo(pendingTop, 1);
     } finally {
       style.remove();
       await setViewport(originalViewport);
@@ -1290,9 +1341,11 @@ describe('blog-side-navigation section list', () => {
     content.replaceWith(...content.childNodes);
     articleSection.dataset.status = 'pending';
     await init(block);
-    expect(block.hidden).to.equal(true);
+    expect(block.hidden).to.equal(false);
+    expect(block.classList.contains('is-pending')).to.equal(true);
     expect(block.querySelector('nav')).not.to.exist;
-    expect(main.querySelector('.blog-article-layout')).not.to.exist;
+    expect(block.closest('.blog-article-layout')).to.exist;
+    expect(articleSection.closest('.blog-article-content')).to.exist;
 
     content.append(...articleSection.childNodes);
     articleSection.append(content);
@@ -1300,6 +1353,7 @@ describe('blog-side-navigation section list', () => {
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     await waitFor(() => block.querySelectorAll('nav a').length === 4);
     expect(block.hidden).to.equal(false);
+    expect(block.classList.contains('is-pending')).to.equal(false);
     expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
     expect(block.querySelector(':scope > p > strong').textContent).to.equal('On this page');
@@ -1329,6 +1383,21 @@ describe('blog-side-navigation section list', () => {
       documentEvents.restore();
       windowEvents.restore();
     }
+  });
+
+  it('removes the early layout when the loaded article has no headings', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<p>No sections here.</p>');
+    const articleSection = main.lastElementChild;
+    articleSection.dataset.status = 'pending';
+    await init(block);
+    expect(articleSection.closest('.blog-article-content')).to.exist;
+    delete articleSection.dataset.status;
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => !main.querySelector('.blog-article-layout'));
+    expect(articleSection.parentElement).to.equal(main);
+    expect(block.hidden).to.equal(true);
+    expect(block.classList.contains('is-pending')).to.equal(false);
   });
 
   it('cancels a pending retry when the block is initialized before the deferred event', async () => {
