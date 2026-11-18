@@ -645,7 +645,8 @@ function setupCollapsingHeader(el) {
     const y = window.scrollY;
     pendingDelta += y - lastScrollY;
     lastScrollY = y;
-    if (isMobile() || scrollRafPending) return;
+    if (isMobile()) { pendingDelta = 0; return; }
+    if (scrollRafPending) return;
     scrollRafPending = true;
     requestAnimationFrame(() => {
       scrollRafPending = false;
@@ -655,6 +656,8 @@ function setupCollapsingHeader(el) {
       if (stickyTopCache === null) stickyTopCache = getStickyTop();
       const isStuck = cardsContainer.getBoundingClientRect().top <= stickyTopCache;
       if (!isStuck) { removeCollapsed(); return; }
+      // Ignore sub-pixel noise (Safari momentum settle, rubber-band, fractional scrollY).
+      if (Math.abs(delta) < 1) return;
       if (delta > 0) applyCollapsed();
       else if (delta < 0) removeCollapsed();
     });
