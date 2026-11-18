@@ -652,7 +652,6 @@ export function mountProductPricingFilter(collection, container) {
   // Always rendered, so screen readers hear the count or the empty state's text.
   const countEl = createTag('div', { class: 'sr-only', role: 'status', 'aria-live': 'polite' });
   let resultCount;
-  // Search term the last reported count belongs to.
   let countedSearch;
   const renderLabels = (params) => {
     const off = isCategoryOff(params, offTags);
@@ -663,8 +662,7 @@ export function mountProductPricingFilter(collection, container) {
     if (drawer.applied.textContent !== labels.applied) drawer.applied.textContent = labels.applied;
     bar.triggerLabel.textContent = labels.trigger;
     if (drawer.results.textContent !== labels.results) drawer.results.textContent = labels.results;
-    // Zero or stale counts stay visible but out of the atomic status announcement.
-    if (!fresh || resultCount === 0) drawer.results.setAttribute('aria-hidden', 'true');
+    if (!fresh) drawer.results.setAttribute('aria-hidden', 'true');
     else drawer.results.removeAttribute('aria-hidden');
     emptyEl.innerHTML = labels.empty;
     const emptyText = emptyEl.textContent.trim();

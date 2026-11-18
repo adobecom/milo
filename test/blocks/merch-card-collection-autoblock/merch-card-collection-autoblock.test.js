@@ -1378,7 +1378,7 @@ describe('merch-card-collection autoblock', () => {
         }
       });
 
-      it('zero-match search announces no count from any live region', async () => {
+      it('zero-match search announces no count from the page live regions', async () => {
         const original = data.placeholders.noSearchResultsText;
         data.placeholders.noSearchResultsText = '<p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p>';
         try {
@@ -1388,7 +1388,9 @@ describe('merch-card-collection autoblock', () => {
           collection.dispatchEvent(new CustomEvent('merch-card-collection:literals-changed', { detail: { resultCount: 0 } }));
           const status = container.querySelector('.sr-only[role="status"]');
           expect(status.textContent).to.equal('Your search for test did not yield any results');
-          expect(container.querySelector('.product-pricing-drawer-results').getAttribute('aria-hidden')).to.equal('true');
+          const drawerResults = container.querySelector('.product-pricing-drawer-results');
+          expect(drawerResults.hasAttribute('aria-hidden')).to.be.false;
+          expect(drawerResults.textContent).to.equal('0 Results');
           const emptyEl = container.querySelector('.product-pricing-results');
           expect(emptyEl.hasAttribute('role')).to.be.false;
           expect(emptyEl.hasAttribute('aria-live')).to.be.false;
