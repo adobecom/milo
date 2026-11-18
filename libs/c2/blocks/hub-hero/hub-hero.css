@@ -1383,6 +1383,18 @@
 
 }
 
+/*
+ * Hover width must win over the scroll-driven carouselSlideExpandSize animation directly.
+ * Feeding it through --slide-min-w leaves Firefox 159+ stuck at stale sizes until the next scroll.
+ */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) and (width >= 768px) {
+  .hub-hero .hub-hero-carousel-item:is(.hovered, .focused) {
+    --slide-min-w: initial;
+
+    min-width: var(--hover-w) !important;
+  }
+}
+
 /** prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
 
