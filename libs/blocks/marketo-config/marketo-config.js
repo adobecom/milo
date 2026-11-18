@@ -191,6 +191,7 @@ const getPanels = (panelsData, lsKey, templateRules, fieldMap) => {
 
   Object.entries(panelsData).forEach(([panelName, panelConfig]) => {
     const fieldsData = panelConfig.filter((field) => !managedProps.has(field.prop));
+    if (!fieldsData.length) return;
     panels.push({
       title: panelName.substring(0, 1).toUpperCase() + panelName.substring(1),
       content: html`<${Fields} fieldsData=${fieldsData} />`,

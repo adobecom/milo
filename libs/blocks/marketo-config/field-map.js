@@ -145,7 +145,7 @@ export const createFieldMap = (preferences = []) => {
       if (!field.prop) return;
       const source = field.kind === 'filter' ? rule.field_filters : rule.field_visibility;
       const value = source?.[field.id] ?? field.defaultValue;
-      patch[field.prop] = field.alwaysRequired && value !== HIDDEN ? 'required' : value;
+      patch[field.prop] = field.kind === 'visibility' && field.alwaysRequired && value !== HIDDEN ? 'required' : value;
     });
     patch[STEP_PREF] = getDefaultDistribution(patch, count);
     return patch;
