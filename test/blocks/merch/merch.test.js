@@ -922,6 +922,28 @@ describe('Merch Block', () => {
       const params = new URLSearchParams();
       expect(await getCheckoutContext(el, params)).to.be.null;
     });
+
+    it('keeps Genuine NC params in extraOptions', async () => {
+      const el = document.createElement('a');
+      const params = new URLSearchParams('osi=abc&type=checkoutUrl&closeWindow=1&openBrowser=1&static=0&takeAction=1&exitApp=1');
+      const context = await getCheckoutContext(el, params);
+      expect(JSON.parse(context.extraOptions)).to.deep.equal({ closeWindow: '1', openBrowser: '1', static: '0', takeAction: '1', exitApp: '1' });
+    });
+
+    it('forwards only the authored Genuine NC params', async () => {
+      const el = document.createElement('a');
+      const params = new URLSearchParams('osi=abc&type=checkoutUrl&static=0&exitApp=1');
+      const context = await getCheckoutContext(el, params);
+      expect(JSON.parse(context.extraOptions)).to.deep.equal({ static: '0', exitApp: '1' });
+    });
+
+    it('drops unlisted params and keeps allowed ones', async () => {
+      const el = document.createElement('a');
+      const params = new URLSearchParams('osi=abc&type=checkoutUrl&foo=bar&promoid=test');
+      const extra = JSON.parse((await getCheckoutContext(el, params)).extraOptions);
+      expect(extra.foo).to.be.undefined;
+      expect(extra.promoid).to.equal('test');
+    });
   });
 
   describe('function "buildCta"', () => {
