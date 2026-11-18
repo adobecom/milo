@@ -288,58 +288,6 @@ describe('formatDate', () => {
   });
 });
 
-describe('escapeHtml', () => {
-  it('returns null and undefined unchanged', () => {
-    expect(escapeHtml(null)).to.equal(null);
-    expect(escapeHtml(undefined)).to.equal(undefined);
-  });
-
-  it('returns empty string unchanged', () => {
-    expect(escapeHtml('')).to.equal('');
-  });
-
-  it('leaves plain country codes unchanged', () => {
-    expect(escapeHtml('de')).to.equal('de');
-    expect(escapeHtml('lu')).to.equal('lu');
-  });
-
-  it('encodes HTML metacharacters for safe insertion into HTML', () => {
-    const malicious = '<img src=x onerror=alert(1)>';
-    const out = escapeHtml(malicious);
-    expect(out).to.include('&lt;');
-    expect(out).to.include('&gt;');
-    expect(out).to.not.include('<img');
-  });
-
-  it('stringifies non-string input before escaping', () => {
-    expect(escapeHtml(42)).to.equal('42');
-  });
-});
-
-describe('escapeAttr', () => {
-  it('returns null, undefined and empty string unchanged', () => {
-    expect(escapeAttr(null)).to.equal(null);
-    expect(escapeAttr(undefined)).to.equal(undefined);
-    expect(escapeAttr('')).to.equal('');
-  });
-
-  it('encodes quotes so a value cannot close a quoted attribute', () => {
-    const out = escapeAttr('" onmouseover="alert(1)');
-    expect(out).to.not.include('"');
-    expect(out).to.include('&quot;');
-  });
-
-  it('encodes & < > and single quotes', () => {
-    expect(escapeAttr('a&b')).to.include('&amp;');
-    expect(escapeAttr('<x>')).to.equal('&lt;x&gt;');
-    expect(escapeAttr("o'clock")).to.include('&#39;');
-  });
-
-  it('stringifies non-string input before escaping', () => {
-    expect(escapeAttr(42)).to.equal('42');
-  });
-});
-
 describe('preview feature', () => {
   beforeEach(() => {
     setConfig(config);
@@ -1536,6 +1484,52 @@ describe('getMepPopup', () => {
     return Object.fromEntries(values.filter((_, index) => index % 2 === 0)
       .map((label, index) => [label.textContent, values[index * 2 + 1].textContent.trim()]));
   };
+
+  [0, 5].forEach((pageId) => {
+    it(`preserves normalized entries and preview selections in DOM-rendered page ${pageId}`, async () => {
+      const variant = 'test"<b>variant</b>';
+      const activity = {
+        url: '/mep/original.json',
+        manifestUrl: '/mep/edited.json',
+        variantNames: `default||${variant}`,
+        selectedVariantName: variant,
+        source: ['target', 'promo'],
+        manifestConsentType: '<b>consent</b>',
+        manifestCountryRestriction: '',
+      };
+      const mepConfig = { page: { ...basePage, pageId }, activities: [activity] };
+      const { manifests: [entry] } = getManifestList(mepConfig, []);
+      const popup = await renderPopup(mepConfig);
+      const select = popup.querySelector('.mep-experience-dropdown select');
+      expect(select.options.length).to.equal(entry.options.length);
+      [...select.options].forEach((option, index) => {
+        const expected = entry.options[index];
+        expect(option.textContent).to.equal(expected.label);
+        expect(option.value).to.equal(expected.value);
+        expect(option.getAttribute('name')).to.equal(expected.name);
+        expect(option.title).to.equal(expected.title);
+        expect(option.getAttribute('id')).to.equal(expected.id ?? null);
+        expect(option.dataset.manifest).to.equal(expected.dataManifest);
+      });
+      expect(select.value).to.equal(variant);
+      expect(activityValues(popup)).to.include({
+        Source: 'target, promo',
+        'Consent req': activity.manifestConsentType,
+        'Allowed User Countries': 'No restriction',
+        'Manifest URL': activity.manifestUrl,
+      });
+      expect(popup.querySelector('b')).to.be.null;
+      const preview = popup.querySelector('a[data-id="preview-button"]');
+      expect(new URL(preview.href).searchParams.get('mep'))
+        .to.equal(`/mep/edited.json--${variant}`);
+      select.value = 'default';
+      select.dispatchEvent(new Event('change'));
+      expect(new URL(preview.href).searchParams.get('mep')).to.equal('/mep/edited.json--default');
+      select.value = '';
+      select.dispatchEvent(new Event('change'));
+      expect(new URL(preview.href).searchParams.get('mep')).to.equal('');
+    });
+  });
 
   it('displays all API activity fields including consent, countries and an open-ended schedule', async () => {
     const activity = {

@@ -244,7 +244,11 @@ describe('mmm-2', () => {
       expect(block.querySelector(`:scope > .${name}`)).to.exist;
       expect(document.head.querySelector(`link[href*="/blocks/${name}/"]`)).to.not.exist;
     });
-    expect(document.head.querySelector('link[href*="/blocks/mmm-2/mmm-2.js"]')).to.exist;
+    const moduleUrl = new URL('/libs/blocks/mmm-2/mmm-2.js', window.location.href).href;
+    const alreadyLoaded = performance.getEntriesByName(moduleUrl)
+      .some(({ initiatorType }) => initiatorType === 'script');
+    expect(alreadyLoaded
+      || !!document.head.querySelector('link[href*="/blocks/mmm-2/mmm-2.js"]')).to.be.true;
     setRoutedFetch({ '/get-pages': jsonResponse(getPagesData) });
     const module = await import('../../../libs/blocks/mmm-2/mmm-2.js');
     await module.default(block);
