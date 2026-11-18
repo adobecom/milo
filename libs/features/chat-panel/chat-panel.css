@@ -23,6 +23,7 @@ body.chat-panel-open {
   position: fixed;
   top: 0;
   right: 0;
+  box-sizing: border-box;
   width: var(--chat-panel-width);
   height: 100vh;
   background: var(--chat-panel-bg);
@@ -38,6 +39,18 @@ body.chat-panel-open {
 
 body.chat-panel-open #chat-panel {
   transform: translateX(0);
+}
+
+/* Below desktop width the panel overlays the page instead of pushing it.
+   Provisional breakpoint; to be refined with design. */
+@media (max-width: 1199px) {
+  body.chat-panel-open {
+    padding-right: 0;
+  }
+
+  #chat-panel {
+    width: min(var(--chat-panel-width), 100vw);
+  }
 }
 
 .chat-panel-header {
