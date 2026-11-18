@@ -1067,7 +1067,7 @@ const resolvableUrl = (value) => {
   // resolvable, hash the empty string and inject a deterministic garbage id.
   const bare = trimmed.replace(/^https?:\/\//i, '');
   if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+(?::\d+)?([/?#]|$)/i.test(bare)) return null;
-  return `https://${bare}`;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${bare}`;
 };
 
 // The authoring contract for the three reference lists, exported so the
