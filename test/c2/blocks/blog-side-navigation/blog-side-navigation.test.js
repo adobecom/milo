@@ -592,10 +592,8 @@ describe('blog-side-navigation section list', () => {
           const links = [...list.querySelectorAll('a')];
           expect(block.querySelector('nav').children.length).to.equal(1);
           expect(block.querySelector('.blog-side-navigation-current')).not.to.exist;
-          if (count > 3) {
-            button.focus();
-            button.click();
-          }
+          button.focus();
+          button.click();
           expect(button.parentElement).to.equal(links[0].parentElement);
           expect(links.map((link) => link.textContent)).to.deep.equal(titles);
           expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
@@ -603,20 +601,18 @@ describe('blog-side-navigation section list', () => {
           expect(getComputedStyle(links[0].parentElement).backgroundColor)
             .to.equal('rgb(243, 243, 243)');
           expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
-          if (count > 3) {
-            expect(document.activeElement).to.equal(button);
-            await setViewport({ width: 768, height: 1000 });
-            await new Promise(requestAnimationFrame);
-            expect(button.parentElement).to.equal(links[0].parentElement);
-            await setViewport({ width, height: 1000 });
-            await new Promise(requestAnimationFrame);
-            expect(button.parentElement).to.equal(links[0].parentElement);
-            expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
-            expect(block.querySelector('nav').children.length).to.equal(1);
-            button.click();
-            expect(button.getAttribute('aria-expanded')).to.equal('false');
-            expect(button.parentElement).to.equal(links[0].parentElement);
-          }
+          expect(document.activeElement).to.equal(button);
+          await setViewport({ width: 768, height: 1000 });
+          await new Promise(requestAnimationFrame);
+          expect(button.parentElement).to.equal(links[0].parentElement);
+          await setViewport({ width, height: 1000 });
+          await new Promise(requestAnimationFrame);
+          expect(button.parentElement).to.equal(links[0].parentElement);
+          expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
+          expect(block.querySelector('nav').children.length).to.equal(1);
+          button.click();
+          expect(button.getAttribute('aria-expanded')).to.equal('false');
+          expect(button.parentElement).to.equal(links[0].parentElement);
           main.remove();
         }
       }
@@ -895,29 +891,32 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('keeps the article in place on mobile while a collapsed list waits for its sections', async () => {
+  it('keeps the article in place on mobile while a 2, 3 or 4 link list waits for its sections', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     style.textContent = SIDE_NAV_CSS;
     document.head.append(style);
     try {
       await setViewport({ width: 390, height: 800 });
-      // Starts like a real article (no heading margin collapsing through the article column).
-      const content = `<div>Intro</div>${['One', 'Two', 'Three', 'Four'].map((title) => `<h2>${title}</h2>`).join('')}`;
-      const { main, block } = buildArticle(content);
-      block.innerHTML = '<div><div>On this page</div></div>'
-        + '<div><div><ol><li>One</li><li>Two</li><li>Three</li><li>Four</li></ol></div></div>';
-      const articleSection = main.lastElementChild;
-      articleSection.dataset.status = 'pending';
-      await init(block);
-      const article = main.querySelector('.blog-article-content');
-      const pendingTop = article.getBoundingClientRect().top;
-      delete articleSection.dataset.status;
-      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
-      await waitFor(() => block.querySelectorAll('nav a').length === 4);
-      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
-      expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
-      expect(article.getBoundingClientRect().top).to.be.closeTo(pendingTop, 1);
+      for (const count of [2, 3, 4]) {
+        const titles = ['One', 'Two', 'Three', 'Four'].slice(0, count);
+        // Starts like a real article (no heading margin collapsing through the article column).
+        const content = `<div>Intro</div>${titles.map((title) => `<h2>${title}</h2>`).join('')}`;
+        const { main, block } = buildArticle(content);
+        block.innerHTML = '<div><div>On this page</div></div>'
+          + `<div><div><ol>${titles.map((title) => `<li>${title}</li>`).join('')}</ol></div></div>`;
+        const articleSection = main.lastElementChild;
+        articleSection.dataset.status = 'pending';
+        await init(block);
+        const article = main.querySelector('.blog-article-content');
+        const pendingTop = article.getBoundingClientRect().top;
+        delete articleSection.dataset.status;
+        document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+        await waitFor(() => block.querySelectorAll('nav a').length === count);
+        expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+        expect(article.getBoundingClientRect().top).to.be.closeTo(pendingTop, 1);
+        main.remove();
+      }
     } finally {
       style.remove();
       await setViewport(originalViewport);
@@ -1202,7 +1201,7 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('starts expanded and only offers collapse for more than three links on tablet', async () => {
+  it('only offers collapse for more than three links on tablet and starts those collapsed', async () => {
     const media = mockTablet();
     for (const count of [1, 2, 3, 4]) {
       const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -1220,10 +1219,10 @@ describe('blog-side-navigation section list', () => {
       } else {
         expect(mediaStub.firstCall.args[0]).to.equal('(width >= 768px)');
         expect(button.hidden).to.equal(false);
-        expect(button.getAttribute('aria-expanded')).to.equal('true');
+        expect(button.getAttribute('aria-expanded')).to.equal('false');
         expect(button.querySelector('.blog-side-navigation-toggle-icon')
           .getAttribute('aria-hidden')).to.equal('true');
-        expect(items.every((item) => !item.hidden)).to.equal(true);
+        expect(items.filter((item) => !item.hidden).length).to.equal(1);
         expect(document.getElementById(button.getAttribute('aria-controls')))
           .to.equal(block.querySelector('ul'));
         expect(button.getAttribute('aria-label')).to.equal('JUMP TO SECTION');
@@ -1237,7 +1236,7 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('defaults desktop and tablet navigation open while keeping collapsible mobile lists closed', async () => {
+  it('starts every collapsible list closed at mobile, tablet and desktop widths', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     try {
       for (const width of [390, 767, 768, 1279, 1280, 1440]) {
@@ -1249,11 +1248,12 @@ describe('blog-side-navigation section list', () => {
           await init(block);
           const button = block.querySelector('button');
           const items = [...block.querySelectorAll('li')];
-          const open = count <= 3 || width >= 768;
-          expect(button.hidden).to.equal(count <= 3);
+          const collapsible = width < 768 || count > 3;
+          const open = !collapsible;
+          expect(button.hidden).to.equal(!collapsible);
           expect(button.getAttribute('aria-expanded')).to.equal(String(open));
           expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
-          if (count > 3) {
+          if (collapsible) {
             button.click();
             expect(button.getAttribute('aria-expanded')).to.equal(String(!open));
             expect(items.filter((item) => !item.hidden).length).to.equal(open ? 1 : count);
@@ -1290,7 +1290,7 @@ describe('blog-side-navigation section list', () => {
   });
 
   [true, false].forEach((collapsed) => {
-    it(`supports the collapsed variant ${collapsed} without changing short lists or mobile defaults`, async () => {
+    it(`treats the collapsed variant ${collapsed} like the default collapsed state`, async () => {
       const originalViewport = { width: window.innerWidth, height: window.innerHeight };
       try {
         for (const width of [390, 768, 1440]) {
@@ -1303,13 +1303,14 @@ describe('blog-side-navigation section list', () => {
             await init(block);
             const button = block.querySelector('button');
             const items = [...block.querySelectorAll('li')];
-            const open = count <= 3 || (width >= 768 && !collapsed);
-            expect(button.hidden).to.equal(count <= 3);
+            const collapsible = width < 768 || count > 3;
+            const open = !collapsible;
+            expect(button.hidden).to.equal(!collapsible);
             expect(button.getAttribute('aria-expanded')).to.equal(String(open));
             expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
             expect(block.querySelectorAll('nav a').length).to.equal(count);
             expect(block.textContent).not.to.contain('Collapsed');
-            if (count > 3) {
+            if (collapsible) {
               button.focus();
               button.click();
               expect(button.getAttribute('aria-expanded')).to.equal(String(!open));
@@ -1415,7 +1416,7 @@ describe('blog-side-navigation section list', () => {
     expect(block.querySelectorAll('nav a').length).to.equal(2);
   });
 
-  it('keeps short mobile lists open and only collapses lists with four or more links', async () => {
+  it('starts mobile lists with two or more links collapsed', async () => {
     mockTablet(false);
     for (const count of [1, 2, 3, 4, 5]) {
       const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -1427,10 +1428,6 @@ describe('blog-side-navigation section list', () => {
       if (count === 1) {
         expect(button).not.to.exist;
         expect(items[0].hidden).to.equal(false);
-      } else if (count <= 3) {
-        expect(button.hidden).to.equal(true);
-        expect(button.getAttribute('aria-expanded')).to.equal('true');
-        expect(items.every((item) => !item.hidden)).to.equal(true);
       } else {
         expect(button.hidden).to.equal(false);
         expect(button.getAttribute('aria-expanded')).to.equal('false');
@@ -1457,17 +1454,18 @@ describe('blog-side-navigation section list', () => {
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
     const url = window.location.href;
+    expect(button.getAttribute('aria-expanded')).to.equal('false');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+    button.focus();
+    button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('true');
     expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
+    expect(document.activeElement === button).to.equal(true);
     links[1].focus({ preventScroll: true });
     button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('false');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
-    expect(document.activeElement).to.equal(button);
-    button.click();
-    expect(button.getAttribute('aria-expanded')).to.equal('true');
-    expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
-    expect(document.activeElement).to.equal(button);
+    expect(document.activeElement === button).to.equal(true);
     expect(window.location.href).to.equal(url);
     expect(scrollStub.called).to.equal(false);
   });
@@ -1525,6 +1523,9 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
+    expect(button.getAttribute('aria-expanded')).to.equal('false');
+    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+    button.click();
     links[1].focus({ preventScroll: true });
     media.matches = false;
     media.dispatchEvent(new Event('change'));
@@ -1553,7 +1554,7 @@ describe('blog-side-navigation section list', () => {
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
   });
 
-  it('keeps short lists open and preserves link focus across mobile and tablet breakpoints', async () => {
+  it('keeps short tablet lists open, collapses them on mobile and keeps focus in the list', async () => {
     const media = mockTablet();
     for (const count of [2, 3]) {
       const { main, block } = buildArticle(
@@ -1562,15 +1563,22 @@ describe('blog-side-navigation section list', () => {
       await init(block);
       const button = block.querySelector('button');
       const links = [...block.querySelectorAll('a')];
+      expect(button.hidden).to.equal(true);
+      expect(button.getAttribute('aria-expanded')).to.equal('true');
+      expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
       links[1].focus({ preventScroll: true });
-      for (const matches of [false, true, false]) {
-        media.matches = matches;
-        media.dispatchEvent(new Event('change'));
-        expect(button.hidden).to.equal(true);
-        expect(button.getAttribute('aria-expanded')).to.equal('true');
-        expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
-        expect(document.activeElement).to.equal(links[1]);
-      }
+      media.matches = false;
+      media.dispatchEvent(new Event('change'));
+      expect(button.hidden).to.equal(false);
+      expect(button.getAttribute('aria-expanded')).to.equal('false');
+      expect(block.querySelectorAll('li[hidden]').length).to.equal(count - 1);
+      expect(document.activeElement).to.equal(button);
+      media.matches = true;
+      media.dispatchEvent(new Event('change'));
+      expect(button.hidden).to.equal(true);
+      expect(button.getAttribute('aria-expanded')).to.equal('true');
+      expect(block.querySelectorAll('li[hidden]').length).to.equal(0);
+      expect(document.activeElement).to.equal(links[0]);
       links[1].click();
       await Promise.resolve();
       expect(button.hidden).to.equal(true);
@@ -1655,7 +1663,6 @@ describe('blog-side-navigation section list', () => {
         const button = block.querySelector('button');
         const items = [...block.querySelectorAll('nav > ul > li')];
         const links = items.map((item) => item.querySelector('a'));
-        if (tablet) button.click();
         button.focus({ preventScroll: true });
         const url = window.location.href;
         for (const activeIndex of [count - 1, 0, 1]) {

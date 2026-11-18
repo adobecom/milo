@@ -873,12 +873,17 @@ export default async function init(el) {
   decorateProgressBar(el, main);
   decorateArticleSchema(el, authorsData).catch((error) => logError(`schema failed: ${error.message}`));
 
-  document.addEventListener(MILO_EVENTS.DEFERRED, () => {
+  const loadNavigation = () => {
     if (!el.isConnected || main?.querySelector('.blog-side-navigation')) return;
     const navigation = createTag('div', { class: 'blog-side-navigation' });
     el.after(navigation);
     loadBlock(navigation).catch((error) => logError(`side navigation failed: ${error.message}`));
-  }, { once: true });
+  };
+
+  if (getBlogSections(el.closest('.section')).some((section) => section.dataset.status)) {
+    loadNavigation();
+  }
+  document.addEventListener(MILO_EVENTS.DEFERRED, loadNavigation, { once: true });
 
   return readingTime;
 }
