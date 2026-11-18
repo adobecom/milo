@@ -487,7 +487,7 @@ export async function loadMasComponent(componentName) {
     }
 
     try {
-      return await import(targetUrl);
+      return await import(/* webpackIgnore: true */ targetUrl);
     } catch (error) {
       failedExternalLoads.add(targetUrl);
       throw error;
