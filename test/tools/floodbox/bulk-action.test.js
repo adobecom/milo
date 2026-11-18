@@ -150,6 +150,17 @@ describe('BulkAction', () => {
       expect(callback.secondCall.args[0]).to.include({ path: paths[1], statusCode: 200 });
     });
 
+    it('waits for a real status when unprocessed resources are listed with status 0', async () => {
+      stubJob();
+      const queued = resources.map(({ path }) => ({ path, status: 0 }));
+      daFetchStub.onCall(1).resolves(response({ state: 'running', data: { resources: queued } }));
+
+      await runBulk();
+
+      sinon.assert.callCount(callback, 2);
+      callback.getCalls().forEach((call) => expect(call.args[0].statusCode).to.equal(200));
+    });
+
     it('fails and stops a job that makes no progress for 15 minutes', async () => {
       const clock = sinon.useFakeTimers({ toFake: ['Date'] });
       try {

@@ -118,7 +118,8 @@ export class BulkAction {
       });
     });
     const reportResources = (resources) => resources.forEach((resource) => {
-      if (!Number.isInteger(resource?.status)) return;
+      // Unprocessed resources can be listed with a non-HTTP placeholder status (e.g. 0).
+      if (!Number.isInteger(resource?.status) || resource.status < 100) return;
       const { path: resultPath, webPath, resourcePath } = resource;
       const keys = [resultPath, webPath, resourcePath, resourcePath?.replace?.(/\.md$/, '')]
         .filter((key) => typeof key === 'string');
