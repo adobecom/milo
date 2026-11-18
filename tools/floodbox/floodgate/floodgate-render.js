@@ -2,10 +2,10 @@
 import { html, nothing } from 'https://da.live/deps/lit/dist/index.js';
 import * as floodbox from '../floodbox.js';
 
-/** Strip admin preview URL prefix for display only. */
+/** Strip admin preview/live URL prefix for display only. */
 export function stripAdminPreviewPrefixForDisplay(href) {
   if (!href || typeof href !== 'string') return href || '';
-  let s = href.replace(/^https:\/\/admin\.(hlx|aem)\.page\/preview(\/|\s+|$)/i, '');
+  let s = href.replace(/^https:\/\/admin\.(hlx|aem)\.page\/(preview|live)(\/|\s+|$)/i, '');
   if (s && !s.startsWith('/') && !s.startsWith('http')) {
     s = `/${s}`;
   }
@@ -189,11 +189,19 @@ export function renderPromoteStep(cmp) {
   `;
 }
 
-export function previewErrorsForDisplay(cmp) {
-  return cmp._previewErrorList.map((e) => ({
+function adminErrorsForDisplay(list) {
+  return list.map((e) => ({
     href: stripAdminPreviewPrefixForDisplay(e.href),
     status: e.status,
   }));
+}
+
+export function previewErrorsForDisplay(cmp) {
+  return adminErrorsForDisplay(cmp._previewErrorList);
+}
+
+export function publishErrorsForDisplay(cmp) {
+  return adminErrorsForDisplay(cmp._publishErrorList);
 }
 
 export function renderPreviewStep(cmp) {
@@ -232,7 +240,7 @@ export function renderPublishStep(cmp) {
         ${floodbox.renderBadge('Total', cmp._publishedFilesCount + cmp._publishErrorList.length)}
       </div>
       <div class="detail-lists">
-        ${floodbox.renderList('Publish Errors', cmp._publishErrorList)}
+        ${floodbox.renderList('Publish Errors', publishErrorsForDisplay(cmp))}
       </div>
       ${renderLinksSection(cmp, cmp._publishedUrls, 'publish')}
       ${cmp._publishDuration > 0 ? html`<p>Duration: ${cmp._publishDuration} seconds</p>` : nothing}
@@ -353,10 +361,21 @@ export function getDoneSteps(cmp) {
   return { steps, allErrors };
 }
 
+function getDoneStepErrorList(cmp, name) {
+  switch (name) {
+    case 'Copy': return cmp._copiedErrorList;
+    case 'Promote': return cmp._promoteErrorList;
+    case 'Preview': return previewErrorsForDisplay(cmp);
+    case 'Publish': return publishErrorsForDisplay(cmp);
+    case 'Unpublish': return cmp._unpublishErrorList;
+    case 'Delete': return cmp._deleteErrorList;
+    default: return [];
+  }
+}
+
 export function renderDoneStepCard(cmp, s) {
-  const isCopyWithErrors = s.name === 'Copy' && s.errors > 0;
-  const isPreviewWithErrors = s.name === 'Preview' && s.errors > 0;
-  if (isCopyWithErrors) {
+  const errorList = s.errors > 0 ? getDoneStepErrorList(cmp, s.name) : [];
+  if (errorList.length) {
     return html`
       <details class="done-step-expandable">
         <summary class="detail-card detail-card-errors">
@@ -370,26 +389,7 @@ export function renderDoneStepCard(cmp, s) {
           <span class="done-expand-chevron" aria-hidden="true"></span>
         </summary>
         <div class="done-step-expand-body">
-          ${floodbox.renderList('Copy Errors', cmp._copiedErrorList)}
-        </div>
-      </details>
-    `;
-  }
-  if (isPreviewWithErrors) {
-    return html`
-      <details class="done-step-expandable">
-        <summary class="detail-card detail-card-preview-errors">
-          <div>
-            <h3>${s.name}</h3>
-            <p>${s.success}<span class="done-card-sub">/${s.success + s.errors}</span></p>
-          </div>
-          <div class="done-card-meta">
-            <span class="done-card-err">${s.errors} err</span>
-          </div>
-          <span class="done-expand-chevron" aria-hidden="true"></span>
-        </summary>
-        <div class="done-step-expand-body">
-          ${floodbox.renderList('Preview Errors', previewErrorsForDisplay(cmp))}
+          ${floodbox.renderList(`${s.name} Errors`, errorList)}
         </div>
       </details>
     `;
