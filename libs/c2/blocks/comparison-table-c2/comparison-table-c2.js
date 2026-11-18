@@ -638,20 +638,25 @@ function setupCollapsingHeader(el) {
   });
 
   let scrollRafPending = false;
+  let pendingDelta = 0;
   window.addEventListener('scroll', () => {
+    // Track the delta per scroll event: a rAF scheduled from one event can run before the next
+    // event lands, so reading scrollY there sees "no movement" and wrongly expands the header.
+    const y = window.scrollY;
+    pendingDelta += y - lastScrollY;
+    lastScrollY = y;
     if (isMobile() || scrollRafPending) return;
     scrollRafPending = true;
     requestAnimationFrame(() => {
       scrollRafPending = false;
+      const delta = pendingDelta;
+      pendingDelta = 0;
       if (isMobile()) return;
-      const y = window.scrollY;
-      const goingDown = y > lastScrollY;
-      lastScrollY = y;
       if (stickyTopCache === null) stickyTopCache = getStickyTop();
       const isStuck = cardsContainer.getBoundingClientRect().top <= stickyTopCache;
       if (!isStuck) { removeCollapsed(); return; }
-      if (goingDown && !wasCollapsed) applyCollapsed();
-      if (!goingDown && wasCollapsed) removeCollapsed();
+      if (delta > 0) applyCollapsed();
+      else if (delta < 0) removeCollapsed();
     });
   }, { passive: true });
 

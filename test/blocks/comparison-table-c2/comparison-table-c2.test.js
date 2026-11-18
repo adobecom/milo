@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
@@ -191,5 +191,38 @@ describe('Comparison Table C2', () => {
     await waitFor(() => el.querySelector('.mobile-filter-select[aria-label]'), 2000);
     expect(selects[0].getAttribute('aria-label')).to.equal('Choose table column 1');
     expect(selects[1].getAttribute('aria-label')).to.equal('Choose table column 2');
+  });
+
+  it('only toggles the collapsed header on real scroll movement', async () => {
+    await setViewport({ width: 1280, height: 800 });
+    const nextFrame = () => new Promise((r) => {
+      requestAnimationFrame(() => requestAnimationFrame(r));
+    });
+    const scrollTo = async (y) => {
+      window.scrollTo(0, y);
+      window.dispatchEvent(new Event('scroll'));
+      await nextFrame();
+    };
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    document.body.append(Object.assign(document.createElement('div'), { style: 'height: 3000px' }));
+    const el = document.querySelector('.comparison-table-c2');
+    init(el);
+    const container = el.querySelector('.header-cards-container');
+    await nextFrame();
+
+    await scrollTo(400);
+    expect(container.classList.contains('is-collapsed')).to.be.true;
+
+    await scrollTo(400);
+    expect(container.classList.contains('is-collapsed')).to.be.true;
+
+    await scrollTo(401);
+    expect(container.classList.contains('is-collapsed')).to.be.true;
+
+    await scrollTo(399);
+    expect(container.classList.contains('is-collapsed')).to.be.false;
+
+    await scrollTo(0);
+    await setViewport({ width: 800, height: 600 });
   });
 });

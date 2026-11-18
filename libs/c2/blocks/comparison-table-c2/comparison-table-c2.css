@@ -89,7 +89,6 @@
 
       .ct-header-item-card {
         box-shadow: 0 4px 16px var(--s2a-color-transparent-black-08);
-        transition: box-shadow 250ms ease;
       }
 
       .header-item-collapsible,
@@ -162,6 +161,7 @@
     border: var(--s2a-border-width-lg) solid var(--s2a-color-gray-25);
     padding: var(--s2a-spacing-md);
     background: var(--s2a-color-gray-25);
+    transition: box-shadow 250ms ease;
 
     @supports (animation-timeline: view()) {
       animation: ct-card-fade linear forwards;
