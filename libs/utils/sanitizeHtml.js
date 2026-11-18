@@ -10,7 +10,6 @@ function stringToHTML(str) {
   }
 }
 
-// these can navigate the page or rewrite URLs after sanitizing
 const UNSAFE_SELECTOR = [
   'script',
   'base',
