@@ -1069,7 +1069,7 @@
     /* Keep a stable flex basis large enough for either assembly endpoint. */
     width: max(var(--grid-img-width), var(--slide-max-width));
     max-width: var(--slide-max-width);
-    min-width: var(--hub-hero-carousel-item-min-width);
+    min-width: calc(var(--grid-img-width-min) + (var(--hub-hero-carousel-item-min-width) - var(--grid-img-width-min)) * var(--slide-min-progress, 1));
     transition-property: max-width, width, min-width, background-color;
     transition-duration: var(--card-expand-duration);
     transition-timing-function: var(--card-expand-easing);
@@ -1079,7 +1079,6 @@
     .hub-hero-carousel-item.hovered,
     .hub-hero-carousel-item.focused {
       --hover-w: min(calc(var(--carousel-item-media-height) * 1.25), calc(var(--hub-hero-carousel-container-width) * 0.5));
-      --slide-min-w: var(--hover-w);
       width: var(--hover-w);
       min-width: var(--hover-w);
       background-color: var(--s2a-color-gray-1000);
@@ -2151,21 +2150,33 @@
   }
 }
 
+/*
+ * The assembly min-width ramp animates this number instead of min-width itself. Firefox mishandles
+ * min-width hover transitions on cards whose animations also list min-width, even when idle.
+ */
+@property --slide-min-progress {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
 @keyframes carouselSlideExpandSize {
   0% {
     max-width: var(--grid-img-width);
-    min-width: var(--slide-min-w, var(--grid-img-width-min));
     max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
+
+    --slide-min-progress: 0;
   }
 
   40% {
-    min-width: var(--slide-min-w, var(--grid-img-width-min));
+    --slide-min-progress: 0;
   }
 
   100% {
     max-height: var(--slide-max-height, var(--hub-hero-carousel-container-height));
     max-width: var(--slide-max-width);
-    min-width: var(--slide-min-w, var(--hub-hero-carousel-item-min-width));
+
+    --slide-min-progress: 1;
   }
 }
 
