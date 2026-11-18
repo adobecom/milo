@@ -64,10 +64,17 @@ describe('blog-side-navigation section list', () => {
     const links = [...block.querySelectorAll('a')];
     expect(links.map((link) => link.textContent)).to.deep.equal(['Key takeaways', 'Next section']);
     expect(links.map((link) => link.getAttribute('href')))
-      .to.deep.equal(['#key-takeaways', '#next-section']);
+      .to.deep.equal(['#original', '#next-section']);
     expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
-      .to.deep.equal(['key-takeaways', 'next-section']);
+      .to.deep.equal(['original', 'next-section']);
     expect(main.querySelector('h2 em')).to.exist;
+  });
+
+  it('replaces an existing id that cannot be used as a CSS selector', async () => {
+    const { main, block } = buildArticle('<h2 id="2026-trends">2026 trends</h2>');
+    await init(block);
+    expect(block.querySelector('nav a').getAttribute('href')).to.equal('#section-2026-trends');
+    expect(main.querySelector('h2').id).to.equal('section-2026-trends');
   });
 
   it('uses translated headings and unique targets for repeated titles', async () => {
@@ -137,6 +144,18 @@ describe('blog-side-navigation section list', () => {
         .to.deep.equal(expectedTargets);
       expect(block.querySelector(':scope > p').textContent).to.equal('Explore this article');
       expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
+    });
+
+    it('keeps existing heading ids unless an authored label replaces them', async () => {
+      const { main, block } = authoredBlock(
+        ['Overview', ''],
+        '<h2 id="first">First</h2><h2 id="second-deep-link">Second</h2>',
+      );
+      await init(block);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+        .to.deep.equal(['#overview', '#second-deep-link']);
+      expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
+        .to.deep.equal(['overview', 'second-deep-link']);
     });
 
     it('treats former setting names as labels and renders labels as plain text', async () => {

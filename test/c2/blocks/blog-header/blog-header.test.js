@@ -1,9 +1,7 @@
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
-import {
-  getConfig, setConfig, loadBlock, MILO_EVENTS,
-} from '../../../../libs/utils/utils.js';
+import { getConfig, setConfig, loadBlock, MILO_EVENTS } from '../../../../libs/utils/utils.js';
 import { closeModal } from '../../../../libs/blocks/modal/modal.js';
 import initAuthor from '../../../../libs/blocks/blog-author/blog-author.js';
 import initSideNavigation from '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.js';
