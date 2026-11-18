@@ -2477,13 +2477,16 @@ const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => bloc
 
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
 
+// One sheet per site at the site content root, not per locale folder.
+export const getGeoIpSheetUrl = (config) => `${config.origin || window.location.origin}${config.contentRoot ?? ''}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+
 const geoIpWarm = {};
 export const getGeoIpWarmSheet = (url) => geoIpWarm[url];
 const warmGeoIpSheet = (config, section, isDoc = true) => {
   if (!lingoActive()) return;
   const tokenInLcp = /-geo-ip(}}|%7D%7D)/.test(section?.innerHTML ?? '');
   if (!tokenInLcp && !(isDoc && getMepEnablement('geo-ip-lcp'))) return;
-  const url = `${config.locale?.contentRoot}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
+  const url = getGeoIpSheetUrl(config);
   geoIpWarm[url] ??= customFetch({ resource: url, withCacheRules: true })
     .then((r) => (r?.ok ? r.json() : null))
     .catch(() => null);
