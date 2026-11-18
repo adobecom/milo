@@ -2196,11 +2196,6 @@
 }
 
 @supports not (animation-timeline: view()) {
-  /* Override more-specific three-slide animations in unsupported browsers. */
-  .hub-hero,
-  .hub-hero * {
-    animation: none !important;
-  }
 
   .hub-hero {
     --carousel-items-top: 15%;

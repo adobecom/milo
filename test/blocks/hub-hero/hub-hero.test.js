@@ -46,11 +46,15 @@ describe('hub-hero block', () => {
       const emulateSupport = (value) => value
         .replaceAll('(-moz-appearance: none)', '(display: block)')
         .replaceAll('(animation-timeline: view())', `(display: ${supported ? 'block' : 'unsupported'})`);
+      // Without timeline support, scroll-driven animations run as 0s and snap to their end state.
+      const emulateEngine = (value) => (supported
+        ? value
+        : value.replace(/animation-(timeline|range)\s*:/g, '--unsupported-animation-$1:'));
       const supports = CSS.supports.bind(CSS);
       sinon.stub(CSS, 'supports').callsFake((value) => supports(emulateSupport(`(${value})`)));
       styles = document.createElement('style');
       // Stubbing CSS.supports does not affect stylesheet @supports evaluation.
-      styles.textContent = emulateSupport(css);
+      styles.textContent = emulateEngine(emulateSupport(css));
       document.head.append(styles);
       document.body.innerHTML = await readFile({ path: './mocks/default.html' });
       const block = document.querySelector('.hub-hero');
@@ -70,12 +74,18 @@ describe('hub-hero block', () => {
       });
     });
 
-    [390, 1440].forEach((width) => {
-      it(`disables every animation in unsupported Firefox at ${width}px`, async () => {
+    it('keeps the static mobile fallback in unsupported Firefox', async () => {
+      const block = await loadFirefoxBlock(false, 390);
+      const column = block.querySelector('.hub-hero-image-grid-container-col');
+      expect(getComputedStyle(column).animationName).to.equal('none');
+    });
+
+    [1024, 1440].forEach((width) => {
+      it(`keeps carousel cards clickable in unsupported Firefox at ${width}px`, async () => {
         const block = await loadFirefoxBlock(false, width);
-        [block, ...block.querySelectorAll('*')].forEach((element) => {
-          expect(getComputedStyle(element).animationName).to.equal('none');
-        });
+        const cards = [...block.querySelectorAll('.hub-hero-carousel-item')];
+        expect(cards).to.have.length(3);
+        cards.forEach((card) => expect(getComputedStyle(card).pointerEvents).to.not.equal('none'));
       });
     });
 
