@@ -178,20 +178,27 @@ function getAuthoredData(block) {
   };
 }
 
+// createTag parses string content as HTML; authored and fetched copy must stay literal text.
+function textTag(tag, attrs, text) {
+  const el = createTag(tag, attrs);
+  el.textContent = text;
+  return el;
+}
+
 function buildCard({
   navHref, picture, title, date, readingTime, category,
 }) {
   const copy = createTag('div', { class: 'related-content-card-copy' });
-  if (date) copy.append(createTag('p', { class: 'related-content-card-eyebrow' }, date));
-  copy.append(createTag('h3', { class: 'related-content-card-title' }, title));
+  if (date) copy.append(textTag('p', { class: 'related-content-card-eyebrow' }, date));
+  copy.append(textTag('h3', { class: 'related-content-card-title' }, title));
 
   if (readingTime || category) {
     const meta = createTag('p', { class: 'related-content-card-meta' });
-    if (readingTime) meta.append(createTag('span', { class: 'related-content-card-readtime' }, readingTime));
+    if (readingTime) meta.append(textTag('span', { class: 'related-content-card-readtime' }, readingTime));
     if (readingTime && category) {
       meta.append(createTag('span', { class: 'related-content-card-separator', 'aria-hidden': 'true' }, '|'));
     }
-    if (category) meta.append(createTag('span', { class: 'related-content-card-category' }, category));
+    if (category) meta.append(textTag('span', { class: 'related-content-card-category' }, category));
     copy.append(meta);
   }
 
