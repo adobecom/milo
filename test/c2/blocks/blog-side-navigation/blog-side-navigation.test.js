@@ -828,8 +828,11 @@ describe('blog-side-navigation section list', () => {
       const articleEnd = layout.getBoundingClientRect().bottom + window.scrollY;
       window.scrollTo({ top: articleEnd - 60, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
-      expect(block.getBoundingClientRect().bottom)
-        .to.be.closeTo(layout.getBoundingClientRect().bottom, 1);
+      // The rail stops at the layout's content edge, above the space reserved for the footer.
+      expect(block.getBoundingClientRect().bottom).to.be.closeTo(
+        layout.getBoundingClientRect().bottom - parseFloat(getComputedStyle(layout).paddingBottom),
+        1,
+      );
       window.scrollTo({ top: 0, behavior: 'instant' });
       await new Promise(requestAnimationFrame);
       for (const width of [1279, 1024, 768, 767, 390, 458, 1440, 390]) {
@@ -1309,9 +1312,11 @@ describe('blog-side-navigation section list', () => {
     content.replaceWith(...content.childNodes);
     articleSection.dataset.status = 'pending';
     await init(block);
-    expect(block.hidden).to.equal(true);
+    expect(block.hidden).to.equal(false);
+    expect(block.classList.contains('is-pending')).to.equal(true);
     expect(block.querySelector('nav')).not.to.exist;
-    expect(main.querySelector('.blog-article-layout')).not.to.exist;
+    expect(block.closest('.blog-article-layout')).to.exist;
+    expect(articleSection.closest('.blog-article-content')).to.exist;
 
     content.append(...articleSection.childNodes);
     articleSection.append(content);
@@ -1319,6 +1324,7 @@ describe('blog-side-navigation section list', () => {
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     await waitFor(() => block.querySelectorAll('nav a').length === 4);
     expect(block.hidden).to.equal(false);
+    expect(block.classList.contains('is-pending')).to.equal(false);
     expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
     expect(block.querySelector(':scope > p > strong').textContent).to.equal('On this page');
@@ -1348,6 +1354,21 @@ describe('blog-side-navigation section list', () => {
       documentEvents.restore();
       windowEvents.restore();
     }
+  });
+
+  it('removes the early layout when the loaded article has no headings', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<p>No sections here.</p>');
+    const articleSection = main.lastElementChild;
+    articleSection.dataset.status = 'pending';
+    await init(block);
+    expect(articleSection.closest('.blog-article-content')).to.exist;
+    delete articleSection.dataset.status;
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => !main.querySelector('.blog-article-layout'));
+    expect(articleSection.parentElement).to.equal(main);
+    expect(block.hidden).to.equal(true);
+    expect(block.classList.contains('is-pending')).to.equal(false);
   });
 
   it('cancels a pending retry when the block is initialized before the deferred event', async () => {

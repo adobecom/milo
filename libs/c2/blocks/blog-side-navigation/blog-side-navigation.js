@@ -212,8 +212,16 @@ export default async function init(block) {
     return;
   }
 
-  if (main.querySelector(':scope > .section[data-status="pending"]')) {
-    block.hidden = true;
+  const headerSection = main.querySelector('.blog-header').closest('.section');
+  const pendingSection = main.querySelector([
+    ':scope > .section[data-status="pending"]',
+    ':scope > .blog-article-layout > .blog-article-content > .section[data-status="pending"]',
+  ].join(', '));
+  if (pendingSection) {
+    // Build the two-column grid now, while the article sections are still hidden, so they
+    // reveal in their final column instead of jumping once the navigation is ready.
+    block.classList.add('is-pending');
+    createLayout(block, headerSection, getBlogSections(headerSection));
     if (pendingInitializations.has(block)) return;
     const retry = () => {
       pendingInitializations.delete(block);
@@ -236,7 +244,6 @@ export default async function init(block) {
     pendingInitializations.delete(block);
   }
 
-  const headerSection = main.querySelector('.blog-header').closest('.section');
   const layout = block.closest('.blog-article-layout');
   const articleSections = layout
     ? [...layout.querySelectorAll(':scope > .blog-article-content > .section')]
@@ -262,6 +269,8 @@ export default async function init(block) {
   }
 
   if (!headings.length) {
+    block.classList.remove('is-pending');
+    if (layout) layout.replaceWith(...articleSections);
     block.hidden = block.dataset.failed !== 'true';
     if (!block.hidden) block.replaceChildren();
     return;
@@ -302,6 +311,7 @@ export default async function init(block) {
   title.textContent = label;
   block.replaceChildren(createTag('p', null, title), nav);
   block.hidden = false;
+  block.classList.remove('is-pending');
   createLayout(block, headerSection, articleSections);
   const sectionTracker = trackActiveSection(block, headings, collapseControls);
   [...list.querySelectorAll(':scope > li > a')].forEach((link, index) => {
