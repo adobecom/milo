@@ -2,11 +2,59 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-import { findFragments, runFindStep } from '../../../../tools/floodbox/floodgate/floodgate-workflows.js';
+import { executePreview, executePublish, findFragments, runFindStep } from '../../../../tools/floodbox/floodgate/floodgate-workflows.js';
+import { BulkAction } from '../../../../tools/floodbox/bulk-action.js';
 import RequestHandler from '../../../../tools/floodbox/request-handler.js';
 
 const ORG = 'test-org';
 const REPO = 'test-repo';
+
+describe('Floodgate bulk preview and publish', () => {
+  afterEach(() => sinon.restore());
+
+  [
+    { execute: executePreview, action: 'preview', prefix: 'preview', topic: 'preview' },
+    { execute: executePublish, action: 'live', prefix: 'publish', topic: 'publish' },
+  ].forEach(({ execute, action, prefix, topic }) => {
+    it(`uses bulk ${action} results to update success links and retry paths`, async () => {
+      const paths = [`/${ORG}/${REPO}/page.html`, `/${ORG}/${REPO}/asset.pdf`];
+      const cmp = {
+        token: 'test-token',
+        [`_${prefix}edFilesCount`]: 0,
+        [`_${prefix}edUrls`]: [],
+        [`_${prefix}ErrorList`]: [],
+        requestUpdate: sinon.spy(),
+      };
+      sinon.stub(BulkAction, 'delay').resolves();
+      const fetchStub = sinon.stub(RequestHandler.prototype, 'daFetch');
+      fetchStub.onCall(0).resolves({
+        ok: true,
+        json: async () => ({ job: { topic, name: 'job-1', state: 'created' } }),
+      });
+      fetchStub.onCall(1).resolves({
+        ok: true,
+        json: async () => ({
+          state: 'stopped',
+          data: { resources: [{ path: '/page', status: 200 }, { path: '/asset.pdf', status: 404 }] },
+        }),
+      });
+
+      await execute(cmp, ORG, REPO, paths);
+
+      expect(fetchStub.firstCall.args[0])
+        .to.equal(`https://admin.hlx.page/${action}/${ORG}/${REPO}/main/*`);
+      expect(cmp[`_${prefix}edFilesCount`]).to.equal(1);
+      expect(cmp[`_${prefix}edUrls`]).to.deep.equal([
+        `https://admin.hlx.page/${action}/${ORG}/${REPO}/main/page`,
+      ]);
+      expect(cmp[`_${prefix}ErrorList`]).to.deep.equal([{
+        href: `https://admin.hlx.page/${action}/${ORG}/${REPO}/main/asset.pdf`,
+        status: 404,
+        path: paths[1],
+      }]);
+    });
+  });
+});
 
 function makeCmp({ files, color, chronoBoxFragmentsEnabled = false, accessMode } = {}) {
   return {
