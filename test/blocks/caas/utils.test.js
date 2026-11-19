@@ -344,6 +344,7 @@ describe('getConfig', () => {
           leftPanel: {
             header: 'Refine Your Results',
             clearAllFiltersText: 'Clear All',
+            clearAllFiltersAriaLabel: 'Clear all filters',
             mobile: {
               filtersBtnLabel: 'Filters',
               panel: {
@@ -364,6 +365,7 @@ describe('getConfig', () => {
           topPanel: {
             groupLabel: 'Filters:',
             clearAllFiltersText: 'Clear All',
+            clearAllFiltersAriaLabel: 'Clear all filters',
             moreFiltersBtnText: 'More Filters +',
             mobile: {
               group: {
@@ -434,6 +436,22 @@ describe('getConfig', () => {
         lastViewedSession: '',
       },
     });
+  });
+
+  it('should include clearAllFiltersAriaLabel when authored', async () => {
+    const config = await getConfig(state, { ...strings, filterClearAllAriaLabel: 'Clear all Topic filters' });
+    expect(config.filterPanel.i18n.leftPanel.clearAllFiltersAriaLabel).to.equal('Clear all Topic filters');
+    expect(config.filterPanel.i18n.topPanel.clearAllFiltersAriaLabel).to.equal('Clear all Topic filters');
+    expect(config.filterPanel.i18n.leftPanel.clearAllFiltersText).to.equal('Clear All');
+    expect(config.filterPanel.i18n.topPanel.clearAllFiltersText).to.equal('Clear All');
+  });
+
+  it('should default clearAllFiltersAriaLabel to "Clear all filters" when not authored', async () => {
+    const config = await getConfig(state, strings);
+    expect(config.filterPanel.i18n.leftPanel.clearAllFiltersAriaLabel).to.equal('Clear all filters');
+    expect(config.filterPanel.i18n.topPanel.clearAllFiltersAriaLabel).to.equal('Clear all filters');
+    expect(config.filterPanel.i18n.leftPanel.clearAllFiltersText).to.equal('Clear All');
+    expect(config.filterPanel.i18n.topPanel.clearAllFiltersText).to.equal('Clear All');
   });
 
   it('should return localized filters', async () => {
@@ -620,6 +638,7 @@ describe('getConfig', () => {
           leftPanel: {
             header: 'Refine Your Results',
             clearAllFiltersText: 'Clear All',
+            clearAllFiltersAriaLabel: 'Clear all filters',
             mobile: {
               filtersBtnLabel: 'Filters',
               panel: {
@@ -640,6 +659,7 @@ describe('getConfig', () => {
           topPanel: {
             groupLabel: 'Filters:',
             clearAllFiltersText: 'Clear All',
+            clearAllFiltersAriaLabel: 'Clear all filters',
             moreFiltersBtnText: 'More Filters +',
             mobile: {
               group: {
@@ -1362,6 +1382,7 @@ describe('getFloodgateCaasConfig', () => {
           leftPanel: {
             header: 'Refine Your Results',
             clearAllFiltersText: 'Clear All',
+            clearAllFiltersAriaLabel: 'Clear all filters',
             mobile: {
               filtersBtnLabel: 'Filters',
               panel: {
@@ -1382,6 +1403,7 @@ describe('getFloodgateCaasConfig', () => {
           topPanel: {
             groupLabel: 'Filters:',
             clearAllFiltersText: 'Clear All',
+            clearAllFiltersAriaLabel: 'Clear all filters',
             moreFiltersBtnText: 'More Filters +',
             mobile: {
               group: {
