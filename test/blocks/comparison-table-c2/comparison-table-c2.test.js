@@ -217,4 +217,69 @@ describe('Comparison Table C2', () => {
     link.remove();
     await setViewport({ width: 800, height: 600 });
   });
+
+  it('only toggles the collapsed header on real scroll movement', async () => {
+    await setViewport({ width: 1280, height: 800 });
+    const nextFrame = () => new Promise((r) => {
+      requestAnimationFrame(() => requestAnimationFrame(r));
+    });
+    const scrollTo = async (y) => {
+      window.scrollTo(0, y);
+      // scrollTo doesn't fire a scroll event when the position is unchanged; dispatch one anyway
+      window.dispatchEvent(new Event('scroll'));
+      await nextFrame();
+    };
+    try {
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      document.body.append(Object.assign(document.createElement('div'), { style: 'height: 3000px' }));
+      const el = document.querySelector('.comparison-table-c2');
+      init(el);
+      const container = el.querySelector('.header-cards-container');
+      await nextFrame();
+
+      await scrollTo(400);
+      expect(container.classList.contains('is-collapsed')).to.be.true;
+
+      await scrollTo(400);
+      expect(container.classList.contains('is-collapsed')).to.be.true;
+
+      await scrollTo(401);
+      expect(container.classList.contains('is-collapsed')).to.be.true;
+
+      await scrollTo(399);
+      expect(container.classList.contains('is-collapsed')).to.be.false;
+    } finally {
+      window.scrollTo(0, 0);
+      await setViewport({ width: 800, height: 600 });
+    }
+  });
+
+  it('does not carry mobile scroll movement over to desktop', async () => {
+    const nextFrame = () => new Promise((r) => {
+      requestAnimationFrame(() => requestAnimationFrame(r));
+    });
+    const scrollTo = async (y) => {
+      window.scrollTo(0, y);
+      window.dispatchEvent(new Event('scroll'));
+      await nextFrame();
+    };
+    try {
+      await setViewport({ width: 800, height: 800 });
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      document.body.append(Object.assign(document.createElement('div'), { style: 'height: 3000px' }));
+      const el = document.querySelector('.comparison-table-c2');
+      init(el);
+      const container = el.querySelector('.header-cards-container');
+      await nextFrame();
+
+      await scrollTo(400);
+      await setViewport({ width: 1280, height: 800 });
+      await nextFrame();
+      await scrollTo(398);
+      expect(container.classList.contains('is-collapsed')).to.be.false;
+    } finally {
+      window.scrollTo(0, 0);
+      await setViewport({ width: 800, height: 600 });
+    }
+  });
 });
