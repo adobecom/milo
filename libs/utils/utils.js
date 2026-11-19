@@ -134,6 +134,7 @@ const C2_BLOCKS = [
   'email-collection-c2',
   'explore-card',
   'faq',
+  'figure-c2',
   'firefly-globe',
   'floating-cta',
   'global-footer',

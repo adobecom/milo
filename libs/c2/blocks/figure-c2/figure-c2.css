@@ -1,0 +1,51 @@
+.figure-c2 {
+  --figure-c2-media-max-height: 600px; /* carried over from the C1 figure block; no --s2a- token */
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-md);
+
+  figure {
+    margin: 0;
+    text-align: center;
+  }
+
+  :is(img, video) {
+    max-width: 100%;
+    max-height: var(--figure-c2-media-max-height);
+  }
+
+  :is(img, video, .milo-video) {
+    border-radius: var(--s2a-border-radius-sm);
+  }
+
+  .milo-video {
+    overflow: clip;
+  }
+
+  figcaption {
+    margin-block-start: var(--s2a-spacing-xs);
+    color: var(--s2a-color-content-caption);
+  }
+
+  &.full-height {
+    --figure-c2-media-max-height: none;
+  }
+
+  &:has(figure + figure) :is(img, video) {
+    width: 100%;
+    object-fit: cover;
+  }
+}
+
+@media (width >= 768px) {
+  .figure-c2 {
+    flex-direction: row;
+    gap: var(--s2a-spacing-xl);
+
+    figure {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+}
