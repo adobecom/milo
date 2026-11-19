@@ -80,7 +80,7 @@ function trackActiveSection(block, headings, collapseControls) {
     if (measure) {
       const height = getComputedStyle(jumpNavigation).position === 'sticky'
         ? jumpNavigation.getBoundingClientRect().height : 0;
-      layout?.style.setProperty('--blog-side-navigation-height', `${height}px`);
+      layout?.style.setProperty('--blog-side-navigation-c2-height', `${height}px`);
       headingTops = headings.map((heading) => heading.getBoundingClientRect().top + scrollTop);
       scrollMargin = parseFloat(getComputedStyle(headings[0]).scrollMarginTop) || 0;
       measure = false;

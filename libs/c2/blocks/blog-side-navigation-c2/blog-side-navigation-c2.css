@@ -275,7 +275,7 @@
   }
 
   .blog-article-content h2 {
-    scroll-margin-top: calc(var(--global-height-nav) + var(--blog-side-navigation-height, 0px) + var(--s2a-spacing-lg));
+    scroll-margin-top: calc(var(--global-height-nav) + var(--blog-side-navigation-c2-height, 0px) + var(--s2a-spacing-lg));
   }
 
   .blog-side-navigation-c2 nav > ul > li > a[aria-current="location"] {
