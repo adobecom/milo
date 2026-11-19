@@ -26,7 +26,7 @@ describe('video uploaded using franklin bot', () => {
     document.body.innerHTML = '';
   });
 
-  it('numbers both controls only after a second video is decorated', async () => {
+  it('keeps control names free of numeric suffixes when more videos are decorated', async () => {
     const block = document.querySelector('.video.autoplay.single');
     const block2 = document.querySelector('.video.autoplay.second');
     const a = block.querySelector('a');
@@ -40,8 +40,8 @@ describe('video uploaded using franklin bot', () => {
     init(a2);
     setTimeout(callback, 500);
     await clock.runAllAsync();
-    expect(pausePlayWrapper.getAttribute('aria-label')).to.match(/ 1$/);
-    expect(block2.querySelector('.pause-play-wrapper').getAttribute('aria-label')).to.match(/ 2$/);
+    expect(pausePlayWrapper.getAttribute('aria-label')).not.to.match(/\d/);
+    expect(block2.querySelector('.pause-play-wrapper').getAttribute('aria-label')).not.to.match(/\d/);
   });
 
   it('removes the element, if it does not have a parent node', (done) => {
@@ -221,7 +221,7 @@ describe('video uploaded using franklin bot', () => {
 
       function expectState(playing) {
         expect(control.querySelector('.offset-filler').classList.contains('is-playing')).to.equal(playing);
-        expect(control.getAttribute('aria-label')).to.match(playing ? /^Pause(?: motion)? 2$/ : /^Play(?: motion)? 2$/);
+        expect(control.getAttribute('aria-label')).to.match(playing ? /^Pause(?: motion)?$/ : /^Play(?: motion)?$/);
         expect(control.getAttribute('title')).to.equal(control.getAttribute('aria-label'));
         expect(control.getAttribute('aria-pressed')).to.equal(String(playing));
       }
@@ -234,7 +234,7 @@ describe('video uploaded using franklin bot', () => {
         expect(button.getAttribute('video-index')).to.equal('2');
         expect(button.getAttribute('aria-pressed')).to.equal('false');
         decorate.syncPausePlayIcon(holder.querySelector('video'));
-        expect(button.getAttribute('aria-label')).to.match(/^Play(?: motion)? 2$/);
+        expect(button.getAttribute('aria-label')).to.match(/^Play(?: motion)?$/);
       });
 
       it('preserves reduced-motion state through localization and Enter/Space playback', async () => {
@@ -248,7 +248,7 @@ describe('video uploaded using franklin bot', () => {
         video.dispatchEvent(new Event('canplay'));
         expect(video.paused).to.be.true;
         decorate.decoratePausePlayWrapper(video);
-        await waitFor(() => control.getAttribute('aria-label') === 'Play motion 2');
+        await waitFor(() => control.getAttribute('aria-label') === 'Play motion');
         expectState(false);
         control.focus();
         await sendKeys({ press: 'Enter' });
@@ -309,7 +309,7 @@ describe('video uploaded using franklin bot', () => {
         expectState(false);
       });
 
-      it('renumbers the first control without changing its paused state when another video is decorated', async () => {
+      it('preserves unnumbered names and paused state when another video is decorated', async () => {
         sinon.stub(window, 'IntersectionObserver').returns({ observe: sinon.stub() });
         const addVideo = (hash = '#autoplay') => {
           const holder = createTag('div');
@@ -327,13 +327,89 @@ describe('video uploaded using franklin bot', () => {
         expect(addVideo('#hoverplay')).to.be.null;
         expect(first.getAttribute('aria-label')).to.equal('Play motion');
         const second = addVideo();
-        expect(first.getAttribute('aria-label')).to.equal('Play motion 1');
-        expect(first.getAttribute('title')).to.equal('Play motion 1');
+        expect(first.getAttribute('aria-label')).to.equal('Play motion');
+        expect(first.getAttribute('title')).to.equal('Play motion');
         expect(first.querySelector('.is-playing')).not.to.exist;
         expect(first.getAttribute('aria-pressed')).to.equal('false');
-        expect(second.getAttribute('aria-label')).to.equal('Play motion 2');
+        expect(second.getAttribute('aria-label')).to.equal('Play motion');
         decorate.syncPausePlayIcon(first.parentElement.querySelector('video'));
-        expect(first.getAttribute('aria-label')).to.equal('Play motion 1');
+        expect(first.getAttribute('aria-label')).to.equal('Play motion');
+      });
+
+      ['shared', 'c2/blocks/side-by-side', 'c2/blocks/split-aside-grid'].forEach((path) => {
+        it(`guards automatic viewport playback but preserves manual Play (${path})`, async () => {
+          let reducedMotion = true;
+          const matchMedia = window.matchMedia.bind(window);
+          sinon.stub(window, 'matchMedia').callsFake((query) => (
+            query === '(prefers-reduced-motion: reduce)'
+              ? { matches: reducedMotion } : matchMedia(query)
+          ));
+          const observers = [];
+          sinon.stub(window, 'IntersectionObserver').callsFake((onIntersect) => {
+            const observer = {
+              observe: sinon.spy(),
+              unobserve: sinon.stub(),
+              disconnect: sinon.stub(),
+              onIntersect,
+            };
+            observers.push(observer);
+            return observer;
+          });
+          sinon.stub(window, 'videoIntersectionObs').value(null);
+          video.removeAttribute('autoplay');
+          video.setAttribute('data-play-viewport', '');
+          decorate.applyAccessibilityEvents(video);
+          const playSpy = sinon.spy(video, 'play');
+          const holder = video.closest('.video-holder');
+          if (path === 'shared') {
+            const anchor = createTag('a', { href: '/test/video.mp4#autoplay/viewportplay' });
+            document.body.append(createTag('div', {}, anchor));
+            decorate.decorateAnchorVideo({ src: anchor.href, anchorTag: anchor });
+          } else {
+            const name = path.split('/').pop();
+            const block = createTag('div', { class: name }, name === 'side-by-side'
+              ? '<div><div></div><div></div></div><div><div><h3>First</h3></div><div><h3>Second</h3></div></div>'
+              : '<div><div><h3>First</h3></div><div></div></div><div><div><h3>Second</h3></div><div></div></div>');
+            const first = block.firstElementChild;
+            const media = name === 'side-by-side' ? first.firstElementChild : first.lastElementChild;
+            media.append(createTag('p', {}, holder));
+            document.body.replaceChildren(block);
+            const { default: initBlock } = await import(`../../../libs/${path}/${name}.js?video-controls-${foundation}`);
+            initBlock(block);
+          }
+          const observer = path === 'shared' ? observers[observers.length - 1]
+            : observers.find((item) => item.observe.calledWith(video));
+          const intersect = (visible) => observer.onIntersect([
+            { target: video, isIntersecting: visible, intersectionRatio: visible ? 1 : 0 },
+          ]);
+          intersect(true);
+          expect(playSpy.called).to.be.false;
+          expectState(false);
+          const manualPlaying = new Promise((resolve) => {
+            video.addEventListener('playing', resolve, { once: true });
+          });
+          control.click();
+          await manualPlaying;
+          expect(playSpy.calledOnce).to.be.true;
+          expectState(true);
+          intersect(false);
+          await waitFor(() => !control.querySelector('.is-playing'));
+          expectState(false);
+          intersect(true);
+          expect(playSpy.calledOnce).to.be.true;
+          reducedMotion = false;
+          const automaticPlaying = new Promise((resolve) => {
+            video.addEventListener('playing', resolve, { once: true });
+          });
+          intersect(true);
+          await automaticPlaying;
+          expect(playSpy.calledTwice).to.be.true;
+          expectState(true);
+          control.click();
+          intersect(true);
+          expect(playSpy.calledTwice).to.be.true;
+          expectState(false);
+        });
       });
 
       it('synchronizes repeated media events, programmatic pauses, and the end of viewport playback', async () => {

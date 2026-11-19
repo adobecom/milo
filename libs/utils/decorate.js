@@ -14,7 +14,6 @@ import {
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
 export const USER_PAUSED_ATTR = 'data-user-paused';
-let firstVideo = null;
 let videoLabels = {
   playMotion: 'Play',
   pauseMotion: 'Pause',
@@ -350,10 +349,8 @@ export function syncPausePlayIcon(video) {
   offsetFiller.classList.toggle('is-playing', isPlaying);
   const changedLabel = isPlaying ? videoLabels.pauseMotion : videoLabels.playMotion;
   const oldLabel = isPlaying ? videoLabels.playMotion : videoLabels.pauseMotion;
-  const indexOfVideo = (playPauseBtn.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : playPauseBtn.getAttribute('video-index');
-  const ariaLabel = `${changedLabel} ${indexOfVideo || ''}`.trim();
-  playPauseBtn.setAttribute('title', ariaLabel);
-  playPauseBtn.setAttribute('aria-label', ariaLabel);
+  playPauseBtn.setAttribute('title', changedLabel);
+  playPauseBtn.setAttribute('aria-label', changedLabel);
   playPauseBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
   playPauseBtn.querySelector('.pause-icon')?.setAttribute('alt', videoLabels.pauseMotion);
   playPauseBtn.querySelector('.play-icon')?.setAttribute('alt', videoLabels.playMotion);
@@ -481,15 +478,17 @@ function getVideoIntersectionObserver() {
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
+        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
           syncPausePlayIcon(video);
-        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isReducedMotion && !isUserPaused
+          && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
-          syncPausePlayIcon(video, { type: 'playing' });
+          syncPausePlayIcon(video);
         }
       });
     }, { threshold: [0.8] });
@@ -611,11 +610,6 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   }
   anchorTag.insertAdjacentHTML('afterend', video);
   const videoEl = parentElement.querySelector('video');
-  if (hasAccessibilityControl && indexOfVideo === 1) firstVideo = videoEl;
-  if (firstVideo && videoCounter > 1) {
-    syncPausePlayIcon(firstVideo);
-    firstVideo = null;
-  }
 
   createIntersectionObserver({
     el: videoEl,
