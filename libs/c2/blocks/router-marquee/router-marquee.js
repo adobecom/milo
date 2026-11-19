@@ -575,7 +575,7 @@ const updateContentSpacing = (el) => {
   vp.style.setProperty('--rm-controls-h', `${controlsH}px`);
   // Set min-height so the viewport never shrinks below what the content needs
   const needed = wrapperPadTop + foregroundH + contentH + 24 + controlsH;
-  const minHeight = `${Math.max(window.innerHeight, needed)}px`;
+  const minHeight = `max(calc(${window.innerHeight}px - var(--rm-lcp-height-offset)), ${needed}px)`;
   if (vp.style.minHeight !== minHeight) vp.style.minHeight = minHeight;
   // Compact padding-top when content overlaps controls
   // Applied to all wrappers to handle slide changes

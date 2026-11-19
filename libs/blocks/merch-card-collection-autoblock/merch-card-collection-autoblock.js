@@ -50,22 +50,22 @@ function getTimeoutPromise(timeout) {
 }
 
 async function loadDependencies(options) {
-  /** Load lit first as it's needed by MAS components */
+  const dependencyPromises = [
+    loadMasComponent(MAS_MERCH_CARD),
+    loadMasComponent(MAS_MERCH_CARD_COLLECTION),
+  ];
+  if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
+  const componentsPromise = Promise.all(dependencyPromises);
+  loadMasComponent(MAS_MERCH_QUANTITY_SELECT).catch(() => {});
+  componentsPromise.catch(() => {});
 
-  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
     throw new Error('Failed to initialize mas commerce service');
   }
 
-  const dependencyPromises = [
-    loadMasComponent(MAS_MERCH_CARD),
-    loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
-    loadMasComponent(MAS_MERCH_CARD_COLLECTION),
-  ];
-  if (options.sidenav) dependencyPromises.push(loadMasComponent(MAS_MERCH_SIDENAV));
-  await Promise.all(dependencyPromises);
+  await componentsPromise;
 }
 
 // The sidenav, and the header it brings (search, filters, sort), are the only
@@ -157,6 +157,10 @@ const mountedCollections = new WeakSet();
 let drawerCount = 0;
 
 const hashParams = () => new URLSearchParams(window.location.hash.slice(1));
+
+// A filter state always has a key=value; a bare id (e.g. #mini-plans-web-cta-creative-cloud-card)
+// is a modal deeplink, which must not reset the bar.
+export const isModalHash = (hash) => hash.length > 1 && !hash.includes('=');
 
 // Sorted so a given filter set always produces the same hash.
 function writeHash(params) {
@@ -553,16 +557,30 @@ function buildProductPricingBar(collection, groups) {
   const triggerAttrs = { class: 'product-pricing-filter-trigger', type: 'button', 'aria-haspopup': 'dialog' };
   const trigger = createTag('button', triggerAttrs, [svgIcon(SLIDERS_ICON), triggerLabel]);
 
-  const pillGroups = barGroups(groups).map((group) => createTag(
-    'div',
-    {
-      // Collapsed to its active pill by CSS.
-      class: `product-pricing-filter-group${group.category ? ' product-pricing-filter-group-active-only' : ''}`,
-      role: 'radiogroup',
-      'aria-label': group.title,
-    },
-    group.options.map((opt) => buildPill(opt, group, 'bar')),
-  ));
+  // Category pills, so their name can say they are filters.
+  const categoryPills = [];
+  const pillGroups = barGroups(groups).map((group) => {
+    const pillEls = group.options.map((opt) => buildPill(opt, group, 'bar'));
+    if (group.category) {
+      pillEls.forEach((pill, i) => categoryPills.push({ input: pill.querySelector('input'), label: group.options[i].label }));
+    }
+    return createTag(
+      'div',
+      {
+        // Collapsed to its active pill by CSS.
+        class: `product-pricing-filter-group${group.category ? ' product-pricing-filter-group-active-only' : ''}`,
+        role: 'radiogroup',
+        'aria-label': group.title,
+      },
+      pillEls,
+    );
+  });
+  const nameCategoryPills = (word) => categoryPills.forEach(({ input, label }) => input.setAttribute('aria-label', `${label} ${word}`));
+  nameCategoryPills('filter');
+  replaceKey('filter-pill-suffix', getFedsPlaceholderConfig()).then((word) => {
+    // An unresolved key comes back as its de-hyphenated text.
+    if (word && word !== 'filter pill suffix') nameCategoryPills(word);
+  }).catch(() => {});
   // Inside the scroller, so the trigger scrolls with the pills. Outside it, the
   // trigger would hold 141px of a 300px row on mobile.
   const pills = createTag('div', { class: 'product-pricing-filter-pills' }, [trigger, ...pillGroups]);
@@ -735,7 +753,13 @@ export function mountProductPricingFilter(collection, container) {
     render(hashParams());
     collection.toggleAttribute('data-edu-only', eduOnly(loadedCards(collection)));
   });
-  window.addEventListener('hashchange', sync);
+  const syncUnlessModal = () => {
+    if (!isModalHash(window.location.hash)) sync();
+  };
+  window.addEventListener('hashchange', syncUnlessModal);
+  // Closing a modal restores the filter hash with pushState, which fires no hashchange.
+  // modal.js restores it right after this event, so read the hash on the next task.
+  window.addEventListener('milo:modal:closed', () => setTimeout(syncUnlessModal));
   const initial = hashParams();
   const missing = seedParams(initial, groups);
   if (missing.length) {

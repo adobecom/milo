@@ -1,5 +1,4 @@
-import { getConfig } from '../../../../utils/utils.js';
-import { getMarketConfig } from '../../../../utils/market.js';
+import { getConfig, getMarketConfig } from '../../../../utils/utils.js';
 import { getFileName } from '../../../personalization/personalization.js';
 import { mepMasStudioUrls } from '../../../../blocks/merch/mas-mep-utils.js';
 import {
@@ -100,7 +99,7 @@ export function setBadgeEventListeners() {
   }
 
   document.addEventListener('click', (e) => {
-    if (e.target.closest('.mep-preview-overlay')) return;
+    if (e.target.closest('.mep-fab, #mep-drawer')) return;
 
     const fragment = e.target.closest(FRAGMENT_SELECTOR);
     if (!fragment) return;

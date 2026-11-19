@@ -54,6 +54,7 @@
     --pm-content-subtle: var(--s2a-color-content-subtle);
     --pm-badge-color: var(--s2a-color-content-inverse);
 
+    border: var(--s2a-border-width-sm) solid rgba(255, 255, 255, 0.05);
     color: var(--pm-content);
     display: flex;
     flex-direction: column;
@@ -146,10 +147,17 @@
   .pm-merch-ctas {
     display: flex;
     gap: var(--s2a-spacing-xs);
+    margin-top: var(--s2a-spacing-xs);
+    align-self: stretch;
 
-    > .con-button {
+    > p,
+    > .action-area,
+    mas-field {
+      display: contents;
+    }
+
+    .con-button {
       flex: 1 1 0;
-      justify-content: center;
     }
   }
 
@@ -202,7 +210,7 @@
     .pm-merch-ctas {
       flex-direction: column;
 
-      > .con-button {
+      .con-button {
         flex: none;
         inline-size: 100%;
       }
@@ -317,6 +325,12 @@ body:has(header.local-nav) .product-marquee-grid {
       align-items: flex-start;
       align-self: center;
       text-align: start;
+    }
+
+    .pm-merch-ctas {
+      flex: none;
+      align-self: center;
+      margin-top: 0;
     }
   }
 

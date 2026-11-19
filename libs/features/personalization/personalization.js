@@ -538,6 +538,7 @@ function registerInBlockActions(command) {
         return {
           fragment: searchParams.get('fragment') || searchParams.get('query'),
           field: searchParams.get('field') || '',
+          ...(searchParams.get('pzn') && { pzn: searchParams.get('pzn') }),
         };
       };
       const { fragment: sourceFragment, field } = getFragmentParams(blockSelector);
@@ -545,7 +546,9 @@ function registerInBlockActions(command) {
       if (blockSelector) {
         config.mep.inBlock[blockName].fragments ??= {};
         const { fragments } = config.mep.inBlock[blockName];
-        command.content = getFragmentParams(command.content).fragment;
+        const { fragment: targetFragment, pzn } = getFragmentParams(command.content);
+        command.content = targetFragment;
+        if (pzn) command.pzn = pzn;
         fragments[blockSelector] ??= {};
         fragments[blockSelector][field] = command;
         let overridesParent = document.querySelector('div.mas-overrides');
@@ -553,8 +556,14 @@ function registerInBlockActions(command) {
           overridesParent = createTag('div', { style: 'display: none;', class: 'mas-overrides' });
           document.body.appendChild(overridesParent);
         }
-        if (!overridesParent.querySelector(`aem-fragment[fragment="${command.content}"]`)) {
-          overridesParent.appendChild(createTag('aem-fragment', { fragment: command.content }));
+        const preloadSelector = command.pzn
+          ? `aem-fragment[fragment="${command.content}"][pzn="${command.pzn}"]`
+          : `aem-fragment[fragment="${command.content}"]:not([pzn])`;
+        if (!overridesParent.querySelector(preloadSelector)) {
+          overridesParent.appendChild(createTag('aem-fragment', {
+            fragment: command.content,
+            ...(command.pzn && { pzn: command.pzn }),
+          }));
         }
       }
       return;
@@ -1830,14 +1839,13 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
-      loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
+      // Flatten mep-next → caas/utils.js → {lingo-active, getUuid,
+      // caasIdentity, collectionIdentity} discovery chain
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      // TEMP: ?mepnext=off -> preview.js, else mep-next; gate + toLowerCase() hack die on removal.
-      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'off'
-        ? './preview.js' : '../mep/mep-next/mep-next.js';
-      import(previewSrc).then(({ saveToMmm }) => saveToMmm()).catch((e) => {
+      loadLink(`${config.base}/utils/caasIdentity.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      loadLink(`${config.base}/blocks/caas/collectionIdentity.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      import('../mep/mep-next/mep-next.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });

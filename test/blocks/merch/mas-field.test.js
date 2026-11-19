@@ -1,8 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { getConfig, setConfig, updateConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import { stubVisibility } from '../../helpers/visibility.js';
+import { waitFor as waitForCondition } from '../../helpers/waitfor.js';
 
 // TODO: Remove once mas-field is published to @adobecom/mas-platform.
 // All other MAS components (merch-card, merch-quantity-select, etc.) resolve via the import map
@@ -127,6 +128,54 @@ describe('mas-field', () => {
       const descriptionField = masFields.find((mf) => mf.getAttribute('field') === 'description');
       expect(titleField.querySelector('aem-fragment').getAttribute('fragment')).to.equal('1234');
       expect(descriptionField.querySelector('aem-fragment').getAttribute('fragment')).to.equal('field-scope-1');
+    });
+
+    const fieldLink = (fragment, field) => {
+      const a = document.createElement('a');
+      a.href = `https://mas.adobe.com/studio.html#content-type=merch-card&fragment=${fragment}&field=${field}`;
+      a.textContent = `[[pzn-test:${field}]]`;
+      document.body.append(a);
+      return a;
+    };
+    const fragmentOf = (field) => document.querySelector(`mas-field[field="${field}"] aem-fragment`);
+
+    it('card-level mep row with pzn applies fragment and pzn to field links', async () => {
+      setConfig({ mep: { inBlock: { mas: { fragments: { 'pzn-card-1': { '': { action: 'replace', content: 'tgt-pzn', pzn: 'pzn-cc-lapsed' } } } } } } });
+      await init(fieldLink('pzn-card-1', 'description'));
+      const el = fragmentOf('description');
+      expect(el.getAttribute('fragment')).to.equal('tgt-pzn');
+      expect(el.getAttribute('pzn')).to.equal('pzn-cc-lapsed');
+    });
+
+    it('field-specific mep row wins over card-level pzn row', async () => {
+      setConfig({
+        mep: {
+          inBlock: {
+            mas: {
+              fragments: {
+                'pzn-card-2': {
+                  '': { action: 'replace', content: 'tgt-pzn', pzn: 'pzn-cc-lapsed' },
+                  cardTitle: { action: 'replace', content: 'title-only' },
+                },
+              },
+            },
+          },
+        },
+      });
+      await init(fieldLink('pzn-card-2', 'cardTitle'));
+      await init(fieldLink('pzn-card-2', 'description'));
+      expect(fragmentOf('cardTitle').getAttribute('fragment')).to.equal('title-only');
+      expect(fragmentOf('cardTitle').hasAttribute('pzn')).to.be.false;
+      expect(fragmentOf('description').getAttribute('fragment')).to.equal('tgt-pzn');
+      expect(fragmentOf('description').getAttribute('pzn')).to.equal('pzn-cc-lapsed');
+    });
+
+    it('card-level mep row without pzn does not apply to field links', async () => {
+      setConfig({ mep: { inBlock: { mas: { fragments: { 'pzn-none-1': { '': { action: 'replace', content: 'no-pzn-tgt' } } } } } } });
+      await init(fieldLink('pzn-none-1', 'description'));
+      const el = fragmentOf('description');
+      expect(el.getAttribute('fragment')).to.equal('pzn-none-1');
+      expect(el.hasAttribute('pzn')).to.be.false;
     });
 
     it('creates mas-field wrapping aem-fragment with correct attributes', async () => {
@@ -675,6 +724,49 @@ describe('mas-field', () => {
       const link = p.querySelector('mas-field a');
       expect(link.href).to.equal('https://www.adobe.com/fr/');
       p.remove();
+    });
+
+    describe('late preview modal links', () => {
+      let previousConfig;
+      const modalPath = '/test/fragments/modals/inline-field-modal';
+      const modalHash = '#inline-field-modal';
+
+      beforeEach(() => {
+        previousConfig = getConfig();
+        setConfig({
+          codeRoot: '/libs',
+          miloLibs: '/libs',
+          pathname: '/no/test.html',
+          locales: { '': { ietf: 'en-US' }, no: { ietf: 'no-NO' } },
+        });
+      });
+
+      afterEach(() => updateConfig(previousConfig));
+
+      for (const { wrapper, dnt } of [
+        { wrapper: 'p', dnt: false },
+        { wrapper: 'em', dnt: false },
+        { wrapper: 'p', dnt: true },
+      ]) {
+        it(`${dnt ? 'preserves the localization opt-out for' : 'localizes'} a preview modal in a late ${wrapper === 'em' ? 'emphasized CTA' : 'standalone field'}`, async () => {
+          const container = document.createElement('div');
+          container.className = 'section';
+          container.innerHTML = `<div class="hero-marquee"><p>${wrapper === 'em' ? '<em>' : ''}`
+            + '<mas-field field="ctas[1]"><span data-role="mas-field-content">'
+            + `<a href="https://main--test--adobecom.aem.page${modalPath}${modalHash}${dnt ? '#_dnt' : ''}">See what's included</a>`
+            + `</span></mas-field>${wrapper === 'em' ? '</em>' : ''}</p></div>`;
+          document.body.append(container);
+          const masField = container.querySelector('mas-field');
+          const link = masField.querySelector('a');
+
+          masField.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+          await waitForCondition(() => link.dataset.blockStatus === 'loaded');
+
+          expect(link.dataset.modalPath).to.equal(`${dnt ? '' : '/no'}${modalPath}`);
+          expect(link.getAttribute('href')).to.equal(modalHash);
+          if (dnt) expect(link.dataset.hasDnt).to.equal('true');
+        });
+      }
     });
 
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {

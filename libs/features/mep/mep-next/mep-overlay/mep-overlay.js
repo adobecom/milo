@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { isWithinFirewall, onSidekickAuth } from '../../sidekick-auth.js';
+import { onSidekickAuth } from '../../sidekick-auth.js';
 import { NON_PERSONALIZED_OFFER_TEST, PERSONALIZED_OFFER } from '../../../personalization/personalization.js';
 import {
   CARD_STORAGE_KEY,
@@ -135,33 +135,36 @@ function updateGnavOffset() {
 function safeUrl(url) {
   if (typeof url !== 'string') return '';
   try {
-    const { protocol } = new URL(url, window.location.origin);
+    const { protocol } = new URL(url, 'https://www.adobe.com');
     return protocol === 'http:' || protocol === 'https:' ? url : '';
   } catch (e) {
     return '';
   }
 }
 
-// Manifest-derived values are set as text, never as createTag's string content
-// arg (which routes through insertAdjacentHTML and would parse markup).
+// createTag's string content arg routes through insertAdjacentHTML; data must go in as text.
+function createTextTag(tag, attrs, text) {
+  const el = createTag(tag, attrs);
+  el.textContent = text ?? '';
+  return el;
+}
+
 function buildRow(label, value) {
   const cls = value === 'on' ? 'mep-row-value emphasis' : 'mep-row-value';
-  const row = createTag('div', { class: cls });
-  if (value) row.textContent = String(value);
-  return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
+  const row = createTextTag('div', { class: cls }, value ? String(value) : '');
+  return createTag('div', { class: 'mep-row' }, [createTextTag('h2', {}, label), row]);
 }
 
 function buildNestedSection(label, subPairs) {
   const rows = subPairs.map(([subLabel, subValue]) => {
     const isOnOff = subValue === 'on' || subValue === 'off';
-    const valEl = createTag('div', isOnOff ? { class: subValue === 'on' ? 'mep-row-value emphasis' : 'mep-row-value' } : {});
-    valEl.textContent = subValue == null ? '' : String(subValue);
+    const valEl = createTextTag('div', isOnOff ? { class: subValue === 'on' ? 'mep-row-value emphasis' : 'mep-row-value' } : {}, subValue == null ? '' : String(subValue));
     return createTag('div', { class: 'mep-surfaces-row' }, [
-      createTag('div', { class: 'mep-row-value' }, subLabel),
+      createTextTag('div', { class: 'mep-row-value' }, subLabel),
       valEl,
     ]);
   });
-  const children = label ? [createTag('h2', {}, label), ...rows] : rows;
+  const children = label ? [createTextTag('h2', {}, label), ...rows] : rows;
   return createTag('div', { class: 'mep-row-section' }, children);
 }
 
@@ -242,7 +245,7 @@ function applyManifestStatus(card, manifest) {
   const list = createTag(
     'ul',
     { class: `mep-manifest-${level}-tooltip` },
-    messages.map((message) => createTag('li', {}, message)),
+    messages.map((message) => createTextTag('li', {}, message)),
   );
   card.classList.add(`manifest-${level}`);
   card.prepend(createTag('div', { class: `mep-manifest-${level}` }, [svgIcon('icon-alert'), label, list]));
@@ -258,8 +261,7 @@ function buildVariantSelect(options) {
       ...(option.id && { id: option.id }),
       ...(option.dataManifest && { 'data-manifest': option.dataManifest }),
     };
-    const optEl = createTag('option', attrs);
-    optEl.textContent = option.label ?? '';
+    const optEl = createTextTag('option', attrs, option.label);
     if (option.selected) optEl.selected = true;
     select.append(optEl);
   });
@@ -267,11 +269,9 @@ function buildVariantSelect(options) {
 }
 
 function buildManifestCard(manifest) {
-  const filename = createTag('span', { class: 'mep-manifest-filename' });
-  filename.textContent = manifest.fileName ?? '';
   const link = createTag('a', { href: safeUrl(manifest.editUrl), target: '_blank', rel: 'noopener' }, [
-    createTag('span', {}, `${manifest.index}. `),
-    filename,
+    createTextTag('span', {}, `${manifest.index}. `),
+    createTextTag('span', { class: 'mep-manifest-filename' }, manifest.fileName),
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
@@ -310,7 +310,7 @@ function buildManifestCard(manifest) {
   if (hasRange && now > end) state = 'complete';
   if (manifest.showActive) {
     const label = { active: 'Active', inactive: 'Inactive', complete: 'Complete' }[state];
-    statusRow.append(createTag('span', { class: `mep-manifest-state ${state}` }, label));
+    statusRow.append(createTextTag('span', { class: `mep-manifest-state ${state}` }, label));
   }
   if (manifest.eventStart && manifest.eventEnd) {
     const instantLink = createTag('a', {
@@ -328,11 +328,9 @@ function buildManifestCard(manifest) {
       { label: 'End', date: manifest.eventEndDate, time: manifest.eventEndTime },
     ].map(({ label, date, time }) => {
       const endpoint = createTag('div', { class: 'mep-manifest-endpoint' });
-      const srLabel = createTag('span', { class: 'mep-visually-hidden' }, `${label}:`);
-      const dateEl = createTag('span', { class: 'mep-manifest-date' });
-      dateEl.textContent = date ?? '';
-      const timeEl = createTag('span', { class: 'mep-manifest-time' });
-      timeEl.textContent = time ?? '';
+      const srLabel = createTextTag('span', { class: 'mep-visually-hidden' }, `${label}:`);
+      const dateEl = createTextTag('span', { class: 'mep-manifest-date' }, date);
+      const timeEl = createTextTag('span', { class: 'mep-manifest-time' }, time);
       endpoint.append(srLabel, dateEl, timeEl);
       return endpoint;
     });
@@ -389,8 +387,8 @@ function buildToggleRow([title, description], pageId) {
   ]);
   const desc = typeof description === 'function' ? description(title) : description;
   const textEl = createTag('div', { class: 'mep-toggle-text' }, [
-    createTag('h2', {}, title),
-    createTag('p', { class: 'mep-row-value' }, desc),
+    createTextTag('h2', {}, title),
+    createTextTag('p', { class: 'mep-row-value' }, desc),
   ]);
   return createTag('div', { class: 'mep-toggle-row' }, [textEl, switchEl]);
 }
@@ -405,7 +403,7 @@ function buildToggle(card, pageId) {
 async function populateGeoSelect(selectEl, id) {
   const geoOptions = await getSpoofGeoOptions(id) ?? [];
   selectEl.replaceChildren(...geoOptions.map(({ value, label, selected }) => {
-    const opt = createTag('option', { value }, label);
+    const opt = createTextTag('option', { value }, label);
     if (selected) opt.selected = true;
     return opt;
   }));
@@ -437,7 +435,7 @@ async function buildSpoofGeo(card, pageId) {
       await populateGeoSelect(selectEl, id);
     }
 
-    const label = createTag('label', { for: id, 'data-value': val }, val);
+    const label = createTextTag('label', { for: id, 'data-value': val }, val);
     labelMap.set(id, label);
 
     ['icon-radio-unchecked', 'icon-radio-checked'].forEach((icon) => label.prepend(svgIcon(icon)));
@@ -481,7 +479,7 @@ function buildCard(card, pageId, defaultExpanded = true) {
   const cardEl = createTag('div', { class: 'mep-card' });
   if (!card?.header) return cardEl;
 
-  const headerEl = createTag('h1', {}, card.header);
+  const headerEl = createTextTag('h1', {}, card.header);
   headerEl.appendChild(svgIcon('icon-expand-circle-down'));
 
   const bodyEl = createTag('div', { class: 'mep-card-body' });
@@ -496,6 +494,7 @@ function buildCard(card, pageId, defaultExpanded = true) {
 function buildFAB(gnavOffset) {
   const fab = createTag('button', {
     class: 'mep-fab',
+    hidden: '',
     style: `top: ${gnavOffset + 16}px`,
     popovertarget: 'mep-drawer',
   });
@@ -533,7 +532,7 @@ function buildTabsAndBody(pageId) {
 
   tabDefs.forEach(([name, content], index) => {
     const isActive = name === 'Actions';
-    const tabEl = createTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
+    const tabEl = createTextTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
     const contentEl = createTag('div', { class: `mep-tab-content${isActive ? ' active' : ''}`, 'data-tab': index });
     content.forEach((el) => contentEl.appendChild(el));
     tabsEl.appendChild(tabEl);
@@ -594,35 +593,19 @@ async function setDefaultValues() {
   selectEl.value = mepAkamaiLocale;
 }
 
-async function refreshFirewallAuth(refreshAuth) {
-  if (await isWithinFirewall()) await refreshAuth();
-}
-
-function buildLoginCard(onRefresh) {
-  const refreshButton = createTag('a', { href: '#', class: 'con-button button-l fill' }, 'Refresh');
-  refreshButton.addEventListener('click', async (event) => {
-    event.preventDefault();
-    await refreshFirewallAuth(onRefresh);
-  });
-  return createTag('div', { class: 'mep-card expanded center' }, [
-    createTag('h1', {}, 'Content Unavailable'),
-    createTag('div', { class: 'mep-card-body' }, [
-      createTag('p', {}, 'Sign into AEM Sidekick or be inside the Adobe firewall for options.'),
-      refreshButton,
-    ]),
-  ]);
-}
-
 async function renderAuthState(pageId, isAuthed) {
   const drawerEl = document.querySelector('#mep-drawer');
   const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
   if (!contentEl) return;
+  if (!isAuthed && drawerEl.matches(':popover-open')) drawerEl.hidePopover();
+  drawerEl.hidden = !isAuthed;
+  const fabEl = document.querySelector('.mep-fab');
+  if (fabEl) fabEl.hidden = !isAuthed;
   if (isAuthed === authenticated && authStateRendered) return;
   authenticated = isAuthed;
   authStateRendered = true;
 
   if (!authenticated) {
-    contentEl.replaceChildren(buildLoginCard(() => renderAuthState(pageId, true)));
     drawerEl.querySelector('.mep-footer')?.remove();
     return;
   }
@@ -669,6 +652,7 @@ function buildDrawer(gnavOffset, pageId) {
   return createTag('div', {
     id: 'mep-drawer',
     class: 'mep-drawer',
+    hidden: '',
     popover: 'manual',
     'data-lenis-prevent': '',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
@@ -843,6 +827,8 @@ function setSummaryObserver() {
 }
 
 async function buildOverlay() {
+  authenticated = false;
+  authStateRendered = false;
   const gnavOffset = await getGnavOffset();
   lastGnavOffset = gnavOffset;
 

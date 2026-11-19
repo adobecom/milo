@@ -507,8 +507,6 @@ const buildSlide = ({ slide, idx, slidesTotal }) => {
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
     ...(isModal && { 'aria-haspopup': 'dialog' }),
-    'aria-setsize': slidesTotal,
-    'aria-posinset': index + 1,
     ...(labelledBy && { 'aria-labelledby': labelledBy }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
@@ -706,10 +704,14 @@ const decorateHubHeroCTA = (heroHeader) => {
   }
   const linkEl = [...heroHeader.querySelectorAll('a')].find((link) => !link.closest('mas-field'));
   const href = linkEl?.href;
-  const sourceText = (linkEl ? linkEl.textContent : '').trim();
-  const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
+  const ctaText = (linkEl ? linkEl.textContent : '').trim();
+  const ariaLabel = linkEl?.getAttribute('aria-label');
   const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons?.arrowRightWhite);
-  const cta = createTag('a', { href, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
+  const cta = createTag('a', {
+    href,
+    class: 'promo-cta',
+    ...(ariaLabel && { 'aria-label': ariaLabel }),
+  }, [img, ctaText, arrow]);
   cta.addEventListener('focus', (e) => {
     if (e.currentTarget.matches(':focus-visible')) scrollHubHeroTo(e.currentTarget, 0);
   });

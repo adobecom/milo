@@ -1,9 +1,8 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
   shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl, isAupEnabled,
-  getAupSelectValue, whenTargetReady,
+  getAupSelectValue, whenTargetReady, getValidatedMarket, isSupportedMarket,
 } from '../../utils/utils.js';
-import { getValidatedMarket, isSupportedMarket } from '../../utils/market.js';
 import { replaceKey, getGeoIpPlaceholders } from '../../features/placeholders.js';
 import { decorateButtons, getBlockSize, getCdtScope, loadCDT } from '../../utils/decorate.js';
 import { localizePreviewLinks, decorateContentLinks } from './autoblock.js';
@@ -382,6 +381,11 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'productArrangementCode',
   'offerType',
   'marketSegment',
+  'closeWindow',
+  'openBrowser',
+  'static',
+  'takeAction',
+  'exitApp',
 ];
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
@@ -1829,9 +1833,11 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  const command = fragments?.[fragment]?.[options.field || ''];
+  const rows = fragments?.[fragment];
+  let command = rows?.[options.field || ''];
+  if (!command && options.field && rows?.['']?.pzn) command = rows[''];
   if (command && command.action === 'replace') {
-    return { ...options, fragment: command.content };
+    return { ...options, fragment: command.content, ...(command.pzn && { pzn: command.pzn }) };
   }
   return options;
 }
@@ -2231,6 +2237,7 @@ function watchMasFieldCtas() {
     if (mf?.tagName !== 'MAS-FIELD') return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
     if (!content?.querySelector('a')) return;
+    await localizePreviewLinks(content);
     if (isCtaFieldContent(content) && mf.closest('em, strong')) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);

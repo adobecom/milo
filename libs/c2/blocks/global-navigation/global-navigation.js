@@ -2,6 +2,7 @@ import {
   getEnv,
   getConfig,
   getMetadata,
+  getGnavSource,
   localizeLink,
   localizeLinkAsync,
   appendHtmlToLink,
@@ -12,6 +13,10 @@ import {
   loadIms,
   isAcomAssistantEnabled,
   isAupEnabled,
+  getValidatedMarket,
+  isTrustedAutoBlock,
+  loadBlock,
+  isC2GnavOnC1Host,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -29,6 +34,49 @@ export async function localizeGnavLinks(body) {
     if (a.href.includes('#_dnt')) return;
     a.href = await localizeLinkAsync(a.href, window.location.hostname, false, a);
   }));
+}
+
+function decorateModalLink(a) {
+  let url;
+  try {
+    url = new URL(a.href);
+  } catch (e) {
+    window.lana?.log(`Cannot make URL from C2 Gnav modal link - ${a.href}: ${e.toString()}`, {
+      tags: 'global-navigation',
+      severity: 'error',
+    });
+    return false;
+  }
+  const isFragment = getConfig().autoBlocks.some(
+    (candidate) => candidate.fragment && isTrustedAutoBlock(candidate.fragment, url),
+  );
+  if (!isFragment
+    || a.hasAttribute('data-wcs-osi')
+    || a.href === window.location.href
+    || a.href.split('/').pop().includes('.')
+    || a.textContent.match('media_.*.mp4')
+    || a.dataset.mepLingoSectionSwap
+    || a.dataset.mepLingoBlockSwap
+    || !url.hash
+    || url.hash.includes('#_inline')
+    || url.hash.includes('#_replacecell')
+    || url.hash.includes('#_dnb')) return false;
+
+  a.dataset.modalPath = url.pathname;
+  a.dataset.modalHash = url.hash;
+  a.href = url.hash;
+  a.className = `modal link-block ${[...a.classList].join(' ')}`;
+  if (url.hash.startsWith('#transcript')) {
+    a.classList.add('video-transcript-source');
+    import('../../../features/video-transcript/video-transcript.js');
+  }
+  return true;
+}
+
+export async function decorateModalLinks(root) {
+  const modals = [...root.querySelectorAll('a[href]:not([data-modal-path])')]
+    .filter((link) => decorateModalLink(link));
+  await Promise.all(modals.map((link) => loadBlock(link)));
 }
 
 export function getFederalDomain(config) {
@@ -138,8 +186,7 @@ export default async function init(el) {
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
-  const isGnavOverrideOnC1 = getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
-  if (isGnavOverrideOnC1) el.classList.add('c2-gnav-c1-host');
+  if (isC2GnavOnC1Host()) el.classList.add('c2-gnav-c1-host');
 
   // Unlike the c1 gnav block, nothing else on a standalone c2 page bootstraps
   // IMS. Without this, window.adobeIMS never initializes and UNAV's internal
@@ -151,8 +198,9 @@ export default async function init(el) {
   // original promise so UNAV can wait for readiness and recover from a timeout.
   imsReady.catch((error) => {
     if (error?.message === 'IMS timeout') return;
-    window.lana?.log?.('Failed to initialize IMS for federal global navigation', {
-      error,
+    lanaLog({
+      message: 'Failed to initialize IMS for federal global navigation',
+      e: error,
       tags: 'global-navigation',
       errorType: 'i',
     });
@@ -213,14 +261,12 @@ export default async function init(el) {
   };
 
   const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`, window.location.href);
+  const gnavUrl = new URL(await getGnavSource(), window.location.href);
   const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
     if (!isMasGeoDetectionEnabled()) return undefined;
-    const base = config.miloLibs || config.codeRoot;
-    const { getValidatedMarket } = await import(`${base}/utils/market.js`);
     return (await getValidatedMarket())?.toUpperCase();
   })().catch(() => undefined);
 
@@ -249,14 +295,16 @@ export default async function init(el) {
       merch: async (link) => (await import('../../../blocks/merch/merch.js')).default(link),
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
+    decorateModalLinks,
     loadBrandConcierge,
     appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {
       convertStageLinks({ anchors, config, hostname, href });
     },
   }).catch((error) => {
-    window.lana?.log?.('Failed to initialize federal global navigation', {
-      error,
+    lanaLog({
+      message: 'Failed to initialize federal global navigation',
+      e: error,
       tags: 'global-navigation',
       errorType: 'e',
     });
@@ -276,7 +324,12 @@ export default async function init(el) {
         const { decorateAcomAssistantGnav } = await loadAcomAssistantGnavModule();
         decorateAcomAssistantGnav(el);
       } catch (error) {
-        window.lana?.log?.(`AcomAssistant: failed to load GNav module (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+        lanaLog({
+          message: 'AcomAssistant: failed to load GNav module',
+          e: error,
+          tags: 'acom-assistant',
+          severity: 'error',
+        });
       }
     }
   });

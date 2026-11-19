@@ -21,6 +21,46 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('promo CTA colors', () => {
+    let stylesheet;
+
+    before(async () => {
+      stylesheet = document.createElement('style');
+      stylesheet.textContent = await readFile({ path: '../../../libs/c2/styles/styles.css' });
+      document.head.append(stylesheet);
+    });
+
+    after(() => stylesheet.remove());
+    afterEach(() => document.body.replaceChildren());
+
+    ['light', 'dark'].forEach((theme) => {
+      it(`preserves ${theme} promo CTA contrast while inline links inherit body color`, async () => {
+        document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+        const block = document.querySelector('.hub-hero');
+        if (theme === 'dark') block.classList.add('dark');
+        await init(block);
+        block.classList.remove('heading-1');
+
+        const cta = block.querySelector('.promo-cta');
+        const reference = cta.cloneNode(true);
+        const referenceContainer = document.createElement('div');
+        referenceContainer.className = theme;
+        referenceContainer.append(reference);
+        document.body.append(referenceContainer);
+        const expected = getComputedStyle(reference);
+        expect(expected.color).not.to.equal(expected.backgroundColor);
+        expect(getComputedStyle(cta).color).to.equal(expected.color);
+
+        const copy = document.createElement('p');
+        copy.className = 'copy body-md';
+        copy.style.color = 'rgb(100, 110, 120)';
+        copy.innerHTML = 'Read <a href="/terms">terms</a>.';
+        block.querySelector('.hub-hero-header').append(copy);
+        expect(getComputedStyle(copy.querySelector('a')).color).to.equal(getComputedStyle(copy).color);
+      });
+    });
+  });
+
   describe('MEP inline MAS editing', () => {
     afterEach(() => {
       unwatchForMasContent();
@@ -143,10 +183,10 @@ describe('hub-hero block', () => {
       expect(kids[2].classList.contains('hub-hero-carousel')).to.be.true;
     });
 
-    it('decorates the hero header CTA as a promo-cta with an alias aria-label', () => {
+    it('decorates the hero header CTA as a promo-cta and keeps the authored aria-label', () => {
       const cta = block.querySelector('.hub-hero-header a.promo-cta');
       expect(cta).to.exist;
-      // text before the pipe is the label, text after is the aria-label
+      // decorateLinks has already moved the authored "Text | Label" into aria-label
       expect(cta.getAttribute('aria-label')).to.equal('Explore all Adobe products');
       expect(cta.textContent).to.contain('Explore now');
       expect(cta.textContent).to.not.contain('Explore all Adobe products');
@@ -1290,9 +1330,9 @@ describe('hub-hero block', () => {
       block = await loadBlock('./mocks/fallbacks.html');
     });
 
-    it('falls back to the CTA text for the aria-label when there is no alias', () => {
+    it('does not add an aria-label to the CTA when none is authored', () => {
       const cta = block.querySelector('.hub-hero-header a.promo-cta');
-      expect(cta.getAttribute('aria-label')).to.equal('Get started');
+      expect(cta.hasAttribute('aria-label')).to.be.false;
       expect(cta.textContent).to.contain('Get started');
     });
 

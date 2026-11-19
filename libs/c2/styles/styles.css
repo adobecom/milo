@@ -1718,8 +1718,8 @@ span.hang-opening-quote {
   }
 }
 
-[class^='body-'] a:not(.con-button):not(.standalone-link),
-[class*=' body-'] a:not(.con-button):not(.standalone-link) {
+[class^='body-'] a:not(.con-button):not(.standalone-link):not(.promo-cta),
+[class*=' body-'] a:not(.con-button):not(.standalone-link):not(.promo-cta) {
   color: inherit;
 }
 
