@@ -1185,9 +1185,9 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
 
-  let regionKey = Object.entries(regions).find(
-    ([key]) => key === country || key === `${country}_${localeKey}`,
-  )?.[0];
+  let regionKey = Object.keys(regions).find(
+    (key) => key === country || key === `${country}_${localeKey}`,
+  ) ?? Object.keys(regions).find((key) => regions[key].region === country);
 
   if (!regionKey && config.mepLingoCountryToRegion) {
     regionKey = Object.entries(config.mepLingoCountryToRegion).find(

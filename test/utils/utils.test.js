@@ -4030,6 +4030,25 @@ describe('Utils', () => {
       window.fetch = originalFetch;
       expect(region).to.be.null;
     });
+
+    it('matches regions whose key suffix differs from the base prefix', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig({
+        ...lingoRegionConfig,
+        locales: {
+          '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+          ara: { ietf: 'ar', tk: 'hah7vzn.css', dir: 'rtl' },
+          ae_ar: { ietf: 'ar-AE', tk: 'hah7vzn.css', dir: 'rtl', base: 'ara' },
+        },
+        pathname: '/ara/creativecloud/',
+      });
+      sessionStorage.setItem('akamai', 'ae');
+      const region = await lingoModule.getLingoRegion();
+      expect(region?.prefix).to.equal('/ae_ar');
+    });
   });
 
   describe('loadIms with Lingo locale', () => {
