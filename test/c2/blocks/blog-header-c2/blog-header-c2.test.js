@@ -674,6 +674,26 @@ describe('blog-header-c2 decoration', () => {
     expect(block.querySelector('.blog-header-c2-author-avatar picture')).to.exist;
   });
 
+  [
+    'Rachel Thornton',
+    '<strong>Rachel</strong> Thornton',
+    '<p>Rachel Thornton</p>',
+  ].forEach((markup) => {
+    it(`renders a name-only author from ${markup}`, async () => {
+      fetchStub = mockFetch();
+      const { block } = buildBlock({ link: false, metadata: false });
+      block.children[2].firstElementChild.innerHTML = markup;
+      await init(block);
+      const authorName = block.querySelector('.blog-header-c2-author-name');
+      expect(authorName.tagName).to.equal('SPAN');
+      expect(authorName.textContent).to.equal('Rachel Thornton');
+      expect(block.querySelector('.blog-header-c2-author-meta')).not.to.exist;
+      expect(block.querySelector('.blog-header-c2-author-avatar img')).to.exist;
+      expect(block.querySelector('.blog-header-c2-title h1')).to.exist;
+      expect(fetchStub.getCalls().some((c) => c.args[0].includes('.plain.html'))).to.equal(false);
+    });
+  });
+
   it('fills the name when a direct author link has no label', async () => {
     fetchStub = mockFetch();
     const { block } = buildBlock({ metadata: false });
