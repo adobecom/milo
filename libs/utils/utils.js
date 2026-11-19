@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'hub-hero',
   'iframe',
   'logo-ticker',
+  'marketo', // STOPGAP (forge-c2-blog-next): C1 re-export, pending the blog Marketo content decision
   'martech-metadata',
   'modal-metadata',
   'modal',
