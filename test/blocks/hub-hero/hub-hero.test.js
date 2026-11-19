@@ -21,6 +21,53 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('scroll-triggered video playback', () => {
+    afterEach(() => {
+      document.body.replaceChildren();
+      sinon.restore();
+    });
+
+    it('respects reduced motion on entry and uncover without changing hover playback', async () => {
+      let reducedMotion = true;
+      const matchMedia = window.matchMedia.bind(window);
+      sinon.stub(window, 'matchMedia').callsFake((query) => {
+        if (query === '(prefers-reduced-motion: reduce)') return { matches: reducedMotion };
+        return matchMedia(query === '(min-width: 768px)' ? '(min-width: 0px)' : query);
+      });
+      const observers = [];
+      sinon.stub(window, 'IntersectionObserver').callsFake((onIntersect) => {
+        const observer = { onIntersect, observe: sinon.spy(), disconnect: sinon.stub() };
+        observers.push(observer);
+        return observer;
+      });
+      const block = await loadBlock('./mocks/default.html');
+      const video = block.querySelector('.hub-hero-carousel-item video');
+      const slide = video.closest('.hub-hero-carousel-item');
+      const nextSlide = slide.nextElementSibling;
+      const play = sinon.stub(video, 'play').resolves();
+      sinon.stub(slide, 'getBoundingClientRect').returns(new DOMRect(0, 100, 100, 100));
+      sinon.stub(nextSlide, 'getBoundingClientRect')
+        .returns(new DOMRect(0, window.innerHeight + 100, 100, 100));
+      const onEnter = observers.find((observer) => observer.observe.calledWith(slide)).onIntersect;
+      const onUncover = observers.find((observer) => observer.observe.calledWith(nextSlide))
+        .onIntersect;
+      const scrollIntoView = () => {
+        onEnter([{ target: slide, isIntersecting: true }]);
+        onUncover([{ target: nextSlide, isIntersecting: false }]);
+      };
+      scrollIntoView();
+      expect(play.called).to.be.false;
+      reducedMotion = false;
+      scrollIntoView();
+      expect(play.callCount).to.equal(2);
+      reducedMotion = true;
+      scrollIntoView();
+      expect(play.callCount).to.equal(2);
+      video.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 10, clientY: 10 }));
+      expect(play.callCount).to.equal(3);
+    });
+  });
+
   describe('promo CTA colors', () => {
     let stylesheet;
 
