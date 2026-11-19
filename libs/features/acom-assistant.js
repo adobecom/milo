@@ -160,7 +160,7 @@ async function getAutoDefaults() {
 
 function assistantBase(env) {
   return env === 'stage'
-    ? 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient'
+    ? 'https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient'
     : 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
 }
 

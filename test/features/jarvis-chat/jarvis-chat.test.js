@@ -270,7 +270,7 @@ describe('Jarvis Chat', () => {
     const loadScriptSpy = sinon.spy();
     const loadStyleSpy = sinon.spy();
     await initJarvisChat(config, loadScriptSpy, loadStyleSpy, sinon.stub());
-    const expectedAsset = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient';
+    const expectedAsset = 'https://dev-client.messaging.adobe.com/latest/AdobeMessagingClient';
     expect(loadScriptSpy.calledWithExactly(`${expectedAsset}.js`)).to.be.true;
     expect(loadStyleSpy.calledWithExactly(`${expectedAsset}.css`)).to.be.true;
   });
