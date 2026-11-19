@@ -52,8 +52,8 @@ function replaceVideoIntersectionObserver(medias) {
         const isActive = video.closest('.media')?.getAttribute('data-slot') === '0';
 
         if (!isIntersecting) {
-          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
           video.pause();
+          syncPausePlayIcon(video);
         } else if (!reducedMotion() && !isUserPaused
           && (isHaveLoopAttr || !playedOnce) && !isPlaying && isActive) {
           video.play();

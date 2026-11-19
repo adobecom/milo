@@ -403,7 +403,14 @@ export function handlePause(event) {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
     if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
-    if (isVideoReady(video)) { video.play(); }
+    if (isVideoReady(video) || (isManualToggle && document.visibilityState === 'visible')) {
+      video.play().catch((error) => {
+        syncPausePlayIcon(video);
+        if (error.name !== 'AbortError') {
+          window.lana?.log(`Failed to play video: ${error}`, { tags: 'video', severity: 'error' });
+        }
+      });
+    }
   } else {
     video.pause();
     if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');

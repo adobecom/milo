@@ -140,19 +140,16 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
 
-  it('accessibility controls should reflect paused videos that are not ready to play', () => {
-    const block = document.querySelector('.video.autoplay.viewportplay');
+  it('focus should not automatically play hover videos that are not ready', () => {
+    const block = document.querySelector('.video.hoveronly');
     const a = block.querySelector('a');
     init(a);
     const video = block.querySelector('video');
     sinon.stub(video, 'readyState').get(() => 0);
-    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
-    pausePlayWrapper.click();
-    pausePlayWrapper.click();
+    const play = sinon.spy(video, 'play');
+    block.querySelector('.video-holder').focus();
+    expect(play.called).to.be.false;
     expect(video.paused).to.be.true;
-    expect(pausePlayWrapper.querySelector('.is-playing')).not.to.exist;
-    expect(pausePlayWrapper.getAttribute('aria-label')).to.match(/^Play/i);
-    expect(pausePlayWrapper.getAttribute('aria-pressed')).to.equal('false');
   });
 
   it('accessibility controls should play autoplay videos after a manual pause', () => {
@@ -182,6 +179,7 @@ describe('video uploaded using franklin bot', () => {
       let video;
       let control;
       let stream;
+      let drawInterval;
 
       before(async () => {
         const meta = createTag('meta', { name: 'foundation', content: foundation });
@@ -207,11 +205,13 @@ describe('video uploaded using franklin bot', () => {
         canvas.getContext('2d').fillRect(0, 0, 16, 16);
         stream = canvas.captureStream(10);
         video.srcObject = stream;
+        drawInterval = setInterval(() => canvas.getContext('2d').fillRect(0, 0, 16, 16), 100);
         await video.play();
         video.pause();
       });
 
       afterEach(() => {
+        clearInterval(drawInterval);
         video.pause();
         video.srcObject = null;
         stream.getTracks().forEach((track) => track.stop());
@@ -272,19 +272,115 @@ describe('video uploaded using franklin bot', () => {
         video.srcObject = null;
         video.load();
         decorate.applyAccessibilityEvents(video);
-        const canPlay = new Promise((resolve) => {
-          video.addEventListener('canplay', resolve, { once: true });
-        });
         video.srcObject = stream;
-        await canPlay;
+        expect(video.readyState).to.equal(0);
         expect(video.paused).to.be.true;
         expectState(false);
+        const play = sinon.spy(video, 'play');
         const playing = new Promise((resolve) => {
           video.addEventListener('playing', resolve, { once: true });
         });
         control.click();
+        expect(play.calledOnce).to.be.true;
         await playing;
         expectState(true);
+      });
+
+      ['Enter', 'Space'].forEach((key) => {
+        it(`starts metadata-only media on ${key} under reduced motion`, async () => {
+          const matchMedia = window.matchMedia.bind(window);
+          sinon.stub(window, 'matchMedia').callsFake((query) => (
+            query === '(prefers-reduced-motion: reduce)' ? { matches: true } : matchMedia(query)
+          ));
+          decorate.applyAccessibilityEvents(video);
+          sinon.stub(video, 'readyState').get(() => 1);
+          const play = sinon.spy(video, 'play');
+          const playing = new Promise((resolve) => {
+            video.addEventListener('playing', resolve, { once: true });
+          });
+          control.focus();
+          await sendKeys({ press: key });
+          expect(play.calledOnce).to.be.true;
+          await playing;
+          expectState(true);
+        });
+      });
+
+      describe('pending and failed playback requests', () => {
+        let originalLana;
+
+        beforeEach(() => {
+          originalLana = window.lana;
+          window.lana = { log: sinon.spy() };
+          const matchMedia = window.matchMedia.bind(window);
+          sinon.stub(window, 'matchMedia').callsFake((query) => (
+            query === '(prefers-reduced-motion: reduce)' ? { matches: true } : matchMedia(query)
+          ));
+          decorate.applyAccessibilityEvents(video);
+        });
+
+        afterEach(() => {
+          window.lana = originalLana;
+        });
+
+        it('preserves the hidden-document guard for manual playback', () => {
+          sinon.stub(document, 'visibilityState').get(() => 'hidden');
+          const play = sinon.spy(video, 'play');
+          control.click();
+          expect(play.called).to.be.false;
+          expectState(false);
+        });
+
+        it('cancels a pending Play without restarting on canplay, and allows a retry', async () => {
+          video.srcObject = null;
+          video.load();
+          const canPlay = new Promise((resolve) => {
+            video.addEventListener('canplay', resolve, { once: true });
+          });
+          video.srcObject = stream;
+          expect(video.readyState).to.equal(0);
+          const play = sinon.spy(video, 'play');
+          control.click();
+          expect(play.calledOnce).to.be.true;
+          control.click();
+          expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.true;
+          expectState(false);
+          await canPlay;
+          expect(video.paused).to.be.true;
+          expect(play.calledOnce).to.be.true;
+          expect(window.lana.log.called).to.be.false;
+          const playing = new Promise((resolve) => {
+            video.addEventListener('playing', resolve, { once: true });
+          });
+          control.click();
+          await playing;
+          expectState(true);
+          expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.false;
+        });
+
+        ['NotAllowedError', 'NotSupportedError'].forEach((name) => {
+          it(`reports ${name} without a false playing state and allows a retry`, async () => {
+            const nativePlay = video.play.bind(video);
+            const play = sinon.stub(video, 'play');
+            play.onFirstCall().rejects(new DOMException('Playback failed', name));
+            play.onSecondCall().callsFake(nativePlay);
+            control.click();
+            await Promise.resolve();
+            expectState(false);
+            expect(window.lana.log.calledOnce).to.be.true;
+            expect(window.lana.log.firstCall.args).to.deep.equal([
+              `Failed to play video: ${name}: Playback failed`,
+              { tags: 'video', severity: 'error' },
+            ]);
+            const playing = new Promise((resolve) => {
+              video.addEventListener('playing', resolve, { once: true });
+            });
+            control.click();
+            await playing;
+            expectState(true);
+            expect(window.lana.log.calledOnce).to.be.true;
+          });
+        });
       });
 
       it('preserves normal autoplay and does not restart a manually paused video on canplay', async () => {
@@ -393,7 +489,6 @@ describe('video uploaded using franklin bot', () => {
           expect(playSpy.calledOnce).to.be.true;
           expectState(true);
           intersect(false);
-          await waitFor(() => !control.querySelector('.is-playing'));
           expectState(false);
           intersect(true);
           expect(playSpy.calledOnce).to.be.true;

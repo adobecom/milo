@@ -50,8 +50,8 @@ function replaceVideoIntersectionObserver(medias) {
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (!isIntersecting) {
-          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
           video.pause();
+          syncPausePlayIcon(video);
         } else if (!isReducedMotion && !isUserPaused
           && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
