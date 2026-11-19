@@ -88,6 +88,41 @@
   flex-direction: column;
 }
 
+.mep-popup .mep-other-manifests > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mep-popup .mep-other-manifests > summary::-webkit-details-marker {
+  display: none;
+}
+
+.mep-popup .mep-other-manifests > summary::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-right: 2px solid currentcolor;
+  border-bottom: 2px solid currentcolor;
+  transform: rotate(-45deg);
+}
+
+.mep-popup .mep-other-manifests[open] > summary::before {
+  transform: rotate(45deg);
+}
+
+.mep-popup .mep-other-manifests[open] > summary {
+  margin-bottom: 12px;
+}
+
+.mep-popup .mep-other-manifests > summary:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 4px;
+}
+
 .mep-popup .mep-section,
 .mep-popup .mep-info-tooltip {
   gap: 12px;

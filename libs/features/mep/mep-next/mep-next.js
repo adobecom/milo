@@ -863,12 +863,13 @@ export async function getMepPopup(mepConfig, { otherActivities } = {}) {
         { ...mepConfig, activities: otherActivities },
         manifestList.length,
       );
-      mepPopupBody[0].append(createTag('div', {
-        class: 'mep-manifest-list',
+      mepPopupBody[0].append(createTag('details', {
+        class: 'mep-other-manifests',
         'data-filter-match': 'false',
+        open: '',
       }, [
-        createTextTag('h6', null, `Other manifests (${otherList.length})`),
-        ...otherList,
+        createTag('summary', null, createTextTag('h6', null, `Other manifests (${otherList.length})`)),
+        createTag('div', { class: 'mep-manifest-list' }, otherList),
       ]));
     }
   }

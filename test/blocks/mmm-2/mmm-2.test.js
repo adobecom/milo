@@ -607,6 +607,8 @@ describe('mmm-2', () => {
       .to.equal('2 of 49 Manifest(s) matched');
     const matchingGroup = document.querySelector('[data-filter-match="true"]');
     const otherGroup = document.querySelector('[data-filter-match="false"]');
+    expect(otherGroup.tagName).to.equal('DETAILS');
+    expect(otherGroup.open).to.be.true;
     expect(matchingGroup.querySelector('h6').textContent).to.equal('Matching filters (2)');
     expect(otherGroup.querySelector('h6').textContent).to.equal('Other manifests (47)');
     expect([...matchingGroup.querySelectorAll('.mep-edit-manifest')].map((link) => link.textContent))
@@ -625,6 +627,18 @@ describe('mmm-2', () => {
     otherSelect.value = 'all';
     otherSelect.dispatchEvent(new Event('change', { bubbles: true }));
     expect(new URL(preview.href).searchParams.get('mep')).to.include('/unmatched-0.json--all');
+    const previewHref = preview.href;
+    const otherSummary = otherGroup.querySelector('summary');
+    otherSummary.click();
+    expect(otherGroup.open).to.be.false;
+    expect(otherSummary.textContent).to.equal('Other manifests (47)');
+    expect(otherSelect.value).to.equal('all');
+    expect(preview.href).to.equal(previewHref);
+    expect(matchingGroup.querySelectorAll('.mep-edit-manifest')).to.have.length(2);
+    otherSummary.click();
+    expect(otherGroup.open).to.be.true;
+    expect(otherSelect.value).to.equal('all');
+    otherSummary.click();
     document.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
     const summary = document.querySelector('.mep-summary-body');
     const values = [...summary.querySelector('.mep-section-data').children];
@@ -641,6 +655,10 @@ describe('mmm-2', () => {
     await waitFor(() => document.querySelector('.mep-popup'));
     expect(document.querySelector('.mmm2-page-subtext').textContent)
       .to.equal('2 of 49 Manifest(s) matched');
+    const restoredGroup = document.querySelector('[data-filter-match="false"]');
+    expect(restoredGroup.open).to.be.false;
+    expect(restoredGroup.querySelector('select').value).to.equal('all');
+    expect(document.querySelector('.mep-popup a.con-button').href).to.equal(previewHref);
 
     routes['/get-pages'] = jsonResponse({
       ...getPagesData,
