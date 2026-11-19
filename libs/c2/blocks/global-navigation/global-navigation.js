@@ -17,6 +17,7 @@ import {
   isTrustedAutoBlock,
   loadBlock,
   isC2GnavOnC1Host,
+  shouldBlockFreeTrialLinks,
 } from '../../../utils/utils.js';
 import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
 
@@ -36,7 +37,7 @@ export async function localizeGnavLinks(body) {
   }));
 }
 
-function decorateModalLink(a) {
+function getModalUrl(a) {
   let url;
   try {
     url = new URL(a.href);
@@ -45,7 +46,7 @@ function decorateModalLink(a) {
       tags: 'global-navigation',
       severity: 'error',
     });
-    return false;
+    return null;
   }
   const isFragment = getConfig().autoBlocks.some(
     (candidate) => candidate.fragment && isTrustedAutoBlock(candidate.fragment, url),
@@ -60,7 +61,13 @@ function decorateModalLink(a) {
     || !url.hash
     || url.hash.includes('#_inline')
     || url.hash.includes('#_replacecell')
-    || url.hash.includes('#_dnb')) return false;
+    || url.hash.includes('#_dnb')) return null;
+  return url;
+}
+
+function decorateModalLink(a) {
+  const url = getModalUrl(a);
+  if (!url) return false;
 
   a.dataset.modalPath = url.pathname;
   a.dataset.modalHash = url.hash;
@@ -77,6 +84,18 @@ export async function decorateModalLinks(root) {
   const modals = [...root.querySelectorAll('a[href]:not([data-modal-path])')]
     .filter((link) => decorateModalLink(link));
   await Promise.all(modals.map((link) => loadBlock(link)));
+}
+
+// Federal's link policy hook. C1 runs shouldBlockFreeTrialLinks after
+// decorateLinksAsync has marked modals; C2 decorates modals after render, so
+// trial-modal links are checked against a copy carrying that modal path.
+export function shouldBlockGnavLink(el) {
+  if (shouldBlockFreeTrialLinks(el)) return true;
+  const modalUrl = el instanceof HTMLAnchorElement ? getModalUrl(el) : null;
+  if (!modalUrl) return false;
+  const modal = el.cloneNode(true);
+  modal.dataset.modalPath = modalUrl.pathname;
+  return shouldBlockFreeTrialLinks(modal);
 }
 
 export function getFederalDomain(config) {
@@ -296,6 +315,7 @@ export default async function init(el) {
       masCard: async (link) => (await import('../../../blocks/merch-card-autoblock/merch-card-autoblock.js')).default(link),
     },
     decorateModalLinks,
+    shouldBlockLink: shouldBlockGnavLink,
     loadBrandConcierge,
     appendHtmlToLink,
     convertStageLinks: ({ anchors, hostname, href }) => {

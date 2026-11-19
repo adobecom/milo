@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
-import { decorateModalLinks, getFederalDomain, localizeGnavLinks } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+import { decorateModalLinks, getFederalDomain, localizeGnavLinks, shouldBlockGnavLink } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 import { decorateAcomAssistantGnav } from '../../../../libs/features/acom-assistant-gnav.js';
 import { getConfig, setConfig, notifyTargetReady } from '../../../../libs/utils/utils.js';
 
@@ -120,6 +120,102 @@ describe('c2 global-navigation modal links', () => {
       window.history.replaceState(null, '', originalUrl);
       fetchStub.restore();
     }
+  });
+});
+
+describe('c2 global-navigation free-trial link policy', () => {
+  const TRIAL_MODAL = '/kr/cc-shared/fragments/trial-modals/photoshop';
+  let originalConfig;
+  let root;
+  let meta;
+
+  const render = (html) => {
+    root.innerHTML = html;
+    return root.firstElementChild;
+  };
+
+  beforeEach(() => {
+    originalConfig = getConfig();
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs' });
+    getConfig().locale.prefix = '/kr';
+    meta = document.createElement('meta');
+    meta.name = 'foundation';
+    meta.content = 'c2';
+    document.head.append(meta);
+    root = document.createElement('header');
+    document.body.append(root);
+  });
+
+  afterEach(() => {
+    root.remove();
+    meta.remove();
+    setConfig(originalConfig);
+  });
+
+  it('blocks KR free-trial copy with the shared C1 helper', () => {
+    const link = render('<a href="/kr/trial">무료 체험판</a>');
+    expect(shouldBlockGnavLink(link)).to.be.true;
+    expect(link.isConnected).to.be.false;
+  });
+
+  it('keeps unrelated and allow-listed copy', () => {
+    ['구매하기', '무료 앱 다운로드'].forEach((copy) => {
+      const link = render(`<a href="/kr/x">${copy}</a>`);
+      expect(shouldBlockGnavLink(link)).to.be.false;
+      expect(link.isConnected).to.be.true;
+    });
+  });
+
+  it('honors #_allow-kr-trial and strips the marker from the link', () => {
+    const link = render('<a href="/kr/trial#_allow-kr-trial">무료 체험판</a>');
+    expect(shouldBlockGnavLink(link)).to.be.false;
+    expect(link.href).to.not.include('_allow-kr-trial');
+    expect(link.dataset.allowKrFreeTrial).to.equal('true');
+  });
+
+  it('honors the allow-kr-free-trial page metadata', () => {
+    const allow = document.createElement('meta');
+    allow.name = 'allow-kr-free-trial';
+    allow.content = 'on';
+    document.head.append(allow);
+    try {
+      expect(shouldBlockGnavLink(render('<a href="/kr/trial">무료 체험판</a>'))).to.be.false;
+    } finally {
+      allow.remove();
+    }
+  });
+
+  it('blocks trial-modal links regardless of copy without decorating them', () => {
+    const link = render(`<a href="${TRIAL_MODAL}#trial">시작하기</a>`);
+    expect(shouldBlockGnavLink(link)).to.be.true;
+    expect(link.dataset.modalPath).to.equal(undefined);
+    expect(link.getAttribute('href')).to.equal(`${TRIAL_MODAL}#trial`);
+  });
+
+  it('keeps an allowed trial modal so decorateModalLinks opens it normally', async () => {
+    const link = render(`<a href="${TRIAL_MODAL}#trial#_allow-kr-trial">무료 체험판</a>`);
+    expect(shouldBlockGnavLink(link)).to.be.false;
+    expect(link.dataset.modalPath).to.equal(undefined);
+
+    await decorateModalLinks(root);
+    expect(link.dataset.modalPath).to.equal(TRIAL_MODAL);
+    expect(link.dataset.modalHash).to.equal('#trial');
+    expect(link.dataset.blockStatus).to.equal('loaded');
+  });
+
+  it('checks dropdown titles by copy', () => {
+    const title = document.createElement('h2');
+    title.textContent = '무료 체험판';
+    expect(shouldBlockGnavLink(title)).to.be.true;
+    title.textContent = '제품';
+    expect(shouldBlockGnavLink(title)).to.be.false;
+  });
+
+  it('does not block outside KR', () => {
+    getConfig().locale.prefix = '';
+    expect(shouldBlockGnavLink(render('<a href="/trial">Free trial</a>'))).to.be.false;
+    expect(shouldBlockGnavLink(render(`<a href="${TRIAL_MODAL}#trial">Start</a>`))).to.be.false;
+    expect(root.querySelector('a')).to.exist;
   });
 });
 
