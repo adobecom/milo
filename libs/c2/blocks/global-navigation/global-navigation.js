@@ -86,9 +86,6 @@ export async function decorateModalLinks(root) {
   await Promise.all(modals.map((link) => loadBlock(link)));
 }
 
-// Federal's link policy hook. C1 runs shouldBlockFreeTrialLinks after
-// decorateLinksAsync has marked modals; C2 decorates modals after render, so
-// trial-modal links are checked against a copy carrying that modal path.
 export function shouldBlockGnavLink(el) {
   if (shouldBlockFreeTrialLinks(el)) return true;
   const modalUrl = el instanceof HTMLAnchorElement ? getModalUrl(el) : null;
