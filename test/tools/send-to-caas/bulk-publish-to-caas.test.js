@@ -359,6 +359,57 @@ describe('reconcileHtmlIdentity — the live sheet is authoritative', () => {
     });
   });
 
+  describe('advanced settings layout', () => {
+    let style;
+    let originalBodyClass;
+
+    before(async () => {
+      const [accordionCss, publisherCss] = await Promise.all([
+        readFile({ path: '../../../libs/ui/controls/accordion.css' }),
+        readFile({ path: '../../../tools/send-to-caas/bulkpublish.css' }),
+      ]);
+      style = document.createElement('style');
+      style.textContent = `${accordionCss}\n${publisherCss}\n* { transition: none !important; }`;
+      document.head.append(style);
+    });
+
+    beforeEach(() => {
+      originalBodyClass = document.body.className;
+      document.body.className = 'advanced';
+    });
+
+    afterEach(() => {
+      document.body.className = originalBodyClass;
+    });
+
+    after(() => {
+      style.remove();
+    });
+
+    it('keeps every advanced setting inside the expanded panel and reachable by scrolling', () => {
+      const panel = document.querySelector('.advanced-options');
+      const panelBounds = panel.getBoundingClientRect();
+      expect(panel.scrollHeight).to.be.at.most(panel.clientHeight + 1);
+      panel.querySelectorAll('.field').forEach((field) => {
+        expect(field.getBoundingClientRect().bottom, field.id).to.be.at.most(panelBounds.bottom);
+      });
+
+      const lastSetting = panel.querySelector('#autoDetectLingo');
+      lastSetting.scrollIntoView({ block: 'center' });
+      const bounds = lastSetting.getBoundingClientRect();
+      expect(bounds.top).to.be.at.least(0);
+      expect(bounds.bottom).to.be.at.most(window.innerHeight);
+    });
+
+    it('still collapses advanced settings in default and preset modes', () => {
+      const panel = document.querySelector('.advanced-options');
+      ['', 'preset'].forEach((mode) => {
+        document.body.className = mode;
+        expect(panel.getBoundingClientRect().height, mode || 'default').to.equal(0);
+      });
+    });
+  });
+
   describe('the Publish snapshot carries the whole policy', () => {
     it('reads the live section box, not whatever config was left holding', () => {
       // The original defect: the snapshot took htmlIdentity from the live

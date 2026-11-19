@@ -840,15 +840,13 @@ helpButtons.forEach((btn) => {
       case 'html-identity-sections':
         showAlert(`<p><b>Extensionless sections</b></p>
           <p><b>Consumer prerequisite &mdash; read this before configuring any section.</b>
-            Collection card resolution does <b>not</b> yet read
-            <b>caas-identity-extensionless-sections</b>. Until that ships (MWPW-213847), and while
-            <b>Keep .html card identity</b> is on, configuring a section here is <b>worse than
-            leaving it empty</b>: this tool preserves the section's extensionless IDs, while
-            URL-based featured-card lookups keep hashing the <b>.html</b> form, so every card in
-            that section drops out of the collections referencing it &mdash; including localized
-            paths such as <tt>/de/blog/x</tt>. Leave this field empty until consumer resolution is
-            deployed, then set it everywhere in the same change. The rest of this help describes
-            that steady state.</p>
+            Collection card resolution reads <b>caas-identity-extensionless-sections</b> in Milo
+            builds that include MWPW-213847. Confirm that every consuming site uses such a build
+            before configuring sections. Then configure the same list in the publishers and on
+            every consuming page, including localized paths such as <tt>/de/blog/x</tt>.
+            Otherwise publishers and collection lookups hash different URLs, and cards in those
+            sections disappear from collections. Leave this field empty until consumer support
+            is deployed everywhere that references the cards.</p>
           <p>A comma separated list of URL path segments that this site publishes <b>without</b>
             the <b>.html</b> extension &mdash; typically <b>blog</b>, which is served by a different
             repository. <b>Keep .html card identity</b> leaves these alone, so their cards keep the
