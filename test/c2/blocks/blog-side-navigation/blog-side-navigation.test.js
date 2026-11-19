@@ -1201,7 +1201,7 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('only offers collapse for more than three links on tablet and starts those collapsed', async () => {
+  it('starts expanded and only offers collapse for more than three links on tablet', async () => {
     const media = mockTablet();
     for (const count of [1, 2, 3, 4]) {
       const content = Array.from({ length: count }, (_, index) => `<h2>Section ${index}</h2>`)
@@ -1219,10 +1219,10 @@ describe('blog-side-navigation section list', () => {
       } else {
         expect(mediaStub.firstCall.args[0]).to.equal('(width >= 768px)');
         expect(button.hidden).to.equal(false);
-        expect(button.getAttribute('aria-expanded')).to.equal('false');
+        expect(button.getAttribute('aria-expanded')).to.equal('true');
         expect(button.querySelector('.blog-side-navigation-toggle-icon')
           .getAttribute('aria-hidden')).to.equal('true');
-        expect(items.filter((item) => !item.hidden).length).to.equal(1);
+        expect(items.every((item) => !item.hidden)).to.equal(true);
         expect(document.getElementById(button.getAttribute('aria-controls')))
           .to.equal(block.querySelector('ul'));
         expect(button.getAttribute('aria-label')).to.equal('JUMP TO SECTION');
@@ -1236,7 +1236,7 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
-  it('starts every collapsible list closed at mobile, tablet and desktop widths', async () => {
+  it('defaults desktop and tablet navigation open while keeping collapsible mobile lists closed', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     try {
       for (const width of [390, 767, 768, 1279, 1280, 1440]) {
@@ -1249,7 +1249,7 @@ describe('blog-side-navigation section list', () => {
           const button = block.querySelector('button');
           const items = [...block.querySelectorAll('li')];
           const collapsible = width < 768 || count > 3;
-          const open = !collapsible;
+          const open = !collapsible || width >= 768;
           expect(button.hidden).to.equal(!collapsible);
           expect(button.getAttribute('aria-expanded')).to.equal(String(open));
           expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
@@ -1290,7 +1290,7 @@ describe('blog-side-navigation section list', () => {
   });
 
   [true, false].forEach((collapsed) => {
-    it(`treats the collapsed variant ${collapsed} like the default collapsed state`, async () => {
+    it(`supports the collapsed variant ${collapsed} without changing short lists or mobile defaults`, async () => {
       const originalViewport = { width: window.innerWidth, height: window.innerHeight };
       try {
         for (const width of [390, 768, 1440]) {
@@ -1304,7 +1304,7 @@ describe('blog-side-navigation section list', () => {
             const button = block.querySelector('button');
             const items = [...block.querySelectorAll('li')];
             const collapsible = width < 768 || count > 3;
-            const open = !collapsible;
+            const open = !collapsible || (width >= 768 && !collapsed);
             expect(button.hidden).to.equal(!collapsible);
             expect(button.getAttribute('aria-expanded')).to.equal(String(open));
             expect(items.filter((item) => !item.hidden).length).to.equal(open ? count : 1);
@@ -1454,17 +1454,16 @@ describe('blog-side-navigation section list', () => {
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
     const url = window.location.href;
-    expect(button.getAttribute('aria-expanded')).to.equal('false');
-    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
-    button.focus();
-    button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('true');
     expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
-    expect(document.activeElement === button).to.equal(true);
     links[1].focus({ preventScroll: true });
     button.click();
     expect(button.getAttribute('aria-expanded')).to.equal('false');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
+    expect(document.activeElement === button).to.equal(true);
+    button.click();
+    expect(button.getAttribute('aria-expanded')).to.equal('true');
+    expect([...block.querySelectorAll('li')].every((item) => !item.hidden)).to.equal(true);
     expect(document.activeElement === button).to.equal(true);
     expect(window.location.href).to.equal(url);
     expect(scrollStub.called).to.equal(false);
@@ -1523,9 +1522,6 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     const button = block.querySelector('button');
     const links = [...block.querySelectorAll('a')];
-    expect(button.getAttribute('aria-expanded')).to.equal('false');
-    expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
-    button.click();
     links[1].focus({ preventScroll: true });
     media.matches = false;
     media.dispatchEvent(new Event('change'));
@@ -1663,6 +1659,7 @@ describe('blog-side-navigation section list', () => {
         const button = block.querySelector('button');
         const items = [...block.querySelectorAll('nav > ul > li')];
         const links = items.map((item) => item.querySelector('a'));
+        if (tablet) button.click();
         button.focus({ preventScroll: true });
         const url = window.location.href;
         for (const activeIndex of [count - 1, 0, 1]) {
