@@ -25,6 +25,9 @@ describe('AI Summary', () => {
     expect(block.querySelector('.ai-summary-image picture')).to.equal(picture);
     expect(picture.querySelector('img').alt).to.equal('Article overview');
     expect(block.querySelector('.ai-summary-content h2')).to.equal(heading);
+    expect(heading.classList.contains('heading-5')).to.equal(true);
+    expect(block.querySelector('.ai-summary-image .body-lg')).to.not.exist;
+    expect(block.querySelector('.ai-summary-content p').classList.contains('body-lg')).to.equal(true);
     expect(block.querySelector('.ai-summary-content p').textContent).to.equal('An introduction to the summary.');
     expect(block.querySelectorAll('.ai-summary-content li').length).to.equal(2);
     expect(block.querySelector('a').getAttribute('href')).to.equal('/blog/example');
