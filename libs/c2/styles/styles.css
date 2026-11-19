@@ -450,6 +450,9 @@
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
   --feds-language-banner-height: 44px;
 
+  /* Shared icons */
+  --icon-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 7' fill='none'><path d='M1 1l5 5 5-5' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+
   /* Animation properties */
   --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
 

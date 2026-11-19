@@ -100,7 +100,7 @@
   background: currentcolor;
   display: block;
   flex-shrink: 0;
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 7' fill='none'><path d='M1 1l5 5 5-5' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  mask-image: var(--icon-chevron);
   mask-position: center;
   mask-repeat: no-repeat;
   transition: transform var(--faq-transition);
