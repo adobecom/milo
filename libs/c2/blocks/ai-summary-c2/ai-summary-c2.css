@@ -1,0 +1,87 @@
+.ai-summary-c2 {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-md);
+  width: calc(100% - 40px);
+  max-width: var(--body-max-width, 600px);
+  margin: var(--s2a-spacing-lg) auto;
+  padding: var(--s2a-spacing-20);
+  border: 3px solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-sm);
+  color: var(--s2a-color-content-default);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-typography-font-size-body-lg);
+  font-style: normal;
+  font-weight: var(--s2a-font-weight-body);
+  line-height: 150%;
+  overflow-wrap: anywhere;
+}
+
+/* The article layout already supplies the page gutter. */
+.blog-article-content .ai-summary-c2 {
+  width: 100%;
+  max-width: none;
+}
+
+.ai-summary-c2 p,
+.ai-summary-c2 ul,
+.ai-summary-c2 ol {
+  margin: 0 0 var(--s2a-spacing-md);
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.ai-summary-c2 .ai-summary-c2-image {
+  display: none;
+}
+
+.ai-summary-c2 .ai-summary-c2-image p {
+  margin: 0;
+}
+
+.ai-summary-c2 .ai-summary-c2-image picture {
+  display: block;
+}
+
+.ai-summary-c2 .ai-summary-c2-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  border-radius: var(--s2a-border-radius-sm);
+}
+
+.ai-summary-c2 :is(h1, h2, h3, h4, h5, h6) {
+  margin: 0 0 var(--s2a-spacing-md);
+  color: var(--s2a-color-content-default);
+  font-size: var(--s2a-typography-font-size-heading-5);
+  font-style: normal;
+  font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+  line-height: 125%;
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+}
+
+.ai-summary-c2 ul,
+.ai-summary-c2 ol {
+  padding-inline-start: var(--s2a-spacing-lg);
+}
+
+.ai-summary-c2 li + li {
+  margin-top: var(--s2a-spacing-sm);
+}
+
+.ai-summary-c2 .ai-summary-c2-content > div > :last-child {
+  margin-bottom: 0;
+}
+
+@media (width >= 768px) {
+  .ai-summary-c2 {
+    width: 100%;
+    padding: var(--s2a-spacing-lg);
+  }
+
+  .ai-summary-c2 .ai-summary-c2-image {
+    display: block;
+  }
+}
