@@ -4,8 +4,6 @@ import sinon from 'sinon';
 
 document.body.innerHTML = await readFile({ path: '../../personalization/mocks/postPersonalization.html' });
 const {
-  escapeHtml,
-  escapeAttr,
   parsePageAndUrl,
   getMepPopup,
   saveToMmm,
@@ -83,58 +81,6 @@ const config = {
   env: { name: 'stage' },
 };
 setConfig(config);
-
-describe('escapeHtml', () => {
-  it('returns null and undefined unchanged', () => {
-    expect(escapeHtml(null)).to.equal(null);
-    expect(escapeHtml(undefined)).to.equal(undefined);
-  });
-
-  it('returns empty string unchanged', () => {
-    expect(escapeHtml('')).to.equal('');
-  });
-
-  it('leaves plain country codes unchanged', () => {
-    expect(escapeHtml('de')).to.equal('de');
-    expect(escapeHtml('lu')).to.equal('lu');
-  });
-
-  it('encodes HTML metacharacters for safe insertion into HTML', () => {
-    const malicious = '<img src=x onerror=alert(1)>';
-    const out = escapeHtml(malicious);
-    expect(out).to.include('&lt;');
-    expect(out).to.include('&gt;');
-    expect(out).to.not.include('<img');
-  });
-
-  it('stringifies non-string input before escaping', () => {
-    expect(escapeHtml(42)).to.equal('42');
-  });
-});
-
-describe('escapeAttr', () => {
-  it('returns null, undefined and empty string unchanged', () => {
-    expect(escapeAttr(null)).to.equal(null);
-    expect(escapeAttr(undefined)).to.equal(undefined);
-    expect(escapeAttr('')).to.equal('');
-  });
-
-  it('encodes quotes so a value cannot close a quoted attribute', () => {
-    const out = escapeAttr('" onmouseover="alert(1)');
-    expect(out).to.not.include('"');
-    expect(out).to.include('&quot;');
-  });
-
-  it('encodes & < > and single quotes', () => {
-    expect(escapeAttr('a&b')).to.include('&amp;');
-    expect(escapeAttr('<x>')).to.equal('&lt;x&gt;');
-    expect(escapeAttr("o'clock")).to.include('&#39;');
-  });
-
-  it('stringifies non-string input before escaping', () => {
-    expect(escapeAttr(42)).to.equal('42');
-  });
-});
 
 describe('preview feature', () => {
   beforeEach(() => {
@@ -496,7 +442,7 @@ describe('M@S badge market resolution', () => {
 
   describe('injectMasBadges market stamping for pseudo-badge surfaces (inline + ost)', () => {
     // The inline (mas-field) and ost surfaces render their badges via CSS
-    // ::before pseudo using attr(data-mas-market). preview.js stamps the
+    // ::before pseudo using attr(data-mas-market). mep-mas.js stamps the
     // data attribute on the host so the chip text can render purely in CSS.
     it('stamps data-mas-market on the inline host using its descendant checkout link country', () => {
       const host = document.createElement('span');
@@ -1238,7 +1184,7 @@ describe('getMepPopup', () => {
   afterEach(() => {
     popups.splice(0).forEach((popup) => popup.remove());
     document.querySelectorAll('[data-mas-block]').forEach((el) => el.remove());
-    document.querySelectorAll('meta[name="langfirst"]').forEach((el) => el.remove());
+    document.querySelectorAll('meta[name="langfirst"], meta[name="foundation"]').forEach((el) => el.remove());
     delete getConfig().locale.regions;
     delete config.locale.regions;
     if (originalMarketsConfig === undefined) {
@@ -1275,7 +1221,7 @@ describe('getMepPopup', () => {
     expect(matchedOption, 'matching variant option is pre-selected').to.exist;
   });
 
-  const XSS = '<img src=x onerror=alert(1)>';
+  const XSS = '<img src=x onerror="window.mepNextXss = true">';
   const basePage = {
     url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
   };
@@ -1287,10 +1233,10 @@ describe('getMepPopup', () => {
       page: { ...basePage },
       activities: [buildActivity({ variantNames: [XSS], selectedVariantName: XSS })],
     });
-    expect(popup.querySelector('img'), 'no injected element from variant name').to.be.null;
+    expect(popup.querySelectorAll('img').length, 'no injected element from variant name').to.equal(0);
     const selected = popup.querySelector('.mep-selected-variant');
     expect(selected.textContent, 'variant rendered as literal text').to.include(XSS);
-    expect(selected.querySelector('img'), 'variant text not parsed as markup').to.be.null;
+    expect(selected.querySelectorAll('img').length, 'variant text not parsed as markup').to.equal(0);
   });
 
   it('does not let a malicious manifest url break out of the href/title attributes', async () => {
@@ -1298,9 +1244,30 @@ describe('getMepPopup', () => {
     setConfig(config);
     const popup = await renderPopup({
       page: { ...basePage },
-      activities: [buildActivity({ url: 'https://x/"><img src=x onerror=alert(1)>' })],
+      activities: [buildActivity({ url: `https://x/">${XSS}` })],
     });
-    expect(popup.querySelector('.mep-manifest-title img'), 'attribute break-out blocked').to.be.null;
+    expect(popup.querySelectorAll('.mep-manifest-title img').length, 'attribute break-out blocked').to.equal(0);
+  });
+
+  it('renders page summary values and Lingo region keys as text, not HTML', async () => {
+    const langfirstMeta = createTag('meta', { name: 'langfirst', content: 'on' });
+    document.head.append(langfirstMeta, createTag('meta', { name: 'foundation', content: XSS }));
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    getConfig().locale.regions = { [`x${XSS}_de`]: { prefix: '/ch_de' } };
+    const popup = await renderPopup({
+      page: {
+        ...basePage, personalization: XSS, locale: XSS, geo: XSS, target: XSS, lastSeen: '2024-01-01T00:00:00.000Z',
+      },
+      activities: [buildActivity()],
+    });
+    expect(popup.querySelectorAll('img').length, 'no injected element from page or region data').to.equal(0);
+    const summary = popup.querySelector('.mep-summary-body').textContent;
+    expect(summary).to.include(XSS);
+    expect(summary).to.include(XSS.toLowerCase());
+    expect(summary, 'foundation metadata rendered as text').to.include(XSS.toUpperCase());
+    const regionOption = popup.querySelector('select[id^="mepLingoRegionSelect"] option:not([value=""])');
+    expect(regionOption.textContent).to.equal(`x${XSS}_de`);
   });
 
   it('neutralizes a javascript: manifest url to an empty href', async () => {
@@ -1321,8 +1288,8 @@ describe('getMepPopup', () => {
       page: { ...basePage },
       activities: [buildActivity({ source: '<b>x</b>', consentType: '<b>x</b>', countryRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
     });
-    expect(popup.querySelector('.mep-section-data b'), 'section data values not parsed as markup').to.be.null;
-    expect(popup.querySelector('.target-activity-name b'), 'target activity name not parsed as markup').to.be.null;
+    expect(popup.querySelectorAll('.mep-section-data b').length, 'section data values not parsed as markup').to.equal(0);
+    expect(popup.querySelectorAll('.target-activity-name b').length, 'target activity name not parsed as markup').to.equal(0);
   });
 
   it('does not throw and renders default (control) when variantNames is undefined', async () => {
@@ -1685,6 +1652,25 @@ describe('getMepPopup', () => {
     masMarketSelect.dispatchEvent(new Event('change'));
     expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
     expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('mepMasMarket');
+  });
+
+  it('renders market dropdown values as text, not HTML', async () => {
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,x" data-injected="1' }] } };
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-7b.html', pageId: 517, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const masMarketSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+    expect(popup.querySelector('[data-injected]')).to.be.null;
+    expect([...masMarketSelect.options].map((o) => o.value)).to.include('x" data-injected="1');
   });
 
   it('cold market cache: renders a disabled placeholder, then re-renders with fetched markets in place', async () => {

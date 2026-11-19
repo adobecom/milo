@@ -221,7 +221,7 @@
 }
 
 .mktoHidden:has(.mktoRequired) {
-    display: block !important;
+  display: block !important;
 }
 
 .marketo .mktoForm .mktoField {
@@ -273,6 +273,11 @@
 
 [dir="rtl"] .marketo .mktoForm select {
   background-position: 3% 50%;
+}
+
+.marketo .mktoForm input[type="date"] {
+  appearance: none;
+  height: 40px;
 }
 
 [dir="rtl"] .marketo .mktoForm input[type="tel"] {
