@@ -4,7 +4,7 @@
   flex-direction: column;
   gap: var(--s2a-spacing-md);
   width: calc(100% - 40px);
-  max-width: var(--body-max-width, 600px);
+  max-width: var(--blog-body-max-width, 600px);
   margin: var(--s2a-spacing-lg) auto;
   padding: var(--s2a-spacing-20);
   border: 3px solid var(--s2a-color-border-subtle);

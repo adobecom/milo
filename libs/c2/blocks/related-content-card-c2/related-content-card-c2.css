@@ -124,7 +124,7 @@
   }
 
   .related-content-card-c2 {
-    max-width: var(--body-max-width, 100%);
+    max-width: var(--blog-body-max-width, 100%);
   }
 
   .related-content-card-c2 .related-content-card-c2-title {
