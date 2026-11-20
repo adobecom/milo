@@ -31,7 +31,7 @@ MMM-2 keeps the manifest link, experience selector and expand control on one row
 with expanded activity details spanning the full width below.
 Manifest order numbers are plain text; only the filenames are linked.
 The **Other manifests** group can be collapsed using its heading or the keyboard.
-It starts expanded; collapsing keeps the count visible and preserves manifest
+It starts collapsed; collapsing keeps the count visible and preserves manifest
 selections in Preview. Each page retains its own expanded/collapsed state when reopened.
 Each expanded page has its own **Preview** button inside its Options panel,
 below that page's settings. The button uses only that page's selected manifests

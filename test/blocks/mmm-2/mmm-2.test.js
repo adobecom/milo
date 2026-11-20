@@ -608,7 +608,7 @@ describe('mmm-2', () => {
     const matchingGroup = document.querySelector('[data-filter-match="true"]');
     const otherGroup = document.querySelector('[data-filter-match="false"]');
     expect(otherGroup.tagName).to.equal('DETAILS');
-    expect(otherGroup.open).to.be.true;
+    expect(otherGroup.open).to.be.false;
     expect(matchingGroup.querySelector('h6').textContent).to.equal('Matching filters (2)');
     expect(otherGroup.querySelector('h6').textContent).to.equal('Other manifests (47)');
     expect([...matchingGroup.querySelectorAll('.mep-edit-manifest')].map((link) => link.textContent))
@@ -623,12 +623,14 @@ describe('mmm-2', () => {
     const preview = document.querySelector('.mep-popup a.con-button');
     expect(preview.href).to.not.include(getPageData.activities[2].pathname);
     expect(preview.href).to.include('matching-1.json');
+    const otherSummary = otherGroup.querySelector('summary');
+    otherSummary.click();
+    expect(otherGroup.open).to.be.true;
     const otherSelect = otherGroup.querySelector('select');
     otherSelect.value = 'all';
     otherSelect.dispatchEvent(new Event('change', { bubbles: true }));
     expect(new URL(preview.href).searchParams.get('mep')).to.include('/unmatched-0.json--all');
     const previewHref = preview.href;
-    const otherSummary = otherGroup.querySelector('summary');
     otherSummary.click();
     expect(otherGroup.open).to.be.false;
     expect(otherSummary.textContent).to.equal('Other manifests (47)');

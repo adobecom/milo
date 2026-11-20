@@ -866,7 +866,6 @@ export async function getMepPopup(mepConfig, { otherActivities } = {}) {
       mepPopupBody[0].append(createTag('details', {
         class: 'mep-other-manifests',
         'data-filter-match': 'false',
-        open: '',
       }, [
         createTag('summary', null, createTextTag('h6', null, `Other manifests (${otherList.length})`)),
         createTag('div', { class: 'mep-manifest-list' }, otherList),
