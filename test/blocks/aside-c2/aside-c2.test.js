@@ -50,6 +50,40 @@ describe('aside-c2', () => {
     expect(block.querySelector('h2 + p').classList.contains('body-md')).to.be.true;
   });
 
+  it('groups promo body elements into an actions container in their original order', () => {
+    const block = document.createElement('div');
+    block.className = 'aside-c2 promo';
+    block.innerHTML = `<div><div>
+      <h2>Promo heading</h2>
+      <p class="custom body-sm">First body</p>
+      <p>Second body <a href="/action">Action</a> text</p>
+      <p class="not-body-md">Other content</p>
+    </div></div>`;
+    const bodyElements = [...block.querySelectorAll('p')].slice(0, 2);
+    document.body.append(block);
+    init(block);
+    const actions = block.querySelector('.foreground > .actions-container');
+    expect([...actions.children]).to.deep.equal(bodyElements);
+    expect(actions.previousElementSibling.tagName).to.equal('H2');
+    expect(actions.nextElementSibling.className).to.equal('not-body-md');
+    expect(actions.querySelector('a').getAttribute('href')).to.equal('/action');
+  });
+
+  it('does not group body elements for non-promo blocks', () => {
+    expect(getBlock('lockup').querySelector('.actions-container')).to.not.exist;
+    expect(getBlock('lockup').querySelector('.foreground > .body-md')).to.exist;
+  });
+
+  it('does not create an empty actions container for promo blocks without body elements', () => {
+    const block = document.createElement('div');
+    block.className = 'aside-c2 promo';
+    block.innerHTML = '<div><div><h2>Promo heading</h2></div></div>';
+    document.body.append(block);
+    init(block);
+    expect(block.querySelector('.actions-container')).to.not.exist;
+    expect(block.querySelector('.foreground > h2')).to.exist;
+  });
+
   it('marks a leading paragraph with a picture as product lockup', () => {
     const label = getBlock('lockup').querySelector('.foreground').firstElementChild;
     expect(label.classList.contains('product-lockup')).to.be.true;
@@ -254,6 +288,44 @@ describe('aside-c2 styles', () => {
   it('scales video height with its width', () => {
     const { width, height } = getBlock('video').querySelector('video').getBoundingClientRect();
     expect(height).to.be.closeTo((width * 180) / 320, 1);
+  });
+
+  it('places promo actions beside the stacked lockup and heading from tablet up', async () => {
+    const block = document.createElement('div');
+    block.className = 'aside-c2 promo';
+    block.innerHTML = `<div class="inner"><div class="foreground">
+      <p class="product-lockup">Product</p>
+      <h3>Promo heading</h3>
+      <div class="actions-container"><p>Body content</p></div>
+    </div></div>`;
+    document.body.append(block);
+    const foreground = block.querySelector('.foreground');
+    const lockup = block.querySelector('.product-lockup');
+    const heading = block.querySelector('h3');
+    const actions = block.querySelector('.actions-container');
+    const verifyColumns = () => {
+      expect(foreground.getBoundingClientRect().width)
+        .to.be.closeTo(block.querySelector('.inner').getBoundingClientRect().width, 1);
+      const lockupRect = lockup.getBoundingClientRect();
+      const headingRect = heading.getBoundingClientRect();
+      const actionsRect = actions.getBoundingClientRect();
+      expect(headingRect.left).to.be.closeTo(lockupRect.left, 1);
+      expect(headingRect.top).to.be.at.least(lockupRect.bottom);
+      expect(actionsRect.left).to.be.above(lockupRect.right);
+      expect(actionsRect.top).to.be.closeTo(lockupRect.top, 1);
+      expect(actionsRect.width).to.be.below(headingRect.width);
+      expect(actionsRect.right).to.be.closeTo(foreground.getBoundingClientRect().right, 1);
+    };
+    verifyColumns();
+    await setViewport(TABLET);
+    verifyColumns();
+    await setViewport(MOBILE);
+    expect(getComputedStyle(foreground).display).to.equal('flex');
+    const actionsRect = actions.getBoundingClientRect();
+    const headingRect = heading.getBoundingClientRect();
+    expect(actionsRect.top).to.be.at.least(headingRect.bottom);
+    expect(actionsRect.width).to.be.below(headingRect.width);
+    expect(actionsRect.right).to.be.closeTo(headingRect.right, 1);
   });
 
   it('rounds images wrapped in a link', () => {

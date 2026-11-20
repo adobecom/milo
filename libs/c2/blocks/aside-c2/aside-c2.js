@@ -19,6 +19,16 @@ function decorateProductLockup(foreground) {
   if (federatedSrc !== src) icon.src = federatedSrc;
 }
 
+function decorateActions(foreground) {
+  const bodyElements = [...foreground.children]
+    .filter((child) => [...child.classList].some((name) => name.startsWith('body-')));
+  if (!bodyElements.length) return;
+
+  const actions = createTag('div', { class: 'actions-container' });
+  bodyElements[0].before(actions);
+  actions.append(...bodyElements);
+}
+
 function decorateStandaloneLink(foreground) {
   const container = foreground.lastElementChild;
   const link = container?.querySelector(':scope > a:only-child:not(.con-button)');
@@ -62,6 +72,7 @@ function addOrderListeners(el) {
 }
 
 function decorate(block, el) {
+  const promo = el.classList.contains('promo');
   const [firstRow, secondRow] = block.children;
   const [foreground, assetCell] = firstRow?.children ?? [];
   const media = secondRow ? getMediaCell(secondRow) : assetCell;
@@ -72,6 +83,7 @@ function decorate(block, el) {
     decorateBlockText(foreground, TEXT_CONFIG);
     decorateProductLockup(foreground);
     decorateStandaloneLink(foreground);
+    if (promo) decorateActions(foreground);
   }
   media?.classList.add('media');
   const background = createBackground(backgroundCell);
