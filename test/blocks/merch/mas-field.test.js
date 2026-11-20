@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { getConfig, setConfig, updateConfig } from '../../../libs/utils/utils.js';
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
+import { decoratePromo } from '../../../libs/blocks/global-navigation/utilities/menu/menu.js';
 import { stubVisibility } from '../../helpers/visibility.js';
 import { waitFor as waitForCondition } from '../../helpers/waitfor.js';
 
@@ -30,6 +31,14 @@ if (!customElements.get('mas-field')) {
         } else if (field === 'ctas-promo') {
           // Pre-stamped like real mas-field; asserts the unwrap preserves it.
           content.innerHTML = '<a is="checkout-link" data-wcs-osi="OSI-CTA" data-promotion-code="PROMO26" href="https://commerce.adobe.com/">Buy now</a>';
+        } else if (field === 'ctas-gnav') {
+          content.innerHTML = '<div slot="footer" class="action-area"><a href="https://www.adobe.com/products/special-offers.html?promoid=MH16SFKV&mv=other">Economize agora</a></div>';
+        } else if (field === 'ctas-gnav-login') {
+          content.innerHTML = '<div slot="footer" class="action-area"><a href="https://www.adobe.com/#_evt-login">Sign in</a></div>';
+        } else if (field === 'ctas-gnav-checkout') {
+          content.innerHTML = '<div slot="footer" class="action-area"><a is="checkout-link" data-wcs-osi="OSI-CTA" data-promotion-code="PROMO26" href="https://commerce.adobe.com/">Buy now</a></div>';
+        } else if (field === 'ctas-gnav-dnt') {
+          content.innerHTML = '<div slot="footer" class="action-area"><a href="https://www.adobe.com/products/special-offers.html#_dnt">See offers</a></div>';
         } else if (field === 'prices-promo') {
           // Price + terms link triggers the unwrap; promo pre-stamped on the span.
           content.innerHTML = '<span is="inline-price" data-template="price" data-wcs-osi="OSI-X" data-promotion-code="PROMO26"></span> <a href="https://www.adobe.com/">See terms</a>';
@@ -95,6 +104,106 @@ describe('mas-field', () => {
     after(() => {
       unmockIms();
       sinon.restore();
+    });
+
+    it('uses the localized anchor of a resolved gnav CTA without cloning its MAS field', async () => {
+      const previousConfig = getConfig();
+      const promo = document.createElement('div');
+      try {
+        setConfig({
+          codeRoot: '/libs',
+          pathname: '/br/test.html',
+          locales: { br: { ietf: 'pt-BR' } },
+          prodDomains: ['www.adobe.com'],
+        });
+        promo.className = 'gnav-promo';
+        promo.innerHTML = `<div><div><p>Creative Cloud</p><p><strong>
+          <a class="merch" href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=gnav-promo&field=ctas-gnav">MAS CTA</a>
+        </strong></p></div></div>`;
+        document.body.append(promo);
+
+        await decoratePromo(promo, 0);
+
+        const link = promo.querySelector('.feds-cta-wrapper > a.feds-cta--primary');
+        expect(link, 'style the resolved anchor, not a cloned MAS field').to.exist;
+        expect(link.href).to.equal('https://www.adobe.com/br/products/special-offers.html?promoid=MH16SFKV&mv=other');
+        expect(link.textContent).to.equal('Economize agora');
+        expect(link.getAttribute('daa-ll')).to.equal('Economize agora-1');
+        expect(promo.querySelector('mas-field')).to.equal(null);
+      } finally {
+        promo.remove();
+        updateConfig(previousConfig);
+      }
+    });
+
+    it('preserves the sign-in handler on a resolved gnav CTA', async () => {
+      const previousConfig = getConfig();
+      const promo = document.createElement('div');
+      const signIn = sinon.spy();
+      const imsStub = sinon.stub(window, 'adobeIMS').value({ ...window.adobeIMS, signIn });
+      const signInContext = { id: 'gnav-promo' };
+      try {
+        setConfig({ codeRoot: '/libs', signInContext });
+        promo.className = 'gnav-promo';
+        promo.innerHTML = `<div><div><p>Creative Cloud</p><p><strong>
+          <a class="merch" href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=gnav-login&field=ctas-gnav-login">MAS CTA</a>
+        </strong></p></div></div>`;
+        document.body.append(promo);
+
+        await decoratePromo(promo, 0);
+
+        const link = promo.querySelector('.feds-cta-wrapper > a.feds-cta--primary');
+        expect(link).to.exist;
+        expect(link.href).not.to.include('#_evt-login');
+        link.addEventListener('click', (event) => event.preventDefault(), { once: true });
+        link.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        expect(signIn.calledOnceWithExactly(signInContext)).to.be.true;
+      } finally {
+        promo.remove();
+        imsStub.restore();
+        updateConfig(previousConfig);
+      }
+    });
+
+    [
+      { field: 'ctas-gnav-checkout', label: 'checkout and promotion attributes' },
+      { field: 'ctas-gnav-dnt', label: 'the localization opt-out' },
+    ].forEach(({ field, label }) => {
+      it(`preserves ${label} on a resolved gnav CTA`, async () => {
+        const previousConfig = getConfig();
+        const promo = document.createElement('div');
+        try {
+          setConfig({
+            codeRoot: '/libs',
+            pathname: '/br/test.html',
+            locales: { br: { ietf: 'pt-BR' } },
+            prodDomains: ['www.adobe.com'],
+          });
+          promo.className = 'gnav-promo';
+          promo.innerHTML = `<div><div><p>Creative Cloud</p><p><strong>
+            <a class="merch" href="https://mas.adobe.com/studio.html#content-type=merch-card&fragment=gnav-preserve&field=${field}">MAS CTA</a>
+          </strong></p></div></div>`;
+          document.body.append(promo);
+
+          await decoratePromo(promo, 0);
+
+          const link = promo.querySelector('.feds-cta-wrapper > a.feds-cta--primary');
+          expect(link).to.exist;
+          if (field === 'ctas-gnav-checkout') {
+            expect(link.getAttribute('is')).to.equal('checkout-link');
+            expect(link.getAttribute('data-wcs-osi')).to.equal('OSI-CTA');
+            expect(link.getAttribute('data-promotion-code')).to.equal('PROMO26');
+            expect(link.href).to.equal('https://commerce.adobe.com/');
+          } else {
+            expect(link.href).to.equal('https://www.adobe.com/products/special-offers.html');
+            expect(link.dataset.hasDnt).to.equal('true');
+          }
+          expect(promo.querySelector('mas-field')).to.equal(null);
+        } finally {
+          promo.remove();
+          updateConfig(previousConfig);
+        }
+      });
     });
 
     it('mep replace on one headless field does not affect other fields sharing the same source fragment', async () => {

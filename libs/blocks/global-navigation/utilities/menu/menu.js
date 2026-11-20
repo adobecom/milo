@@ -1,5 +1,5 @@
 import { processTrackingLabels } from '../../../../martech/attributes.js';
-import { createTag, getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
+import { createTag, decorateLinksAsync, getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
 import { debounce } from '../../../../utils/action.js';
 import {
   fetchAndProcessPlainHtml,
@@ -7,6 +7,7 @@ import {
   icons,
   isDesktop,
   isDesktopForContext,
+  lanaLog,
   logErrorFor,
   selectors,
   setActiveDropdown,
@@ -57,8 +58,15 @@ let promoCtasWatched = false;
 function watchPromoCtas() {
   if (promoCtasWatched) return;
   promoCtasWatched = true;
-  document.addEventListener('mas:ready', ({ target: mf }) => {
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD' || !mf.classList.contains('feds-cta')) return;
+    try {
+      // Keep the anchor in its field until async URL localization finishes.
+      await decorateLinksAsync(mf);
+    } catch (e) {
+      lanaLog({ message: 'Failed to localize MAS promo CTA', e, tags: 'gnav-menu', errorType: 'i', severity: 'error' });
+      return;
+    }
     const link = mf.querySelector('a');
     if (!link) return;
     link.className = mf.className;
@@ -71,13 +79,16 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   if (shouldBlockFreeTrialLinks(elem)) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
-  const clone = elem.cloneNode(true);
-  clone.className = `feds-cta feds-cta--${modifier}`;
-  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
+  // Move the resolved anchor to preserve localization and attached event handlers.
+  const cta = elem.matches('mas-field')
+    ? elem.querySelector('a') ?? elem.cloneNode(true)
+    : elem.cloneNode(true);
+  cta.className = `feds-cta feds-cta--${modifier}`;
+  cta.setAttribute('daa-ll', getAnalyticsValue(cta.textContent, index));
 
   return toFragment`
     <div class="feds-cta-wrapper">
-      ${clone}
+      ${cta}
     </div>`;
 }
 
