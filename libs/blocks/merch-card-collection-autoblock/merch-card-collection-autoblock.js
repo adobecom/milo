@@ -670,19 +670,27 @@ export function mountProductPricingFilter(collection, container) {
   // Always rendered, so screen readers hear the count or the empty state's text.
   const countEl = createTag('div', { class: 'sr-only', role: 'status', 'aria-live': 'polite' });
   let resultCount;
+  let countedSearch;
   const renderLabels = (params) => {
     const off = isCategoryOff(params, offTags);
     const labels = filterBarLabels(params, activeGroups(params), placeholders, resultCount, off);
+    // A count from the previous search must not be announced while the new one settles.
+    const fresh = (params.get('search') || '') === countedSearch;
     // Renders repeat for one change, and the drawer counts would re-announce the same text.
     if (drawer.applied.textContent !== labels.applied) drawer.applied.textContent = labels.applied;
     bar.triggerLabel.textContent = labels.trigger;
     if (drawer.results.textContent !== labels.results) drawer.results.textContent = labels.results;
+    if (!fresh) drawer.results.setAttribute('aria-hidden', 'true');
+    else drawer.results.removeAttribute('aria-hidden');
     emptyEl.innerHTML = labels.empty;
-    // Same text again would be re-announced.
-    const announce = labels.announce || emptyEl.textContent.trim() || labels.results;
+    const emptyText = emptyEl.textContent.trim();
+    let announce = '';
+    if (fresh) {
+      if (resultCount === 0 && emptyText) announce = emptyText;
+      else announce = labels.announce || emptyText || labels.results;
+    }
     if (countEl.textContent !== announce) countEl.textContent = announce;
   };
-  // The selected pill stays live. Search is ignored.
   const renderAvailability = (params) => {
     const active = activeGroups(params);
     const unavailable = unavailablePills(loadedCards(collection), active, params);
@@ -749,6 +757,7 @@ export function mountProductPricingFilter(collection, container) {
   });
   collection.addEventListener(COLLECTION_LITERALS_CHANGED, (e) => {
     resultCount = e.detail?.resultCount;
+    countedSearch = hashParams().get('search') || '';
     settle();
     render(hashParams());
     collection.toggleAttribute('data-edu-only', eduOnly(loadedCards(collection)));
