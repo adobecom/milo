@@ -21,6 +21,87 @@ const loadBlock = async (path) => {
 };
 
 describe('hub-hero block', () => {
+  describe('scroll-timeline browser compatibility', () => {
+    let originalViewport;
+    let styles;
+    let css;
+
+    before(async () => {
+      originalViewport = { width: window.innerWidth, height: window.innerHeight };
+      const tokens = await readFile({ path: '../../../libs/c2/styles/styles.css' });
+      css = tokens + await readFile({ path: '../../../libs/c2/blocks/hub-hero/hub-hero.css' });
+    });
+
+    afterEach(async () => {
+      document.body.replaceChildren();
+      styles.remove();
+      window.scrollTo(0, 0);
+      await settleLayout();
+      sinon.restore();
+      await setViewport(originalViewport);
+    });
+
+    const loadFirefoxBlock = async (supported, width) => {
+      await setViewport({ width, height: 800 });
+      const emulateSupport = (value) => value
+        .replaceAll('(-moz-appearance: none)', '(display: block)')
+        .replaceAll('(animation-timeline: view())', `(display: ${supported ? 'block' : 'unsupported'})`);
+      // Without timeline support, scroll-driven animations run as 0s and snap to their end state.
+      const emulateEngine = (value) => (supported
+        ? value
+        : value.replace(/animation-(timeline|range)\s*:/g, '--unsupported-animation-$1:'));
+      const supports = CSS.supports.bind(CSS);
+      sinon.stub(CSS, 'supports').callsFake((value) => supports(emulateSupport(`(${value})`)));
+      styles = document.createElement('style');
+      // Stubbing CSS.supports does not affect stylesheet @supports evaluation.
+      styles.textContent = emulateEngine(emulateSupport(css));
+      document.head.append(styles);
+      document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+      const block = document.querySelector('.hub-hero');
+      block.classList.add('slides-3');
+      block.insertBefore(block.children[2].cloneNode(true), block.children[3]);
+      block.lastElementChild.remove();
+      await init(block);
+      await settleLayout();
+      return block;
+    };
+
+    [390, 767, 768].forEach((width) => {
+      it(`animates the image grid in supported Firefox at ${width}px`, async () => {
+        const block = await loadFirefoxBlock(true, width);
+        const column = block.querySelector('.hub-hero-image-grid-container-col');
+        expect(getComputedStyle(column).animationName).to.include('hubHeroGridCol1');
+      });
+    });
+
+    it('keeps the static mobile fallback in unsupported Firefox', async () => {
+      const block = await loadFirefoxBlock(false, 390);
+      const column = block.querySelector('.hub-hero-image-grid-container-col');
+      expect(getComputedStyle(column).animationName).to.equal('none');
+    });
+
+    [1024, 1440].forEach((width) => {
+      it(`keeps carousel cards clickable in unsupported Firefox at ${width}px`, async () => {
+        const block = await loadFirefoxBlock(false, width);
+        const cards = [...block.querySelectorAll('.hub-hero-carousel-item')];
+        expect(cards).to.have.length(3);
+        cards.forEach((card) => expect(getComputedStyle(card).pointerEvents).to.not.equal('none'));
+      });
+    });
+
+    [true, false].forEach((supported) => {
+      it(`${supported ? 'pins' : 'does not pin'} the header with ${supported ? 'supported' : 'unsupported'} timelines`, async () => {
+        const block = await loadFirefoxBlock(supported, 1280);
+        sinon.stub(block, 'offsetHeight').get(() => 4000);
+        sinon.stub(block, 'getBoundingClientRect').returns({ top: 0, bottom: 4000 });
+        window.dispatchEvent(new Event('scroll'));
+        await settleLayout();
+        expect(block.querySelector('.hub-hero-header').classList.contains('pinned'))
+          .to.equal(supported);
+      });
+    });
+  });
+
   describe('promo CTA colors', () => {
     let stylesheet;
 
