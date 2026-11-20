@@ -875,11 +875,17 @@ export const loadAnalyticsAndInteractionData = async (
       result: { propositions: resultPayload },
     };
   } catch (err) {
+    setGpvCookie(pageName);
+    const lanaOptions = { tags: 'martech', errorType: 'e', sampleRate: 10 };
+    if (err.message === 'Request timed out') {
+      window.lana?.log(`target response time: timed out after ${calculatedTimeout}ms | pzn=v2`, lanaOptions);
+      return { timedOut: true };
+    }
     if (err.message !== 'No propositions found') {
       // eslint-disable-next-line no-console
       console.log(err);
+      window.lana?.log(`target response time: error: ${err.message} (timeout ${calculatedTimeout}ms) | pzn=v2`, lanaOptions);
     }
-    setGpvCookie(pageName);
     return {};
   }
 };

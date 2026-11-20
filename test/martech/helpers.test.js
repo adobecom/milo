@@ -67,34 +67,50 @@ describe('loadAnalyticsAndInteractionData', () => {
     }
   });
 
-  it('should handle fetch failure gracefully', async () => {
-    window.fetch = () => Promise.reject(new Error('Network error'));
+  describe('lana logging', () => {
+    let originalLana;
+    const lanaOptions = { tags: 'martech', errorType: 'e', sampleRate: 10 };
+    const params = { locale: { ietf: 'en-US', prefix: 'us' }, env: 'prod' };
 
-    try {
-      await loadAnalyticsAndInteractionData({
-        locale: { ietf: 'en-US', prefix: 'us' },
-        env: 'prod',
-        calculatedTimeout: 10000,
-      });
-    } catch (err) {
-      expect(err.message).to.equal('Error: Network error');
-    }
-  });
-
-  it('should handle timeout errors correctly', async () => {
-    window.fetch = () => new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Request timed out')), 2000);
+    beforeEach(() => {
+      originalLana = window.lana;
+      window.lana = { log: sinon.stub() };
     });
 
-    try {
-      await loadAnalyticsAndInteractionData({
-        locale: { ietf: 'en-US', prefix: 'us' },
-        env: 'prod',
-        calculatedTimeout: 1000,
-      });
-    } catch (err) {
-      expect(err.message).to.equal('Error: Request timed out');
-    }
+    afterEach(() => {
+      window.lana = originalLana;
+    });
+
+    it('logs the failure and does not flag a timeout when fetch fails', async () => {
+      window.fetch = () => Promise.reject(new Error('Network error'));
+
+      const result = await loadAnalyticsAndInteractionData({ ...params, calculatedTimeout: 10000 });
+
+      expect(result).to.deep.equal({});
+      expect(window.lana.log.calledOnceWith(
+        'target response time: error: Network error (timeout 10000ms) | pzn=v2',
+        lanaOptions,
+      )).to.be.true;
+    });
+
+    it('logs the timeout and flags timedOut when the request exceeds the timeout', async () => {
+      window.fetch = () => new Promise(() => {});
+
+      const result = await loadAnalyticsAndInteractionData({ ...params, calculatedTimeout: 10 });
+
+      expect(result).to.deep.equal({ timedOut: true });
+      expect(window.lana.log.calledOnceWith(
+        'target response time: timed out after 10ms | pzn=v2',
+        lanaOptions,
+      )).to.be.true;
+    });
+
+    it('does not log or flag a timeout on success', async () => {
+      const result = await loadAnalyticsAndInteractionData({ ...params, calculatedTimeout: 10000 });
+
+      expect(result.timedOut).to.be.undefined;
+      expect(window.lana.log.called).to.be.false;
+    });
   });
 
   it('should handle missing handle in the response', async () => {

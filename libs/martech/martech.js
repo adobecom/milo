@@ -65,6 +65,12 @@ function calculateResponseTime(responseStart) {
   return roundToQuarter(responseTime);
 }
 
+const getPznLabel = () => {
+  const signedIn = isSignedOut() ? 'signedout' : 'signedin';
+  const v2page = getMepEnablement('personalization-v2') ? '-v2page' : '';
+  return `pzn=v1-${signedIn}${v2page}`;
+};
+
 export const getTargetAjoPersonalization = async (
   { handleAlloyResponse, config, sendTargetResponseAnalytics },
 ) => {
@@ -72,10 +78,11 @@ export const getTargetAjoPersonalization = async (
   const ajo = config.mep.ajoEnabled;
   const eventName = ajo ? ALLOY_PROPOSITION_FETCH : ALLOY_SEND_EVENT;
   const targetAjo = ajo ? 'ajo' : 'target';
+  const pznLabel = getPznLabel();
   window.addEventListener(eventName, () => {
     const responseTime = calculateResponseTime(responseStart);
     try {
-      window.lana.log(`target response time: ${responseTime}`, {
+      window.lana.log(`target response time: ${responseTime} | ${pznLabel}`, {
         tags: 'martech',
         errorType: 'e',
         sampleRate: 0.5,
@@ -93,7 +100,7 @@ export const getTargetAjoPersonalization = async (
 
   if (response.error) {
     try {
-      window.lana.log(`${targetAjo} response time: ad blocker`, {
+      window.lana.log(`${targetAjo} response time: ad blocker | ${pznLabel}`, {
         tags: 'martech',
         errorType: 'e',
         sampleRate: 0.5,
@@ -105,6 +112,10 @@ export const getTargetAjoPersonalization = async (
     return { targetAjoManifests, targetAjoPropositions };
   }
   if (response.timeout) {
+    window.lana?.log(
+      `${targetAjo} response time: timed out after ${timeout}ms | ${pznLabel}`,
+      { tags: 'martech', errorType: 'e', sampleRate: 10 },
+    );
     waitForEventOrTimeout(eventName, 5100 - timeout)
       .then(() => sendTargetResponseAnalytics(true, responseStart, timeout));
   } else {
