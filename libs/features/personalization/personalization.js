@@ -1839,10 +1839,12 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
-      // Flatten mep-next → caas/utils.js → {lingo-active, getUuid, caasIdentity} discovery chain
+      // Flatten mep-next → caas/utils.js → {lingo-active, getUuid,
+      // caasIdentity, collectionIdentity} discovery chain
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/caasIdentity.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      loadLink(`${config.base}/blocks/caas/collectionIdentity.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       import('../mep/mep-next/mep-next.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
