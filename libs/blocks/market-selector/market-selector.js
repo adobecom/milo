@@ -264,7 +264,10 @@ function createDropdown(
   labelSpan.textContent = label;
   button.append(labelSpan);
 
-  const popover = createTag('div', { class: 'market-selector-popover' });
+  const popover = createTag('div', {
+    class: 'market-selector-popover',
+    ...(analyticsLabel ? { 'data-analytics-label': analyticsLabel } : {}),
+  });
   const dragHandle = createTag('div', { class: 'market-selector-drag-handle' });
   const dragHandleBar = createTag('div', { class: 'market-selector-drag-handle-bar' });
   dragHandle.append(dragHandleBar);
@@ -314,6 +317,7 @@ function createDropdown(
   if (routeWheelToList) popover.addEventListener('wheel', onPopoverWheel, { passive: false });
 
   const closePopoverElement = (popoverEl) => {
+    if (popoverEl.dataset.open !== 'true') return;
     popoverEl.style.display = 'none';
     delete popoverEl.dataset.open;
     popoverEl.classList.remove('fixed-height');
@@ -325,7 +329,8 @@ function createDropdown(
     if (btn) btn.setAttribute('aria-expanded', 'false');
     const listEl = popoverEl.querySelector('.market-selector-list');
     if (listEl) listEl.removeAttribute('aria-activedescendant');
-    if (analyticsLabel) sendAnalyticsEvent(`${analyticsLabel}:dismissed`, 'dismissal');
+    const eventLabel = popoverEl.dataset.analyticsLabel || analyticsLabel;
+    if (eventLabel) sendAnalyticsEvent(`${eventLabel}:dismissed`, 'dismissal');
   };
 
   const renderItems = (filteredItems) => {
@@ -476,8 +481,8 @@ function createDropdown(
   });
 
   const onOutsideClick = (e) => {
-    if (!e.target.closest('.market-selector-dropdown')) {
-      document.querySelectorAll('.market-selector-popover[data-open="true"]').forEach(closePopoverElement);
+    if (popover.dataset.open === 'true' && !e.target.closest('.market-selector-dropdown')) {
+      closePopoverElement(popover);
     }
   };
   document.addEventListener('click', onOutsideClick);
