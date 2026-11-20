@@ -263,6 +263,7 @@ export async function executePreview(cmp, org, repo, paths) {
       repo,
       paths,
       action: 'preview',
+      useBulk: true,
       accessToken: cmp.token,
       signal,
       callback: (status) => {
@@ -292,6 +293,7 @@ export async function executePublish(cmp, org, repo, paths) {
       repo,
       paths,
       action: 'live',
+      useBulk: true,
       accessToken: cmp.token,
       signal,
       callback: (status) => {
