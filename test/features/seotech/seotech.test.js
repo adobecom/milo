@@ -1,8 +1,9 @@
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
-import { waitForElement } from '../../helpers/waitfor.js';
+import sinon, { stub } from 'sinon';
+import { readFile } from '@web/test-runner-commands';
+import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
-import { getConfig, createTag } from '../../../libs/utils/utils.js';
+import { getConfig, createTag, loadArea, setConfig, preloadModuleLowPriority } from '../../../libs/utils/utils.js';
 import {
   appendScriptTag,
   sha256,
@@ -81,6 +82,123 @@ describe('sha256', () => {
 });
 
 describe('seotech', () => {
+  describe('deferred module preload', () => {
+    let sandbox;
+    let originalHead;
+    let originalBody;
+    let originalLana;
+    let originalUrl;
+    let originalConfig;
+    let preload;
+    let seotechRequests;
+    let appendHead;
+
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox();
+      originalHead = document.head.innerHTML;
+      originalBody = document.body.innerHTML;
+      originalLana = window.lana;
+      originalUrl = window.location.href;
+      originalConfig = getConfig();
+      setConfig({});
+      window.lana = { log: sandbox.spy() };
+      document.head.innerHTML = `${await readFile({ path: '../../utils/mocks/head.html' })}
+        <meta name="seotech-video-url" content="https://youtu.be/fake">`;
+      document.head.querySelector('meta[name="footer-promo-tag"]')?.remove();
+      document.body.innerHTML = '<main><div><p>Plain content</p></div></main>';
+      appendHead = document.head.appendChild.bind(document.head);
+      sandbox.stub(document.head, 'appendChild').callsFake((node) => {
+        if (node.tagName === 'LINK' && node.rel === 'modulepreload'
+          && (node.href.endsWith('/features/seotech/seotech.js') || node.href.endsWith('/module.js'))) {
+          preload = node;
+          return node;
+        }
+        return appendHead(node);
+      });
+      seotechRequests = 0;
+      const fetch = window.fetch.bind(window);
+      sandbox.stub(window, 'fetch').callsFake((url, ...args) => {
+        if (String(url).includes('/mock-seotech-api/')) {
+          seotechRequests += 1;
+          return Promise.resolve(Response.json({ videoObject: { '@type': 'VideoObject', name: 'Test video' } }));
+        }
+        return fetch(url, ...args);
+      });
+      const url = new URL(window.location.href);
+      url.searchParams.set('seotech-api-base-url', `${url.origin}/mock-seotech-api`);
+      window.history.replaceState({}, '', url);
+    });
+
+    afterEach(() => {
+      window.history.replaceState({}, '', originalUrl);
+      document.head.innerHTML = originalHead;
+      document.body.innerHTML = originalBody;
+      window.lana = originalLana;
+      setConfig(originalConfig);
+      sandbox.restore();
+      preload = undefined;
+    });
+
+    it('exports the shared low-priority module preload helper', async () => {
+      const url = `${window.location.origin}/module.js`;
+      const result = preloadModuleLowPriority(url);
+      await waitFor(() => preload, 1000);
+      const { rel, fetchPriority } = preload;
+      expect(rel).to.equal('modulepreload');
+      expect(fetchPriority).to.equal('low');
+      preload.dispatchEvent(new Event('load'));
+      expect(await result).to.be.undefined;
+    });
+
+    it('preloads SEOTECH after its metadata gate without blocking page load', async () => {
+      await loadArea();
+      await waitFor(() => preload, 2000);
+      expect(document.getElementById('page-load-ok-milo')).to.exist;
+      expect(preload.fetchPriority).to.equal('low');
+      expect(seotechRequests).to.equal(0);
+      preload.dispatchEvent(new Event('load'));
+      await waitFor(() => document.head.querySelector('script.seotech-video-url'), 2000);
+      const script = document.head.querySelector('script.seotech-video-url');
+      expect(JSON.parse(script.textContent)).to.deep.equal({
+        '@type': 'VideoObject',
+        name: 'Test video',
+      });
+      expect(seotechRequests).to.equal(1);
+    });
+
+    it('logs a failed SEOTECH preload and falls back to import', async () => {
+      await loadArea();
+      await waitFor(() => preload, 2000);
+      preload.dispatchEvent(new Event('error'));
+      await waitFor(() => seotechRequests === 1 && document.head.querySelector('script.seotech-video-url'), 2000);
+      expect(window.lana.log.calledWithMatch('SEOTECH module preload failed')).to.be.true;
+      expect(document.head.querySelector('script.seotech-video-url')).to.exist;
+    });
+
+    it('reuses an existing SEOTECH modulepreload without changing its priority', async () => {
+      const url = new URL('../../../libs/features/seotech/seotech.js', import.meta.url).href;
+      const existingLink = document.createElement('link');
+      existingLink.rel = 'modulepreload';
+      existingLink.fetchPriority = 'high';
+      existingLink.href = url;
+      appendHead(existingLink);
+      await loadArea();
+      await waitFor(() => seotechRequests === 1 && document.head.querySelector('script.seotech-video-url'), 2000);
+      expect(preload).to.be.undefined;
+      expect(existingLink.rel).to.equal('modulepreload');
+      expect(existingLink.fetchPriority).to.equal('high');
+      expect(document.head.querySelector('script.seotech-video-url')).to.exist;
+    });
+
+    it('does not preload SEOTECH when its metadata gate is disabled', async () => {
+      document.querySelector('meta[name="seotech-video-url"]').remove();
+      await loadArea();
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+      expect(preload).to.be.undefined;
+      expect(seotechRequests).to.equal(0);
+    });
+  });
+
   describe('appendScriptTag + seotech-structured-data', () => {
     beforeEach(async () => {
       window.lana = { log: (s) => console.log(`LANA NOT STUBBED! ${s}`) };

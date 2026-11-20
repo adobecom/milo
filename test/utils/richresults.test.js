@@ -17,6 +17,7 @@ describe('Rich Results', () => {
     let preload;
     let appendFails;
     let statusAtPreload;
+    let appendHead;
 
     beforeEach(async () => {
       sandbox = sinon.createSandbox();
@@ -27,7 +28,7 @@ describe('Rich Results', () => {
       setConfig({});
       document.head.innerHTML = '<meta name="jsonld-graph-manager" content="true">';
       document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-      const append = document.head.appendChild.bind(document.head);
+      appendHead = document.head.appendChild.bind(document.head);
       sandbox.stub(document.head, 'appendChild').callsFake((node) => {
         if (node.tagName === 'LINK' && node.rel === 'modulepreload' && node.href.endsWith('/jsonld-graph-manager.js')) {
           preload = node;
@@ -35,7 +36,7 @@ describe('Rich Results', () => {
           if (appendFails) throw new Error('preload insertion failed');
           return node;
         }
-        return append(node);
+        return appendHead(node);
       });
     });
 
@@ -64,18 +65,20 @@ describe('Rich Results', () => {
       expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.exist;
     });
 
-    it('reuses an existing link for the module URL', async () => {
+    it('reuses an existing modulepreload for the module URL', async () => {
       const url = new URL('../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href;
       const existingLink = document.createElement('link');
-      existingLink.rel = 'prefetch';
+      existingLink.rel = 'modulepreload';
+      existingLink.fetchPriority = 'high';
       existingLink.href = url;
-      document.head.appendChild(existingLink);
+      appendHead(existingLink);
 
       await loadArea();
       await waitFor(() => window.miloJsonLd.manager, 2000);
 
       expect(preload).to.be.undefined;
-      expect(existingLink.rel).to.equal('prefetch');
+      expect(existingLink.rel).to.equal('modulepreload');
+      expect(existingLink.fetchPriority).to.equal('high');
       expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.exist;
     });
 
