@@ -3366,7 +3366,7 @@ function warmTypekit() {
     .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
 }
 
-function preloadJsonLdManager(url) {
+function preloadModuleLowPriority(url) {
   const link = document.createElement('link');
   if (!link.relList?.supports?.('modulepreload') || !('fetchPriority' in link)) return Promise.resolve();
 
@@ -3376,13 +3376,7 @@ function preloadJsonLdManager(url) {
       clearTimeout(timeout);
       link.onload = null;
       link.onerror = null;
-      if (reason) {
-        window.lana?.log(`JSON-LD graph manager preload ${reason}; falling back to import`, {
-          tags: 'jsonld-graph-manager',
-          severity: 'warn',
-        });
-      }
-      resolve();
+      resolve(reason);
     };
     timeout = setTimeout(() => finish('timed out'), 10000);
     link.rel = 'modulepreload';
@@ -3408,8 +3402,16 @@ export async function loadArea(area = document) {
     jsonLdInitScheduled = true;
     window.setTimeout(() => {
       const url = new URL('../features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href;
-      preloadJsonLdManager(url)
-        .then(() => import(url))
+      preloadModuleLowPriority(url)
+        .then((reason) => {
+          if (reason) {
+            window.lana?.log(`JSON-LD graph manager preload ${reason}; falling back to import`, {
+              tags: 'jsonld-graph-manager',
+              severity: 'warn',
+            });
+          }
+          return import(url);
+        })
         .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
         .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
           tags: 'jsonld-graph-manager',
