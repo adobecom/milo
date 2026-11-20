@@ -24,7 +24,7 @@
     import sinon from 'sinon';
     import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
     import { calls, setNavigation } from './mocks/federal-main.js';
-    import init from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
+    import init, { shouldBlockGnavLink } from '../../../../libs/c2/blocks/global-navigation/global-navigation.js';
 
     const gnavSheet = '/test/features/placeholders/placeholders-geo-ip-gnav.json';
     let langfirstMeta;
@@ -110,6 +110,12 @@
           disableLingo();
           const args = await runInit();
           expect(args.fetchAUPSDKInstance).to.be.a('function');
+        });
+
+        it('passes the C1 free-trial link policy to federal', async () => {
+          disableLingo();
+          const args = await runInit();
+          expect(args.shouldBlockLink).to.equal(shouldBlockGnavLink);
         });
 
         it('passes a post-render modal decorator without altering Federal CTA styling', async () => {
