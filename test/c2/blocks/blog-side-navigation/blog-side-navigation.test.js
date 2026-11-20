@@ -663,6 +663,8 @@ describe('blog-side-navigation section list', () => {
     expect(article.lastElementChild).to.equal(section);
     expect(section.id).to.equal('article-body');
     expect(recommended.parentElement).to.equal(section);
+    expect(section.querySelector('.content > h2').classList.contains('heading-3')).to.equal(true);
+    expect(recommended.querySelector('h2').classList.contains('heading-3')).to.equal(false);
     expect(main.lastElementChild).to.equal(footer);
     expect(main.querySelectorAll('#article-body').length).to.equal(1);
   });
