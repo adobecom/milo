@@ -12,8 +12,7 @@ function getAuthoredConfig(block) {
     const listFirst = firstRow && (
       firstRow.querySelector('ol, ul') || /^\s*1\.(?:\s|$)/.test(firstRow.textContent)
     );
-    const headingRow = listFirst ? undefined : firstRow;
-    const labelsRow = listFirst ? firstRow : secondRow;
+    const [headingRow, labelsRow] = [undefined, firstRow, secondRow].slice(listFirst ? 0 : 1);
     const list = labelsRow?.querySelector('ol, ul');
     let labels = [];
     if (list) {
