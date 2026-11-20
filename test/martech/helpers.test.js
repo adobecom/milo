@@ -321,6 +321,69 @@ describe('loadAnalyticsAndInteractionData', () => {
     document.cookie = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent=general=in';
   });
 
+  describe('sign-in status', () => {
+    const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
+    let requestBodies;
+    let cookieWrites;
+    const eventTypes = () => requestBodies.map((b) => (b.event || b.events[0]).xdm.eventType);
+
+    const load = (sis) => {
+      const stub = sinon.stub(window.performance, 'getEntriesByType');
+      stub.callThrough();
+      stub.withArgs('navigation').returns([{ serverTiming: [{ name: 'sis', description: sis }] }]);
+      return loadAnalyticsAndInteractionData({
+        locale: { ietf: 'en-US', prefix: 'us' },
+        env: 'prod',
+        calculatedTimeout: 10000,
+      });
+    };
+
+    beforeEach(() => {
+      delete window.hybridPers;
+      requestBodies = [];
+      cookieWrites = [];
+      Object.defineProperty(document, 'cookie', {
+        configurable: true,
+        get: () => cookieDesc.get.call(document),
+        set: (value) => {
+          cookieWrites.push(value);
+          cookieDesc.set.call(document, value);
+        },
+      });
+      window.fetch = (url, opts) => {
+        requestBodies.push(JSON.parse(opts.body));
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ handle: [{ type: 'personalization:decisions', payload: [{ decisionId: '1', items: [{ data: { format: 'application/json' } }] }] }] }),
+        });
+      };
+    });
+
+    afterEach(() => {
+      sinon.restore();
+      delete document.cookie;
+      delete window.hybridPers;
+    });
+
+    it('signed out: sends the page view and display, and tells Launch to skip its own', async () => {
+      const result = await load('0');
+
+      expect(eventTypes()).to.deep.equal(['web.webpagedetails.pageViews', 'decisioning.propositionDisplay']);
+      expect(window.hybridPers).to.be.true;
+      expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.true;
+      expect(result.type).to.equal('pageView');
+    });
+
+    it('signed in: fetches Target decisions only, so Launch still sends the page view and display', async () => {
+      const result = await load('1');
+
+      expect(eventTypes()).to.deep.equal(['decisioning.propositionFetch']);
+      expect(window.hybridPers).to.be.undefined;
+      expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.false;
+      expect(result.result.propositions).to.have.lengthOf(1);
+    });
+  });
+
   describe('getVisitorStatus', () => {
     let getCookieStub;
     let setCookieStub;
