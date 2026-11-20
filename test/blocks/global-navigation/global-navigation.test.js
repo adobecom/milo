@@ -136,6 +136,58 @@ describe('global navigation', () => {
     });
   });
 
+  // Placed after the LANA IMS test, which must be the first to call the
+  // module-memoized loadIms() so it observes the rejection.
+  describe('initial compact layout (MWPW-210874)', () => {
+    let meta;
+    let observer;
+
+    beforeEach(() => {
+      meta = toFragment`<meta name="gnav-dynamic-reflow" content="on">`;
+      document.head.append(meta);
+    });
+
+    afterEach(() => {
+      observer?.disconnect();
+      meta.remove();
+      sinon.restore();
+    });
+
+    const captureReveal = () => {
+      let state;
+      observer = new MutationObserver(() => {
+        const header = document.querySelector('header.global-navigation.ready');
+        if (!header || state) return;
+        state = {
+          compact: header.classList.contains('is-compact'),
+          newNav: header.classList.contains('new-nav'),
+          searchBeforeNav: !!header.querySelector('.feds-search + .feds-nav'),
+        };
+      });
+      observer.observe(document.body, { attributes: true, attributeFilter: ['class'], subtree: true });
+      return () => state;
+    };
+
+    it('reveals an overflowing desktop row directly in compact drawer order', async () => {
+      const getState = captureReveal();
+      await createFullGlobalNavigation({ viewport: 'smallDesktop', globalNavigation: longNav });
+      expect(getState()).to.deep.equal({ compact: true, newNav: true, searchBeforeNav: true });
+    });
+
+    it('reveals a fitting desktop row without compact state', async () => {
+      const getState = captureReveal();
+      await createFullGlobalNavigation({ viewport: 'wide', globalNavigation: logoOnlyNav, hasBreadcrumbs: false });
+      expect(getState()?.compact).to.equal(false);
+      expect(getState()?.newNav).to.equal(false);
+    });
+
+    it('keeps native mobile layout without forced compact state', async () => {
+      const getState = captureReveal();
+      await createFullGlobalNavigation({ viewport: 'mobile', globalNavigation: longNav });
+      expect(getState()).to.deep.equal({ compact: false, newNav: true, searchBeforeNav: true });
+    });
+  });
+
   describe('reloadProfile / window.feds.nav.reload', () => {
     afterEach(() => {
       sinon.restore();
