@@ -197,6 +197,8 @@ function createLayout(block, headerSection, articleSections) {
   const article = createTag('div', { class: 'blog-article-content' });
   headerSection.after(layout);
   article.append(...articleSections);
+  article.querySelectorAll(':scope > .section > .content > h2')
+    .forEach((heading) => heading.classList.add('heading-3'));
   layout.append(block, article);
 }
 
