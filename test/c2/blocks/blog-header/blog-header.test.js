@@ -379,7 +379,9 @@ describe('blog-header decoration', () => {
     expect(readingTime).to.equal(getReadingTime(main));
     expect(block.querySelector('.blog-header-eyebrow-end').textContent).to.equal('2 min read');
     expect(block.querySelector('.blog-header-title h1')).to.exist;
+    expect(block.querySelector('.blog-header-title h1').classList.contains('heading-2')).to.equal(true);
     expect(block.querySelector('.blog-header-summary')).to.exist;
+    expect(block.querySelector('.blog-header-summary p').classList.contains('body-lg')).to.equal(true);
     const share = block.querySelector('.blog-header-share');
     expect(share.getAttribute('aria-haspopup')).to.equal('dialog');
     expect(share.textContent).to.contain('Share');
@@ -772,7 +774,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => block.querySelector('.blog-header-author-meta'));
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+      .to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
     expect(block.querySelector('.blog-header-author-meta').textContent)
       .to.equal('Profile Title | Profile Company');
     expect(window.lana.log.called).to.equal(false);
@@ -824,7 +826,7 @@ describe('blog-header decoration', () => {
     await init(block);
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     const avatar = block.querySelector('.blog-header-avatar');
-    expect(avatar.getAttribute('src')).to.equal('/libs/blocks/article-header/adobe-logo.svg');
+    expect(avatar.getAttribute('src')).to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
     expect(avatar.alt).to.equal('');
     expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(false);
   });
@@ -835,7 +837,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     const img = block.querySelector('.blog-header-author-avatar img.blog-header-avatar');
-    expect(img.getAttribute('src')).to.equal('/libs/blocks/article-header/adobe-logo.svg');
+    expect(img.getAttribute('src')).to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
     expect(window.lana.log.called).to.equal(true);
   });
 
@@ -848,7 +850,7 @@ describe('blog-header decoration', () => {
       .to.equal(new URL(profilePath, window.location.origin).href);
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+      .to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
   });
 
   it('uses the default avatar and logs a rejected profile request', async () => {
@@ -857,7 +859,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+      .to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
     expect(window.lana.log.firstCall.args[0]).to.contain('network down');
   });
 
@@ -867,7 +869,7 @@ describe('blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+      .to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
     expect(window.lana.log.firstCall.args[0]).to.contain('response body failed');
   });
 
@@ -876,7 +878,7 @@ describe('blog-header decoration', () => {
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+      .to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
     expect(window.lana.log.called).to.equal(false);
   });
 
@@ -894,7 +896,7 @@ describe('blog-header decoration', () => {
       await init(block);
       await waitFor(() => block.querySelector('.blog-header-author-meta'));
       expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-        .to.equal('/libs/blocks/article-header/adobe-logo.svg');
+        .to.equal('/libs/c2/blocks/blog-header/adobe-logo.svg');
       expect(block.querySelector('.blog-header-author-name').textContent).to.equal('Profile Name');
       expect(block.querySelector('.blog-header-author-name').getAttribute('href')).to.equal(profilePath);
       expect(block.querySelector('.blog-header-author-meta').textContent)
@@ -1920,6 +1922,7 @@ describe('blog-header share modal', () => {
     expect(image.src).to.equal(`${window.location.origin}/blog/media_share.png?width=1200`);
     expect(image.alt).to.equal('Article preview');
     expect(dialog.querySelector('.blog-share-heading').textContent).to.equal('Share post');
+    expect(dialog.querySelector('.blog-share-heading').classList.contains('heading-5')).to.equal(true);
     expect(dialog.querySelector('.dialog-close').getAttribute('aria-label')).to.equal('Close share dialog');
     const actions = dialog.querySelectorAll('.blog-share-action');
     expect(actions.length).to.equal(4);

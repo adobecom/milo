@@ -611,3 +611,32 @@
 body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   z-index: var(--jarvis-z-index-override);
 }
+
+.dialog-modal.blog-share-modal {
+  width: fit-content;
+  max-width: calc(100% - 2em);
+  padding: var(--s2a-spacing-lg) var(--s2a-spacing-20);
+  background: var(--s2a-color-gray-50);
+  border-radius: var(--s2a-border-radius-sm);
+
+  @media (width >= 768px) {
+    padding: 37px var(--s2a-spacing-2xl) var(--s2a-spacing-2xl);
+  }
+
+  button.dialog-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: var(--s2a-border-radius-xs);
+    background: var(--s2a-color-gray-100);
+    inset-block-start: var(--s2a-spacing-xs);
+    inset-inline: auto var(--s2a-spacing-xs);
+
+    &:hover {
+      background: var(--s2a-color-gray-300);
+    }
+  }
+}

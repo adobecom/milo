@@ -1,4 +1,5 @@
 import { createTag, getConfig, getMetadata, loadBlock, MILO_EVENTS } from '../../../utils/utils.js';
+import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
 import { getSVGsfromFile } from '../../../blocks/share/share.js';
 import { getModal } from '../modal/modal.js';
@@ -249,7 +250,7 @@ function fetchAuthorProfile(profileUrl) {
 function defaultAvatar(base) {
   return createTag('img', {
     class: 'blog-header-avatar',
-    src: `${base}/blocks/article-header/adobe-logo.svg`,
+    src: `${base}/c2/blocks/blog-header/adobe-logo.svg`,
     alt: '',
     loading: 'lazy',
   });
@@ -353,11 +354,7 @@ function decorateAuthor(data, authorLinkEnabled, base) {
 
   setAuthorMeta(info, details);
 
-  if (picture) {
-    avatar.append(picture);
-  } else {
-    avatar.append(defaultAvatar(base));
-  }
+  avatar.append(picture || defaultAvatar(base));
   if (authorLinkEnabled && href && (!picture || !details[0] || !details[1] || needsName)) {
     loadAuthorProfile(resolveUrl(href, window.location.href), data, avatar, info);
   }
@@ -574,6 +571,7 @@ async function createShareModal(trigger) {
   const heading = createTag('h2', { class: 'blog-share-heading' });
   heading.textContent = labels.heading;
   content.append(heading);
+  decorateBlockText(content, { heading: '5' });
   content.append(buildShareCard(data));
   content.append(await buildShareActions(getPlatforms(), data, base, labels));
 
@@ -858,8 +856,10 @@ export default async function init(el) {
   const [titleRow, summaryRow, ...authorRows] = el.children;
   const authorsData = authorRows.map(getAuthorData);
   titleRow?.classList.add('blog-header-title');
+  if (titleRow) decorateBlockText(titleRow, { heading: '2' });
   summaryRow?.classList.add('blog-header-summary');
   decorateSummary(summaryRow);
+  if (summaryRow) decorateBlockText(summaryRow, { body: 'lg' });
 
   const [eyebrow, byline] = await Promise.all([
     buildEyebrow(config, readingTime),
