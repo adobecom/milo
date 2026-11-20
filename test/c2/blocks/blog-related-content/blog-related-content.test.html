@@ -100,6 +100,7 @@
             expect(block.parentElement).to.equal(navigation);
             expect(block.previousElementSibling.tagName).to.equal('NAV');
             expect(block.querySelector('h3').textContent).to.equal('Related Content');
+            expect(block.querySelector('h3').classList.contains('heading-6')).to.equal(true);
             expect(loadCaas.calledOnce).to.equal(true);
             expect(loadCaas.firstCall.args[0].href).to.equal('https://milo.adobe.com/tools/caas#encoded');
             expect(loadCaas.firstCall.args.length).to.equal(1);
