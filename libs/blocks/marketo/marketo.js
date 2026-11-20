@@ -354,11 +354,58 @@ export const formSuccess = (formEl, formData) => {
   return false;
 };
 
+export const addDatePlaceholders = (formEl) => {
+  formEl.querySelectorAll('input[type="date"]').forEach((dateField) => {
+    const fieldWrap = dateField.closest('.mktoFieldWrap') ?? dateField.parentElement;
+    if (fieldWrap.querySelector(':scope > .mktoDatePlaceholder')) return;
+    fieldWrap.classList.add('mktoDateFieldWrap');
+
+    const placeholder = document.createElement('span');
+    const locale = dateField.lang || formEl.lang || document.documentElement.lang || undefined;
+    const dateParts = new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).formatToParts(new Date(2006, 10, 22));
+    placeholder.className = 'mktoDatePlaceholder';
+    placeholder.setAttribute('aria-hidden', 'true');
+    placeholder.textContent = dateParts.map(({ type, value }) => ({
+      day: 'DD',
+      month: 'MM',
+      year: 'YYYY',
+    }[type] || value)).join('');
+    fieldWrap.append(placeholder);
+
+    const updatePlaceholder = () => {
+      fieldWrap.classList.toggle('mktoDateFieldEmpty', !dateField.value);
+    };
+
+    ['input', 'change'].forEach((eventName) => dateField.addEventListener(eventName, updatePlaceholder));
+    updatePlaceholder();
+  });
+};
+
 const readyForm = (form, formData) => {
   const formEl = form.getFormElem().get(0);
   const el = formEl.closest('.marketo');
   const isDesktop = matchMedia('(min-width: 900px)');
   el.classList.remove('loading');
+  addDatePlaceholders(formEl);
+
+  // MCZ can convert a text field to date after Forms2 is ready.
+  if (!formEl.querySelector('input[type="date"]')) {
+    const observer = new MutationObserver(() => {
+      if (!formEl.querySelector('input[type="date"]')) return;
+      addDatePlaceholders(formEl);
+      observer.disconnect();
+    });
+    observer.observe(formEl, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['type'],
+    });
+  }
 
   const handleIframeReady = (event) => {
     if (event.origin !== 'https://engage.adobe.com') return;

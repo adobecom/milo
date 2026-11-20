@@ -271,13 +271,66 @@
   white-space: nowrap;
 }
 
-[dir="rtl"] .marketo .mktoForm select {
-  background-position: 3% 50%;
+.marketo .mktoForm input[type="date"] {
+  box-sizing: border-box;
+  min-width: 0;
+  height: 40px;
+  padding-inline-end: 12px;
+  background-image: url("./calendar.svg");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 20px;
 }
 
-.marketo .mktoForm input[type="date"] {
-  appearance: none;
-  height: 40px;
+@supports (-webkit-touch-callout: none) {
+  .marketo .mktoForm input[type="date"] {
+    appearance: none;
+  }
+}
+
+.marketo .mktoForm input[type="date"]::-webkit-calendar-picker-indicator {
+  width: 20px;
+  height: 20px;
+  opacity: 0;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="date"] {
+  background-position: left 12px center;
+}
+
+.marketo .mktoForm .mktoDateFieldWrap {
+  position: relative;
+}
+
+.marketo .mktoForm .mktoDatePlaceholder {
+  display: none;
+  position: absolute;
+  inset-inline-start: var(--spacing-xs);
+  top: calc(100% - 20px);
+  transform: translateY(-50%);
+  color: var(--marketo-form-text);
+  font-family: var(--body-font-family);
+  font-size: 16px;
+  font-style: normal;
+  font-weight: normal;
+  line-height: normal;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 1199px) {
+  .marketo .mktoForm .mktoDateFieldEmpty .mktoDatePlaceholder {
+    display: block;
+  }
+
+  .marketo .mktoForm .mktoDateFieldEmpty input[type="date"] {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+[dir="rtl"] .marketo .mktoForm select {
+  background-position: 3% 50%;
 }
 
 [dir="rtl"] .marketo .mktoForm input[type="tel"] {
@@ -763,11 +816,7 @@
   }
     
   .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
-    padding-right: 6px;
-  }
-
-  [dir="rtl"] .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
-    padding-left: 4px;
+    padding-inline-end: 40px;
   }
 }
 
