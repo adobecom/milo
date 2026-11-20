@@ -29,7 +29,7 @@ describe('Rich Results', () => {
       document.body.innerHTML = await readFile({ path: './mocks/body.html' });
       const append = document.head.appendChild.bind(document.head);
       sandbox.stub(document.head, 'appendChild').callsFake((node) => {
-        if (node.tagName === 'LINK' && node.href.endsWith('/jsonld-graph-manager.js')) {
+        if (node.tagName === 'LINK' && node.rel === 'modulepreload' && node.href.endsWith('/jsonld-graph-manager.js')) {
           preload = node;
           statusAtPreload = document.querySelector('main > .section')?.dataset.status;
           if (appendFails) throw new Error('preload insertion failed');
@@ -61,6 +61,21 @@ describe('Rich Results', () => {
       expect(preload.href).to.equal(new URL('../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href);
       preload.dispatchEvent(new Event('load'));
       await waitFor(() => window.miloJsonLd.manager, 2000);
+      expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.exist;
+    });
+
+    it('reuses an existing link for the module URL', async () => {
+      const url = new URL('../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href;
+      const existingLink = document.createElement('link');
+      existingLink.rel = 'prefetch';
+      existingLink.href = url;
+      document.head.appendChild(existingLink);
+
+      await loadArea();
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+
+      expect(preload).to.be.undefined;
+      expect(existingLink.rel).to.equal('prefetch');
       expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.exist;
     });
 

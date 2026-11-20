@@ -3372,21 +3372,21 @@ function preloadModuleLowPriority(url) {
 
   return new Promise((resolve) => {
     let timeout;
+    let settled = false;
     const finish = (reason) => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timeout);
-      link.onload = null;
-      link.onerror = null;
       resolve(reason);
     };
     timeout = setTimeout(() => finish('timed out'), 10000);
-    link.rel = 'modulepreload';
-    link.fetchPriority = 'low';
-    link.crossOrigin = 'anonymous';
-    link.onload = () => finish();
-    link.onerror = () => finish('failed');
-    link.href = url;
     try {
-      document.head.appendChild(link);
+      loadLink(url, {
+        rel: 'modulepreload',
+        crossorigin: 'anonymous',
+        fetchpriority: 'low',
+        callback: (eventType) => finish(eventType === 'error' ? 'failed' : undefined),
+      });
     } catch (e) {
       finish(`failed: ${e}`);
     }
