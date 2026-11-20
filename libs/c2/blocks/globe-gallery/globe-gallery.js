@@ -6,7 +6,7 @@ import {
   seededRandom, createBaseFrame, createBaseFrameInput, deriveBaseFrame, travelSpanPx, logGlobe,
   wrapAngle,
 } from '../../../utils/globe/core.js';
-import { escapeHtml, hangParagraphs, buildGlobeSkeleton, fetchGlobeData, parseCommonRows } from '../../../utils/globe/authoring.js';
+import { hangParagraphs, buildGlobeSkeleton, fetchGlobeData, parseCommonRows } from '../../../utils/globe/authoring.js';
 import { CARD_ORDER_BASE, HOVER_SCALE, initGlobeBlock } from '../../../utils/globe/runtime.js';
 
 const NAME = 'globe-gallery';
@@ -93,12 +93,6 @@ function badgeSvgUrl(a) {
   return [a.getAttribute('href'), a.textContent.trim()].find((s) => s?.includes('.svg')) ?? '';
 }
 
-function badgeIconHtml(url) {
-  if (!url) return null;
-  const src = getFederatedUrl(url);
-  return `<picture class="globe-modal-badge-icon" aria-hidden="true"><img loading="lazy" src="${escapeHtml(src)}" alt=""></picture>`;
-}
-
 function parseArcCopy(row) {
   if (!row) return { title: '', body: [] };
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
@@ -149,9 +143,8 @@ function parseFragmentCardSegment(nodes) {
         const anchors = [...row.querySelectorAll('a')];
         const svgAnchor = anchors.find(badgeSvgUrl);
         const linkAnchor = anchors.find((a) => a !== svgAnchor);
-        const icon = badgeIconHtml(
-          svgAnchor ? badgeSvgUrl(svgAnchor) : row.querySelector('img')?.getAttribute('src'),
-        );
+        const iconSrc = svgAnchor ? badgeSvgUrl(svgAnchor) : row.querySelector('img')?.getAttribute('src');
+        const icon = iconSrc ? getFederatedUrl(iconSrc) : null;
         svgAnchor?.remove();
 
         const badgeName = (linkAnchor ?? row).textContent.trim();
@@ -270,10 +263,20 @@ export function renderModalContent(targetEl, meta) {
   const config = getConfig();
   const rows = meta.badges.map((b) => {
     const daall = `${processTrackingLabels(b.name, config, 20)}--globe_card_modal`;
-    const nameHtml = b.href
-      ? `<a class="globe-modal-badge-app globe-modal-badge-app-link" href="${escapeHtml(b.href)}" daa-ll="${escapeHtml(daall)}">${escapeHtml(b.name)}</a>`
-      : `<span class="globe-modal-badge-app">${escapeHtml(b.name)}</span>`;
-    return createTag('li', { class: 'globe-modal-badge' }, `<div class="globe-modal-badge-left">${b.icon ?? ''}${nameHtml}</div><span class="globe-modal-badge-role">${escapeHtml(b.role)}</span>`);
+    const left = createTag('div', { class: 'globe-modal-badge-left' });
+    if (b.icon) {
+      const picture = createTag('picture', { class: 'globe-modal-badge-icon', 'aria-hidden': 'true' });
+      picture.append(createTag('img', { loading: 'lazy', src: b.icon, alt: '' }));
+      left.append(picture);
+    }
+    const name = b.href
+      ? createTag('a', { class: 'globe-modal-badge-app globe-modal-badge-app-link', href: b.href, 'daa-ll': daall })
+      : createTag('span', { class: 'globe-modal-badge-app' });
+    name.textContent = b.name;
+    left.append(name);
+    const role = createTag('span', { class: 'globe-modal-badge-role' });
+    role.textContent = b.role;
+    return createTag('li', { class: 'globe-modal-badge' }, [left, role]);
   });
   targetEl.querySelector('.globe-modal-badges').replaceChildren(...rows);
   return { descEl, speech: [[meta.name], [meta.role]] };
