@@ -15,6 +15,7 @@ const federateSvgSrc = (img) => { if (isSvgUrl(img?.src)) img.src = getFederated
 const unwrapParagraphs = (el) => el.querySelectorAll('p').forEach((p) => p.replaceWith(...p.childNodes));
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -57,7 +58,7 @@ const handleMobileAutoplay = (carousel) => {
         if (!isMobile() || !entry.isIntersecting) return;
         const nextRect = nextSlide?.getBoundingClientRect();
         const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
-        if (!isCovered) video.play().catch(() => { });
+        if (!isCovered && !prefersReducedMotion()) video.play().catch(() => { });
       },
       { threshold: 0.6 },
     );
@@ -74,7 +75,7 @@ const handleMobileAutoplay = (carousel) => {
           return;
         }
         const rect = slide.getBoundingClientRect();
-        if (rect.top >= 0 && rect.top <= window.innerHeight) {
+        if (rect.top >= 0 && rect.top <= window.innerHeight && !prefersReducedMotion()) {
           video.play().catch(() => { });
         }
       },
