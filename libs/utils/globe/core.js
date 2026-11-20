@@ -49,7 +49,7 @@ export function wrapAngle(a) { return Math.atan2(Math.sin(a), Math.cos(a)); }
 
 export const nextFrame = () => new Promise((res) => { requestAnimationFrame(res); });
 
-export function logGlobe(name, msg, severity = 'warn') {
+export function logGlobe(name, msg, severity = 'warning') {
   window.lana?.log?.(`${name}: ${msg}`, { tags: name, severity });
 }
 

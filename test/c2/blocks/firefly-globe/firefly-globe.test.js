@@ -355,7 +355,7 @@ describe('firefly-globe: fetchFireflyAssets', () => {
     const [msg, opts] = log.firstCall.args;
     expect(msg).to.include('0 returned');
     expect(msg).to.include('category_id=cat');
-    expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'warn' });
+    expect(opts).to.deep.equal({ tags: 'firefly-globe', severity: 'warning' });
   });
 
   it('warns and returns null when every asset is unusable', async () => {
