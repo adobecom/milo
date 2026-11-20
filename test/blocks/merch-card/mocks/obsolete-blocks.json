@@ -1,0 +1,16 @@
+{
+  "blocks": {
+    "data": [
+      { "Block": "merch-card", "Variant": "", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "segment", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "special-offers", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "plans", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "catalog", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "product", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "inline-heading", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "image", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "mini-compare-chart", "Decision": "obsolete", "Consonant": "", "Documentation": "" },
+      { "Block": "merch-card", "Variant": "twp", "Decision": "obsolete", "Consonant": "", "Documentation": "" }
+    ]
+  }
+}
