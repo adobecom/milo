@@ -326,11 +326,17 @@ describe('Elastic Carousel responsive geometry', () => {
           if (textSpacing) applyTextSpacing();
           await settleLayout();
           const cards = [...block.querySelectorAll('.elastic-carousel-item')];
+          cards.forEach(expectFullText);
+          const restingHeight = block.getBoundingClientRect().height;
+          const following = document.body.lastElementChild;
+          const followingTop = following.getBoundingClientRect().top + window.scrollY;
           for (const card of [cards.at(-1), cards[0]]) {
             for (const interaction of ['focus', 'hover']) {
               if (interaction === 'focus') card.focus();
               else card.dispatchEvent(new MouseEvent('mouseenter'));
               await settleLayout();
+              expect(block.getBoundingClientRect().height, `${interaction}: stable transition height`)
+                .to.be.closeTo(restingHeight, 1);
               finishTransitions(block);
               await settleLayout();
               const bounds = block.getBoundingClientRect();
@@ -340,6 +346,10 @@ describe('Elastic Carousel responsive geometry', () => {
               expect(rect.right, `${interaction}: right edge stays visible`)
                 .to.be.at.most(bounds.right + 1);
               expectFullText(card);
+              expect(block.getBoundingClientRect().height, `${interaction}: stable settled height`)
+                .to.be.closeTo(restingHeight, 1);
+              expect(following.getBoundingClientRect().top + window.scrollY)
+                .to.be.closeTo(followingTop, 1);
               card.blur();
               card.classList.remove('hovered');
             }
@@ -350,17 +360,24 @@ describe('Elastic Carousel responsive geometry', () => {
     });
 
     [false, true].forEach((textSpacing) => {
-      it(`reveals complete ${direction} desktop text on hover/focus with text spacing ${textSpacing}`, async () => {
+      it(`shows complete ${direction} desktop text at rest without hover shifts with text spacing ${textSpacing}`, async () => {
         await setViewport({ width: 1366, height: 768 });
         document.documentElement.setAttribute('dir', direction);
         const block = await loadCarousel();
+        const cards = [...block.querySelectorAll('.elastic-carousel-item')];
+        cards[0].querySelector('.elastic-carousel-item-footer p').textContent = 'Create something new.';
+        cards[4].querySelector('.elastic-carousel-item-footer p').textContent = 'Explore creative tools for students, teachers, and teams. Create and share photos, videos, designs, and presentations with industry-leading apps and creative AI.';
         const card = block.querySelector('[data-index="3"]');
         const title = card.querySelector('.elastic-carousel-item-footer h3');
         const description = card.querySelector('.elastic-carousel-item-footer p');
         if (textSpacing) applyTextSpacing();
         await settleLayout();
-        expect(getComputedStyle(title).webkitLineClamp).to.equal('1');
-        expect(getComputedStyle(description).webkitLineClamp).to.equal('2');
+        expect(getComputedStyle(title).webkitLineClamp).to.equal('none');
+        expect(getComputedStyle(description).webkitLineClamp).to.equal('none');
+        cards.forEach(expectFullText);
+        const following = document.body.lastElementChild;
+        const restingHeight = block.getBoundingClientRect().height;
+        const followingTop = following.getBoundingClientRect().top + window.scrollY;
         if (textSpacing) expectSpacing(description);
         for (const interaction of ['hover', 'focus']) {
           if (interaction === 'hover') card.dispatchEvent(new MouseEvent('mouseenter'));
@@ -369,6 +386,10 @@ describe('Elastic Carousel responsive geometry', () => {
           finishTransitions(block);
           await settleLayout();
           expectFullText(card);
+          expect(block.getBoundingClientRect().height, 'hover/focus does not change carousel height')
+            .to.be.closeTo(restingHeight, 1);
+          expect(following.getBoundingClientRect().top + window.scrollY, 'following content does not move')
+            .to.be.closeTo(followingTop, 1);
           const footer = card.querySelector('.elastic-carousel-item-footer');
           expect(getComputedStyle(footer).maxWidth).to.equal('270px');
           const footerBounds = footer.getBoundingClientRect();
@@ -390,12 +411,16 @@ describe('Elastic Carousel responsive geometry', () => {
         await setViewport({ width, height: 800 });
         document.documentElement.setAttribute('dir', direction);
         const block = await loadCarousel();
+        const cards = [...block.querySelectorAll('.elastic-carousel-item')];
+        const cardHeights = cards.map((card) => card.getBoundingClientRect().height);
         const top = block.getBoundingClientRect().top + window.scrollY;
         const range = block.offsetHeight - window.innerHeight;
         for (const progress of [0, 0.25, 0.5, 0.75, 1]) {
           window.scrollTo(0, top + range * progress);
           await settleLayout();
-          block.querySelectorAll('.elastic-carousel-item-header').forEach((header) => {
+          block.querySelectorAll('.elastic-carousel-item-header').forEach((header, index) => {
+            expect(cards[index].getBoundingClientRect().height, 'stacking preserves intrinsic height')
+              .to.be.closeTo(cardHeights[index], 1);
             const label = header.querySelector('p');
             const icon = header.querySelector('img');
             const style = getComputedStyle(header);

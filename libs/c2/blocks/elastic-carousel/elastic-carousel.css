@@ -37,7 +37,7 @@ html[dir="rtl"] {
   --start-gap: 2.75rem;
   --end-gap: .25rem;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
-  --elastic-carousel-container-width: calc((var(--slides) * var(--elastic-carousel-item-max-width)) + (var(--slides) * (var(--end-gap) * 2)));
+  --elastic-carousel-text-width: min(var(--elastic-carousel-item-max-width), calc(100cqw / (var(--slides) - 1))); /* stylelint-disable-line unit-no-unknown */
 
   min-height: var(--elastic-carousel-container-height-desktop);
   position: relative;
@@ -53,15 +53,15 @@ html[dir="rtl"] {
     left: 0;
     transform: translateX(calc(var(--elastic-carousel-row-offset, 0px) + 50cqw - 50%)); /* stylelint-disable-line unit-no-unknown */
     transition: transform .5s ease;
-    max-width: var(--elastic-carousel-container-width);
 
     .elastic-carousel-item {
-      --elastic-carousel-title-lines: 1;
-      --elastic-carousel-description-lines: 2;
-      --elastic-carousel-description-line-height: var(--s2a-font-line-height-16);
+      --elastic-carousel-title-lines: none;
+      --elastic-carousel-description-lines: none;
+      --elastic-carousel-description-line-height: var(--s2a-typography-line-height-body-md);
 
       display: flex;
       flex-direction: column;
+      flex-shrink: 0;
       position: relative;
       text-decoration: none;
       color: inherit;
@@ -200,6 +200,8 @@ html[dir="rtl"] {
 /** tablet only */
 @media (768px <= width < 1280px) {
   .elastic-carousel {
+    --elastic-carousel-text-width: min(var(--elastic-carousel-item-max-width), calc(100cqw / (var(--slides) - 1.5))); /* stylelint-disable-line unit-no-unknown */
+
     min-height: var(--elastic-carousel-container-height-tablet);
 
     .elastic-carousel-container {
@@ -255,10 +257,6 @@ html[dir="rtl"] {
 
         &.hovered,
         &:focus-visible {
-          --elastic-carousel-title-lines: none;
-          --elastic-carousel-description-lines: none;
-          --elastic-carousel-description-line-height: var(--s2a-typography-line-height-body-md);
-
           background-color: var(--s2a-color-gray-1000);
           max-width: 496px;
           width: calc((100cqw/calc(var(--slides)))*var(--elastic-carousel-item-hover-grow-index)); /* stylelint-disable-line unit-no-unknown */
@@ -269,8 +267,6 @@ html[dir="rtl"] {
           }
 
           .elastic-carousel-item-footer {
-            padding-inline-end: calc(var(--s2a-spacing-lg) + 24px + var(--s2a-spacing-md));
-
             h1,
             h2,
             h3,
@@ -296,16 +292,16 @@ html[dir="rtl"] {
 }
 
 @media (hover: hover) and (width >= 768px) {
-  .elastic-carousel .elastic-carousel-item:is(.hovered, :focus-visible) .elastic-carousel-item-footer {
-    max-width: 270px;
+  /* Keep text wrapping stable while the media expands on hover/focus. */
+  .elastic-carousel .elastic-carousel-container .elastic-carousel-item .elastic-carousel-item-header,
+  .elastic-carousel .elastic-carousel-container .elastic-carousel-item .elastic-carousel-item-footer {
+    box-sizing: border-box;
+    width: var(--elastic-carousel-text-width);
   }
-}
 
-@media (hover: none), (width < 768px) {
-  .elastic-carousel .elastic-carousel-container .elastic-carousel-item {
-    --elastic-carousel-title-lines: none;
-    --elastic-carousel-description-lines: none;
-    --elastic-carousel-description-line-height: var(--s2a-typography-line-height-body-md);
+  .elastic-carousel .elastic-carousel-container .elastic-carousel-item .elastic-carousel-item-footer {
+    max-width: 270px;
+    padding-inline-end: calc(var(--s2a-spacing-lg) + 24px + var(--s2a-spacing-md));
   }
 }
 
@@ -433,6 +429,14 @@ html[dir="rtl"] {
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
           overflow-x: clip;
+
+          /* Reserve wrapping at the narrowest stack width to keep the view timeline stable. */
+          .elastic-carousel-item-header,
+          .elastic-carousel-item-footer {
+            box-sizing: border-box;
+            width: calc(100cqw - 2 * var(--stack-shrink)); /* stylelint-disable-line unit-no-unknown */
+            margin-inline: auto;
+          }
 
           .elastic-carousel-item-header {
             padding: var(--s2a-spacing-lg);
