@@ -3,6 +3,8 @@ import { expect } from '@esm-bundle/chai';
 import { createFullGlobalNavigation, unavVersion } from './test-utilities.js';
 import { decoratePromo } from '../../../libs/blocks/global-navigation/utilities/menu/menu.js';
 import { toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { getConfig, setConfig, updateConfig } from '../../../libs/utils/utils.js';
+import { waitForRemoval } from '../../helpers/waitfor.js';
 
 describe('Promo', () => {
   before(() => {
@@ -62,13 +64,51 @@ describe('Promo', () => {
 });
 
 describe('Promo mas-field CTAs', () => {
+  it('localizes a late CTA before extracting it from its MAS field', async () => {
+    const previousConfig = getConfig();
+    const container = document.createElement('div');
+    try {
+      setConfig({
+        codeRoot: '/libs',
+        pathname: '/br/test.html',
+        locales: { br: { ietf: 'pt-BR' } },
+        prodDomains: ['www.adobe.com'],
+      });
+      const promo = toFragment`<div class="gnav-promo"><div><div><p>Promo</p></div></div></div>`;
+      await decoratePromo(promo, 0);
+      container.innerHTML = `<mas-field id="late-promo-cta" field="ctas"
+        class="feds-cta feds-cta--primary" daa-ll="save-now">
+        <span data-role="mas-field-content">
+          <a href="https://www.adobe.com/products/special-offers.html?promoid=MH16SFKV&mv=other">Economize agora</a>
+        </span>
+      </mas-field>`;
+      document.body.append(container);
+      const mf = container.querySelector('mas-field');
+      const removed = waitForRemoval('#late-promo-cta');
+
+      mf.dispatchEvent(new Event('mas:ready', { bubbles: true }));
+
+      expect(mf.isConnected, 'keep the field attached while localizing').to.be.true;
+      await removed;
+      const link = container.querySelector('a');
+      expect(link.href).to.equal('https://www.adobe.com/br/products/special-offers.html?promoid=MH16SFKV&mv=other');
+      expect(link.className).to.equal('feds-cta feds-cta--primary');
+      expect(link.getAttribute('daa-ll')).to.equal('save-now');
+    } finally {
+      container.remove();
+      updateConfig(previousConfig);
+    }
+  });
+
   it('hoists feds-cta class and daa-ll onto the resolved anchor on mas:ready', async () => {
     const promo = toFragment`<div class="gnav-promo"><div><div><p>Promo</p></div></div></div>`;
     await decoratePromo(promo, 0);
     const mf = toFragment`<mas-field class="feds-cta feds-cta--primary" daa-ll="buy-now"><a href="https://adobe.com/buy">Buy</a></mas-field>`;
     document.body.append(mf);
+    const removed = waitForRemoval('mas-field.feds-cta');
 
     mf.dispatchEvent(new Event('mas:ready', { bubbles: true }));
+    await removed;
 
     const link = document.querySelector('a[href="https://adobe.com/buy"]');
     expect(link.className).to.equal('feds-cta feds-cta--primary');
