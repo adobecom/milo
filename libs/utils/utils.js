@@ -135,6 +135,7 @@ const C2_BLOCKS = [
   'global-footer',
   'global-navigation',
   'globe-gallery',
+  'hero-c2',
   'hover-list',
   'hub-hero',
   'iframe',

@@ -1,0 +1,175 @@
+.hero-c2 {
+  --hero-c2-media-height: 360px;
+
+  overflow-x: clip;
+  position: relative;
+
+  .hero-c2-content {
+    --grid-margin-width: var(--s2a-spacing-lg);
+
+    display: grid;
+    gap: var(--s2a-spacing-xl);
+  }
+
+  .hero-c2-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-2xl);
+  }
+
+  .hero-c2-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+
+    .heading-2,
+    p {
+      text-wrap: balance;
+    }
+  }
+
+  .hero-c2-supporting {
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  }
+
+  /* Media area: background fills it, media is centered on top */
+  .hero-c2-media-area {
+    display: grid;
+    min-block-size: 480px;
+    place-items: center;
+    position: relative;
+  }
+
+  .hero-c2-background {
+    inset: 0;
+    position: absolute;
+
+    picture,
+    .video-container {
+      block-size: 100%;
+      display: block;
+      inline-size: 100%;
+      margin: 0;
+    }
+
+    img,
+    video {
+      block-size: 100%;
+      inline-size: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .hero-c2-foreground {
+    block-size: var(--hero-c2-media-height);
+    position: relative;
+
+    p {
+      margin: 0;
+    }
+
+    picture {
+      block-size: 100%;
+      display: block;
+    }
+
+    img,
+    video {
+      block-size: 100%;
+      display: block;
+      inline-size: auto;
+      max-inline-size: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .hero-c2-text .eyebrow {
+    order: -1;
+    align-items: center;
+    display: flex;
+    gap: var(--s2a-spacing-2xs);
+    padding-block-end: var(--s2a-spacing-xs);
+
+    picture {
+      display: flex;
+    }
+
+    img {
+      block-size: 18px;
+      inline-size: 18px;
+      object-fit: contain;
+    }
+  }
+
+  .hero-c2-merch {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-sm);
+  }
+
+  .hero-c2-merch-content {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-sm);
+
+    > p,
+    .mas-description,
+    .mas-short-description {
+      font-size: var(--s2a-typography-font-size-body-sm);
+      line-height: var(--s2a-typography-line-height-body-sm);
+    }
+
+    .mas-price-commitment,
+    .mas-subtitle {
+      font-size: var(--s2a-typography-font-size-caption);
+      line-height: var(--s2a-typography-line-height-caption);
+    }
+  }
+
+  .hero-c2-merch-ctas {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+
+    > p,
+    > .action-area,
+    mas-field {
+      display: contents;
+    }
+  }
+}
+
+/* Same breakpoints and grid tokens as aside-c2 */
+@media (width >= 768px) {
+  .hero-c2 {
+    .hero-c2-content {
+      column-gap: var(--grid-gutter);
+      grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+    }
+
+    .hero-c2-left {
+      align-self: center;
+      grid-column: 1 / span 5;
+    }
+
+    .hero-c2-media-area {
+      grid-column: 7 / span 6;
+    }
+  }
+}
+
+/* 4 cols copy / 1 col gap / 7 cols media */
+@media (width >= 1280px) {
+  .hero-c2 {
+    .hero-c2-left {
+      grid-column: 1 / span 4;
+    }
+
+    .hero-c2-media-area {
+      grid-column: 6 / span 7;
+    }
+  }
+}
