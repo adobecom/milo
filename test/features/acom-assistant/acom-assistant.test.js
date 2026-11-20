@@ -59,13 +59,39 @@ describe('AcomAssistant shared client lifecycle', () => {
 
       await start();
 
-      expect(client.initialize.firstCall.args[0].checkoutClientId).to.equal('host-checkout-client');
+      const config = client.initialize.firstCall.args[0];
+      expect(config.context.agents.checkoutClientId).to.equal('host-checkout-client');
+      expect(config).to.not.have.property('checkoutClientId');
     });
 
     it('defaults to acom_bc when bc-checkout-client-id metadata is absent', async () => {
       await start();
 
-      expect(client.initialize.firstCall.args[0].checkoutClientId).to.equal('acom_bc');
+      const config = client.initialize.firstCall.args[0];
+      expect(config.context.agents.checkoutClientId).to.equal('acom_bc');
+      expect(config).to.not.have.property('checkoutClientId');
+    });
+
+    it('keeps the default checkout client ID when callers pass other context', async () => {
+      await assistant.loadAcomAssistant({
+        appid: 'surface-one',
+        context: { orgId: 'org-1', userData: { source: 'footer' }, agents: { other: 'value' } },
+      }, deps);
+
+      const { context } = client.initialize.firstCall.args[0];
+      expect(context.orgId).to.equal('org-1');
+      expect(context.userData.source).to.equal('footer');
+      expect(context.agents).to.deep.equal({ other: 'value', checkoutClientId: 'acom_bc' });
+    });
+
+    it('lets callers override the checkout client ID', async () => {
+      await assistant.loadAcomAssistant({
+        appid: 'surface-one',
+        context: { agents: { checkoutClientId: 'caller-checkout-client' } },
+      }, deps);
+
+      expect(client.initialize.firstCall.args[0].context.agents.checkoutClientId)
+        .to.equal('caller-checkout-client');
     });
   });
 
