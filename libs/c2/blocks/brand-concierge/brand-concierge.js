@@ -27,11 +27,9 @@ import {
 
 const variants = {};
 let useAcomAssistant = false;
-let acomAssistantModulePromise;
 
 async function routeAcomAssistantInput(options) {
-  acomAssistantModulePromise ||= import('./acom-assistant-bootstrap.js');
-  const { default: acomAssistantRouteInput } = await acomAssistantModulePromise;
+  const { default: acomAssistantRouteInput } = await import('./acom-assistant-bootstrap.js');
   return acomAssistantRouteInput(options);
 }
 
@@ -244,6 +242,15 @@ export default async function init(el) {
   if (gradientRow) el.removeChild(gradientRow);
 
   window.dispatchEvent(new CustomEvent('bc:ready', { detail: 'brand-concierge' }));
+
+  if (useAcomAssistant) {
+    import('./acom-assistant-bootstrap.js')
+      .then(({ ensureAcomAssistant }) => ensureAcomAssistant(cards))
+      .catch((error) => {
+        window.lana?.log?.(`AcomAssistant: failed to preload client (${error.message})`, { tags: 'acom-assistant', severity: 'error' });
+      });
+    return;
+  }
 
   if (!hasChatCookie()) localStorage.setItem('bc-side-overlay', 'closed');
   if (localStorage.getItem('bc-side-overlay') === 'open' && !document.body.classList.contains('bc-side-open') && !isMobile()) {
