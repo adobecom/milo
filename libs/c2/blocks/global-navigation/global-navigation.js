@@ -17,8 +17,14 @@ import {
   isTrustedAutoBlock,
   loadBlock,
   isC2GnavOnC1Host,
+  loadLana,
+  loadLink,
 } from '../../../utils/utils.js';
-import { isDesktop, lanaLog, loadStyles } from '../../../blocks/global-navigation/utilities/utilities.js';
+
+// Loaded lazily: a static import (and its personalization.js dependency) would delay the
+// federal main.js import below, which gates the whole nav.
+const loadGnavUtilities = () => import('../../../blocks/global-navigation/utilities/utilities.js');
+const lanaLog = (...args) => loadGnavUtilities().then((utils) => utils.lanaLog(...args));
 
 const loadAcomAssistantGnavModule = () => import('../../../features/acom-assistant-gnav.js');
 
@@ -113,10 +119,12 @@ async function decorateAppPrompt(el) {
 
   if (state === 'off'
     || !window.adobeIMS?.isSignedInUser()
-    || !isDesktop.matches
     || hasMobileUA
     || !entName?.length
     || !promptPath?.length) return;
+
+  const { isDesktop, loadStyles } = await loadGnavUtilities();
+  if (!isDesktop.matches) return;
 
   const parent = el.querySelector('.feds-utilities');
   if (!parent) return;
@@ -143,6 +151,7 @@ export async function loadBrandConcierge(block) {
     return;
   }
   const { base } = getConfig();
+  const { loadStyles } = await loadGnavUtilities();
   const [{ default: initBrandConcierge }] = await Promise.all([
     import('../brand-concierge-global/brand-concierge-global.js'),
     loadStyles(`${base}/c2/blocks/brand-concierge-global/brand-concierge-global.css`),
@@ -181,6 +190,7 @@ export function initAupSdk({ imsReady, unavEnabled }) {
 }
 
 export default async function init(el) {
+  loadLana();
   const config = getConfig();
   const isLingo = lingoActive();
   const federalDomain = getFederalDomain(config);
@@ -260,9 +270,19 @@ export default async function init(el) {
     return resolved ? tempAnchor.href : href;
   };
 
-  const { main } = await import(federalGnavUrl);
-  const gnavUrl = new URL(await getGnavSource(), window.location.href);
-  const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
+  // Fetch the gnav document in parallel with federal main.js instead of after it.
+  // The URL mirrors federal's own fetch: getFederatedUrl(localizeLink(<source>.plain.html)).
+  const gnavUrlPromise = getGnavSource().then((source) => {
+    const url = new URL(source, window.location.href);
+    const plainUrl = `${url.origin}${url.pathname.replace(/(\.html$|$)/, '.plain.html')}`;
+    loadLink(getFederatedUrl(localizeLink(plainUrl)), { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+    return url;
+  });
+  const [{ main }, gnavUrl, lingoRegion] = await Promise.all([
+    import(federalGnavUrl),
+    gnavUrlPromise,
+    isLingo ? getLingoRegion({ useGeoLocation: true }) : null,
+  ]);
 
   const countryCodePromise = (async () => {
     const { isMasGeoDetectionEnabled } = await import('../../../blocks/merch/merch.js');
