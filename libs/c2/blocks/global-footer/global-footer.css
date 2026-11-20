@@ -447,7 +447,7 @@ span.feds-footer-privacyLink-divider {
   color: var(--s2a-color-gray-25);
   font-size: var(--s2a-font-size-20);
   line-height: var(--s2a-font-line-height-20);
-  letter-spacing: 0.48px;
+  letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
   font-width: var(--s2a-font-weight-adobe-clean-black);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
 }
