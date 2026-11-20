@@ -420,6 +420,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
   const prevPageName = cookies[GPV_COOKIE] || '';
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
+  const authState = isSignedOut() ? 'loggedOut' : 'authenticated';
+  const returningStatus = getVisitorStatus({});
   const webPageDetails = {
     URL: window.location.href,
     siteSection: window.location.hostname,
@@ -441,11 +443,6 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       identityMap: getOrGenerateUserId(),
       web: {
         webPageDetails,
-        webInteraction: isPageViewCall || isCollectCall ? undefined : {
-          name: 'Martech-API',
-          type: 'other',
-          linkClicks: { value: 1 },
-        },
         webReferrer: { URL: document.referrer },
       },
       timestamp: new Date().toISOString(),
@@ -457,7 +454,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       __adobe: {
         target: {
           is404: false,
-          authState: 'loggedOut',
+          authState,
           hitType,
           isMilo: true,
           adobeLocale: getLanguageCode(locale),
@@ -472,7 +469,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           page: { pageInfo: { language: getLanguageCode(locale) } },
           diagnostic: { franklin: { implementation: 'milo' } },
           previousPage: { pageInfo: { pageName: prevPageName } },
-          primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
+          primaryUser: { primaryProfile: { profileInfo: { authState, returningStatus } } },
         },
         otherConsents: getConsentConfiguration({ optOnConsentCookie, consentState }),
         user: { firstVisit: isFirstVisit() },

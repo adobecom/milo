@@ -325,7 +325,14 @@ describe('loadAnalyticsAndInteractionData', () => {
     const cookieDesc = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
     let requestBodies;
     let cookieWrites;
-    const eventTypes = () => requestBodies.map((b) => (b.event || b.events[0]).xdm.eventType);
+    const events = () => requestBodies.map((b) => b.event || b.events[0]);
+    const eventTypes = () => events().map((e) => e.xdm.eventType);
+    const authStates = (e) => [
+      // eslint-disable-next-line no-underscore-dangle
+      e.data.__adobe.target.authState,
+      // eslint-disable-next-line no-underscore-dangle
+      e.data._adobe_corpnew.digitalData.primaryUser.primaryProfile.profileInfo.authState,
+    ];
 
     const load = (sis) => {
       const stub = sinon.stub(window.performance, 'getEntriesByType');
@@ -369,6 +376,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       const result = await load('0');
 
       expect(eventTypes()).to.deep.equal(['web.webpagedetails.pageViews', 'decisioning.propositionDisplay']);
+      expect(authStates(events()[0])).to.deep.equal(['loggedOut', 'loggedOut']);
       expect(window.hybridPers).to.be.true;
       expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.true;
       expect(result.type).to.equal('pageView');
@@ -381,6 +389,13 @@ describe('loadAnalyticsAndInteractionData', () => {
       expect(window.hybridPers).to.be.undefined;
       expect(cookieWrites.some((c) => c.startsWith('gpv='))).to.be.false;
       expect(result.result.propositions).to.have.lengthOf(1);
+    });
+
+    it('signed in: sends the real sign-in status and no link click', async () => {
+      await load('1');
+
+      expect(authStates(events()[0])).to.deep.equal(['authenticated', 'authenticated']);
+      expect(events()[0].xdm.web.webInteraction).to.be.undefined;
     });
   });
 
