@@ -197,8 +197,6 @@ function createLayout(block, headerSection, articleSections) {
   const article = createTag('div', { class: 'blog-article-content' });
   headerSection.after(layout);
   article.append(...articleSections);
-  article.querySelectorAll(':scope > .section > .content > h2')
-    .forEach((heading) => heading.classList.add('heading-3'));
   layout.append(block, article);
 }
 
@@ -250,6 +248,10 @@ export default async function init(block) {
   const articleSections = layout
     ? [...layout.querySelectorAll(':scope > .blog-article-content > .section')]
     : getBlogSections(headerSection);
+  articleSections.forEach((section) => {
+    section.querySelectorAll(':scope > .content > h2')
+      .forEach((heading) => heading.classList.add('heading-3'));
+  });
   const headings = articleSections.flatMap((section) => (
     [...section.querySelectorAll(':scope > .content h2')]
   )).filter((heading) => (

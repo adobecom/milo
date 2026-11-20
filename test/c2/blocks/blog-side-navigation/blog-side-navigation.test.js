@@ -1352,6 +1352,8 @@ describe('blog-side-navigation section list', () => {
 
     content.append(...articleSection.childNodes);
     articleSection.append(content);
+    articleSection.insertAdjacentHTML('beforeend', '<div class="ai-summary">'
+      + '<div class="ai-summary-content"><h2 class="heading-5">Key takeaways</h2></div></div>');
     delete articleSection.dataset.status;
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     await waitFor(() => block.querySelectorAll('nav a').length === 4);
@@ -1363,6 +1365,9 @@ describe('blog-side-navigation section list', () => {
     expect(block.querySelector('nav').getAttribute('aria-label')).to.equal('On this page');
     expect(block.closest('.blog-article-layout')).to.exist;
     expect(block.querySelector('nav').textContent).not.to.contain('collapsed');
+    expect([...content.querySelectorAll('h2')].every((heading) => heading.classList.contains('heading-3')))
+      .to.equal(true);
+    expect(articleSection.querySelector('.ai-summary h2').className).to.equal('heading-5');
   });
 
   it('registers only one deferred retry and scroll tracker after repeated pending initialization', async () => {
