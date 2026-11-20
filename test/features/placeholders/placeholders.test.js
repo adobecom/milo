@@ -125,6 +125,7 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
     if (country) sessionStorage.setItem('akamai', country);
     setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
     const cfg = getConfig();
+    cfg.contentRoot = contentRoot;
     cfg.locale.contentRoot = contentRoot;
     return cfg;
   }
@@ -132,6 +133,7 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
   function disableGeo() {
     setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
     const cfg = getConfig();
+    cfg.contentRoot = contentRoot;
     cfg.locale.contentRoot = contentRoot;
     return cfg;
   }
@@ -145,6 +147,13 @@ describe('Geo-IP Placeholders (column-per-market sheet)', () => {
   it('resolves the visitor country column for a -geo-ip key', async () => {
     const cfg = enableGeo('us');
     expect(await replaceText('{{hello-geo-ip}}', cfg)).to.equal('hello US');
+  });
+
+  it('reads the site-root sheet, not the locale folder', async () => {
+    const cfg = enableGeo('us');
+    cfg.locale.contentRoot = '/nonexistent/fr';
+    const overrides = await getGeoIpPlaceholders(cfg);
+    expect(overrides.get('hello-geo-ip')).to.equal('hello US');
   });
 
   it('resolves a different country column', async () => {

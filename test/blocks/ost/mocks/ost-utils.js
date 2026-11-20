@@ -146,6 +146,7 @@ const getGeoLocalePrefix = () => Promise.resolve(null);
 const getPlaceholderPaths = () => [];
 const getGeoIpWarmSheet = () => undefined;
 const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+const getGeoIpSheetUrl = (config) => `${config.contentRoot ?? ''}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(config.locale)}`;
 const normCountryCode = (country) => {
   if (typeof country !== 'string') return undefined;
   const lower = country.toLowerCase();
@@ -215,6 +216,7 @@ export {
   getPlaceholderPaths,
   getGeoIpWarmSheet,
   geoIpSiteKey,
+  getGeoIpSheetUrl,
   normCountryCode,
   resolveDetectedMarketCountry,
   getValidatedMasLibsUrl,
