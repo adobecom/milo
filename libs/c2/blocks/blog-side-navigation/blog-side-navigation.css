@@ -1,0 +1,360 @@
+/* Mobile: the navigation sits above the article and sticks under the global nav.
+   From 768px it becomes a sticky column beside the article. */
+.blog-article-layout {
+  display: flow-root;
+  gap: var(--s2a-spacing-xl);
+  box-sizing: border-box;
+  padding-inline: 0;
+  padding-block-end: var(--s2a-spacing-3xl);
+
+  @media (width >= 768px) {
+    display: grid;
+    grid-template-columns: minmax(0, min(280px, 30%)) minmax(0, 1fr);
+    align-items: start;
+    padding-inline: var(--grid-margin-width);
+  }
+
+  @media (width >= 1280px) {
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+    gap: 56px;
+  }
+}
+
+.blog-side-navigation {
+  width: 100%;
+  max-width: var(--body-max-width, 600px);
+  margin-inline: auto;
+  color: var(--s2a-color-content-default);
+  font-size: var(--s2a-font-size-md);
+  line-height: 1.5;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Lets the nav stick within the article flow rather than this wrapper. */
+  &:not([hidden]) {
+    display: contents;
+  }
+
+  &.is-pending {
+    visibility: hidden;
+
+    /* Holds the collapsed navigation's height (heading line + one link row) until it renders. */
+    &:not([hidden]) {
+      display: block;
+      height: calc(3em + 2 * var(--s2a-spacing-sm) + var(--s2a-border-width-sm));
+      overflow: hidden;
+    }
+  }
+
+  @media (width >= 768px) {
+    position: sticky;
+    z-index: 1;
+    top: calc(var(--global-height-nav) + var(--s2a-spacing-lg));
+    max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-3xl));
+    max-width: 280px;
+    margin-inline: 0;
+    overflow-y: auto;
+
+    &:not([hidden]) {
+      display: block;
+    }
+
+    &.is-pending:not([hidden]) {
+      height: auto;
+      overflow: visible auto;
+    }
+  }
+
+  > p {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    margin: 0;
+    padding-inline: var(--grid-margin-width);
+    color: var(--s2a-color-gray-700);
+    font-weight: var(--s2a-font-weight-body);
+    text-transform: uppercase;
+
+    > strong {
+      font-weight: inherit;
+    }
+
+    @media (width >= 768px) {
+      margin-block-end: var(--s2a-spacing-20);
+      padding-inline: 0;
+      color: inherit;
+      font-weight: var(--s2a-font-weight-label);
+    }
+  }
+
+  > nav {
+    position: sticky;
+    top: var(--global-height-nav);
+    z-index: 1;
+    box-sizing: border-box;
+    max-height: calc(100dvh - var(--global-height-nav));
+    overflow-y: auto;
+    background: var(--s2a-color-gray-25);
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (width >= 768px) {
+      position: relative;
+      top: auto;
+      max-height: none;
+      overflow-y: visible;
+      background: none;
+    }
+  }
+
+  > .blog-related-content {
+    isolation: isolate;
+    box-sizing: border-box;
+    padding-inline: var(--grid-margin-width);
+
+    @media (width >= 768px) {
+      padding-inline: 0;
+    }
+  }
+
+  .blog-side-navigation-label {
+    display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  nav > ul {
+    margin: 0;
+    padding: 0;
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+    border-top: 0;
+    background: var(--s2a-color-background-default);
+    list-style: none;
+
+    @media (width >= 768px) {
+      border-top: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+      border-radius: var(--s2a-border-radius-4);
+      box-shadow: 1px 1px 4px 0 var(--s2a-color-transparent-black-08);
+    }
+
+    > li {
+      margin: 0;
+
+      /* Aligns link text with the page gutter; the links carry their own inline padding. */
+      padding-inline: max(0px, calc(var(--grid-margin-width) - var(--s2a-spacing-xs)));
+
+      @media (width >= 768px) {
+        padding-inline: 0;
+      }
+
+      > a {
+        display: block;
+        padding: var(--s2a-spacing-sm) var(--s2a-spacing-xs);
+        color: inherit;
+        font-weight: var(--s2a-font-weight-body);
+        text-decoration: none;
+        overflow-wrap: anywhere;
+
+        &:hover {
+          text-decoration: underline;
+        }
+
+        &[aria-current="location"] {
+          font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+          text-decoration: none;
+        }
+
+        &:focus-visible {
+          outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+          outline-offset: calc(-1 * var(--s2a-border-width-md));
+        }
+      }
+
+      &:has(> a[aria-current="location"]) {
+        background: var(--s2a-color-gray-75);
+
+        @media (width >= 768px) {
+          background: transparent;
+        }
+      }
+
+      &:has(> .blog-side-navigation-toggle) {
+        display: flex;
+        align-items: center;
+
+        > a {
+          flex: 1;
+          min-width: 0;
+        }
+      }
+
+      /* Collapsed: only the active link shows, bold and on one line below 768px. */
+      &:has(> .blog-side-navigation-toggle[aria-expanded="false"]) {
+        background: transparent;
+
+        > a:not([aria-current="location"]) {
+          font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+
+          @media (width >= 768px) {
+            font-weight: var(--s2a-font-weight-body);
+          }
+        }
+
+        .blog-side-navigation-label {
+          -webkit-line-clamp: 1;
+
+          @media (width >= 768px) {
+            -webkit-line-clamp: 2;
+          }
+        }
+      }
+    }
+  }
+
+  .blog-side-navigation-toggle {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    margin-inline-end: var(--s2a-spacing-xs);
+    padding: 0;
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+    border-radius: var(--s2a-border-radius-6);
+    background: var(--s2a-color-gray-50);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    @media (width >= 768px) {
+      &:hover {
+        background: var(--s2a-color-gray-100);
+      }
+    }
+
+    &[aria-expanded="true"] {
+      border-color: var(--s2a-color-gray-700);
+      background: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-gray-25);
+    }
+
+    &[hidden] {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+      outline-offset: calc(-1 * var(--s2a-border-width-md));
+    }
+
+    .blog-side-navigation-toggle-icon {
+      position: relative;
+      width: 12px;
+      height: 12px;
+
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 12px;
+        height: 2px;
+        margin: auto;
+        border-radius: 1px;
+        background: currentcolor;
+      }
+
+      &::after {
+        width: 2px;
+        height: 12px;
+      }
+    }
+
+    &[aria-expanded="true"] .blog-side-navigation-toggle-icon {
+      box-sizing: border-box;
+      width: 14px;
+      height: 14px;
+      border: 1.5px solid currentcolor;
+      border-radius: 50%;
+
+      &::before {
+        width: 6px;
+        height: 1.5px;
+      }
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+.blog-article-content {
+  isolation: isolate;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
+  max-width: none;
+  margin-inline: auto;
+  margin-block-start: var(--s2a-spacing-xl);
+  padding-inline: var(--grid-margin-width);
+
+  @media (width >= 768px) {
+    --body-max-width: 100%;
+
+    margin-block-start: 0;
+    padding-inline: 0;
+  }
+
+  h2 {
+    scroll-margin-top: calc(var(--global-height-nav) + var(--blog-side-navigation-height, 0px) + var(--s2a-spacing-lg));
+
+    /* Back to the global heading offset once the nav no longer sticks above the article. */
+    @media (width >= 768px) {
+      scroll-margin-top: var(--feds-totalheight-nav);
+    }
+  }
+
+  > .section {
+    &[class*="grid-width-"] {
+      padding-inline: 0;
+    }
+
+    > .content {
+      max-width: 100%;
+      margin-inline: 0;
+
+      /* Authored body copy: small vertical rhythm and a smaller in-body heading. */
+      > * + * {
+        margin-block-start: var(--s2a-spacing-xs);
+      }
+
+      > p,
+      > ul,
+      > ol {
+        font-size: var(--s2a-typography-font-size-body-lg);
+      }
+
+      > h2 {
+        margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
+      }
+    }
+
+    /* In-body related-content cards get extra breathing room beneath them. */
+    > .related-content-card {
+      margin-block-end: var(--s2a-spacing-xl);
+    }
+
+    > .tag-cta {
+      margin-block: var(--s2a-spacing-2xl);
+    }
+  }
+}

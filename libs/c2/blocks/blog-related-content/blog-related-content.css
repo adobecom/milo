@@ -1,0 +1,82 @@
+/* stylelint-disable selector-class-pattern -- CaaS owns the mixed-case class names. */
+
+.blog-related-content {
+  margin-block-start: var(--s2a-spacing-2xl);
+
+  &[hidden] {
+    display: none;
+  }
+
+  > h3 {
+    margin: 0 0 var(--s2a-spacing-20);
+    font-weight: var(--s2a-font-weight-label);
+    text-transform: uppercase;
+  }
+
+  .consonant-Wrapper,
+  .consonant-Wrapper-inner,
+  .consonant-CardsGrid {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .consonant-CardsGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s2a-spacing-md);
+
+    .consonant-Card.horizontal-card {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 0;
+      height: 80px;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+      border-radius: var(--s2a-border-radius-4);
+      background: var(--s2a-color-gray-25);
+
+      .consonant-Card-header {
+        width: 64px;
+        min-width: 64px;
+        height: 100%;
+        padding: 0;
+        border-radius: 0;
+      }
+
+      .consonant-Card-content {
+        box-sizing: border-box;
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        padding: 10px var(--s2a-spacing-sm);
+      }
+
+      .consonant-Card-title {
+        display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+        margin: 0;
+        overflow: hidden;
+        color: var(--s2a-color-content-default);
+        font-size: var(--s2a-font-size-sm);
+        font-weight: var(--s2a-font-weight-label);
+        line-height: var(--s2a-font-line-height-sm);
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+      }
+    }
+  }
+
+  .consonant-Card-label,
+  .consonant-Card-text,
+  .consonant-Card-footer {
+    display: none;
+  }
+
+  a:focus-visible {
+    outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+    outline-offset: calc(-1 * var(--s2a-border-width-md));
+  }
+}

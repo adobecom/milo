@@ -1,0 +1,9 @@
+{
+  "data": [
+    { "Tag": "caas:products/genstudio", "Link": "/products/genstudio", "Title": "GenStudio" },
+    { "Tag": "caas:topic/personalization", "Link": "https://business.adobe.com/blog/personalization", "Title": "Personalization" },
+    { "Tag": "caas:topic/generative-ai", "Link": "https://business.adobe.com/blog/generative-ai", "Title": "Generative AI" },
+    { "Tag": "caas:topic/3d-ar", "Link": "", "Title": "3D & AR" },
+    { "Tag": "caas:events/business-type/b2b", "Link": "/resources/b2b", "Title": "Business-to-Business" }
+  ]
+}
