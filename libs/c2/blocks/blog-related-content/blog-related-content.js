@@ -1,6 +1,7 @@
 import { createTag, getConfig } from '../../../utils/utils.js';
 import { replaceKey } from '../../../features/placeholders.js';
 import { loadCaas } from '../../../blocks/caas/caas.js';
+import { decorateBlockText } from '../../../utils/decorate.js';
 
 export default async function init(block) {
   if (!block.closest('.blog-side-navigation')) {
@@ -25,7 +26,9 @@ export default async function init(block) {
   const heading = createTag('h3');
   heading.textContent = title;
   const content = createTag('div', { class: 'blog-related-content-collection' }, collection);
-  block.replaceChildren(heading, content);
+  block.replaceChildren(heading);
+  decorateBlockText(block, { heading: '6' });
+  block.append(content);
   block.dataset.relatedContentInitialized = 'true';
   try {
     await loadCaas(collection);
