@@ -10,6 +10,130 @@ describe('Rich Results', () => {
     setConfig({});
   });
 
+  describe('JSON-LD manager preload', () => {
+    let sandbox;
+    let originalManager;
+    let originalLana;
+    let preload;
+    let appendFails;
+    let statusAtPreload;
+    let appendHead;
+
+    beforeEach(async () => {
+      sandbox = sinon.createSandbox();
+      originalManager = window.miloJsonLd;
+      originalLana = window.lana;
+      window.miloJsonLd = {};
+      window.lana = { log: sandbox.spy() };
+      setConfig({});
+      document.head.innerHTML = '<meta name="jsonld-graph-manager" content="true">';
+      document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+      appendHead = document.head.appendChild.bind(document.head);
+      sandbox.stub(document.head, 'appendChild').callsFake((node) => {
+        if (node.tagName === 'LINK' && node.rel === 'modulepreload' && node.href.endsWith('/jsonld-graph-manager.js')) {
+          preload = node;
+          statusAtPreload = document.querySelector('main > .section')?.dataset.status;
+          if (appendFails) throw new Error('preload insertion failed');
+          return node;
+        }
+        return appendHead(node);
+      });
+    });
+
+    afterEach(() => {
+      window.miloJsonLd?.manager?.destroy();
+      window.miloJsonLd = originalManager;
+      window.lana = originalLana;
+      sandbox.restore();
+      preload = undefined;
+      appendFails = false;
+    });
+
+    it('preloads after the section is revealed without holding up page loading', async () => {
+      statusAtPreload = 'not scheduled';
+      await loadArea();
+      await waitFor(() => preload, 2000);
+      expect(document.getElementById('page-load-ok-milo')).to.exist;
+      expect(statusAtPreload).to.be.undefined;
+      expect(window.miloJsonLd.manager).to.be.undefined;
+      expect(preload.rel).to.equal('modulepreload');
+      expect(preload.fetchPriority).to.equal('low');
+      expect(preload.crossOrigin).to.equal('anonymous');
+      expect(preload.href).to.equal(new URL('../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href);
+      preload.dispatchEvent(new Event('load'));
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+      expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.exist;
+    });
+
+    it('reuses an existing modulepreload for the module URL', async () => {
+      const url = new URL('../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href;
+      const existingLink = document.createElement('link');
+      existingLink.rel = 'modulepreload';
+      existingLink.fetchPriority = 'high';
+      existingLink.href = url;
+      appendHead(existingLink);
+
+      await loadArea();
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+
+      expect(preload).to.be.undefined;
+      expect(existingLink.rel).to.equal('modulepreload');
+      expect(existingLink.fetchPriority).to.equal('high');
+      expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.exist;
+    });
+
+    it('does not preload or initialize when disabled', async () => {
+      document.querySelector('meta[name="jsonld-graph-manager"]').content = 'false';
+      await loadArea();
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+      expect(preload).to.be.undefined;
+      expect(window.miloJsonLd.manager).to.be.undefined;
+    });
+
+    it('uses the plain import when modulepreload is unsupported', async () => {
+      const { supports } = DOMTokenList.prototype;
+      sandbox.stub(DOMTokenList.prototype, 'supports').callsFake(function supportsRel(token) {
+        return token === 'modulepreload' ? false : supports.call(this, token);
+      });
+      await loadArea();
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+      expect(preload).to.be.undefined;
+    });
+
+    it('falls back to the plain import if the preload fails', async () => {
+      await loadArea();
+      await waitFor(() => preload, 2000);
+      preload.dispatchEvent(new Event('error'));
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+      expect(window.lana.log.calledWithMatch('JSON-LD graph manager preload failed')).to.be.true;
+    });
+
+    it('falls back to the plain import if the preload cannot be inserted', async () => {
+      appendFails = true;
+      await loadArea();
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+      expect(window.lana.log.calledWithMatch('preload insertion failed')).to.be.true;
+    });
+
+    it('falls back to the plain import if the preload stalls', async () => {
+      const setTimer = window.setTimeout.bind(window);
+      let expire;
+      sandbox.stub(window, 'setTimeout').callsFake((callback, delay, ...args) => {
+        if (delay === 10000) {
+          expire = callback;
+          return 0;
+        }
+        return setTimer(callback, delay, ...args);
+      });
+      await loadArea();
+      await waitFor(() => preload, 2000);
+      expect(window.miloJsonLd.manager).to.be.undefined;
+      expire();
+      await waitFor(() => window.miloJsonLd.manager, 2000);
+      expect(window.lana.log.calledWithMatch('JSON-LD graph manager preload timed out')).to.be.true;
+    });
+  });
+
   it('add the Article rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-article.html' });
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
