@@ -13,62 +13,60 @@
   font-weight: var(--s2a-font-weight-body);
   line-height: 150%;
   overflow-wrap: anywhere;
-}
 
-.ai-summary p,
-.ai-summary ul,
-.ai-summary ol {
-  margin: 0 0 var(--s2a-spacing-md);
-  font-size: inherit;
-  line-height: inherit;
-}
-
-.ai-summary .ai-summary-image {
-  display: none;
-}
-
-.ai-summary .ai-summary-image p {
-  margin: 0;
-}
-
-.ai-summary .ai-summary-image picture {
-  display: block;
-}
-
-.ai-summary .ai-summary-image img {
-  display: block;
-  width: 100%;
-  height: auto;
-  max-height: none;
-  border-radius: var(--s2a-border-radius-sm);
-}
-
-.ai-summary :is(h1, h2, h3, h4, h5, h6) {
-  margin: 0 0 var(--s2a-spacing-md);
-  color: var(--s2a-color-content-default);
-  font-style: normal;
-  font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
-}
-
-.ai-summary ul,
-.ai-summary ol {
-  padding-inline-start: var(--s2a-spacing-lg);
-}
-
-.ai-summary li + li {
-  margin-top: var(--s2a-spacing-sm);
-}
-
-.ai-summary .ai-summary-content > div > :last-child {
-  margin-bottom: 0;
-}
-
-@media (width >= 768px) {
-  .ai-summary {
+  @media (width >= 768px) {
     width: 100%;
   }
 
-  .ai-summary .ai-summary-image {
-    display: block;
+  p,
+  ul,
+  ol {
+    margin: 0 0 var(--s2a-spacing-md);
+    font-size: inherit;
+    line-height: inherit;
+  }
+
+  .ai-summary-image {
+    display: none;
+
+    p {
+      margin: 0;
+    }
+
+    picture {
+      display: block;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: none;
+      border-radius: var(--s2a-border-radius-sm);
+    }
+
+    @media (width >= 768px) {
+      display: block;
+    }
+  }
+
+  :is(h1, h2, h3, h4, h5, h6) {
+    margin: 0 0 var(--s2a-spacing-md);
+    color: var(--s2a-color-content-default);
+    font-style: normal;
+    font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+  }
+
+  ul,
+  ol {
+    padding-inline-start: var(--s2a-spacing-lg);
+  }
+
+  li + li {
+    margin-top: var(--s2a-spacing-sm);
+  }
+
+  .ai-summary-content > div > :last-child {
+    margin-bottom: 0;
   }
 }
