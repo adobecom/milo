@@ -6,7 +6,7 @@ import { getConfig, setConfig, isTrustedUrl, isSameOriginManifestPath } from '..
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  fetchData, DATA_TYPE, categorizeActions, replaceInner, deleteMarkedEls,
+  fetchData, DATA_TYPE, categorizeActions, replaceInner, deleteMarkedEls, handleTwpButtons,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -804,6 +804,51 @@ describe('matchGlob function', () => {
   });
 });
 
+describe('createContent sanitization', () => {
+  it('sanitizes inline content on replace: keeps markup, drops script and event handlers', async () => {
+    const el = document.createElement('div');
+    el.textContent = 'old';
+    const result = await createContent(el, {
+      content: '<p>New <strong>copy</strong><img src="x" onerror="window.mepPersXss = true"></p><script>window.mepPersXss = true</script>',
+      action: 'replace',
+      modifiers: [],
+    });
+    expect(result).to.equal(el);
+    expect(el.querySelector('strong').textContent).to.equal('copy');
+    expect(el.querySelector('img').hasAttribute('onerror')).to.be.false;
+    expect(!!el.querySelector('script')).to.be.false;
+  });
+
+  it('sanitizes inline content inserted into a new container', async () => {
+    const el = document.createElement('div');
+    const container = await createContent(el, {
+      content: '<a href="javascript:alert(1)">link</a><img src="x" onerror="window.mepPersXss = true">',
+      action: 'insertafter',
+      modifiers: [],
+    });
+    expect(container.querySelector('a').hasAttribute('href')).to.be.false;
+    expect(container.querySelector('img').hasAttribute('onerror')).to.be.false;
+  });
+
+  it('keeps a fragment path as anchor text instead of parsing it as markup', async () => {
+    const parent = document.createElement('div');
+    const el = document.createElement('div');
+    parent.appendChild(el);
+    const content = 'https://www.adobe.com/fragments/x<img src=x onerror="window.mepPersXss = true">';
+    const wrapper = await createContent(el, { content, action: 'insertafter', modifiers: [] });
+    const anchor = wrapper.querySelector('a');
+    expect(!!anchor.querySelector('img')).to.be.false;
+    expect(anchor.textContent).to.equal(content);
+  });
+
+  it('keeps leading <style> in inline content', async () => {
+    const el = document.createElement('div');
+    await createContent(el, { content: '<style>.x{color:red}</style><p>a</p>', action: 'replace', modifiers: [] });
+    expect(el.firstElementChild.tagName).to.equal('STYLE');
+    expect(el.querySelector('p').textContent).to.equal('a');
+  });
+});
+
 describe('MEP Utils', () => {
   describe('combineMepSources', async () => {
     it('yields an empty list when everything is undefined', async () => {
@@ -1107,6 +1152,20 @@ describe('MEP Utils', () => {
       allLinks = document.querySelectorAll('a');
       ftLinks = [...allLinks].filter((link) => link.innerHTML.toLowerCase().match(/free.trial/));
       expect(ftLinks.length).to.equal(0);
+    });
+
+    it('promotes the secondary <em> button to <strong> without rebuilding siblings', () => {
+      const p = document.createElement('p');
+      p.innerHTML = '<strong><a href="/buy">Buy</a></strong> <em class="x"><a href="/trial">Free trial</a></em>';
+      const buy = p.querySelector('a[href="/buy"]');
+      const trial = p.querySelector('a[href="/trial"]');
+      handleTwpButtons(trial, 'twp buttons');
+      expect(!!p.querySelector('em')).to.be.false;
+      const strongs = p.querySelectorAll('strong');
+      expect(strongs.length).to.equal(2);
+      expect(strongs[1].className).to.equal('x');
+      expect(p.querySelector('a[href="/buy"]')).to.equal(buy);
+      expect(p.querySelector('a[href="/trial"]')).to.equal(trial);
     });
   });
 });
