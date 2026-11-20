@@ -1,4 +1,5 @@
 import { createTag, localizeLinkAsync, getConfig } from '../../../utils/utils.js';
+import { decorateBlockText } from '../../../utils/decorate.js';
 
 async function loadTagUrls(url) {
   try {
@@ -60,14 +61,13 @@ export default async function init(block) {
     .filter((link) => !link.matches('.tag-cta-tag[data-caas-tag]') && !heading?.contains(link));
   const tags = ((heading && !links.length) || block.classList.contains('include-caas'))
     ? await getAutomaticTags() : [];
-  const content = heading ? [heading] : [];
   heading?.classList.add('tag-cta-heading');
+  block.replaceChildren(...(heading ? [heading] : []));
+  decorateBlockText(block, { heading: '3' });
 
   if (links.length || tags.length) {
     const list = createTag('ul', { class: 'tag-cta-list', role: 'list' });
     [...links, ...tags].forEach((tag) => list.append(createTag('li', null, tag)));
-    content.push(list);
+    block.append(list);
   }
-
-  block.replaceChildren(...content);
 }
