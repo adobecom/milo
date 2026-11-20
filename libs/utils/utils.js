@@ -3366,6 +3366,39 @@ function warmTypekit() {
     .forEach((href) => loadLink(href, { rel: 'preconnect', crossorigin: 'anonymous' }));
 }
 
+function preloadJsonLdManager(url) {
+  const link = document.createElement('link');
+  if (!link.relList?.supports?.('modulepreload') || !('fetchPriority' in link)) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let timeout;
+    const finish = (reason) => {
+      clearTimeout(timeout);
+      link.onload = null;
+      link.onerror = null;
+      if (reason) {
+        window.lana?.log(`JSON-LD graph manager preload ${reason}; falling back to import`, {
+          tags: 'jsonld-graph-manager',
+          severity: 'warn',
+        });
+      }
+      resolve();
+    };
+    timeout = setTimeout(() => finish('timed out'), 10000);
+    link.rel = 'modulepreload';
+    link.fetchPriority = 'low';
+    link.crossOrigin = 'anonymous';
+    link.onload = () => finish();
+    link.onerror = () => finish('failed');
+    link.href = url;
+    try {
+      document.head.appendChild(link);
+    } catch (e) {
+      finish(`failed: ${e}`);
+    }
+  });
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   let jsonLdOptions;
@@ -3374,7 +3407,9 @@ export async function loadArea(area = document) {
     if (!jsonLdOptions || jsonLdInitScheduled) return;
     jsonLdInitScheduled = true;
     window.setTimeout(() => {
-      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
+      const url = new URL('../features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href;
+      preloadJsonLdManager(url)
+        .then(() => import(url))
         .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
         .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
           tags: 'jsonld-graph-manager',
