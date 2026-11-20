@@ -227,7 +227,7 @@ export default async function init(block) {
 
   const header = createTag('div', { class: 'pt-header' });
   const checkBtn = createTag('button', { type: 'button', class: 'pt-check-btn' }, 'Check status');
-  header.append(createTag('h2', { class: 'pt-title' }, 'Project Tracking'), checkBtn);
+  header.append(createTag('h2', { class: 'pt-title' }, 'Publish Status Dashboard'), checkBtn);
 
   const label = createTag('label', { class: 'pt-label', for: 'pt-urls' }, 'Pages to track');
   const hint = createTag('p', { class: 'pt-hint' }, 'Paste page URLs (business.adobe.com or …aem.page), one per line — or drop a sheet below.');
