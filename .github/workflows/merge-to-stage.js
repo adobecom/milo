@@ -216,6 +216,16 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
+  // Manual escape hatch for PRs merged to stage by hand during the RCP or stage freeze
+  if (process.env.OPEN_STAGE_TO_MAIN_PR_ONLY === 'true') {
+    try {
+      if (await getStageToMainPR()) return console.log('Stage to Main PR already exists. Stopping execution.');
+      await openStageToMainPR();
+      return console.log('Process successfully executed.');
+    } catch (error) {
+      return console.error(error);
+    }
+  }
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
   if (isStageFreezeActive()) return console.log('Stopped, batches are not created four days prior to a RCP to ensure a clean stage branch for emergencies.');
 
