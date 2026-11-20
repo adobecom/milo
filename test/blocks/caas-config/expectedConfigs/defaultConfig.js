@@ -135,6 +135,7 @@ const defaultConfig = {
       leftPanel: {
         header: 'Refine Your Results',
         clearAllFiltersText: 'Clear All',
+        clearAllFiltersAriaLabel: 'Clear all filters',
         mobile: {
           filtersBtnLabel: 'Filters',
           panel: {
@@ -155,6 +156,7 @@ const defaultConfig = {
       topPanel: {
         groupLabel: 'Filters:',
         clearAllFiltersText: 'Clear All',
+        clearAllFiltersAriaLabel: 'Clear all filters',
         moreFiltersBtnText: 'More Filters +',
         mobile: {
           group: {
