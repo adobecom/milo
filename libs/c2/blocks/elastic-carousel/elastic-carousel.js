@@ -9,7 +9,8 @@ const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
-const isMobile = () => window.innerWidth <= 768;
+const isMobile = () => window.innerWidth < 768;
+const TOUCH_SCROLL_QUERY = '(hover: none) and (width >= 768px)';
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -89,6 +90,7 @@ const disableHoverOnScroll = (carousel) => {
   let timer;
   const controller = new AbortController();
   window.addEventListener('wheel', () => {
+    if (window.matchMedia(TOUCH_SCROLL_QUERY).matches) return;
     clearTimeout(timer);
     carousel.classList.add('disable-hover');
     timer = setTimeout(() => {
@@ -124,18 +126,22 @@ const onCarouselLeave = (event) => {
 
 const onHover = (event) => {
   const slideEl = event.target;
-  const carouselContainer = slideEl.closest('.elastic-carousel-container');
-  if (!carouselContainer) return;
-  clearTimeout(leaveTimeouts.get(carouselContainer));
-
   const video = slideEl.querySelector('video');
   clearTimeout(slideLeaveTimeouts.get(video));
   slideLeaveTimeouts.delete(video);
-
   if (video) {
     stopRewind(video);
     video.play().catch(() => { });
   }
+  if (window.matchMedia(TOUCH_SCROLL_QUERY).matches) {
+    if (event.type === 'focus') {
+      slideEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    }
+    return;
+  }
+  const carouselContainer = slideEl.closest('.elastic-carousel-container');
+  if (!carouselContainer) return;
+  clearTimeout(leaveTimeouts.get(carouselContainer));
 
   const slideIndex = slideEl.dataset.index * 1;
   const container = slideEl.parentElement;
@@ -263,11 +269,22 @@ export default async function init(el) {
   const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.elastic-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
+  const sizeObserver = new ResizeObserver((entries) => {
+    if (!isMobile()) return;
+    entries.forEach(({ target, borderBoxSize }) => {
+      const height = `${borderBoxSize[0].blockSize}px`;
+      if (target.style.getPropertyValue('--elastic-carousel-item-height') !== height) {
+        target.style.setProperty('--elastic-carousel-item-height', height);
+      }
+    });
+  });
+  decoratedCarousel.querySelectorAll('.elastic-carousel-item').forEach((slide) => sizeObserver.observe(slide));
 
   new MutationObserver((_, observer) => {
     if (!document.contains(el)) {
       scrollController.abort();
       mobileObservers.forEach((o) => o.disconnect());
+      sizeObserver.disconnect();
       observer.disconnect();
     }
   }).observe(document.body, { childList: true, subtree: true });
