@@ -62,6 +62,7 @@ describe('Tag CTA', () => {
     expect(heading.id).to.equal('related-resources');
     expect(heading.textContent).to.equal('Explore related resources');
     expect(heading.classList.contains('tag-cta-heading')).to.be.true;
+    expect(heading.classList.contains('heading-3')).to.be.true;
     const rendered = [...block.querySelectorAll('li > a')];
     expect(rendered.length).to.equal(links.length);
     expect(rendered.every((link, index) => link === links[index])).to.be.true;
@@ -70,7 +71,7 @@ describe('Tag CTA', () => {
     expect(fetchStub.called).to.be.false;
   });
 
-  [375, 768, 1440].forEach((width) => {
+  [[375, 24], [768, 24], [1024, 32], [1280, 48], [1440, 48]].forEach(([width, headingSize]) => {
     it(`aligns with the article column without adding an inset at ${width}px`, async () => {
       const originalViewport = { width: window.innerWidth, height: window.innerHeight };
       try {
@@ -85,6 +86,7 @@ describe('Tag CTA', () => {
         expect(tags.left).to.be.closeTo(column.left, 0.01);
         expect(tags.right).to.be.closeTo(column.right, 0.01);
         expect(block.querySelector('h2').getBoundingClientRect().left).to.equal(tags.left);
+        expect(getComputedStyle(block.querySelector('h2')).fontSize).to.equal(`${headingSize}px`);
         expect(getComputedStyle(document.querySelector('.tag-cta.multiple-rows')).maxWidth)
           .to.equal('800px');
       } finally {
