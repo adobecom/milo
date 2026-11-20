@@ -1677,7 +1677,15 @@ span.hang-opening-quote {
 
   @keyframes parallax-fade-to-dark {
     from { opacity: 0; }
-    to { opacity: 0.75; }
+    to { opacity: var(--parallax-dim-max, 0.75); }
+  }
+
+  /* Match pdf-space's short-viewport safeguard, including high-zoom layouts.
+     This can also match short, unzoomed windows on high-density displays. */
+  @media (max-height: 400px) and (min-resolution: 1.5dppx) {
+    .section.parallax-move-up-fast {
+      --parallax-dim-max: 0.15;
+    }
   }
 
   .section:has(+ .section.parallax-double-garage-door),
