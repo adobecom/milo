@@ -1,9 +1,11 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { checkUnpublishedFragments } from '../checks/merch.js';
+import { checkUnpublishedFragments, findStaticPrices } from '../checks/merch.js';
 
 const wcsElements = signal([]);
 const masFieldsMultipleFragmentWarnings = signal([]);
 const unpublishedFragments = signal([]);
+const uncheckedFragmentCount = signal(0);
+const staticPrices = signal([]);
 const loading = signal(true);
 
 const MAS_UNPUBLISHED_HIGHLIGHT = 'preflight-mas-unpublished';
@@ -98,12 +100,13 @@ export function checkMasFieldsMultipleFragments() {
   masFieldsMultipleFragmentWarnings.value = warnings;
 }
 
-async function checkUnpublishedFragmentsForPanel() {
+export async function checkUnpublishedFragmentsForPanel() {
   const main = document.querySelector('main');
   main?.querySelectorAll(`.${MAS_UNPUBLISHED_HIGHLIGHT}`).forEach((el) => {
     el.classList.remove(MAS_UNPUBLISHED_HIGHLIGHT);
   });
-  const { unpublished } = await checkUnpublishedFragments({ area: document });
+  const { unpublished, unchecked } = await checkUnpublishedFragments({ area: document });
+  uncheckedFragmentCount.value = unchecked.length;
   unpublishedFragments.value = unpublished.map((u) => {
     u.cards?.forEach((c) => c.classList.add(MAS_UNPUBLISHED_HIGHLIGHT));
     const firstCard = u.cards?.[0];
@@ -113,6 +116,10 @@ async function checkUnpublishedFragmentsForPanel() {
       location: firstCard ? getBlockLocation(firstCard) : 0,
     };
   });
+}
+
+export function checkStaticPricesForPanel() {
+  staticPrices.value = findStaticPrices(document);
 }
 
 function getService() {
@@ -524,6 +531,41 @@ function UnpublishedFragmentsSection() {
   `;
 }
 
+function StaticPriceItem({ price }) {
+  return html`
+    <div class="preflight-item merch-item merch-error">
+      <div class="preflight-item-text">
+        <p class="preflight-item-title">
+          <span class="result-icon red"></span>
+          ${price.text}${price.hidden && ' (hidden)'}
+        </p>
+        <p class="preflight-item-description">${price.snippet}</p>
+        ${!price.hidden && html`
+          <button
+            class="preflight-action merch-scroll-btn"
+            onclick=${() => scrollToElement(getBlockLocation(price.element))}>
+            Scroll to price
+          </button>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function StaticPricesSection() {
+  const prices = staticPrices.value;
+  if (prices.length === 0) return null;
+  return html`
+    <div class="merch-section">
+      <h3 class="merch-section-title">Static prices</h3>
+      <p class="merch-section-description">These prices are typed on the page, so they won't update when the offer changes. Replace them with OST or M@S prices. Hidden ones are in closed tabs or other content not shown right now.</p>
+      <div class="merch-blocks-list">
+        ${prices.map((price) => html`<${StaticPriceItem} price=${price} />`)}
+      </div>
+    </div>
+  `;
+}
+
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
   const passedCount = wcsElements.value.filter((elem) => !elem.priceUnavailable
@@ -536,8 +578,11 @@ function MerchSummary() {
   const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;
   const masWarningsCount = masFieldsMultipleFragmentWarnings.value.length;
   const unpublishedCount = unpublishedFragments.value.length;
+  const uncheckedCount = uncheckedFragmentCount.value;
+  const staticPriceCount = staticPrices.value.length;
 
-  if (totalElements === 0 && masWarningsCount === 0 && unpublishedCount === 0) {
+  if (totalElements === 0 && masWarningsCount === 0 && unpublishedCount === 0
+    && uncheckedCount === 0 && staticPriceCount === 0) {
     return html`
       <div class="merch-summary no-blocks">
         <h3>No Merch Elements Found</h3>
@@ -578,6 +623,18 @@ function MerchSummary() {
           <span class="merch-stat-label">Unpublished M@S fragments</span>
         </div>
       `}
+      ${uncheckedCount > 0 && html`
+        <div class="merch-summary-stat has-warnings">
+          <span class="merch-stat-number">${uncheckedCount}</span>
+          <span class="merch-stat-label">M@S fragments couldn't be checked</span>
+        </div>
+      `}
+      ${staticPriceCount > 0 && html`
+        <div class="merch-summary-stat has-errors">
+          <span class="merch-stat-number">${staticPriceCount}</span>
+          <span class="merch-stat-label">Static prices</span>
+        </div>
+      `}
     </div>
   `;
 }
@@ -588,6 +645,7 @@ export default function Merch() {
     setTimeout(() => {
       checkWcsElements();
       checkUnpublishedFragmentsForPanel();
+      checkStaticPricesForPanel();
     }, 3000);
   }, []);
 
@@ -605,6 +663,7 @@ export default function Merch() {
         <${MerchSummary} />
         <${MasFieldsMultipleFragmentSection} />
         <${UnpublishedFragmentsSection} />
+        <${StaticPricesSection} />
       </div>
     `;
   }
@@ -614,6 +673,7 @@ export default function Merch() {
       <${MerchSummary} />
       <${MasFieldsMultipleFragmentSection} />
       <${UnpublishedFragmentsSection} />
+      <${StaticPricesSection} />
       <div class="merch-section">
         <h3 class="merch-section-title">Elements</h3>
         <div class="merch-blocks-list">

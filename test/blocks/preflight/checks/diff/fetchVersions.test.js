@@ -1,9 +1,13 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import fetchVersions, { deriveLiveUrl } from '../../../../../libs/blocks/preflight/checks/diff/fetchVersions.js';
+import { clearPageStatusCache } from '../../../../../libs/blocks/preflight/checks/adminStatus.js';
 
 describe('preflight fetchVersions', () => {
-  afterEach(() => sinon.restore());
+  afterEach(() => {
+    sinon.restore();
+    clearPageStatusCache();
+  });
 
   it('deriveLiveUrl swaps aem.page for aem.live', () => {
     const live = deriveLiveUrl(new URL('https://main--milo--adobecom.aem.page/a/b'));

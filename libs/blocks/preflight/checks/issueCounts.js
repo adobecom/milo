@@ -19,16 +19,30 @@ const countChecks = (checks = []) => issues(
   checks.filter(isWarning).length,
 );
 
+const countContent = (checks = []) => issues(
+  checks.filter(isFail).reduce((sum, check) => sum + (check.details?.items?.length ?? 0), 0),
+  checks.filter(isWarning).length,
+);
+
+const countMerch = (checks = []) => issues(
+  checks.filter(isFail)
+    .reduce((sum, { details: d }) => sum + (d?.unpublished ?? d?.prices ?? []).length, 0),
+  checks.filter(isWarning).length,
+);
+
 export function countIssues(checks, linkErrors = 0) {
   const [a11y] = checks.accessibility || [];
-  const [merch] = checks.merch || [];
   const [assets] = checks.assets || [];
   const { criticalAssetFailures = [], warningAssetFailures = [] } = assets?.details || {};
   const general = countChecks(checks.structure);
+  const content = countContent(checks.content);
   return {
-    General: issues(general.errors + linkErrors, general.warnings),
+    General: issues(
+      general.errors + content.errors + linkErrors,
+      general.warnings + content.warnings,
+    ),
     SEO: countChecks(checks.seo),
-    'M@S': issues(isFail(merch) ? merch.details?.unpublished?.length : 0),
+    'M@S': countMerch(checks.merch),
     Accessibility: issues(isFail(a11y) ? a11y.details?.issuesCount : 0),
     Performance: countChecks(checks.performance),
     Assets: issues(criticalAssetFailures.length, warningAssetFailures.length),
