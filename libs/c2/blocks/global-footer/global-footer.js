@@ -523,6 +523,7 @@ class Footer {
           onCleanup,
           focusOnPointerOpen: false,
           routeWheelToList: true,
+          fitAboveGnav: true,
         });
         selector.classList.add('market-selector-c2');
         this.elements.regionPicker = selector;

@@ -463,3 +463,16 @@
     scrollbar-color: var(--s2a-color-transparent-white-64) transparent;
   }
 }
+
+@media (min-width: 601px) {
+  .global-footer:not(.mobile):has(.market-selector-c2) {
+    & .market-selector-popover.fit-above-gnav {
+      height: var(--market-selector-height, 356px);
+    }
+
+    & .market-selector-popover.fit-above-gnav .market-selector-list {
+      height: var(--market-selector-list-height, 292px);
+      max-height: var(--market-selector-list-height, 292px);
+    }
+  }
+}
