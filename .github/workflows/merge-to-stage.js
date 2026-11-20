@@ -216,8 +216,8 @@ const main = async (params) => {
   github = params.github;
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
-  // Manual escape hatch for PRs merged to stage by hand during the RCP or stage freeze
-  if (process.env.OPEN_STAGE_TO_MAIN_PR_ONLY === 'true') {
+  // A PR merged to stage by hand (e.g. during the RCP or stage freeze) still needs a Stage to Main PR
+  if (process.env.MANUAL_STAGE_MERGE === 'true') {
     try {
       if (await getStageToMainPR()) return console.log('Stage to Main PR already exists. Stopping execution.');
       await openStageToMainPR();

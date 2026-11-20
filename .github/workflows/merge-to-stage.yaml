@@ -2,15 +2,10 @@ name: Merge to stage
 
 on:
   pull_request_target:
-    types: [labeled]
+    types: [labeled, closed]
   schedule:
     - cron: '0 */4 * * *' # Run every 4 hours
   workflow_dispatch: # Allow manual trigger
-    inputs:
-      open_stage_to_main_pr_only:
-        description: 'Only open the Stage to Main PR (no merges; ignores the RCP and stage freeze checks)'
-        type: boolean
-        default: false
   repository_dispatch:
     types: [merge-to-stage]
 
@@ -21,11 +16,15 @@ env:
   MILO_STAGE_SLACK_WH: ${{secrets.MILO_STAGE_SLACK_WH}}
   MAX_PRS_PER_BATCH: ${{secrets.MAX_PRS_PER_BATCH}}
   STAGE_RCP_OFFSET_DAYS: ${{secrets.STAGE_RCP_OFFSET_DAYS}}
-  OPEN_STAGE_TO_MAIN_PR_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.open_stage_to_main_pr_only }}
+  MANUAL_STAGE_MERGE: ${{ github.event.action == 'closed' }}
 
 jobs:
   merge-to-stage:
-    if: github.repository_owner == 'adobecom' && (github.event_name != 'pull_request_target' || github.event.pull_request.base.ref == 'stage')
+    # On a closed PR, run only for a PR merged into stage by a person (the bot's own merges are part of a batch run)
+    if: >-
+      github.repository_owner == 'adobecom' && (github.event_name != 'pull_request_target' ||
+      (github.event.pull_request.base.ref == 'stage' && (github.event.action == 'labeled' ||
+      (github.event.pull_request.merged && github.event.pull_request.merged_by.type != 'Bot'))))
     runs-on: ubuntu-latest
     environment: milo_pr_merge
 
