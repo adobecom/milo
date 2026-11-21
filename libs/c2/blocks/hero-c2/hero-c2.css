@@ -1,23 +1,32 @@
-.hero-c2 {
-  --hero-c2-media-height: 360px;
+/* stylelint-disable property-no-unknown, unit-no-unknown */
 
-  overflow-x: clip;
+.hero-c2 {
+  --hero-c2-fg-width: 112px;
+  --hero-c2-nav-h: var(--c2-global-height-nav, 80px);
+  --hero-c2-pad-top: calc(var(--hero-c2-nav-h) + var(--s2a-spacing-xl));
+  --hero-c2-pad-bottom: var(--s2a-spacing-xl);
+
   position: relative;
 
-  .hero-c2-content {
+  :root:has(.breadcrumbs, .feds-breadcrumbs) & {
+    --hero-c2-nav-h: var(--c2-global-height-nav, 124px);
+  }
+
+  .hero-c2-inner {
     --grid-margin-width: var(--s2a-spacing-lg);
 
     display: grid;
     gap: var(--s2a-spacing-xl);
   }
 
-  .hero-c2-left {
+  .hero-c2-content {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-2xl);
+    padding-block-start: var(--hero-c2-pad-top);
   }
 
-  .hero-c2-text {
+  .hero-c2-header {
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
@@ -28,31 +37,23 @@
     }
   }
 
-  .hero-c2-supporting {
-    a {
-      color: inherit;
-      text-decoration: underline;
-    }
-  }
-
-  /* Media area: background fills it, media is centered on top */
-  .hero-c2-media-area {
+  .hero-c2-media {
+    aspect-ratio: 4 / 3;
     display: grid;
-    min-block-size: 480px;
     place-items: center;
     position: relative;
   }
 
-  .hero-c2-background {
+  .hero-c2-bg {
+    border-radius: var(--s2a-border-radius-md);
     inset: 0;
+    overflow: hidden;
     position: absolute;
 
     picture,
     .video-container {
       block-size: 100%;
       display: block;
-      inline-size: 100%;
-      margin: 0;
     }
 
     img,
@@ -63,30 +64,65 @@
     }
   }
 
-  .hero-c2-foreground {
-    block-size: var(--hero-c2-media-height);
-    position: relative;
+  &.glassy .hero-c2-bg {
+    backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
+    background: var(--s2a-color-transparent-white-04);
+    border-radius: var(--s2a-border-radius-xs);
+    box-shadow:
+      inset 0 0 0 var(--s2a-border-width-sm) var(--s2a-color-gray-25),
+      0 32px 64px var(--s2a-color-transparent-black-16),
+      0 12px 24px rgb(0 0 0 / 14%),
+      0 4px 8px var(--s2a-color-transparent-black-12);
+    padding: var(--s2a-spacing-2xs);
 
-    p {
-      margin: 0;
-    }
-
-    picture {
-      block-size: 100%;
-      display: block;
-    }
-
-    img,
-    video {
-      block-size: 100%;
-      display: block;
-      inline-size: auto;
-      max-inline-size: 100%;
-      object-fit: contain;
+    picture,
+    .video-container {
+      border-radius: var(--s2a-border-radius-2xs);
+      overflow: hidden;
     }
   }
 
-  .hero-c2-text .eyebrow {
+  .hero-c2-fg {
+    inline-size: var(--hero-c2-fg-width);
+    position: relative;
+
+    img,
+    video {
+      block-size: auto;
+      display: block;
+      inline-size: 100%;
+    }
+  }
+
+  &.fg-v-start .hero-c2-fg {
+    align-self: start;
+  }
+
+  &.fg-v-end .hero-c2-fg {
+    align-self: end;
+  }
+
+  &.fg-h-start .hero-c2-fg {
+    justify-self: start;
+  }
+
+  &.fg-h-end .hero-c2-fg {
+    justify-self: end;
+  }
+
+  .hero-c2-event {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-lg);
+  }
+
+  .hero-c2-event-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s2a-spacing-lg);
+  }
+
+  .hero-c2-header .eyebrow {
     order: -1;
     align-items: center;
     display: flex;
@@ -103,73 +139,79 @@
       object-fit: contain;
     }
   }
+}
 
-  .hero-c2-merch {
-    display: flex;
-    flex-direction: column;
-    gap: var(--s2a-spacing-sm);
-  }
+@media (width >= 768px) {
+  .hero-c2 {
+    --hero-c2-fg-width: 273px;
 
-  .hero-c2-merch-content {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    gap: var(--s2a-spacing-sm);
-
-    > p,
-    .mas-description,
-    .mas-short-description {
-      font-size: var(--s2a-typography-font-size-body-sm);
-      line-height: var(--s2a-typography-line-height-body-sm);
-    }
-
-    .mas-price-commitment,
-    .mas-subtitle {
-      font-size: var(--s2a-typography-font-size-caption);
-      line-height: var(--s2a-typography-line-height-caption);
-    }
-  }
-
-  .hero-c2-merch-ctas {
-    display: flex;
-    gap: var(--s2a-spacing-xs);
-
-    > p,
-    > .action-area,
-    mas-field {
-      display: contents;
+    .merch-widget-c2 {
+      max-inline-size: 410px;
     }
   }
 }
 
-/* Same breakpoints and grid tokens as aside-c2 */
-@media (width >= 768px) {
+@media (width >= 900px) {
   .hero-c2 {
-    .hero-c2-content {
+    --hero-c2-fg-width: 360px;
+    --hero-c2-content-cols: 5;
+
+    display: flex;
+    flex-direction: column;
+    min-block-size: 820px;
+
+    &.narrow-content {
+      --hero-c2-content-cols: 4;
+    }
+
+    &.wide-content {
+      --hero-c2-content-cols: 6;
+    }
+
+    .hero-c2-inner {
+      --grid-margin-width: 0;
+
       column-gap: var(--grid-gutter);
+      flex: 1;
       grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
     }
 
-    .hero-c2-left {
-      align-self: center;
-      grid-column: 1 / span 5;
+    .hero-c2-content {
+      grid-column: 1 / span var(--hero-c2-content-cols);
+      padding-block-end: var(--hero-c2-pad-bottom);
+      padding-inline-start: var(--s2a-spacing-2xl);
     }
 
-    .hero-c2-media-area {
-      grid-column: 7 / span 6;
+    .hero-c2-media {
+      aspect-ratio: auto;
+      grid-column: calc(var(--hero-c2-content-cols) + 2) / -1;
+      margin-block: var(--hero-c2-pad-top) var(--hero-c2-pad-bottom);
+      margin-inline-end: var(--s2a-spacing-lg);
+    }
+
+    &.full-height,
+    &.full-width {
+      .hero-c2-media {
+        margin: 0;
+      }
+
+      .hero-c2-bg {
+        border-radius: 0;
+      }
+    }
+
+    &.full-width {
+      container-type: inline-size;
+
+      .hero-c2-media {
+        margin-inline-end: calc(-1 * max(0px, (100cqi - var(--grid-max-width)) / 2));
+      }
     }
   }
 }
 
-/* 4 cols copy / 1 col gap / 7 cols media */
 @media (width >= 1280px) {
-  .hero-c2 {
-    .hero-c2-left {
-      grid-column: 1 / span 4;
-    }
-
-    .hero-c2-media-area {
-      grid-column: 6 / span 7;
-    }
+  .hero-c2 .hero-c2-content {
+    padding-block-start: calc(var(--hero-c2-pad-top) + var(--s2a-spacing-lg));
   }
 }

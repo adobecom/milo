@@ -1,0 +1,162 @@
+.merch-widget-c2 {
+  --merch-widget-text: var(--s2a-color-content-default);
+  --merch-widget-text-subtle: var(--s2a-color-content-subtle);
+  --merch-widget-badge-text: var(--s2a-color-content-inverse);
+
+  border-block-start: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-16);
+  color: var(--merch-widget-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-sm);
+  padding-block-start: var(--s2a-spacing-sm);
+
+  .dark & {
+    border-block-start-color: var(--s2a-color-transparent-white-16);
+  }
+
+  .icon-button {
+    background: transparent;
+    border-color: transparent;
+    block-size: 1rem;
+    inline-size: auto;
+    margin-inline-start: 3px;
+    vertical-align: -0.2em;
+
+    svg {
+      block-size: 100%;
+      inline-size: 100%;
+    }
+
+    path {
+      fill: var(--merch-widget-text-subtle);
+    }
+  }
+
+  .con-button.outline {
+    border-color: var(--merch-widget-text);
+    color: var(--merch-widget-text);
+  }
+
+  .merch-widget-ctas {
+    align-self: stretch;
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+
+    > p,
+    > .action-area,
+    mas-field {
+      display: contents;
+    }
+
+    .con-button {
+      flex: 1 1 0;
+      justify-content: center;
+    }
+
+    + .supplemental-text {
+      margin-block-start: var(--s2a-spacing-sm);
+    }
+  }
+
+  .merch-widget-content {
+    align-items: flex-start;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-sm);
+    position: relative;
+
+    > p,
+    .mas-description,
+    .mas-short-description {
+      font-size: var(--s2a-typography-font-size-body-sm);
+      line-height: var(--s2a-typography-line-height-body-sm);
+    }
+
+    .mas-description,
+    .mas-short-description {
+      padding-block: var(--s2a-spacing-xs);
+    }
+
+    merch-badge {
+      --merch-badge-background-color: var(--merch-widget-text) !important;
+      --merch-badge-border: var(--s2a-border-width-sm) solid var(--merch-widget-text) !important;
+      --merch-badge-border-radius: var(--s2a-border-radius-2xs) !important;
+      --merch-badge-color: var(--merch-widget-badge-text) !important;
+      --merch-badge-padding: var(--s2a-spacing-2xs) var(--s2a-spacing-xs) !important;
+
+      line-height: var(--s2a-typography-line-height-body-xs);
+    }
+
+    .mas-price-commitment,
+    .mas-subtitle,
+    > h5 + p {
+      color: var(--merch-widget-text);
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-caption);
+      font-weight: var(--s2a-font-weight-adobe-clean-regular);
+      letter-spacing: var(--s2a-typography-letter-spacing-caption);
+      line-height: var(--s2a-typography-line-height-caption);
+    }
+
+    .mas-price-commitment {
+      color: var(--merch-widget-text-subtle);
+    }
+
+    .mas-price,
+    .mas-card-title {
+      color: var(--merch-widget-text);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+    }
+
+    > p:first-of-type {
+      padding-inline-end: var(--s2a-spacing-3xl);
+    }
+
+    > p:has(strong) {
+      padding-block: var(--s2a-spacing-xs);
+    }
+
+    :where(mas-field > [data-role="mas-field-content"]) p {
+      display: inline;
+      font: inherit;
+      letter-spacing: inherit;
+
+      & + p::before {
+        content: ' ';
+      }
+    }
+
+    p:has(> .mas-badge) {
+      inset-block-start: calc(-1 * var(--s2a-spacing-2xs));
+      inset-inline-end: 0;
+      margin: 0;
+      position: absolute;
+    }
+  }
+
+  mas-field span.placeholder-resolved[data-template='priceStrikethrough'],
+  mas-field span.placeholder-resolved[data-template='strikethrough'],
+  mas-field span.price.price-strikethrough,
+  mas-field span.price.price-promo-strikethrough {
+    color: var(--s2a-color-content-subtle);
+    text-decoration-color: var(--s2a-color-content-subtle) !important;
+  }
+
+  mas-field span.placeholder-resolved[data-template='strikethrough'] span.price.price-strikethrough,
+  mas-field span.placeholder-resolved[data-template='priceStrikethrough'] span.price.price-strikethrough {
+    text-decoration: none;
+  }
+}
+
+@media (width >= 768px) {
+  .merch-widget-c2 .merch-widget-ctas {
+    padding-block-start: var(--s2a-spacing-sm);
+  }
+}
+
+@media (width >= 900px) {
+  .merch-widget-c2 .merch-widget-ctas .con-button:only-child {
+    max-inline-size: 200px;
+  }
+}
