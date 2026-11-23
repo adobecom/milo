@@ -1544,6 +1544,21 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
+  it('sizes article headings before the sections reveal', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<h2>First</h2><h2 class="heading-5">Second</h2>');
+    const articleSection = main.lastElementChild;
+    articleSection.dataset.status = 'pending';
+    await init(block);
+    expect(block.querySelector('nav')).not.to.exist;
+    const [first, second] = articleSection.querySelectorAll('.content > h2');
+    expect(first.className).to.equal('heading-3');
+    expect(second.className).to.equal('heading-5');
+    delete articleSection.dataset.status;
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => block.querySelectorAll('nav a').length === 2);
+  });
+
   it('removes the early layout when the loaded article has no headings', async () => {
     mockTablet();
     const { main, block } = buildArticle('<p>No sections here.</p>');

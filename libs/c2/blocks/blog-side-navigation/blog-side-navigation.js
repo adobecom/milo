@@ -67,6 +67,16 @@ function markArticle(main, sections) {
   sections.at(-1)?.classList.add(ARTICLE_CLASSES[2]);
 }
 
+function addHeadingClasses(sections) {
+  sections.forEach((section) => {
+    section.querySelectorAll(':scope > .content > h2').forEach((heading) => {
+      if (![...heading.classList].some((name) => name.startsWith('heading-'))) {
+        heading.classList.add('heading-3');
+      }
+    });
+  });
+}
+
 function unmarkArticle(main, block) {
   markArticle(main, []);
   block.style.removeProperty('--blog-side-navigation-track-size');
@@ -261,7 +271,10 @@ export default async function init(block) {
     // Place the article sections now, while they are still hidden, so they reveal in their
     // final column instead of jumping once the navigation is ready.
     block.classList.add('is-pending');
-    markArticle(main, getArticleSections(headerSection, block));
+    const pendingSections = getArticleSections(headerSection, block);
+    markArticle(main, pendingSections);
+    // Size the headings before the sections reveal, not after the navigation initializes.
+    addHeadingClasses(pendingSections);
     if (pendingInitializations.has(block)) return;
     const retry = () => {
       pendingInitializations.delete(block);
@@ -285,14 +298,7 @@ export default async function init(block) {
   }
 
   const articleSections = getArticleSections(headerSection, block);
-  articleSections.forEach((section) => {
-    section.querySelectorAll(':scope > .content > h2')
-      .forEach((heading) => {
-        if (![...heading.classList].some((name) => name.startsWith('heading-'))) {
-          heading.classList.add('heading-3');
-        }
-      });
-  });
+  addHeadingClasses(articleSections);
   const headings = articleSections.flatMap((section) => (
     [...section.querySelectorAll(':scope > .content h2')]
   )).filter((heading) => (
