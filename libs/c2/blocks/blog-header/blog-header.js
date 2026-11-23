@@ -261,7 +261,7 @@ function setAuthorMeta(info, details) {
   if (!text) return;
   let meta = info.querySelector('.blog-header-author-meta');
   if (!meta) {
-    meta = createTag('span', { class: 'blog-header-author-meta' });
+    meta = createTag('span', { class: 'blog-header-author-meta body-md' });
     info.append(meta);
   }
   meta.textContent = text;
@@ -270,8 +270,8 @@ function setAuthorMeta(info, details) {
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
   const el = (href && name)
-    ? createTag('a', { class: 'blog-header-author-name', href })
-    : createTag('span', { class: 'blog-header-author-name' });
+    ? createTag('a', { class: 'blog-header-author-name label', href })
+    : createTag('span', { class: 'blog-header-author-name label' });
   el.textContent = name ?? '';
   return el;
 }
@@ -372,7 +372,7 @@ function formatDate(value, config) {
 }
 
 async function buildEyebrow(config, readingTime) {
-  const eyebrow = createTag('p', { class: 'blog-header-eyebrow' });
+  const eyebrow = createTag('p', { class: 'blog-header-eyebrow eyebrow' });
 
   let startText = getMetadata('eyebrow-start');
   if (!startText) {

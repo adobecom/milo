@@ -1,5 +1,6 @@
 import { createTag, getConfig, getMetadata } from '../../../utils/utils.js';
 import { replaceKey } from '../../../features/placeholders.js';
+import { decorateViewportContent } from '../../../utils/decorate.js';
 
 // Elements excluded from the fetched article's reading-time word count.
 const READING_TIME_EXCLUDE = [
@@ -189,8 +190,8 @@ function buildCard({
   navHref, picture, title, date, readingTime, category,
 }) {
   const copy = createTag('div', { class: 'related-content-card-copy' });
-  if (date) copy.append(textTag('p', { class: 'related-content-card-eyebrow' }, date));
-  copy.append(textTag('h3', { class: 'related-content-card-title' }, title));
+  if (date) copy.append(textTag('p', { class: 'related-content-card-eyebrow eyebrow' }, date));
+  copy.append(textTag('h3', { class: 'related-content-card-title heading-6' }, title));
 
   if (readingTime || category) {
     const meta = createTag('p', { class: 'related-content-card-meta' });
@@ -214,11 +215,9 @@ function buildCard({
   return createTag('a', attrs, children);
 }
 
-export default async function init(block) {
-  const config = getConfig();
-  const authored = getAuthoredData(block);
-  const linked = authored.link ? await fetchLinkedData(authored.link, config) : null;
-
+function decorate(container, block, config, linkedData) {
+  const authored = getAuthoredData(container);
+  const linked = linkedData.get(authored.link?.href) || null;
   const title = authored.title || linked?.title || '';
 
   if (!title) {
@@ -229,13 +228,23 @@ export default async function init(block) {
 
   const card = buildCard({
     navHref: authored.navHref,
-    picture: authored.picture || linked?.picture || null,
+    picture: authored.picture || linked?.picture?.cloneNode(true) || null,
     title,
     date: formatDate(authored.date || linked?.date || '', config),
     readingTime: authored.readingTime || linked?.readingTime || '',
     category: authored.category || linked?.category || '',
   });
 
-  block.textContent = '';
-  block.append(card);
+  container.replaceChildren(card);
+}
+
+export default async function init(block) {
+  const config = getConfig();
+  block.classList.add('container');
+  // Viewport content is decorated synchronously, so fetch every linked article up front.
+  const links = [...new Map([...block.querySelectorAll('a[href]')]
+    .map((link) => [link.href, link])).values()];
+  const linkedData = new Map(await Promise.all(links
+    .map(async (link) => [link.href, await fetchLinkedData(link, config)])));
+  decorateViewportContent(block, (container) => decorate(container, block, config, linkedData));
 }

@@ -29,7 +29,7 @@
     display: block;
     box-sizing: border-box;
     padding: var(--s2a-spacing-xs) var(--s2a-spacing-md);
-    border-radius: 10px;
+    border-radius: var(--s2a-border-radius-sm);
     background-color: var(--s2a-color-gray-100);
     color: var(--s2a-color-content-default);
     font-size: var(--s2a-font-size-md);

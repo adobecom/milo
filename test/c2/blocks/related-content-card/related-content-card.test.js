@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { getConfig, loadBlock, setConfig } from '../../../../libs/utils/utils.js';
@@ -141,8 +141,8 @@ describe('related-content-card', () => {
 
     before(async () => {
       stylesheet = document.createElement('style');
-      const path = '../../../../libs/c2/blocks/related-content-card/related-content-card.css';
-      stylesheet.textContent = await readFile({ path });
+      const paths = ['../../../../libs/c2/styles/styles.css', '../../../../libs/c2/blocks/related-content-card/related-content-card.css'];
+      stylesheet.textContent = (await Promise.all(paths.map((path) => readFile({ path })))).join('\n');
       document.head.append(stylesheet);
     });
 
@@ -167,7 +167,7 @@ describe('related-content-card', () => {
     });
 
     ['ja', 'ja-JP', 'ko', 'ko-KR', 'ar', 'en-US'].forEach((language) => {
-      it(`uses a 1.35 line height and two-line title clamp (${language})`, async () => {
+      it(`uses heading-6 typography and a two-line title clamp (${language})`, async () => {
         const block = document.querySelector('#card-data');
         block.lang = language;
         block.style.width = '320px';
@@ -176,7 +176,13 @@ describe('related-content-card', () => {
         await init(block);
         const title = block.querySelector('h3');
         const style = getComputedStyle(title);
-        expect(parseFloat(style.lineHeight)).to.be.closeTo(parseFloat(style.fontSize) * 1.35, 0.01);
+        const probe = document.createElement('h6');
+        document.body.append(probe);
+        const standard = getComputedStyle(probe);
+        expect(title.classList.contains('heading-6')).to.be.true;
+        expect(style.fontSize).to.equal(standard.fontSize);
+        expect(style.lineHeight).to.equal(standard.lineHeight);
+        probe.remove();
         expect(style.webkitLineClamp).to.equal('2');
         expect(style.overflow).to.equal('hidden');
         expect(title.getBoundingClientRect().height)
@@ -185,6 +191,29 @@ describe('related-content-card', () => {
         expect(title.textContent).to.equal(titleText);
       });
     });
+  });
+
+  it('decorates each authored viewport and swaps them on resize', async () => {
+    const { innerWidth: width, innerHeight: height } = window;
+    const block = document.querySelector('#card-data');
+    block.innerHTML = `
+      <div><div>mobile-viewport</div></div>
+      <div><div><h2><a href="https://business.adobe.com/m">Mobile title</a></h2></div></div>
+      <div><div>desktop-viewport</div></div>
+      <div><div><h2><a href="https://business.adobe.com/d">Desktop title</a></h2></div></div>`;
+    await setViewport({ width: 600, height });
+    try {
+      await init(block);
+      expect(block.classList.contains('container')).to.be.true;
+      expect(block.querySelector('.related-content-card-title').textContent).to.equal('Mobile title');
+      expect(block.querySelector('.related-content-card-link').href).to.equal('https://business.adobe.com/m');
+      await setViewport({ width: 1300, height });
+      await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      expect(block.querySelector('.related-content-card-title').textContent).to.equal('Desktop title');
+      expect(block.querySelectorAll('.related-content-card-link').length).to.equal(1);
+    } finally {
+      await setViewport({ width, height });
+    }
   });
 
   it('preserves the query when fetching a same-origin article', async () => {

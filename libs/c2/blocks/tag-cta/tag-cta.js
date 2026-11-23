@@ -1,5 +1,5 @@
 import { createTag, localizeLinkAsync, getConfig } from '../../../utils/utils.js';
-import { decorateBlockText } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
 async function loadTagUrls(url) {
   try {
@@ -55,19 +55,30 @@ async function getAutomaticTags() {
   return pills.filter(Boolean);
 }
 
-export default async function init(block) {
-  const heading = block.querySelector('h1, h2, h3, h4, h5, h6');
-  const links = [...block.querySelectorAll('a')]
+function getContent(container) {
+  const heading = container.querySelector('h1, h2, h3, h4, h5, h6');
+  const links = [...container.querySelectorAll('a')]
     .filter((link) => !link.matches('.tag-cta-tag[data-caas-tag]') && !heading?.contains(link));
-  const tags = ((heading && !links.length) || block.classList.contains('include-caas'))
-    ? await getAutomaticTags() : [];
+  return { heading, links };
+}
+
+function decorate(container, tags) {
+  const { heading, links } = getContent(container);
   heading?.classList.add('tag-cta-heading');
-  block.replaceChildren(...(heading ? [heading] : []));
-  decorateBlockText(block, { heading: '3' });
+  container.replaceChildren(...(heading ? [heading] : []));
+  decorateBlockText(container, { heading: '3' });
 
   if (links.length || tags.length) {
     const list = createTag('ul', { class: 'tag-cta-list', role: 'list' });
-    [...links, ...tags].forEach((tag) => list.append(createTag('li', null, tag)));
-    block.append(list);
+    [...links, ...tags.map((tag) => tag.cloneNode(true))]
+      .forEach((tag) => list.append(createTag('li', null, tag)));
+    container.append(list);
   }
+}
+
+export default async function init(block) {
+  const { heading, links } = getContent(block);
+  const tags = ((heading && !links.length) || block.classList.contains('include-caas'))
+    ? await getAutomaticTags() : [];
+  decorateViewportContent(block, (container) => decorate(container, tags));
 }
