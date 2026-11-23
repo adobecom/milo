@@ -260,12 +260,14 @@ const getActiveViewport = () => {
 // Posters are deferred to data-rm-poster during decoration in decorateAnchorVideo, so
 // hidden viewports/slides never fetch them; promote to a real poster when the video loads.
 const promotePoster = (video) => {
-  if (video?.dataset.rmPoster && !video.getAttribute('poster')) {
+  if (!video) return;
+  if (video.dataset.rmPoster && !video.getAttribute('poster')) {
     video.setAttribute('poster', video.dataset.rmPoster);
-    // Firefox drops the poster a frame before the first video frame paints;
-    // the background keeps the poster visible through that gap.
-    video.style.backgroundImage = `url("${video.dataset.rmPoster}")`;
   }
+  const poster = video.getAttribute('poster');
+  // Firefox drops the poster a frame before the first video frame paints;
+  // the background keeps the poster visible through that gap.
+  if (poster && !video.style.backgroundImage) video.style.backgroundImage = `url("${poster}")`;
 };
 
 const loadVideo = (video) => {
