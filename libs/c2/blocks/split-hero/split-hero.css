@@ -611,6 +611,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
             .split-hero-foreground {
               --sh-pan-delay: var(--sh-d-copy-start);
+              --sh-pan-boost: min(1 - var(--sh-d-lock-rate), var(--sh-overflow-ratio, 0));
 
               align-self: flex-start;
             }
@@ -702,12 +703,12 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
   @keyframes sh-pan-join {
     from { transform: translateY(0); }
-    to { transform: translateY(calc(-0.5 * var(--sh-d-pan-rate) * var(--sh-pan-ramp))); }
+    to { transform: translateY(calc(-0.5 * (var(--sh-d-pan-rate) + var(--sh-pan-boost, 0)) * var(--sh-pan-ramp))); }
   }
 
   @keyframes sh-pan {
     from { transform: translateY(0); }
-    to { transform: translateY(calc(-1 * var(--sh-d-pan-rate) * (var(--sh-end) - var(--sh-pan-cruise)))); }
+    to { transform: translateY(calc(-1 * (var(--sh-d-pan-rate) + var(--sh-pan-boost, 0)) * (var(--sh-end) - var(--sh-pan-cruise)))); }
   }
 
   @keyframes sh-lock-join {
