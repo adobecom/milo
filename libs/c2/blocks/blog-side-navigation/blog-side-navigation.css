@@ -171,16 +171,24 @@ main .blog-side-navigation {
   }
 
   /* Collapsed: only the active link shows, bold and on one line below 768px. */
-  @media (width < 768px) {
-    nav li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) {
-      background: transparent;
+  nav li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) {
+    background: transparent;
 
-      > a {
-        font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+    > a {
+      font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+
+      @media (width >= 768px) {
+        &:not([aria-current="location"]) {
+          font-weight: var(--s2a-font-weight-body);
+        }
       }
+    }
 
-      .blog-side-navigation-label {
-        -webkit-line-clamp: 1;
+    .blog-side-navigation-label {
+      -webkit-line-clamp: 1;
+
+      @media (width >= 768px) {
+        -webkit-line-clamp: 2;
       }
     }
   }
@@ -273,11 +281,10 @@ main .blog-side-navigation {
   }
 
   /* Lets the nav stick within the track rather than this panel. */
-  @media (width < 768px) {
-    display: contents;
-  }
+  display: contents;
 
   @media (width >= 768px) {
+    display: block;
     position: sticky;
     top: calc(var(--global-height-nav) + var(--s2a-spacing-lg));
     max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-3xl));
@@ -303,12 +310,8 @@ main > .blog-article-section {
   }
 
   [id] {
+    /* The navigation height is 0 from 768px, where it no longer sticks above the article. */
     scroll-margin-top: calc(var(--global-height-nav) + var(--blog-side-navigation-height, 0px) + var(--s2a-spacing-lg));
-
-    /* Back to the global heading offset once the nav no longer sticks above the article. */
-    @media (width >= 768px) {
-      scroll-margin-top: var(--feds-totalheight-nav);
-    }
   }
 
   > .content {
@@ -362,8 +365,9 @@ main > .blog-article-start {
   }
 }
 
+/* A panel taller than the article extends it, as a grid row would. */
 main > .blog-article-end {
-  padding-block-end: var(--s2a-spacing-3xl);
+  padding-block-end: calc(var(--s2a-spacing-3xl) + var(--blog-side-navigation-overflow-size, 0px));
 }
 
 /* The article sections are placed beside the navigation before they load; keep them hidden

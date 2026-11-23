@@ -29,7 +29,7 @@ async function getReadingTimeText(textLength, config = getConfig()) {
   const readingTime = Math.ceil(textLength / readingSpeed);
   const placeholderKey = (readingTime > 1) ? '5-min-read' : '1-min-read';
   const format = await replaceKey(placeholderKey, config);
-  return format.replace(/[1,5]/g, readingTime);
+  return format.replace(/\d+/, readingTime);
 }
 
 function logError(message) {
@@ -64,20 +64,38 @@ function formatCategory(tag) {
 }
 
 // Resolve relative image URLs against the fetched article URL.
-function resolveImageUrls(picture, baseUrl) {
-  picture.querySelectorAll('img, source').forEach((el) => {
-    ['src', 'srcset'].forEach((attr) => {
-      const val = el.getAttribute(attr);
-      if (!val) return;
-      const resolved = val.split(',').map((part) => {
-        const [url, descriptor] = part.trim().split(/\s+/);
-        if (!url) return part.trim();
-        return `${new URL(url, baseUrl).href}${descriptor ? ` ${descriptor}` : ''}`;
-      }).join(', ');
-      el.setAttribute(attr, resolved);
-    });
+// Media from a fetched document is copied rather than cloned: only these attributes reach the
+// page, so no inline handler, style or unexpected element from that document comes along.
+const MEDIA_ATTRIBUTES = {
+  PICTURE: [],
+  SOURCE: ['type', 'media', 'srcset', 'sizes'],
+  IMG: ['src', 'srcset', 'sizes', 'alt', 'width', 'height', 'loading'],
+};
+
+function resolveMediaUrl(name, value, baseUrl) {
+  if (name === 'src') return new URL(value, baseUrl).href;
+  if (name !== 'srcset') return value;
+  return value.split(',').map((part) => {
+    const [url, descriptor] = part.trim().split(/\s+/);
+    if (!url) return part.trim();
+    return `${new URL(url, baseUrl).href}${descriptor ? ` ${descriptor}` : ''}`;
+  }).join(', ');
+}
+
+// Throws on a URL that cannot be resolved.
+export function copyMedia(media, baseUrl) {
+  const names = MEDIA_ATTRIBUTES[media.tagName];
+  if (!names) return null;
+  const copy = createTag(media.tagName.toLowerCase());
+  names.forEach((name) => {
+    const value = media.getAttribute(name);
+    if (value !== null) copy.setAttribute(name, resolveMediaUrl(name, value, baseUrl));
   });
-  return picture;
+  if (media.tagName === 'PICTURE') {
+    copy.append(...[...media.querySelectorAll(':scope > source, :scope > img')]
+      .map((child) => copyMedia(child, baseUrl)));
+  }
+  return copy;
 }
 
 function getCardMetadata(doc) {
@@ -98,7 +116,7 @@ function getLinkedCategory(meta) {
 function getLinkedPicture(meta, doc, articleUrl) {
   try {
     const picture = meta.cardimage?.querySelector('picture');
-    if (picture) return resolveImageUrls(picture.cloneNode(true), articleUrl.href);
+    if (picture) return copyMedia(picture, articleUrl.href);
     const ogImage = getMetadata('og:image', doc);
     return ogImage
       ? createTag('picture', null, createTag('img', { src: ogImage, alt: '', loading: 'lazy' }))
@@ -241,8 +259,10 @@ function decorate(container, block, config, linkedData) {
 export default async function init(block) {
   const config = getConfig();
   block.classList.add('container');
-  // Viewport content is decorated synchronously, so fetch every linked article up front.
-  const links = [...new Map([...block.querySelectorAll('a[href]')]
+  // Viewport content is decorated synchronously, so fetch the linked articles up front: the
+  // first link of each row, which is the link a viewport container's card resolves.
+  const links = [...new Map([...block.children]
+    .map((row) => getAuthoredData(row).link).filter(Boolean)
     .map((link) => [link.href, link])).values()];
   const linkedData = new Map(await Promise.all(links
     .map(async (link) => [link.href, await fetchLinkedData(link, config)])));

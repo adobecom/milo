@@ -3,6 +3,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
 import { getSVGsfromFile } from '../../../blocks/share/share.js';
 import { getModal } from '../modal/modal.js';
+import { copyMedia } from '../related-content-card/related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
@@ -176,22 +177,6 @@ function resolveUrl(value, base) {
   }
 }
 
-function resolveSrcset(srcset, base) {
-  return srcset.split(',').map((candidate) => {
-    const [url, descriptor] = candidate.trim().split(/\s+/);
-    return [resolveUrl(url, base), descriptor].filter(Boolean).join(' ');
-  }).join(', ');
-}
-
-function resolveMediaUrls(picture, base) {
-  picture.querySelectorAll('source[srcset]').forEach((source) => {
-    source.setAttribute('srcset', resolveSrcset(source.getAttribute('srcset'), base));
-  });
-  const img = picture.tagName === 'IMG' ? picture : picture.querySelector('img');
-  if (img?.getAttribute('src')) img.setAttribute('src', resolveUrl(img.getAttribute('src'), base));
-  if (img?.getAttribute('srcset')) img.setAttribute('srcset', resolveSrcset(img.getAttribute('srcset'), base));
-}
-
 function getProfileData(doc, profileUrl) {
   const author = doc.querySelector('.blog-author');
   if (!author) return null;
@@ -299,10 +284,14 @@ async function loadAuthorProfile(profileUrl, data, avatar, info) {
   const profile = await fetchAuthorProfile(profileUrl);
   if (!profile) return;
   if (!data.picture && profile.picture) {
-    const clone = profile.picture.cloneNode(true);
-    resolveMediaUrls(clone, profileUrl);
-    const img = clone.tagName === 'IMG' ? clone : clone.querySelector('img');
-    if (img?.getAttribute('src') === 'about:error') {
+    let clone = null;
+    try {
+      clone = copyMedia(profile.picture, profileUrl);
+    } catch {
+      // Reported below as an invalid image.
+    }
+    const img = clone?.tagName === 'IMG' ? clone : clone?.querySelector('img');
+    if (!clone || img?.getAttribute('src') === 'about:error') {
       logError(`author profile image is invalid for ${profileUrl}`);
     } else {
       img?.classList.add('blog-header-avatar');
@@ -701,7 +690,7 @@ function decorateDividers(el) {
     dividerObservers.delete(headerSection);
   };
   const updateFrame = (entries, observer) => {
-    if (!headerSection.isConnected) {
+    if (!el.isConnected || !headerSection.isConnected) {
       disconnectAll();
       return;
     }

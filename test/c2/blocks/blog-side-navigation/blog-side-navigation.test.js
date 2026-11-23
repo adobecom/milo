@@ -1122,7 +1122,8 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     const link = block.querySelector('a');
     const heading = main.querySelector('h2');
-    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64;
+    // 24px clears the heading from the global navigation, as on mobile.
+    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64 - 24;
     link.click();
     await Promise.resolve();
     expect(scrollStub.calledOnce).to.equal(true);
@@ -1143,7 +1144,8 @@ describe('blog-side-navigation section list', () => {
     main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="height: 64px"></div>');
     await init(block);
     const heading = main.querySelector('h2');
-    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64;
+    // 24px clears the heading from the global navigation, as on mobile.
+    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64 - 24;
     block.querySelector('a').click();
     await Promise.resolve();
     expect(mediaStub.firstCall.args[0]).to.equal('(prefers-reduced-motion: reduce)');
@@ -1215,6 +1217,80 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
+  it('ends the mobile track at the article after the list expands and collapses again', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 375, height: 800 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>'
+        + '<p style="height: 900px"></p>');
+      await init(block);
+      const button = block.querySelector('button');
+      const end = main.querySelector('.blog-article-end');
+      const settle = () => new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      for (const expanded of ['true', 'false']) {
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal(expanded);
+        await settle();
+        expect(block.getBoundingClientRect().bottom)
+          .to.be.closeTo(end.getBoundingClientRect().bottom, 1);
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('extends a short article so the desktop panel never runs past it', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 1280, height: 900 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2>');
+      await init(block);
+      const panel = block.querySelector('.blog-side-navigation-panel');
+      panel.append(Object.assign(document.createElement('div'), { style: 'height: 500px' }));
+      await waitFor(() => main.style.getPropertyValue('--blog-side-navigation-overflow-size') !== '');
+      await new Promise(requestAnimationFrame);
+      const end = main.querySelector('.blog-article-end');
+      expect(panel.getBoundingClientRect().bottom)
+        .to.be.at.most(end.getBoundingClientRect().bottom + 1);
+      expect(block.getBoundingClientRect().bottom)
+        .to.be.closeTo(end.getBoundingClientRect().bottom, 1);
+      panel.lastElementChild.remove();
+      await waitFor(() => main.style.getPropertyValue('--blog-side-navigation-overflow-size') === '0px');
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('closes the open mobile list on Escape and returns focus to its toggle', async () => {
+    mockTablet(false);
+    const { block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>');
+    await init(block);
+    const button = block.querySelector('button');
+    button.click();
+    const link = block.querySelectorAll('a')[2];
+    link.focus();
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(button.getAttribute('aria-expanded')).to.equal('false');
+    expect(document.activeElement).to.equal(button);
+  });
+
+  it('scrolls to an existing id with reserved characters on initial load', async () => {
+    window.history.replaceState(null, '', '#q&a:v3');
+    const { block } = buildArticle('<h2 id="q&amp;a:v3">Questions</h2>');
+    await init(block);
+    expect(scrollStub.calledOnce).to.equal(true);
+  });
+
   it('preserves native behavior for modified clicks', async () => {
     mockTablet(false);
     const { block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
@@ -1263,7 +1339,7 @@ describe('blog-side-navigation section list', () => {
           expect(links[3].getAttribute('aria-current')).to.equal('location');
         }
         const nav = block.querySelector('nav');
-        const extra = desktop ? 0 : nav.getBoundingClientRect().height + 24;
+        const extra = (desktop ? 0 : nav.getBoundingClientRect().height) + 24;
         const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 80 - extra;
         expect(scrollStub.firstCall.args[0].top).to.be.closeTo(expectedTop, 1);
         button.click();

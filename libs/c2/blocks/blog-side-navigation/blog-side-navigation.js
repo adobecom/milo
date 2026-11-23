@@ -45,8 +45,8 @@ function scrollToSection(heading, block) {
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? 'instant' : 'smooth';
   const nav = block.querySelector('nav');
-  const offset = getComputedStyle(nav).position === 'sticky'
-    ? nav.getBoundingClientRect().height + 24 : 0;
+  const offset = (getComputedStyle(nav).position === 'sticky'
+    ? nav.getBoundingClientRect().height : 0) + 24;
   // Kept author ids need not be valid selectors (e.g. "2024-trends"); escape before the lookup.
   const hash = `#${encodeURIComponent(CSS.escape(heading.id))}`;
   return scrollToHashedElement(hash, document, behavior, offset);
@@ -70,7 +70,7 @@ function markArticle(main, sections) {
 function unmarkArticle(main, block) {
   markArticle(main, []);
   block.style.removeProperty('--blog-side-navigation-track-size');
-  ['--blog-side-navigation-height', '--blog-side-navigation-block-size']
+  ['--blog-side-navigation-height', '--blog-side-navigation-block-size', '--blog-side-navigation-overflow-size']
     .forEach((name) => main.style.removeProperty(name));
 }
 
@@ -130,12 +130,11 @@ function trackActiveSection(block, headings, collapseControls) {
   // Below 768px the navigation is above the article but out of flow, so the article reserves
   // its height. Set it from the observer, before paint, so the article never shifts.
   // The track spans from the header section to the end of the article, so the panel can
-  // stick for the whole article whether or not the header draws dividers.
+  // stick for the whole article whether or not the header draws dividers. A panel taller than
+  // the article extends it, as a grid row would. The article moves with the reserved sizes, so
+  // set them before measuring the track.
   const navSection = block.closest('.section');
   const reserve = () => {
-    const end = main.querySelector(':scope > .blog-article-end') || navSection;
-    const track = end.getBoundingClientRect().bottom - navSection.getBoundingClientRect().bottom;
-    setSize(block, '--blog-side-navigation-track-size', Math.max(0, track));
     const stacked = getComputedStyle(panel).display === 'contents';
     const size = stacked ? [...panel.children].reduce((total, child) => {
       if (child.hidden || getComputedStyle(child).display === 'none') return total;
@@ -144,6 +143,13 @@ function trackActiveSection(block, headings, collapseControls) {
         + parseFloat(style.marginBlockStart) + parseFloat(style.marginBlockEnd);
     }, 0) : 0;
     setSize(main, '--blog-side-navigation-block-size', size);
+    const end = main.querySelector(':scope > .blog-article-end') || navSection;
+    const overflow = parseFloat(main.style.getPropertyValue('--blog-side-navigation-overflow-size')) || 0;
+    const article = end.getBoundingClientRect().bottom - overflow
+      - navSection.getBoundingClientRect().bottom;
+    const extra = stacked ? 0 : Math.max(0, panel.offsetHeight - article);
+    setSize(main, '--blog-side-navigation-overflow-size', extra);
+    setSize(block, '--blog-side-navigation-track-size', Math.max(0, article + extra));
   };
   const resize = () => {
     reserve();
@@ -214,6 +220,12 @@ function addCollapseControl(list, label, collapsed) {
     const viewport = tablet.matches ? 'tablet' : 'mobile';
     expanded[viewport] = !expanded[viewport];
     render();
+  });
+  list.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || tablet.matches || !expanded.mobile) return;
+    expanded.mobile = false;
+    render();
+    button.focus({ preventScroll: true });
   });
   tablet.addEventListener('change', render);
   render();
@@ -380,8 +392,12 @@ export default async function init(block) {
       });
     });
   }
-  const linkedHeading = headings.find((heading) => (
-    window.location.hash === `#${encodeURIComponent(heading.id)}`
-  ));
+  let linkedId = '';
+  try {
+    linkedId = decodeURIComponent(window.location.hash.slice(1));
+  } catch {
+    // A malformed fragment links to no heading.
+  }
+  const linkedHeading = linkedId && headings.find((heading) => heading.id === linkedId);
   if (linkedHeading) await scrollToSection(linkedHeading, block);
 }

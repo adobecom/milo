@@ -33,7 +33,7 @@
     }
   }
 
-  .blog-header-title h1 {
+  .blog-header-title [class*="heading-"] {
     margin: 0;
     font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
     color: var(--s2a-color-content-default);
@@ -301,6 +301,8 @@
   & ~ .blog-article-start {
     --blog-article-offset: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
 
+    /* Mobile only: from 768px this pseudo-element is the navigation's margin guard
+       (blog-side-navigation.css), so the divider must not reset it there. */
     @media (width < 768px) {
       &::before {
         content: "";
@@ -339,7 +341,7 @@
     border-radius: var(--s2a-border-radius-sm);
     overflow: hidden;
     background: var(--s2a-color-gray-25);
-    box-shadow: 4px 4px 4px rgb(0 0 0 / 5%);
+    box-shadow: 4px 4px 4px var(--s2a-color-transparent-black-04);
   }
 
   .blog-share-card-image {
@@ -404,7 +406,7 @@
     border: none;
     border-radius: var(--s2a-border-radius-sm);
     background: var(--s2a-color-gray-25);
-    box-shadow: 4px 4px 4px rgb(0 0 0 / 5%);
+    box-shadow: 4px 4px 4px var(--s2a-color-transparent-black-04);
     color: var(--s2a-color-gray-1000);
     cursor: pointer;
 
