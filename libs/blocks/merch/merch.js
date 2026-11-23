@@ -2124,6 +2124,25 @@ export function holdCtaUntilPrice(container) {
   withForegroundTimeout(price.checkReady().catch(() => false)).then(reveal);
 }
 
+const INLINE_COMMERCE_CTA_SELECTOR = 'a[is="checkout-link"], button[is="checkout-button"]';
+
+/**
+ * Fire-and-forget: once each upgraded commerce CTA settles, sets its aria-label.
+ * Never throws and never rejects, so decoration is unaffected by labelling failures.
+ */
+function labelInlineCtas(ctas) {
+  [...ctas].forEach((cta) => {
+    if (typeof cta.onceSettled !== 'function') return;
+    Promise.resolve()
+      .then(() => cta.onceSettled())
+      .then(() => {
+        if (!Array.isArray(cta.value)) return undefined;
+        return addAriaLabelToCta(cta);
+      })
+      .catch((e) => fieldLog?.warn?.('mas-field CTA aria-label failed', e));
+  });
+}
+
 /**
  * Hoists a resolved inline CTA into the authored em/strong and runs decorateButtons.
  * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
@@ -2187,7 +2206,9 @@ function decorateInlineCtas(masField, content) {
     upgradeCommerceLinks(content);
     ensureInlinePriceStyle(content);
     hoisted = [...content.childNodes].find((node) => node.nodeType === Node.ELEMENT_NODE);
+    const ctas = [...content.querySelectorAll(INLINE_COMMERCE_CTA_SELECTOR)];
     masField.replaceWith(...content.childNodes);
+    labelInlineCtas(ctas);
   } else {
     // Keep mas-field as the CTA's ancestor so decorateButtons' 'em a'/'strong a' still match
     // once re-nested, and its promo/id context survives by structure. Move content while it's
@@ -2212,6 +2233,7 @@ function decorateInlineCtas(masField, content) {
     upgradeCommerceLinks(masField);
     ensureInlinePriceStyle(masField);
     hoisted = masField.querySelector('a, button');
+    labelInlineCtas(masField.querySelectorAll(INLINE_COMMERCE_CTA_SELECTOR));
   }
 
   // decorateButtons would strip the <strong> and misclassify router-marquee's CTAs as outline.
