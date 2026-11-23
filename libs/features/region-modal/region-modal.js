@@ -469,7 +469,7 @@ function buildContent(
       markets,
       regionCode,
       stayLangKey,
-      siteCountry,
+      prefixIsMarket ? siteCountry : currentPagePrefix,
     )
     : getCurrentSiteLabel();
   const currentPageUrl = window.location.hash ? document.location.href : '#';
