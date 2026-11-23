@@ -1548,12 +1548,16 @@ describe('blog-side-navigation section list', () => {
     mockTablet();
     const { main, block } = buildArticle('<h2>First</h2><h2 class="heading-5">Second</h2>');
     const articleSection = main.lastElementChild;
+    const content = articleSection.querySelector('.content');
+    content.replaceWith(...content.childNodes);
     articleSection.dataset.status = 'pending';
     await init(block);
     expect(block.querySelector('nav')).not.to.exist;
-    const [first, second] = articleSection.querySelectorAll('.content > h2');
+    const [first, second] = articleSection.querySelectorAll(':scope > h2');
     expect(first.className).to.equal('heading-3');
     expect(second.className).to.equal('heading-5');
+    content.append(...articleSection.childNodes);
+    articleSection.append(content);
     delete articleSection.dataset.status;
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     await waitFor(() => block.querySelectorAll('nav a').length === 2);

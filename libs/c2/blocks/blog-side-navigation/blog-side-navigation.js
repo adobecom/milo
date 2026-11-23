@@ -69,7 +69,9 @@ function markArticle(main, sections) {
 
 function addHeadingClasses(sections) {
   sections.forEach((section) => {
-    section.querySelectorAll(':scope > .content > h2').forEach((heading) => {
+    // A section still waiting to load has its default content unwrapped; decorateContent
+    // later moves these same elements into .content, so the class carries over.
+    section.querySelectorAll(':scope > h2, :scope > .content > h2').forEach((heading) => {
       if (![...heading.classList].some((name) => name.startsWith('heading-'))) {
         heading.classList.add('heading-3');
       }
