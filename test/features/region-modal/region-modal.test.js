@@ -41,7 +41,9 @@ function stubHeadOk(ok = true) {
         json: () => Promise.resolve({
           data: [
             { marketCode: 'us', en: 'United States' },
-            { marketCode: 'de', en: 'Germany' },
+            { marketCode: 'de', en: 'Germany', de: 'Deutschland - EUR €' },
+            { marketCode: 'ae', en: 'United Arab Emirates - AED', ar: 'الإمارات العربية المتحدة - AED' },
+            { marketCode: 'hk', en: 'Hong Kong - HKD $', 'zh-hant': '香港 - HKD $' },
           ],
         }),
       });
@@ -591,6 +593,69 @@ describe('Region modal feature', () => {
     pickerButton.click();
     const pickers = modal.querySelectorAll('.picker');
     expect(pickers.length).to.equal(1);
+  });
+
+  describe('stay link for language-only sites', () => {
+    const languages = [
+      {
+        prefix: '', nativeName: 'English', langName: 'English', lang: 'en', defaultMarket: 'us', supportedRegions: 'us',
+      },
+      {
+        prefix: 'de', nativeName: 'Deutsch', langName: 'German', lang: 'de', defaultMarket: 'de', supportedRegions: 'de, at',
+      },
+      {
+        prefix: 'ara', nativeName: 'العربية', langName: 'Arabic', lang: 'ar', defaultMarket: 'ae', supportedRegions: 'ae, eg',
+      },
+      {
+        prefix: 'zh-hant', nativeName: '繁體中文', langName: 'Chinese', lang: 'zh', defaultMarket: 'hk', supportedRegions: 'hk, tw',
+      },
+    ];
+    const initialUrl = window.location.href;
+
+    const openModalOn = async (prefix, geoMarketCode = 'us') => {
+      setConfig({
+        ...baseConfig,
+        marketsConfig: { languages: { data: languages } },
+      });
+      stubHeadOk(true);
+      await showRegionModal(
+        { markets: [{ prefix: '', nativeName: 'English', lang: 'en', language: 'English' }], geoMarketCode },
+        { ...getConfig(), locale: { prefix: prefix ? `/${prefix}` : '' } },
+        createTag,
+        loadStyle,
+        noopLoadBlock,
+      );
+      return document.querySelector('#region-modal');
+    };
+
+    const stayLink = (modal) => modal.querySelector('.link-wrapper a:not(.con-button)');
+
+    afterEach(() => window.history.replaceState(null, '', initialUrl));
+
+    it('uses the default market of an Arabic language site, not the prefix', async () => {
+      const modal = await openModalOn('ara');
+      const link = stayLink(modal);
+      expect(link.textContent).to.equal('الإمارات العربية المتحدة');
+      link.click();
+      expect(document.cookie).to.include('country=ae');
+      expect(window.location.search).to.include('country=ae');
+    });
+
+    it('resolves the zh-hant site to its own market column', async () => {
+      const modal = await openModalOn('zh-hant');
+      const link = stayLink(modal);
+      expect(link.textContent).to.equal('香港');
+      link.click();
+      expect(document.cookie).to.include('country=hk');
+    });
+
+    it('keeps using the prefix country for country sites', async () => {
+      const modal = await openModalOn('de');
+      const link = stayLink(modal);
+      expect(link.textContent).to.equal('Deutschland');
+      link.click();
+      expect(document.cookie).to.include('country=de');
+    });
   });
 
   describe('decorateLanguageBanner', () => {

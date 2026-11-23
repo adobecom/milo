@@ -100,6 +100,26 @@ describe('marketHelper.js — getMarketLabel()', () => {
     const market = { 'de-at': 'Österreich', en: 'Austria' };
     expect(getMarketLabel(market, 'de', '/at')).to.equal('Österreich');
   });
+
+  it('uses the hyphenated prefix column when lang and lang-prefix columns are empty', () => {
+    const market = { 'zh-hant': '香港 - HKD $', en: 'Hong Kong - HKD $' };
+    expect(getMarketLabel(market, 'zh', 'zh-hant')).to.equal('香港 - HKD $');
+  });
+
+  it('prefers the lang-prefix column over the hyphenated prefix column', () => {
+    const market = { 'zh-zh-hant': 'lang-prefix', 'zh-hant': 'prefix', en: 'Hong Kong' };
+    expect(getMarketLabel(market, 'zh', 'zh-hant')).to.equal('lang-prefix');
+  });
+
+  it('does not use a non-hyphenated prefix column and falls back to en', () => {
+    const market = { uk: 'Ukrainian label', en: 'United Kingdom' };
+    expect(getMarketLabel(market, 'xx', 'uk')).to.equal('United Kingdom');
+  });
+
+  it('falls back to en when the hyphenated prefix column is empty', () => {
+    const market = { 'zh-hant': '', en: 'Macau' };
+    expect(getMarketLabel(market, 'zh', 'zh-hant')).to.equal('Macau');
+  });
 });
 
 describe('marketHelper.js — loadMarketsData()', () => {
