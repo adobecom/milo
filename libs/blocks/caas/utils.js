@@ -335,14 +335,27 @@ export const decodeCompressedString = async (txt) => {
   return responseToJSON(resp);
 };
 
-export const loadCaasFiles = async () => {
-  const searchParams = new URLSearchParams(document.location.search);
-  const version = searchParams?.get('caasver') || 'stable';
-  let cssFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/app.css`;
-  let jsFile = `https://www.adobe.com/special/chimera/caas-libs/${version}/main.min.js`;
+// caasver/caashost choose which CaaS bundle runs on the page, so only accept
+// values that stay inside the intended path and corp host (MWPW-210164).
+const CAAS_VERSION_PATTERN = /^\w+([.-]\w+)*$/;
+const CAAS_HOST_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*(\.[a-z0-9]+(-[a-z0-9]+)*)*$/i;
+
+const getValidatedCaasParam = (searchParams, name, pattern) => {
+  const value = searchParams.get(name);
+  if (!value) return null;
+  if (pattern.test(value)) return value;
+  window.lana?.log(`CaaS: ignored invalid ${name} query param: ${value}`, { tags: 'caas', severity: 'warning' });
+  return null;
+};
+
+export const getCaasFileUrls = (searchParams) => {
+  const version = getValidatedCaasParam(searchParams, 'caasver', CAAS_VERSION_PATTERN) || 'stable';
+  const libsBase = `https://www.adobe.com/special/chimera/caas-libs/${version}`;
+  let cssFile = `${libsBase}/app.css`;
+  let jsFile = `${libsBase}/main.min.js`;
 
   // for caas local development
-  const host = searchParams?.get('caashost');
+  const host = getValidatedCaasParam(searchParams, 'caashost', CAAS_HOST_PATTERN);
   if (host) {
     cssFile = `http://${host}.corp.adobe.com:5000/dist/app.css`;
     jsFile = `http://${host}.corp.adobe.com:5000/dist/main.js`;
@@ -354,9 +367,21 @@ export const loadCaasFiles = async () => {
     jsFile = 'https://adobecom.github.io/caas/dist/main.source.js';
   }
 
+  return {
+    cssFile,
+    jsFile,
+    reactFile: `${libsBase}/react.umd.js`,
+    reactDomFile: `${libsBase}/react.dom.umd.js`,
+  };
+};
+
+export const loadCaasFiles = async () => {
+  const { cssFile, jsFile, reactFile, reactDomFile } = getCaasFileUrls(
+    new URLSearchParams(document.location.search),
+  );
   loadStyle(cssFile);
-  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.umd.js`);
-  await loadScript(`https://www.adobe.com/special/chimera/caas-libs/${version}/react.dom.umd.js`);
+  await loadScript(reactFile);
+  await loadScript(reactDomFile);
   await loadScript(jsFile);
 };
 
