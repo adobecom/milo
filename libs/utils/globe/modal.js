@@ -439,6 +439,15 @@ export default function createGlobeModal(ctx, {
     modalScene ||= new THREE.Scene();
   }
 
+  // A context lost before the first open leaves no renderer to recover it; create one on restore.
+  function onModalContextLost(e) {
+    e.preventDefault();
+  }
+  function onModalContextRestored() {
+    if (modalRenderer || modalIdx < 0) return;
+    ensureModalRenderer();
+  }
+
   function open(i, originX, originY) {
     const { cards } = ctx;
     if (!modalEl || !cards[i]) return;
@@ -662,6 +671,10 @@ export default function createGlobeModal(ctx, {
   function setup() {
     modalCanvasEl ||= q('.globe-modal-canvas');
     hoist(modalCanvasEl);
+    if (modalCanvasEl) {
+      modalCanvasEl.addEventListener('webglcontextlost', onModalContextLost);
+      modalCanvasEl.addEventListener('webglcontextrestored', onModalContextRestored);
+    }
     modalEl ||= q('.globe-modal');
     if (!modalEl) return;
     const declaredMs = cssNumber(modalEl, MODAL_ANIM_VAR, 0);
@@ -842,6 +855,8 @@ export default function createGlobeModal(ctx, {
 
   function destroy(finalize) {
     reset();
+    modalCanvasEl?.removeEventListener('webglcontextlost', onModalContextLost);
+    modalCanvasEl?.removeEventListener('webglcontextrestored', onModalContextRestored);
     modalRenderer?.dispose();
     modalRenderer = null;
     if (finalize) {

@@ -262,7 +262,8 @@ come from `BAND_RENDER`. A texture costs `w × h × 4 × 4/3` bytes regardless o
 
 The hint texture's `onUpdate` frees its canvas's 2D backing store after upload. That is safe only when exactly one
 renderer uploads the texture, nothing sets `needsUpdate` later, and nothing reads `texture.image` dimensions later. Only
-the hint texture qualifies. Card textures don't, because the modal renderer uploads them too.
+the hint texture qualifies. A context restore can't re-upload it, so `onContextRestored` rebuilds the hint plane.
+Card textures don't, because the modal renderer uploads them too.
 
 ## Orientation and drag
 

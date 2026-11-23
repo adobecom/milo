@@ -275,6 +275,31 @@ describe('globe-gallery: WebGL context loss', () => {
     expect(webglRequests(getContext)).to.have.length(0);
   });
 
+  it('creates the modal renderer on restore when its context was lost before the first open', async () => {
+    await mount(1024);
+    const modalCanvas = document.querySelector('.globe-modal-canvas');
+    const modalExt = loseContext(modalCanvas);
+    const lost = nextEvent(modalCanvas, 'webglcontextlost');
+    modalExt.loseContext();
+    await lost;
+    await afterTask();
+
+    const widget = block.querySelector('.globe-a11y');
+    widget.focus();
+    await frames();
+    widget.click();
+    await sendKeys({ press: 'Enter' });
+    expect(block.querySelector('.globe-modal-chrome').open).to.be.true;
+
+    const restored = nextEvent(modalCanvas, 'webglcontextrestored');
+    modalExt.restoreContext();
+    await restored;
+    const renders = sinon.spy(WebGL2RenderingContext.prototype, 'clear');
+    await frames();
+    expect(renders.callCount).to.be.greaterThan(0);
+    expect(modalCanvas.width).to.be.greaterThan(300);
+  });
+
   it('resumes when the modal canvas restores before the main one', async () => {
     await mount(1024);
     const widget = block.querySelector('.globe-a11y');

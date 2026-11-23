@@ -1268,6 +1268,7 @@ function createGlobeRuntime(spec, {
       return;
     }
     if (!build.scene) return;
+    build.hint.onResize();
     build.renderReady = true;
     syncTicker();
   }
