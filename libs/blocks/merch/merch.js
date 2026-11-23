@@ -2124,6 +2124,12 @@ export function holdCtaUntilPrice(container) {
   withForegroundTimeout(price.checkReady().catch(() => false)).then(reveal);
 }
 
+function addAriaLabelToMasFieldCta(cta) {
+  if (!cta.ariaLabel && cta.onceSettled) {
+    cta.onceSettled().then(() => addAriaLabelToCta(cta));
+  }
+}
+
 /**
  * Hoists a resolved inline CTA into the authored em/strong and runs decorateButtons.
  * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
@@ -2213,6 +2219,8 @@ function decorateInlineCtas(masField, content) {
     ensureInlinePriceStyle(masField);
     hoisted = masField.querySelector('a, button');
   }
+
+  addAriaLabelToMasFieldCta(hoisted);
 
   // decorateButtons would strip the <strong> and misclassify router-marquee's CTAs as outline.
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
@@ -2378,6 +2386,8 @@ async function createInlineField(el, options) {
   if (isCtaFieldContent(content)) {
     return decorateInlineCtas(masField, content) ?? masField;
   }
+
+  masField.querySelectorAll('a, button').forEach((cta) => addAriaLabelToMasFieldCta(cta));
 
   // Non-CTA (block) fields never move after this point, so upgrading now is safe.
   upgradeCommerceLinks(content);
