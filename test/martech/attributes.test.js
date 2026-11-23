@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { decorateSectionAnalytics, processTrackingLabels } from '../../libs/martech/attributes.js';
-import { createTag } from '../../libs/utils/utils.js';
+import { ANALYTICS_SECTIONS, createTag } from '../../libs/utils/utils.js';
 
 const expectedLinkValues = [
   'already-has-1',
@@ -13,6 +13,21 @@ const expectedLinkValues = [
 ];
 
 describe('Analytics', async () => {
+  it('tags blog article sections inside the side navigation layout in page order', () => {
+    document.body.innerHTML = '<main><div class="section"><div class="blog-header"></div></div>'
+      + '<div class="blog-article-layout"><div class="blog-side-navigation"></div>'
+      + '<div class="blog-article-content"><div class="section"><p>One</p></div>'
+      + '<div class="section"><p>Two</p></div></div></div>'
+      + '<div class="section"><p>After</p></div></main>';
+    document.querySelectorAll(ANALYTICS_SECTIONS)
+      .forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: {} }));
+    const sections = [...document.querySelectorAll('main .section')];
+    expect(sections.map((section) => section.getAttribute('daa-lh')))
+      .to.deep.equal(['s1', 's2', 's3', 's4']);
+    expect(document.querySelector('.blog-article-layout').hasAttribute('daa-lh')).to.equal(false);
+    expect(document.querySelector('.blog-side-navigation').hasAttribute('daa-lh')).to.equal(false);
+  });
+
   it('should decorate attributes without pzn', async () => {
     document.body.outerHTML = await readFile({ path: './mocks/body.html' });
     document.querySelectorAll('main > div').forEach((section, idx) => decorateSectionAnalytics(section, idx, { mep: {} }));

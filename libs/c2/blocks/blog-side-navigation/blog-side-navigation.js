@@ -5,6 +5,7 @@ import { getBlogSections } from '../blog-header/blog-header.js';
 const sectionTrackers = new WeakMap();
 const authoredConfigs = new WeakMap();
 const pendingInitializations = new WeakMap();
+const originalPositions = new WeakMap();
 
 function getAuthoredConfig(block) {
   if (!authoredConfigs.has(block)) {
@@ -35,12 +36,9 @@ function getAuthoredConfig(block) {
   return authoredConfigs.get(block);
 }
 
-function isSelectableId(id, heading) {
-  try {
-    return document.querySelector(`#${id}`) === heading;
-  } catch {
-    return false;
-  }
+function isUniqueId(id, heading) {
+  return document.getElementById(id) === heading
+    && document.querySelectorAll(`#${CSS.escape(id)}`).length === 1;
 }
 
 function scrollToSection(hash, block) {
@@ -194,6 +192,7 @@ function createLayout(block, headerSection, articleSections) {
 
   const layout = createTag('div', { class: 'blog-article-layout' });
   const article = createTag('div', { class: 'blog-article-content' });
+  originalPositions.set(block, { parent: block.parentElement, next: block.nextSibling });
   headerSection.after(layout);
   article.append(...articleSections);
   layout.append(block, article);
@@ -249,7 +248,13 @@ export default async function init(block) {
     : getBlogSections(headerSection);
   articleSections.forEach((section) => {
     section.querySelectorAll(':scope > .content > h2')
-      .forEach((heading) => heading.classList.add('heading-3'));
+      .forEach((heading) => {
+        if (![...heading.classList].some((name) => name.startsWith('heading-'))) {
+          heading.classList.add('heading-3');
+        }
+      });
+    section.querySelectorAll(':scope > .content > :is(p, ul, ol):not([class])')
+      .forEach((element) => element.classList.add('body-lg'));
   });
   const headings = articleSections.flatMap((section) => (
     [...section.querySelectorAll(':scope > .content h2')]
@@ -273,7 +278,14 @@ export default async function init(block) {
 
   if (!headings.length) {
     block.classList.remove('is-pending');
-    if (layout) layout.replaceWith(...articleSections);
+    if (layout) {
+      const { parent, next } = originalPositions.get(block) || {};
+      layout.replaceWith(...articleSections);
+      if (parent?.isConnected) {
+        parent.insertBefore(block, next?.parentNode === parent ? next : null);
+      }
+      originalPositions.delete(block);
+    }
     block.hidden = block.dataset.failed !== 'true';
     if (!block.hidden) block.replaceChildren();
     return;
@@ -286,9 +298,8 @@ export default async function init(block) {
   headings.forEach((heading, index) => {
     const title = labels[index] || heading.textContent.trim();
     let { id } = heading;
-    // Keep an existing anchor so deep links survive, unless the author chose a jump label
-    // for it. The shared scroll helper needs the id to work as a CSS selector.
-    if (labels[index] || !id || !isSelectableId(id, heading)) {
+    // Keep an existing anchor so deep links survive, even when the author chose a jump label.
+    if (!id || !isUniqueId(id, heading)) {
       const slug = title.normalize('NFC').toLowerCase()
         .replace(/[^\p{L}\p{N}\p{M}]+/gu, '-').replace(/^-|-$/g, '');
       const baseId = /^\d/.test(slug) ? `section-${slug}` : slug || `section-${index + 1}`;

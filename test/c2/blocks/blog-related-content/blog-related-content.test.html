@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta name="foundation" content="c2">
     <script type="importmap">
       {
         "imports": {
@@ -162,10 +163,6 @@
 
         describe('blog-related-content C2 routing', () => {
           it('loads from the C2 directory on a foundation=c2 page', async () => {
-            const foundation = document.createElement('meta');
-            foundation.name = 'foundation';
-            foundation.content = 'c2';
-            document.head.append(foundation);
             const block = document.createElement('div');
             block.className = 'blog-related-content';
             document.body.append(block);
@@ -177,7 +174,6 @@
               expect(document.head.querySelector('link[href$="/c2/blocks/blog-related-content/blog-related-content.css"]')).to.exist;
             } finally {
               block.remove();
-              foundation.remove();
             }
           });
         });

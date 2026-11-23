@@ -70,11 +70,24 @@ describe('blog-side-navigation section list', () => {
     expect(main.querySelector('h2 em')).to.exist;
   });
 
-  it('replaces an existing id that cannot be used as a CSS selector', async () => {
-    const { main, block } = buildArticle('<h2 id="2026-trends">2026 trends</h2>');
+  it('keeps existing ids that need CSS escaping and scrolls to them', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<h2 id="2026-trends">2026 trends</h2><h2 id="faq.v2">FAQ</h2>');
     await init(block);
-    expect(block.querySelector('nav a').getAttribute('href')).to.equal('#section-2026-trends');
-    expect(main.querySelector('h2').id).to.equal('section-2026-trends');
+    expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+      .to.deep.equal(['#2026-trends', '#faq.v2']);
+    expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
+      .to.deep.equal(['2026-trends', 'faq.v2']);
+    block.querySelectorAll('nav a')[1].click();
+    await waitFor(() => scrollStub.called);
+    expect(scrollStub.calledOnce).to.equal(true);
+  });
+
+  it('replaces a duplicated existing id', async () => {
+    const { main, block } = buildArticle('<h2 id="dup">First</h2><p id="dup">Copy</p>');
+    await init(block);
+    expect(block.querySelector('nav a').getAttribute('href')).to.equal('#first');
+    expect(main.querySelector('h2').id).to.equal('first');
   });
 
   it('uses translated headings and unique targets for repeated titles', async () => {
@@ -146,16 +159,18 @@ describe('blog-side-navigation section list', () => {
       expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
     });
 
-    it('keeps existing heading ids unless an authored label replaces them', async () => {
+    it('keeps existing heading ids when an authored label is set', async () => {
       const { main, block } = authoredBlock(
         ['Overview', ''],
         '<h2 id="first">First</h2><h2 id="second-deep-link">Second</h2>',
       );
       await init(block);
       expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
-        .to.deep.equal(['#overview', '#second-deep-link']);
+        .to.deep.equal(['#first', '#second-deep-link']);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['Overview', 'Second']);
       expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
-        .to.deep.equal(['overview', 'second-deep-link']);
+        .to.deep.equal(['first', 'second-deep-link']);
     });
 
     it('treats former setting names as labels and renders labels as plain text', async () => {
@@ -544,7 +559,7 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(button).color).to.equal('rgb(255, 255, 255)');
         expect(getComputedStyle(button).borderColor).to.equal('rgb(80, 80, 80)');
         expect(getComputedStyle(icon, '::before').width).to.equal('6px');
-        expect(getComputedStyle(icon, '::before').height).to.equal('1.5px');
+        expect(getComputedStyle(icon, '::before').height).to.equal('2px');
         expect(getComputedStyle(icon, '::after').display).to.equal('none');
         expect(getComputedStyle(icon).borderStyle).to.equal('solid');
         expect(getComputedStyle(icon).borderColor).to.equal('rgb(255, 255, 255)');
@@ -1404,8 +1419,55 @@ describe('blog-side-navigation section list', () => {
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
     await waitFor(() => !main.querySelector('.blog-article-layout'));
     expect(articleSection.parentElement).to.equal(main);
+    expect(block.isConnected).to.equal(true);
+    expect(block.parentElement).to.equal(main.firstElementChild);
     expect(block.hidden).to.equal(true);
     expect(block.classList.contains('is-pending')).to.equal(false);
+  });
+
+  it('keeps an authored label mismatch visible after removing the early layout', async () => {
+    mockTablet();
+    const previousLana = window.lana;
+    window.lana = { log: stub() };
+    try {
+      const { main, block } = buildArticle('<p>No sections here.</p>');
+      block.innerHTML = '<div><div><ol><li>Overview</li></ol></div></div>';
+      const articleSection = main.lastElementChild;
+      articleSection.dataset.status = 'pending';
+      await init(block);
+      delete articleSection.dataset.status;
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+      await waitFor(() => !main.querySelector('.blog-article-layout'));
+      expect(block.parentElement).to.equal(main.firstElementChild);
+      expect(block.nextElementSibling).to.equal(null);
+      expect(block.dataset.failed).to.equal('true');
+      expect(block.dataset.reason).to.contain('1 list items for 0 headings');
+      expect(block.hidden).to.equal(false);
+    } finally {
+      window.lana = previousLana;
+    }
+  });
+
+  it('hides the early layout until the header section above it has loaded', async () => {
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2>');
+      const [headerSection, articleSection] = main.children;
+      headerSection.dataset.status = 'pending';
+      articleSection.dataset.status = 'pending';
+      await init(block);
+      const layout = main.querySelector('.blog-article-layout');
+      expect(layout.previousElementSibling).to.equal(headerSection);
+      expect(getComputedStyle(layout).display).to.equal('none');
+      headerSection.dataset.status = 'decorated';
+      expect(getComputedStyle(layout).display).to.equal('none');
+      delete headerSection.dataset.status;
+      expect(getComputedStyle(layout).display).to.not.equal('none');
+    } finally {
+      style.remove();
+    }
   });
 
   it('cancels a pending retry when the block is initialized before the deferred event', async () => {
@@ -1500,7 +1562,7 @@ describe('blog-side-navigation section list', () => {
           const vertical = getComputedStyle(icon, '::after');
           expect(vertical.display === 'none').to.equal(expanded);
           const strokes = expanded
-            ? [['::before', 6, 1.5]]
+            ? [['::before', 6, 2]]
             : [['::before', 12, 2], ['::after', 2, 12]];
           for (const [pseudo, expectedWidth, expectedHeight] of strokes) {
             const stroke = getComputedStyle(icon, pseudo);
