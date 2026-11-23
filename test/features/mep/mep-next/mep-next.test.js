@@ -216,16 +216,54 @@ describe('M@S highlight badges', () => {
     expect(document.querySelectorAll('a.mep-mas-edit-badge-collection').length).to.equal(1);
   });
 
-  it('injectMasBadges does not add a stack or sibling badge for a STANDALONE card (per-element OST instead)', () => {
-    // Standalone = card NOT inside a [data-mas-block="collection"]. Even with a
-    // captured Studio URL it gets no stack — the gating is on collection membership.
+  it('injectMasBadges adds a stack but no sibling badge for a STANDALONE card', () => {
+    // Standalone = card NOT inside a [data-mas-block="collection"]. With a
+    // captured Studio URL it gets the action stack, but no sibling badge.
     const cardHost = document.createElement('div');
     cardHost.dataset.masBlock = 'card';
     document.body.append(cardHost);
-    mepMasStudioUrls.set(cardHost, 'https://mas.adobe.com/studio.html#content-type=merch-card&query=solo');
+    const url = 'https://mas.adobe.com/studio.html#content-type=merch-card&query=solo';
+    mepMasStudioUrls.set(cardHost, url);
     injectMasBadges();
     expect(cardHost.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
-    expect(document.querySelectorAll('.mep-mas-card-actions').length, 'standalone card gets no stack').to.equal(0);
+    expect(document.querySelectorAll('.mep-mas-card-actions').length).to.equal(1);
+    const edit = document.querySelector('.mep-mas-card-actions .mep-mas-card-action-edit');
+    expect(edit.textContent).to.include('Edit Card');
+    expect(edit.getAttribute('href')).to.equal(toFragmentEditorUrl(url));
+    cardHost.remove();
+  });
+
+  it('injectMasBadges adds the Edit Card stack for standalone cards inside tab panels', () => {
+    const panels = [false, true].map((hidden) => {
+      const panel = document.createElement('div');
+      panel.setAttribute('role', 'tabpanel');
+      panel.hidden = hidden;
+      const card = document.createElement('div');
+      card.dataset.masBlock = 'card';
+      panel.append(card);
+      document.body.append(panel);
+      mepMasStudioUrls.set(card, 'https://mas.adobe.com/studio.html#content-type=merch-card&query=tab');
+      return panel;
+    });
+    injectMasBadges();
+    injectMasBadges();
+    const stacks = document.querySelectorAll('.mep-mas-card-actions');
+    expect(stacks.length).to.equal(2);
+    stacks.forEach((stack) => {
+      const edit = stack.querySelector('.mep-mas-card-action-edit');
+      expect(edit.textContent).to.include('Edit Card');
+      expect(edit.getAttribute('href')).to.include('page=fragment-editor');
+    });
+    panels.forEach((p) => p.remove());
+  });
+
+  it('injectMasBadges adds no Edit Card control for a standalone card without a captured URL', () => {
+    const cardHost = document.createElement('div');
+    cardHost.dataset.masBlock = 'card';
+    document.body.append(cardHost);
+    injectMasBadges();
+    expect(document.querySelectorAll('.mep-mas-card-actions').length).to.equal(0);
+    expect(document.querySelectorAll('.mep-mas-card-action-edit').length).to.equal(0);
     cardHost.remove();
   });
 

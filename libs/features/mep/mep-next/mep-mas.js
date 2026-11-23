@@ -197,8 +197,8 @@ function annotateOffers() {
   });
 }
 
-// Consolidated action stack for COLLECTION cards only (Edit / View in OST /
-// Copy). Standalone cards use per-element ::before OST badges instead.
+// Consolidated action stack for any card with a captured Studio URL (Edit /
+// View in OST / Copy).
 const CARD_ACTIONS_CLASS = 'mep-mas-card-actions';
 const CARD_ACTION_EDIT_CLASS = 'mep-mas-card-action-edit';
 const CARD_ACTION_OST_CLASS = 'mep-mas-card-action-ost';
@@ -350,10 +350,10 @@ export function injectMasBadges() {
   let visibleCount = 0;
   document.querySelectorAll('[data-mas-block]').forEach((el) => {
     const surface = el.dataset.masBlock;
-    // Collection cards get the consolidated action stack; standalone cards use
-    // per-element ::before OST. offer/inline/ost are ::before pseudos too.
+    // Card hosts (collection or standalone, incl. inside tabs) get the
+    // consolidated action stack. offer/inline/ost are ::before pseudos.
     if (surface === 'card') {
-      if (el.closest('[data-mas-block="collection"]')) injectMasCardActionStack(el);
+      injectMasCardActionStack(el);
       visibleCount += 1;
       return;
     }
@@ -392,8 +392,8 @@ export function injectMasBadges() {
 
 export function removeMasBadges() {
   document.querySelectorAll(`a.${MAS_BADGE_CLASS}`).forEach((el) => el.remove());
-  // Collection card stacks live on <body> — strip them. Standalone/offer/inline/ost
-  // are CSS-only (outline + ::before).
+  // Card stacks live on <body> — strip them. offer/inline/ost are CSS-only
+  // (outline + ::before).
   document.querySelectorAll(`.${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
   liveCardActionStacks.clear();
   removeSubCollectionBadges();
