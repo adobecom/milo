@@ -457,7 +457,11 @@ function buildContent(
   }
 
   const currentEntry = getMarketsLangEntry();
-  const siteCountry = norm(currentPagePrefix) || 'us';
+  const prefixCode = norm(currentPagePrefix) || 'us';
+  // Language sites (e.g. ara, el) are not country codes; use the row's default market instead.
+  const ownRegions = currentEntry?.supportedRegions?.split(',').map((r) => r.trim().toLowerCase());
+  const prefixIsMarket = !ownRegions || ownRegions.includes(prefixCode);
+  const siteCountry = prefixIsMarket ? prefixCode : (currentEntry?.defaultMarket || prefixCode);
   const regionCode = useGeo ? siteCountry : '';
   const stayLangKey = getLangKeyForModalMarket(currentEntry || {});
   const stayLabel = useGeo && regionCode && markets?.length
