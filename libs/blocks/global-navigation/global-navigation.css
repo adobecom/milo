@@ -57,12 +57,18 @@ header.global-navigation {
   justify-content: space-between;
 }
 
+/* The wrapper always owns the auto margin that right-aligns the trailing group, even
+   before/without the assistant mounting (empty = zero-width spacer). Siblings after
+   it drop their own auto margin, so it must not depend on the mount being present. */
+.global-navigation .feds-bc-wrapper {
+  margin-inline-start: auto;
+}
+
 /* stylelint-disable-next-line selector-id-pattern */
 .global-navigation .feds-bc-wrapper:has(#acomAssistant-gnav-mount) {
   display: flex;
   align-items: center;
   width: var(--feds-bc-wrapper-width, auto);
-  margin-inline-start: auto;
   padding: 0 var(--feds-bc-wrapper-padding-inline, 8px);
 }
 
