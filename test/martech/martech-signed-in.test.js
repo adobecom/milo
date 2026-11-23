@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { enablePersonalizationV2, setConfig } from '../../libs/utils/utils.js';
+import { enablePersonalizationV2, setConfig, waitForLaunchSendEvent } from '../../libs/utils/utils.js';
 
 const { default: init } = await import('../../libs/martech/martech.js');
 
@@ -15,6 +15,7 @@ describe('martech init for a signed-in visitor', () => {
     setConfig({ locales: { '': { ietf: 'en-US' } }, miloLibs: '/libs' });
     document.head.insertAdjacentHTML('beforeend', `<script src="${LAUNCH}" type="javascript/blocked" data-loaded="true"></script>`);
     window._satellite = { track: sinon.stub() };
+    window.adobeIMS = { getProfile: () => Promise.resolve({ userId: 'A@AdobeID' }) };
     sinon.stub(window.performance, 'getEntriesByType').returns([{ serverTiming: [{ name: 'sis', description: '1' }] }]);
     document.cookie = `${AMCV}=${encodeURIComponent('MCMID|111')}; path=/`;
     metas = ['personalization-v2', 'personalization-v2-signed-in'].map((name) => {
@@ -33,6 +34,7 @@ describe('martech init for a signed-in visitor', () => {
     document.cookie = `${AMCV}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
     localStorage.removeItem('milo-signed-in-ecid');
     delete window._satellite;
+    delete window.adobeIMS;
     delete window.marketingtech;
   });
 
@@ -41,6 +43,9 @@ describe('martech init for a signed-in visitor', () => {
     expect(enablePersonalizationV2()).to.be.false;
 
     window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: {} }));
+    await waitForLaunchSendEvent();
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    expect(JSON.parse(localStorage.getItem('milo-signed-in-ecid')).ecid).to.equal('111');
     expect(enablePersonalizationV2()).to.be.false;
 
     sinon.useFakeTimers({ now: Date.now() + 2 * 60 * 1000, toFake: ['Date'] });

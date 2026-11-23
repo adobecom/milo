@@ -2299,11 +2299,15 @@ export function isSignedOut() {
 const SIGNED_IN_ECID_KEY = 'milo-signed-in-ecid';
 // Adobe links an ECID to the Adobe ID 20-60 s after a signed-in page view.
 const ECID_LINK_DELAY_MS = 2 * 60 * 1000;
+const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 
 function getEcid() {
   try {
-    return decodeURIComponent(getCookie('AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg') || '')
-      .match(/MCMID\|([^|]+)/)?.[1];
+    // Browsers store the cookie name with either "@" or "%40", so decode names before matching.
+    const amcv = document.cookie.split(';')
+      .map((cookie) => cookie.trim().split('='))
+      .find(([name]) => decodeURIComponent(name) === AMCV_COOKIE);
+    return decodeURIComponent(amcv?.slice(1).join('=') || '').match(/MCMID\|([^|]+)/)?.[1];
   } catch (e) {
     return undefined;
   }
@@ -2317,22 +2321,58 @@ function readSignedInEcid() {
   }
 }
 
-/**
- * Remembers the ECID after Launch sends a signed-in page view with the Adobe ID.
- */
-export function rememberSignedInEcid() {
-  const ecid = getEcid();
-  if (!ecid || readSignedInEcid().ecid === ecid) return;
+export function forgetSignedInEcid() {
   try {
-    localStorage.setItem(SIGNED_IN_ECID_KEY, JSON.stringify({ ecid, time: Date.now() }));
+    localStorage.removeItem(SIGNED_IN_ECID_KEY);
   } catch (e) {
     // Storage is not available.
   }
 }
 
+async function getSignedInUser() {
+  try {
+    await loadIms().catch(() => {});
+    const { userId } = await window.adobeIMS.getProfile();
+    if (!userId) return undefined;
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(userId));
+    return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  } catch (e) {
+    return undefined;
+  }
+}
+
+/**
+ * Remembers the ECID and the signed-in account after Launch sends a signed-in page view
+ * with the Adobe ID. A new ECID or a different account starts a new wait.
+ */
+export async function rememberSignedInEcid() {
+  const ecid = getEcid();
+  const user = ecid && await getSignedInUser();
+  if (!user) return;
+  const saved = readSignedInEcid();
+  if (saved.ecid === ecid && saved.user === user) return;
+  try {
+    localStorage.setItem(SIGNED_IN_ECID_KEY, JSON.stringify({ ecid, user, time: Date.now() }));
+  } catch (e) {
+    // Storage is not available.
+  }
+}
+
+let launchSendEvent;
+/**
+ * Resolves on the first alloy_sendEvent after the first call. Callers that ask after the
+ * event fired still get it, so the order of Launch and MEP does not matter.
+ */
+export function waitForLaunchSendEvent() {
+  launchSendEvent ??= new Promise((resolve) => {
+    window.addEventListener('alloy_sendEvent', resolve, { once: true });
+  });
+  return launchSendEvent;
+}
+
 function isEcidLinked() {
-  const { ecid, time } = readSignedInEcid();
-  return !!ecid && ecid === getEcid() && Date.now() - time >= ECID_LINK_DELAY_MS;
+  const { ecid, user, time } = readSignedInEcid();
+  return !!ecid && !!user && ecid === getEcid() && Date.now() - time >= ECID_LINK_DELAY_MS;
 }
 
 /**

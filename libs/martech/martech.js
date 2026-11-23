@@ -1,6 +1,6 @@
 import {
   getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
-  rememberSignedInEcid,
+  rememberSignedInEcid, forgetSignedInEcid, waitForLaunchSendEvent,
 } from '../utils/utils.js';
 
 const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
@@ -161,7 +161,9 @@ const loadMartechFiles = async (config) => {
       setupEntitlementCallback(loadIms().then(() => !!window.adobeIMS?.isSignedInUser()));
     }
     // Launch's signed-in page view sends the Adobe ID with the ECID, so Adobe links them.
-    if (!isSignedOut()) {
+    if (isSignedOut()) {
+      forgetSignedInEcid();
+    } else {
       window.addEventListener(ALLOY_SEND_EVENT, rememberSignedInEcid, { once: true });
     }
 
@@ -215,6 +217,8 @@ const loadMartechFiles = async (config) => {
     };
     window.edgeConfigId = config.env.edgeConfigId;
 
+    // Start listening before Launch loads, so MEP still sees a page view that finishes first.
+    waitForLaunchSendEvent();
     await loadScript((
       isProxied()
         ? ''
