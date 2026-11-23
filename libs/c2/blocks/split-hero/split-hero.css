@@ -498,6 +498,7 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
         --sh-d-fit-width: 1600px;
         --sh-d-margin: 16px;
         --sh-d-overlap: var(--s2a-border-radius-xl);
+        --sh-d-copy-boost: 1.25;
 
         timeline-scope: --split-hero;
       }
@@ -612,6 +613,9 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
             .split-hero-foreground {
               --sh-pan-delay: var(--sh-d-copy-start);
 
+              /* Copy taller than the viewport pans faster to bring its CTAs into view. */
+              --sh-pan-boost: min(0.5, var(--sh-overflow-ratio, 0) * var(--sh-d-copy-boost));
+
               align-self: flex-start;
             }
 
@@ -702,12 +706,12 @@ body:has(header.has-breadcrumbs) .section:has(> .split-hero) {
 
   @keyframes sh-pan-join {
     from { transform: translateY(0); }
-    to { transform: translateY(calc(-0.5 * var(--sh-d-pan-rate) * var(--sh-pan-ramp))); }
+    to { transform: translateY(calc(-0.5 * (var(--sh-d-pan-rate) + var(--sh-pan-boost, 0)) * var(--sh-pan-ramp))); }
   }
 
   @keyframes sh-pan {
     from { transform: translateY(0); }
-    to { transform: translateY(calc(-1 * var(--sh-d-pan-rate) * (var(--sh-end) - var(--sh-pan-cruise)))); }
+    to { transform: translateY(calc(-1 * (var(--sh-d-pan-rate) + var(--sh-pan-boost, 0)) * (var(--sh-end) - var(--sh-pan-cruise)))); }
   }
 
   @keyframes sh-lock-join {

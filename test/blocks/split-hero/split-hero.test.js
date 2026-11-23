@@ -608,8 +608,14 @@ describe('Split Hero', () => {
   describe('parallax reveal', () => {
     before(async () => loadStyles('/libs/c2/blocks/section-metadata/section-metadata.css'));
 
-    async function renderReveal(width, variant = true, media = MEDIA, breadcrumbs = true) {
-      await setViewport({ width, height: 900 });
+    async function renderReveal(
+      width,
+      variant = true,
+      media = MEDIA,
+      breadcrumbs = true,
+      height = 900,
+    ) {
+      await setViewport({ width, height });
       document.body.innerHTML = `
         <header class="${breadcrumbs ? 'has-breadcrumbs' : ''}" style="position:fixed;inset:0 0 auto;height:80px"></header>
         <main>
@@ -733,6 +739,63 @@ describe('Split Hero', () => {
       });
     });
 
+    [1024, 1440].forEach((width) => {
+      it(`scrolls overflowing copy into view before revealing the next section at ${width}px`, async () => {
+        const block = await renderReveal(width, true, MEDIA, true, 600);
+        const copy = block.querySelector('.split-hero-text');
+        block.querySelector('.split-hero-supporting').remove();
+        copy.insertAdjacentHTML('beforeend', `<p>${'Längerer lokalisierter Text für Adobe Acrobat. '.repeat(24)}</p>`);
+        block.querySelector('.split-hero-merch-ctas').insertAdjacentHTML(
+          'beforeend',
+          '<a href="/plans" class="con-button outline">Alle Abo-Optionen</a>',
+        );
+        await nextFrame();
+        await nextFrame();
+        await nextFrame();
+
+        const frame = block.querySelector('.split-hero-media-frame');
+        const next = block.closest('.section').nextElementSibling;
+        const initialCopy = copy.getBoundingClientRect().top;
+        const initialMedia = frame.getBoundingClientRect().width;
+        const initialLip = next.getBoundingClientRect().top;
+        const overflow = block.offsetHeight - window.innerHeight;
+        const buttons = [...block.querySelectorAll('.split-hero-merch-ctas .con-button')];
+        expect(overflow).to.be.greaterThan(0);
+        expect(buttons).to.have.length(2);
+        expect(buttons[0].getBoundingClientRect().bottom).to.be.greaterThan(window.innerHeight);
+
+        // Pinned from the first pixel: the media leads while the copy and next section hold.
+        await scrollToPosition(overflow / 2);
+        expect(block.getBoundingClientRect().top).to.be.closeTo(0, 1);
+        expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
+        expect(frame.getBoundingClientRect().width).to.be.lessThan(initialMedia);
+        expect(next.getBoundingClientRect().top).to.be.closeTo(initialLip, 1);
+
+        // The boosted copy pan clears both CTAs before the next section reaches them.
+        let position = overflow / 2;
+        while (buttons[1].getBoundingClientRect().bottom >= window.innerHeight && position < 3000) {
+          position += 25;
+          // eslint-disable-next-line no-await-in-loop
+          await scrollToPosition(position);
+        }
+        buttons.forEach((button) => {
+          const rect = button.getBoundingClientRect();
+          expect(rect.top).to.be.greaterThan(124);
+          expect(rect.bottom).to.be.lessThan(window.innerHeight);
+          expect(rect.bottom).to.be.at.most(next.getBoundingClientRect().top);
+          [rect.left + 8, rect.right - 8].forEach((x) => {
+            [rect.top + 8, rect.bottom - 8].forEach((y) => {
+              expect(button.contains(document.elementFromPoint(x, y))).to.be.true;
+            });
+          });
+        });
+
+        await scrollToPosition(0);
+        expect(copy.getBoundingClientRect().top).to.be.closeTo(initialCopy, 1);
+        expect(frame.getBoundingClientRect().width).to.be.closeTo(initialMedia, 1);
+      });
+    });
+
     async function scrollMobileSpan(block) {
       const span = parseFloat(block.closest('.section').style.getPropertyValue('--sh-drift-end'));
       await scrollToPosition(span);
@@ -838,6 +901,14 @@ describe('Split Hero', () => {
       await nextFrame();
       await nextFrame();
       expect(content.offsetHeight).to.equal(800);
+      await setViewport({ width: 1440, height: 600 });
+      await nextFrame();
+      await nextFrame();
+      const overflow = block.offsetHeight - window.innerHeight;
+      expect(overflow).to.be.greaterThan(0);
+      const section = block.closest('.section');
+      const ratio = parseFloat(section.style.getPropertyValue('--sh-overflow-ratio'));
+      expect(ratio).to.be.closeTo(overflow / window.innerHeight, 0.01);
       await setViewport({ width: 1440, height: 900 });
       await nextFrame();
       await nextFrame();
