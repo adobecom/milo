@@ -9,9 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { ADOBE_SHAREPOINT_HOSTNAME, getValidatedRepoOwnerOrigin } from '../../libs/utils/utils.js';
+
 const loading = document.getElementById('loading');
 const STATUS_LEVELS = ['level-0', 'level-4'];
 const MAX_RETRIES = 5;
+const TRUSTED_CONFIG_OWNERS = ['adobecom', 'adobe'];
 let urlInfo;
 
 export function createTag(name, attrs) {
@@ -60,38 +63,45 @@ export function getDocPathFromUrl(url) {
   return `${path}.docx`;
 }
 
-export function getUrlInfo() {
-  if (urlInfo) {
-    return urlInfo;
+function isValidReferrer(url) {
+  try {
+    return new URL(url).hostname === ADOBE_SHAREPOINT_HOSTNAME;
+  } catch {
+    return false;
   }
-  const location = new URL(document.location.href);
-  function getParam(name) {
-    return location.searchParams.get(name);
-  }
+}
 
-  function isValidReferrer(url) {
-    const allowedHosts = ['adobe.sharepoint.com'];
-    return allowedHosts.includes(new URL(url)?.hostname);
-  }
-
-  const projectName = getParam('project');
+export function parseUrlInfo(href) {
+  const { searchParams } = new URL(href);
+  const projectName = searchParams.get('project');
   const sub = projectName ? projectName.split('--') : [];
 
-  const sp = getParam('referrer');
-  const owner = getParam('owner') || sub[1];
-  const repo = getParam('repo') || sub[0];
-  const ref = getParam('ref') || 'main';
+  const sp = searchParams.get('referrer');
+  const owner = searchParams.get('owner') || sub[1];
+  const repo = searchParams.get('repo') || sub[0];
+  const ref = searchParams.get('ref') || 'main';
 
-  urlInfo = {
+  // Anyone can publish an *.aem.page site, so a well-formed host alone does not
+  // make its config trustworthy; only load config from known owners (MWPW-210165).
+  const isTrustedOwner = TRUSTED_CONFIG_OWNERS.includes(`${owner}`.trim().toLowerCase());
+  const origin = isTrustedOwner
+    ? getValidatedRepoOwnerOrigin(repo, owner, { ref, tld: 'page' })
+    : null;
+
+  return {
     sp,
     owner,
     repo,
     ref,
-    origin: `https://${ref}--${repo}--${owner}.aem.page`,
+    origin,
     isValid() {
-      return sp && owner && repo && ref && isValidReferrer(sp);
+      return !!(sp && origin && isValidReferrer(sp));
     },
   };
+}
+
+export function getUrlInfo() {
+  if (!urlInfo) urlInfo = parseUrlInfo(document.location.href);
   return urlInfo;
 }
 

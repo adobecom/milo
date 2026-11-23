@@ -10,6 +10,11 @@
  * governing permissions and limitations under the License.
  */
 /* global */
+import {
+  ADOBE_ENTRA_AUTHORITY,
+  MILO_ENTRA_CLIENT_ID,
+  getValidatedSharePointSite,
+} from '../../libs/utils/utils.js';
 import { getUrlInfo } from './utils.js';
 
 const LOC_CONFIG = '/drafts/localization/configs/config.json';
@@ -87,8 +92,20 @@ function getGLaaSAPIDetails(workflow, previewServer) {
   };
 }
 
+// The GLaaS access token is sent to config.glaas.url, so keep it on Adobe's
+// corp network rather than trusting whatever host the config names.
+function isTrustedGLaaSUrl(url) {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return protocol === 'https:' && hostname.endsWith('.corp.adobe.com');
+  } catch {
+    return false;
+  }
+}
+
 function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
   const gLaaSConfig = config.glaas.data[0];
+  if (!isTrustedGLaaSUrl(gLaaSConfig?.url)) throw new Error('Could not verify GLaaS URL.');
   return {
     ...gLaaSConfig,
     workflows: workflowsConfig,
@@ -102,19 +119,22 @@ function getDecoratedGLaaSConfig(config, decoratedLocales, workflowsConfig) {
 
 function getSharepointConfig(config, fgColor) {
   const sharepointConfig = config.sp.data[0];
+  const site = getValidatedSharePointSite(sharepointConfig.site);
+  if (!site) throw new Error('Could not verify SharePoint site.');
   const { driveId } = sharepointConfig;
   const drive = driveId ? `/drives/${driveId}` : '/drive';
 
-  // ${sharepointConfig.site} - MS Graph API Url with site pointers.
-  const baseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.rootFolders}`;
-  const fgBaseURI = `${sharepointConfig.site}${drive}/root:${sharepointConfig.fgRootFolder}`.replace('<fgColor>', `${fgColor}`);
-  const baseItemsURI = `${sharepointConfig.site}${drive}/items`;
+  // ${site} - MS Graph API Url with site pointers.
+  const baseURI = `${site}${drive}/root:${sharepointConfig.rootFolders}`;
+  const fgBaseURI = `${site}${drive}/root:${sharepointConfig.fgRootFolder}`.replace('<fgColor>', `${fgColor}`);
+  const baseItemsURI = `${site}${drive}/items`;
   return {
     ...sharepointConfig,
+    site,
     clientApp: {
       auth: {
-        clientId: sharepointConfig.clientId,
-        authority: sharepointConfig.authority,
+        clientId: MILO_ENTRA_CLIENT_ID,
+        authority: ADOBE_ENTRA_AUTHORITY,
       },
       cache: { cacheLocation: 'sessionStorage' },
     },
@@ -126,7 +146,7 @@ function getSharepointConfig(config, fgColor) {
       url: GRAPH_API,
       file: {
         get: { baseURI, fgBaseURI },
-        download: { baseURI: `${sharepointConfig.site}/drive/items` },
+        download: { baseURI: `${site}/drive/items` },
         upload: {
           baseURI,
           fgBaseURI,

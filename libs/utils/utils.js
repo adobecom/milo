@@ -3240,37 +3240,44 @@ export function partition(arr, fn) {
 const AEM_HOST_SEGMENT_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const AEM_HOST_SEGMENT_MAX_LENGTH = 63;
 
+const AEM_HOST_TLDS = ['live', 'page'];
+
 /**
- * Validates a repo/owner pair intended for use in an *.aem.live host and
- * returns the resulting origin, or null if either value is missing or does
- * not look like a safe AEM repo/owner segment. Guards against arbitrary host
- * injection via the `repo`/`owner` query params (VULN-38270).
+ * Validates a ref/repo/owner triple intended for use in an *.aem.live (or
+ * *.aem.page) host and returns the resulting origin, or null if any value is
+ * missing or does not look like a safe AEM host segment. Guards against
+ * arbitrary host injection via the `ref`/`repo`/`owner` query params
+ * (VULN-38270, MWPW-210165).
  * @param {string} repo raw repo query parameter value
  * @param {string} owner raw owner query parameter value
- * @returns {string|null} origin, or null if repo/owner are missing or invalid
+ * @param {object} [options]
+ * @param {string} [options.ref='main'] raw ref (branch) query parameter value
+ * @param {string} [options.tld='live'] 'live' or 'page'
+ * @returns {string|null} origin, or null if any value is missing or invalid
  */
-export function getValidatedRepoOwnerOrigin(repo, owner) {
-  if (!repo || !owner) return null;
-  const cleanRepo = repo.trim().toLowerCase();
-  const cleanOwner = owner.trim().toLowerCase();
-  if (
-    cleanRepo.length > AEM_HOST_SEGMENT_MAX_LENGTH
-    || cleanOwner.length > AEM_HOST_SEGMENT_MAX_LENGTH
-    || !AEM_HOST_SEGMENT_PATTERN.test(cleanRepo)
-    || !AEM_HOST_SEGMENT_PATTERN.test(cleanOwner)
-  ) return null;
+export function getValidatedRepoOwnerOrigin(repo, owner, { ref = 'main', tld = 'live' } = {}) {
+  if (!repo || !owner || !ref || !AEM_HOST_TLDS.includes(tld)) return null;
+  const segments = [ref, repo, owner].map((segment) => `${segment}`.trim().toLowerCase());
+  if (segments.some((segment) => segment.length > AEM_HOST_SEGMENT_MAX_LENGTH
+    || !AEM_HOST_SEGMENT_PATTERN.test(segment))) return null;
   let url;
   try {
-    url = new URL(`https://main--${cleanRepo}--${cleanOwner}.${SLD}.live`);
+    url = new URL(`https://${segments.join('--')}.${SLD}.${tld}`);
   } catch {
     // stricter URL parsers (e.g. Node) reject invalid punycode labels
     return null;
   }
-  if (!url.hostname.endsWith(`.${SLD}.live`)) return null;
+  if (!url.hostname.endsWith(`.${SLD}.${tld}`)) return null;
   return url.origin;
 }
 
 export const ADOBE_SHAREPOINT_HOSTNAME = 'adobe.sharepoint.com';
+// Milo's first-party Entra app and Adobe's tenant authority. Pinned in code
+// rather than read from fetched config, whose origin is client-controlled: a
+// poisoned config could otherwise point login at an attacker's app registration
+// (MWPW-206105 / VULN-38270 / MWPW-210165).
+export const MILO_ENTRA_CLIENT_ID = '008626ae-f818-43d8-9d7f-26afe05e771d';
+export const ADOBE_ENTRA_AUTHORITY = 'https://login.microsoftonline.com/fa7b1b5a-7b34-4387-94ae-d2c178decee1';
 const ESCAPED_SHAREPOINT_HOSTNAME = ADOBE_SHAREPOINT_HOSTNAME.replace(/\./g, '\\.');
 const GUID_PATTERN = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const GRAPH_SHAREPOINT_SITE_PATTERN = new RegExp(`^https://graph\\.microsoft\\.com/v1\\.0/sites/${ESCAPED_SHAREPOINT_HOSTNAME},${GUID_PATTERN},${GUID_PATTERN}$`);

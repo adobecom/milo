@@ -18,6 +18,11 @@ Warning: edit the config carefuly, an invalid config might break the tool
 - `helix-glaas` sheet (technical - CHANGE ONLY IF YOU KNOW WHAT YOU ARE DOING): GLaaS connection parameters
 - `helix-sp` sheet (technical - CHANGE ONLY IF YOU KNOW WHAT YOU ARE DOING): Sharepoint connection parameters
 
+Security constraints (MWPW-210165) — the tool refuses to load a config that breaks them:
+- The config is only loaded from `https://<ref>--<repo>--<owner>.aem.page` where `owner` is `adobecom` or `adobe` (`TRUSTED_CONFIG_OWNERS` in `utils.js`).
+- `helix-sp` `site` must be Adobe's Graph SharePoint site (`https://graph.microsoft.com/v1.0/sites/adobe.sharepoint.com,<guid>,<guid>`); `clientId` and `authority` are ignored in favour of the pinned Milo Entra app.
+- `helix-glaas` `url` must be `https://` on a `*.corp.adobe.com` host.
+
 ## Usage
 
 - Create a new Excel spreadsheet (project document) in a folder under `drafts` in the Project Sharepoint site

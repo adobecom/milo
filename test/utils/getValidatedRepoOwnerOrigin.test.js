@@ -59,4 +59,20 @@ describe('getValidatedRepoOwnerOrigin', () => {
       expect(() => getValidatedRepoOwnerOrigin(repo, owner), `${repo} / ${owner}`).to.not.throw();
     });
   });
+
+  it('builds an aem.page origin for a custom ref', () => {
+    expect(getValidatedRepoOwnerOrigin('milo', 'adobecom', { ref: 'Stage', tld: 'page' }))
+      .to.equal('https://stage--milo--adobecom.aem.page');
+  });
+
+  it('rejects host-escape payloads in ref (MWPW-210165)', () => {
+    const hostile = ['evil.example/', 'evil.example#', 'evil.example?', 'a@evil.example', 'mi--lo', ''];
+    hostile.forEach((ref) => {
+      expect(getValidatedRepoOwnerOrigin('milo', 'adobecom', { ref, tld: 'page' }), ref).to.be.null;
+    });
+  });
+
+  it('rejects unsupported tlds', () => {
+    expect(getValidatedRepoOwnerOrigin('milo', 'adobecom', { tld: 'example' })).to.be.null;
+  });
 });
