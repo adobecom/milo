@@ -261,7 +261,7 @@ function setAuthorMeta(info, details) {
   if (!text) return;
   let meta = info.querySelector('.blog-header-author-meta');
   if (!meta) {
-    meta = createTag('span', { class: 'blog-header-author-meta body-md' });
+    meta = createTag('span', { class: 'blog-header-author-meta' });
     info.append(meta);
   }
   meta.textContent = text;
@@ -270,8 +270,8 @@ function setAuthorMeta(info, details) {
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
   const el = (href && name)
-    ? createTag('a', { class: 'blog-header-author-name label', href })
-    : createTag('span', { class: 'blog-header-author-name label' });
+    ? createTag('a', { class: 'blog-header-author-name', href })
+    : createTag('span', { class: 'blog-header-author-name' });
   el.textContent = name ?? '';
   return el;
 }
@@ -693,11 +693,7 @@ function decorateDividers(el) {
   headerSection.classList.add('blog-divider-frame');
   const sections = [headerSection, ...getBlogSections(headerSection)];
 
-  const findEndpoint = () => {
-    const layout = headerSection.nextElementSibling;
-    if (layout?.classList.contains('blog-article-layout')) return layout;
-    return getBlogSections(headerSection).at(-1) || headerSection;
-  };
+  const findEndpoint = () => getBlogSections(headerSection).at(-1) || headerSection;
 
   let endpoint;
   const disconnectAll = () => {
@@ -722,10 +718,9 @@ function decorateDividers(el) {
 
   disconnectAll();
   const observer = new ResizeObserver(updateFrame);
-  // The deferred side-navigation inserts .blog-article-layout as a new sibling and
-  // moves the article sections into it, which the ResizeObserver can miss. Watch
-  // direct children of main (childList only, so no attribute/style churn) and
-  // recompute on load so the dividers span the full article quickly and reliably.
+  // Sections can be added or removed after load (e.g. personalization), which the
+  // ResizeObserver can miss. Watch direct children of main (childList only, so no
+  // attribute/style churn) and recompute on load so the dividers span the full article.
   const refresh = () => updateFrame([], observer);
   const mutationObserver = new MutationObserver(refresh);
   dividerObservers.set(headerSection, [observer, mutationObserver]);
@@ -740,10 +735,7 @@ const BAR_HEIGHT = 8;
 const PROGRESS_BAR_OFFSET = -4;
 
 function findArticleCopy(headerSection) {
-  const layout = headerSection.nextElementSibling;
-  const sections = layout?.classList.contains('blog-article-layout')
-    ? [...layout.querySelectorAll(':scope > .blog-article-content > .section:not([hidden])')]
-    : getBlogSections(headerSection);
+  const sections = getBlogSections(headerSection);
   const contents = [];
   for (const section of sections) {
     if (section.querySelector('.card-metadata')) {
@@ -781,7 +773,7 @@ function decorateProgressBar(el, main) {
     }
     if (discover) {
       articleCopy = findArticleCopy(headerSection);
-      article = main.querySelector('.blog-article-layout > .blog-article-content');
+      article = main.querySelector(':scope > .blog-article-start');
       discover = false;
     }
     const first = articleCopy.first?.getBoundingClientRect();
@@ -791,10 +783,14 @@ function decorateProgressBar(el, main) {
       return;
     }
 
-    // The mobile nav is sticky and display: contents; the divider follows the article's gap.
-    const dividerY = stacked.matches && article
-      ? article.getBoundingClientRect().top
-        - parseFloat(getComputedStyle(article).marginBlockStart) / 2
+    // Below 768px the divider sits midway through the article's gap below the navigation.
+    const articleStyle = stacked.matches && article && getComputedStyle(article);
+    const articleGap = articleStyle
+      ? parseFloat(articleStyle.marginBlockStart)
+        - parseFloat(articleStyle.getPropertyValue('--blog-side-navigation-block-size'))
+      : NaN;
+    const dividerY = Number.isFinite(articleGap)
+      ? article.getBoundingClientRect().top - articleGap / 2
       : headerSection.getBoundingClientRect().bottom - 1;
     const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
     const dividerTop = dividerY - BAR_HEIGHT / 2;

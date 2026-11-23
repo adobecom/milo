@@ -78,7 +78,7 @@ describe('Tag CTA', () => {
         await setViewport({ width, height: 900 });
         const block = document.querySelector('.tag-cta');
         const article = block.parentElement;
-        article.classList.add('blog-article-content');
+        article.classList.add('blog-article-section');
         article.style.cssText = 'width: 70%; margin-inline: auto';
         await init(block);
         const column = article.getBoundingClientRect();

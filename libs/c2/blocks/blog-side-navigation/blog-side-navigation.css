@@ -1,80 +1,47 @@
-/* Mobile: the navigation sits above the article and sticks under the global nav.
-   From 768px it becomes a sticky column beside the article. */
-.blog-article-layout {
-  display: flow-root;
-  gap: var(--s2a-spacing-xl);
-  box-sizing: border-box;
-  padding-inline: 0;
-  padding-block-end: var(--s2a-spacing-3xl);
-
-  @media (width >= 768px) {
-    display: grid;
-    grid-template-columns: minmax(0, min(280px, 30%)) minmax(0, 1fr);
-    align-items: start;
-    padding-inline: var(--grid-margin-width);
-  }
+/* The navigation stays in the header section and the article sections stay in main, so
+   section analytics and MEP's section selectors keep counting them. The navigation is a track
+   placed out of flow beside the article (from 768px) or above it, and its panel sticks inside
+   that track. The article sections are inset into the column the track leaves free. */
+.blog-side-navigation,
+main > .blog-article-section {
+  --blog-side-navigation-column: min(280px, calc((100% - 2 * var(--grid-margin-width)) * 0.3));
+  --blog-article-column-gap: var(--s2a-spacing-xl);
 
   @media (width >= 1280px) {
-    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
-    gap: 56px;
+    --blog-article-column-gap: 56px;
   }
 }
 
-/* The layout is built early so the article reveals in its final column. It is not a
-   .section, so keep it hidden while the header section above it is still loading. */
-main > .section[data-status] + .blog-article-layout {
-  display: none;
+/* The track is placed against the section that holds it. */
+main > .section:has(> .blog-side-navigation) {
+  position: relative;
 }
 
-.blog-side-navigation {
-  width: 100%;
-  max-width: 600px;
-  margin-inline: auto;
+main .blog-side-navigation {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 100%;
+  inset-inline: 0;
+  box-sizing: border-box;
+  block-size: var(--blog-side-navigation-track-size, 0);
+  margin: 0;
   color: var(--s2a-color-content-default);
   font-size: var(--s2a-font-size-md);
   line-height: 1.5;
-  scrollbar-width: none;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Lets the nav stick within the article flow rather than this wrapper. */
-  &:not([hidden]) {
-    display: contents;
-  }
+  /* The track spans the article; only the panel takes pointer input. */
+  pointer-events: none;
 
   &.is-pending {
     visibility: hidden;
-
-    /* Holds the collapsed navigation's height (heading line + one link row) until it renders. */
-    &:not([hidden]) {
-      display: block;
-      height: calc(3em + 2 * var(--s2a-spacing-sm) + var(--s2a-border-width-sm));
-      overflow: hidden;
-    }
   }
 
   @media (width >= 768px) {
-    position: sticky;
-    z-index: 1;
-    top: calc(var(--global-height-nav) + var(--s2a-spacing-lg));
-    max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-3xl));
-    max-width: 280px;
-    margin-inline: 0;
-    overflow-y: auto;
-
-    &:not([hidden]) {
-      display: block;
-    }
-
-    &.is-pending:not([hidden]) {
-      height: auto;
-      overflow: visible auto;
-    }
+    inset-inline: var(--grid-margin-width) auto;
+    inline-size: var(--blog-side-navigation-column);
   }
 
-  > p {
+  .blog-side-navigation-panel > p {
     position: relative;
     z-index: 1;
     box-sizing: border-box;
@@ -96,7 +63,7 @@ main > .section[data-status] + .blog-article-layout {
     }
   }
 
-  > nav {
+  .blog-side-navigation-panel > nav {
     position: sticky;
     top: var(--global-height-nav);
     z-index: 1;
@@ -119,7 +86,7 @@ main > .section[data-status] + .blog-article-layout {
     }
   }
 
-  > .blog-related-content {
+  .blog-side-navigation-panel > .blog-related-content {
     isolation: isolate;
     box-sizing: border-box;
     padding-inline: var(--grid-margin-width);
@@ -297,18 +264,41 @@ main > .section[data-status] + .blog-article-layout {
   }
 }
 
-.blog-article-content {
+.blog-side-navigation-panel {
+  pointer-events: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Lets the nav stick within the track rather than this panel. */
+  @media (width < 768px) {
+    display: contents;
+  }
+
+  @media (width >= 768px) {
+    position: sticky;
+    top: calc(var(--global-height-nav) + var(--s2a-spacing-lg));
+    max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-3xl));
+    overflow-y: auto;
+  }
+}
+
+main > .blog-article-section {
   isolation: isolate;
   box-sizing: border-box;
   min-width: 0;
-  width: 100%;
   max-width: none;
-  margin-inline: auto;
-  margin-block-start: var(--s2a-spacing-xl);
-  padding-inline: var(--grid-margin-width);
+  margin-inline: var(--grid-margin-width);
 
   @media (width >= 768px) {
-    margin-block-start: 0;
+    margin-inline-start: calc(
+      var(--grid-margin-width) + var(--blog-side-navigation-column) + var(--blog-article-column-gap)
+    );
+  }
+
+  &[class*="grid-width-"] {
     padding-inline: 0;
   }
 
@@ -321,32 +311,63 @@ main > .section[data-status] + .blog-article-layout {
     }
   }
 
-  > .section {
-    &[class*="grid-width-"] {
-      padding-inline: 0;
+  > .content {
+    max-width: 100%;
+    margin-inline: 0;
+
+    /* Authored body copy: small vertical rhythm and a smaller in-body heading. */
+    > * + * {
+      margin-block-start: var(--s2a-spacing-xs);
     }
 
-    > .content {
-      max-width: 100%;
-      margin-inline: 0;
-
-      /* Authored body copy: small vertical rhythm and a smaller in-body heading. */
-      > * + * {
-        margin-block-start: var(--s2a-spacing-xs);
-      }
-
-      > [class*="heading-"] {
-        margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
-      }
+    > p,
+    > ul,
+    > ol {
+      font-size: var(--s2a-typography-font-size-body-lg);
     }
 
-    /* In-body related-content cards get extra breathing room beneath them. */
-    > .related-content-card {
-      margin-block-end: var(--s2a-spacing-xl);
-    }
-
-    > .tag-cta {
-      margin-block: var(--s2a-spacing-2xl);
+    > [class*="heading-"] {
+      margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
     }
   }
+
+  /* In-body related-content cards get extra breathing room beneath them. */
+  > .related-content-card {
+    margin-block-end: var(--s2a-spacing-xl);
+  }
+
+  > .tag-cta {
+    margin-block: var(--s2a-spacing-2xl);
+  }
+}
+
+/* Below 768px the article starts under the out-of-flow navigation, whose height the
+   navigation sets once rendered; the fallback is its collapsed height (heading + one link). */
+main > .blog-article-start {
+  --blog-article-offset: var(--s2a-spacing-xl);
+
+  margin-block-start: calc(
+    var(--blog-side-navigation-block-size, calc(3 * var(--s2a-font-size-md) + 2 * var(--s2a-spacing-sm) + var(--s2a-border-width-sm)))
+    + var(--blog-article-offset)
+  );
+
+  /* Keeps the article's first margin inside the column, as a column box would. */
+  @media (width >= 768px) {
+    margin-block-start: 0;
+
+    &::before {
+      content: "";
+      display: table;
+    }
+  }
+}
+
+main > .blog-article-end {
+  padding-block-end: var(--s2a-spacing-3xl);
+}
+
+/* The article sections are placed beside the navigation before they load; keep them hidden
+   until the header section above them has loaded too. */
+main > .section[data-status]:has(.blog-header) ~ .blog-article-section {
+  display: none;
 }

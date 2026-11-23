@@ -5,7 +5,7 @@ import { getBlogSections } from '../blog-header/blog-header.js';
 const sectionTrackers = new WeakMap();
 const authoredConfigs = new WeakMap();
 const pendingInitializations = new WeakMap();
-const originalPositions = new WeakMap();
+const ARTICLE_CLASSES = ['blog-article-section', 'blog-article-start', 'blog-article-end'];
 
 function getAuthoredConfig(block) {
   if (!authoredConfigs.has(block)) {
@@ -41,20 +41,50 @@ function isUniqueId(id, heading) {
     && document.querySelectorAll(`#${CSS.escape(id)}`).length === 1;
 }
 
-function scrollToSection(hash, block) {
+function scrollToSection(heading, block) {
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     ? 'instant' : 'smooth';
   const nav = block.querySelector('nav');
   const offset = getComputedStyle(nav).position === 'sticky'
     ? nav.getBoundingClientRect().height + 24 : 0;
+  // Kept author ids need not be valid selectors (e.g. "2024-trends"); escape before the lookup.
+  const hash = `#${encodeURIComponent(CSS.escape(heading.id))}`;
   return scrollToHashedElement(hash, document, behavior, offset);
+}
+
+// A navigation authored in its own section is not part of the article.
+function getArticleSections(headerSection, block) {
+  return getBlogSections(headerSection).filter((section) => !section.contains(block));
+}
+
+// The article sections stay where they are in main, so section analytics (daa-lh) and
+// MEP's positional section selectors keep counting them. Classes place them beside the nav.
+function markArticle(main, sections) {
+  main.querySelectorAll(`:scope > .${ARTICLE_CLASSES[0]}`)
+    .forEach((section) => section.classList.remove(...ARTICLE_CLASSES));
+  sections.forEach((section) => section.classList.add(ARTICLE_CLASSES[0]));
+  sections[0]?.classList.add(ARTICLE_CLASSES[1]);
+  sections.at(-1)?.classList.add(ARTICLE_CLASSES[2]);
+}
+
+function unmarkArticle(main, block) {
+  markArticle(main, []);
+  block.style.removeProperty('--blog-side-navigation-track-size');
+  ['--blog-side-navigation-height', '--blog-side-navigation-block-size']
+    .forEach((name) => main.style.removeProperty(name));
+}
+
+function setSize(element, name, size) {
+  const value = `${size}px`;
+  if (element.style.getPropertyValue(name) !== value) element.style.setProperty(name, value);
 }
 
 function trackActiveSection(block, headings, collapseControls) {
   const links = [...block.querySelectorAll('nav > ul > li > a')];
   const navigation = document.querySelector('.global-navigation');
   const jumpNavigation = block.querySelector('nav');
-  const layout = block.closest('.blog-article-layout');
+  const panel = block.querySelector('.blog-side-navigation-panel');
+  const main = block.closest('main');
   let currentIndex = -1;
   let frame = 0;
   let measure = true;
@@ -77,7 +107,7 @@ function trackActiveSection(block, headings, collapseControls) {
     if (measure) {
       const height = getComputedStyle(jumpNavigation).position === 'sticky'
         ? jumpNavigation.getBoundingClientRect().height : 0;
-      layout?.style.setProperty('--blog-side-navigation-height', `${height}px`);
+      main.style.setProperty('--blog-side-navigation-height', `${height}px`);
       headingTops = headings.map((heading) => heading.getBoundingClientRect().top + scrollTop);
       scrollMargin = parseFloat(getComputedStyle(headings[0]).scrollMarginTop) || 0;
       measure = false;
@@ -97,25 +127,48 @@ function trackActiveSection(block, headings, collapseControls) {
     measure = true;
     schedule();
   };
-  const observer = new ResizeObserver(invalidate);
+  // Below 768px the navigation is above the article but out of flow, so the article reserves
+  // its height. Set it from the observer, before paint, so the article never shifts.
+  // The track spans from the header section to the end of the article, so the panel can
+  // stick for the whole article whether or not the header draws dividers.
+  const navSection = block.closest('.section');
+  const reserve = () => {
+    const end = main.querySelector(':scope > .blog-article-end') || navSection;
+    const track = end.getBoundingClientRect().bottom - navSection.getBoundingClientRect().bottom;
+    setSize(block, '--blog-side-navigation-track-size', Math.max(0, track));
+    const stacked = getComputedStyle(panel).display === 'contents';
+    const size = stacked ? [...panel.children].reduce((total, child) => {
+      if (child.hidden || getComputedStyle(child).display === 'none') return total;
+      const style = getComputedStyle(child);
+      return total + child.offsetHeight
+        + parseFloat(style.marginBlockStart) + parseFloat(style.marginBlockEnd);
+    }, 0) : 0;
+    setSize(main, '--blog-side-navigation-block-size', size);
+  };
+  const resize = () => {
+    reserve();
+    invalidate();
+  };
+  const observer = new ResizeObserver(resize);
   sectionTrackers.set(block, () => {
     window.removeEventListener('scroll', schedule);
-    window.removeEventListener('resize', invalidate);
+    window.removeEventListener('resize', resize);
     observer.disconnect();
     cancelAnimationFrame(frame);
     collapseControls?.cleanup();
     sectionTrackers.delete(block);
   });
   window.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', invalidate);
-  const main = block.closest('main');
-  const article = block.closest('.blog-article-layout') || main;
-  observer.observe(article);
-  observer.observe(jumpNavigation);
-  if (article !== main) observer.observe(main);
+  window.addEventListener('resize', resize);
+  // Not main: the reserved space resizes it, which would loop the observer. The article
+  // sections' content boxes do not change with the space reserved above them.
+  [navSection, ...main.querySelectorAll(':scope > .blog-article-section')]
+    .forEach((section) => observer.observe(section));
+  [...panel.children].forEach((child) => observer.observe(child));
   if (navigation) observer.observe(navigation);
+  reserve();
   update();
-  return { setActiveIndex };
+  return { setActiveIndex, reserve };
 }
 
 function addCollapseControl(list, label, collapsed) {
@@ -179,25 +232,6 @@ function addCollapseControl(list, label, collapsed) {
   };
 }
 
-function createLayout(block, headerSection, articleSections) {
-  if (block.closest('.blog-article-layout')) return;
-
-  if (!articleSections.length) {
-    window.lana?.log('Could not find article sections for blog side navigation layout.', {
-      tags: 'blog-side-navigation',
-      severity: 'warning',
-    });
-    return;
-  }
-
-  const layout = createTag('div', { class: 'blog-article-layout' });
-  const article = createTag('div', { class: 'blog-article-content' });
-  originalPositions.set(block, { parent: block.parentElement, next: block.nextSibling });
-  headerSection.after(layout);
-  article.append(...articleSections);
-  layout.append(block, article);
-}
-
 export default async function init(block) {
   sectionTrackers.get(block)?.();
   const main = block.closest('main');
@@ -211,15 +245,11 @@ export default async function init(block) {
   }
 
   const headerSection = main.querySelector('.blog-header').closest('.section');
-  const pendingSection = main.querySelector([
-    ':scope > .section[data-status="pending"]',
-    ':scope > .blog-article-layout > .blog-article-content > .section[data-status="pending"]',
-  ].join(', '));
-  if (pendingSection) {
-    // Build the two-column grid now, while the article sections are still hidden, so they
-    // reveal in their final column instead of jumping once the navigation is ready.
+  if (main.querySelector(':scope > .section[data-status="pending"]')) {
+    // Place the article sections now, while they are still hidden, so they reveal in their
+    // final column instead of jumping once the navigation is ready.
     block.classList.add('is-pending');
-    createLayout(block, headerSection, getBlogSections(headerSection));
+    markArticle(main, getArticleSections(headerSection, block));
     if (pendingInitializations.has(block)) return;
     const retry = () => {
       pendingInitializations.delete(block);
@@ -242,10 +272,7 @@ export default async function init(block) {
     pendingInitializations.delete(block);
   }
 
-  const layout = block.closest('.blog-article-layout');
-  const articleSections = layout
-    ? [...layout.querySelectorAll(':scope > .blog-article-content > .section')]
-    : getBlogSections(headerSection);
+  const articleSections = getArticleSections(headerSection, block);
   articleSections.forEach((section) => {
     section.querySelectorAll(':scope > .content > h2')
       .forEach((heading) => {
@@ -253,8 +280,6 @@ export default async function init(block) {
           heading.classList.add('heading-3');
         }
       });
-    section.querySelectorAll(':scope > .content > :is(p, ul, ol):not([class])')
-      .forEach((element) => element.classList.add('body-lg'));
   });
   const headings = articleSections.flatMap((section) => (
     [...section.querySelectorAll(':scope > .content h2')]
@@ -278,14 +303,7 @@ export default async function init(block) {
 
   if (!headings.length) {
     block.classList.remove('is-pending');
-    if (layout) {
-      const { parent, next } = originalPositions.get(block) || {};
-      layout.replaceWith(...articleSections);
-      if (parent?.isConnected) {
-        parent.insertBefore(block, next?.parentNode === parent ? next : null);
-      }
-      originalPositions.delete(block);
-    }
+    unmarkArticle(main, block);
     block.hidden = block.dataset.failed !== 'true';
     if (!block.hidden) block.replaceChildren();
     return;
@@ -323,10 +341,12 @@ export default async function init(block) {
   nav.append(list);
   const title = createTag('strong');
   title.textContent = label;
-  block.replaceChildren(createTag('p', null, title), nav);
+  const panel = createTag('div', { class: 'blog-side-navigation-panel' }, [createTag('p', null, title), nav]);
+  block.replaceChildren(panel);
   block.hidden = false;
   block.classList.remove('is-pending');
-  createLayout(block, headerSection, articleSections);
+  markArticle(main, articleSections);
+  if (relatedContent) panel.append(relatedContent);
   const sectionTracker = trackActiveSection(block, headings, collapseControls);
   [...list.querySelectorAll(':scope > li > a')].forEach((link, index) => {
     const heading = headings[index];
@@ -337,9 +357,11 @@ export default async function init(block) {
       if (collapseControls && !window.matchMedia('(width >= 768px)').matches) {
         sectionTracker.setActiveIndex(index);
         collapseControls.collapse();
+        // Release the space the open list reserved before measuring the scroll target.
+        sectionTracker.reserve();
       }
       if (window.location.hash !== link.hash) window.history.pushState(null, '', link.hash);
-      scrollToSection(link.hash, block).then(() => {
+      scrollToSection(heading, block).then(() => {
         if (!heading.hasAttribute('tabindex')) heading.tabIndex = -1;
         heading.focus({ preventScroll: true });
       }).catch((error) => {
@@ -351,7 +373,6 @@ export default async function init(block) {
     });
   });
   if (relatedContent) {
-    block.append(relatedContent);
     loadBlock(relatedContent).catch((error) => {
       window.lana?.log(`Blog related content failed to initialize: ${error.message}`, {
         tags: 'blog-related-content',
@@ -359,7 +380,8 @@ export default async function init(block) {
       });
     });
   }
-  if (headings.some((heading) => window.location.hash === `#${encodeURIComponent(heading.id)}`)) {
-    await scrollToSection(window.location.hash, block);
-  }
+  const linkedHeading = headings.find((heading) => (
+    window.location.hash === `#${encodeURIComponent(heading.id)}`
+  ));
+  if (linkedHeading) await scrollToSection(linkedHeading, block);
 }

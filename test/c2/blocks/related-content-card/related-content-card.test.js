@@ -167,7 +167,7 @@ describe('related-content-card', () => {
     });
 
     ['ja', 'ja-JP', 'ko', 'ko-KR', 'ar', 'en-US'].forEach((language) => {
-      it(`uses heading-6 typography and a two-line title clamp (${language})`, async () => {
+      it(`uses a 1.35 line height and two-line title clamp (${language})`, async () => {
         const block = document.querySelector('#card-data');
         block.lang = language;
         block.style.width = '320px';
@@ -176,13 +176,7 @@ describe('related-content-card', () => {
         await init(block);
         const title = block.querySelector('h3');
         const style = getComputedStyle(title);
-        const probe = document.createElement('h6');
-        document.body.append(probe);
-        const standard = getComputedStyle(probe);
-        expect(title.classList.contains('heading-6')).to.be.true;
-        expect(style.fontSize).to.equal(standard.fontSize);
-        expect(style.lineHeight).to.equal(standard.lineHeight);
-        probe.remove();
+        expect(parseFloat(style.lineHeight)).to.be.closeTo(parseFloat(style.fontSize) * 1.35, 0.01);
         expect(style.webkitLineClamp).to.equal('2');
         expect(style.overflow).to.equal('hidden');
         expect(title.getBoundingClientRect().height)

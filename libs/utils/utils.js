@@ -2845,7 +2845,7 @@ export async function scrollToHashedElement(hash, area = document, behavior = 's
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
   try {
-    targetElement = document.querySelector(`#${CSS.escape(elementId)}:not(.dialog-modal)`);
+    targetElement = document.querySelector(`#${elementId}:not(.dialog-modal)`);
   } catch (e) {
     window.lana?.log(`Could not query element because of invalid hash - ${elementId}: ${e.toString()}`, {
       tags: 'utils',
@@ -3197,12 +3197,6 @@ async function decorateDocumentExtras() {
   langBannerPromise = decorateLanguageBanner();
 }
 
-// The C2 blog side navigation moves article sections into a layout wrapper; tag them in order.
-export const ANALYTICS_SECTIONS = [
-  'main > div:not(.blog-article-layout)',
-  'main > .blog-article-layout > .blog-article-content > div',
-].join(', ');
-
 async function documentPostSectionLoading(config) {
   const injectBlock = getMetadata('injectblock');
   if (injectBlock) {
@@ -3233,8 +3227,7 @@ async function documentPostSectionLoading(config) {
   delayed([getConfig, getMetadata, loadScript, loadStyle, loadIms]);
 
   import('../martech/attributes.js').then((analytics) => {
-    document.querySelectorAll(ANALYTICS_SECTIONS)
-      .forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
+    document.querySelectorAll('main > div').forEach((section, idx) => analytics.decorateSectionAnalytics(section, idx, config));
   });
 
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));

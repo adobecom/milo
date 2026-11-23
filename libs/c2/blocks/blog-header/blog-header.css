@@ -112,6 +112,9 @@
   }
 
   .blog-header-author-name {
+    font-weight: var(--s2a-font-weight-label);
+    font-size: var(--s2a-font-size-md);
+    line-height: 1.5;
     color: var(--s2a-color-content-default);
     text-decoration: none;
     overflow-wrap: anywhere;
@@ -122,6 +125,9 @@
   }
 
   .blog-header-author-meta {
+    font-weight: var(--s2a-font-weight-body);
+    font-size: var(--s2a-font-size-md);
+    line-height: 1.5;
     color: var(--s2a-color-content-default);
     overflow-wrap: anywhere;
   }
@@ -193,7 +199,7 @@
 /* Section dividers: decorative rules that never take up layout space. */
 .blog-divider-frame {
   &,
-  & + .blog-article-layout {
+  & ~ .blog-article-section {
     --blog-divider-dots: var(--s2a-color-gray-400) 0 2px, transparent 2px 7px;
     --blog-divider-gap: var(--s2a-spacing-3xl);
     --blog-divider-rule-size: 1.5px;
@@ -240,8 +246,8 @@
     }
   }
 
-  /* On mobile the article draws the rule itself; the header draws it only when no article follows. */
-  &:not(:has(+ .blog-article-layout))::after {
+  /* On mobile the article draws the rule itself; the header draws it only without a navigation. */
+  &:not(:has(> .blog-side-navigation:not([hidden])))::after {
     content: "";
   }
 
@@ -250,46 +256,21 @@
     margin-block-end: var(--blog-divider-gap);
   }
 
-  & + .blog-article-layout {
-    --blog-divider-space: 56px;
-
-    > .blog-article-content {
-      position: relative;
-      margin-block-start: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
-
-      &::before {
-        content: "";
-        position: absolute;
-        inset-inline: 0;
-        inset-block-start: calc(-1 * (var(--blog-divider-space) + var(--blog-divider-rule-size)));
-        block-size: var(--blog-divider-rule-size);
-        border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
-        pointer-events: none;
-      }
-    }
-
+  > .blog-side-navigation {
     @media (width >= 768px) {
       --blog-divider-inline-space: var(--s2a-spacing-xl);
 
-      > .blog-article-content {
-        margin-block-start: 0;
+      inset-block-start: calc(100% + var(--blog-divider-gap));
+      block-size: max(0px, calc(var(--blog-side-navigation-track-size, 0px) - var(--blog-divider-gap)));
 
-        &::before {
-          content: none;
-        }
-      }
-
-      position: relative;
-      column-gap: calc(2 * var(--blog-divider-inline-space));
-
-      > .blog-side-navigation {
+      > .blog-side-navigation-panel {
         margin-block-start: calc(76px - var(--blog-divider-gap));
       }
 
+      /* The vertical rule between the navigation and the article. */
       &::before {
         content: "";
         position: absolute;
-        grid-column: 1 / 2;
         inset-block: calc(-1 * var(--blog-divider-gap)) 0;
         inset-inline-start: calc(100% + var(--blog-divider-inline-space));
         inline-size: 2px;
@@ -301,6 +282,35 @@
 
     @media (width >= 1280px) {
       --blog-divider-inline-space: 56px;
+    }
+  }
+
+  & ~ .blog-article-section {
+    --blog-divider-space: 56px;
+
+    @media (width >= 768px) {
+      --blog-article-column-gap: calc(2 * var(--s2a-spacing-xl));
+    }
+
+    @media (width >= 1280px) {
+      --blog-article-column-gap: 112px;
+    }
+  }
+
+  /* Below 768px the rule sits between the navigation and the article. */
+  & ~ .blog-article-start {
+    --blog-article-offset: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
+
+    @media (width < 768px) {
+      &::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        inset-block-start: calc(-1 * (var(--blog-divider-space) + var(--blog-divider-rule-size)));
+        block-size: var(--blog-divider-rule-size);
+        border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
+        pointer-events: none;
+      }
     }
   }
 }

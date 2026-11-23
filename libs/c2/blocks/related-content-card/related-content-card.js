@@ -190,8 +190,8 @@ function buildCard({
   navHref, picture, title, date, readingTime, category,
 }) {
   const copy = createTag('div', { class: 'related-content-card-copy' });
-  if (date) copy.append(textTag('p', { class: 'related-content-card-eyebrow eyebrow' }, date));
-  copy.append(textTag('h3', { class: 'related-content-card-title heading-6' }, title));
+  if (date) copy.append(textTag('p', { class: 'related-content-card-eyebrow' }, date));
+  copy.append(textTag('h3', { class: 'related-content-card-title' }, title));
 
   if (readingTime || category) {
     const meta = createTag('p', { class: 'related-content-card-meta' });

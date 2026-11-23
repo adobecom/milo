@@ -6,7 +6,7 @@
   color: var(--s2a-color-content-default);
   letter-spacing: 0;
 
-  .blog-article-content & {
+  .blog-article-section & {
     width: 100%;
     max-width: none;
     margin-inline: 0;
