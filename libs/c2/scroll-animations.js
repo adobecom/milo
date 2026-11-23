@@ -92,7 +92,7 @@ function initMoveUpFast() {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
       const newTop = `${-Math.round(topMaxPx * t)}px`;
       if (section.style.top !== newTop) section.style.top = newTop;
-      overlay.style.opacity = 0.75 * t;
+      overlay.style.opacity = `calc(var(--parallax-dim-max, 0.75) * ${t})`;
     });
     cleanupTasks.push(() => {
       section.style.position = '';
