@@ -392,7 +392,7 @@ async function buildEyebrow(config, readingTime) {
 
   if (startText) {
     const start = createTag('span', { class: 'blog-header-eyebrow-start' });
-    start.textContent = `Updated: ${startText}`;
+    start.textContent = `${await replaceKey('blog-updated', config)} ${startText}`;
     eyebrow.append(start);
   }
   if (endText) {
