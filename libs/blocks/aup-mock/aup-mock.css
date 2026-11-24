@@ -24,9 +24,14 @@
 }
 
 .aup-mock .aup-mnemonic {
+  display: inline-block;
+  transform: translateY(24px);
+}
+
+.aup-mock .aup-mnemonic img {
+  display: block;
   width: 48px;
   height: 48px;
-  transform: translateY(24px);
   border-radius: 8px;
   background: #fff;
 }
@@ -225,3 +230,64 @@
   }
 }
 
+
+.aup-mock .aup-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.aup-mock .aup-legend legend {
+  padding: 0 4px;
+  font-weight: 700;
+}
+
+.aup-mock .aup-legend label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.aup-mock .aup-legend label::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--aup-source-color);
+}
+
+.aup-mock [data-source='product'] { --aup-source-color: rgb(20 115 230 / 35%); }
+.aup-mock [data-source='template'] { --aup-source-color: rgb(45 157 120 / 35%); }
+.aup-mock [data-source='segment'] { --aup-source-color: rgb(0 166 190 / 35%); }
+.aup-mock [data-source='plan'] { --aup-source-color: rgb(230 134 25 / 35%); }
+.aup-mock [data-source='fragment'] { --aup-source-color: rgb(227 72 80 / 35%); }
+.aup-mock [data-source='mask'] { --aup-source-color: rgb(146 86 217 / 40%); }
+
+.aup-mock .aup-sourced {
+  position: relative;
+}
+
+.aup-mock .aup-overlay {
+  display: none;
+  position: absolute;
+  inset-block: 0;
+  background: var(--aup-source-color);
+  outline: 1px dashed rgb(0 0 0 / 30%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.aup-mock.aup-show-product .aup-overlay[data-source='product'],
+.aup-mock.aup-show-template .aup-overlay[data-source='template'],
+.aup-mock.aup-show-segment .aup-overlay[data-source='segment'],
+.aup-mock.aup-show-plan .aup-overlay[data-source='plan'],
+.aup-mock.aup-show-fragment .aup-overlay[data-source='fragment'],
+.aup-mock.aup-show-mask .aup-overlay[data-source='mask'] {
+  display: block;
+}

@@ -49,18 +49,40 @@ const richText = (nodes = []) => {
   return fragment;
 };
 
+const SOURCES = {
+  product: 'Product baseline',
+  template: 'Template baseline',
+  segment: 'Segment baseline',
+  plan: 'Plan baseline',
+  fragment: 'Fragment',
+  mask: 'Mask',
+};
+
+// one translucent band per layer an area comes from, shown when that layer's box is checked
+const sourced = (el, sources = []) => {
+  if (!el) return el;
+  el.classList.add('aup-sourced');
+  el.append(...sources.map((source, index) => tag('span', {
+    class: 'aup-overlay',
+    'data-source': source,
+    title: SOURCES[source] ?? source,
+    style: `left:${(100 * index) / sources.length}%;width:${100 / sources.length}%`,
+  })));
+  return el;
+};
+
 const badge = (b) => b?.text && tag('span', {
   class: 'aup-badge',
   style: `color:${b.color ?? 'inherit'};background:${b.backgroundColor ?? 'transparent'};border-color:${b.borderColor ?? 'transparent'}`,
 }, b.text);
 
-const header = (card) => tag('div', {
+const header = (card) => sourced(tag('div', {
   class: 'aup-header',
   style: card.backgroundImage?.src && `background-image:url(${card.backgroundImage.src})`,
-}, (card.mnemonics ?? []).map(({ icon, alt, link }) => {
-  const img = tag('img', { src: icon, alt, class: 'aup-mnemonic' });
-  return link ? tag('a', { href: link }, img) : img;
-}));
+}, (card.mnemonics ?? []).map(({ icon, alt, link }) => sourced(
+  tag(link ? 'a' : 'span', { href: link, class: 'aup-mnemonic' }, tag('img', { src: icon, alt })),
+  card.sources?.mnemonics,
+))), card.sources?.backgroundImage);
 
 const iconItem = ({ icon, alt, name, description, tooltip }) => tag('li', { title: tooltip }, [
   icon && tag('img', { src: icon, alt, loading: 'lazy' }),
@@ -88,52 +110,55 @@ const featureColumns = ({ id, header: title, items }) => {
 };
 
 const features = (card) => card.features?.length > 0
-  && tag('div', { class: 'aup-features' }, card.features.flatMap(featureColumns));
+  && sourced(tag('div', { class: 'aup-features' }, card.features.flatMap(featureColumns)), card.sources?.features);
 
-const details = (card) => tag('div', { class: 'aup-details' }, [
-  header(card),
-  tag('div', { class: 'aup-body' }, [
-    badge(card.badge),
-    tag('h2', { class: 'aup-title' }, richText(card.title)),
-    card.subtitle && tag('p', { class: 'aup-subtitle' }, card.subtitle),
-    tag('div', { class: 'aup-description' }, richText(card.description)),
-    tag('div', { class: 'aup-short-description' }, richText(card.shortDescription)),
-    card.callout && tag('div', { class: 'aup-callout' }, richText(card.callout)),
-    features(card),
-  ]),
-]);
+const details = (card) => {
+  const { sources = {} } = card;
+  return tag('div', { class: 'aup-details' }, [
+    header(card),
+    tag('div', { class: 'aup-body' }, [
+      sourced(badge(card.badge), sources.badge),
+      sourced(tag('h2', { class: 'aup-title' }, richText(card.title)), sources.title),
+      card.subtitle && sourced(tag('p', { class: 'aup-subtitle' }, card.subtitle), sources.subtitle),
+      sourced(tag('div', { class: 'aup-description' }, richText(card.description)), sources.description),
+      sourced(tag('div', { class: 'aup-short-description' }, richText(card.shortDescription)), sources.shortDescription),
+      card.callout && sourced(tag('div', { class: 'aup-callout' }, richText(card.callout)), sources.callout),
+      features(card),
+    ]),
+  ]);
+};
 
 const planOption = ({ code, label, card }, selected) => tag('label', { class: `aup-plan${selected ? ' selected' : ''}` }, [
   tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
   tag('div', { class: 'aup-plan-info' }, [
-    tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), badge(card.badge)]),
-    tag('div', { class: 'aup-price' }, richText(card.price)),
-    tag('div', { class: 'aup-promo' }, richText(card.promoText)),
+    tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), sourced(badge(card.badge), card.sources?.badge)]),
+    sourced(tag('div', { class: 'aup-price' }, richText(card.price)), card.sources?.price),
+    card.promoText?.length > 0 && sourced(tag('div', { class: 'aup-promo' }, richText(card.promoText)), card.sources?.promoText),
   ]),
 ]);
 
 const addon = (card, code) => {
   if (!card.addon) return null;
   const offer = card.addon.offers?.find(({ planType }) => planType === code);
-  return tag('label', { class: 'aup-addon' }, [
+  return sourced(tag('label', { class: 'aup-addon' }, [
     tag('input', { type: 'checkbox' }),
     tag('span', {}, `${card.addon.label}${offer?.price ? ` (${offer.price})` : ''}`),
-  ]);
+  ]), card.sources?.addon);
 };
 
 const checkout = (card, code) => tag('div', { class: 'aup-checkout' }, [
   addon(card, code),
-  tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).map(({ text, url, variant, style }) => tag(
+  sourced(tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).map(({ text, url, variant, style }) => tag(
     'a',
     { href: url, class: `con-button${variant === 'accent' ? ' blue' : ''}${style === 'outline' ? ' outline' : ''}` },
     text,
-  ))),
+  ))), card.sources?.ctas),
   card.secureTransaction?.enabled && tag('p', { class: 'aup-secure' }, card.secureTransaction.label),
-  ...(card.customFields ?? []).map(({ label, value }) => tag(
+  ...(card.customFields ?? []).map(({ label, value }) => sourced(tag(
     'div',
     { class: 'aup-custom', 'data-label': label },
     richText(value),
-  )),
+  ), card.sources?.customFields)),
 ]);
 
 const authoredPlans = (el) => [...el.querySelectorAll(':scope > div')]
@@ -155,9 +180,24 @@ export default async function init(el) {
     return el;
   }
   let selected = available[0].code;
+  const areaSources = available.flatMap(({ card }) => Object.values(card.sources ?? {}));
+  const present = new Set(areaSources.flat());
+  const legend = () => tag('fieldset', { class: 'aup-legend' }, [
+    tag('legend', {}, 'Show where content comes from'),
+    ...Object.entries(SOURCES).filter(([key]) => present.has(key)).map(([source, label]) => tag(
+      'label',
+      { 'data-source': source },
+      [tag('input', {
+        type: 'checkbox',
+        name: 'aup-source',
+        value: source,
+        checked: el.classList.contains(`aup-show-${source}`),
+      }), tag('span', {}, label)],
+    )),
+  ]);
   const render = () => {
     const current = available.find(({ code }) => code === selected);
-    el.replaceChildren(tag('div', { class: 'aup-modal' }, [
+    el.replaceChildren(legend(), tag('div', { class: 'aup-modal' }, [
       details(current.card),
       tag('div', { class: 'aup-plans' }, [
         tag('h3', {}, 'Choose a plan'),
@@ -168,6 +208,10 @@ export default async function init(el) {
     ]));
   };
   el.addEventListener('change', ({ target }) => {
+    if (target.name === 'aup-source') {
+      el.classList.toggle(`aup-show-${target.value}`, target.checked);
+      return;
+    }
     if (target.name !== 'aup-plan') return;
     selected = target.value;
     render();
