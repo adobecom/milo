@@ -342,12 +342,27 @@
   background: var(--aup-source-color);
 }
 
-.aup-mock [data-source='product'] { --aup-source-color: rgb(20 115 230 / 35%); }
-.aup-mock [data-source='template'] { --aup-source-color: rgb(45 157 120 / 35%); }
-.aup-mock [data-source='segment'] { --aup-source-color: rgb(0 166 190 / 35%); }
-.aup-mock [data-source='plan'] { --aup-source-color: rgb(230 134 25 / 35%); }
-.aup-mock [data-source='fragment'] { --aup-source-color: rgb(227 72 80 / 35%); }
-.aup-mock [data-source='mask'] { --aup-source-color: rgb(146 86 217 / 40%); }
+.aup-mock .aup-studio {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: -8px 0 16px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.aup-mock .aup-studio span {
+  font-weight: 700;
+}
+
+.aup-mock [data-source='product'] { --aup-source-rgb: 20 115 230; }
+.aup-mock [data-source='template'] { --aup-source-rgb: 30 140 100; }
+.aup-mock [data-source='segment'] { --aup-source-rgb: 0 150 175; }
+.aup-mock [data-source='plan'] { --aup-source-rgb: 215 120 10; }
+.aup-mock [data-source='fragment'] { --aup-source-rgb: 215 55 65; }
+.aup-mock [data-source='mask'] { --aup-source-rgb: 135 75 210; }
+
+.aup-mock [data-source] { --aup-source-color: rgb(var(--aup-source-rgb)); }
 
 .aup-mock .aup-sourced {
   position: relative;
@@ -356,11 +371,37 @@
 .aup-mock .aup-overlay {
   display: none;
   position: absolute;
-  inset-block: 0;
-  background: var(--aup-source-color);
-  outline: 1px dashed rgb(0 0 0 / 30%);
+  inset: -3px;
+  border: 2px solid var(--aup-source-color);
+  border-radius: 4px;
+  background: rgb(var(--aup-source-rgb) / 12%);
   pointer-events: none;
   z-index: 1;
+}
+
+.aup-mock .aup-overlay.aup-outline {
+  background: none;
+}
+
+/* nested boxes (a fragment price inside a template description) sit above their container's,
+   their chip below so both stay readable */
+.aup-mock .aup-sourced .aup-sourced > .aup-overlay {
+  z-index: 2;
+}
+
+.aup-mock .aup-overlay::before {
+  content: attr(data-label);
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-end: calc(var(--aup-chip, 0) * 64px - 2px);
+  padding: 1px 5px;
+  border-radius: 3px 3px 0 0;
+  background: var(--aup-source-color);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 13px;
+  white-space: nowrap;
 }
 
 .aup-mock.aup-show-product .aup-overlay[data-source='product'],
@@ -370,4 +411,9 @@
 .aup-mock.aup-show-fragment .aup-overlay[data-source='fragment'],
 .aup-mock.aup-show-mask .aup-overlay[data-source='mask'] {
   display: block;
+}
+
+.aup-mock .aup-sourced .aup-sourced > .aup-overlay::before {
+  inset-block: 100% auto;
+  border-radius: 0 0 3px 3px;
 }

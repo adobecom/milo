@@ -64,24 +64,27 @@ const SOURCES = {
 // elements priced with the card's own offer: inline prices and checkout CTAs
 const OFFER_BOUND = '[data-template], .aup-checkout-cta';
 
-const overlays = (el, sources) => {
+const labelOf = (source) => SOURCES[source] ?? source;
+
+// one labelled box per layer; `outline` (no fill) keeps colored elements (badge, CTA) readable
+const overlays = (el, sources, { field, outline } = {}) => {
   el.classList.add('aup-sourced');
+  if (field && !el.title) el.title = `${field}: ${sources.map(labelOf).join(' + ')}`;
   el.append(...sources.map((source, index) => tag('span', {
-    class: 'aup-overlay',
+    class: `aup-overlay${outline ? ' aup-outline' : ''}`,
     'data-source': source,
-    title: SOURCES[source] ?? source,
-    style: `left:${(100 * index) / sources.length}%;width:${100 / sources.length}%`,
+    'data-label': labelOf(source).replace(' baseline', ''),
+    style: `--aup-chip:${index}`,
   })));
 };
 
-// translucent bands per layer an area comes from, shown when that layer's box is checked;
-// a baseline area priced with the fragment's offer gets the fragment band over its prices & CTAs
-const sourced = (el, sources = []) => {
-  if (!el) return el;
+// a baseline area priced with the fragment's offer gets nested fragment boxes on prices & CTAs
+const sourced = (el, sources = [], options = {}) => {
+  if (!el || !sources.length) return el;
   const mixed = sources.length > 1 && sources.includes('fragment');
   const bound = mixed ? [...el.querySelectorAll(OFFER_BOUND)] : [];
-  overlays(el, bound.length ? sources.filter((source) => source !== 'fragment') : sources);
-  for (const element of bound) overlays(element, ['fragment']);
+  overlays(el, bound.length ? sources.filter((source) => source !== 'fragment') : sources, options);
+  for (const element of bound) overlays(element, ['fragment'], { field: 'price', outline: true });
   return el;
 };
 
@@ -94,9 +97,10 @@ const header = (card) => tag('div', { class: 'aup-header' }, [
   ...(card.mnemonics ?? []).map(({ icon, alt, link }) => sourced(
     tag(link ? 'a' : 'span', { href: link, class: 'aup-mnemonic' }, tag('img', { src: icon, alt })),
     card.sources?.mnemonics,
+    { field: 'mnemonics' },
   )),
-  sourced(tag('h2', { class: 'aup-title' }, richText(card.title)), card.sources?.title),
-  sourced(badge(card.badge), card.sources?.badge),
+  sourced(tag('h2', { class: 'aup-title' }, richText(card.title)), card.sources?.title, { field: 'title' }),
+  sourced(badge(card.badge), card.sources?.badge, { field: 'badge', outline: true }),
 ]);
 
 const iconItem = ({ icon, alt, name, description, tooltip }) => tag('li', { title: tooltip }, [
@@ -110,43 +114,57 @@ const section = ({ icon, title, items }) => tag('div', { class: 'aup-section' },
   tag('ul', {}, items.map((item) => tag('li', {}, richText(item)))),
 ]);
 
-const featureColumns = ({ id, header: title, items }) => {
+// features are sourced per header & item: `includedApps.header`, `includedApps[2]`…
+const featureColumns = (sources) => ({ id, header: title, items }) => {
+  const item = (render) => (entry, index) => sourced(render(entry), sources[`${id}[${index}]`], { field: `${id}[${index}]` });
   if (id === 'includedApps') {
-    const more = items.slice(VISIBLE_APPS);
+    const apps = items.map(item(iconItem));
+    const more = apps.slice(VISIBLE_APPS);
     return tag('div', { class: 'aup-included', 'data-feature': id }, [
-      tag('h4', {}, title ? richText(title) : 'Includes'),
-      tag('ul', { class: 'aup-apps' }, items.slice(0, VISIBLE_APPS).map(iconItem)),
+      sourced(
+        tag('h4', {}, title ? richText(title) : 'Includes'),
+        sources[`${id}.header`],
+        { field: `${id}.header` },
+      ),
+      tag('ul', { class: 'aup-apps' }, apps.slice(0, VISIBLE_APPS)),
       more.length > 0 && tag('details', { class: 'aup-more-apps' }, [
         tag('summary', {}, `Show all ${items.length} apps`),
-        tag('ul', { class: 'aup-apps' }, more.map(iconItem)),
+        tag('ul', { class: 'aup-apps' }, more),
       ]),
     ]);
   }
-  const plain = items.filter(({ items: sub }) => !sub);
+  const rendered = items.map((entry, i) => item(entry.items ? section : iconItem)(entry, i));
+  const plain = rendered.filter((el, index) => !items[index].items);
   return [
-    ...items.filter(({ items: sub }) => sub).map(section),
-    plain.length > 0 && tag('ul', { class: 'aup-section', 'data-feature': id }, plain.map(iconItem)),
+    ...rendered.filter((el, index) => items[index].items),
+    plain.length > 0 && tag('ul', { class: 'aup-section', 'data-feature': id }, plain),
   ];
 };
 
 const features = (card) => card.features?.length > 0
-  && sourced(tag('div', { class: 'aup-features' }, card.features.flatMap(featureColumns)), card.sources?.features);
+  && tag('div', { class: 'aup-features' }, card.features.flatMap(featureColumns(card.sources ?? {})));
 
 // AUP layout: no banner, subtitle, short description nor callout on the product side
 const details = (card) => tag('div', { class: 'aup-details' }, [
   header(card),
-  sourced(tag('div', { class: 'aup-description' }, richText(card.description)), card.sources?.description),
+  sourced(
+    tag('div', { class: 'aup-description' }, richText(card.description)),
+    card.sources?.description,
+    { field: 'description' },
+  ),
   features(card),
 ]);
 
 // the plan note (e.g. cancellation terms) is the card's promoText
 const planOption = ({ code, label, card }, selected) => tag('label', { class: `aup-plan${selected ? ' selected' : ''}` }, [
   tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
-  tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), sourced(badge(card.badge), card.sources?.badge)]),
-  sourced(tag('div', { class: 'aup-price' }, richText(card.price)), card.sources?.price),
+  tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label),
+    sourced(badge(card.badge), card.sources?.badge, { field: 'badge', outline: true })]),
+  sourced(tag('div', { class: 'aup-price' }, richText(card.price)), card.sources?.price, { field: 'price' }),
   card.promoText?.length > 0 && sourced(
     tag('div', { class: 'aup-plan-note' }, [richText(card.promoText), tag('span', { class: 'aup-info' }, 'i')]),
     card.sources?.promoText,
+    { field: 'promoText' },
   ),
 ]);
 
@@ -156,19 +174,44 @@ const addon = (card, code) => {
   return sourced(tag('label', { class: 'aup-addon' }, [
     tag('input', { type: 'checkbox' }),
     tag('span', {}, `${card.addon.label}${offer?.price ? ` (${offer.price})` : ''}`),
-  ]), card.sources?.addon);
+  ]), card.sources?.addon, { field: 'addon' });
 };
 
 const checkout = (card, code) => tag('div', { class: 'aup-checkout' }, [
   addon(card, code),
   // AUP only shows the checkout CTA
   sourced(tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).filter(({ isCheckout }) => isCheckout)
-    .map(({ text, url }) => tag('a', { href: url, class: 'con-button blue aup-checkout-cta' }, text))), card.sources?.ctas),
+    .map(({ text, url }) => tag('a', { href: url, class: 'con-button blue aup-checkout-cta' }, text))), card.sources?.ctas, {
+    field: 'ctas',
+    outline: true,
+  }),
   card.secureTransaction?.enabled && tag('p', { class: 'aup-secure' }, [
     tag('span', { class: 'aup-lock' }),
     card.secureTransaction.label,
   ]),
 ]);
+
+const STUDIO = 'https://mas.adobe.com/studio.html#path=sandbox&';
+
+// M@S Studio links to each piece of content the selected plan is built from
+const studioLinks = ({ code, url, card }) => {
+  const mask = new URL(url).searchParams.get('mask');
+  const editor = (id) => id && `${STUDIO}page=fragment-editor&fragmentId=${id}`;
+  const links = [
+    [`${code} fragment`, editor(card.sourceIds.fragment)],
+    ['Template baseline', editor(card.sourceIds.template)],
+    ['Segment baseline', editor(card.sourceIds.segment)],
+    ['Plan baseline', editor(card.sourceIds.plan)],
+    ['Product', card.productArrangementCode
+      && `${STUDIO}page=product-detail&arrangementCode=${card.productArrangementCode}`],
+    [`${mask} mask`, mask && `${STUDIO}page=masks-editor&maskName=${mask}`],
+    ['extras placeholder', `${STUDIO}page=placeholders&locale=en_US&search=extras`],
+  ].filter(([, href]) => href);
+  return tag('nav', { class: 'aup-studio' }, [
+    tag('span', {}, 'Edit in M@S Studio:'),
+    ...links.map(([label, href]) => tag('a', { href, target: '_blank' }, label)),
+  ]);
+};
 
 const authoredPlans = (el) => [...el.querySelectorAll(':scope > div')]
   .map((row) => [...row.children].map((cell) => cell.querySelector('a')?.href ?? cell.textContent.trim()))
@@ -181,6 +224,7 @@ export default async function init(el) {
     const response = await fetch(url);
     const json = await response.json();
     const card = json.cards?.[0] ?? json;
+    card.sourceIds = Object.fromEntries((card.sources ?? []).map(({ source, id }) => [source, id]));
     // sources lists the fields per layer: index it per field for the overlays
     card.sources = (card.sources ?? []).reduce((byField, { source, fields }) => {
       for (const field of fields) (byField[field] ??= []).push(source);
@@ -211,7 +255,7 @@ export default async function init(el) {
   ]);
   const render = () => {
     const current = available.find(({ code }) => code === selected);
-    el.replaceChildren(legend(), tag('div', { class: 'aup-modal' }, [
+    el.replaceChildren(legend(), studioLinks(current), tag('div', { class: 'aup-modal' }, [
       details(current.card),
       tag('div', { class: 'aup-plans' }, [
         tag('button', { type: 'button', class: 'aup-close', 'aria-label': 'Close' }, '✕'),
