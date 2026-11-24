@@ -436,7 +436,7 @@ describe('v2 Target from the consumer head', () => {
   it('does nothing when utils.js would not start a v2 call', async () => {
     setMeta({ 'personalization-v2': 'on' });
     expect(startEarlyTargetInteraction()).to.be.null;
-    setMeta({ target: 'on' });
+    setMeta({ target: 'on', 'personalization-v2-signed-in': 'on' });
     setServerTiming([{ name: 'sis', description: '1' }]);
     expect(startEarlyTargetInteraction()).to.be.null;
     expect(window.milo?.targetInteraction).to.be.undefined;
@@ -462,7 +462,8 @@ describe('v2 Target from the consumer head', () => {
 
   describe('gate parity with utils.js', () => {
     const PARAMS = ['', 'mep=off', 'martech=off', 'target=off', 'target=postlcp', 'xlg=loggedout',
-      'personalization-v2=off', 'personalization-v2=on', 'target-timeout=1234', 'env=prod', 'env=bogus'];
+      'personalization-v2=off', 'personalization-v2=on', 'personalization-v2-signed-in=on',
+      'target-timeout=1234', 'env=prod', 'env=bogus'];
     const METAS = [
       {}, { target: 'on' }, { 'personalization-v2': 'on' },
       { 'personalization-v2': 'on', target: 'on' },
@@ -471,6 +472,7 @@ describe('v2 Target from the consumer head', () => {
       { 'personalization-v2': 'off', target: 'on' },
       { 'personalization-v2': 'on', xlg: 'loggedout' },
       { 'personalization-v2': 'on', target: 'on', 'target-timeout': '2500' },
+      { 'personalization-v2': 'on', target: 'on', 'personalization-v2-signed-in': 'on' },
     ];
     const TIMINGS = [
       [],
