@@ -114,31 +114,30 @@ const section = ({ icon, title, items }) => tag('div', { class: 'aup-section' },
   tag('ul', {}, items.map((item) => tag('li', {}, richText(item)))),
 ]);
 
-// features are sourced per header & item: `includedApps.header`, `includedApps[2]`…
+// features are sourced per column (`includedApps`, each `whatsIncluded` cell) &
+// header (`includedApps.header`)
 const featureColumns = (sources) => ({ id, header: title, items }) => {
-  const item = (render) => (entry, index) => sourced(render(entry), sources[`${id}[${index}]`], { field: `${id}[${index}]` });
+  const column = (el) => sourced(el, sources[id], { field: id });
   if (id === 'includedApps') {
-    const apps = items.map(item(iconItem));
-    const more = apps.slice(VISIBLE_APPS);
-    return tag('div', { class: 'aup-included', 'data-feature': id }, [
+    const more = items.slice(VISIBLE_APPS);
+    return column(tag('div', { class: 'aup-included', 'data-feature': id }, [
       sourced(
         tag('h4', {}, title ? richText(title) : 'Includes'),
         sources[`${id}.header`],
         { field: `${id}.header` },
       ),
-      tag('ul', { class: 'aup-apps' }, apps.slice(0, VISIBLE_APPS)),
+      tag('ul', { class: 'aup-apps' }, items.slice(0, VISIBLE_APPS).map(iconItem)),
       more.length > 0 && tag('details', { class: 'aup-more-apps' }, [
         tag('summary', {}, `Show all ${items.length} apps`),
-        tag('ul', { class: 'aup-apps' }, more),
+        tag('ul', { class: 'aup-apps' }, more.map(iconItem)),
       ]),
-    ]);
+    ]));
   }
-  const rendered = items.map((entry, i) => item(entry.items ? section : iconItem)(entry, i));
-  const plain = rendered.filter((el, index) => !items[index].items);
+  const plain = items.filter(({ items: sub }) => !sub);
   return [
-    ...rendered.filter((el, index) => items[index].items),
-    plain.length > 0 && tag('ul', { class: 'aup-section', 'data-feature': id }, plain),
-  ];
+    ...items.filter(({ items: sub }) => sub).map(section),
+    plain.length > 0 && tag('ul', { class: 'aup-section', 'data-feature': id }, plain.map(iconItem)),
+  ].filter(Boolean).map(column);
 };
 
 const features = (card) => card.features?.length > 0
