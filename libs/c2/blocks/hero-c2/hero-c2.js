@@ -24,10 +24,10 @@ function decorateCopy(copy) {
 function decorateBackground(cell) {
   if (!hasContent(cell)) return null;
   const scratch = createTag('div');
-  decorateBlockBg(scratch, cell, { className: 'hero-c2-bg', useHandleFocalpoint: true });
-  if (cell.classList.contains('hero-c2-bg')) return cell;
+  decorateBlockBg(scratch, cell, { className: 'hero-c2-media-bg', useHandleFocalpoint: true });
+  if (cell.classList.contains('hero-c2-media-bg')) return cell;
   if (!scratch.style.background) return null;
-  return createTag('div', { class: 'hero-c2-bg', style: `background: ${scratch.style.background}` });
+  return createTag('div', { class: 'hero-c2-media-bg', style: `background: ${scratch.style.background}` });
 }
 
 function buildPlainWidget(cell) {
@@ -58,8 +58,8 @@ function buildEventWidget(cell) {
 
 function decorate(block, buildWidget) {
   const [textRow, widgetRow, footerRow] = block.children;
-  const [text, bgCell] = textRow?.children || [];
-  const [widgetCell, fg] = widgetRow?.children || [];
+  const [text, mediaBgCell] = textRow?.children || [];
+  const [widgetCell, media] = widgetRow?.children || [];
   const [footer] = footerRow?.children || [];
   if (!text) return;
 
@@ -75,16 +75,16 @@ function decorate(block, buildWidget) {
     content.append(footer);
   }
 
-  const media = createTag('div', { class: 'hero-c2-media' });
-  const bg = decorateBackground(bgCell);
-  if (bg) media.append(bg);
-  if (hasContent(fg)) {
-    fg.classList.add('hero-c2-fg');
-    media.append(fg);
+  const mediaArea = createTag('div', { class: 'hero-c2-media-area' });
+  const mediaBg = decorateBackground(mediaBgCell);
+  if (mediaBg) mediaArea.append(mediaBg);
+  if (hasContent(media)) {
+    media.classList.add('hero-c2-media');
+    mediaArea.append(media);
   }
 
   const inner = createTag('div', { class: 'hero-c2-inner container' });
-  inner.append(content, media);
+  inner.append(content, mediaArea);
   block.replaceChildren(inner);
   block.querySelectorAll('video:not([controls])').forEach((video) => video.setAttribute('tabindex', '-1'));
 }

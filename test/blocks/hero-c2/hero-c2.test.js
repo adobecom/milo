@@ -38,14 +38,14 @@ describe('hero-c2', () => {
   after(() => foundation.remove());
 
   describe('structure', () => {
-    it('replaces the rows with an inner container holding content and media', async () => {
+    it('replaces the rows with an inner container holding content and media area', async () => {
       const block = await build('', row(COPY, IMAGE), row('', IMAGE), row('Footer'));
       expect(block.children.length).to.equal(1);
       const inner = block.firstElementChild;
       expect(inner.classList.contains('hero-c2-inner')).to.be.true;
       expect(inner.classList.contains('container')).to.be.true;
       expect([...inner.children].map((el) => el.className))
-        .to.deep.equal(['hero-c2-content', 'hero-c2-media']);
+        .to.deep.equal(['hero-c2-content', 'hero-c2-media-area']);
     });
 
     it('puts the heading before the eyebrow and resolves the eyebrow icon URL', async () => {
@@ -58,27 +58,27 @@ describe('hero-c2', () => {
     });
   });
 
-  describe('background and foreground', () => {
-    it('uses an image cell as the background and a second-row image as the foreground', async () => {
+  describe('media-bg and media', () => {
+    it('uses an image cell as the media-bg and a second-row image as the media', async () => {
       const block = await build('', row(COPY, IMAGE), row('', IMAGE));
-      const media = block.querySelector('.hero-c2-media');
-      expect(media.children[0].classList.contains('hero-c2-bg')).to.be.true;
-      expect(media.children[0].querySelector('img')).to.exist;
-      expect(media.children[1].classList.contains('hero-c2-fg')).to.be.true;
+      const mediaArea = block.querySelector('.hero-c2-media-area');
+      expect(mediaArea.children[0].classList.contains('hero-c2-media-bg')).to.be.true;
+      expect(mediaArea.children[0].querySelector('img')).to.exist;
+      expect(mediaArea.children[1].classList.contains('hero-c2-media')).to.be.true;
     });
 
     it('turns plain text into a CSS background', async () => {
       const block = await build('', row(COPY, 'linear-gradient(red, blue)'));
-      const bg = block.querySelector('.hero-c2-bg');
-      expect(bg.style.background).to.contain('linear-gradient');
-      expect(bg.querySelector('img')).to.be.null;
+      const mediaBg = block.querySelector('.hero-c2-media-bg');
+      expect(mediaBg.style.background).to.contain('linear-gradient');
+      expect(mediaBg.querySelector('img')).to.be.null;
     });
 
-    it('omits the background and foreground when their cells are empty', async () => {
+    it('omits the media-bg and media when their cells are empty', async () => {
       const block = await build('', row(COPY, ''), row('', ''));
-      const media = block.querySelector('.hero-c2-media');
-      expect(media.querySelector('.hero-c2-bg')).to.be.null;
-      expect(media.querySelector('.hero-c2-fg')).to.be.null;
+      const mediaArea = block.querySelector('.hero-c2-media-area');
+      expect(mediaArea.querySelector('.hero-c2-media-bg')).to.be.null;
+      expect(mediaArea.querySelector('.hero-c2-media')).to.be.null;
     });
 
     it('removes decorative videos from the tab order', async () => {
@@ -104,11 +104,11 @@ describe('hero-c2', () => {
   });
 
   describe('plain widget', () => {
-    it('keeps the foreground out of the buttons\' supplemental text', async () => {
+    it('keeps the media out of the buttons\' supplemental text', async () => {
       const block = await build('', row(COPY, ''), row(BUTTONS, IMAGE));
-      const fg = block.querySelector('.hero-c2-fg');
-      expect(fg.classList.contains('supplemental-text')).to.be.false;
-      expect(fg.classList.contains('body-xl')).to.be.false;
+      const media = block.querySelector('.hero-c2-media');
+      expect(media.classList.contains('supplemental-text')).to.be.false;
+      expect(media.classList.contains('body-xl')).to.be.false;
     });
 
     it('omits the widget when its cell is empty', async () => {
@@ -172,15 +172,15 @@ describe('hero-c2', () => {
         return getComputedStyle(block.querySelector('.hero-c2-content')).gridColumnEnd;
       };
       expect(await span('')).to.equal('span 5');
-      expect(await span('narrow-content')).to.equal('span 4');
-      expect(await span('wide-content')).to.equal('span 6');
+      expect(await span('content-narrow')).to.equal('span 4');
+      expect(await span('content-wide')).to.equal('span 6');
     });
 
-    it('places the foreground per axis', async () => {
+    it('places the media per axis', async () => {
       await setViewport({ width: 1280, height: 800 });
       const placement = async (classes) => {
         const block = await build(classes, row(COPY, IMAGE), row('', IMAGE));
-        const { alignSelf, justifySelf } = getComputedStyle(block.querySelector('.hero-c2-fg'));
+        const { alignSelf, justifySelf } = getComputedStyle(block.querySelector('.hero-c2-media'));
         return [alignSelf, justifySelf];
       };
       expect(await placement('media-v-start media-h-end')).to.deep.equal(['start', 'end']);
@@ -191,37 +191,37 @@ describe('hero-c2', () => {
       await setViewport({ width: 1280, height: 800 });
       const shadow = async (classes) => {
         const block = await build(classes, row(COPY, IMAGE));
-        return getComputedStyle(block.querySelector('.hero-c2-bg')).boxShadow;
+        return getComputedStyle(block.querySelector('.hero-c2-media-bg')).boxShadow;
       };
       expect(await shadow('')).to.equal('none');
       expect(await shadow('glassy')).to.not.equal('none');
     });
 
-    it('sizes the foreground as a share of the media area', async () => {
+    it('sizes the media as a share of the media area', async () => {
       await setViewport({ width: 1280, height: 800 });
       const share = async (classes) => {
         const block = await build(classes, row(COPY, IMAGE), row('', IMAGE));
-        const media = block.querySelector('.hero-c2-media').getBoundingClientRect().width;
-        return Math.round((100 * block.querySelector('.hero-c2-fg').getBoundingClientRect().width) / media);
+        const mediaArea = block.querySelector('.hero-c2-media-area').getBoundingClientRect().width;
+        return Math.round((100 * block.querySelector('.hero-c2-media').getBoundingClientRect().width) / mediaArea);
       };
       expect(await share('')).to.equal(33);
-      expect(await share('wide-media')).to.equal(50);
-      expect(await share('extra-wide-media')).to.equal(75);
-      expect(await share('full-media')).to.equal(100);
+      expect(await share('media-wide')).to.equal(50);
+      expect(await share('media-xtra-wide')).to.equal(75);
+      expect(await share('media-full')).to.equal(100);
     });
 
-    it('keeps a tall foreground from growing the media area', async () => {
+    it('keeps tall media from growing the media area', async () => {
       await setViewport({ width: 1280, height: 800 });
       const TALL = '<picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" style="aspect-ratio: 1 / 4"></picture>';
-      const heights = async (classes, fg) => {
-        const block = await build(classes, row(COPY, IMAGE), row('', fg));
-        const media = block.querySelector('.hero-c2-media').getBoundingClientRect().height;
-        return [media, block.querySelector('.hero-c2-fg').getBoundingClientRect().height];
+      const heights = async (classes, media) => {
+        const block = await build(classes, row(COPY, IMAGE), row('', media));
+        const mediaArea = block.querySelector('.hero-c2-media-area').getBoundingClientRect().height;
+        return [mediaArea, block.querySelector('.hero-c2-media').getBoundingClientRect().height];
       };
       const [plain] = await heights('', IMAGE);
-      const [media, fg] = await heights('full-media', TALL);
-      expect(media).to.equal(plain);
-      expect(fg).to.be.at.most(media);
+      const [mediaArea, media] = await heights('media-full', TALL);
+      expect(mediaArea).to.equal(plain);
+      expect(media).to.be.at.most(mediaArea);
     });
   });
 });
