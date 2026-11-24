@@ -101,24 +101,29 @@
   cursor: pointer;
 }
 
-.aup-mock .aup-plan-option.selected .aup-plan {
+.aup-mock .aup-plan.selected {
   border-color: #1473e6;
 }
 
-.aup-mock .aup-plan-mask {
-  padding: 4px 16px;
-  border-radius: 12px 12px 0 0;
-  font-size: 13px;
+.aup-mock .aup-badge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 2px 10px;
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 18px;
 }
 
-.aup-mock .aup-plan-option.masked .aup-plan {
-  border-color: var(--aup-mask-color);
-  border-top-width: 0;
-  border-radius: 0 0 12px 12px;
+.aup-mock .aup-body > .aup-badge {
+  margin-bottom: 12px;
 }
 
 .aup-mock .aup-plan-label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
   font-weight: 700;
 }
 
@@ -146,8 +151,7 @@
   gap: 12px;
 }
 
-.aup-mock .aup-addon,
-.aup-mock .aup-quantity {
+.aup-mock .aup-addon {
   display: flex;
   gap: 8px;
   align-items: center;

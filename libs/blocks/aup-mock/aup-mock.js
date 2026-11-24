@@ -49,9 +49,9 @@ const richText = (nodes = []) => {
   return fragment;
 };
 
-const mask = (b) => b?.text && tag('div', {
-  class: 'aup-plan-mask',
-  style: `color:${b.color ?? 'inherit'};background:${b.backgroundColor ?? 'transparent'}`,
+const badge = (b) => b?.text && tag('span', {
+  class: 'aup-badge',
+  style: `color:${b.color ?? 'inherit'};background:${b.backgroundColor ?? 'transparent'};border-color:${b.borderColor ?? 'transparent'}`,
 }, b.text);
 
 const header = (card) => tag('div', {
@@ -74,6 +74,7 @@ const features = (card) => (card.features ?? []).map(({ id, items }) => tag(
 const details = (card) => tag('div', { class: 'aup-details' }, [
   header(card),
   tag('div', { class: 'aup-body' }, [
+    badge(card.badge),
     tag('h2', { class: 'aup-title' }, richText(card.title)),
     card.subtitle && tag('p', { class: 'aup-subtitle' }, card.subtitle),
     tag('div', { class: 'aup-description' }, richText(card.description)),
@@ -83,18 +84,12 @@ const details = (card) => tag('div', { class: 'aup-details' }, [
   ]),
 ]);
 
-const planOption = ({ code, label, card }, selected) => tag('div', {
-  class: `aup-plan-option${selected ? ' selected' : ''}${card.badge?.text ? ' masked' : ''}`,
-  style: card.badge?.backgroundColor && `--aup-mask-color:${card.badge.backgroundColor}`,
-}, [
-  mask(card.badge),
-  tag('label', { class: 'aup-plan' }, [
-    tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
-    tag('div', { class: 'aup-plan-info' }, [
-      tag('div', { class: 'aup-plan-label' }, label),
-      tag('div', { class: 'aup-price' }, richText(card.price)),
-      tag('div', { class: 'aup-promo' }, richText(card.promoText)),
-    ]),
+const planOption = ({ code, label, card }, selected) => tag('label', { class: `aup-plan${selected ? ' selected' : ''}` }, [
+  tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
+  tag('div', { class: 'aup-plan-info' }, [
+    tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), badge(card.badge)]),
+    tag('div', { class: 'aup-price' }, richText(card.price)),
+    tag('div', { class: 'aup-promo' }, richText(card.promoText)),
   ]),
 ]);
 
@@ -107,17 +102,8 @@ const addon = (card, code) => {
   ]);
 };
 
-const quantity = ({ quantitySelect: q }) => q && tag('label', { class: 'aup-quantity' }, [
-  q.title,
-  tag('select', {}, Array.from({ length: Math.floor((q.max - q.min) / q.step) + 1 }, (_, i) => {
-    const value = q.min + i * q.step;
-    return tag('option', { selected: value === q.default }, `${value}`);
-  })),
-]);
-
 const checkout = (card, code) => tag('div', { class: 'aup-checkout' }, [
   addon(card, code),
-  quantity(card),
   tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).map(({ text, url, variant, style }) => tag(
     'a',
     { href: url, class: `con-button${variant === 'accent' ? ' blue' : ''}${style === 'outline' ? ' outline' : ''}` },
