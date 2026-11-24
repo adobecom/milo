@@ -7,6 +7,9 @@ main > .blog-article-section {
   --blog-side-navigation-column: min(280px, calc((100% - 2 * var(--grid-margin-width)) * 0.3));
   --blog-article-column-gap: var(--s2a-spacing-xl);
 
+  /* Figma's mobile card height has no exact size token. */
+  --blog-side-navigation-row-size: 66px;
+
   @media (width >= 1280px) {
     --blog-article-column-gap: 56px;
   }
@@ -68,9 +71,11 @@ main .forge-blog-side-navigation {
     top: var(--global-height-nav);
     z-index: 1;
     box-sizing: border-box;
-    max-height: calc(100dvh - var(--global-height-nav));
+    max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-xs));
+    margin-inline: var(--grid-margin-width);
     overflow-y: auto;
-    background: var(--s2a-color-gray-25);
+    border-radius: var(--s2a-border-radius-sm);
+    background: var(--s2a-color-background-subtle);
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -81,8 +86,22 @@ main .forge-blog-side-navigation {
       position: relative;
       top: auto;
       max-height: none;
+      margin-inline: 0;
       overflow-y: visible;
+      border-radius: 0;
       background: none;
+    }
+
+    &.is-floating {
+      @media (width < 768px) {
+        margin-inline: var(--s2a-spacing-xs);
+        border-radius: var(--s2a-border-radius-md);
+        background: var(--s2a-color-transparent-white-64);
+        backdrop-filter: blur(var(--s2a-blur-64));
+        box-shadow: var(--s2a-shadow-level-4-x) var(--s2a-shadow-level-4-y)
+          var(--s2a-shadow-level-4-blur) var(--s2a-shadow-level-4-spread)
+          var(--s2a-shadow-level-4-color);
+      }
     }
   }
 
@@ -106,33 +125,49 @@ main .forge-blog-side-navigation {
   nav > ul {
     margin: 0;
     padding: 0;
-    border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
-    border-top: 0;
-    background: var(--s2a-color-background-default);
+    border: 0;
+    background: transparent;
     list-style: none;
 
     @media (width >= 768px) {
-      border-top: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
       border-radius: var(--s2a-border-radius-4);
+      background: var(--s2a-color-background-default);
       box-shadow: 1px 1px 4px 0 var(--s2a-color-transparent-black-08);
     }
   }
 
   nav a {
-    display: block;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-block-size: var(--blog-side-navigation-row-size);
     padding: var(--s2a-spacing-sm) var(--s2a-spacing-xs);
     color: inherit;
+    font-size: var(--s2a-typography-font-size-label);
     font-weight: var(--s2a-font-weight-body);
+    line-height: var(--s2a-typography-line-height-label);
     text-decoration: none;
     overflow-wrap: anywhere;
+
+    @media (width >= 768px) {
+      display: block;
+      min-block-size: 0;
+      font-size: inherit;
+      line-height: inherit;
+    }
 
     &:hover {
       text-decoration: underline;
     }
 
     &[aria-current="location"] {
-      font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+      font-weight: var(--s2a-font-weight-label);
       text-decoration: none;
+
+      @media (width >= 768px) {
+        font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+      }
     }
 
     &:focus-visible {
@@ -144,8 +179,8 @@ main .forge-blog-side-navigation {
   nav li {
     margin: 0;
 
-    /* Aligns link text with the page gutter; the links carry their own inline padding. */
-    padding-inline: max(0px, calc(var(--grid-margin-width) - var(--s2a-spacing-xs)));
+    /* Card inset and link padding complete the mobile page gutter. */
+    padding-inline: var(--s2a-spacing-xs);
 
     @media (width >= 768px) {
       padding-inline: 0;
@@ -162,6 +197,11 @@ main .forge-blog-side-navigation {
     &:has(> .blog-side-navigation-toggle) {
       display: flex;
       align-items: center;
+      gap: var(--s2a-spacing-xs);
+
+      @media (width >= 768px) {
+        gap: 0;
+      }
 
       > a {
         flex: 1;
@@ -170,25 +210,19 @@ main .forge-blog-side-navigation {
     }
   }
 
-  /* Collapsed: only the active link shows, bold and on one line below 768px. */
+  /* Collapsed: only the active link shows, with room for a two-line mobile label. */
   nav li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) {
     background: transparent;
 
     > a {
-      font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+      font-weight: var(--s2a-font-weight-label);
 
       @media (width >= 768px) {
+        font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+
         &:not([aria-current="location"]) {
           font-weight: var(--s2a-font-weight-body);
         }
-      }
-    }
-
-    .blog-side-navigation-label {
-      -webkit-line-clamp: 1;
-
-      @media (width >= 768px) {
-        -webkit-line-clamp: 2;
       }
     }
   }
@@ -350,7 +384,7 @@ main > .blog-article-start {
   --blog-article-offset: var(--s2a-spacing-xl);
 
   margin-block-start: calc(
-    var(--blog-side-navigation-block-size, calc(3 * var(--s2a-font-size-md) + 2 * var(--s2a-spacing-sm) + var(--s2a-border-width-sm)))
+    var(--blog-side-navigation-block-size, calc(1.5 * var(--s2a-font-size-md) + var(--blog-side-navigation-row-size)))
     + var(--blog-article-offset)
   );
 

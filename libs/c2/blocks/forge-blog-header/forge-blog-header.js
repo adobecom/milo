@@ -720,9 +720,6 @@ function decorateDividers(el) {
   window.addEventListener('load', refresh, { once: true });
 }
 
-const BAR_HEIGHT = 8;
-const PROGRESS_BAR_OFFSET = -4;
-
 function findArticleCopy(headerSection) {
   const sections = getBlogSections(headerSection);
   const contents = [];
@@ -746,12 +743,9 @@ function decorateProgressBar(el, main) {
 
   const bar = createTag('div', { class: 'blog-progress-bar', 'aria-hidden': 'true' });
   el.append(bar);
-  const stacked = window.matchMedia('(width < 768px)');
   let frame = 0;
   let discover = true;
   let articleCopy;
-  let article;
-  let lastTop;
   let lastProgress;
 
   const update = () => {
@@ -762,7 +756,6 @@ function decorateProgressBar(el, main) {
     }
     if (discover) {
       articleCopy = findArticleCopy(headerSection);
-      article = main.querySelector(':scope > .blog-article-start');
       discover = false;
     }
     const first = articleCopy.first?.getBoundingClientRect();
@@ -772,19 +765,8 @@ function decorateProgressBar(el, main) {
       return;
     }
 
-    // Below 768px the divider sits midway through the article's gap below the navigation.
-    const articleStyle = stacked.matches && article && getComputedStyle(article);
-    const articleGap = articleStyle
-      ? parseFloat(articleStyle.marginBlockStart)
-        - parseFloat(articleStyle.getPropertyValue('--blog-side-navigation-block-size'))
-      : NaN;
-    const dividerY = Number.isFinite(articleGap)
-      ? article.getBoundingClientRect().top - articleGap / 2
-      : headerSection.getBoundingClientRect().bottom - 1;
     const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
-    const dividerTop = dividerY - BAR_HEIGHT / 2;
-    const top = Math.max(globalNav, dividerTop) + PROGRESS_BAR_OFFSET;
-    // Start filling when the first article copy reaches the bar below the global nav.
+    // Preserve the reading range: copy starts below global navigation and ends in the viewport.
     const start = window.scrollY + first.top - globalNav;
 
     const distance = last.bottom + window.scrollY - window.innerHeight - start;
@@ -792,10 +774,6 @@ function decorateProgressBar(el, main) {
     if (bar.hidden !== hidden) bar.hidden = hidden;
     if (hidden) return;
     const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
-    if (top !== lastTop) {
-      bar.style.top = `${top}px`;
-      lastTop = top;
-    }
     if (progress !== lastProgress) {
       bar.style.transform = `scaleX(${progress})`;
       lastProgress = progress;

@@ -102,6 +102,7 @@ function trackActiveSection(block, headings, collapseControls) {
   let measure = true;
   let headingTops = [];
   let scrollMargin = 0;
+  let stickyTop;
   const setActiveIndex = (index) => {
     if (index === currentIndex) return;
     links[currentIndex]?.removeAttribute('aria-current');
@@ -117,14 +118,18 @@ function trackActiveSection(block, headings, collapseControls) {
     }
     const scrollTop = window.scrollY;
     if (measure) {
-      const height = getComputedStyle(jumpNavigation).position === 'sticky'
-        ? jumpNavigation.getBoundingClientRect().height : 0;
+      const style = getComputedStyle(jumpNavigation);
+      stickyTop = style.position === 'sticky' ? parseFloat(style.top) || 0 : undefined;
+      const height = stickyTop === undefined ? 0 : jumpNavigation.getBoundingClientRect().height;
       main.style.setProperty('--blog-side-navigation-height', `${height}px`);
       headingTops = headings.map((heading) => heading.getBoundingClientRect().top + scrollTop);
       scrollMargin = parseFloat(getComputedStyle(headings[0]).scrollMarginTop) || 0;
       measure = false;
     }
     const navigationBottom = navigation?.getBoundingClientRect().bottom || 0;
+    const bounds = stickyTop === undefined ? undefined : jumpNavigation.getBoundingClientRect();
+    jumpNavigation.classList.toggle('is-floating', !!bounds
+      && bounds.top <= stickyTop + 1 && bounds.bottom > stickyTop);
     const offset = scrollTop + Math.max(navigationBottom, scrollMargin) + 1;
     let activeIndex = 0;
     headingTops.forEach((top, index) => {

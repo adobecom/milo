@@ -461,7 +461,7 @@ describe('forge-blog-side-navigation section list', () => {
     expect(scrollStub.firstCall.args[0].behavior).to.equal('instant');
   });
 
-  it('limits long jump labels to two lines except in collapsed mobile navigation', async () => {
+  it('limits long jump labels to two lines, including collapsed mobile navigation', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     style.textContent = SIDE_NAV_CSS;
@@ -484,13 +484,13 @@ describe('forge-blog-side-navigation section list', () => {
               const text = link.querySelector('.blog-side-navigation-label');
               const textStyle = getComputedStyle(text);
               const lineHeight = parseFloat(textStyle.lineHeight);
-              const lines = !expanded && width < 768 ? 1 : 2;
-              expect(textStyle.webkitLineClamp).to.equal(String(lines));
+              expect(textStyle.webkitLineClamp).to.equal('2');
               expect(textStyle.overflow).to.equal('hidden');
+              const height = text.getBoundingClientRect().height + 24;
               expect(link.getBoundingClientRect().height)
-                .to.be.closeTo(text.getBoundingClientRect().height + 24, 1);
+                .to.be.closeTo(width < 768 ? Math.max(66, height) : height, 1);
               if (text.textContent === longTitle) {
-                expect(text.getBoundingClientRect().height).to.be.closeTo(lineHeight * lines, 1);
+                expect(text.getBoundingClientRect().height).to.be.closeTo(lineHeight * 2, 1);
                 expect(text.scrollHeight).to.be.greaterThan(text.clientHeight);
               } else {
                 expect(text.getBoundingClientRect().height).to.be.closeTo(lineHeight, 1);
@@ -509,7 +509,7 @@ describe('forge-blog-side-navigation section list', () => {
     }
   });
 
-  it('uses plus and minus controls with an outer border and no link dividers at every viewport', async () => {
+  it('uses plus and minus controls without link dividers at every viewport', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     style.textContent = SIDE_NAV_CSS;
@@ -528,9 +528,9 @@ describe('forge-blog-side-navigation section list', () => {
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal('800');
+          .to.equal(mobile ? '700' : '800');
         expect(list.querySelector('[aria-current="location"]').getBoundingClientRect().height)
-          .to.equal(48);
+          .to.equal(mobile ? 66 : 48);
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
           .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         if (mobile) {
@@ -541,7 +541,7 @@ describe('forge-blog-side-navigation section list', () => {
           expect(getComputedStyle(button).borderRadius).to.equal('6px');
           expect(getComputedStyle(button).backgroundColor).to.equal('rgb(248, 248, 248)');
           expect(getComputedStyle(button.parentElement).backgroundColor).to.equal('rgba(0, 0, 0, 0)');
-          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('800');
+          expect(getComputedStyle(button.parentElement.querySelector('a')).fontWeight).to.equal('700');
         }
         expect(getComputedStyle(icon, '::before').width).to.equal('12px');
         expect(getComputedStyle(icon, '::before').height).to.equal('2px');
@@ -549,7 +549,7 @@ describe('forge-blog-side-navigation section list', () => {
         expect(getComputedStyle(icon, '::after').height).to.equal('12px');
         expect(getComputedStyle(icon, '::after').display).not.to.equal('none');
         expect(getComputedStyle(list).borderTopWidth).to.equal(width < 768 ? '0px' : '1px');
-        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(218, 218, 218)');
+        expect(getComputedStyle(list).borderBottomWidth).to.equal(mobile ? '0px' : '1px');
         button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
         if (mobile) {
@@ -566,9 +566,9 @@ describe('forge-blog-side-navigation section list', () => {
         expect(getComputedStyle(icon).borderColor).to.equal('rgb(255, 255, 255)');
         expect(getComputedStyle(icon).borderRadius).to.equal('50%');
         expect(getComputedStyle(list).borderTopWidth).to.equal(width < 768 ? '0px' : '1px');
-        expect(getComputedStyle(list).borderBottom).to.equal('1px solid rgb(218, 218, 218)');
+        expect(getComputedStyle(list).borderBottomWidth).to.equal(mobile ? '0px' : '1px');
         expect(getComputedStyle(list.querySelector('[aria-current="location"]')).fontWeight)
-          .to.equal('800');
+          .to.equal(mobile ? '700' : '800');
         if (!mobile) {
           expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
             .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
@@ -578,7 +578,7 @@ describe('forge-blog-side-navigation section list', () => {
           expect(getComputedStyle(item).borderWidth).to.equal('0px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineStart).to.equal('8px');
           expect(getComputedStyle(item.querySelector('a')).paddingInlineEnd).to.equal('8px');
-          expect(item.querySelector('a').getBoundingClientRect().height).to.equal(48);
+          expect(item.querySelector('a').getBoundingClientRect().height).to.equal(mobile ? 66 : 48);
           if (width < 768) {
             expect(item.getBoundingClientRect().width).to.be.closeTo(list.clientWidth, 1);
           }
@@ -614,7 +614,7 @@ describe('forge-blog-side-navigation section list', () => {
           expect(button.parentElement).to.equal(links[0].parentElement);
           expect(links.map((link) => link.textContent)).to.deep.equal(titles);
           expect(links.every((link) => !link.parentElement.hidden)).to.equal(true);
-          expect(getComputedStyle(links[0]).fontWeight).to.equal('800');
+          expect(getComputedStyle(links[0]).fontWeight).to.equal('700');
           expect(getComputedStyle(links[0].parentElement).backgroundColor)
             .to.equal('rgb(243, 243, 243)');
           expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
@@ -787,7 +787,7 @@ describe('forge-blog-side-navigation section list', () => {
     }
   });
 
-  it('uses a compact sticky rail on tablet, a wider desktop layout, and full-width jump links only on mobile', async () => {
+  it('uses a compact sticky rail on tablet, a wider desktop layout, and inset jump links only on mobile', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     style.textContent = `body { margin: 0; }
@@ -867,12 +867,14 @@ describe('forge-blog-side-navigation section list', () => {
           expect(getComputedStyle(nav).position).to.equal('sticky');
           expect(article.getBoundingClientRect().top)
             .to.be.greaterThan(nav.getBoundingClientRect().bottom);
-          expect(nav.getBoundingClientRect().width).to.be.closeTo(width, 1);
-          expect(nav.getBoundingClientRect().left).to.be.closeTo(0, 1);
-          expect(nav.getBoundingClientRect().right).to.be.closeTo(width, 1);
-          expect(nav.querySelector('ul').getBoundingClientRect().width).to.be.closeTo(width, 1);
+          expect(nav.classList.contains('is-floating')).to.equal(false);
+          expect(nav.getBoundingClientRect().width).to.be.closeTo(width - 48, 1);
+          expect(nav.getBoundingClientRect().left).to.be.closeTo(24, 1);
+          expect(nav.getBoundingClientRect().right).to.be.closeTo(width - 24, 1);
+          expect(nav.querySelector('ul').getBoundingClientRect().width)
+            .to.be.closeTo(nav.getBoundingClientRect().width, 1);
           expect(main.querySelector('.content').getBoundingClientRect().width)
-            .to.be.lessThan(nav.getBoundingClientRect().width);
+            .to.be.closeTo(nav.getBoundingClientRect().width, 1);
           const button = block.querySelector('button');
           for (const expanded of [false, true]) {
             if (button.getAttribute('aria-expanded') !== String(expanded)) button.click();
@@ -887,7 +889,7 @@ describe('forge-blog-side-navigation section list', () => {
               + parseFloat(getComputedStyle(link).paddingInlineStart);
             const title = block.querySelector('.blog-side-navigation-panel > p');
             expect(textLeft).to.be.closeTo(title.getBoundingClientRect().left
-              + parseFloat(getComputedStyle(title).paddingInlineStart), 1);
+              + parseFloat(getComputedStyle(title).paddingInlineStart) + 16, 1);
             expect(text.getBoundingClientRect().right)
               .to.be.at.most(button.getBoundingClientRect().left);
           }
@@ -895,6 +897,8 @@ describe('forge-blog-side-navigation section list', () => {
           const gap = width < 1280 ? 32 : 56;
           expect(getComputedStyle(panel).position).to.equal('sticky');
           expect(getComputedStyle(nav).position).to.equal('relative');
+          expect(nav.classList.contains('is-floating')).to.equal(false);
+          expect(getComputedStyle(nav).backdropFilter).to.equal('none');
           expect(article.getBoundingClientRect().left)
             .to.be.closeTo(block.getBoundingClientRect().right + gap, 1);
           expect(article.getBoundingClientRect().top)
@@ -1043,14 +1047,14 @@ describe('forge-blog-side-navigation section list', () => {
     }
   });
 
-  it('pins only jump links below the global header on mobile and clears section targets', async () => {
+  it('floats mobile jump links below the global header only through the article and clears section targets', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
     style.textContent = `.forge-blog-header { min-height: 200px; }${SIDE_NAV_CSS}`;
     document.head.append(style);
     scrollStub.callThrough();
     try {
-      for (const width of [390, 767]) {
+      for (const width of [375, 767]) {
         await setViewport({ width, height: 800 });
         window.scrollTo({ top: 0, behavior: 'instant' });
         const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
@@ -1070,13 +1074,27 @@ describe('forge-blog-side-navigation section list', () => {
         const relatedTop = related.getBoundingClientRect().top;
         const title = block.querySelector('.blog-side-navigation-panel > p');
         const titleTop = title.getBoundingClientRect().top;
+        const articleTop = article.getBoundingClientRect().top;
         expect(title.textContent).to.equal('JUMP TO SECTION');
         expect(nav.getBoundingClientRect().top).to.be.greaterThan(80);
+        expect(nav.classList.contains('is-floating')).to.equal(false);
+        expect(getComputedStyle(nav).borderRadius).to.equal('12px');
         for (const top of [600, 900]) {
           window.scrollTo({ top, behavior: 'instant' });
           await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
           expect(nav.getBoundingClientRect().top).to.be.closeTo(80, 1);
           expect(nav.querySelector('ul').getBoundingClientRect().top).to.be.closeTo(80, 1);
+          expect(nav.classList.contains('is-floating')).to.equal(true);
+          expect(nav.getBoundingClientRect().left).to.be.closeTo(8, 1);
+          expect(nav.getBoundingClientRect().right).to.be.closeTo(width - 8, 1);
+          expect(nav.getBoundingClientRect().height).to.equal(66);
+          expect(getComputedStyle(nav).borderRadius).to.equal('16px');
+          expect(getComputedStyle(nav).backgroundColor).to.equal('rgba(255, 255, 255, 0.64)');
+          expect(getComputedStyle(nav).backdropFilter).to.equal('blur(64px)');
+          expect(getComputedStyle(nav).boxShadow).not.to.equal('none');
+          expect(article.getBoundingClientRect().top + window.scrollY)
+            .to.be.closeTo(articleTop, 1);
           expect(title.getBoundingClientRect().top).to.be.closeTo(titleTop - top, 1);
           expect(title.getBoundingClientRect().bottom).to.be.at.most(80);
           expect(related.getBoundingClientRect().top).to.be.closeTo(relatedTop - top, 1);
@@ -1104,6 +1122,27 @@ describe('forge-blog-side-navigation section list', () => {
         expect(document.activeElement === heading).to.equal(true);
         scrollStub.resetBehavior();
         scrollStub.callThrough();
+        const articleEnd = article.getBoundingClientRect().bottom + window.scrollY;
+        window.scrollTo({ top: articleEnd, behavior: 'instant' });
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        expect(nav.getBoundingClientRect().bottom).to.be.at.most(80);
+        expect(nav.classList.contains('is-floating')).to.equal(false);
+        window.scrollTo({ top: 600, behavior: 'instant' });
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        expect(nav.classList.contains('is-floating')).to.equal(true);
+        await setViewport({ width: 768, height: 800 });
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        expect(nav.classList.contains('is-floating')).to.equal(false);
+        expect(getComputedStyle(nav).position).to.equal('relative');
+        expect(getComputedStyle(nav).backdropFilter).to.equal('none');
+        await setViewport({ width, height: 800 });
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+        expect(nav.classList.contains('is-floating')).to.equal(false);
         main.remove();
       }
     } finally {
@@ -1971,7 +2010,7 @@ describe('forge-blog-side-navigation section list', () => {
           expect(visible[0].querySelector('a').getAttribute('href'))
             .to.equal(`#${titles[activeIndex].toLowerCase()}`);
           expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
-          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal('800');
+          expect(getComputedStyle(links[activeIndex]).fontWeight).to.equal(tablet ? '800' : '700');
           expect(button.parentElement === visible[0]).to.equal(true);
           expect(button.getAttribute('aria-expanded')).to.equal('false');
           expect(getComputedStyle(visible[0]).display).to.equal('flex');
@@ -1998,7 +2037,7 @@ describe('forge-blog-side-navigation section list', () => {
           expect(expandedControl.querySelector('.blog-side-navigation-label').textContent)
             .to.equal(titles[0]);
           expect(links[2].getAttribute('aria-current')).to.equal('location');
-          expect(getComputedStyle(links[2]).fontWeight).to.equal('800');
+          expect(getComputedStyle(links[2]).fontWeight).to.equal('700');
           expect(getComputedStyle(items[2]).backgroundColor).to.equal('rgb(243, 243, 243)');
           expect(getComputedStyle(links[1]).fontWeight).to.equal('400');
           scrollTop = positions[1] + 10;

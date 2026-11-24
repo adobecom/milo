@@ -179,11 +179,12 @@
     }
   }
 
-  /* Reading progress: positioned and filled by JS; never takes up layout space. */
+  /* Reading progress stays at the viewport bottom without taking up layout space. */
   .blog-progress-bar {
     position: fixed;
+    inset-block-end: 0;
     inset-inline: 0;
-    block-size: 8px;
+    block-size: var(--s2a-spacing-xs);
     background: var(--s2a-color-blue-900);
     transform: scaleX(0);
     transform-origin: left;

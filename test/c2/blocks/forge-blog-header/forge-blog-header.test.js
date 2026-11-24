@@ -1701,36 +1701,31 @@ describe('forge-blog-header reading progress', () => {
   });
 
   [false, true].forEach((noDividers) => {
-    it(`follows stage's mobile divider and tablet rail with no-dividers=${noDividers}`, async () => {
-      await setViewport({ width: 767, height: 900 });
+    it(`keeps progress at the viewport bottom across breakpoints with no-dividers=${noDividers}`, async () => {
       scrollTop = 0;
       style.textContent += sideNavigationCss;
-      const { main, block, headerSection } = buildArticle();
+      const { block, headerSection } = buildArticle();
       block.classList.toggle('no-dividers', noDividers);
       await init(block);
       const navigation = document.createElement('div');
       navigation.className = 'forge-blog-side-navigation';
       headerSection.append(navigation);
       await initSideNavigation(navigation);
-      const article = main.querySelector('.blog-article-start');
-      mockRect(article, 600, 2600);
       await nextFrame();
       const bar = block.querySelector('.blog-progress-bar');
-      expect(getComputedStyle(navigation.querySelector('.blog-side-navigation-panel')).display)
-        .to.equal('contents');
-      const gap = noDividers ? 32 : 114;
-      // Half the 8px bar centers it on the divider; C2's PROGRESS_BAR_OFFSET lifts it 4px.
-      const offset = -4 - 4;
-      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 + offset);
-      expect(progress(bar)).to.equal(0);
-      await scrollTo(600);
-      expect(parseFloat(bar.style.top)).to.equal(64 - 4);
-      await scrollTo(0);
-      expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 + offset);
-      for (const width of [768, 1279, 1440]) {
+      for (const width of [375, 767, 768, 1024, 1279, 1280, 1440]) {
         await setViewport({ width, height: 900 });
-        await nextFrame();
-        expect(parseFloat(bar.style.top)).to.equal(400 - 1 + offset);
+        for (const top of [0, 1000, 1800]) {
+          await scrollTo(top);
+          const bounds = bar.getBoundingClientRect();
+          expect(getComputedStyle(bar).position).to.equal('fixed');
+          expect(getComputedStyle(bar).bottom).to.equal('0px');
+          expect(bounds.height).to.equal(8);
+          expect(bounds.bottom).to.be.closeTo(document.documentElement.clientHeight, 1);
+          expect(bar.style.top).to.equal('');
+          const expected = Math.min(1, Math.max(0, (top - 536) / (1800 - 536)));
+          expect(progress(bar)).to.be.closeTo(expected, 0.000001);
+        }
       }
     });
   });
