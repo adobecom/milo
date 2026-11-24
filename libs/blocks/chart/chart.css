@@ -173,7 +173,8 @@
 .chart.list .chart-container,
 .chart.list .chart-wrapper,
 .chart.oversized-number .chart-container,
-.chart.oversized-number .chart-wrapper {
+.chart.oversized-number .chart-wrapper,
+.chart.dynamic-data .chart-container {
   height: auto;
 }
 
@@ -211,4 +212,87 @@
 .chart.pie[data-responsive-size=large] .chart-container,
 .chart.pie[data-responsive-size=large] .chart-wrapper {
   height: 512px;
+}
+
+.chart.dynamic-data .chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.chart.dynamic-data .chart-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--spectrum-grey-900);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.chart.dynamic-data .chart-legend button[aria-pressed=false] {
+  text-decoration: line-through;
+}
+
+.chart.dynamic-data .chart-legend-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--spectrum-grey-900);
+  border-radius: 3px;
+  background: var(--series-color);
+}
+
+.chart.dynamic-data .chart-legend-swatch.line {
+  height: 3px;
+  border-radius: 0;
+}
+
+.chart.dynamic-data .chart-instructions {
+  margin: 8px 0 16px;
+  font-size: 14px;
+}
+
+.chart.dynamic-data .chart-data {
+  overflow-x: auto;
+}
+
+.chart.dynamic-data .chart-data summary {
+  width: fit-content;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.chart.dynamic-data .chart-data table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chart.dynamic-data .chart-data th,
+.chart.dynamic-data .chart-data td {
+  padding: 8px;
+  border: 1px solid #767676;
+  text-align: left;
+}
+
+.chart.dynamic-data .chart-wrapper:focus-visible,
+.chart.dynamic-data button:focus-visible,
+.chart.dynamic-data summary:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 3px;
+}
+
+.chart.dynamic-data .chart-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
