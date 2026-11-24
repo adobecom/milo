@@ -1396,10 +1396,13 @@ span.hang-opening-quote {
         animation-name: enable-parallax-stagger;
       }
 
-      &.masonry-layout > :not([class*="section-"]) {
-        --parallax-stagger-drift: 150px;
+      &.masonry-layout {
         --parallax-range-end-name: entry;
         --parallax-range-end-length: 100%;
+      }
+
+      &.masonry-layout > :not([class*="section-"]) {
+        --parallax-stagger-drift: 150px;
 
         animation-timeline: view(block);
       }
