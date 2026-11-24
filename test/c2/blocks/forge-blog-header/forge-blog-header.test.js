@@ -1714,14 +1714,15 @@ describe('forge-blog-header reading progress', () => {
       await nextFrame();
       const bar = block.querySelector('.blog-progress-bar');
       for (const width of [375, 767, 768, 1024, 1279, 1280, 1440]) {
-        await setViewport({ width, height: 900 });
+        const viewport = { width, height: 900 };
+        await setViewport(viewport);
         for (const top of [0, 1000, 1800]) {
           await scrollTo(top);
           const bounds = bar.getBoundingClientRect();
           expect(getComputedStyle(bar).position).to.equal('fixed');
           expect(getComputedStyle(bar).bottom).to.equal('0px');
           expect(bounds.height).to.equal(8);
-          expect(bounds.bottom).to.be.closeTo(document.documentElement.clientHeight, 1);
+          expect(bounds.bottom).to.be.closeTo(viewport.height, 1);
           expect(bar.style.top).to.equal('');
           const expected = Math.min(1, Math.max(0, (top - 536) / (1800 - 536)));
           expect(progress(bar)).to.be.closeTo(expected, 0.000001);
