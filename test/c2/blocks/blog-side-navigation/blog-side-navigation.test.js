@@ -1245,6 +1245,50 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
+  it('reserves panel changes before layout, so observers of main see no ResizeObserver loop', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    const loopErrors = [];
+    const onError = (event) => {
+      if (/ResizeObserver loop/.test(event.message)) loopErrors.push(event.message);
+    };
+    // Like the blog header on a real page, something watches main's size.
+    const mainObserver = new ResizeObserver(() => {});
+    window.addEventListener('error', onError);
+    try {
+      await setViewport({ width: 375, height: 800 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>'
+        + '<p style="height: 900px"></p>');
+      mainObserver.observe(main);
+      await init(block);
+      const settle = () => new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      await settle();
+      const reserved = () => parseFloat(main.style.getPropertyValue('--blog-side-navigation-block-size'));
+      const before = reserved();
+      block.querySelector('.blog-side-navigation-panel')
+        .append(Object.assign(document.createElement('div'), { style: 'height: 300px' }));
+      await Promise.resolve();
+      expect(reserved()).to.equal(before + 300);
+      await settle();
+      const button = block.querySelector('button');
+      for (const expanded of ['true', 'false']) {
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal(expanded);
+        await settle();
+      }
+      expect(loopErrors).to.deep.equal([]);
+    } finally {
+      mainObserver.disconnect();
+      window.removeEventListener('error', onError);
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
   it('extends a short article so the desktop panel never runs past it', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
@@ -1986,14 +2030,17 @@ describe('blog-side-navigation section list', () => {
         expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
       }
       expect(rectangles.every((rectangle) => rectangle.calledOnce)).to.equal(true);
-      expect(computedStyle.withArgs(headings[0]).calledOnce).to.equal(true);
+      // Not withArgs: sinon checks element arguments by appending a child to them.
+      const headingStyleCalls = () => computedStyle.getCalls()
+        .filter((call) => call.args[0] === headings[0]).length;
+      expect(headingStyleCalls()).to.equal(1);
       positions[1] = 150;
       headings[0].style.scrollMarginTop = '100px';
       onResize();
       await new Promise(requestAnimationFrame);
       expect(links[1].getAttribute('aria-current')).to.equal('location');
       expect(rectangles.every((rectangle) => rectangle.calledTwice)).to.equal(true);
-      expect(computedStyle.withArgs(headings[0]).calledTwice).to.equal(true);
+      expect(headingStyleCalls()).to.equal(2);
       expect(observer.observe.calledWith(main)).to.equal(false);
       expect(observer.observe.calledWith(main.querySelector('.blog-article-start'))).to.equal(true);
       block.remove();

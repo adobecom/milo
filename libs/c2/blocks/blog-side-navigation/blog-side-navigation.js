@@ -167,11 +167,21 @@ function trackActiveSection(block, headings, collapseControls) {
     reserve();
     invalidate();
   };
+  // Resizing the page inside a ResizeObserver callback logs a "ResizeObserver loop" error,
+  // so reserve space as soon as the panel's content changes, before the browser lays it out.
+  const panelChangeObserver = new MutationObserver(reserve);
+  panelChangeObserver.observe(panel, {
+    attributes: true,
+    characterData: true,
+    childList: true,
+    subtree: true,
+  });
   const observer = new ResizeObserver(resize);
   sectionTrackers.set(block, () => {
     window.removeEventListener('scroll', schedule);
     window.removeEventListener('resize', resize);
     observer.disconnect();
+    panelChangeObserver.disconnect();
     cancelAnimationFrame(frame);
     collapseControls?.cleanup();
     sectionTrackers.delete(block);
