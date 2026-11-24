@@ -23,6 +23,7 @@ Empty cells render nothing. Rows must not be skipped: an empty `| |` row still o
 - `narrow-content`, `wide-content`: change how many columns the content takes; the media takes the rest after a 1-column gap.
 - `full-height`: from 900px, the background runs from the top of the screen, behind the nav, to the bottom of the block, and to the edge of the block's grid.
 - `full-width`: like `full-height`, but the background always runs to the right edge of the screen.
+- `wide-fg`, `extra-wide-fg`, `full-fg`: the foreground is 33% of the media area wide by default; these make it 50%, 75%, or 100%. The foreground never grows the media area: a foreground taller than the area scales down to fit it and stays against the edge set by its placement variants.
 - `fg-v-start`, `fg-v-end`, `fg-h-start`, `fg-h-end`: place the foreground at the start or end of the background, vertically or horizontally. Combine one of each for a corner. The foreground is centered on any axis without a variant.
 - `glassy`: puts the background in a translucent, blurred frame with a thin border and shadow.
 - `merch`, `event`: block-level only. Set them on the block name, not on a viewport marker.

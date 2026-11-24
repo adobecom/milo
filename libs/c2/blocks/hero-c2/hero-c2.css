@@ -1,7 +1,7 @@
 /* stylelint-disable property-no-unknown, unit-no-unknown */
 
 .hero-c2 {
-  --hero-c2-fg-width: 112px;
+  --hero-c2-fg-width: 33%;
   --hero-c2-nav-h: var(--c2-global-height-nav, 80px);
   --hero-c2-pad-top: calc(var(--hero-c2-nav-h) + var(--s2a-spacing-xl));
   --hero-c2-pad-bottom: var(--s2a-spacing-xl);
@@ -39,6 +39,7 @@
 
   .hero-c2-media {
     aspect-ratio: 4 / 3;
+    container-type: size;
     display: grid;
     place-items: center;
     position: relative;
@@ -91,7 +92,21 @@
       block-size: auto;
       display: block;
       inline-size: 100%;
+      max-block-size: 100cqb;
+      object-fit: contain;
     }
+  }
+
+  &.wide-fg {
+    --hero-c2-fg-width: 50%;
+  }
+
+  &.extra-wide-fg {
+    --hero-c2-fg-width: 75%;
+  }
+
+  &.full-fg {
+    --hero-c2-fg-width: 100%;
   }
 
   &.fg-v-start .hero-c2-fg {
@@ -108,6 +123,22 @@
 
   &.fg-h-end .hero-c2-fg {
     justify-self: end;
+  }
+
+  &.fg-v-start .hero-c2-fg :is(img, video) {
+    object-position: top;
+  }
+
+  &.fg-v-end .hero-c2-fg :is(img, video) {
+    object-position: bottom;
+  }
+
+  &.fg-h-start .hero-c2-fg :is(img, video) {
+    object-position: left;
+  }
+
+  &.fg-h-end .hero-c2-fg :is(img, video) {
+    object-position: right;
   }
 
   .hero-c2-event {
@@ -143,8 +174,6 @@
 
 @media (width >= 768px) {
   .hero-c2 {
-    --hero-c2-fg-width: 273px;
-
     .merch-widget-c2 {
       max-inline-size: 410px;
     }
@@ -153,7 +182,6 @@
 
 @media (width >= 900px) {
   .hero-c2 {
-    --hero-c2-fg-width: 360px;
     --hero-c2-content-cols: 5;
 
     display: flex;

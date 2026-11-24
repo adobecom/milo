@@ -31,27 +31,29 @@ function decorateBackground(cell) {
 }
 
 function buildPlainWidget(cell) {
-  decorateBlockText(cell, { body: 'md', button: 'md' });
-  return cell;
+  const widget = createTag('div');
+  widget.append(...cell.childNodes);
+  decorateBlockText(widget, { body: 'md', button: 'md' });
+  return widget;
 }
 
 const isDate = (p) => p.firstElementChild?.matches('strong')
   && p.textContent === p.firstElementChild.textContent;
 
 function buildEventWidget(cell) {
-  buildPlainWidget(cell);
+  const widget = buildPlainWidget(cell);
   const dates = createTag('div', { class: 'hero-c2-event-dates' });
   let date;
-  [...cell.children].filter((el) => !el.matches('.action-area')).forEach((el) => {
+  [...widget.children].filter((el) => !el.matches('.action-area')).forEach((el) => {
     if (isDate(el)) {
       date = createTag('div', { class: 'hero-c2-event-date' });
       dates.append(date);
     }
     date?.append(el);
   });
-  cell.classList.add('hero-c2-event');
-  cell.prepend(dates);
-  return cell;
+  widget.classList.add('hero-c2-event');
+  widget.prepend(dates);
+  return widget;
 }
 
 function decorate(block, buildWidget) {

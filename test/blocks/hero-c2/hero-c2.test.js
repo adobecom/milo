@@ -104,6 +104,13 @@ describe('hero-c2', () => {
   });
 
   describe('plain widget', () => {
+    it('keeps the foreground out of the buttons\' supplemental text', async () => {
+      const block = await build('', row(COPY, ''), row(BUTTONS, IMAGE));
+      const fg = block.querySelector('.hero-c2-fg');
+      expect(fg.classList.contains('supplemental-text')).to.be.false;
+      expect(fg.classList.contains('body-xl')).to.be.false;
+    });
+
     it('omits the widget when its cell is empty', async () => {
       const block = await build('', row(COPY, ''), row('', IMAGE));
       expect(block.querySelector('.hero-c2-widget')).to.be.null;
@@ -188,6 +195,33 @@ describe('hero-c2', () => {
       };
       expect(await shadow('')).to.equal('none');
       expect(await shadow('glassy')).to.not.equal('none');
+    });
+
+    it('sizes the foreground as a share of the media area', async () => {
+      await setViewport({ width: 1280, height: 800 });
+      const share = async (classes) => {
+        const block = await build(classes, row(COPY, IMAGE), row('', IMAGE));
+        const media = block.querySelector('.hero-c2-media').getBoundingClientRect().width;
+        return Math.round((100 * block.querySelector('.hero-c2-fg').getBoundingClientRect().width) / media);
+      };
+      expect(await share('')).to.equal(33);
+      expect(await share('wide-fg')).to.equal(50);
+      expect(await share('extra-wide-fg')).to.equal(75);
+      expect(await share('full-fg')).to.equal(100);
+    });
+
+    it('keeps a tall foreground from growing the media area', async () => {
+      await setViewport({ width: 1280, height: 800 });
+      const TALL = '<picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" style="aspect-ratio: 1 / 4"></picture>';
+      const heights = async (classes, fg) => {
+        const block = await build(classes, row(COPY, IMAGE), row('', fg));
+        const media = block.querySelector('.hero-c2-media').getBoundingClientRect().height;
+        return [media, block.querySelector('.hero-c2-fg').getBoundingClientRect().height];
+      };
+      const [plain] = await heights('', IMAGE);
+      const [media, fg] = await heights('full-fg', TALL);
+      expect(media).to.equal(plain);
+      expect(fg).to.be.at.most(media);
     });
   });
 });
