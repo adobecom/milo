@@ -202,11 +202,10 @@
   & ~ .blog-article-section {
     --blog-divider-dots: var(--s2a-color-gray-400) 0 2px, transparent 2px 7px;
     --blog-divider-gap: var(--s2a-spacing-3xl);
-    --blog-divider-rule-size: 1.5px;
+    --blog-divider-rule-size: var(--s2a-border-width-md);
     --blog-divider-rule-image: linear-gradient(var(--s2a-color-gray-400), var(--s2a-color-gray-400));
 
     @media (width >= 768px) {
-      --blog-divider-rule-size: var(--s2a-border-width-md);
       --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
     }
   }

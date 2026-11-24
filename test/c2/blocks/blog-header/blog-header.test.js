@@ -1366,7 +1366,7 @@ describe('blog-header section dividers', () => {
         const ruleTop = article.getBoundingClientRect().top + parseFloat(rule.top);
         expect(rule.content).to.equal('""');
         expect(rule.pointerEvents).to.equal('none');
-        expect(rule.blockSize).to.equal(width < 768 ? '1.5px' : '2px');
+        expect(rule.blockSize).to.equal('2px');
         expect(rule.borderImageSource).to.include(width < 768
           ? 'linear-gradient(rgb(198, 198, 198), rgb(198, 198, 198))'
           : 'repeating-linear-gradient');
@@ -1459,7 +1459,7 @@ describe('blog-header section dividers', () => {
       expect(bottom.content).to.equal('""');
       expect(parseFloat(bottom.width))
         .to.be.closeTo(headerSection.getBoundingClientRect().width, 0.01);
-      expect(bottom.blockSize).to.equal('1.5px');
+      expect(bottom.blockSize).to.equal('2px');
       expect(bottom.backgroundImage)
         .to.equal('linear-gradient(rgb(198, 198, 198), rgb(198, 198, 198))');
     });
@@ -1716,7 +1716,7 @@ describe('blog-header reading progress', () => {
       const bar = block.querySelector('.blog-progress-bar');
       expect(getComputedStyle(navigation.querySelector('.blog-side-navigation-panel')).display)
         .to.equal('contents');
-      const gap = noDividers ? 32 : 113.5;
+      const gap = noDividers ? 32 : 114;
       // Half the 8px bar centers it on the divider; C2's PROGRESS_BAR_OFFSET lifts it 4px.
       const offset = -4 - 4;
       expect(parseFloat(bar.style.top)).to.equal(600 - gap / 2 + offset);
