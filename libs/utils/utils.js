@@ -119,6 +119,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'aside-c2',
   'base-card',
   'brand-concierge',
   'brand-concierge-global',
@@ -2098,9 +2099,72 @@ export function filterDuplicatedLinkBlocks(blocks) {
   return uniqueBlocks;
 }
 
+export const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+// TODO: make `-viewport` required post-rollout (drop the bare-keyword fallback)
+const VIEWPORT_DELIMITER = /^(mobile|tablet|desktop)(-viewport)?\s*(\(.*\))?$/s;
+
+function isEmptyCell(cell) {
+  return !cell || (!cell.children.length && !cell.textContent.trim());
+}
+
+function isEmptyRow(row) {
+  return !row.textContent.trim() && [...row.children].every(isEmptyCell);
+}
+
+function getDelimiterKeyword(row) {
+  return row.children.length === 1
+    && VIEWPORT_DELIMITER.exec(row.children[0].textContent.trim().toLowerCase())?.[1];
+}
+
+export function getViewportContent(allRows, viewport, index) {
+  const delimiterIdx = allRows.findIndex((row) => getDelimiterKeyword(row) === viewport);
+  if (delimiterIdx < 0) return { delimiterIdx, viewportRows: [] };
+
+  const nextIdx = allRows
+    .findIndex((row, i) => i > delimiterIdx && VIEWPORT_KEYWORDS
+      .indexOf(getDelimiterKeyword(row)) > index);
+  const viewportRows = allRows.slice(delimiterIdx + 1, nextIdx < 0 ? allRows.length : nextIdx);
+  return { delimiterIdx, viewportRows };
+}
+
+function inheritRowCells(row, prevRow) {
+  if (!prevRow) return;
+  // Copied MEP placeholders expand like the source, keeping later rows/cells aligned
+  if (prevRow.dataset.mepReplaceType === 'row') {
+    if (!isEmptyRow(row)) return;
+    row.dataset.mepReplaceType = 'row';
+    row.replaceChildren(...prevRow.cloneNode(true).childNodes);
+    return;
+  }
+
+  [...row.children].forEach((col, i) => {
+    const prevCol = prevRow.children[i];
+    if (!isEmptyCell(col) || isEmptyCell(prevCol)) return;
+    if (prevCol.dataset.mepReplaceType === 'cell') col.dataset.mepReplaceType = 'cell';
+    col.replaceChildren(...prevCol.cloneNode(true).childNodes);
+  });
+}
+
+export function inheritViewportContent(section) {
+  if (getMetadata('foundation') !== 'c2') return;
+  section.querySelectorAll(':scope > div[class]').forEach((block) => {
+    const rows = [...block.children]
+      .filter((row) => row.children[0]?.textContent.trim().toLowerCase() !== 'mep-lingo');
+    if (!rows.length || getDelimiterKeyword(rows[0]) !== 'mobile') return;
+    let prevRows = [];
+    VIEWPORT_KEYWORDS.forEach((viewport, index) => {
+      const { viewportRows, delimiterIdx } = getViewportContent(rows, viewport, index);
+      if (delimiterIdx < 0) return;
+      viewportRows.forEach((row, i) => inheritRowCells(row, prevRows[i]));
+      prevRows = viewportRows;
+    });
+  });
+}
+
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  inheritViewportContent(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -2321,13 +2385,8 @@ export function loadMepAddons() {
   return promises;
 }
 
-// TEMP: ?mepnext=off -> preview.js, otherwise mep-next; gate + toLowerCase() hack die on removal.
-function isMepNextOverlay() {
-  return new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') !== 'off';
-}
-
 function initMepOverlay() {
-  if (!getConfig().mep?.preview || !isMepNextOverlay()) return;
+  if (!getConfig().mep?.preview) return;
   import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
     .then(({ default: init }) => init());
 }
@@ -2390,19 +2449,26 @@ export function registerBlockDeps(blockName, ...deps) {
   blockDeps.set(blockName, deps);
 }
 
+function preloadModule(href) {
+  // WebKit can refetch a module when modulepreload is added after its import.
+  const url = new URL(href, document.baseURI).href;
+  if (performance.getEntriesByName(url).some(({ initiatorType }) => initiatorType === 'script')) return;
+  loadLink(href, { rel: 'modulepreload', crossorigin: 'anonymous' });
+}
+
 const preloadBlockResources = (blocks = [], { warmStyles = false } = {}) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
-    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    preloadModule(`${base}/utils/decorate.js`);
     loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
-  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  preloadModule(`${blockPath}.js`);
   (blockDeps.get(name) ?? []).forEach((dep) => {
     const url = typeof dep === 'function' ? dep(blockPath) : dep;
-    if (typeof url === 'string') loadLink(url, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    if (typeof url === 'string') preloadModule(url);
   });
   if (!hasStyles) return null;
   if (warmStyles) { loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' }); return null; }
@@ -2813,14 +2879,9 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    if (isMepNextOverlay()) {
-      // The overlay itself is initialized once via initMepOverlay() in loadArea.
-      import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
-        .then(({ default: init }) => init());
-    } else {
-      import('../features/personalization/preview.js')
-        .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
-    }
+    // The overlay itself is initialized once via initMepOverlay() in loadArea.
+    import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
+      .then(({ default: init }) => init());
   }
   if (config?.env?.name !== 'prod' && (getMetadata('dynamic-nav') || config?.dynamicNavKey)) {
     const { miloLibs } = config;

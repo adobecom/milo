@@ -166,6 +166,7 @@ function initParallax(el) {
     const frameEndScale = Math.max(tune('scale-min'), Math.min(1, widthScale));
     const mediaStartDrop = Math.max(0, el.offsetHeight - headerHeight - topGap - frameHeight);
     const values = {
+      '--sh-overflow-ratio': Math.max(0, el.offsetHeight - window.innerHeight) / window.innerHeight,
       '--sh-drop': `${mediaStartDrop}px`,
       '--sh-scale': frameEndScale,
     };
@@ -179,7 +180,7 @@ function initParallax(el) {
       measure();
     });
   };
-  const observer = new ResizeObserver(measure);
+  const observer = new ResizeObserver(schedule);
   el.querySelectorAll('.split-hero-foreground, .split-hero-media-frame')
     .forEach((item) => observer.observe(item));
   el.addEventListener('load', schedule, true);

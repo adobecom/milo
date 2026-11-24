@@ -221,7 +221,7 @@
 }
 
 .mktoHidden:has(.mktoRequired) {
-    display: block !important;
+  display: block !important;
 }
 
 .marketo .mktoForm .mktoField {
@@ -275,8 +275,23 @@
   background-position: 3% 50%;
 }
 
+.marketo .mktoForm input[type="date"] {
+  appearance: none;
+  height: 40px;
+}
+
 [dir="rtl"] .marketo .mktoForm input[type="tel"] {
   direction: inherit;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="date"]::-webkit-calendar-picker-indicator {
+  order: -1;
+  margin-left: 0;
+  margin-right: 8px;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="date"]::-webkit-datetime-edit {
+  text-align: right;
 }
 
 .marketo .mktoForm .mktoCheckboxList input,
@@ -453,6 +468,16 @@
   background-repeat: no-repeat;
   background-position: 86% 50%, 97% 50%;
   background-size: 19.5px, 1em 1em;
+}
+
+.marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+  background-position: 86% 50%, 97% 50%;
+  padding-right: 12px;
+}
+
+[dir="rtl"] .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+  background-position: 14% 50%, 3% 50%;
+  padding-left: 12px;
 }
 
 [dir="rtl"] .marketo .mktoForm.show-warnings select.mktoField.mktoInvalid:not(:focus){
@@ -735,6 +760,14 @@
   .resource-form.section.two-up .marketo {
     margin-left: 0;
     margin-right: 0;
+  }
+    
+  .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+    padding-right: 6px;
+  }
+
+  [dir="rtl"] .marketo .mktoForm.show-warnings input[type="date"].mktoField.mktoInvalid {
+    padding-left: 4px;
   }
 }
 
