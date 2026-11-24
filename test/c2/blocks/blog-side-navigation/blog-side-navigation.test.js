@@ -1315,6 +1315,36 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
+  it('counts the divider gap and the panel margin where a short article ends', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    const headerCss = await readFile({ path: '../../../../libs/c2/blocks/blog-header/blog-header.css' });
+    style.textContent = `${SIDE_NAV_CSS}\n${headerCss}`;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 1280, height: 900 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2>');
+      main.firstElementChild.classList.add('blog-divider-frame');
+      await init(block);
+      const panel = block.querySelector('.blog-side-navigation-panel');
+      expect(panel.getBoundingClientRect().top - block.getBoundingClientRect().top).to.be.above(0);
+      const headerBottom = main.firstElementChild.getBoundingClientRect().bottom;
+      expect(block.getBoundingClientRect().top - headerBottom).to.be.above(0);
+      panel.append(Object.assign(document.createElement('div'), { style: 'height: 500px' }));
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      const end = main.querySelector('.blog-article-end');
+      expect(panel.getBoundingClientRect().bottom)
+        .to.be.at.most(end.getBoundingClientRect().bottom + 1);
+      expect(block.getBoundingClientRect().bottom)
+        .to.be.closeTo(end.getBoundingClientRect().bottom, 1);
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
   it('closes the open mobile list on Escape and returns focus to its toggle', async () => {
     mockTablet(false);
     const { block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>');

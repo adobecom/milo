@@ -157,11 +157,17 @@ function trackActiveSection(block, headings, collapseControls) {
     setSize(main, '--blog-side-navigation-block-size', size);
     const end = main.querySelector(':scope > .blog-article-end') || navSection;
     const overflow = parseFloat(main.style.getPropertyValue('--blog-side-navigation-overflow-size')) || 0;
-    const article = end.getBoundingClientRect().bottom - overflow
-      - navSection.getBoundingClientRect().bottom;
-    const extra = stacked ? 0 : Math.max(0, panel.offsetHeight - article);
+    const navBottom = navSection.getBoundingClientRect().bottom;
+    const articleHeight = end.getBoundingClientRect().bottom - overflow - navBottom;
+    let panelBottom = 0;
+    if (!stacked) {
+      // Count the gap above the panel and its top margin, not just its height.
+      const trackTop = block.getBoundingClientRect().top - navBottom;
+      panelBottom = trackTop + panel.offsetTop + panel.offsetHeight;
+    }
+    const extra = Math.max(0, panelBottom - articleHeight);
     setSize(main, '--blog-side-navigation-overflow-size', extra);
-    setSize(block, '--blog-side-navigation-track-size', Math.max(0, article + extra));
+    setSize(block, '--blog-side-navigation-track-size', Math.max(0, articleHeight + extra));
   };
   const resize = () => {
     reserve();
