@@ -99,6 +99,32 @@ describe('Functional Test', () => {
     expect(normalizePath(nonDAMpath)).to.not.include('https://www.adobe.com');
   });
 
+  it('preserves URLs with #_dnn without localizing or federating them', () => {
+    const config = getConfig();
+    const { locale } = config;
+    config.locale = { ietf: 'fr-FR', prefix: '/fr' };
+    try {
+      [
+        'https://www.adobe.com/foo?source=mep',
+        'https://main--milo--adobecom.aem.live/foo',
+        'https://www.adobe.com/federal/foo',
+        'https://www.adobe.com/content/dam/foo.jpg',
+        '/foo?source=mep',
+      ].forEach((path) => {
+        expect(normalizePath(`${path}#_dnn`)).to.equal(path);
+      });
+    } finally {
+      config.locale = locale;
+    }
+  });
+
+  it('still strips recognized origins with #_dnt or no opt-out marker', () => {
+    expect(normalizePath('https://www.adobe.com/foo?source=mep#_dnt'))
+      .to.equal('/foo?source=mep');
+    expect(normalizePath('https://www.adobe.com/foo?source=mep#section'))
+      .to.equal('/foo?source=mep#section');
+  });
+
   it('scheduled manifest should apply changes if active (bts)', async () => {
     const config = getConfig();
     config.mep = {
