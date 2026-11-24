@@ -187,6 +187,11 @@ export default async function init(el) {
     const response = await fetch(url);
     const json = await response.json();
     const card = json.cards?.[0] ?? json;
+    // sources lists the fields per layer: index it per field for the overlays
+    card.sources = (card.sources ?? []).reduce((byField, { source, fields }) => {
+      for (const field of fields) (byField[field] ??= []).push(source);
+      return byField;
+    }, {});
     return { code: code.toUpperCase(), label, url, card, status: response.status };
   }));
   const available = plans.filter(({ status }) => status === 200);
