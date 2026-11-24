@@ -1089,9 +1089,9 @@ describe('merch-card-collection autoblock', () => {
       expect(checked).to.deep.equal(['photo']);
     });
 
-    it('pages the collection 12 cards at a time', () => {
+    it('pages the collection 16 cards at a time', () => {
       const { collection } = mount();
-      expect(collection.limit).to.equal(12);
+      expect(collection.limit).to.equal(16);
     });
 
     it('collapses and expands a drawer section from its toggle', () => {

@@ -150,7 +150,7 @@ const svgIcon = (markup) => createTag('span', { class: 'product-pricing-icon' },
 const COLLECTION_LITERALS_CHANGED = 'merch-card-collection:literals-changed';
 
 // "Show more" step. MAS defaults every collection to 27.
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 16;
 
 const mountedCollections = new WeakSet();
 // Each drawer's title needs a page-unique id for aria-labelledby.
