@@ -26,6 +26,10 @@
     padding-block-start: var(--hero-c2-pad-top);
   }
 
+  .hero-c2-footer {
+    margin-block-start: auto;
+  }
+
   .hero-c2-header {
     display: flex;
     flex-direction: column;
