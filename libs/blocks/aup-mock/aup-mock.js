@@ -1,7 +1,7 @@
 const ENDPOINT = 'https://14257-merchatscale-aupmock.adobeioruntime.net/api/v1/web/MerchAtScale/fragment?locale=en_US&api_key=unified_checkout_server_v3&template=headless&offer=';
 
 const DEFAULT_PLANS = [
-  ['ABM', 'Annual, billed monthly', `${ENDPOINT}632B3ADD940A7FBB7864AA5AD19B8D28`],
+  ['ABM', 'Annual, billed monthly', `${ENDPOINT}632B3ADD940A7FBB7864AA5AD19B8D28&mask=best-value`],
   ['PUF', 'Annual, prepaid', `${ENDPOINT}9E618D5A589EF8D6364DFBE02FC2C264`],
   ['M2M', 'Monthly', `${ENDPOINT}257E1D82082387D152029F93C1030624`],
 ];
