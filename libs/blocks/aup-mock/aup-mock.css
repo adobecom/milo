@@ -1,5 +1,5 @@
 .aup-mock {
-  max-width: 1000px;
+  max-width: 1280px;
   margin: 32px auto;
   font-family: adobe-clean, 'Adobe Clean', 'Trebuchet MS', sans-serif;
   color: #222;
@@ -7,78 +7,65 @@
 
 .aup-mock .aup-modal {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr minmax(440px, 1fr);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 24px rgb(0 0 0 / 16%);
-  background: #fff;
+  background: #f8f8f8;
+}
+
+.aup-mock .aup-details {
+  padding: 48px 40px;
 }
 
 .aup-mock .aup-header {
-  height: 80px;
-  background-size: cover;
-  background-position: center;
   display: flex;
-  align-items: flex-end;
-  padding: 0 24px;
-}
-
-.aup-mock .aup-mnemonic {
-  display: inline-block;
-  transform: translateY(24px);
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 40px;
 }
 
 .aup-mock .aup-mnemonic img {
   display: block;
   width: 48px;
   height: 48px;
-  border-radius: 8px;
-  background: #fff;
-}
-
-.aup-mock .aup-body {
-  padding: 36px 24px 24px;
 }
 
 .aup-mock .aup-title {
-  margin: 0 0 4px;
-  font-size: 24px;
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.2;
 }
 
 .aup-mock .aup-title p,
-.aup-mock .aup-plan-info p,
-.aup-mock .aup-custom p,
+.aup-mock .aup-plan p,
 .aup-mock .aup-secure {
   margin: 0;
 }
 
-.aup-mock .aup-subtitle {
-  margin: 0 0 12px;
-  color: #505050;
+.aup-mock .aup-description {
+  font-size: 16px;
+  line-height: 1.5;
 }
 
-.aup-mock .aup-callout {
-  margin: 12px 0;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: #f3f3f3;
-  font-size: 14px;
+.aup-mock .aup-description p {
+  margin: 0;
 }
 
 .aup-mock .aup-features {
   display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
   align-items: start;
-  margin-top: 16px;
+  margin-top: 32px;
 }
 
 .aup-mock .aup-features h4 {
   display: flex;
   gap: 8px;
   align-items: center;
-  margin: 0 0 8px;
-  font-size: 14px;
+  margin: 0 0 16px;
+  font-size: 16px;
 }
 
 .aup-mock .aup-features h4 p {
@@ -89,37 +76,42 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .aup-mock .aup-apps li {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: 14px;
+  font-size: 16px;
 }
 
-.aup-mock .aup-features img {
-  width: 20px;
-  height: 20px;
+.aup-mock .aup-apps img {
+  width: 26px;
+  height: 26px;
+}
+
+.aup-mock .aup-more-apps summary {
+  margin-top: 16px;
+  color: #1473e6;
+  cursor: pointer;
+}
+
+.aup-mock .aup-more-apps .aup-apps {
+  margin-top: 16px;
 }
 
 .aup-mock .aup-section {
   margin: 0;
-  padding: 12px 16px;
-  border: 1px solid #e1e1e1;
-  border-radius: 8px;
-  background: #f5f5f5;
-  font-size: 13px;
-  line-height: 1.4;
-  color: #505050;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .aup-mock .aup-section ul {
   margin: 0;
-  padding-left: 18px;
+  padding-left: 20px;
 }
 
 .aup-mock .aup-section li {
@@ -130,106 +122,194 @@
   margin: 0;
 }
 
-.aup-mock .aup-section h4 {
-  color: #222;
-}
-
 .aup-mock .aup-plans {
-  padding: 24px;
-  background: #f8f8f8;
+  position: relative;
+  padding: 72px 40px 32px;
+  background: #fff;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+}
+
+.aup-mock .aup-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  border: 0;
+  background: none;
+  font-size: 22px;
+  cursor: pointer;
 }
 
 .aup-mock .aup-plans h3 {
-  margin: 0;
+  margin: 0 0 4px;
+  font-size: 22px;
 }
 
 .aup-mock .aup-plan {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 12px 16px;
-  border: 2px solid #d5d5d5;
-  border-radius: 12px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 24px;
+  border: 3px solid transparent;
+  border-radius: 16px;
   background: #fff;
+  box-shadow: 0 1px 6px rgb(0 0 0 / 12%);
   cursor: pointer;
 }
 
 .aup-mock .aup-plan.selected {
-  border-color: #1473e6;
+  border-color: #3b63fb;
+}
+
+.aup-mock .aup-plan input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .aup-mock .aup-badge {
   display: inline-block;
-  align-self: flex-start;
+  align-self: center;
   padding: 2px 10px;
   border: 1px solid;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
   line-height: 18px;
-}
-
-.aup-mock .aup-body > .aup-badge {
-  margin-bottom: 12px;
+  white-space: nowrap;
 }
 
 .aup-mock .aup-plan-label {
   display: flex;
   gap: 8px;
   align-items: center;
-  font-weight: 700;
+  font-size: 20px;
 }
 
-.aup-mock .aup-price {
-  font-size: 20px;
-  font-weight: 700;
+.aup-mock .aup-plan .aup-price {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.aup-mock .aup-plan .price-currency-symbol {
+  margin-right: 2px;
+  font-size: 16px;
+  font-weight: 400;
+  vertical-align: super;
+}
+
+.aup-mock .aup-plan .price-recurrence {
+  font-size: 18px;
+  font-weight: 400;
 }
 
 .aup-mock .price-tax-inclusivity {
   margin-left: 4px;
-  font-size: 12px;
+  font-size: 0.6em;
   font-weight: 400;
 }
 
-.aup-mock .aup-promo,
-.aup-mock .aup-custom,
-.aup-mock .aup-secure {
-  font-size: 13px;
+.aup-mock .aup-plan .price-tax-inclusivity {
+  font-size: 18px;
+}
+
+.aup-mock .aup-plan-note {
+  font-size: 16px;
   color: #505050;
+}
+
+.aup-mock .aup-plan .aup-plan-note p {
+  display: inline;
+}
+
+.aup-mock .aup-info {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid currentcolor;
+  border-radius: 50%;
+  font: italic 700 12px/18px serif;
+  text-align: center;
 }
 
 .aup-mock .aup-checkout {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
+  margin-top: 16px;
 }
 
 .aup-mock .aup-addon {
   display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 14px;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 18px;
+  line-height: 1.6;
 }
 
-.aup-mock .aup-ctas {
+.aup-mock .aup-addon input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 5px;
+}
+
+.aup-mock .aup-ctas .aup-checkout-cta {
+  display: block;
+  padding: 16px;
+  border-radius: 40px;
+  background: #3b63fb;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.aup-mock .aup-secure {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+}
+
+.aup-mock .aup-lock {
+  position: relative;
+  width: 14px;
+  height: 11px;
+  margin-top: 8px;
+  border: 2px solid currentcolor;
+  border-radius: 2px;
+}
+
+.aup-mock .aup-lock::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: -10px;
+  width: 6px;
+  height: 7px;
+  border: 2px solid currentcolor;
+  border-bottom: 0;
+  border-radius: 5px 5px 0 0;
 }
 
 .aup-mock .aup-source {
+  align-self: center;
   font-size: 12px;
 }
 
-@media (width <= 768px) {
-  .aup-mock .aup-modal {
+@media (width <= 1024px) {
+  .aup-mock .aup-modal,
+  .aup-mock .aup-features {
     grid-template-columns: 1fr;
   }
 }
-
 
 .aup-mock .aup-legend {
   display: flex;

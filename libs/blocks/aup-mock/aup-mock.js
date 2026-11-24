@@ -1,10 +1,13 @@
 const ENDPOINT = 'https://14257-merchatscale-aupmock.adobeioruntime.net/api/v1/web/MerchAtScale/fragment?locale=en_US&api_key=unified_checkout_server_v3&template=headless&offer=';
 
 const DEFAULT_PLANS = [
+  ['M2M', 'Monthly', `${ENDPOINT}257E1D82082387D152029F93C1030624`],
   ['ABM', 'Annual, billed monthly', `${ENDPOINT}632B3ADD940A7FBB7864AA5AD19B8D28&mask=best-value`],
   ['PUF', 'Annual, prepaid', `${ENDPOINT}9E618D5A589EF8D6364DFBE02FC2C264`],
-  ['M2M', 'Monthly', `${ENDPOINT}257E1D82082387D152029F93C1030624`],
 ];
+
+const DEFAULT_PLAN = 'ABM';
+const VISIBLE_APPS = 5;
 
 const TAGS = {
   paragraph: 'p',
@@ -87,13 +90,14 @@ const badge = (b) => b?.text && tag('span', {
   style: `color:${b.color ?? 'inherit'};background:${b.backgroundColor ?? 'transparent'};border-color:${b.borderColor ?? 'transparent'}`,
 }, b.text);
 
-const header = (card) => sourced(tag('div', {
-  class: 'aup-header',
-  style: card.backgroundImage?.src && `background-image:url(${card.backgroundImage.src})`,
-}, (card.mnemonics ?? []).map(({ icon, alt, link }) => sourced(
-  tag(link ? 'a' : 'span', { href: link, class: 'aup-mnemonic' }, tag('img', { src: icon, alt })),
-  card.sources?.mnemonics,
-))), card.sources?.backgroundImage);
+const header = (card) => tag('div', { class: 'aup-header' }, [
+  ...(card.mnemonics ?? []).map(({ icon, alt, link }) => sourced(
+    tag(link ? 'a' : 'span', { href: link, class: 'aup-mnemonic' }, tag('img', { src: icon, alt })),
+    card.sources?.mnemonics,
+  )),
+  sourced(tag('h2', { class: 'aup-title' }, richText(card.title)), card.sources?.title),
+  sourced(badge(card.badge), card.sources?.badge),
+]);
 
 const iconItem = ({ icon, alt, name, description, tooltip }) => tag('li', { title: tooltip }, [
   icon && tag('img', { src: icon, alt, loading: 'lazy' }),
@@ -108,9 +112,14 @@ const section = ({ icon, title, items }) => tag('div', { class: 'aup-section' },
 
 const featureColumns = ({ id, header: title, items }) => {
   if (id === 'includedApps') {
+    const more = items.slice(VISIBLE_APPS);
     return tag('div', { class: 'aup-included', 'data-feature': id }, [
-      title && tag('h4', {}, richText(title)),
-      tag('ul', { class: 'aup-apps' }, items.map(iconItem)),
+      tag('h4', {}, title ? richText(title) : 'Includes'),
+      tag('ul', { class: 'aup-apps' }, items.slice(0, VISIBLE_APPS).map(iconItem)),
+      more.length > 0 && tag('details', { class: 'aup-more-apps' }, [
+        tag('summary', {}, `Show all ${items.length} apps`),
+        tag('ul', { class: 'aup-apps' }, more.map(iconItem)),
+      ]),
     ]);
   }
   const plain = items.filter(({ items: sub }) => !sub);
@@ -123,29 +132,22 @@ const featureColumns = ({ id, header: title, items }) => {
 const features = (card) => card.features?.length > 0
   && sourced(tag('div', { class: 'aup-features' }, card.features.flatMap(featureColumns)), card.sources?.features);
 
-const details = (card) => {
-  const { sources = {} } = card;
-  return tag('div', { class: 'aup-details' }, [
-    header(card),
-    tag('div', { class: 'aup-body' }, [
-      sourced(badge(card.badge), sources.badge),
-      sourced(tag('h2', { class: 'aup-title' }, richText(card.title)), sources.title),
-      card.subtitle && sourced(tag('p', { class: 'aup-subtitle' }, card.subtitle), sources.subtitle),
-      sourced(tag('div', { class: 'aup-description' }, richText(card.description)), sources.description),
-      sourced(tag('div', { class: 'aup-short-description' }, richText(card.shortDescription)), sources.shortDescription),
-      card.callout && sourced(tag('div', { class: 'aup-callout' }, richText(card.callout)), sources.callout),
-      features(card),
-    ]),
-  ]);
-};
+// AUP layout: no banner, subtitle, short description nor callout on the product side
+const details = (card) => tag('div', { class: 'aup-details' }, [
+  header(card),
+  sourced(tag('div', { class: 'aup-description' }, richText(card.description)), card.sources?.description),
+  features(card),
+]);
 
+// the plan note (e.g. cancellation terms) is the card's promoText
 const planOption = ({ code, label, card }, selected) => tag('label', { class: `aup-plan${selected ? ' selected' : ''}` }, [
   tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
-  tag('div', { class: 'aup-plan-info' }, [
-    tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), sourced(badge(card.badge), card.sources?.badge)]),
-    sourced(tag('div', { class: 'aup-price' }, richText(card.price)), card.sources?.price),
-    card.promoText?.length > 0 && sourced(tag('div', { class: 'aup-promo' }, richText(card.promoText)), card.sources?.promoText),
-  ]),
+  tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), sourced(badge(card.badge), card.sources?.badge)]),
+  sourced(tag('div', { class: 'aup-price' }, richText(card.price)), card.sources?.price),
+  card.promoText?.length > 0 && sourced(
+    tag('div', { class: 'aup-plan-note' }, [richText(card.promoText), tag('span', { class: 'aup-info' }, 'i')]),
+    card.sources?.promoText,
+  ),
 ]);
 
 const addon = (card, code) => {
@@ -159,21 +161,13 @@ const addon = (card, code) => {
 
 const checkout = (card, code) => tag('div', { class: 'aup-checkout' }, [
   addon(card, code),
-  sourced(tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).map(({ text, url, variant, style, isCheckout }) => tag(
-    'a',
-    {
-      href: url,
-      class: ['con-button', variant === 'accent' && 'blue', style === 'outline' && 'outline', isCheckout && 'aup-checkout-cta']
-        .filter(Boolean).join(' '),
-    },
-    text,
-  ))), card.sources?.ctas),
-  card.secureTransaction?.enabled && tag('p', { class: 'aup-secure' }, card.secureTransaction.label),
-  ...(card.customFields ?? []).map(({ label, value }) => sourced(tag(
-    'div',
-    { class: 'aup-custom', 'data-label': label },
-    richText(value),
-  ), card.sources?.customFields)),
+  // AUP only shows the checkout CTA
+  sourced(tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).filter(({ isCheckout }) => isCheckout)
+    .map(({ text, url }) => tag('a', { href: url, class: 'con-button blue aup-checkout-cta' }, text))), card.sources?.ctas),
+  card.secureTransaction?.enabled && tag('p', { class: 'aup-secure' }, [
+    tag('span', { class: 'aup-lock' }),
+    card.secureTransaction.label,
+  ]),
 ]);
 
 const authoredPlans = (el) => [...el.querySelectorAll(':scope > div')]
@@ -199,7 +193,7 @@ export default async function init(el) {
     el.replaceChildren(tag('p', { class: 'aup-error' }, 'No plan could be loaded.'));
     return el;
   }
-  let selected = available[0].code;
+  let selected = available.find(({ code }) => code === DEFAULT_PLAN)?.code ?? available[0].code;
   const areaSources = available.flatMap(({ card }) => Object.values(card.sources ?? {}));
   const present = new Set(areaSources.flat());
   const legend = () => tag('fieldset', { class: 'aup-legend' }, [
@@ -220,7 +214,8 @@ export default async function init(el) {
     el.replaceChildren(legend(), tag('div', { class: 'aup-modal' }, [
       details(current.card),
       tag('div', { class: 'aup-plans' }, [
-        tag('h3', {}, 'Choose a plan'),
+        tag('button', { type: 'button', class: 'aup-close', 'aria-label': 'Close' }, '✕'),
+        tag('h3', {}, 'Choose a subscription'),
         ...available.map((plan) => planOption(plan, plan.code === selected)),
         checkout(current.card, selected),
         tag('a', { class: 'aup-source', href: current.url, target: '_blank' }, `${current.code} source call`),
