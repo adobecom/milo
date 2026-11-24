@@ -722,7 +722,7 @@ const init = (el) => {
 
   if (!chartType || !chartWrapper || !dataLink) return;
 
-  const customPalette = ['column', 'line', 'bar', 'list'].includes(chartType)
+  const customPalette = ['column', 'line', 'bar', 'list', 'pie'].includes(chartType)
     ? authoredPalette : undefined;
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
