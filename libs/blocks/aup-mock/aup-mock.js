@@ -49,9 +49,9 @@ const richText = (nodes = []) => {
   return fragment;
 };
 
-const badge = (b, className = 'aup-badge') => b?.text && tag('span', {
-  class: className,
-  style: `color:${b.color ?? 'inherit'};background:${b.backgroundColor ?? 'transparent'};border-color:${b.borderColor ?? 'transparent'}`,
+const mask = (b) => b?.text && tag('div', {
+  class: 'aup-plan-mask',
+  style: `color:${b.color ?? 'inherit'};background:${b.backgroundColor ?? 'transparent'}`,
 }, b.text);
 
 const header = (card) => tag('div', {
@@ -74,7 +74,6 @@ const features = (card) => (card.features ?? []).map(({ id, items }) => tag(
 const details = (card) => tag('div', { class: 'aup-details' }, [
   header(card),
   tag('div', { class: 'aup-body' }, [
-    tag('div', { class: 'aup-badges' }, [badge(card.badge), badge(card.trialBadge, 'aup-trial-badge')]),
     tag('h2', { class: 'aup-title' }, richText(card.title)),
     card.subtitle && tag('p', { class: 'aup-subtitle' }, card.subtitle),
     tag('div', { class: 'aup-description' }, richText(card.description)),
@@ -84,12 +83,18 @@ const details = (card) => tag('div', { class: 'aup-details' }, [
   ]),
 ]);
 
-const planOption = ({ code, label, card }, selected) => tag('label', { class: `aup-plan${selected ? ' selected' : ''}` }, [
-  tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
-  tag('div', { class: 'aup-plan-info' }, [
-    tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label), badge(card.badge)]),
-    tag('div', { class: 'aup-price' }, richText(card.price)),
-    tag('div', { class: 'aup-promo' }, richText(card.promoText)),
+const planOption = ({ code, label, card }, selected) => tag('div', {
+  class: `aup-plan-option${selected ? ' selected' : ''}${card.badge?.text ? ' masked' : ''}`,
+  style: card.badge?.backgroundColor && `--aup-mask-color:${card.badge.backgroundColor}`,
+}, [
+  mask(card.badge),
+  tag('label', { class: 'aup-plan' }, [
+    tag('input', { type: 'radio', name: 'aup-plan', value: code, checked: selected }),
+    tag('div', { class: 'aup-plan-info' }, [
+      tag('div', { class: 'aup-plan-label' }, label),
+      tag('div', { class: 'aup-price' }, richText(card.price)),
+      tag('div', { class: 'aup-promo' }, richText(card.promoText)),
+    ]),
   ]),
 ]);
 

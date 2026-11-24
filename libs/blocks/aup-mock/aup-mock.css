@@ -35,24 +35,8 @@
   padding: 36px 24px 24px;
 }
 
-.aup-mock .aup-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.aup-mock .aup-badge,
-.aup-mock .aup-trial-badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border: 1px solid;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
 .aup-mock .aup-title {
-  margin: 12px 0 4px;
+  margin: 0 0 4px;
   font-size: 24px;
 }
 
@@ -78,7 +62,8 @@
   list-style: none;
   padding: 0;
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px 16px;
 }
 
 .aup-mock .aup-features li {
@@ -116,14 +101,24 @@
   cursor: pointer;
 }
 
-.aup-mock .aup-plan.selected {
+.aup-mock .aup-plan-option.selected .aup-plan {
   border-color: #1473e6;
 }
 
+.aup-mock .aup-plan-mask {
+  padding: 4px 16px;
+  border-radius: 12px 12px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.aup-mock .aup-plan-option.masked .aup-plan {
+  border-color: var(--aup-mask-color);
+  border-top-width: 0;
+  border-radius: 0 0 12px 12px;
+}
+
 .aup-mock .aup-plan-label {
-  display: flex;
-  gap: 8px;
-  align-items: center;
   font-weight: 700;
 }
 
