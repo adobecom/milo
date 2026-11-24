@@ -62,14 +62,33 @@ const header = (card) => tag('div', {
   return link ? tag('a', { href: link }, img) : img;
 }));
 
-const features = (card) => (card.features ?? []).map(({ id, items }) => tag(
-  'ul',
-  { class: 'aup-features', 'data-feature': id },
-  items.map(({ icon, alt, name, tooltip }) => tag('li', { title: tooltip }, [
-    tag('img', { src: icon, alt, loading: 'lazy' }),
-    tag('span', {}, name || alt),
-  ])),
-));
+const iconItem = ({ icon, alt, name, description, tooltip }) => tag('li', { title: tooltip }, [
+  icon && tag('img', { src: icon, alt, loading: 'lazy' }),
+  tag('span', {}, name || richText(description ?? alt)),
+]);
+
+// a `whatsIncluded` section (e.g. the shared {{extras}} placeholder): title + rich text bullet list
+const section = ({ icon, title, items }) => tag('div', { class: 'aup-section' }, [
+  tag('h4', {}, [icon && tag('img', { src: icon, alt: '' }), richText(title)]),
+  tag('ul', {}, items.map((item) => tag('li', {}, richText(item)))),
+]);
+
+const featureColumns = ({ id, header: title, items }) => {
+  if (id === 'includedApps') {
+    return tag('div', { class: 'aup-included', 'data-feature': id }, [
+      title && tag('h4', {}, richText(title)),
+      tag('ul', { class: 'aup-apps' }, items.map(iconItem)),
+    ]);
+  }
+  const plain = items.filter(({ items: sub }) => !sub);
+  return [
+    ...items.filter(({ items: sub }) => sub).map(section),
+    plain.length > 0 && tag('ul', { class: 'aup-section', 'data-feature': id }, plain.map(iconItem)),
+  ];
+};
+
+const features = (card) => card.features?.length > 0
+  && tag('div', { class: 'aup-features' }, card.features.flatMap(featureColumns));
 
 const details = (card) => tag('div', { class: 'aup-details' }, [
   header(card),
@@ -80,7 +99,7 @@ const details = (card) => tag('div', { class: 'aup-details' }, [
     tag('div', { class: 'aup-description' }, richText(card.description)),
     tag('div', { class: 'aup-short-description' }, richText(card.shortDescription)),
     card.callout && tag('div', { class: 'aup-callout' }, richText(card.callout)),
-    ...features(card),
+    features(card),
   ]),
 ]);
 
