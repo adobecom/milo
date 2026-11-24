@@ -152,11 +152,15 @@ describe('preview pop-up', function previewPopupSuite() {
 
   before(() => {
     setConfig({ codeRoot: '/libs', georouting: { enabled: 'off' }, footerReady: true });
-    sinon.stub(window, 'fetch').resolves({
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
       ok: true,
       status: 200,
       json: async () => ({ data: [] }),
       text: async () => '',
+    });
+    fetchStub.withArgs(sinon.match('/.milo/config.json')).resolves({
+      ok: false,
+      status: 404,
     });
   });
 
