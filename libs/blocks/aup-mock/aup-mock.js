@@ -58,9 +58,10 @@ const SOURCES = {
   mask: 'Mask',
 };
 
-// one translucent band per layer an area comes from, shown when that layer's box is checked
-const sourced = (el, sources = []) => {
-  if (!el) return el;
+// elements priced with the card's own offer: inline prices and checkout CTAs
+const OFFER_BOUND = '[data-template], .aup-checkout-cta';
+
+const overlays = (el, sources) => {
   el.classList.add('aup-sourced');
   el.append(...sources.map((source, index) => tag('span', {
     class: 'aup-overlay',
@@ -68,6 +69,16 @@ const sourced = (el, sources = []) => {
     title: SOURCES[source] ?? source,
     style: `left:${(100 * index) / sources.length}%;width:${100 / sources.length}%`,
   })));
+};
+
+// translucent bands per layer an area comes from, shown when that layer's box is checked;
+// a baseline area priced with the fragment's offer gets the fragment band over its prices & CTAs
+const sourced = (el, sources = []) => {
+  if (!el) return el;
+  const mixed = sources.length > 1 && sources.includes('fragment');
+  const bound = mixed ? [...el.querySelectorAll(OFFER_BOUND)] : [];
+  overlays(el, bound.length ? sources.filter((source) => source !== 'fragment') : sources);
+  for (const element of bound) overlays(element, ['fragment']);
   return el;
 };
 
@@ -148,9 +159,13 @@ const addon = (card, code) => {
 
 const checkout = (card, code) => tag('div', { class: 'aup-checkout' }, [
   addon(card, code),
-  sourced(tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).map(({ text, url, variant, style }) => tag(
+  sourced(tag('div', { class: 'aup-ctas' }, (card.ctas ?? []).map(({ text, url, variant, style, isCheckout }) => tag(
     'a',
-    { href: url, class: `con-button${variant === 'accent' ? ' blue' : ''}${style === 'outline' ? ' outline' : ''}` },
+    {
+      href: url,
+      class: ['con-button', variant === 'accent' && 'blue', style === 'outline' && 'outline', isCheckout && 'aup-checkout-cta']
+        .filter(Boolean).join(' '),
+    },
     text,
   ))), card.sources?.ctas),
   card.secureTransaction?.enabled && tag('p', { class: 'aup-secure' }, card.secureTransaction.label),
