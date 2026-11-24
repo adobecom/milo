@@ -2257,10 +2257,6 @@
     --hub-hero-height: auto;
   }
 
-  /*
-   * The three-slide column animations outrank the rule above. Without scroll timelines they jump to
-   * their end state, which fades the grid out, so keep the columns static. Cards keep their end state.
-   */
   .hub-hero .hub-hero-image-grid-container-col {
     animation: none !important;
   }
