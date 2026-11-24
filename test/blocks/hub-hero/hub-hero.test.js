@@ -87,6 +87,13 @@ describe('hub-hero block', () => {
         expect(cards).to.have.length(3);
         cards.forEach((card) => expect(getComputedStyle(card).pointerEvents).to.not.equal('none'));
       });
+
+      it(`keeps the image grid visible in unsupported Firefox at ${width}px`, async () => {
+        const block = await loadFirefoxBlock(false, width);
+        const columns = [...block.querySelectorAll('.hub-hero-image-grid-container-col')];
+        expect(columns).to.have.length(5);
+        columns.forEach((column) => expect(getComputedStyle(column).opacity).to.equal('1'));
+      });
     });
 
     [true, false].forEach((supported) => {
