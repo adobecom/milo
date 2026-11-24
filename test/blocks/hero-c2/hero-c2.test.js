@@ -183,8 +183,8 @@ describe('hero-c2', () => {
         const { alignSelf, justifySelf } = getComputedStyle(block.querySelector('.hero-c2-fg'));
         return [alignSelf, justifySelf];
       };
-      expect(await placement('fg-v-start fg-h-end')).to.deep.equal(['start', 'end']);
-      expect(await placement('fg-v-end fg-h-start')).to.deep.equal(['end', 'start']);
+      expect(await placement('media-v-start media-h-end')).to.deep.equal(['start', 'end']);
+      expect(await placement('media-v-end media-h-start')).to.deep.equal(['end', 'start']);
     });
 
     it('frames the background only in the glassy variant', async () => {
@@ -205,9 +205,9 @@ describe('hero-c2', () => {
         return Math.round((100 * block.querySelector('.hero-c2-fg').getBoundingClientRect().width) / media);
       };
       expect(await share('')).to.equal(33);
-      expect(await share('wide-fg')).to.equal(50);
-      expect(await share('extra-wide-fg')).to.equal(75);
-      expect(await share('full-fg')).to.equal(100);
+      expect(await share('wide-media')).to.equal(50);
+      expect(await share('extra-wide-media')).to.equal(75);
+      expect(await share('full-media')).to.equal(100);
     });
 
     it('keeps a tall foreground from growing the media area', async () => {
@@ -219,7 +219,7 @@ describe('hero-c2', () => {
         return [media, block.querySelector('.hero-c2-fg').getBoundingClientRect().height];
       };
       const [plain] = await heights('', IMAGE);
-      const [media, fg] = await heights('full-fg', TALL);
+      const [media, fg] = await heights('full-media', TALL);
       expect(media).to.equal(plain);
       expect(fg).to.be.at.most(media);
     });

@@ -101,47 +101,47 @@
     }
   }
 
-  &.wide-fg {
+  &.wide-media {
     --hero-c2-fg-width: 50%;
   }
 
-  &.extra-wide-fg {
+  &.extra-wide-media {
     --hero-c2-fg-width: 75%;
   }
 
-  &.full-fg {
+  &.full-media {
     --hero-c2-fg-width: 100%;
   }
 
-  &.fg-v-start .hero-c2-fg {
+  &.media-v-start .hero-c2-fg {
     align-self: start;
   }
 
-  &.fg-v-end .hero-c2-fg {
+  &.media-v-end .hero-c2-fg {
     align-self: end;
   }
 
-  &.fg-h-start .hero-c2-fg {
+  &.media-h-start .hero-c2-fg {
     justify-self: start;
   }
 
-  &.fg-h-end .hero-c2-fg {
+  &.media-h-end .hero-c2-fg {
     justify-self: end;
   }
 
-  &.fg-v-start .hero-c2-fg :is(img, video) {
+  &.media-v-start .hero-c2-fg :is(img, video) {
     object-position: top;
   }
 
-  &.fg-v-end .hero-c2-fg :is(img, video) {
+  &.media-v-end .hero-c2-fg :is(img, video) {
     object-position: bottom;
   }
 
-  &.fg-h-start .hero-c2-fg :is(img, video) {
+  &.media-h-start .hero-c2-fg :is(img, video) {
     object-position: left;
   }
 
-  &.fg-h-end .hero-c2-fg :is(img, video) {
+  &.media-h-end .hero-c2-fg :is(img, video) {
     object-position: right;
   }
 
