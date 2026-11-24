@@ -6,7 +6,7 @@
   color: var(--s2a-color-content-default);
   letter-spacing: 0;
 
-  .blog-article-content & {
+  .blog-article-section & {
     width: 100%;
     max-width: none;
     margin-inline: 0;
@@ -29,7 +29,7 @@
     display: block;
     box-sizing: border-box;
     padding: var(--s2a-spacing-xs) var(--s2a-spacing-md);
-    border-radius: 10px;
+    border-radius: var(--s2a-border-radius-sm);
     background-color: var(--s2a-color-gray-100);
     color: var(--s2a-color-content-default);
     font-size: var(--s2a-font-size-md);
@@ -62,7 +62,7 @@
 
     a:focus-visible {
       outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
-      outline-offset: 3px;
+      outline-offset: var(--s2a-border-width-md);
     }
   }
 }

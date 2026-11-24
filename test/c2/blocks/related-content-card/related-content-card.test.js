@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { getConfig, loadBlock, setConfig } from '../../../../libs/utils/utils.js';
@@ -9,7 +9,7 @@ const config = getConfig();
 // Resolve reading-time placeholders locally so tests never hit the network.
 config.placeholders = { '1-min-read': '1 min read', '5-min-read': '5 min read' };
 
-const { default: init } = await import('../../../../libs/c2/blocks/related-content-card/related-content-card.js');
+const { default: init, copyMedia } = await import('../../../../libs/c2/blocks/related-content-card/related-content-card.js');
 
 const WORD = 'lorem';
 
@@ -141,8 +141,8 @@ describe('related-content-card', () => {
 
     before(async () => {
       stylesheet = document.createElement('style');
-      const path = '../../../../libs/c2/blocks/related-content-card/related-content-card.css';
-      stylesheet.textContent = await readFile({ path });
+      const paths = ['../../../../libs/c2/styles/styles.css', '../../../../libs/c2/blocks/related-content-card/related-content-card.css'];
+      stylesheet.textContent = (await Promise.all(paths.map((path) => readFile({ path })))).join('\n');
       document.head.append(stylesheet);
     });
 
@@ -185,6 +185,29 @@ describe('related-content-card', () => {
         expect(title.textContent).to.equal(titleText);
       });
     });
+  });
+
+  it('decorates each authored viewport and swaps them on resize', async () => {
+    const { innerWidth: width, innerHeight: height } = window;
+    const block = document.querySelector('#card-data');
+    block.innerHTML = `
+      <div><div>mobile-viewport</div></div>
+      <div><div><h2><a href="https://business.adobe.com/m">Mobile title</a></h2></div></div>
+      <div><div>desktop-viewport</div></div>
+      <div><div><h2><a href="https://business.adobe.com/d">Desktop title</a></h2></div></div>`;
+    await setViewport({ width: 600, height });
+    try {
+      await init(block);
+      expect(block.classList.contains('container')).to.be.true;
+      expect(block.querySelector('.related-content-card-title').textContent).to.equal('Mobile title');
+      expect(block.querySelector('.related-content-card-link').href).to.equal('https://business.adobe.com/m');
+      await setViewport({ width: 1300, height });
+      await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      expect(block.querySelector('.related-content-card-title').textContent).to.equal('Desktop title');
+      expect(block.querySelectorAll('.related-content-card-link').length).to.equal(1);
+    } finally {
+      await setViewport({ width, height });
+    }
   });
 
   it('preserves the query when fetching a same-origin article', async () => {
@@ -343,6 +366,31 @@ describe('related-content-card', () => {
     await init(block);
     // og:title trimmed of the "| Adobe Blog" ending.
     expect(block.querySelector('h3').textContent).to.equal('OG Title');
+  });
+
+  it('copies linked media without attributes outside the allowlist', () => {
+    // A parsed document is inert, as a fetched article is: its handlers never run.
+    const html = '<picture onclick="x()"><source srcset="./a.webp 1x, ./b.webp 2x" type="image/webp" style="x">'
+      + '<img src="./a.png" alt="A" onerror="x()" style="display:none" data-x="1"><script></script></picture>';
+    const picture = new DOMParser().parseFromString(html, 'text/html').querySelector('picture');
+    const copy = copyMedia(picture, 'https://example.com/blog/post');
+    expect(copy.outerHTML).to.equal('<picture><source type="image/webp" '
+      + 'srcset="https://example.com/blog/a.webp 1x, https://example.com/blog/b.webp 2x">'
+      + '<img src="https://example.com/blog/a.png" alt="A"></picture>');
+  });
+
+  it('fetches only the authored link of each card row', async () => {
+    const block = document.querySelector('#card-link');
+    block.firstElementChild.firstElementChild.insertAdjacentHTML('beforeend', '<p><a href="/mock/other">Other</a></p>');
+    await init(block);
+    expect(fetchStub.calledOnceWithExactly('/mock/full-article')).to.be.true;
+  });
+
+  it('replaces only the number in a multi-digit reading time placeholder', async () => {
+    config.placeholders = { '1-min-read': '1 min read', '5-min-read': '15 min read' };
+    const block = document.querySelector('#card-link');
+    await init(block);
+    expect(block.querySelector('.related-content-card-readtime').textContent).to.equal('2 min read');
   });
 
   it('keeps the original link visible when the fetch fails', async () => {

@@ -3,6 +3,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
 import { getSVGsfromFile } from '../../../blocks/share/share.js';
 import { getModal } from '../modal/modal.js';
+import { copyMedia } from '../related-content-card/related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
@@ -176,22 +177,6 @@ function resolveUrl(value, base) {
   }
 }
 
-function resolveSrcset(srcset, base) {
-  return srcset.split(',').map((candidate) => {
-    const [url, descriptor] = candidate.trim().split(/\s+/);
-    return [resolveUrl(url, base), descriptor].filter(Boolean).join(' ');
-  }).join(', ');
-}
-
-function resolveMediaUrls(picture, base) {
-  picture.querySelectorAll('source[srcset]').forEach((source) => {
-    source.setAttribute('srcset', resolveSrcset(source.getAttribute('srcset'), base));
-  });
-  const img = picture.tagName === 'IMG' ? picture : picture.querySelector('img');
-  if (img?.getAttribute('src')) img.setAttribute('src', resolveUrl(img.getAttribute('src'), base));
-  if (img?.getAttribute('srcset')) img.setAttribute('srcset', resolveSrcset(img.getAttribute('srcset'), base));
-}
-
 function getProfileData(doc, profileUrl) {
   const author = doc.querySelector('.blog-author');
   if (!author) return null;
@@ -299,10 +284,14 @@ async function loadAuthorProfile(profileUrl, data, avatar, info) {
   const profile = await fetchAuthorProfile(profileUrl);
   if (!profile) return;
   if (!data.picture && profile.picture) {
-    const clone = profile.picture.cloneNode(true);
-    resolveMediaUrls(clone, profileUrl);
-    const img = clone.tagName === 'IMG' ? clone : clone.querySelector('img');
-    if (img?.getAttribute('src') === 'about:error') {
+    let clone = null;
+    try {
+      clone = copyMedia(profile.picture, profileUrl);
+    } catch {
+      // Reported below as an invalid image.
+    }
+    const img = clone?.tagName === 'IMG' ? clone : clone?.querySelector('img');
+    if (!clone || img?.getAttribute('src') === 'about:error') {
       logError(`author profile image is invalid for ${profileUrl}`);
     } else {
       img?.classList.add('blog-header-avatar');
@@ -372,7 +361,7 @@ function formatDate(value, config) {
 }
 
 async function buildEyebrow(config, readingTime) {
-  const eyebrow = createTag('p', { class: 'blog-header-eyebrow' });
+  const eyebrow = createTag('p', { class: 'blog-header-eyebrow eyebrow' });
 
   let startText = getMetadata('eyebrow-start');
   if (!startText) {
@@ -693,11 +682,7 @@ function decorateDividers(el) {
   headerSection.classList.add('blog-divider-frame');
   const sections = [headerSection, ...getBlogSections(headerSection)];
 
-  const findEndpoint = () => {
-    const layout = headerSection.nextElementSibling;
-    if (layout?.classList.contains('blog-article-layout')) return layout;
-    return getBlogSections(headerSection).at(-1) || headerSection;
-  };
+  const findEndpoint = () => getBlogSections(headerSection).at(-1) || headerSection;
 
   let endpoint;
   const disconnectAll = () => {
@@ -705,7 +690,7 @@ function decorateDividers(el) {
     dividerObservers.delete(headerSection);
   };
   const updateFrame = (entries, observer) => {
-    if (!headerSection.isConnected) {
+    if (!el.isConnected || !headerSection.isConnected) {
       disconnectAll();
       return;
     }
@@ -722,10 +707,9 @@ function decorateDividers(el) {
 
   disconnectAll();
   const observer = new ResizeObserver(updateFrame);
-  // The deferred side-navigation inserts .blog-article-layout as a new sibling and
-  // moves the article sections into it, which the ResizeObserver can miss. Watch
-  // direct children of main (childList only, so no attribute/style churn) and
-  // recompute on load so the dividers span the full article quickly and reliably.
+  // Sections can be added or removed after load (e.g. personalization), which the
+  // ResizeObserver can miss. Watch direct children of main (childList only, so no
+  // attribute/style churn) and recompute on load so the dividers span the full article.
   const refresh = () => updateFrame([], observer);
   const mutationObserver = new MutationObserver(refresh);
   dividerObservers.set(headerSection, [observer, mutationObserver]);
@@ -740,10 +724,7 @@ const BAR_HEIGHT = 8;
 const PROGRESS_BAR_OFFSET = -4;
 
 function findArticleCopy(headerSection) {
-  const layout = headerSection.nextElementSibling;
-  const sections = layout?.classList.contains('blog-article-layout')
-    ? [...layout.querySelectorAll(':scope > .blog-article-content > .section:not([hidden])')]
-    : getBlogSections(headerSection);
+  const sections = getBlogSections(headerSection);
   const contents = [];
   for (const section of sections) {
     if (section.querySelector('.card-metadata')) {
@@ -781,7 +762,7 @@ function decorateProgressBar(el, main) {
     }
     if (discover) {
       articleCopy = findArticleCopy(headerSection);
-      article = main.querySelector('.blog-article-layout > .blog-article-content');
+      article = main.querySelector(':scope > .blog-article-start');
       discover = false;
     }
     const first = articleCopy.first?.getBoundingClientRect();
@@ -791,10 +772,14 @@ function decorateProgressBar(el, main) {
       return;
     }
 
-    // The mobile nav is sticky and display: contents; the divider follows the article's gap.
-    const dividerY = stacked.matches && article
-      ? article.getBoundingClientRect().top
-        - parseFloat(getComputedStyle(article).marginBlockStart) / 2
+    // Below 768px the divider sits midway through the article's gap below the navigation.
+    const articleStyle = stacked.matches && article && getComputedStyle(article);
+    const articleGap = articleStyle
+      ? parseFloat(articleStyle.marginBlockStart)
+        - parseFloat(articleStyle.getPropertyValue('--blog-side-navigation-block-size'))
+      : NaN;
+    const dividerY = Number.isFinite(articleGap)
+      ? article.getBoundingClientRect().top - articleGap / 2
       : headerSection.getBoundingClientRect().bottom - 1;
     const globalNav = document.querySelector('.global-navigation')?.getBoundingClientRect().bottom || 0;
     const dividerTop = dividerY - BAR_HEIGHT / 2;

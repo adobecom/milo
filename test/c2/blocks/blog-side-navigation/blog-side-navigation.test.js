@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { spy, stub } from 'sinon';
 import { getConfig, loadBlock, MILO_EVENTS, setConfig } from '../../../../libs/utils/utils.js';
 import init from '../../../../libs/c2/blocks/blog-side-navigation/blog-side-navigation.js';
+import { decorateSectionAnalytics } from '../../../../libs/martech/attributes.js';
 import { waitFor } from '../../../helpers/waitfor.js';
 
 // C2 pages load the C2 core stylesheet, which defines the S2A tokens and grid margins.
@@ -70,11 +71,24 @@ describe('blog-side-navigation section list', () => {
     expect(main.querySelector('h2 em')).to.exist;
   });
 
-  it('replaces an existing id that cannot be used as a CSS selector', async () => {
-    const { main, block } = buildArticle('<h2 id="2026-trends">2026 trends</h2>');
+  it('keeps existing ids that need CSS escaping and scrolls to them', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<h2 id="2026-trends">2026 trends</h2><h2 id="faq.v2">FAQ</h2>');
     await init(block);
-    expect(block.querySelector('nav a').getAttribute('href')).to.equal('#section-2026-trends');
-    expect(main.querySelector('h2').id).to.equal('section-2026-trends');
+    expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
+      .to.deep.equal(['#2026-trends', '#faq.v2']);
+    expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
+      .to.deep.equal(['2026-trends', 'faq.v2']);
+    block.querySelectorAll('nav a')[1].click();
+    await waitFor(() => scrollStub.called);
+    expect(scrollStub.calledOnce).to.equal(true);
+  });
+
+  it('replaces a duplicated existing id', async () => {
+    const { main, block } = buildArticle('<h2 id="dup">First</h2><p id="dup">Copy</p>');
+    await init(block);
+    expect(block.querySelector('nav a').getAttribute('href')).to.equal('#first');
+    expect(main.querySelector('h2').id).to.equal('first');
   });
 
   it('uses translated headings and unique targets for repeated titles', async () => {
@@ -134,7 +148,7 @@ describe('blog-side-navigation section list', () => {
         .to.deep.equal(expectedTargets);
       expect([...main.querySelectorAll('h2')].map((heading) => heading.textContent))
         .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
-      expect(block.querySelector(':scope > p').textContent).to.equal('Explore this article');
+      expect(block.querySelector('.blog-side-navigation-panel > p').textContent).to.equal('Explore this article');
       expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
       expect(window.lana.log.called).to.equal(false);
       await init(block);
@@ -142,20 +156,22 @@ describe('blog-side-navigation section list', () => {
         .to.deep.equal(expectedLabels);
       expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
         .to.deep.equal(expectedTargets);
-      expect(block.querySelector(':scope > p').textContent).to.equal('Explore this article');
+      expect(block.querySelector('.blog-side-navigation-panel > p').textContent).to.equal('Explore this article');
       expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
     });
 
-    it('keeps existing heading ids unless an authored label replaces them', async () => {
+    it('keeps existing heading ids when an authored label is set', async () => {
       const { main, block } = authoredBlock(
         ['Overview', ''],
         '<h2 id="first">First</h2><h2 id="second-deep-link">Second</h2>',
       );
       await init(block);
       expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
-        .to.deep.equal(['#overview', '#second-deep-link']);
+        .to.deep.equal(['#first', '#second-deep-link']);
+      expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
+        .to.deep.equal(['Overview', 'Second']);
       expect([...main.querySelectorAll('h2')].map((heading) => heading.id))
-        .to.deep.equal(['overview', 'second-deep-link']);
+        .to.deep.equal(['first', 'second-deep-link']);
     });
 
     it('treats former setting names as labels and renders labels as plain text', async () => {
@@ -218,7 +234,7 @@ describe('blog-side-navigation section list', () => {
           await init(block);
           const labels = ['Overview', 'Second', 'Third', 'Next steps'];
           const targets = ['#overview', '#second', '#third', '#next-steps'];
-          expect(block.querySelector(':scope > p > strong').textContent).to.equal('JUMP TO SECTION');
+          expect(block.querySelector('.blog-side-navigation-panel > p > strong').textContent).to.equal('JUMP TO SECTION');
           expect(block.querySelector('nav').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
           expect(block.querySelector('button').getAttribute('aria-label')).to.equal('JUMP TO SECTION');
           expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
@@ -227,7 +243,7 @@ describe('blog-side-navigation section list', () => {
             .to.deep.equal(targets);
           expect(window.lana.log.called).to.equal(false);
           await init(block);
-          expect(block.querySelector(':scope > p > strong').textContent).to.equal('JUMP TO SECTION');
+          expect(block.querySelector('.blog-side-navigation-panel > p > strong').textContent).to.equal('JUMP TO SECTION');
           expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
             .to.deep.equal(labels);
         });
@@ -239,7 +255,7 @@ describe('blog-side-navigation section list', () => {
       block.firstElementChild.remove();
       block.firstElementChild.firstElementChild.textContent = '1. Overview';
       await init(block);
-      expect(block.querySelector(':scope > p > strong').textContent).to.equal('JUMP TO SECTION');
+      expect(block.querySelector('.blog-side-navigation-panel > p > strong').textContent).to.equal('JUMP TO SECTION');
       expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
         .to.deep.equal(['Overview', 'Second', 'Third', 'Fourth']);
     });
@@ -248,7 +264,7 @@ describe('blog-side-navigation section list', () => {
       const { block } = authoredBlock([]);
       block.lastElementChild.remove();
       await init(block);
-      expect(block.querySelector(':scope > p > strong').textContent).to.equal('Explore this article');
+      expect(block.querySelector('.blog-side-navigation-panel > p > strong').textContent).to.equal('Explore this article');
       expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
         .to.deep.equal(['First', 'Second', 'Third', 'Fourth']);
     });
@@ -275,7 +291,7 @@ describe('blog-side-navigation section list', () => {
       const heading = '<em>Explore</em> & learn';
       block.firstElementChild.firstElementChild.textContent = heading;
       await init(block);
-      const title = block.querySelector(':scope > p > strong');
+      const title = block.querySelector('.blog-side-navigation-panel > p > strong');
       expect(title.textContent).to.equal(heading);
       expect(title.children.length).to.equal(0);
       expect(block.querySelector('nav').getAttribute('aria-label')).to.equal(heading);
@@ -361,7 +377,7 @@ describe('blog-side-navigation section list', () => {
       const { main, block } = authoredBlock(['Overview', '', '', '', 'Extra']);
       await init(block);
       expect(block.dataset.failed).to.equal('true');
-      main.querySelector('.blog-article-content .content')
+      main.querySelector('.blog-article-section .content')
         .insertAdjacentHTML('beforeend', '<h2>Fifth</h2>');
       await init(block);
       expect(block.dataset.failed).to.be.undefined;
@@ -429,7 +445,7 @@ describe('blog-side-navigation section list', () => {
   it('keeps existing section URLs stable when another heading is inserted above them', async () => {
     const { main, block } = buildArticle('<h2>First section</h2><h2>Next section</h2>');
     await init(block);
-    main.querySelector('.blog-article-content .content')
+    main.querySelector('.blog-article-section .content')
       .insertAdjacentHTML('afterbegin', '<h2>New introduction</h2>');
     await init(block);
     expect([...block.querySelectorAll('nav a')].map((link) => link.getAttribute('href')))
@@ -507,7 +523,7 @@ describe('blog-side-navigation section list', () => {
         const icon = button.querySelector('span');
         const list = block.querySelector('ul');
         const mobile = width < 768;
-        expect(getComputedStyle(block.querySelector(':scope > p > strong')).fontWeight)
+        expect(getComputedStyle(block.querySelector('.blog-side-navigation-panel > p > strong')).fontWeight)
           .to.equal(mobile ? '400' : '700');
         if (button.getAttribute('aria-expanded') !== 'false') button.click();
         expect(getComputedStyle(button).marginInlineEnd).to.equal('8px');
@@ -518,7 +534,7 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(list.querySelector('[aria-current="location"]').parentElement)
           .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
         if (mobile) {
-          expect(getComputedStyle(block.querySelector(':scope > p')).fontSize).to.equal('16px');
+          expect(getComputedStyle(block.querySelector('.blog-side-navigation-panel > p')).fontSize).to.equal('16px');
           expect(getComputedStyle(list).borderRadius).to.equal('0px');
           expect(getComputedStyle(list).boxShadow).to.equal('none');
           expect(getComputedStyle(button).borderWidth).to.equal('1px');
@@ -544,7 +560,7 @@ describe('blog-side-navigation section list', () => {
         expect(getComputedStyle(button).color).to.equal('rgb(255, 255, 255)');
         expect(getComputedStyle(button).borderColor).to.equal('rgb(80, 80, 80)');
         expect(getComputedStyle(icon, '::before').width).to.equal('6px');
-        expect(getComputedStyle(icon, '::before').height).to.equal('1.5px');
+        expect(getComputedStyle(icon, '::before').height).to.equal('2px');
         expect(getComputedStyle(icon, '::after').display).to.equal('none');
         expect(getComputedStyle(icon).borderStyle).to.equal('solid');
         expect(getComputedStyle(icon).borderColor).to.equal('rgb(255, 255, 255)');
@@ -578,7 +594,8 @@ describe('blog-side-navigation section list', () => {
   it('shows mobile links once in order with the active link highlighted when open', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const style = document.createElement('style');
-    style.textContent = SIDE_NAV_CSS;
+    // A real header keeps the article's headings below the reading line at the top of the page.
+    style.textContent = `.blog-header { min-height: 400px; }${SIDE_NAV_CSS}`;
     document.head.append(style);
     try {
       for (const width of [390, 767]) {
@@ -640,7 +657,7 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     expect(block.hidden).to.equal(true);
     expect(block.querySelector('nav')).not.to.exist;
-    expect(document.querySelector('.blog-article-layout')).not.to.exist;
+    expect(document.querySelector('.blog-article-section')).not.to.exist;
   });
 
   it('includes authored recommendations without moving the footer promo into the rail layout', async () => {
@@ -655,17 +672,19 @@ describe('blog-side-navigation section list', () => {
     const recommended = main.querySelector('.text');
     const footer = main.lastElementChild;
     await init(block);
-    const layout = main.querySelector('.blog-article-layout');
-    const article = layout.querySelector('.blog-article-content');
-    expect(layout.previousElementSibling.querySelector('.blog-header')).to.exist;
-    expect(layout.firstElementChild).to.equal(block);
-    expect(article.children.length).to.equal(3);
-    expect(article.lastElementChild).to.equal(section);
+    const article = [...main.querySelectorAll(':scope > .blog-article-section')];
+    expect(block.parentElement).to.equal(main.firstElementChild);
+    expect(article.length).to.equal(3);
+    expect(article[0].classList.contains('blog-article-start')).to.equal(true);
+    expect(article.at(-1)).to.equal(section);
+    expect(section.classList.contains('blog-article-end')).to.equal(true);
+    expect(section.parentElement).to.equal(main);
     expect(section.id).to.equal('article-body');
     expect(recommended.parentElement).to.equal(section);
     expect(section.querySelector('.content > h2').classList.contains('heading-3')).to.equal(true);
     expect(recommended.querySelector('h2').classList.contains('heading-3')).to.equal(false);
     expect(main.lastElementChild).to.equal(footer);
+    expect(footer.classList.contains('blog-article-section')).to.equal(false);
     expect(main.querySelectorAll('#article-body').length).to.equal(1);
   });
 
@@ -684,14 +703,14 @@ describe('blog-side-navigation section list', () => {
     const hiddenSection = main.querySelector('.section[hidden]');
     const footerPromo = main.lastElementChild;
     await init(block);
-    const article = main.querySelector('.blog-article-content');
-    expect([...article.children].map((section) => section.firstElementChild.className))
+    const article = [...main.querySelectorAll(':scope > .blog-article-section')];
+    expect(article.map((section) => section.firstElementChild.className))
       .to.deep.equal(['content', 'tag-cta', 'related-content-card', 'blog-author']);
-    expect(article.querySelector('.blog-author + .section-metadata')).to.exist;
-    expect(metadata.parentElement).to.equal(main);
-    expect(pageMetadata.parentElement).to.equal(main);
-    expect(hiddenSection.parentElement).to.equal(main);
-    expect(footerPromo.parentElement).to.equal(main);
+    expect(main.querySelector('.blog-article-end > .blog-author + .section-metadata')).to.exist;
+    [metadata, pageMetadata, hiddenSection, footerPromo].forEach((section) => {
+      expect(section.parentElement).to.equal(main);
+      expect(section.classList.contains('blog-article-section')).to.equal(false);
+    });
     expect(block.querySelectorAll('nav a').length).to.equal(1);
   });
 
@@ -704,10 +723,10 @@ describe('blog-side-navigation section list', () => {
     );
     const related = main.querySelector('.blog-related-content');
     await init(block);
-    expect(related.parentElement).to.equal(block);
+    expect(related.parentElement).to.equal(block.querySelector('.blog-side-navigation-panel'));
     await init(block);
-    expect(related.parentElement).to.equal(block);
-    expect(main.querySelectorAll('.blog-article-layout').length).to.equal(1);
+    expect(related.parentElement).to.equal(block.querySelector('.blog-side-navigation-panel'));
+    expect(main.querySelectorAll('.blog-article-start').length).to.equal(1);
     expect(block.querySelectorAll('nav a').length).to.equal(1);
   });
 
@@ -723,8 +742,9 @@ describe('blog-side-navigation section list', () => {
         + '<div class="blog-related-content">Outside related content</div></div>');
       const outside = main.lastElementChild;
       await init(block);
-      expect(main.querySelector('.blog-article-content').children.length).to.equal(1);
+      expect(main.querySelectorAll('.blog-article-section').length).to.equal(1);
       expect(outside.parentElement).to.equal(main);
+      expect(outside.classList.contains('blog-article-section')).to.equal(false);
       expect(outside.querySelector('.blog-related-content')).to.exist;
       expect(block.querySelector('.blog-related-content')).not.to.exist;
       expect([...block.querySelectorAll('nav a')].map((link) => link.textContent))
@@ -738,7 +758,7 @@ describe('blog-side-navigation section list', () => {
     const footer = main.lastElementChild;
     await init(block);
     expect(footer.parentElement).to.equal(main);
-    expect(main.querySelector('.blog-article-content').contains(footer)).to.equal(false);
+    expect(footer.classList.contains('blog-article-section')).to.equal(false);
     expect(block.querySelectorAll('nav a').length).to.equal(1);
   });
 
@@ -754,10 +774,10 @@ describe('blog-side-navigation section list', () => {
     main.after(footer);
     try {
       await init(block);
-      const layout = main.querySelector('.blog-article-layout');
+      const articleEnd = main.querySelector('.blog-article-end');
       for (const width of [375, 768, 1440]) {
         await setViewport({ width, height: 900 });
-        expect(layout.getBoundingClientRect().bottom)
+        expect(articleEnd.getBoundingClientRect().bottom)
           .to.be.closeTo(footer.getBoundingClientRect().top, 0.01);
       }
     } finally {
@@ -774,70 +794,76 @@ describe('blog-side-navigation section list', () => {
       .blog-header { min-height: 200px; }
       ${SIDE_NAV_CSS}`;
     document.head.append(style);
+    const frame = () => new Promise(requestAnimationFrame);
     try {
       await setViewport({ width: 1440, height: 1000 });
       const { main, block } = buildArticle(
         '<h2>Article section</h2><p>Article content.</p><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>',
       );
       await init(block);
-      const layout = main.querySelector('.blog-article-layout');
-      const article = main.querySelector('.blog-article-content');
+      const panel = block.querySelector('.blog-side-navigation-panel');
+      const article = main.querySelector('.blog-article-start');
+      const headerSection = main.firstElementChild;
       const listStyle = getComputedStyle(block.querySelector('nav > ul'));
       expect(listStyle.borderRadius).to.equal('4px');
       expect(listStyle.border).to.equal('1px solid rgb(218, 218, 218)');
       expect(listStyle.backgroundColor).to.equal('rgb(255, 255, 255)');
       expect(listStyle.boxShadow).to.equal('rgba(0, 0, 0, 0.08) 1px 1px 4px 0px');
-      expect(getComputedStyle(layout).columnGap).to.equal('56px');
-      expect(getComputedStyle(layout).marginBottom).to.equal('0px');
-      expect(getComputedStyle(block).position).to.equal('sticky');
-      expect(getComputedStyle(block).top).to.equal('104px');
-      expect(getComputedStyle(block).overflowY).to.equal('auto');
+      // The navigation stays in the header section and the article stays in main.
+      expect(block.parentElement).to.equal(headerSection);
+      expect(article.parentElement).to.equal(main);
+      expect(getComputedStyle(block).position).to.equal('absolute');
+      expect(getComputedStyle(panel).position).to.equal('sticky');
+      expect(getComputedStyle(panel).overflowY).to.equal('auto');
       expect(getComputedStyle(block.querySelector('[aria-current="location"]'))
         .borderInlineStartWidth).to.equal('0px');
       expect(getComputedStyle(block.querySelector('[aria-current="location"]').parentElement)
         .backgroundColor).to.equal('rgba(0, 0, 0, 0)');
       expect(block.getBoundingClientRect().width).to.be.at.most(280);
       expect(article.getBoundingClientRect().left)
-        .to.be.greaterThan(block.getBoundingClientRect().right);
-      expect(article.getBoundingClientRect().top).to.equal(block.getBoundingClientRect().top);
-      expect(block.getBoundingClientRect().top)
+        .to.be.closeTo(block.getBoundingClientRect().right + 56, 1);
+      expect(article.getBoundingClientRect().top)
+        .to.be.closeTo(panel.getBoundingClientRect().top, 1);
+      expect(panel.getBoundingClientRect().top)
         .to.be.at.least(main.querySelector('.blog-header').getBoundingClientRect().bottom);
       expect(main.querySelector('.content').getBoundingClientRect().width)
         .to.equal(article.getBoundingClientRect().width);
       for (const width of [1440, 1600, 2000]) {
         await setViewport({ width, height: 1000 });
         // C2 spans the viewport and insets the rail and article by the grid margin.
-        const gutter = parseFloat(getComputedStyle(layout).paddingInlineStart);
+        const gutter = parseFloat(getComputedStyle(article).marginInlineEnd);
         expect(gutter).to.be.greaterThan(0);
-        expect(layout.getBoundingClientRect().width).to.equal(document.documentElement.clientWidth);
         expect(block.getBoundingClientRect().left).to.be.closeTo(gutter, 1);
         expect(article.getBoundingClientRect().left)
           .to.be.closeTo(block.getBoundingClientRect().right + 56, 1);
         expect(article.getBoundingClientRect().right)
-          .to.be.closeTo(layout.getBoundingClientRect().right - gutter, 1);
+          .to.be.closeTo(document.documentElement.clientWidth - gutter, 1);
       }
-      block.insertAdjacentHTML('beforeend', '<div class="blog-related-content" style="height: 80px"></div>');
+      panel.insertAdjacentHTML('beforeend', '<div class="blog-related-content" style="height: 80px"></div>');
       article.style.minHeight = '1800px';
       main.insertAdjacentHTML('beforeend', '<div class="section" style="height: 1000px"></div>');
+      await frame();
+      await frame();
       scrollStub.callThrough();
       window.scrollTo({ top: 400, behavior: 'instant' });
-      await new Promise(requestAnimationFrame);
-      expect(block.getBoundingClientRect().top).to.be.closeTo(104, 1);
-      const articleEnd = layout.getBoundingClientRect().bottom + window.scrollY;
-      window.scrollTo({ top: articleEnd - 60, behavior: 'instant' });
-      await new Promise(requestAnimationFrame);
-      // The rail stops at the layout's content edge, above the space reserved for the footer.
-      expect(block.getBoundingClientRect().bottom).to.be.closeTo(
-        layout.getBoundingClientRect().bottom - parseFloat(getComputedStyle(layout).paddingBottom),
-        1,
-      );
+      await frame();
+      const stickyTop = parseFloat(getComputedStyle(panel).top);
+      expect(panel.getBoundingClientRect().top).to.be.closeTo(stickyTop, 1);
+      // The track spans the article, so the rail stops at the end of the article.
+      const contentEnd = article.getBoundingClientRect().bottom;
+      expect(block.getBoundingClientRect().bottom).to.be.closeTo(contentEnd, 1);
+      window.scrollTo({ top: contentEnd + window.scrollY - 60, behavior: 'instant' });
+      await frame();
+      expect(panel.getBoundingClientRect().bottom)
+        .to.be.closeTo(block.getBoundingClientRect().bottom, 1);
       window.scrollTo({ top: 0, behavior: 'instant' });
-      await new Promise(requestAnimationFrame);
+      await frame();
       for (const width of [1279, 1024, 768, 767, 390, 458, 1440, 390]) {
         await setViewport({ width, height: 1000 });
+        await frame();
         const nav = block.querySelector('nav');
         if (width < 768) {
-          expect(getComputedStyle(block).display).to.equal('contents');
+          expect(getComputedStyle(panel).display).to.equal('contents');
           expect(getComputedStyle(nav).position).to.equal('sticky');
           expect(article.getBoundingClientRect().top)
             .to.be.greaterThan(nav.getBoundingClientRect().bottom);
@@ -859,31 +885,30 @@ describe('blog-side-navigation section list', () => {
             const text = link.querySelector('span') || link;
             const textLeft = link.getBoundingClientRect().left
               + parseFloat(getComputedStyle(link).paddingInlineStart);
-            const title = block.querySelector(':scope > p');
+            const title = block.querySelector('.blog-side-navigation-panel > p');
             expect(textLeft).to.be.closeTo(title.getBoundingClientRect().left
               + parseFloat(getComputedStyle(title).paddingInlineStart), 1);
             expect(text.getBoundingClientRect().right)
               .to.be.at.most(button.getBoundingClientRect().left);
           }
         } else {
-          expect(getComputedStyle(layout).display).to.equal('grid');
           const gap = width < 1280 ? 32 : 56;
-          expect(getComputedStyle(layout).columnGap).to.equal(`${gap}px`);
-          expect(getComputedStyle(block).position).to.equal('sticky');
+          expect(getComputedStyle(panel).position).to.equal('sticky');
           expect(getComputedStyle(nav).position).to.equal('relative');
           expect(article.getBoundingClientRect().left)
             .to.be.closeTo(block.getBoundingClientRect().right + gap, 1);
-          expect(article.getBoundingClientRect().top).to.equal(block.getBoundingClientRect().top);
+          expect(article.getBoundingClientRect().top)
+            .to.be.closeTo(panel.getBoundingClientRect().top, 1);
           expect(block.getBoundingClientRect().width).to.be.at.most(280);
           const related = block.querySelector('.blog-related-content');
           expect(related.getBoundingClientRect().left).to.equal(block.getBoundingClientRect().left);
           expect(related.getBoundingClientRect().width)
             .to.equal(block.getBoundingClientRect().width);
           window.scrollTo({ top: 400, behavior: 'instant' });
-          await new Promise(requestAnimationFrame);
-          expect(block.getBoundingClientRect().top).to.be.closeTo(104, 1);
+          await frame();
+          expect(panel.getBoundingClientRect().top).to.be.closeTo(stickyTop, 1);
           window.scrollTo({ top: 0, behavior: 'instant' });
-          await new Promise(requestAnimationFrame);
+          await frame();
         }
         expect(document.documentElement.scrollWidth).to.be.at.most(width);
       }
@@ -910,9 +935,12 @@ describe('blog-side-navigation section list', () => {
         const articleSection = main.lastElementChild;
         articleSection.dataset.status = 'pending';
         await init(block);
-        const article = main.querySelector('.blog-article-content');
-        const pendingTop = article.getBoundingClientRect().top;
+        const article = main.querySelector('.blog-article-start');
+        expect(article.classList.contains('blog-article-section')).to.equal(true);
+        // The section is shown once loaded, before the deferred navigation initializes.
         delete articleSection.dataset.status;
+        const pendingTop = article.getBoundingClientRect().top;
+        expect(pendingTop).to.be.greaterThan(0);
         document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
         await waitFor(() => block.querySelectorAll('nav a').length === count);
         expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
@@ -937,10 +965,12 @@ describe('blog-side-navigation section list', () => {
           .join('');
         const { main, block } = buildArticle(content);
         await init(block);
-        main.querySelector('.blog-article-content').style.minHeight = '2000px';
+        main.querySelector('.blog-article-start').style.minHeight = '2000px';
         const button = block.querySelector('button');
         if (button.getAttribute('aria-expanded') === 'false') button.click();
-        const scroller = width < 768 ? block.querySelector('nav') : block;
+        await new Promise(requestAnimationFrame);
+        const scroller = width < 768
+          ? block.querySelector('nav') : block.querySelector('.blog-side-navigation-panel');
         expect(getComputedStyle(scroller).overflowY).to.equal('auto');
         expect(getComputedStyle(scroller).scrollbarWidth).to.equal('none');
         expect(getComputedStyle(scroller, '::-webkit-scrollbar').display).to.equal('none');
@@ -978,10 +1008,11 @@ describe('blog-side-navigation section list', () => {
         const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2><h2>Third</h2><h2>Fourth</h2>');
         main.insertAdjacentHTML('afterbegin', '<header class="global-navigation" style="position: fixed; inset: 0 0 auto; height: 80px; z-index: 10; background: white"></header>');
         await init(block);
-        const article = main.querySelector('.blog-article-content');
+        const article = main.querySelector('.blog-article-start');
         article.style.minHeight = '2400px';
         article.insertAdjacentHTML('beforeend', '<div class="overlapping-content"></div>');
-        block.insertAdjacentHTML('beforeend', '<div class="blog-related-content"><div class="overlapping-content"></div></div>');
+        block.querySelector('.blog-side-navigation-panel').insertAdjacentHTML('beforeend', '<div class="blog-related-content"><div class="overlapping-content"></div></div>');
+        await new Promise(requestAnimationFrame);
         window.scrollTo({ top: 400, behavior: 'instant' });
         await new Promise(requestAnimationFrame);
         const nav = block.querySelector('nav');
@@ -1030,13 +1061,14 @@ describe('blog-side-navigation section list', () => {
         related.className = 'blog-related-content';
         related.style.height = '240px';
         related.style.marginBlockStart = '40px';
-        block.append(related);
-        const article = main.querySelector('.blog-article-content');
+        block.querySelector('.blog-side-navigation-panel').append(related);
+        const article = main.querySelector('.blog-article-start');
         article.style.minHeight = '2400px';
         main.insertAdjacentHTML('beforeend', '<div class="section" style="height: 1000px"></div>');
         await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
         const relatedTop = related.getBoundingClientRect().top;
-        const title = block.querySelector(':scope > p');
+        const title = block.querySelector('.blog-side-navigation-panel > p');
         const titleTop = title.getBoundingClientRect().top;
         expect(title.textContent).to.equal('JUMP TO SECTION');
         expect(nav.getBoundingClientRect().top).to.be.greaterThan(80);
@@ -1090,7 +1122,8 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     const link = block.querySelector('a');
     const heading = main.querySelector('h2');
-    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64;
+    // 24px clears the heading from the global navigation, as on mobile.
+    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64 - 24;
     link.click();
     await Promise.resolve();
     expect(scrollStub.calledOnce).to.equal(true);
@@ -1111,7 +1144,8 @@ describe('blog-side-navigation section list', () => {
     main.insertAdjacentHTML('afterbegin', '<div class="global-navigation" style="height: 64px"></div>');
     await init(block);
     const heading = main.querySelector('h2');
-    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64;
+    // 24px clears the heading from the global navigation, as on mobile.
+    const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 64 - 24;
     block.querySelector('a').click();
     await Promise.resolve();
     expect(mediaStub.firstCall.args[0]).to.equal('(prefers-reduced-motion: reduce)');
@@ -1139,6 +1173,196 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     expect(scrollStub.calledOnce).to.equal(true);
     expect(scrollStub.firstCall.args[0].behavior).to.equal('smooth');
+  });
+
+  it('scrolls to an authored id that is not a valid selector', async () => {
+    mediaStub = stub(window, 'matchMedia').returns({ matches: true });
+    window.history.replaceState(null, '', '#2024-trends');
+    const { block } = buildArticle('<h2 id="2024-trends">Trends</h2>');
+    await init(block);
+    expect(block.querySelector('a').getAttribute('href')).to.equal('#2024-trends');
+    expect(scrollStub.calledOnce).to.equal(true);
+  });
+
+  it('keeps every section in main, so section analytics and positional selectors count them', async () => {
+    const { main, block } = buildArticle('<h2>First</h2>');
+    main.insertAdjacentHTML('beforeend', '<div class="section"><div class="content"><h2>Second</h2></div></div>'
+      + '<div class="section"><div class="footer-promo"></div></div>');
+    const sections = [...main.children];
+    await init(block);
+    expect([...main.children]).to.deep.equal(sections);
+    expect(main.querySelector(':scope > div:nth-child(3)')).to.equal(sections[2]);
+    const config = getConfig();
+    main.querySelectorAll(':scope > div')
+      .forEach((section, idx) => decorateSectionAnalytics(section, idx, config));
+    expect(sections.map((section) => section.getAttribute('daa-lh')))
+      .to.deep.equal(['s1', 's2', 's3', 's4']);
+  });
+
+  it('ends the track at the article whether or not the header draws dividers', async () => {
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      const { main, block } = buildArticle('<h2>First</h2><p style="height: 600px"></p>');
+      main.firstElementChild.querySelector('.blog-header').classList.add('no-dividers');
+      await init(block);
+      await new Promise(requestAnimationFrame);
+      const end = main.querySelector('.blog-article-end');
+      const contentEnd = end.getBoundingClientRect().bottom;
+      expect(main.style.getPropertyValue('--blog-divider-height')).to.equal('');
+      expect(block.getBoundingClientRect().bottom).to.be.closeTo(contentEnd, 1);
+    } finally {
+      style.remove();
+    }
+  });
+
+  it('ends the mobile track at the article after the list expands and collapses again', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 375, height: 800 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>'
+        + '<p style="height: 900px"></p>');
+      await init(block);
+      const button = block.querySelector('button');
+      const end = main.querySelector('.blog-article-end');
+      const settle = () => new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      for (const expanded of ['true', 'false']) {
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal(expanded);
+        await settle();
+        expect(block.getBoundingClientRect().bottom)
+          .to.be.closeTo(end.getBoundingClientRect().bottom, 1);
+      }
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('reserves panel changes before layout, so observers of main see no ResizeObserver loop', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    const loopErrors = [];
+    const onError = (event) => {
+      if (/ResizeObserver loop/.test(event.message)) loopErrors.push(event.message);
+    };
+    // Like the blog header on a real page, something watches main's size.
+    const mainObserver = new ResizeObserver(() => {});
+    window.addEventListener('error', onError);
+    try {
+      await setViewport({ width: 375, height: 800 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>'
+        + '<p style="height: 900px"></p>');
+      mainObserver.observe(main);
+      await init(block);
+      const settle = () => new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      await settle();
+      const reserved = () => parseFloat(main.style.getPropertyValue('--blog-side-navigation-block-size'));
+      const before = reserved();
+      block.querySelector('.blog-side-navigation-panel')
+        .append(Object.assign(document.createElement('div'), { style: 'height: 300px' }));
+      await Promise.resolve();
+      expect(reserved()).to.equal(before + 300);
+      await settle();
+      const button = block.querySelector('button');
+      for (const expanded of ['true', 'false']) {
+        button.click();
+        expect(button.getAttribute('aria-expanded')).to.equal(expanded);
+        await settle();
+      }
+      expect(loopErrors).to.deep.equal([]);
+    } finally {
+      mainObserver.disconnect();
+      window.removeEventListener('error', onError);
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('extends a short article so the desktop panel never runs past it', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 1280, height: 900 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2>');
+      await init(block);
+      const panel = block.querySelector('.blog-side-navigation-panel');
+      panel.append(Object.assign(document.createElement('div'), { style: 'height: 500px' }));
+      await waitFor(() => main.style.getPropertyValue('--blog-side-navigation-overflow-size') !== '');
+      await new Promise(requestAnimationFrame);
+      const end = main.querySelector('.blog-article-end');
+      expect(panel.getBoundingClientRect().bottom)
+        .to.be.at.most(end.getBoundingClientRect().bottom + 1);
+      expect(block.getBoundingClientRect().bottom)
+        .to.be.closeTo(end.getBoundingClientRect().bottom, 1);
+      panel.lastElementChild.remove();
+      await waitFor(() => main.style.getPropertyValue('--blog-side-navigation-overflow-size') === '0px');
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('counts the divider gap and the panel margin where a short article ends', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const style = document.createElement('style');
+    const headerCss = await readFile({ path: '../../../../libs/c2/blocks/blog-header/blog-header.css' });
+    style.textContent = `${SIDE_NAV_CSS}\n${headerCss}`;
+    document.head.append(style);
+    try {
+      await setViewport({ width: 1280, height: 900 });
+      const { main, block } = buildArticle('<h2>One</h2><h2>Two</h2>');
+      main.firstElementChild.classList.add('blog-divider-frame');
+      await init(block);
+      const panel = block.querySelector('.blog-side-navigation-panel');
+      expect(panel.getBoundingClientRect().top - block.getBoundingClientRect().top).to.be.above(0);
+      const headerBottom = main.firstElementChild.getBoundingClientRect().bottom;
+      expect(block.getBoundingClientRect().top - headerBottom).to.be.above(0);
+      panel.append(Object.assign(document.createElement('div'), { style: 'height: 500px' }));
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      });
+      const end = main.querySelector('.blog-article-end');
+      expect(panel.getBoundingClientRect().bottom)
+        .to.be.at.most(end.getBoundingClientRect().bottom + 1);
+      expect(block.getBoundingClientRect().bottom)
+        .to.be.closeTo(end.getBoundingClientRect().bottom, 1);
+    } finally {
+      style.remove();
+      await setViewport(originalViewport);
+    }
+  });
+
+  it('closes the open mobile list on Escape and returns focus to its toggle', async () => {
+    mockTablet(false);
+    const { block } = buildArticle('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>');
+    await init(block);
+    const button = block.querySelector('button');
+    button.click();
+    const link = block.querySelectorAll('a')[2];
+    link.focus();
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(button.getAttribute('aria-expanded')).to.equal('false');
+    expect(document.activeElement).to.equal(button);
+  });
+
+  it('scrolls to an existing id with reserved characters on initial load', async () => {
+    window.history.replaceState(null, '', '#q&a:v3');
+    const { block } = buildArticle('<h2 id="q&amp;a:v3">Questions</h2>');
+    await init(block);
+    expect(scrollStub.calledOnce).to.equal(true);
   });
 
   it('preserves native behavior for modified clicks', async () => {
@@ -1189,7 +1413,7 @@ describe('blog-side-navigation section list', () => {
           expect(links[3].getAttribute('aria-current')).to.equal('location');
         }
         const nav = block.querySelector('nav');
-        const extra = desktop ? 0 : nav.getBoundingClientRect().height + 24;
+        const extra = (desktop ? 0 : nav.getBoundingClientRect().height) + 24;
         const expectedTop = heading.getBoundingClientRect().top + window.scrollY - 80 - extra;
         expect(scrollStub.firstCall.args[0].top).to.be.closeTo(expectedTop, 1);
         button.click();
@@ -1278,7 +1502,7 @@ describe('blog-side-navigation section list', () => {
       block.innerHTML = `<div><div><p>${heading}</p></div></div>`;
       await init(block);
       const label = heading.trim() || 'JUMP TO SECTION';
-      expect(block.querySelector(':scope > p > strong').textContent).to.equal(label);
+      expect(block.querySelector('.blog-side-navigation-panel > p > strong').textContent).to.equal(label);
       expect(block.querySelector('nav').getAttribute('aria-label')).to.equal(label);
       const button = block.querySelector('button');
       expect(button.getAttribute('aria-label')).to.equal(label);
@@ -1347,8 +1571,8 @@ describe('blog-side-navigation section list', () => {
     expect(block.hidden).to.equal(false);
     expect(block.classList.contains('is-pending')).to.equal(true);
     expect(block.querySelector('nav')).not.to.exist;
-    expect(block.closest('.blog-article-layout')).to.exist;
-    expect(articleSection.closest('.blog-article-content')).to.exist;
+    expect(navigationSection.classList.contains('blog-article-section')).to.equal(false);
+    expect(articleSection.classList.contains('blog-article-start')).to.equal(true);
 
     content.append(...articleSection.childNodes);
     articleSection.append(content);
@@ -1361,9 +1585,10 @@ describe('blog-side-navigation section list', () => {
     expect(block.classList.contains('is-pending')).to.equal(false);
     expect(block.querySelector('button').getAttribute('aria-expanded')).to.equal('false');
     expect(block.querySelectorAll('li[hidden]').length).to.equal(3);
-    expect(block.querySelector(':scope > p > strong').textContent).to.equal('On this page');
+    expect(block.querySelector('.blog-side-navigation-panel > p > strong').textContent).to.equal('On this page');
     expect(block.querySelector('nav').getAttribute('aria-label')).to.equal('On this page');
-    expect(block.closest('.blog-article-layout')).to.exist;
+    expect(navigationSection.classList.contains('blog-article-section')).to.equal(false);
+    expect(articleSection.classList.contains('blog-article-end')).to.equal(true);
     expect(block.querySelector('nav').textContent).not.to.contain('collapsed');
     expect([...content.querySelectorAll('h2')].every((heading) => heading.classList.contains('heading-3')))
       .to.equal(true);
@@ -1393,19 +1618,85 @@ describe('blog-side-navigation section list', () => {
     }
   });
 
+  it('sizes article headings before the sections reveal', async () => {
+    mockTablet();
+    const { main, block } = buildArticle('<h2>First</h2><h2 class="heading-5">Second</h2>');
+    const articleSection = main.lastElementChild;
+    const content = articleSection.querySelector('.content');
+    content.replaceWith(...content.childNodes);
+    articleSection.dataset.status = 'pending';
+    await init(block);
+    expect(block.querySelector('nav')).not.to.exist;
+    const [first, second] = articleSection.querySelectorAll(':scope > h2');
+    expect(first.className).to.equal('heading-3');
+    expect(second.className).to.equal('heading-5');
+    content.append(...articleSection.childNodes);
+    articleSection.append(content);
+    delete articleSection.dataset.status;
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    await waitFor(() => block.querySelectorAll('nav a').length === 2);
+  });
+
   it('removes the early layout when the loaded article has no headings', async () => {
     mockTablet();
     const { main, block } = buildArticle('<p>No sections here.</p>');
     const articleSection = main.lastElementChild;
     articleSection.dataset.status = 'pending';
     await init(block);
-    expect(articleSection.closest('.blog-article-content')).to.exist;
+    expect(articleSection.classList.contains('blog-article-section')).to.equal(true);
     delete articleSection.dataset.status;
     document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
-    await waitFor(() => !main.querySelector('.blog-article-layout'));
+    await waitFor(() => !main.querySelector('.blog-article-section'));
     expect(articleSection.parentElement).to.equal(main);
+    expect(block.isConnected).to.equal(true);
+    expect(block.parentElement).to.equal(main.firstElementChild);
     expect(block.hidden).to.equal(true);
     expect(block.classList.contains('is-pending')).to.equal(false);
+  });
+
+  it('keeps an authored label mismatch visible after removing the early layout', async () => {
+    mockTablet();
+    const previousLana = window.lana;
+    window.lana = { log: stub() };
+    try {
+      const { main, block } = buildArticle('<p>No sections here.</p>');
+      block.innerHTML = '<div><div><ol><li>Overview</li></ol></div></div>';
+      const articleSection = main.lastElementChild;
+      articleSection.dataset.status = 'pending';
+      await init(block);
+      delete articleSection.dataset.status;
+      document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+      await waitFor(() => !main.querySelector('.blog-article-section'));
+      expect(block.parentElement).to.equal(main.firstElementChild);
+      expect(block.nextElementSibling).to.equal(null);
+      expect(block.dataset.failed).to.equal('true');
+      expect(block.dataset.reason).to.contain('1 list items for 0 headings');
+      expect(block.hidden).to.equal(false);
+    } finally {
+      window.lana = previousLana;
+    }
+  });
+
+  it('hides the early layout until the header section above it has loaded', async () => {
+    const style = document.createElement('style');
+    style.textContent = SIDE_NAV_CSS;
+    document.head.append(style);
+    try {
+      const { main, block } = buildArticle('<h2>First</h2><h2>Second</h2>');
+      main.insertAdjacentHTML('beforeend', '<div class="section" data-status="pending"></div>');
+      const [headerSection, articleSection] = main.children;
+      headerSection.dataset.status = 'pending';
+      await init(block);
+      expect(articleSection.previousElementSibling).to.equal(headerSection);
+      expect(articleSection.classList.contains('blog-article-start')).to.equal(true);
+      expect(getComputedStyle(articleSection).display).to.equal('none');
+      headerSection.dataset.status = 'decorated';
+      expect(getComputedStyle(articleSection).display).to.equal('none');
+      delete headerSection.dataset.status;
+      expect(getComputedStyle(articleSection).display).to.not.equal('none');
+    } finally {
+      style.remove();
+    }
   });
 
   it('cancels a pending retry when the block is initialized before the deferred event', async () => {
@@ -1500,7 +1791,7 @@ describe('blog-side-navigation section list', () => {
           const vertical = getComputedStyle(icon, '::after');
           expect(vertical.display === 'none').to.equal(expanded);
           const strokes = expanded
-            ? [['::before', 6, 1.5]]
+            ? [['::before', 6, 2]]
             : [['::before', 12, 2], ['::after', 2, 12]];
           for (const [pseudo, expectedWidth, expectedHeight] of strokes) {
             const stroke = getComputedStyle(icon, pseudo);
@@ -1769,15 +2060,19 @@ describe('blog-side-navigation section list', () => {
         expect(links[activeIndex].getAttribute('aria-current')).to.equal('location');
       }
       expect(rectangles.every((rectangle) => rectangle.calledOnce)).to.equal(true);
-      expect(computedStyle.withArgs(headings[0]).calledOnce).to.equal(true);
+      // Not withArgs: sinon checks element arguments by appending a child to them.
+      const headingStyleCalls = () => computedStyle.getCalls()
+        .filter((call) => call.args[0] === headings[0]).length;
+      expect(headingStyleCalls()).to.equal(1);
       positions[1] = 150;
       headings[0].style.scrollMarginTop = '100px';
       onResize();
       await new Promise(requestAnimationFrame);
       expect(links[1].getAttribute('aria-current')).to.equal('location');
       expect(rectangles.every((rectangle) => rectangle.calledTwice)).to.equal(true);
-      expect(computedStyle.withArgs(headings[0]).calledTwice).to.equal(true);
-      expect(observer.observe.calledWith(main)).to.equal(true);
+      expect(headingStyleCalls()).to.equal(2);
+      expect(observer.observe.calledWith(main)).to.equal(false);
+      expect(observer.observe.calledWith(main.querySelector('.blog-article-start'))).to.equal(true);
       block.remove();
       window.dispatchEvent(new Event('scroll'));
       await new Promise(requestAnimationFrame);
@@ -1824,7 +2119,7 @@ describe('blog-side-navigation section list', () => {
     await init(block);
     expect(block.querySelectorAll('nav').length).to.equal(1);
     expect(block.querySelectorAll('a').length).to.equal(1);
-    expect(main.querySelectorAll('.blog-article-layout').length).to.equal(1);
+    expect(main.querySelectorAll('.blog-article-start').length).to.equal(1);
     expect(block.querySelector('a').getAttribute('href')).to.equal('#section-1');
   });
 

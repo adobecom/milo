@@ -8,10 +8,6 @@
   border: 3px solid var(--s2a-color-border-subtle);
   border-radius: var(--s2a-border-radius-sm);
   color: var(--s2a-color-content-default);
-  font-size: var(--s2a-typography-font-size-body-lg);
-  font-style: normal;
-  font-weight: var(--s2a-font-weight-body);
-  line-height: 150%;
   overflow-wrap: anywhere;
 
   @media (width >= 768px) {
@@ -22,8 +18,6 @@
   ul,
   ol {
     margin: 0 0 var(--s2a-spacing-md);
-    font-size: inherit;
-    line-height: inherit;
   }
 
   .ai-summary-image {
@@ -50,7 +44,7 @@
     }
   }
 
-  :is(h1, h2, h3, h4, h5, h6) {
+  [class*="heading-"] {
     margin: 0 0 var(--s2a-spacing-md);
     color: var(--s2a-color-content-default);
     font-style: normal;

@@ -1,5 +1,6 @@
 <html>
   <head>
+    <meta name="foundation" content="c2">
     <script type="importmap">
       {
         "imports": {
@@ -97,7 +98,7 @@
             await init(block);
             await initNavigation(navigation);
             await waitFor(() => !block.hidden);
-            expect(block.parentElement).to.equal(navigation);
+            expect(block.parentElement).to.equal(navigation.querySelector('.blog-side-navigation-panel'));
             expect(block.previousElementSibling.tagName).to.equal('NAV');
             expect(block.querySelector('h3').textContent).to.equal('Related Content');
             expect(block.querySelector('h3').classList.contains('heading-6')).to.equal(true);
@@ -105,7 +106,7 @@
             expect(loadCaas.firstCall.args[0].href).to.equal('https://milo.adobe.com/tools/caas#encoded');
             expect(loadCaas.firstCall.args.length).to.equal(1);
             await initNavigation(navigation);
-            expect(block.parentElement).to.equal(navigation);
+            expect(block.parentElement).to.equal(navigation.querySelector('.blog-side-navigation-panel'));
             expect(block.hidden).to.equal(false);
             expect(loadCaas.calledOnce).to.equal(true);
           });
@@ -162,10 +163,6 @@
 
         describe('blog-related-content C2 routing', () => {
           it('loads from the C2 directory on a foundation=c2 page', async () => {
-            const foundation = document.createElement('meta');
-            foundation.name = 'foundation';
-            foundation.content = 'c2';
-            document.head.append(foundation);
             const block = document.createElement('div');
             block.className = 'blog-related-content';
             document.body.append(block);
@@ -177,7 +174,6 @@
               expect(document.head.querySelector('link[href$="/c2/blocks/blog-related-content/blog-related-content.css"]')).to.exist;
             } finally {
               block.remove();
-              foundation.remove();
             }
           });
         });

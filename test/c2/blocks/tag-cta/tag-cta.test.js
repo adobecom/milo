@@ -78,7 +78,7 @@ describe('Tag CTA', () => {
         await setViewport({ width, height: 900 });
         const block = document.querySelector('.tag-cta');
         const article = block.parentElement;
-        article.classList.add('blog-article-content');
+        article.classList.add('blog-article-section');
         article.style.cssText = 'width: 70%; margin-inline: auto';
         await init(block);
         const column = article.getBoundingClientRect();
@@ -187,6 +187,29 @@ describe('Tag CTA', () => {
     expect([...block.querySelectorAll('li')].map((item) => item.textContent))
       .to.deep.equal(['Marketing', 'GenStudio', 'Personalization']);
     expect(block.querySelectorAll('ul').length).to.equal(1);
+  });
+
+  it('decorates each authored viewport and swaps them on resize', async () => {
+    const { innerWidth: width, innerHeight: height } = window;
+    const block = document.querySelector('.tag-cta');
+    block.innerHTML = `
+      <div><div>mobile-viewport</div></div>
+      <div><div><h2>Mobile topics</h2><p><a href="/m">Mobile</a></p></div></div>
+      <div><div>desktop-viewport</div></div>
+      <div><div><h2>Desktop topics</h2><p><a href="/d1">One</a> <a href="/d2">Two</a></p></div></div>`;
+    await setViewport({ width: 600, height });
+    try {
+      await init(block);
+      expect(block.querySelector('.tag-cta-heading').textContent).to.equal('Mobile topics');
+      expect([...block.querySelectorAll('.tag-cta-list a')].map((a) => a.textContent)).to.deep.equal(['Mobile']);
+      expect(block.textContent).to.not.include('viewport');
+      await setViewport({ width: 1300, height });
+      await new Promise((resolve) => { requestAnimationFrame(resolve); });
+      expect(block.querySelector('.tag-cta-heading').textContent).to.equal('Desktop topics');
+      expect([...block.querySelectorAll('.tag-cta-list a')].map((a) => a.textContent)).to.deep.equal(['One', 'Two']);
+    } finally {
+      await setViewport({ width, height });
+    }
   });
 
   it('loads from the C2 directory on a foundation=c2 page', async () => {

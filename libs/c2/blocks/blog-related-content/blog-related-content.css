@@ -7,7 +7,7 @@
     display: none;
   }
 
-  > h3 {
+  > [class*="heading-"] {
     margin: 0 0 var(--s2a-spacing-20);
     font-weight: var(--s2a-font-weight-label);
     text-transform: uppercase;
