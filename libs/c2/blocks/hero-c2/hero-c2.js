@@ -56,12 +56,29 @@ function buildEventWidget(cell) {
   return widget;
 }
 
+function extractAfterDividers(cell) {
+  const parts = [];
+  [...cell.children].forEach((child) => {
+    if (child.textContent.trim() === '+++') {
+      parts.push(createTag('div'));
+      child.remove();
+    } else if (parts.length) {
+      parts.at(-1).append(child);
+    }
+  });
+  return parts;
+}
+
 function decorate(block, buildWidget) {
-  const [textRow, widgetRow, footerRow] = block.children;
+  const [textRow, secondRow, footerRow] = block.children;
   const [text, mediaBgCell] = textRow?.children || [];
-  const [widgetCell, media] = widgetRow?.children || [];
-  const [footer] = footerRow?.children || [];
+  const secondCells = [...(secondRow?.children || [])];
+  const media = secondCells.at(-1);
   if (!text) return;
+
+  const [splitWidget, splitFooter] = extractAfterDividers(text);
+  const widgetCell = splitWidget || (secondCells.length > 1 ? secondCells[0] : null);
+  const footer = splitFooter || footerRow?.children[0];
 
   decorateCopy(text);
   const content = createTag('div', { class: 'hero-c2-content' }, text);

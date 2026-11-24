@@ -103,6 +103,51 @@ describe('hero-c2', () => {
     });
   });
 
+  describe('+++ dividers', () => {
+    const LEFT = `${COPY}<p>+++</p>${BUTTONS}<p>+++</p><p>Footer text</p>`;
+
+    it('splits the left cell into message, widget and footer', async () => {
+      const block = await build('', row(LEFT, ''), row(IMAGE));
+      const content = block.querySelector('.hero-c2-content');
+      expect(content.querySelector('.hero-c2-header')).to.exist;
+      expect(content.querySelector('.hero-c2-widget .action-area')).to.exist;
+      expect(content.querySelector('.hero-c2-footer').textContent).to.equal('Footer text');
+      expect(content.textContent).to.not.contain('+++');
+      expect(block.querySelector('.hero-c2-media')).to.exist;
+    });
+
+    it('reads the media from the last cell of the second row', async () => {
+      const block = await build('', row(LEFT, ''), row('', IMAGE));
+      expect(block.querySelector('.hero-c2-media picture')).to.exist;
+      expect(block.querySelector('.hero-c2-widget picture')).to.be.null;
+    });
+
+    it('recognises a divider wrapped in formatting', async () => {
+      const block = await build('', row(`${COPY}<p><strong>+++</strong></p>${BUTTONS}`, ''), row(IMAGE));
+      expect(block.querySelector('.hero-c2-widget .action-area')).to.exist;
+      expect(block.textContent).to.not.contain('+++');
+    });
+
+    it('allows a message only, with no dividers', async () => {
+      const block = await build('', row(COPY, ''), row('', IMAGE));
+      expect(block.querySelector('.hero-c2-header')).to.exist;
+      expect(block.querySelector('.hero-c2-widget')).to.be.null;
+      expect(block.querySelector('.hero-c2-footer')).to.be.null;
+    });
+
+    it('allows a footer without a widget', async () => {
+      const block = await build('', row(`${COPY}<p>+++</p><p>+++</p><p>Footer text</p>`, ''), row(IMAGE));
+      expect(block.querySelector('.hero-c2-widget')).to.be.null;
+      expect(block.querySelector('.hero-c2-footer').textContent).to.equal('Footer text');
+    });
+
+    it('allows a widget without a footer', async () => {
+      const block = await build('', row(`${COPY}<p>+++</p>${BUTTONS}`, ''), row(IMAGE));
+      expect(block.querySelector('.hero-c2-widget')).to.exist;
+      expect(block.querySelector('.hero-c2-footer')).to.be.null;
+    });
+  });
+
   describe('plain widget', () => {
     it('keeps the media out of the buttons\' supplemental text', async () => {
       const block = await build('', row(COPY, ''), row(BUTTONS, IMAGE));

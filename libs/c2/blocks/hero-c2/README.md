@@ -2,21 +2,23 @@
 
 ## Authoring
 
-Three rows, read by position.
+Two rows, read by position. The left cell is merged down across both rows and split by lines containing only `+++`.
 
 ```
 | text   | media-bg |
+| +++    |----------|
 | widget | media    |
+| +++    |          |
 | footer |          |
 ```
 
 - **text**: eyebrow paragraph, heading, body. The eyebrow is the paragraph directly before the heading and may include an SVG product icon link. The heading comes first in the DOM; `order: -1` shows the eyebrow above it.
+- **widget**: optional, after the first `+++`. Plain text and buttons by default. The `merch` variant builds merch content with `libs/c2/utils/merch-widget`; the `event` variant lays out dates (below).
+- **footer**: optional caption below the widget, after the second `+++`.
 - **media-bg**: image, video, or a CSS color/gradient as plain text. It fills the media area.
-- **widget**: optional. Plain text and buttons by default. The `merch` variant builds merch content with `libs/c2/utils/merch-widget`; the `event` variant lays out dates (below).
-- **media**: optional image or video, centered over the media-bg.
-- **footer**: optional caption below the widget.
+- **media**: optional image or video, centered over the media-bg. It is the last cell of the second row.
 
-Empty cells render nothing. Rows must not be skipped: an empty `| |` row still occupies its position.
+Empty cells render nothing. Without `+++` lines, the second row's first cell is read as the widget and a third row as the footer.
 
 ## Variants
 
