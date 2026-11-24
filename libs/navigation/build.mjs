@@ -1,9 +1,10 @@
-import * as esbuild from 'esbuild'; // eslint-disable-line
+import * as esbuild from 'esbuild'; // eslint-disable-line import/no-extraneous-dependencies
 import fs from 'node:fs';
 import nodepath from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = nodepath.dirname(fileURLToPath(import.meta.url)); // eslint-disable-line
+// eslint-disable-next-line no-underscore-dangle
+const __dirname = nodepath.dirname(fileURLToPath(import.meta.url));
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
@@ -70,7 +71,7 @@ const LitResolver = {
 // Only reachable via utils.js/delayed.js's loadArea(document)/loadDelayed()
 // paths (full-page bootstrap, authoring/QA, MEP overlay), which standalone
 // gnav never calls - excluded so this dead code doesn't bloat the bundle.
-const deadWeightFilenames = [
+const lazyChunkFilenames = [
   'preflight-notification.js',
   'region-modal.js',
   'georoutingv2.js',
@@ -86,34 +87,50 @@ const deadWeightFilenames = [
   'automated-aria.js',
   'interlinks.js',
   'samplerum.js',
+
+  // These ARE used by standalone gnav (not dead code), but only via dynamic
+  // import() - excluding them here keeps that lazy-loading instead of
+  // eagerly inlining them:
+  // - aup-sdk.js: preserves the conditional SDK preload.
+  // - merch.js: preserves dynamic imports, including gnav's startup import.
+  // - merch-card-autoblock.js: its dynamic entry also depends on merch.js.
+  'aup-sdk.js',
+  'merch.js',
+  'merch-card-autoblock.js',
 ];
 
-const DEAD_WEIGHT_DIR = 'dead-weight';
+const LAZY_CHUNKS_DIR = 'lazy-chunks';
 // filename -> absolute source path, filled in as the resolver matches imports
-const resolvedDeadWeightFiles = new Map();
+const resolvedLazyChunkFiles = new Map();
 
 // Marking these external alone isn't enough: npm only ships dist/, so the
 // original relative path (e.g. ../features/google-login.js) won't exist for
-// consumers. Rewrite to a flat ./dead-weight/<file>.js path instead, and
-// copy the real file there after the build (see copyDeadWeightFile below).
-const DeadWeightResolver = {
-  name: 'dead-weight-resolver',
+// consumers. Rewrite to a flat ./lazy-chunks/<file>.js path instead, and
+// build the real file there after the build (see buildLazyChunkFiles below).
+const LazyChunkResolver = {
+  name: 'lazy-chunk-resolver',
   setup({ onResolve }) {
     onResolve({ filter: /.*/ }, (args) => {
-      const filename = deadWeightFilenames.find((f) => args.path.endsWith(f));
+      // Only externalize genuine dynamic import() calls. A plain static
+      // `import {...} from` must be available before the importing module's
+      // top-level code runs, so externalizing it doesn't make it lazy - it
+      // just forces consumers' bundlers (e.g. webpack) to pull the whole
+      // lazy-chunk file into whatever chunk contains the importer instead.
+      if (args.kind !== 'dynamic-import') return null;
+      const filename = lazyChunkFilenames.find((f) => args.path.endsWith(f));
       if (!filename) return null;
-      resolvedDeadWeightFiles.set(filename, nodepath.resolve(args.resolveDir, args.path));
-      return { path: `./${DEAD_WEIGHT_DIR}/${filename}`, external: true };
+      resolvedLazyChunkFiles.set(filename, nodepath.resolve(args.resolveDir, args.path));
+      return { path: `./${LAZY_CHUNKS_DIR}/${filename}`, external: true };
     });
   },
 };
 
-// Some dead-weight files load CSS at runtime via loadStyle(new URL('./x.css',
+// Some lazy-chunk files load CSS at runtime via loadStyle(new URL('./x.css',
 // import.meta.url)) instead of a static import - esbuild can't see/bundle
 // that, so the referenced .css file is copied here as a flat sibling file
-// to satisfy the relative URL once it's flattened into dist/dead-weight/.
-const copyDeadWeightCss = (entryPoints) => {
-  const destDir = nodepath.resolve(__dirname, 'dist', DEAD_WEIGHT_DIR);
+// to satisfy the relative URL once it's flattened into dist/lazy-chunks/.
+const copyLazyChunkCss = (entryPoints) => {
+  const destDir = nodepath.resolve(__dirname, 'dist', LAZY_CHUNKS_DIR);
   entryPoints.forEach((absPath) => {
     const source = fs.readFileSync(absPath, 'utf8');
     const re = /new URL\(['"](\.[^'"]+\.css)['"]/g;
@@ -124,52 +141,43 @@ const copyDeadWeightCss = (entryPoints) => {
         fs.copyFileSync(cssPath, nodepath.join(destDir, nodepath.basename(cssPath)));
       } else {
         // eslint-disable-next-line no-console
-        console.warn(`[build.mjs] dead-weight css not found, skipping: ${cssPath}`);
+        console.warn(`[build.mjs] lazy-chunk css not found, skipping: ${cssPath}`);
       }
       match = re.exec(source);
     }
   });
 };
 
-// Each dead-weight file is bundled (not just copied) into dist/dead-weight/
-// via its own esbuild entry point - this inlines its own imports for real,
-// instead of leaving relative import statements that would point at the
-// wrong place once flattened out of the monorepo's folder structure.
+// Build all lazy entries together so esbuild owns their internal import
+// paths and shares dependencies, including stateful modules.
 // A missing/renamed source file is skipped with a warning rather than
 // failing the build - these are optional/unreachable, so a stale list
 // entry should only lose the optimization for that one file, not break CI.
-const buildDeadWeightFiles = async () => {
-  const entryPoints = [...resolvedDeadWeightFiles.values()].filter((absPath) => {
+const buildLazyChunkFiles = async () => {
+  const entryPoints = [...resolvedLazyChunkFiles.values()].filter((absPath) => {
     if (fs.existsSync(absPath)) return true;
     // eslint-disable-next-line no-console
-    console.warn(`[build.mjs] dead-weight file not found, skipping: ${absPath}`);
+    console.warn(`[build.mjs] lazy-chunk file not found, skipping: ${absPath}`);
     return false;
   });
   if (!entryPoints.length) return;
   await esbuild.build({
     entryPoints,
     bundle: true,
-    splitting: false,
+    // Do not externalize nested imports here: esbuild must resolve them
+    // to these same entries and generate paths relative to each output.
+    splitting: true,
     format: 'esm',
     sourcemap: true,
-    outdir: `./dist/${DEAD_WEIGHT_DIR}/`,
-    entryNames: '[name]', // flatten output - matches the ./dead-weight/<file>.js rewrite above
+    chunkNames: 'chunks/[name]-[hash]',
+    outdir: `./dist/${LAZY_CHUNKS_DIR}/`,
+    entryNames: '[name]', // flatten output - matches the ./lazy-chunks/<file>.js rewrite above
     plugins: [LitResolver],
   });
-  copyDeadWeightCss(entryPoints);
+  copyLazyChunkCss(entryPoints);
 };
 
-// Disabling splitting collapses gnav's ~15+ dynamic-import chunks into one
-// file, avoiding extra sequential network hops when re-bundled by a
-// consumer (e.g. webpack). import() calls still resolve lazily.
-//
-// NOTE: still inlines spectrum-web-components/theme.js (~367KB, only
-// needed for the 3-in-1 merch modal). Externalizing/lazy-loading it can be
-// looked into separately - deferred for now to measure this change alone.
-//
-// A bundle-size-growth warning (comparing navigation.js against a stored
-// baseline, to flag newly-inlined deadWeightFilenames candidates) was
-// prototyped and removed for simplicity - can be looked into separately.
+// Keep core navigation in one bundle; matching feature imports stay external.
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -178,7 +186,7 @@ await esbuild.build({
   sourcemap: true,
   outdir: './dist/',
   define: { 'import.meta.standaloneNavBundle': 'true' },
-  plugins: [LitResolver, StyleLoader, DeadWeightResolver],
+  plugins: [LitResolver, StyleLoader, LazyChunkResolver],
 });
 
-await buildDeadWeightFiles();
+await buildLazyChunkFiles();
