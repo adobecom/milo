@@ -174,7 +174,7 @@
 .chart.list .chart-wrapper,
 .chart.oversized-number .chart-container,
 .chart.oversized-number .chart-wrapper,
-.chart.dynamic-data .chart-container {
+.chart.bar-line .chart-container {
   height: auto;
 }
 
@@ -214,13 +214,13 @@
   height: 512px;
 }
 
-.chart.dynamic-data .chart-legend {
+.chart.bar-line .chart-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 24px;
 }
 
-.chart.dynamic-data .chart-legend button {
+.chart.bar-line .chart-legend button {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -234,11 +234,11 @@
   cursor: pointer;
 }
 
-.chart.dynamic-data .chart-legend button[aria-pressed=false] {
+.chart.bar-line .chart-legend button[aria-pressed=false] {
   text-decoration: line-through;
 }
 
-.chart.dynamic-data .chart-legend-swatch {
+.chart.bar-line .chart-legend-swatch {
   display: inline-block;
   width: 18px;
   height: 18px;
@@ -247,46 +247,46 @@
   background: var(--series-color);
 }
 
-.chart.dynamic-data .chart-legend-swatch.line {
+.chart.bar-line .chart-legend-swatch.line {
   height: 3px;
   border-radius: 0;
 }
 
-.chart.dynamic-data .chart-instructions {
+.chart.bar-line .chart-instructions {
   margin: 8px 0 16px;
   font-size: 14px;
 }
 
-.chart.dynamic-data .chart-data {
+.chart.bar-line .chart-data {
   overflow-x: auto;
 }
 
-.chart.dynamic-data .chart-data summary {
+.chart.bar-line .chart-data summary {
   width: fit-content;
   padding: 12px 0;
   cursor: pointer;
 }
 
-.chart.dynamic-data .chart-data table {
+.chart.bar-line .chart-data table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.chart.dynamic-data .chart-data th,
-.chart.dynamic-data .chart-data td {
+.chart.bar-line .chart-data th,
+.chart.bar-line .chart-data td {
   padding: 8px;
   border: 1px solid #767676;
   text-align: left;
 }
 
-.chart.dynamic-data .chart-wrapper:focus-visible,
-.chart.dynamic-data button:focus-visible,
-.chart.dynamic-data summary:focus-visible {
+.chart.bar-line .chart-wrapper:focus-visible,
+.chart.bar-line button:focus-visible,
+.chart.bar-line summary:focus-visible {
   outline: 2px solid #1473e6;
   outline-offset: 3px;
 }
 
-.chart.dynamic-data .chart-sr-only {
+.chart.bar-line .chart-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;

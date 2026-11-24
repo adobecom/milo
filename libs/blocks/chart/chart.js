@@ -7,7 +7,7 @@ import {
   formatExcelDate,
 } from './utils.js';
 import getTheme from './chartLightTheme.js';
-import { getDynamicConfig, getDynamicOptions, decorateDynamicChart } from './dynamic-data.js';
+import { getBarLineConfig, getBarLineOptions, decorateBarLineChart } from './bar-line.js';
 
 export const SMALL = 'small';
 export const MEDIUM = 'medium';
@@ -30,7 +30,7 @@ export const colorPalette = {
 };
 const SECTION_CLASSNAME = 'chart-section';
 const chartTypes = [
-  'dynamic-data',
+  'bar-line',
   'bar',
   'column',
   'line',
@@ -123,7 +123,7 @@ export function processDataset(data, preserveCategories = false) {
   return { dataset, headers, units };
 }
 
-export function processDynamicData(data, { dataPoints } = {}) {
+export function processBarLineData(data, { dataPoints } = {}) {
   if (!Array.isArray(data) || !data.length
     || data.some((row) => !row || typeof row !== 'object' || Array.isArray(row))) return null;
 
@@ -428,7 +428,7 @@ export const getChartOptions = ({
   colors,
   labelDeg = 0,
   colorByData,
-  dynamicConfig,
+  barLineConfig,
 }) => {
   const hasOverride = colorByData ?? (headers ? hasPropertyCI(headers, 'color') : false);
   const source = dataset?.source;
@@ -529,8 +529,8 @@ export const getChartOptions = ({
       if (isPie) return pieSeriesOptions(size);
       return [];
     })(),
-    ...(chartType === 'dynamic-data'
-      ? getDynamicOptions(dataset, units, { ...dynamicConfig, labelDeg }) : {}),
+    ...(chartType === 'bar-line'
+      ? getBarLineOptions(dataset, units, { ...barLineConfig, labelDeg }) : {}),
   };
 };
 
@@ -563,8 +563,8 @@ const initChart = ({
     setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
 
-  const cleanup = chartType === 'dynamic-data'
-    ? decorateDynamicChart(chart, chartWrapper, data, onResize) : () => {};
+  const cleanup = chartType === 'bar-line'
+    ? decorateBarLineChart(chart, chartWrapper, data, onResize) : () => {};
 
   const handleEscapeKey = (event) => {
     if (event.key === 'Escape') {
@@ -711,8 +711,8 @@ export const getOversizedNumberSize = (charLength) => {
 
 const init = (el) => {
   const chartType = chartTypes?.find((type) => el.className?.indexOf(type) !== -1);
-  const isDynamic = chartType === 'dynamic-data';
-  const dynamicConfig = isDynamic ? getDynamicConfig(el) : undefined;
+  const isBarLine = chartType === 'bar-line';
+  const barLineConfig = isBarLine ? getBarLineConfig(el) : undefined;
   let authoredPalette;
   let invalidPalette = false;
   Array.from(el.children).forEach((row) => {
@@ -755,7 +755,7 @@ const init = (el) => {
 
   if (!chartType || !chartWrapper || !dataLink) return;
 
-  const customPalette = ['column', 'line', 'bar', 'list', 'dynamic-data'].includes(chartType)
+  const customPalette = ['column', 'line', 'bar', 'list', 'bar-line'].includes(chartType)
     ? authoredPalette : undefined;
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
@@ -807,8 +807,8 @@ const init = (el) => {
       if (!rawData) return;
 
       const { data, series } = rawData;
-      const processedData = isDynamic
-        ? processDynamicData(data, dynamicConfig) : processDataset(data);
+      const processedData = isBarLine
+        ? processBarLineData(data, barLineConfig) : processDataset(data);
       if (!processedData) {
         const message = createTag('p', { role: 'status' });
         message.textContent = 'Chart data must contain a category and two numeric series.';
@@ -820,7 +820,7 @@ const init = (el) => {
         ? ['bar', 'column'].includes(chartType) && processedData.dataset.source[0].length === 2
         : undefined;
       let colors = colorByData ? customPalette : getColors(authoredColor, customPalette);
-      if (hasOverride && !customPalette && !isDynamic) {
+      if (hasOverride && !customPalette && !isBarLine) {
         colors = getOverrideColors(authoredColor, data);
       }
       const options = {
@@ -832,7 +832,7 @@ const init = (el) => {
         size,
         labelDeg,
         colorByData,
-        dynamicConfig,
+        barLineConfig,
         onResize: () => el.setAttribute('data-responsive-size', getResponsiveSize(authoredSize)),
       };
       const text = propertyValueCI(processedData.headers, 'subheading');
@@ -860,7 +860,7 @@ const init = (el) => {
       }
 
       /* c8 ignore next 4 */
-      if (!isDynamic) {
+      if (!isBarLine) {
         window.addEventListener('resize', throttle(
           1000,
           () => {

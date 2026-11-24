@@ -2,7 +2,7 @@ import { createTag } from '../../utils/utils.js';
 
 let chartId = 0;
 
-export function getDynamicConfig(el) {
+export function getBarLineConfig(el) {
   const config = {};
   const keys = {
     'data-points': 'dataPoints',
@@ -32,7 +32,7 @@ const textTag = (tag, text, attributes) => {
 
 const formatValue = (value, { prefix = '', suffix = '' }) => `${prefix}${value}${suffix}`;
 
-export function getDynamicOptions(dataset, units, config = {}) {
+export function getBarLineOptions(dataset, units, config = {}) {
   const [, bar, line] = dataset.source[0];
   const yAxes = [units.yAxes[0], units.yAxes[1] || units.yAxes[0]];
   const rotation = config.labelDeg || 0;
@@ -103,7 +103,7 @@ export function getDynamicOptions(dataset, units, config = {}) {
   };
 }
 
-export function decorateDynamicChart(chart, wrapper, { dataset, units }, onResize) {
+export function decorateBarLineChart(chart, wrapper, { dataset, units }, onResize) {
   const [headers, ...rows] = dataset.source;
   const title = wrapper.closest('.chart').querySelector('.title').textContent.trim();
   const controls = createTag('div', { class: 'chart-controls' });

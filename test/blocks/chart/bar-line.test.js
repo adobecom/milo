@@ -3,8 +3,8 @@ import sinon from 'sinon';
 import { readFile, sendKeys, sendMouse, resetMouse } from '@web/test-runner-commands';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { loadStyle, setConfig } from '../../../libs/utils/utils.js';
-import init, { processDynamicData, SMALL } from '../../../libs/blocks/chart/chart.js';
-import { getDynamicConfig } from '../../../libs/blocks/chart/dynamic-data.js';
+import init, { processBarLineData, SMALL } from '../../../libs/blocks/chart/chart.js';
+import { getBarLineConfig } from '../../../libs/blocks/chart/bar-line.js';
 
 setConfig({ codeRoot: '/libs' });
 
@@ -20,8 +20,8 @@ describe('combined bar and line chart', () => {
 
   before(async () => {
     [html, json] = await Promise.all([
-      readFile({ path: './mocks/dynamic-data.html' }),
-      readFile({ path: './mocks/dynamic-data.json' }).then(JSON.parse),
+      readFile({ path: './mocks/bar-line.html' }),
+      readFile({ path: './mocks/bar-line.json' }).then(JSON.parse),
     ]);
     minimalHtml = html;
     const content = document.createElement('div');
@@ -72,8 +72,8 @@ describe('combined bar and line chart', () => {
     it(`supports existing four-row authoring and diagonal labels at ${viewport}px`, async () => {
       window.innerWidth = viewport;
       const markup = minimalHtml.replace(
-        'dynamic-data border',
-        'dynamic-data blue border desktop-diagonal-labels mobile-diagonal-labels',
+        'bar-line border',
+        'bar-line blue border desktop-diagonal-labels mobile-diagonal-labels',
       )
         .replace('#112233, #445566', '#F95D6A, #FF7C43');
       const data = {
@@ -132,8 +132,8 @@ describe('combined bar and line chart', () => {
 
   it('keeps an optional x-axis name clear of diagonal category labels', async () => {
     const markup = html.replace(
-      'dynamic-data border',
-      'dynamic-data border desktop-diagonal-labels mobile-diagonal-labels',
+      'bar-line border',
+      'bar-line border desktop-diagonal-labels mobile-diagonal-labels',
     );
     const el = await render(json, markup);
     const labels = Array.from(el.querySelectorAll('svg text'));
@@ -293,14 +293,14 @@ describe('combined bar and line chart', () => {
       [{ Time: '09:00', Orders: '12x', Price: 3 }],
       [{ Time: '09:00', Orders: '', Price: 3 }],
       [{ Time: '09:00', Orders: 1, Price: null }],
-    ].forEach((data) => expect(processDynamicData(data)).to.equal(null));
+    ].forEach((data) => expect(processBarLineData(data)).to.equal(null));
   });
 
   it('ignores invalid point limits and removes option rows without disturbing positional content', () => {
     ['0', '-1', '1.5', 'many'].forEach((value) => {
       const el = document.createElement('div');
       el.innerHTML = `<div><div>Title</div></div><div><div>data-points</div><div>${value}</div></div>`;
-      expect(getDynamicConfig(el)).to.eql({});
+      expect(getBarLineConfig(el)).to.eql({});
       expect(el.children).to.have.length(1);
       expect(el.textContent).to.equal('Title');
     });
