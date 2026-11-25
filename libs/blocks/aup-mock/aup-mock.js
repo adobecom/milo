@@ -33,7 +33,7 @@ const tag = (name, attributes = {}, children = []) => {
 
 const richText = (nodes = []) => {
   const fragment = document.createDocumentFragment();
-  for (const node of [nodes ?? []].flat()) {
+  for (const node of [nodes?.json ?? nodes ?? []].flat()) {
     if (typeof node === 'string') {
       fragment.append(node);
     } else if (node.nodeType === 'text') {
@@ -160,7 +160,7 @@ const planOption = ({ code, label, card }, selected) => tag('label', { class: `a
   tag('div', { class: 'aup-plan-label' }, [tag('span', {}, label),
     sourced(badge(card.badge), card.sources?.badge, { field: 'badge', outline: true })]),
   sourced(tag('div', { class: 'aup-price' }, richText(card.price)), card.sources?.price, { field: 'price' }),
-  card.promoText?.length > 0 && sourced(
+  card.promoText?.json?.length > 0 && sourced(
     tag('div', { class: 'aup-plan-note' }, [richText(card.promoText), tag('span', { class: 'aup-info' }, 'i')]),
     card.sources?.promoText,
     { field: 'promoText' },
