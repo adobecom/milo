@@ -2,7 +2,7 @@
 import { expect } from '@esm-bundle/chai';
 import { setViewport } from '@web/test-runner-commands';
 import {
-  setBackgroundFocus, decorateBlockText, getButtonType,
+  setBackgroundFocus, decorateBlockText, getButtonType, decorateButtons,
   decoratePictures, decorateViewportContent, normalizeMasFieldText,
 } from '../../libs/utils/decorate.js';
 
@@ -437,5 +437,53 @@ describe('decorateViewportContent — delimiter detection', () => {
       .map((node) => node.textContent).join('|');
 
     expect(text.match(/m0/g)).to.have.length(1);
+  });
+});
+
+describe('decorateButtons', () => {
+  it('Add outline if EM is parent', () => {
+    const div = document.createElement('div');
+    const em = document.createElement('em');
+    const button = document.createElement('a');
+    em.appendChild(button);
+    div.appendChild(em);
+
+    decorateButtons(div, 'button-l');
+    expect(button.className).to.equal('con-button outline button-l');
+  });
+
+  it('but not if its already decorated with blue', () => {
+    const div = document.createElement('div');
+    const em = document.createElement('em');
+    const button = document.createElement('a');
+    button.setAttribute('class', 'blue');
+    em.appendChild(button);
+    div.appendChild(em);
+
+    decorateButtons(div, 'button-l');
+    expect(button.className).to.equal('blue con-button button-l');
+  });
+
+  it('Add blue if STRONG is parent', () => {
+    const div = document.createElement('div');
+    const strong = document.createElement('strong');
+    const button = document.createElement('a');
+    strong.appendChild(button);
+    div.appendChild(strong);
+
+    decorateButtons(div, 'button-l');
+    expect(button.className).to.equal('con-button blue button-l');
+  });
+
+  it('but not if its already decorated with outline', () => {
+    const div = document.createElement('div');
+    const strong = document.createElement('strong');
+    const button = document.createElement('a');
+    button.setAttribute('class', 'outline');
+    strong.appendChild(button);
+    div.appendChild(strong);
+
+    decorateButtons(div, 'button-l');
+    expect(button.className).to.equal('outline con-button button-l');
   });
 });

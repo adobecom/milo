@@ -69,7 +69,10 @@ export function decorateButtons(el, size) {
       parent.insertAdjacentElement('afterend', button);
       parent.remove();
     }
-    target.classList.add('con-button', buttonType);
+    target.classList.add('con-button');
+    if (![...target.classList].some((c) => ['blue', 'outline'].includes(c))) {
+      target.classList.add(buttonType);
+    }
     if (size) target.classList.add(size); /* button-l, button-xl */
     const customClasses = target.href && [...target.href.matchAll(/#_button-([a-zA-Z-]+)/g)];
     if (customClasses) {
