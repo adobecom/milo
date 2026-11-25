@@ -913,8 +913,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
     if (action in COMMANDS && variantInfo.selectorType === SELECTOR_TYPES.fragment) {
       variants[vn].fragments.push({
         selector: normalizePath(variantInfo.selector.split(' #_')[0]),
-        val: normalizePath(line[vn]),
-        action,
+        val: line[vn],
         manifestId,
         targetManifestId,
       });
