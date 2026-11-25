@@ -159,7 +159,7 @@ async function getAutoDefaults() {
 
 function assistantBase(env) {
   return env === 'stage'
-    ? 'https://jarvis-drawer-temp.awesome-sites.corp.adobe.com/dev/client/AdobeMessagingClient'
+    ? 'https://jarvis-drawer-temp.awesome-sites.corp.adobe.com/stage/client/AdobeMessagingClient'
     : 'https://client.messaging.adobe.com/latest/AdobeMessagingClient';
 }
 
