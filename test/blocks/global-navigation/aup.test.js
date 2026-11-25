@@ -2,7 +2,8 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, loadStyles, viewports } from './test-utilities.js';
-import { delay, waitFor, waitForRemoval } from '../../helpers/waitfor.js';
+import { delay, waitFor, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 import { getConfig, setConfig, loadScript } from '../../../libs/utils/utils.js';
 import {
   AUP_SDK_READY_EVENT, clearPreservedAupModalHash, fetchCheckoutLinkConfigs,
@@ -460,6 +461,7 @@ describe('AUP', () => {
         hash = 'buy-test',
         initialHash = '#category=photo',
         foundationName = 'milo',
+        tag = 'iframe',
         onRelaunch,
       } = {}) => {
         foundation = document.createElement('meta');
@@ -484,7 +486,7 @@ describe('AUP', () => {
             }
             pending = true;
             action.aupHandler({ type: 'open', element: target });
-            const iframe = createElement('iframe');
+            const iframe = createElement(tag);
             const callback = sinon.spy();
             let resolveLaunch;
             const launchPromise = new Promise((resolve) => { resolveLaunch = resolve; });
@@ -540,16 +542,17 @@ describe('AUP', () => {
       });
 
       [
-        { name: 'C1', foundationName: 'milo', close: closeModal },
-        { name: 'C2', foundationName: 'c2', close: closeC2Modal },
-      ].forEach(({ name, foundationName, close }) => {
+        { name: 'C1 iframe', foundationName: 'milo', close: closeModal, tag: 'iframe' },
+        { name: 'C2 iframe', foundationName: 'c2', close: closeC2Modal, tag: 'iframe' },
+        { name: 'C1 non-iframe', foundationName: 'milo', close: closeModal, tag: 'div' },
+      ].forEach(({ name, foundationName, close, tag }) => {
         it(`relaunches ${name} checkout AUP modal in place without reloading or changing history`, async () => {
           const reload = sinon.stub(aupPage, 'reload');
-          const { cta, url, launched } = await setupCheckoutFlow({ foundationName });
+          const { cta, url, launched } = await setupCheckoutFlow({ foundationName, tag });
           try {
             cta.click();
             await launched[0].shown;
-            launched[0].iframe.dispatchEvent(new Event('app_loaded'));
+            if (tag === 'iframe') launched[0].iframe.dispatchEvent(new Event('app_loaded'));
             expect(dialog().querySelector('sp-progress-circle')).to.be.null;
             expect(dialog().classList.contains('hide-close-button')).to.be.true;
             const historyLength = window.history.length;
@@ -558,6 +561,7 @@ describe('AUP', () => {
 
             expect(reload.called).to.be.false;
             expect(dialog().querySelector('sp-progress-circle')).to.not.be.null;
+            expect(dialog().querySelector('.aup-workflow-content').classList.contains('loading')).to.be.true;
             expect(dialog().classList.contains('hide-close-button')).to.be.false;
             expect(launched[0].callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
 
@@ -569,9 +573,11 @@ describe('AUP', () => {
             expect(window.history.length).to.equal(historyLength);
             expect(document.querySelectorAll('.dialog-modal.aup-modal').length).to.equal(1);
             expect(dialog().contains(launched[1].iframe)).to.be.true;
-            expect(dialog().querySelector('sp-progress-circle')).to.not.be.null;
 
-            launched[1].iframe.dispatchEvent(new Event('app_loaded'));
+            if (tag === 'iframe') {
+              expect(dialog().querySelector('sp-progress-circle')).to.not.be.null;
+              launched[1].iframe.dispatchEvent(new Event('app_loaded'));
+            }
             expect(dialog().querySelector('sp-progress-circle')).to.be.null;
             expect(dialog().classList.contains('hide-close-button')).to.be.true;
 
@@ -1142,6 +1148,57 @@ describe('AUP', () => {
     expect(active.querySelector('sp-progress-circle') === null).to.be.true;
     expect(getComputedStyle(iframe).visibility).to.equal('visible');
     expect(getComputedStyle(close).display).to.equal('none');
+  });
+
+  it('shows retry error after 15s foreground iframe load timeout, retries, and auto-closes on second timeout', async () => {
+    const { showDialog } = await initializeHost();
+    const visibility = stubVisibility();
+    const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    const callback = sinon.spy();
+    try {
+      const iframe = createElement('iframe');
+      await showDialog(iframe, { title: 'Workflow' }, callback);
+
+      // Frozen/hidden tab must not consume the 15s foreground budget.
+      visibility.hide();
+      await clock.tickAsync(60000);
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+
+      visibility.show();
+      await clock.tickAsync(14999);
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+
+      await clock.tickAsync(1);
+      await waitForElement('.error-wrapper', { rootEl: dialog() });
+      const retryBtn = dialog().querySelector('.try-again-btn');
+      expect(retryBtn).to.not.be.null;
+      expect(iframe.style.display).to.equal('none');
+
+      retryBtn.click();
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+      expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
+      expect(dialog().querySelector('.aup-workflow-content').classList.contains('loading')).to.be.true;
+
+      await clock.tickAsync(15000);
+      await waitForElement('.error-wrapper', { rootEl: dialog() });
+      expect(dialog().querySelector('.try-again-btn')).to.be.null;
+      expect(callback.called).to.be.false;
+
+      await clock.tickAsync(5000);
+      await waitForRemoval('#aup-workflow-dialog');
+      expect(dialog() === null).to.be.true;
+      expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+
+      // Completing via app_loaded cancels the 15s load timeout.
+      const loadedIframe = createElement('iframe');
+      await showDialog(loadedIframe, { title: 'Workflow' }, sinon.spy());
+      loadedIframe.dispatchEvent(new Event('app_loaded'));
+      await clock.tickAsync(20000);
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+    } finally {
+      clock.restore();
+      visibility.restore();
+    }
   });
 
   [

@@ -6,19 +6,24 @@ import {
   getLingoRegion,
   lingoActive,
   loadScript,
+  loadStyle,
 } from '../../../utils/utils.js';
 import { isDarkMode, toFragment } from './utilities.js';
 import {
   AUP_SDK_READY_EVENT,
+  clearForegroundTimeout,
   clearPreservedAupModalHash,
   getAupModalHashCleanup,
   getAupModalTitle,
   getAupModalTrigger,
   isLocaleModal,
   raceForegroundTimeout,
+  setForegroundTimeout,
 } from '../../merch/merch.js';
 
 const AUP_RELAUNCH_SETTLE_TIMEOUT = 2000;
+const AUP_IFRAME_LOAD_TIMEOUT = 15000;
+const AUP_ERROR_CLOSE_DELAY = 5000;
 
 function findCheckoutTrigger(modalHash) {
   const rawId = modalHash?.slice(1);
@@ -99,22 +104,41 @@ async function createAupSdk() {
       let onWorkflowSuccess;
       let requestClose;
       let closing;
+      let loadTimeoutId;
+      let errorCloseTimeoutId;
       let settled = false;
       let workflowClosed = false;
       let workflowSucceeded = false;
+      const loadSpinnerDeps = () => Promise.all([
+        import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
+        import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
+      ]);
+      const clearLoadTimers = () => {
+        clearForegroundTimeout(loadTimeoutId);
+        loadTimeoutId = undefined;
+        clearTimeout(errorCloseTimeoutId);
+        errorCloseTimeoutId = undefined;
+      };
       const attachSpinner = () => {
-        if (!isIframe || !content || content.querySelector('.aup-loading-indicator')) return null;
+        if (!content) return null;
+        content.classList.add('loading');
+        dialog?.classList.remove('hide-close-button');
+        const existing = content.querySelector('.aup-loading-indicator');
+        if (existing) {
+          existing.style.display = '';
+          return existing;
+        }
         const spinner = toFragment`
           <sp-theme system="spectrum" color="light" scale="medium" class="aup-loading-indicator">
             <sp-progress-circle label="Loading content" indeterminate size="l"></sp-progress-circle>
           </sp-theme>`;
-        content.classList.add('loading');
-        dialog?.classList.remove('hide-close-button');
         content.prepend(spinner);
+        if (!isIframe) loadSpinnerDeps().catch(() => {});
         return spinner;
       };
       const cleanup = ({ preserveHistory = false, keepSpinner = false } = {}) => {
         controller.abort();
+        clearLoadTimers();
         if (keepSpinner) {
           if (finishLoading) element.removeEventListener('app_loaded', finishLoading);
           finishLoading = undefined;
@@ -236,10 +260,7 @@ async function createAupSdk() {
         const isC2 = getMetadata('foundation')?.toLowerCase() === 'c2';
         const [{ getModal, closeModal }] = await Promise.all([
           import(isC2 ? '../../../c2/blocks/modal/modal.js' : '../../modal/modal.js'),
-          ...(isIframe ? [
-            import(`${config.base}/features/spectrum-web-components/dist/theme.js`),
-            import(`${config.base}/features/spectrum-web-components/dist/progress-circle.js`),
-          ] : []),
+          ...(isIframe ? [loadSpinnerDeps()] : []),
         ]);
         closeMiloModal = closeModal;
         if (settled) {
@@ -264,13 +285,60 @@ async function createAupSdk() {
         if (isIframe) {
           const spinner = attachSpinner();
           finishLoading = () => {
+            clearLoadTimers();
             element.removeEventListener('app_loaded', finishLoading);
+            content.querySelector('.error-wrapper')?.remove();
+            element.style.display = 'block';
             content.classList.remove('loading');
             dialog?.classList.add('hide-close-button');
             spinner?.remove();
             finishLoading = undefined;
           };
+          const handleLoadTimeout = async () => {
+            loadTimeoutId = undefined;
+            if (!finishLoading || settled || closing || !dialog?.isConnected) return;
+            const theme = content?.querySelector('.aup-loading-indicator');
+            if (!theme) return;
+            const wasReloaded = element.getAttribute('data-wasreloaded') === 'true';
+            loadStyle(`${config.base}/blocks/merch/merch.css`);
+            const { showErrorMsg } = await import('../../merch/three-in-one.js');
+            if (!finishLoading || settled || closing || !dialog?.isConnected) return;
+            content.classList.remove('loading');
+            await showErrorMsg({
+              iframe: element,
+              miloIframe: content,
+              showBtn: !wasReloaded,
+              theme,
+              onRetry: ({ msgWrapper }) => {
+                msgWrapper.remove();
+                element.setAttribute('data-wasreloaded', 'true');
+                element.style.display = 'block';
+                if (element.getAttribute('src')) {
+                  // eslint-disable-next-line no-self-assign
+                  element.src = element.src;
+                } else if (element.srcdoc) {
+                  // eslint-disable-next-line no-self-assign
+                  element.srcdoc = element.srcdoc;
+                }
+                content.classList.add('loading');
+                theme.style.display = '';
+                clearLoadTimers();
+                loadTimeoutId = setForegroundTimeout(handleLoadTimeout, AUP_IFRAME_LOAD_TIMEOUT);
+              },
+            });
+            if (!finishLoading || settled || closing || !dialog?.isConnected) {
+              content.querySelector('.error-wrapper')?.remove();
+              return;
+            }
+            if (wasReloaded) {
+              errorCloseTimeoutId = setTimeout(() => {
+                errorCloseTimeoutId = undefined;
+                requestClose();
+              }, AUP_ERROR_CLOSE_DELAY);
+            }
+          };
           element.addEventListener('app_loaded', finishLoading, { once: true });
+          loadTimeoutId = setForegroundTimeout(handleLoadTimeout, AUP_IFRAME_LOAD_TIMEOUT);
         }
         content.appendChild(element);
         window.addEventListener('popstate', onNavigation);
