@@ -51,7 +51,7 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
 
   await expect(mepButtonLoc.masHighlightActive).toHaveCount(1);
   await expect(mepButtonLoc.masCardHost.first()).toHaveCount(1);
-  await expect(mepButtonLoc.masCardActionStack).toHaveCount(0);
+  await expect(mepButtonLoc.masCardActionStack).toHaveCount(await mepButtonLoc.masCardHost.count());
 });
 
 /* I am leaving this commented out because there is no way to use milolibs on the fully-qualified domain milo.adobe.com. This test will only pass when using the fully-qualified domain milo.adobe.com, so it is not possible ro run this meaningfully. - jp
