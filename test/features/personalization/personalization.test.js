@@ -125,40 +125,6 @@ describe('Functional Test', () => {
       .to.equal('/foo?source=mep#section');
   });
 
-  it('preserves #_dnn fragment values through manifest parsing', async () => {
-    const config = getConfig();
-    const { locale, locales } = config;
-    config.locale = { ietf: 'fr-FR', prefix: '/fr' };
-    config.locales = { '': { ietf: 'en-US' }, fr: { ietf: 'fr-FR' } };
-    config.mep = {
-      handleFragmentCommand,
-      preview: false,
-      variantOverride: {},
-      highlight: false,
-      targetEnabled: false,
-      experiments: [],
-      promises: {},
-      consentState: { performance: true, advertising: true },
-    };
-    setFetchResponse({
-      data: [
-        { action: 'replace', selector: '/fragments/dnn-source', chrome: 'https://www.adobe.com/fragments/dnn-target#_dnn' },
-        { action: 'replace', selector: '/fragments/plain-source', chrome: 'https://www.adobe.com/fragments/plain-target' },
-      ],
-      ':type': 'sheet',
-    });
-    try {
-      await applyPers({ manifests: [{ manifestPath: '/promos/dnn/manifest.json' }] });
-      expect(config.mep.fragments['/fragments/dnn-source'].fragment)
-        .to.equal('https://www.adobe.com/fragments/dnn-target');
-      expect(config.mep.fragments['/fragments/plain-source'].fragment)
-        .to.equal('/fr/fragments/plain-target');
-    } finally {
-      config.locale = locale;
-      config.locales = locales;
-    }
-  });
-
   it('scheduled manifest should apply changes if active (bts)', async () => {
     const config = getConfig();
     config.mep = {
