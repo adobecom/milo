@@ -87,4 +87,36 @@ describe('enablePersonalizationV2', () => {
     expect(result).to.be.false;
     metaTag.parentNode.removeChild(metaTag);
   });
+
+  describe('personalization-v2-signed-in opt-in', () => {
+    const addMeta = (name, content) => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', name);
+      meta.setAttribute('content', content);
+      document.head.appendChild(meta);
+      return meta;
+    };
+    let metas = [];
+
+    beforeEach(() => mockPerformanceData([{ name: 'sis', description: '1' }]));
+    afterEach(() => {
+      metas.forEach((meta) => meta.remove());
+      metas = [];
+    });
+
+    it('returns true for a signed-in user when the page opts in', () => {
+      metas = [addMeta('personalization-v2', 'on'), addMeta('personalization-v2-signed-in', 'on')];
+      expect(enablePersonalizationV2()).to.be.true;
+    });
+
+    it('returns false for a signed-in user when the opt-in is off', () => {
+      metas = [addMeta('personalization-v2', 'on'), addMeta('personalization-v2-signed-in', 'off')];
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('returns false when the opt-in is on but personalization-v2 is absent', () => {
+      metas = [addMeta('personalization-v2-signed-in', 'on')];
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+  });
 });
