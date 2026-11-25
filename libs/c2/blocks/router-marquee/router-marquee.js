@@ -993,14 +993,21 @@ const reorderSlidesMaybe = (el, viewports) => {
   const sectionMeta = el.parentElement?.querySelector('.section-metadata');
   if (!sectionMeta) return;
   const metadata = getMetadata(sectionMeta);
-  const startIdx = Number(metadata['starting-marquee']?.text?.[0]) - 1;
-  if (startIdx > 0) {
-    Object.keys(viewports).forEach((vp) => {
-      const slides = viewports[vp];
-      if (startIdx >= slides.length) return;
-      viewports[vp] = [slides[startIdx], ...slides.filter((_, i) => i !== startIdx)];
-    });
-  }
+  // Accepts a single 1-based slide number ("3") or an ordered list ("1,6").
+  const order = (metadata['starting-marquee']?.text?.[0] || '')
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map((n) => Number(n) - 1);
+  Object.keys(viewports).forEach((vp) => {
+    const slides = viewports[vp];
+    const picked = [...new Set(order)]
+      .filter((i) => Number.isInteger(i) && i >= 0 && i < slides.length);
+    if (!picked.length) return;
+    viewports[vp] = [
+      ...picked.map((i) => slides[i]),
+      ...slides.filter((_, i) => !picked.includes(i)),
+    ];
+  });
 };
 
 const RETRY_DELAY_MS = 5000;
