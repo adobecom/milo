@@ -47,6 +47,25 @@ describe('plans-hero', () => {
       expect(bodyParas).to.have.lengthOf.at.least(1);
       bodyParas.forEach((p) => expect(p.classList.contains('body-md')).to.be.true);
     });
+
+    it('eager-loads the hero image', () => {
+      expect(block.querySelector('img').getAttribute('loading')).to.equal('eager');
+    });
+  });
+
+  describe('with viewport variations', () => {
+    it('eager-loads only the active viewport image', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/viewports.html' });
+      const block = document.querySelector('.plans-hero');
+      const imgs = [...block.querySelectorAll('img')];
+      init(block);
+
+      const active = block.querySelector('.plans-hero-media img');
+      expect(imgs).to.include(active);
+      imgs.filter((img) => img !== active)
+        .forEach((img) => expect(img.getAttribute('loading')).to.equal('lazy'));
+      expect(active.getAttribute('loading')).to.equal('eager');
+    });
   });
 
   describe('without a media picture', () => {
