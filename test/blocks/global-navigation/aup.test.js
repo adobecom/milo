@@ -526,7 +526,7 @@ describe('AUP', () => {
           cta.aupCheckoutPromise = new Promise(() => {});
 
           window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
-          await clock.tickAsync(9999);
+          await clock.tickAsync(1999);
           expect(reload.calledOnce).to.be.true;
 
           await clock.tickAsync(1);

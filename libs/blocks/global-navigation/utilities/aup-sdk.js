@@ -18,7 +18,7 @@ import {
   raceForegroundTimeout,
 } from '../../merch/merch.js';
 
-const AUP_RELAUNCH_SETTLE_TIMEOUT = 10000;
+const AUP_RELAUNCH_SETTLE_TIMEOUT = 2000;
 
 function findCheckoutTrigger(modalHash) {
   const rawId = modalHash?.slice(1);
