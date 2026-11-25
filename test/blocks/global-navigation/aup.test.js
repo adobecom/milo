@@ -479,7 +479,7 @@ describe('AUP', () => {
             event.preventDefault();
             if (pending) return;
             if (launched.length && onRelaunch) {
-              onRelaunch(target);
+              onRelaunch(target, { currentHost, action });
               return;
             }
             pending = true;
@@ -502,7 +502,7 @@ describe('AUP', () => {
         return { cta, action, url, launched, bind };
       };
 
-      it('reloads when an AUP dialog has no trigger CTA, ignores non-persisted events, and stops after close', async () => {
+      it('reloads when no trigger CTA exists or a stale promise times out, and stops after close', async () => {
         const reload = sinon.stub(aupPage, 'reload');
         const element = createElement('iframe');
         await host.showDialog(element, { title: 'Workflow' }, sinon.spy());
@@ -517,6 +517,26 @@ describe('AUP', () => {
         await waitForRemoval('#aup-workflow-dialog');
         window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
         expect(reload.calledOnce).to.be.true;
+
+        const { cta, launched } = await setupCheckoutFlow();
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+        try {
+          cta.click();
+          await launched[0].shown;
+          cta.aupCheckoutPromise = new Promise(() => {});
+
+          window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+          await clock.tickAsync(9999);
+          expect(reload.calledOnce).to.be.true;
+
+          await clock.tickAsync(1);
+          expect(reload.calledTwice).to.be.true;
+          expect(window.location.hash).to.equal('#buy-test');
+          await closeModal(dialog());
+        } finally {
+          clock.restore();
+          cta.remove();
+        }
       });
 
       [
@@ -564,31 +584,33 @@ describe('AUP', () => {
         });
       });
 
-      it('awaits a detached trigger promise before clicking a matching fallback CTA', async () => {
-        const reload = sinon.stub(aupPage, 'reload');
-        const { cta, launched, bind } = await setupCheckoutFlow({ hash: 'buy:test' });
-        const fallbackCta = document.createElement('a');
-        fallbackCta.setAttribute('is', 'checkout-link');
-        fallbackCta.dataset.modalId = 'buy:test';
-        bind(fallbackCta);
-        document.body.append(fallbackCta);
+      ['buy:test', 'buy test'].forEach((modalId) => {
+        it(`awaits a detached trigger promise before clicking fallback CTA (${modalId})`, async () => {
+          const reload = sinon.stub(aupPage, 'reload');
+          const { cta, launched, bind } = await setupCheckoutFlow({ hash: modalId });
+          const fallbackCta = document.createElement('a');
+          fallbackCta.setAttribute('is', 'checkout-link');
+          fallbackCta.dataset.modalId = modalId;
+          bind(fallbackCta);
+          document.body.append(fallbackCta);
 
-        try {
-          cta.click();
-          await launched[0].shown;
-          cta.remove();
+          try {
+            cta.click();
+            await launched[0].shown;
+            cta.remove();
 
-          window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
-          await waitFor(() => launched.length === 2, 1000, 10);
-          await launched[1].shown;
+            window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+            await waitFor(() => launched.length === 2, 1000, 10);
+            await launched[1].shown;
 
-          expect(reload.called).to.be.false;
-          expect(launched[1].target).to.equal(fallbackCta);
-          expect(dialog().contains(launched[1].iframe)).to.be.true;
-        } finally {
-          cta.remove();
-          fallbackCta.remove();
-        }
+            expect(reload.called).to.be.false;
+            expect(launched[1].target).to.equal(fallbackCta);
+            expect(dialog().contains(launched[1].iframe)).to.be.true;
+          } finally {
+            cta.remove();
+            fallbackCta.remove();
+          }
+        });
       });
 
       [
@@ -603,14 +625,29 @@ describe('AUP', () => {
           expectedHash: '#other-hash',
         },
         {
-          name: 'relaunch rejects/settles without opening a replacement',
-          onRelaunch: (target) => { target.aupCheckoutPromise = Promise.resolve(); },
+          name: 'relaunch rejects without opening a replacement',
+          onRelaunch: (target) => {
+            target.aupCheckoutPromise = Promise.reject(new Error('launch failed'));
+          },
           expectedHash: '#category=photo',
         },
         {
           name: 'relaunch click starts no promise or modal',
           onRelaunch: () => {},
           expectedHash: '#category=photo',
+        },
+        {
+          name: 'replacement showDialog bails early on hash change',
+          onRelaunch: (target, { currentHost, action }) => {
+            action.aupHandler({ type: 'open', element: target });
+            target.aupCheckoutPromise = currentHost.showDialog(
+              createElement('iframe'),
+              { title: 'Checkout' },
+              sinon.spy(),
+            );
+            window.history.replaceState(null, '', '#other-hash');
+          },
+          expectedHash: '#other-hash',
         },
         {
           name: 'relaunch falls back to another modal and keeps the checkout hash',

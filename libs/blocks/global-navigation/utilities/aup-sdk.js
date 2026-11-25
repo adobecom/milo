@@ -14,7 +14,22 @@ import {
   getAupModalHashCleanup,
   getAupModalTitle,
   getAupModalTrigger,
+  isLocaleModal,
+  raceForegroundTimeout,
 } from '../../merch/merch.js';
+
+const AUP_RELAUNCH_SETTLE_TIMEOUT = 10000;
+
+function findCheckoutTrigger(modalHash) {
+  const rawId = modalHash?.slice(1);
+  if (!rawId) return null;
+  const byId = (id) => document.querySelector(`[is="checkout-link"][data-modal-id="${CSS.escape(id)}"]`);
+  let decodedId = rawId;
+  try {
+    decodedId = decodeURIComponent(rawId);
+  } catch { /* keep raw */ }
+  return byId(rawId) || (decodedId !== rawId ? byId(decodedId) : null);
+}
 
 // Mirrors Milo modal close tracking (`${hash}:modalClose:${source}` daa-ll in modal.js).
 export async function sendAupDialogCloseAnalytics(modalHash, source) {
@@ -150,8 +165,7 @@ async function createAupSdk() {
         if (!event.persisted || settled || closing || !dialog?.isConnected) return;
         const trigger = modalTrigger?.isConnected
           ? modalTrigger
-          : (modalHash
-            && document.querySelector(`[is="checkout-link"][data-modal-id="${CSS.escape(modalHash.slice(1))}"]`));
+          : findCheckoutTrigger(modalHash);
         if (!trigger) {
           aupPage.reload();
           return;
@@ -167,13 +181,25 @@ async function createAupSdk() {
           if (!workflowClosed) element.dispatchEvent(new Event('close'));
         }
         cleanup({ preserveHistory: true, keepSpinner: true });
+        let onStaleDialogClose;
+        const staleDialogClosed = new Promise((resolve) => { onStaleDialogClose = resolve; });
+        previousDialog.closeCallback = () => {
+          onStaleDialogClose();
+        };
         const closeStaleDialog = () => {
           if (cancelActiveDialog === closeStaleDialog) cancelActiveDialog = undefined;
           return previousDialog.isConnected ? closeMiloModal(previousDialog, false) : undefined;
         };
         cancelActiveDialog = closeStaleDialog;
         closeCallback({ type: 'close' });
-        await Promise.resolve(aupCheckoutPromise).catch(() => {});
+        const settleOutcome = await raceForegroundTimeout(
+          Promise.race([
+            Promise.resolve(aupCheckoutPromise).catch(() => {}).then(() => 'settled'),
+            staleDialogClosed.then(() => 'closed'),
+          ]),
+          AUP_RELAUNCH_SETTLE_TIMEOUT,
+          'timeout',
+        );
         if (!previousDialog.isConnected || previousDialog.dataset.closing) {
           clearPreservedAupModalHash({ restore: true, hash: modalHash });
           if (cancelActiveDialog === closeStaleDialog) cancelActiveDialog = undefined;
@@ -184,19 +210,22 @@ async function createAupSdk() {
           if (request === dialogRequest) await closeStaleDialog();
           return;
         }
+        if (settleOutcome === 'timeout') {
+          clearPreservedAupModalHash();
+          aupPage.reload();
+          return;
+        }
         const beforeRequest = dialogRequest;
         const finishFailedRelaunch = () => {
-          if (dialogRequest !== beforeRequest) return undefined;
+          if (!previousDialog.isConnected || previousDialog.dataset.closing) return undefined;
           const hasReplacementModal = [...document.querySelectorAll('.dialog-modal')]
-            .some((modal) => modal !== previousDialog
-              && !modal.id?.includes('locale-modal')
-              && !modal.id?.includes('region-modal'));
+            .some((modal) => modal !== previousDialog && !isLocaleModal(modal));
           clearPreservedAupModalHash({ restore: !hasReplacementModal, hash: modalHash });
           return closeStaleDialog();
         };
         trigger.click();
         if (trigger.aupCheckoutPromise && trigger.aupCheckoutPromise !== aupCheckoutPromise) {
-          trigger.aupCheckoutPromise.finally(finishFailedRelaunch);
+          trigger.aupCheckoutPromise.finally(finishFailedRelaunch).catch(() => {});
         } else if (dialogRequest === beforeRequest) {
           await finishFailedRelaunch();
         }
@@ -213,8 +242,12 @@ async function createAupSdk() {
           ] : []),
         ]);
         closeMiloModal = closeModal;
-        if (settled) return;
+        if (settled) {
+          if (request === dialogRequest) await cancelActiveDialog?.();
+          return;
+        }
         if (request !== dialogRequest || (modalHash && window.location.hash !== modalHash)) {
+          if (request === dialogRequest) await cancelActiveDialog?.();
           await requestClose();
           return;
         }
@@ -270,6 +303,7 @@ async function createAupSdk() {
         }
         cancelActiveDialog = requestClose;
       } catch (e) {
+        if (request === dialogRequest) await cancelActiveDialog?.().catch(() => {});
         cleanup();
         throw e;
       }

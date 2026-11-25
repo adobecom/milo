@@ -1068,7 +1068,7 @@ function handleAupModalHash(fallbackModalId, event, modalHashState) {
   return undefined;
 }
 
-const isLocaleModal = (dialog) => dialog?.id?.includes('locale-modal')
+export const isLocaleModal = (dialog) => dialog?.id?.includes('locale-modal')
   || dialog?.id?.includes('region-modal');
 
 export async function updateModalState({ cta, closedByUser } = {}) {
