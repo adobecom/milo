@@ -45,17 +45,15 @@ function replaceVideoIntersectionObserver(medias) {
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
-        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (!isIntersecting) {
+          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
           video.pause();
-          syncPausePlayIcon(video);
-        } else if (!isReducedMotion && !isUserPaused
-          && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
-          syncPausePlayIcon(video);
+          syncPausePlayIcon(video, { type: 'playing' });
         }
       });
     }, { threshold: 0.4 });

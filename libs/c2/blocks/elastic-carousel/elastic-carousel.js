@@ -10,7 +10,6 @@ const slideLeaveTimeouts = new WeakMap();
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.innerWidth <= 768;
-const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -53,7 +52,7 @@ const handleMobileAutoplay = (carousel) => {
         if (entry.isIntersecting) {
           const nextRect = nextSlide?.getBoundingClientRect();
           const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
-          if (!isCovered && !prefersReducedMotion()) video.play().catch(() => { });
+          if (!isCovered) video.play().catch(() => { });
         }
       },
       { threshold: 0.6 },
@@ -72,7 +71,7 @@ const handleMobileAutoplay = (carousel) => {
           rewindVideo(video);
         } else {
           const rect = slide.getBoundingClientRect();
-          if (rect.top >= 0 && rect.top <= window.innerHeight && !prefersReducedMotion()) {
+          if (rect.top >= 0 && rect.top <= window.innerHeight) {
             video.play().catch(() => { });
           }
         }

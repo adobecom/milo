@@ -52,12 +52,11 @@ function replaceVideoIntersectionObserver(medias) {
         const isActive = video.closest('.media')?.getAttribute('data-slot') === '0';
 
         if (!isIntersecting) {
+          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
           video.pause();
-          syncPausePlayIcon(video);
-        } else if (!reducedMotion() && !isUserPaused
-          && (isHaveLoopAttr || !playedOnce) && !isPlaying && isActive) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying && isActive) {
           video.play();
-          syncPausePlayIcon(video);
+          syncPausePlayIcon(video, { type: 'playing' });
         }
       });
     }, { threshold: 0.4 });
@@ -187,9 +186,9 @@ function setupBlock(el, isDesktop) {
       const { playedOnce = false } = video.dataset;
       if (playedOnce) return;
       if (isActive) {
-        if (reducedMotion() || video.hasAttribute(USER_PAUSED_ATTR)) return;
+        if (video.hasAttribute(USER_PAUSED_ATTR)) return;
         video.play();
-        syncPausePlayIcon(video);
+        syncPausePlayIcon(video, { type: 'playing' });
         return;
       }
       video.pause();

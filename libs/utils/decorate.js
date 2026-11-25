@@ -355,7 +355,9 @@ export function syncPausePlayIcon(video) {
   playPauseBtn.querySelector('.pause-icon')?.setAttribute('alt', videoLabels.pauseMotion);
   playPauseBtn.querySelector('.play-icon')?.setAttribute('alt', videoLabels.playMotion);
   const daaLL = playPauseBtn.getAttribute('daa-ll');
-  if (daaLL) playPauseBtn.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
+  if (daaLL === oldLabel || daaLL?.startsWith(`${oldLabel}-`)) {
+    playPauseBtn.setAttribute('daa-ll', changedLabel + daaLL.slice(oldLabel.length));
+  }
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
@@ -403,14 +405,7 @@ export function handlePause(event) {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
     if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
-    if (isVideoReady(video) || (isManualToggle && document.visibilityState === 'visible')) {
-      video.play().catch((error) => {
-        syncPausePlayIcon(video);
-        if (error.name !== 'AbortError') {
-          window.lana?.log(`Failed to play video: ${error}`, { tags: 'video', severity: 'error' });
-        }
-      });
-    }
+    if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
     if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
@@ -444,9 +439,10 @@ export function applyAccessibilityEvents(videoEl) {
   syncPausePlayIcon(videoEl);
   if (videoEl.hasAttribute('autoplay')) {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      // Removing autoplay also stops accordion autoplay; preload keeps the buffering autoplay gave.
       videoEl.removeAttribute('autoplay');
+      videoEl.preload = 'auto';
       videoEl.pause();
-      syncPausePlayIcon(videoEl);
       return;
     }
     videoEl.addEventListener('canplay', () => !videoEl.hasAttribute(USER_PAUSED_ATTR) && isVideoReady(videoEl) && videoEl.play());
@@ -485,15 +481,13 @@ function getVideoIntersectionObserver() {
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
-        const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
           syncPausePlayIcon(video);
-        } else if (!isReducedMotion && !isUserPaused
-          && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
           syncPausePlayIcon(video);
         }
@@ -609,8 +603,9 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
-  const hasAccessibilityControl = accessibilityEnabled && !attrs.includes('controls') && !attrs.includes('hoverplay');
-  if (hasAccessibilityControl) videoCounter += 1;
+  if (!attrs.includes('controls') && !attrs.includes('hoverplay') && accessibilityEnabled) {
+    videoCounter += 1;
+  }
   const indexOfVideo = videoCounter;
   if (accessibilityEnabled) {
     video = addAccessibilityControl(video, attrs, indexOfVideo, tabIndex);

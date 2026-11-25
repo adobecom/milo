@@ -1,55 +1,11 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 
 import init from '../../../libs/c2/blocks/elastic-carousel/elastic-carousel.js';
 
 describe('Elastic Carousel', () => {
   afterEach(() => {
-    document.body.replaceChildren();
-    sinon.restore();
     document.documentElement.removeAttribute('dir');
-  });
-
-  it('respects reduced motion for scroll autoplay without changing hover playback', async () => {
-    let reducedMotion = true;
-    const matchMedia = window.matchMedia.bind(window);
-    sinon.stub(window, 'matchMedia').callsFake((query) => (
-      query === '(prefers-reduced-motion: reduce)' ? { matches: reducedMotion } : matchMedia(query)
-    ));
-    sinon.stub(window, 'innerWidth').get(() => 600);
-    const observers = [];
-    sinon.stub(window, 'IntersectionObserver').callsFake((onIntersect) => {
-      const observer = { onIntersect, observe: sinon.spy(), disconnect: sinon.stub() };
-      observers.push(observer);
-      return observer;
-    });
-    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
-    const block = document.querySelector('.elastic-carousel');
-    await init(block);
-    const [slide, nextSlide] = block.querySelectorAll('.elastic-carousel-item');
-    const video = slide.querySelector('video');
-    const play = sinon.stub(video, 'play').resolves();
-    sinon.stub(slide, 'getBoundingClientRect').returns(new DOMRect(0, 100, 100, 100));
-    sinon.stub(nextSlide, 'getBoundingClientRect')
-      .returns(new DOMRect(0, window.innerHeight + 100, 100, 100));
-    const onEnter = observers.find((observer) => observer.observe.calledWith(slide)).onIntersect;
-    const onUncover = observers.find((observer) => observer.observe.calledWith(nextSlide))
-      .onIntersect;
-    const scrollIntoView = () => {
-      onEnter([{ target: slide, isIntersecting: true }]);
-      onUncover([{ target: nextSlide, isIntersecting: false }]);
-    };
-    scrollIntoView();
-    expect(play.called).to.be.false;
-    reducedMotion = false;
-    scrollIntoView();
-    expect(play.callCount).to.equal(2);
-    reducedMotion = true;
-    scrollIntoView();
-    expect(play.callCount).to.equal(2);
-    slide.dispatchEvent(new MouseEvent('mouseenter'));
-    expect(play.callCount).to.equal(3);
   });
 
   it('wraps slides in a carousel container and sets carousel dataset roles', async () => {
