@@ -1,0 +1,175 @@
+.promo {
+  --promo-background: var(--s2a-color-gray-75);
+  --promo-callout-background: var(--s2a-color-transparent-black-04);
+  --promo-logo-height: 18px;
+
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: var(--grid-max-width-default);
+  margin-inline: auto;
+  padding-inline: var(--s2a-spacing-xs);
+
+  &.dark,
+  .dark & {
+    --promo-background: var(--s2a-color-gray-900);
+    --promo-callout-background: var(--s2a-color-transparent-white-04);
+
+    background-color: transparent;
+  }
+
+  .promo-card {
+    box-sizing: border-box;
+    padding: var(--s2a-spacing-3xl) var(--s2a-spacing-lg);
+    border-radius: var(--s2a-border-radius-xl);
+    background-color: var(--promo-background);
+    animation: promo-load-in 500ms var(--parallax-easing) both;
+  }
+
+  .promo-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s2a-spacing-lg);
+    text-align: center;
+  }
+
+  &:not(.is-live) .promo-content.live,
+  &.is-live .promo-content:not(.live) {
+    display: none;
+  }
+
+  .promo-heading-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+    inline-size: 100%;
+  }
+
+  .promo-logo {
+    display: block;
+    margin-block-end: var(--s2a-spacing-xs);
+    line-height: 0;
+
+    img {
+      display: inline-block;
+      block-size: var(--promo-logo-height);
+      inline-size: auto;
+      vertical-align: top;
+    }
+  }
+
+  .promo-callout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s2a-spacing-md);
+    padding-inline: var(--s2a-spacing-md);
+  }
+
+  .promo-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s2a-spacing-md);
+  }
+
+  .promo-timer {
+    display: none;
+    white-space: nowrap;
+  }
+
+  &.has-timer .promo-timer {
+    display: block;
+    padding-block-start: var(--s2a-spacing-xs);
+  }
+
+  .promo-timer .countdown-digits {
+    display: flex;
+    gap: var(--s2a-spacing-3xs);
+  }
+
+  /* The heading font has no tabular figures, so fix each pair's width to stop the timer jittering */
+  .promo-timer .countdown-value {
+    min-inline-size: 2ch;
+    text-align: center;
+  }
+}
+
+@media (width >= 768px) {
+  .promo {
+    padding-inline: var(--s2a-spacing-lg);
+
+    .promo-card {
+      padding-inline: var(--s2a-spacing-3xl);
+    }
+
+    .promo-callout {
+      --promo-callout-border: var(--s2a-border-width-md);
+
+      flex-direction: row;
+      gap: var(--s2a-spacing-2xl);
+
+      /* Figma draws the border inside the pill, so it comes out of the padding */
+      padding-block: calc(var(--s2a-spacing-md) - var(--promo-callout-border));
+      padding-inline: calc(var(--s2a-spacing-xl) - var(--promo-callout-border))
+        calc(var(--s2a-spacing-md) - var(--promo-callout-border));
+      border: var(--promo-callout-border) solid var(--promo-callout-background);
+      border-radius: var(--s2a-border-radius-round);
+      background-color: var(--promo-callout-background);
+      text-align: start;
+
+      > :not(.promo-actions) {
+        /* Figma copy width; stops the pill from squeezing the heading */
+        max-inline-size: 395px;
+      }
+    }
+
+    .promo-actions {
+      flex-direction: row;
+      flex-shrink: 0;
+    }
+
+    &.has-timer .promo-timer {
+      padding-block-start: 0;
+    }
+  }
+}
+
+@media (width >= 1280px) {
+  .promo {
+    --promo-logo-height: 26px;
+
+    .promo-content {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: var(--s2a-spacing-4xl);
+      text-align: start;
+    }
+
+    .promo-heading-group {
+      flex: 1;
+      min-inline-size: 0;
+    }
+
+    .promo-callout {
+      flex-shrink: 0;
+      padding-block: calc(var(--s2a-spacing-lg) - var(--promo-callout-border));
+      padding-inline: calc(var(--s2a-spacing-2xl) - var(--promo-callout-border))
+        calc(var(--s2a-spacing-lg) - var(--promo-callout-border));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo .promo-card {
+    animation: promo-fade-in 200ms ease-out both;
+  }
+}
+
+@keyframes promo-load-in {
+  from { transform: translateY(var(--s2a-spacing-xl)); }
+}
+
+@keyframes promo-fade-in {
+  from { opacity: 0; }
+}
