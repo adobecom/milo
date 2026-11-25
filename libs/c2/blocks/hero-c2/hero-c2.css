@@ -100,6 +100,7 @@
 
   .hero-c2-media {
     inline-size: var(--hero-c2-media-width);
+    min-inline-size: min(250px, 100%);
     position: relative;
 
     img,

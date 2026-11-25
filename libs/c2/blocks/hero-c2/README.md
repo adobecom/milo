@@ -25,7 +25,7 @@ Empty cells render nothing. Without `+++` lines, the second row's first cell is 
 - `content-narrow`, `content-wide`: change how many columns the content takes; the media area takes the rest after a 1-column gap.
 - `media-bg-full-height`: from 900px, the media-bg runs from the top of the screen, behind the nav, to the bottom of the block, and to the edge of the block's grid.
 - `media-bg-full-width`: like `media-bg-full-height`, but the media-bg always runs to the right edge of the screen.
-- `media-wide`, `media-xtra-wide`, `media-full`: the media is 33% of the media area wide by default; these make it 50%, 75%, or 100%. The media never grows the media area: a media taller than the area scales down to fit it and stays against the edge set by its placement variants.
+- `media-wide`, `media-xtra-wide`, `media-full`: the media is 33% of the media area wide by default, and at least 250px (never wider than the media area); these make it 50%, 75%, or 100%. The media never grows the media area: a media taller than the area scales down to fit it and stays against the edge set by its placement variants.
 - `media-v-start`, `media-v-end`, `media-h-start`, `media-h-end`: place the media at the start or end of the media-bg, vertically or horizontally. Combine one of each for a corner. The media is centered on any axis without a variant.
 - `glassy`: puts the media-bg in a translucent, blurred frame with a thin border and shadow.
 - `merch`, `event`: block-level only. Set them on the block name, not on a viewport marker.

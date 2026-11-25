@@ -249,10 +249,22 @@ describe('hero-c2', () => {
         const mediaArea = block.querySelector('.hero-c2-media-area').getBoundingClientRect().width;
         return Math.round((100 * block.querySelector('.hero-c2-media').getBoundingClientRect().width) / mediaArea);
       };
-      expect(await share('')).to.equal(33);
       expect(await share('media-wide')).to.equal(50);
       expect(await share('media-xtra-wide')).to.equal(75);
       expect(await share('media-full')).to.equal(100);
+    });
+
+    it('keeps the media at least 250px wide, within the media area', async () => {
+      const width = async () => {
+        const block = await build('', row(COPY, IMAGE), row('', IMAGE));
+        return block.querySelector('.hero-c2-media').getBoundingClientRect().width;
+      };
+      await setViewport({ width: 1280, height: 800 });
+      expect(await width()).to.equal(250);
+      await setViewport({ width: 320, height: 800 });
+      const area = document.querySelector('.hero-c2-media-area').getBoundingClientRect().width;
+      expect(area).to.be.below(250 / 0.33);
+      expect(await width()).to.be.at.most(area);
     });
 
     it('keeps tall media from growing the media area', async () => {
