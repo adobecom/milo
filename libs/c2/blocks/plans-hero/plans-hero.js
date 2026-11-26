@@ -10,7 +10,6 @@ function decorate(block) {
   const media = createTag('div', { class: 'plans-hero-media' });
   const picture = mediaCell?.querySelector('picture');
   if (picture) {
-    picture.querySelector('img')?.setAttribute('loading', 'eager');
     handleFocalpoint(picture, mediaCell, true);
     media.append(picture);
   }
@@ -26,4 +25,5 @@ function decorate(block) {
 export default function init(el) {
   el.classList.add('container');
   decorateViewportContent(el, decorate);
+  el.querySelector('.plans-hero-media img')?.setAttribute('loading', 'eager');
 }
