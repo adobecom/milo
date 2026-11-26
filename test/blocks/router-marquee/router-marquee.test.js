@@ -379,6 +379,23 @@ describe('Router Marquee', () => {
     expect(slides[0].querySelector('.rm-title').textContent.trim()).to.equal('Slide two title');
     expect(slides[1].querySelector('.rm-title').textContent.trim()).to.equal('Slide one title');
   });
+
+  it('reorders slides from a list of starting-marquee values, ignoring out-of-range numbers', async () => {
+    const html = await readFile({ path: './mocks/reorder-multiple.html' });
+    const renderTitles = (value) => {
+      document.body.innerHTML = html;
+      if (value) document.querySelector('.section-metadata > div > div:last-child').textContent = value;
+      const block = document.querySelector('.router-marquee');
+      init(block);
+      return [...mobileVp(block).querySelectorAll('.rm-slide')]
+        .map((slide) => slide.querySelector('.rm-title').textContent.trim());
+    };
+
+    // "1, 4": slide 1 stays first, slide 4 second, the rest follow in authored order
+    expect(renderTitles()).to.deep.equal(['Slide one title', 'Slide four title', 'Slide two title', 'Slide three title']);
+    // out-of-range (9) and duplicate (3) values are ignored
+    expect(renderTitles('3,9,3,2')).to.deep.equal(['Slide three title', 'Slide two title', 'Slide one title', 'Slide four title']);
+  });
 });
 
 /** Stands in for MAS rendering a late field into its content span and announcing it. */
