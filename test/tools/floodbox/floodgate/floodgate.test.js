@@ -1,6 +1,8 @@
 /* eslint-disable no-underscore-dangle, object-curly-newline */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+// eslint-disable-next-line import/no-unresolved
+import { render } from 'https://da.live/deps/lit/dist/index.js';
 
 import {
   readPromoteIgnorePaths,
@@ -11,6 +13,7 @@ import {
 import {
   aemUrlToPageUrl,
   getDoneSteps,
+  renderDoneStepCard,
   stripAdminPreviewPrefixForDisplay,
 } from '../../../../tools/floodbox/floodgate/floodgate-render.js';
 
@@ -699,6 +702,11 @@ describe('MiloFloodgate', () => {
         .to.equal('/org/repo/main/page');
     });
 
+    it('strips admin live (publish) prefix', () => {
+      expect(stripAdminPreviewPrefixForDisplay('https://admin.hlx.page/live/org/repo/main/page'))
+        .to.equal('/org/repo/main/page');
+    });
+
     it('returns empty string for falsy input', () => {
       expect(stripAdminPreviewPrefixForDisplay(null)).to.equal('');
       expect(stripAdminPreviewPrefixForDisplay('')).to.equal('');
@@ -706,6 +714,28 @@ describe('MiloFloodgate', () => {
 
     it('returns non-matching strings as-is', () => {
       expect(stripAdminPreviewPrefixForDisplay('/some/path')).to.equal('/some/path');
+    });
+  });
+
+  describe('renderDoneStepCard', () => {
+    it('renders publish errors in an expandable card', () => {
+      const container = document.createElement('div');
+      const cmp = {
+        _publishErrorList: [{ href: 'https://admin.hlx.page/live/org/repo/main/adobe.link', status: 500 }],
+      };
+      render(renderDoneStepCard(cmp, { name: 'Publish', success: 5, errors: 1, duration: 6 }), container);
+      const details = container.querySelector('details.done-step-expandable');
+      expect(details).to.exist;
+      expect(details.querySelector('.url-list-publish-errors h2').textContent).to.equal('Publish Errors');
+      expect(details.querySelector('.url-path').textContent).to.equal('/org/repo/main/adobe.link');
+      expect(details.querySelector('.url-status').textContent.trim()).to.equal('500');
+    });
+
+    it('renders a plain card when a step has no errors', () => {
+      const container = document.createElement('div');
+      render(renderDoneStepCard({}, { name: 'Publish', success: 6, errors: 0, duration: 6 }), container);
+      expect(container.querySelector('details')).to.not.exist;
+      expect(container.querySelector('.done-card-time').textContent).to.equal('6s');
     });
   });
 
