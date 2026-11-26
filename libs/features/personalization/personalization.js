@@ -104,6 +104,8 @@ const isDamContent = (path) => path?.includes('/content/dam/');
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
+  if (path?.includes('#_dnn')) return path.replace('#_dnn', '');
+
   if (isDamContent(path) || !path?.includes('/')) return path;
 
   const isFederal = path.includes('/federal/');
