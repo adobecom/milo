@@ -298,6 +298,14 @@ const fitCardDims = (w, h, maxH) => scaleDims(
   Math.min(maxH / Math.max(1, h), (maxH * WIDE_TEX_RATIO) / Math.max(1, w)),
 );
 
+export function createRenderer(canvas, antialias) {
+  const attrs = { antialias, stencil: true };
+  const gl = canvas.getContext('webgl2', attrs) || canvas.getContext('webgl', attrs);
+  if (!gl) throw new Error('Error creating WebGL context.');
+  if (gl.isContextLost()) throw new Error('WebGL context is lost.');
+  return new THREE.WebGLRenderer({ canvas, context: gl, antialias });
+}
+
 export function createCanvas(w, h) {
   return Object.assign(document.createElement('canvas'), { width: w, height: h });
 }

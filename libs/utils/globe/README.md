@@ -60,27 +60,36 @@ Shared factories take the block `name` only where it feeds `daa-ll` labels or la
 `createGlobeRuntime` lives as long as the block: content, DOM, `bp`, measurements, orientation, pull quote, modal,
 a11y, controls, cursor and interaction.
 
-`createBuild` holds what one build owns: renderer, scene, camera, cards, textures, frame state, card field, hint, hooks
-and the disposer. `destroy()` runs `build.disposer.dispose()` and replaces the object, so a rebuild cannot inherit
-per-build state. Add per-build state to `createBuild`, not as a `let` that `destroy()` has to reset.
+`createBuild` holds what one build owns: scene, camera, cards, textures, frame state, card field, hint, hooks and the
+disposer. A rebuild runs `build.disposer.dispose()` and replaces the object, so it cannot inherit per-build state. Add
+per-build state to `createBuild`, not as a `let` that a rebuild has to reset.
 
-- **Cleanup order is load-bearing.** Cleanups run in reverse order of registration, and the renderer registers first
-  so that it is disposed last. A material or texture disposed after `renderer.dispose()` keeps its GPU object.
 - **Getters read the live `build`.** A hint font or texture that lands late compares against the current build and
   drops itself.
 - Per-build `setup()` calls (interaction, cursor, controls, a11y, hint, pull quote) register their own listeners and reset on
-  `ctx.disposer`, so they have no `teardown` to call. `modal.destroy` runs after the disposer, on the empty build;
-  `modal.destroy(true)` must also run for a build that never finished, to remove a modal hoisted out of the block.
-- **`destroy()` must not `forceContextLoss()`.** The canvas element is reused across rebuilds, and a force-lost context
-  never restores.
-- A rebuild (band crossing, reduced-motion toggle, context restore) resets orientation, drag and nudge to upright, and
-  closes an open modal without reopening it. The spin toggle's paused state survives.
+  `ctx.disposer`, so they have no `teardown` to call. A rebuild calls `modal.reset()` after the disposer; `destroy()`
+  calls `modal.destroy(finalize)`, which must also run for a build that never finished, to remove a modal hoisted out
+  of the block.
+- A rebuild (band crossing, reduced-motion toggle) resets orientation, drag and nudge to upright, and closes an open
+  modal without reopening it. The spin toggle's paused state survives.
 
-**Context loss.** Both canvases listen for `webglcontextlost` / `webglcontextrestored`. Lost stops the ticker; restored
-rebuilds through the same path a band crossing uses. The two canvases' restore events coalesce into one rebuild
-(`ctxLoss.recovering` plus a macrotask). Past `MAX_CONTEXT_REBUILDS` the block collapses to `.globe-empty`; the count
-resets once a rebuild survives `CONTEXT_STABLE_MS`. To test: `const x = document.querySelector('.globe-canvas')
-.getContext('webgl2').getExtension('WEBGL_lose_context'); x.loseContext(); setTimeout(() => x.restoreContext(), 1000);`
+**Renderer lifetime and context loss.** Each canvas has one `WebGLRenderer` for the runtime's lifetime: the main one
+from the first build, the modal one from the first open. A rebuild keeps it; `destroy()` disposes it, after the build's
+materials and textures.
+
+- Construct renderers only through `createRenderer`. If three's constructor throws, its `webglcontext*` listeners stay
+  on the canvas and throw on every later context event.
+- `antialias` is fixed by the canvas's first context.
+- Never `forceContextLoss()`; a force-lost context never restores.
+- The lost event arrives a task after the loss. `contextLost()` also checks `isContextLost()`, and the ticker skips
+  frames while it is true.
+- Main-canvas loss stops the ticker; restore resumes it, and three re-uploads its resources. A rebuild requested while
+  lost runs synchronously on restore, so the runtime's context listeners are added after the renderer's constructor,
+  behind three's own.
+- The modal skips rendering while its context is lost, and renders its card in the main scene when it has no renderer.
+
+To test: `const x = document.querySelector('.globe-canvas').getContext('webgl2').getExtension('WEBGL_lose_context');
+x.loseContext(); setTimeout(() => x.restoreContext(), 1000);`. Repeat on `.globe-modal-canvas` with the modal open.
 
 A failed `WebGLRenderer` creation, no cards, or no canvas also collapses the block to `.globe-empty`.
 
@@ -253,7 +262,8 @@ come from `BAND_RENDER`. A texture costs `w × h × 4 × 4/3` bytes regardless o
 
 The hint texture's `onUpdate` frees its canvas's 2D backing store after upload. That is safe only when exactly one
 renderer uploads the texture, nothing sets `needsUpdate` later, and nothing reads `texture.image` dimensions later. Only
-the hint texture qualifies. Card textures don't, because the modal renderer uploads them too.
+the hint texture qualifies. A context restore can't re-upload it, so `onContextRestored` rebuilds the hint plane.
+Card textures don't, because the modal renderer uploads them too.
 
 ## Orientation and drag
 
