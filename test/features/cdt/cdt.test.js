@@ -1,10 +1,15 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { loadCDT } from '../../../libs/utils/decorate.js';
 import { setConfig } from '../../../libs/utils/utils.js';
+import initCDT from '../../../libs/features/cdt/cdt.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
-const conf = { locales };
+const conf = {
+  locales,
+  placeholders: { 'cdt-days': 'days', 'cdt-hours': 'hours', 'cdt-mins': 'mins', 'cdt-secs': 'secs' },
+};
 setConfig(conf);
 
 // End date one year out so the "active timer" fixtures never expire over time.
@@ -81,5 +86,52 @@ describe('CDT test start is equal to end date', () => {
     await loadCDT(container, container.classList);
     expect(container.querySelectorAll('.timer-label')).to.have.lengthOf(1);
     container.innerHTML = '';
+  });
+});
+
+describe('CDT opt-in C2 mode', () => {
+  const START = Date.parse('2026-11-01T00:00:00Z');
+  const END = Date.parse('2026-11-02T01:01:01Z');
+  const DATES = '2026-11-01T00:00:00Z,2026-11-02T01:01:01Z';
+  let clock;
+
+  afterEach(() => clock.restore());
+
+  it('waits for the start date, ticks every second and reports status changes', async () => {
+    clock = sinon.useFakeTimers({ now: START - 2000, toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    const container = newCdtContainer();
+    const onStatus = sinon.spy();
+    const timer = await initCDT(container, container.classList, DATES, { c2: true, className: 'custom', onStatus });
+
+    expect(timer.className).to.equal('custom');
+    expect(timer.getAttribute('role')).to.equal('timer');
+    expect(timer.hidden).to.be.true;
+    expect(onStatus.args).to.deep.equal([['pending']]);
+
+    clock.tick(2010);
+    const digits = timer.querySelector('.countdown-digits');
+    expect(timer.hidden).to.be.false;
+    expect(onStatus.lastCall.args).to.deep.equal(['running']);
+    expect(digits.getAttribute('dir')).to.equal('ltr');
+    expect(digits.getAttribute('aria-hidden')).to.equal('true');
+    expect(digits.textContent).to.equal('01:01:01:00');
+    expect(timer.querySelector('.sr-only').textContent).to.equal('1 days 1 hours 1 mins 0 secs');
+
+    clock.tick(1000);
+    expect(digits.textContent).to.equal('01:01:00:59');
+
+    clock.tick(END - START);
+    expect(timer.hidden).to.be.true;
+    expect(onStatus.lastCall.args).to.deep.equal(['ended']);
+    expect(clock.countTimers()).to.equal(0);
+  });
+
+  it('stops once removed from the page', async () => {
+    clock = sinon.useFakeTimers({ now: START, toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    const container = newCdtContainer();
+    const timer = await initCDT(container, container.classList, DATES, { c2: true });
+    timer.remove();
+    clock.tick(1010);
+    expect(clock.countTimers()).to.equal(0);
   });
 });

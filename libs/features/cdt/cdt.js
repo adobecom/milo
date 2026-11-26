@@ -86,6 +86,71 @@ function loadCountdownTimer(
   startCountdown();
 }
 
+const C2_UNITS = [['cdt-days', 86400000], ['cdt-hours', 3600000], ['cdt-mins', 60000], ['cdt-secs', 1000]];
+
+// Opt-in C2 timer: ticks every second, waits for an upcoming range and reports status changes.
+// Removing the element from the page stops it.
+function loadC2CountdownTimer(container, labels, timeRangesEpoch, onStatus) {
+  const instant = Date.parse(new URL(window.location.href).searchParams.get('instant'));
+  const offset = Number.isNaN(instant) ? 0 : instant - Date.now();
+  const ranges = [];
+  for (let i = 0; i < timeRangesEpoch.length; i += 2) {
+    ranges.push([timeRangesEpoch[i], timeRangesEpoch[i + 1]]);
+  }
+  const digits = createTag('span', { class: 'countdown-digits', dir: 'ltr', 'aria-hidden': 'true' }, null, { parent: container });
+  const label = createTag('span', { class: 'sr-only' }, null, { parent: container });
+  const values = C2_UNITS.map((unit, i) => {
+    if (i) createTag('span', { class: 'countdown-separator' }, ':', { parent: digits });
+    return createTag('span', { class: 'countdown-value' }, null, { parent: digits });
+  });
+  const controller = new AbortController();
+  let status;
+  let timeout;
+
+  function render(remaining) {
+    let rest = remaining;
+    const parts = C2_UNITS.map(([, ms]) => {
+      const value = Math.floor(rest / ms);
+      rest %= ms;
+      return value;
+    });
+    parts.forEach((value, i) => { values[i].textContent = String(value).padStart(2, '0'); });
+    label.textContent = parts.map((value, i) => `${value} ${labels[i]}`).join(' ');
+  }
+
+  function tick() {
+    clearTimeout(timeout);
+    if (status && !container.isConnected) {
+      controller.abort();
+      return;
+    }
+    const now = Date.now() + offset;
+    const running = ranges.find(([start, end]) => now >= start && now < end);
+    const upcoming = Math.min(...ranges.map(([start]) => start).filter((start) => start > now));
+    const next = (running && 'running') || (Number.isFinite(upcoming) ? 'pending' : 'ended');
+    if (running) render(running[1] - now);
+    container.hidden = !running;
+    if (next !== status) {
+      status = next;
+      onStatus?.(status);
+    }
+    if (status === 'ended') {
+      controller.abort();
+      return;
+    }
+    if (document.hidden) return;
+    // Tick just after the displayed second changes so early or late timers never skip a digit
+    const delay = running ? (running[1] - now) % 1000 : Math.min(upcoming - now, 60000);
+    timeout = setTimeout(tick, delay + 10);
+  }
+
+  // Hidden tabs skip ticks and catch up on return
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) tick();
+  }, { signal: controller.signal });
+  tick();
+}
+
 function isMobile() {
   return window.matchMedia('(max-width: 767px)').matches;
 }
@@ -128,7 +193,18 @@ function getCDTTimeRange(cdtMetadata) {
   return timeRangesEpoch;
 }
 
-export default async function initCDT(el, classList, cdtMetadata) {
+async function initC2CDT(el, cdtMetadata, { className = 'countdown-timer', onStatus } = {}) {
+  const timeRangesEpoch = getCDTTimeRange(cdtMetadata);
+  const labels = await Promise.all(C2_UNITS.map(([key]) => replaceKey(key, getConfig())));
+  const cdtDiv = createTag('div', { class: className, role: 'timer' }, null, { parent: el });
+  loadC2CountdownTimer(cdtDiv, labels, timeRangesEpoch, onStatus);
+  return cdtDiv;
+}
+
+// options.c2 opts into the C2 timer: DD:HH:MM:SS with screen-reader units, no cdt.css,
+// and options.onStatus('pending' | 'running' | 'ended') for status changes
+export default async function initCDT(el, classList, cdtMetadata, options = {}) {
+  if (options.c2) return initC2CDT(el, cdtMetadata, options);
   const placeholders = ['cdt-ends-in', 'cdt-days', 'cdt-hours', 'cdt-mins'];
   const [cdtLabel, cdtDays, cdtHours, cdtMins] = await Promise.all(
     placeholders.map((placeholder) => replaceKey(placeholder, getConfig())),
