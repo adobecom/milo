@@ -702,7 +702,7 @@
     display: grid;
     grid-template-columns: minmax(100px, 1fr) repeat(var(--ct-card-count), minmax(100px, 1fr));
     column-gap: var(--s2a-spacing-md);
-    width: var(--s2a-grid-container-width);
+    width: var(--s2a-grid-container-width, 100%);
     margin-inline: auto;
 
     .header-content-wrapper {

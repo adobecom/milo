@@ -1,4 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { waitFor } from '../../helpers/waitfor.js';
@@ -191,5 +191,30 @@ describe('Comparison Table C2', () => {
     await waitFor(() => el.querySelector('.mobile-filter-select[aria-label]'), 2000);
     expect(selects[0].getAttribute('aria-label')).to.equal('Choose table column 1');
     expect(selects[1].getAttribute('aria-label')).to.equal('Choose table column 2');
+  });
+
+  it('keeps its width inside a grid section when a table section is collapsed', async () => {
+    await setViewport({ width: 1200, height: 800 });
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/libs/c2/blocks/comparison-table-c2/comparison-table-c2.css';
+    const loaded = new Promise((resolve) => { link.onload = resolve; });
+    document.head.append(link);
+    await loaded;
+
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const el = document.querySelector('.comparison-table-c2');
+    const section = document.createElement('div');
+    section.style.cssText = 'display: grid; width: 1000px;';
+    el.before(section);
+    section.append(el);
+    init(el);
+
+    expect(el.getBoundingClientRect().width).to.equal(1000);
+    el.querySelector('.table-column-header button').click();
+    expect(el.getBoundingClientRect().width).to.equal(1000);
+
+    link.remove();
+    await setViewport({ width: 800, height: 600 });
   });
 });
