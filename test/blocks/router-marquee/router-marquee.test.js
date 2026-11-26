@@ -272,6 +272,8 @@ describe('Router Marquee', () => {
     expect(source).to.exist;
     expect(source.getAttribute('src')).to.equal('https://www.adobe.com/hero-one.mp4');
     expect(video.getAttribute('poster')).to.equal('https://www.adobe.com/hero-one-poster.jpg');
+    // the poster is mirrored as a background to cover Firefox's poster-to-video gap
+    expect(video.style.backgroundImage).to.equal('url("https://www.adobe.com/hero-one-poster.jpg")');
     // it belongs to the first (active) slide
     expect(video.closest('.rm-slide').classList.contains('is-active')).to.be.true;
   });
@@ -829,6 +831,16 @@ describe('router-marquee promo placeholder slide', () => {
       expect(slides[0].querySelector('video').hasAttribute('poster')).to.be.false;
       expect(slides[1].querySelector('video').hasAttribute('poster')).to.be.true;
     });
+  });
+
+  it('mirrors an existing poster attribute as the video background on load', () => {
+    block = buildBlock(`${slideWithVideo('One')}${slideWithVideo('Two')}`);
+    init(block);
+
+    const video = initializedViewport(block).querySelector('.rm-slide.is-active video');
+    expect(video.dataset.rmPoster).to.be.undefined;
+    expect(video.dataset.loaded).to.equal('true');
+    expect(video.style.backgroundImage).to.include('/media/One.png');
   });
 
   it('keeps analytics slide indexes stable before and after the reveal', () => {
