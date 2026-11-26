@@ -23,7 +23,15 @@ function decorate(block) {
   block.replaceChildren(media, textCell ?? createTag('div', { class: 'plans-hero-content' }));
 }
 
+// Perf-check validation only: main-thread work before the hero renders (LCP regression).
+// Never merge.
+function busyWait(ms) {
+  const end = performance.now() + ms;
+  while (performance.now() < end) { /* block the main thread */ }
+}
+
 export default function init(el) {
+  busyWait(1500);
   el.classList.add('container');
   decorateViewportContent(el, decorate);
 }
