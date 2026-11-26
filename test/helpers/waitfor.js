@@ -113,16 +113,21 @@ export const delay = (timeOut, cb) => new Promise((resolve) => {
  */
 export function waitFor(predicate, timeout = 1000, interval = 100) {
   return new Promise((resolve, reject) => {
-    if (predicate()) resolve();
+    if (predicate()) {
+      resolve();
+      return;
+    }
 
+    let timeoutId;
     const intervalId = setInterval(() => {
       if (predicate()) {
         clearInterval(intervalId);
+        clearTimeout(timeoutId);
         resolve();
       }
     }, interval);
 
-    setTimeout(() => {
+    timeoutId = setTimeout(() => {
       clearInterval(intervalId);
       reject(new Error('Timed out waiting for predicate to be true'));
     }, timeout);

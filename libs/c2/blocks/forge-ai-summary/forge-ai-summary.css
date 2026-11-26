@@ -1,0 +1,66 @@
+.forge-ai-summary {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-md);
+  margin: var(--s2a-spacing-lg) auto;
+  padding: var(--s2a-spacing-lg);
+  border: 3px solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-sm);
+  color: var(--s2a-color-content-default);
+  overflow-wrap: anywhere;
+
+  @media (width >= 768px) {
+    width: 100%;
+  }
+
+  p,
+  ul,
+  ol {
+    margin: 0 0 var(--s2a-spacing-md);
+  }
+
+  .ai-summary-image {
+    display: none;
+
+    p {
+      margin: 0;
+    }
+
+    picture {
+      display: block;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: none;
+      border-radius: var(--s2a-border-radius-sm);
+    }
+
+    @media (width >= 768px) {
+      display: block;
+    }
+  }
+
+  [class*="heading-"] {
+    margin: 0 0 var(--s2a-spacing-md);
+    color: var(--s2a-color-content-default);
+    font-style: normal;
+    font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+  }
+
+  ul,
+  ol {
+    padding-inline-start: var(--s2a-spacing-lg);
+  }
+
+  li + li {
+    margin-top: var(--s2a-spacing-sm);
+  }
+
+  .ai-summary-content > div > :last-child {
+    margin-bottom: 0;
+  }
+}

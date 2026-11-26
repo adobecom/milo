@@ -14,6 +14,7 @@ import init, {
 } from '../../../libs/blocks/blog-header/blog-header.js';
 
 const placeholders = {
+  'blog-updated': 'Updated:',
   'blog-share': 'Share',
   'blog-share-post': 'Share post',
   'blog-share-close': 'Close share dialog',
@@ -411,6 +412,20 @@ describe('blog-header decoration', () => {
     await init(block);
     expect(block.querySelector('.blog-header-eyebrow-start').textContent)
       .to.equal('Updated: October 28, 2026');
+  });
+
+  it('uses the localized updated prefix', async () => {
+    fetchStub = mockFetch();
+    const updatedLabel = stub(getConfig().placeholders, 'blog-updated').value('Mis a jour :');
+    try {
+      setMetadata('eyebrow-start', 'October 28, 2026');
+      const { block } = buildBlock();
+      await init(block);
+      expect(block.querySelector('.blog-header-eyebrow-start').textContent)
+        .to.equal('Mis a jour : October 28, 2026');
+    } finally {
+      updatedLabel.restore();
+    }
   });
 
   it('prefixes generated dates without changing the existing date format', async () => {

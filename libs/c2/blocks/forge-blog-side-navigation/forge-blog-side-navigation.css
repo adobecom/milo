@@ -1,0 +1,411 @@
+/* The navigation stays in the header section and the article sections stay in main, so
+   section analytics and MEP's section selectors keep counting them. The navigation is a track
+   placed out of flow beside the article (from 768px) or above it, and its panel sticks inside
+   that track. The article sections are inset into the column the track leaves free. */
+.forge-blog-side-navigation,
+main > .blog-article-section {
+  --blog-side-navigation-column: min(280px, calc((100% - 2 * var(--grid-margin-width)) * 0.3));
+  --blog-article-column-gap: var(--s2a-spacing-xl);
+
+  /* Figma's mobile card height has no exact size token. */
+  --blog-side-navigation-row-size: 66px;
+
+  @media (width >= 1280px) {
+    --blog-article-column-gap: 56px;
+  }
+}
+
+/* The track is placed against the section that holds it. */
+main > .section:has(> .forge-blog-side-navigation) {
+  position: relative;
+}
+
+main .forge-blog-side-navigation {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 100%;
+  inset-inline: 0;
+  box-sizing: border-box;
+  block-size: var(--blog-side-navigation-track-size, 0);
+  margin: 0;
+  color: var(--s2a-color-content-default);
+  font-size: var(--s2a-font-size-md);
+  line-height: 1.5;
+
+  /* The track spans the article; only the panel takes pointer input. */
+  pointer-events: none;
+
+  &.is-pending {
+    visibility: hidden;
+  }
+
+  @media (width >= 768px) {
+    inset-inline: var(--grid-margin-width) auto;
+    inline-size: var(--blog-side-navigation-column);
+  }
+
+  .blog-side-navigation-panel > p {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    margin: 0;
+    padding-inline: var(--grid-margin-width);
+    color: var(--s2a-color-gray-700);
+    font-weight: var(--s2a-font-weight-body);
+    text-transform: uppercase;
+
+    > strong {
+      font-weight: inherit;
+    }
+
+    @media (width >= 768px) {
+      margin-block-end: var(--s2a-spacing-20);
+      padding-inline: 0;
+      color: inherit;
+      font-weight: var(--s2a-font-weight-label);
+    }
+  }
+
+  .blog-side-navigation-panel > nav {
+    position: sticky;
+    top: var(--global-height-nav);
+    z-index: 1;
+    box-sizing: border-box;
+    max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-xs));
+    margin-inline: var(--grid-margin-width);
+    overflow-y: auto;
+    border-radius: var(--s2a-border-radius-sm);
+    background: var(--s2a-color-background-subtle);
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    @media (width >= 768px) {
+      position: relative;
+      top: auto;
+      max-height: none;
+      margin-inline: 0;
+      overflow-y: visible;
+      border-radius: 0;
+      background: none;
+    }
+
+    &.is-floating {
+      @media (width < 768px) {
+        margin-inline: var(--s2a-spacing-xs);
+        border-radius: var(--s2a-border-radius-md);
+        background: var(--s2a-color-transparent-white-64);
+        backdrop-filter: blur(var(--s2a-blur-64));
+        box-shadow: var(--s2a-shadow-level-4-x) var(--s2a-shadow-level-4-y)
+          var(--s2a-shadow-level-4-blur) var(--s2a-shadow-level-4-spread)
+          var(--s2a-shadow-level-4-color);
+      }
+    }
+  }
+
+  .blog-side-navigation-panel > .forge-blog-related-content {
+    isolation: isolate;
+    box-sizing: border-box;
+    padding-inline: var(--grid-margin-width);
+
+    @media (width >= 768px) {
+      padding-inline: 0;
+    }
+  }
+
+  .blog-side-navigation-label {
+    display: -webkit-box; /* stylelint-disable-line value-no-vendor-prefix */
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  nav > ul {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    list-style: none;
+
+    @media (width >= 768px) {
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+      border-radius: var(--s2a-border-radius-4);
+      background: var(--s2a-color-background-default);
+      box-shadow: 1px 1px 4px 0 var(--s2a-color-transparent-black-08);
+    }
+  }
+
+  nav a {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-block-size: var(--blog-side-navigation-row-size);
+    padding: var(--s2a-spacing-sm) var(--s2a-spacing-xs);
+    color: inherit;
+    font-size: var(--s2a-typography-font-size-label);
+    font-weight: var(--s2a-font-weight-body);
+    line-height: var(--s2a-typography-line-height-label);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+
+    @media (width >= 768px) {
+      display: block;
+      min-block-size: 0;
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &[aria-current="location"] {
+      font-weight: var(--s2a-font-weight-label);
+      text-decoration: none;
+
+      @media (width >= 768px) {
+        font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+      }
+    }
+
+    &:focus-visible {
+      outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+      outline-offset: calc(-1 * var(--s2a-border-width-md));
+    }
+  }
+
+  nav li {
+    margin: 0;
+
+    /* Card inset and link padding complete the mobile page gutter. */
+    padding-inline: var(--s2a-spacing-xs);
+
+    @media (width >= 768px) {
+      padding-inline: 0;
+    }
+
+    &:has(> a[aria-current="location"]) {
+      background: var(--s2a-color-gray-75);
+
+      @media (width >= 768px) {
+        background: transparent;
+      }
+    }
+
+    &:has(> .blog-side-navigation-toggle) {
+      display: flex;
+      align-items: center;
+      gap: var(--s2a-spacing-xs);
+
+      @media (width >= 768px) {
+        gap: 0;
+      }
+
+      > a {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+  }
+
+  /* Collapsed: only the active link shows, with room for a two-line mobile label. */
+  nav li:has(> .blog-side-navigation-toggle[aria-expanded="false"]) {
+    background: transparent;
+
+    > a {
+      font-weight: var(--s2a-font-weight-label);
+
+      @media (width >= 768px) {
+        font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
+
+        &:not([aria-current="location"]) {
+          font-weight: var(--s2a-font-weight-body);
+        }
+      }
+    }
+  }
+
+  .blog-side-navigation-toggle {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    margin-inline-end: var(--s2a-spacing-xs);
+    padding: 0;
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+    border-radius: var(--s2a-border-radius-6);
+    background: var(--s2a-color-gray-50);
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    @media (width >= 768px) {
+      &:hover {
+        background: var(--s2a-color-gray-100);
+      }
+    }
+
+    &[aria-expanded="true"] {
+      border-color: var(--s2a-color-gray-700);
+      background: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-gray-25);
+    }
+
+    &[hidden] {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
+      outline-offset: calc(-1 * var(--s2a-border-width-md));
+    }
+
+    .blog-side-navigation-toggle-icon {
+      position: relative;
+      width: 12px;
+      height: 12px;
+
+      &::before,
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 12px;
+        height: 2px;
+        margin: auto;
+        border-radius: 1px;
+        background: currentcolor;
+      }
+
+      &::after {
+        width: 2px;
+        height: 12px;
+      }
+    }
+
+    &[aria-expanded="true"] .blog-side-navigation-toggle-icon {
+      box-sizing: border-box;
+      width: 14px;
+      height: 14px;
+      border: 2px solid currentcolor;
+      border-radius: 50%;
+
+      &::before {
+        width: 6px;
+        height: 2px;
+      }
+
+      &::after {
+        display: none;
+      }
+    }
+  }
+}
+
+.blog-side-navigation-panel {
+  pointer-events: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Lets the nav stick within the track rather than this panel. */
+  display: contents;
+
+  @media (width >= 768px) {
+    display: block;
+    position: sticky;
+    top: calc(var(--global-height-nav) + var(--s2a-spacing-lg));
+    max-height: calc(100dvh - var(--global-height-nav) - var(--s2a-spacing-3xl));
+    overflow-y: auto;
+  }
+}
+
+main > .blog-article-section {
+  isolation: isolate;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: none;
+  margin-inline: var(--grid-margin-width);
+
+  @media (width >= 768px) {
+    margin-inline-start: calc(
+      var(--grid-margin-width) + var(--blog-side-navigation-column) + var(--blog-article-column-gap)
+    );
+  }
+
+  &[class*="grid-width-"] {
+    padding-inline: 0;
+  }
+
+  [id] {
+    /* The navigation height is 0 from 768px, where it no longer sticks above the article. */
+    scroll-margin-top: calc(var(--global-height-nav) + var(--blog-side-navigation-height, 0px) + var(--s2a-spacing-lg));
+  }
+
+  > .content {
+    max-width: 100%;
+    margin-inline: 0;
+
+    /* Authored body copy: small vertical rhythm and a smaller in-body heading. */
+    > * + * {
+      margin-block-start: var(--s2a-spacing-xs);
+    }
+
+    > p,
+    > ul,
+    > ol {
+      font-size: var(--s2a-typography-font-size-body-lg);
+    }
+
+    > [class*="heading-"] {
+      margin-block: var(--s2a-spacing-2xl) var(--s2a-spacing-md);
+    }
+  }
+
+  /* In-body related-content cards get extra breathing room beneath them. */
+  > .forge-related-content-card {
+    margin-block-end: var(--s2a-spacing-xl);
+  }
+
+  > .forge-tag-cta {
+    margin-block: var(--s2a-spacing-2xl);
+  }
+}
+
+/* Below 768px the article starts under the out-of-flow navigation, whose height the
+   navigation sets once rendered; the fallback is its collapsed height (heading + one link). */
+main > .blog-article-start {
+  --blog-article-offset: var(--s2a-spacing-xl);
+
+  margin-block-start: calc(
+    var(--blog-side-navigation-block-size, calc(1.5 * var(--s2a-font-size-md) + var(--blog-side-navigation-row-size)))
+    + var(--blog-article-offset)
+  );
+
+  /* Keeps the article's first margin inside the column, as a column box would. */
+  @media (width >= 768px) {
+    margin-block-start: 0;
+
+    &::before {
+      content: "";
+      display: table;
+    }
+  }
+}
+
+/* A panel taller than the article extends it, as a grid row would. */
+main > .blog-article-end {
+  padding-block-end: calc(var(--s2a-spacing-3xl) + var(--blog-side-navigation-overflow-size, 0px));
+}
+
+/* The article sections are placed beside the navigation before they load; keep them hidden
+   until the header section above them has loaded too. */
+main > .section[data-status]:has(.forge-blog-header) ~ .blog-article-section {
+  display: none;
+}
