@@ -24,10 +24,14 @@ function decorate(block) {
 }
 
 // Perf-check validation only: deliberate late layout shift (CLS regression). Never merge.
+// Blocks render after the load event, so wait until the hero is on screen before shifting it.
 function lateShift(el) {
-  const shift = () => setTimeout(() => el.before(createTag('div', { style: 'height: 400px' })), 100);
-  if (document.readyState === 'complete') shift();
-  else window.addEventListener('load', shift, { once: true });
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    observer.disconnect();
+    setTimeout(() => el.before(createTag('div', { style: 'height: 400px' })), 300);
+  });
+  observer.observe(el);
 }
 
 export default function init(el) {
