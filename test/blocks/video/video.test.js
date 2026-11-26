@@ -1,10 +1,10 @@
-import { readFile } from '@web/test-runner-commands';
+import { readFile, sendKeys } from '@web/test-runner-commands';
 import { expect, assert } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { waitFor, waitForElement } from '../../helpers/waitfor.js';
 
-import { setConfig, createTag } from '../../../libs/utils/utils.js';
-import { decorateAnchorVideo, handlePause, applyHoverPlay, decoratePausePlayWrapper } from '../../../libs/utils/decorate.js';
+import { setConfig, createTag, getFedsPlaceholderConfig } from '../../../libs/utils/utils.js';
+import { decorateAnchorVideo, handlePause, applyHoverPlay, USER_PAUSED_ATTR } from '../../../libs/utils/decorate.js';
 
 setConfig({});
 const { default: init } = await import('../../../libs/blocks/video/video.js');
@@ -22,10 +22,11 @@ describe('video uploaded using franklin bot', () => {
 
   afterEach(() => {
     clock.restore();
+    sinon.restore();
     document.body.innerHTML = '';
   });
 
-  it('aria-label should not have index when page has only one video', async () => {
+  it('keeps control names free of numeric suffixes when more videos are decorated', async () => {
     const block = document.querySelector('.video.autoplay.single');
     const block2 = document.querySelector('.video.autoplay.second');
     const a = block.querySelector('a');
@@ -34,12 +35,13 @@ describe('video uploaded using franklin bot', () => {
     setTimeout(callback, 600);
     await clock.runAllAsync();
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
-    pausePlayWrapper.removeAttribute('video-index');
+    expect(pausePlayWrapper.getAttribute('video-index')).to.equal('1');
+    expect(pausePlayWrapper.getAttribute('aria-label')).not.to.match(/\d/);
     init(a2);
     setTimeout(callback, 500);
     await clock.runAllAsync();
-    const videoIndex = pausePlayWrapper.getAttribute('video-index');
-    expect(videoIndex).to.be.null;
+    expect(pausePlayWrapper.getAttribute('aria-label')).not.to.match(/\d/);
+    expect(block2.querySelector('.pause-play-wrapper').getAttribute('aria-label')).not.to.match(/\d/);
   });
 
   it('removes the element, if it does not have a parent node', (done) => {
@@ -138,56 +140,280 @@ describe('video uploaded using franklin bot', () => {
     expect(video.hasAttribute('data-play-viewport')).to.be.true;
   });
 
-  it('accessibility controls should pause autoplay videos', async () => {
+  it('accessibility controls should play autoplay videos after a manual pause', () => {
     const block = document.querySelector('.video.autoplay.viewportplay');
-    const fetchStub = sinon.stub(window, 'fetch');
-    fetchStub.resolves({
-      total: 19,
-      offset: 0,
-      limit: 19,
-      data: [
-        {
-          key: 'play-motion',
-          value: 'Play',
-        },
-        {
-          key: 'pause-motion',
-          value: 'Pause',
-        },
-        {
-          key: 'play-icon',
-          value: 'play icon',
-        },
-        {
-          key: 'pause-icon',
-          value: 'pause icon',
-        },
-      ],
-      ':type': 'sheet',
-    });
-
     const a = block.querySelector('a');
     init(a);
     const video = block.querySelector('video');
-    decoratePausePlayWrapper(video, '');
+    let paused = true;
+    sinon.stub(video, 'paused').get(() => paused);
+    sinon.stub(video, 'readyState').get(() => 4);
+    sinon.stub(video, 'play').callsFake(() => { paused = false; return Promise.resolve(); });
+    sinon.stub(video, 'pause').callsFake(() => { paused = true; });
     const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
     pausePlayWrapper.click();
-    setTimeout(callback, 500);
-    await clock.runAllAsync();
+    pausePlayWrapper.setAttribute('daa-ll', pausePlayWrapper.getAttribute('aria-label'));
     pausePlayWrapper.click();
-    expect(pausePlayWrapper.ariaPressed).to.eql('false');
+    expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.true;
+    pausePlayWrapper.click();
+    expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.false;
+    expect(pausePlayWrapper.querySelector('.is-playing')).to.exist;
+    expect(pausePlayWrapper.getAttribute('daa-ll')).to.equal(pausePlayWrapper.getAttribute('aria-label'));
   });
 
-  it('accessibility controls should play autoplay videos after pausing', async () => {
-    const block = document.querySelector('.video.autoplay.viewportplay');
-    const a = block.querySelector('a');
-    init(a);
-    const pausePlayWrapper = block.querySelector('.pause-play-wrapper');
-    pausePlayWrapper.click();
-    pausePlayWrapper.setAttribute('daa-ll', 'pause-motion');
-    setTimeout(callback, 500);
-    await clock.runAllAsync();
-    expect(pausePlayWrapper.querySelector('.is-playing')).to.exist;
+  ['milo', 'c2'].forEach((foundation) => {
+    describe(`shared video controls (${foundation})`, () => {
+      let decorate;
+      let video;
+      let control;
+      let stream;
+      let drawInterval;
+
+      before(async () => {
+        const meta = createTag('meta', { name: 'foundation', content: foundation });
+        document.head.append(meta);
+        decorate = await import(`../../../libs/utils/decorate.js?video-controls-${foundation}`);
+        meta.remove();
+        setConfig({
+          placeholders: {
+            'play-motion': 'Play motion',
+            'pause-motion': 'Pause motion',
+            'play-icon': 'Play icon',
+            'pause-icon': 'Pause icon',
+          },
+        });
+        getFedsPlaceholderConfig({ useCache: false });
+      });
+
+      beforeEach(async () => {
+        document.body.innerHTML = decorate.addAccessibilityControl('<video autoplay muted></video>', 'autoplay muted', 2);
+        video = document.querySelector('video');
+        control = document.querySelector('.play-pause-button, .pause-play-wrapper');
+        const canvas = createTag('canvas', { width: 16, height: 16 });
+        canvas.getContext('2d').fillRect(0, 0, 16, 16);
+        stream = canvas.captureStream(10);
+        video.srcObject = stream;
+        drawInterval = setInterval(() => canvas.getContext('2d').fillRect(0, 0, 16, 16), 100);
+        await video.play();
+        video.pause();
+      });
+
+      afterEach(() => {
+        clearInterval(drawInterval);
+        video.pause();
+        video.srcObject = null;
+        stream.getTracks().forEach((track) => track.stop());
+        sinon.restore();
+        document.body.innerHTML = '';
+      });
+
+      function expectState(playing) {
+        expect(control.querySelector('.offset-filler').classList.contains('is-playing')).to.equal(playing);
+        expect(control.getAttribute('aria-label')).to.match(playing ? /^Pause(?: motion)?$/ : /^Play(?: motion)?$/);
+        expect(control.getAttribute('title')).to.equal(control.getAttribute('aria-label'));
+        expect(control.getAttribute('aria-pressed')).to.equal(String(playing));
+      }
+
+      it('renders the control in the paused state before playback starts', () => {
+        const holder = createTag('div');
+        holder.innerHTML = decorate.addAccessibilityControl('<video muted></video>', 'muted', 1);
+        const button = holder.querySelector('.play-pause-button, .pause-play-wrapper');
+        expect(button.getAttribute('aria-pressed')).to.equal('false');
+        expect(button.getAttribute('aria-label')).to.match(/^Play(?: motion)?$/);
+      });
+
+      it('preserves reduced-motion state through localization and Enter/Space playback', async () => {
+        const matchMedia = window.matchMedia.bind(window);
+        sinon.stub(window, 'matchMedia').callsFake((query) => (
+          query === '(prefers-reduced-motion: reduce)' ? { matches: true } : matchMedia(query)
+        ));
+        decorate.applyAccessibilityEvents(video);
+        expectState(false);
+        expect(video.hasAttribute('autoplay')).to.be.false;
+        video.dispatchEvent(new Event('canplay'));
+        expect(video.paused).to.be.true;
+        decorate.decoratePausePlayWrapper(video);
+        await waitFor(() => control.getAttribute('aria-label') === 'Play motion');
+        expectState(false);
+        control.focus();
+        await sendKeys({ press: 'Enter' });
+        expect(video.paused).to.be.false;
+        expectState(true);
+        await sendKeys({ press: 'Space' });
+        expect(video.paused).to.be.true;
+        expectState(false);
+        expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.true;
+        await sendKeys({ press: 'Space' });
+        expect(video.paused).to.be.false;
+        expectState(true);
+        expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.false;
+      });
+
+      it('keeps reduced-motion media buffering and plays it only on request once ready', async () => {
+        const matchMedia = window.matchMedia.bind(window);
+        sinon.stub(window, 'matchMedia').callsFake((query) => (
+          query === '(prefers-reduced-motion: reduce)' ? { matches: true } : matchMedia(query)
+        ));
+        video.srcObject = null;
+        video.load();
+        decorate.applyAccessibilityEvents(video);
+        expect(video.hasAttribute('autoplay')).to.be.false;
+        expect(video.preload).to.equal('auto');
+        const play = sinon.spy(video, 'play');
+        control.click();
+        expect(play.called).to.be.false;
+        expectState(false);
+        const canPlay = new Promise((resolve) => {
+          video.addEventListener('canplay', resolve, { once: true });
+        });
+        video.srcObject = stream;
+        await canPlay;
+        expect(video.paused).to.be.true;
+        expectState(false);
+        const playing = new Promise((resolve) => {
+          video.addEventListener('playing', resolve, { once: true });
+        });
+        control.click();
+        await playing;
+        expect(play.calledOnce).to.be.true;
+        expectState(true);
+      });
+
+      it('preserves normal autoplay and does not restart a manually paused video on canplay', async () => {
+        const matchMedia = window.matchMedia.bind(window);
+        sinon.stub(window, 'matchMedia').callsFake((query) => (
+          query === '(prefers-reduced-motion: reduce)' ? { matches: false } : matchMedia(query)
+        ));
+        const playSpy = sinon.spy(video, 'play');
+        decorate.applyAccessibilityEvents(video);
+        expect(video.hasAttribute('autoplay')).to.be.true;
+        const playing = new Promise((resolve) => {
+          video.addEventListener('playing', resolve, { once: true });
+        });
+        video.dispatchEvent(new Event('canplay'));
+        await playing;
+        expectState(true);
+        control.click();
+        expect(video.paused).to.be.true;
+        expect(video.hasAttribute(USER_PAUSED_ATTR)).to.be.true;
+        video.dispatchEvent(new Event('canplay'));
+        expect(playSpy.calledOnce).to.be.true;
+        expectState(false);
+      });
+
+      it('synchronizes with repeated, programmatic, and ended playback events', async () => {
+        video.removeAttribute('autoplay');
+        decorate.applyAccessibilityEvents(video);
+        expectState(false);
+        await video.play();
+        expectState(true);
+        video.dispatchEvent(new Event('playing'));
+        video.dispatchEvent(new Event('playing'));
+        expectState(true);
+        video.pause();
+        video.dispatchEvent(new Event('pause'));
+        expectState(false);
+        await video.play();
+        sinon.stub(video, 'ended').get(() => true);
+        video.dispatchEvent(new Event('ended'));
+        video.dispatchEvent(new Event('ended'));
+        expectState(false);
+      });
+
+      it('updates only the analytics action across repeated playback events', async () => {
+        decorate.applyAccessibilityEvents(video);
+        decorate.decoratePausePlayWrapper(video);
+        await waitFor(() => control.getAttribute('aria-label') === 'Play motion');
+        const heading = 'Play motion graphics and Pause motion effects';
+        control.setAttribute('daa-ll', `Play motion-1--${heading}`);
+        const playing = new Promise((resolve) => {
+          video.addEventListener('playing', resolve, { once: true });
+        });
+        control.click();
+        await playing;
+        video.dispatchEvent(new Event('playing'));
+        expect(control.getAttribute('daa-ll')).to.equal(`Pause motion-1--${heading}`);
+        control.click();
+        video.dispatchEvent(new Event('pause'));
+        decorate.syncPausePlayIcon(video);
+        expect(control.getAttribute('daa-ll')).to.equal(`Play motion-1--${heading}`);
+
+        control.setAttribute('daa-ll', `Custom action-1--${heading}`);
+        await video.play();
+        expect(control.getAttribute('daa-ll')).to.equal(`Custom action-1--${heading}`);
+      });
+
+      it('synchronizes controls relocated outside the video holder via aria-controls', async () => {
+        video.id = 'background-video';
+        control.setAttribute('aria-controls', video.id);
+        decorate.applyAccessibilityEvents(video);
+        document.body.append(control);
+        control.click();
+        expectState(true);
+        video.pause();
+        await waitFor(() => !control.querySelector('.is-playing'));
+        expectState(false);
+      });
+
+      ['blocks', 'mep/ace1151', 'mep/emea1443'].forEach((path) => {
+        it(`does not auto-play reduced-motion video when its accordion panel opens (${path})`, async () => {
+          const matchMedia = window.matchMedia.bind(window);
+          sinon.stub(window, 'matchMedia').callsFake((query) => {
+            if (query === '(prefers-reduced-motion: reduce)') return { matches: true };
+            if (['(min-width: 1200px)', '(max-width: 1199px)'].includes(query)) {
+              return { matches: query === '(min-width: 1200px)', addEventListener: sinon.stub() };
+            }
+            return matchMedia(query);
+          });
+          const { default: initAccordion } = await import(`../../../libs/${path}/accordion/accordion.js`);
+          const block = createTag('div', { class: 'accordion editorial' }, `
+            <div><div>Video</div></div><div><div>Video description</div></div><div></div>
+            <div><div>Other media</div></div><div><div>Other description</div></div><div></div>
+          `);
+          block.children[2].append(video.closest('.video-holder'));
+          document.body.replaceChildren(block);
+          decorate.applyAccessibilityEvents(video);
+          expect(video.readyState).to.be.greaterThan(1);
+          const play = sinon.spy(video, 'play');
+          await initAccordion(block);
+          const [first, second] = block.querySelectorAll('.accordion-trigger');
+          second.click();
+          first.click();
+          expect(play.called).to.be.false;
+          expect(video.paused).to.be.true;
+          expectState(false);
+        });
+
+        it(`preserves accordion video playback on panel changes (${path})`, async () => {
+          const matchMedia = window.matchMedia.bind(window);
+          sinon.stub(window, 'matchMedia').callsFake((query) => (
+            ['(min-width: 1200px)', '(max-width: 1199px)'].includes(query)
+              ? { matches: query === '(min-width: 1200px)', addEventListener: sinon.stub() }
+              : matchMedia(query)
+          ));
+          const { default: initAccordion } = await import(`../../../libs/${path}/accordion/accordion.js`);
+          const block = createTag('div', { class: 'accordion editorial' }, `
+            <div><div>Video</div></div><div><div>Video description</div></div><div></div>
+            <div><div>Other media</div></div><div><div>Other description</div></div><div></div>
+          `);
+          block.children[2].append(video.closest('.video-holder'));
+          document.body.replaceChildren(block);
+          decorate.applyAccessibilityEvents(video);
+          await video.play();
+          const clickSpy = sinon.spy(control, 'click');
+          await initAccordion(block);
+          expect(clickSpy.called).to.be.false;
+          expectState(true);
+          const [first, second] = block.querySelectorAll('.accordion-trigger');
+          second.click();
+          expectState(false);
+          first.click();
+          expectState(true);
+          first.click();
+          expectState(false);
+        });
+      });
+    });
   });
 
   it('handlePause should return undefined if called with unknown event', async () => {
