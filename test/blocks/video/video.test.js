@@ -70,6 +70,27 @@ describe('video uploaded using franklin bot', () => {
     expect(video).to.exist;
   });
 
+  it('starts the control in the play state when reduced motion keeps an autoplay video paused', async () => {
+    const matchMedia = sinon.stub(window, 'matchMedia').callsFake((query) => ({
+      matches: query.includes('reduce'),
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+    }));
+    const block = document.querySelector('.video.autoplay.single');
+    init(block.querySelector('a'));
+    setTimeout(callback, 600);
+    await clock.runAllAsync();
+    matchMedia.restore();
+
+    const control = block.querySelector('.pause-play-wrapper');
+    const label = control.getAttribute('aria-label');
+    expect(block.querySelector('video').paused).to.be.true;
+    expect(control.getAttribute('aria-pressed')).to.equal('false');
+    expect(/^play/i.test(label), label).to.be.true;
+  });
+
   it('decorates video with autoplay', async () => {
     const block = document.querySelector('.video.autoplay');
     const a = block.querySelector('a');

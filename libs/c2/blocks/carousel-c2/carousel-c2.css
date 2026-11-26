@@ -114,6 +114,13 @@
           animation-fill-mode: var(--carousel-animation-fill);
           animation-range: var(--carousel-animation-range);
         }
+
+        /* Matches the 16:9 player box so poster slides fit like the player does on main. */
+        .rich-content .mpc-poster img {
+          aspect-ratio: 16 / 9;
+          height: auto;
+          object-fit: cover;
+        }
       }
 
       &.active {
