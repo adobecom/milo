@@ -23,6 +23,7 @@ function decorate(block) {
   block.replaceChildren(media, textCell ?? createTag('div', { class: 'plans-hero-content' }));
 }
 
+// Perf-check validation: comment-only change, no runtime effect.
 export default function init(el) {
   el.classList.add('container');
   decorateViewportContent(el, decorate);
