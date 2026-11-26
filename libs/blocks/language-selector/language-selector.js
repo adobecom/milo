@@ -367,6 +367,7 @@ function setupDropdownEvents({
   selectedLangItemRef,
   activeIndexRef,
   noSearchResult,
+  focusOnPointerOpen = true,
 }) {
   let isDraggingDropdown = false;
   let dragStartY = 0;
@@ -443,7 +444,7 @@ function setupDropdownEvents({
     noSearchResult,
   });
 
-  async function openDropdown() {
+  async function openDropdown(focusActiveLink = true) {
     sendAnalyticsEvent('language-selector:opened');
     const config = getConfig();
     if (config?.lingoProjectSuccessLogging === 'on') {
@@ -472,7 +473,7 @@ function setupDropdownEvents({
       const first = languageList.querySelector('.language-link');
       const toFocus = selected || first;
       if (toFocus) {
-        toFocus.focus();
+        if (focusActiveLink) toFocus.focus();
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
     });
@@ -483,7 +484,7 @@ function setupDropdownEvents({
     if (isDropdownOpen) {
       closeDropdown();
     } else {
-      openDropdown();
+      openDropdown(focusOnPointerOpen || e.detail === 0);
     }
   });
 
@@ -605,11 +606,16 @@ function setupDropdownEvents({
     if (e.key === 'Escape') {
       e.preventDefault();
       closeDropdown();
+    } else if (e.key === 'ArrowDown' && e.target === dropdown) {
+      e.preventDefault();
+      const toFocus = languageList.querySelector('.language-item.selected .language-link')
+        || languageList.querySelector('.language-link');
+      toFocus?.focus();
     }
   });
 }
 
-export default async function init(block) {
+export default async function init(block, { focusOnPointerOpen = true } = {}) {
   const config = getConfig();
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
@@ -658,5 +664,6 @@ export default async function init(block) {
     selectedLangItemRef,
     activeIndexRef,
     noSearchResult,
+    focusOnPointerOpen,
   });
 }

@@ -10,6 +10,9 @@ import {
   loadScript,
   getFederatedUrl,
   getFedsPlaceholderConfig,
+  customFetch,
+  createTag,
+  decoratePlaceholders,
 } from '../../../utils/utils.js';
 
 import {
@@ -133,6 +136,22 @@ const [setEventVersion, getEventVersion] = (() => {
     () => eventVersion,
   ];
 })();
+// Smooth scroll (Lenis) listens to wheel on window and blocks scrolling inside the drop-up
+const routeDropdownWheelToList = (dropdown) => {
+  const list = dropdown?.querySelector('.language-list');
+  if (!list) return;
+  dropdown.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || getComputedStyle(dropdown).display === 'none') return;
+    e.stopPropagation();
+    if (list.contains(e.target)) return;
+    e.preventDefault();
+    let delta = e.deltaY;
+    if (e.deltaMode === WheelEvent.DOM_DELTA_LINE) delta *= 16;
+    else if (e.deltaMode === WheelEvent.DOM_DELTA_PAGE) delta *= list.clientHeight;
+    list.scrollTop += delta;
+  }, { passive: false });
+};
+
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -502,6 +521,42 @@ class Footer {
     return this.elements.featuredProducts;
   };
 
+  initLanguageSelector = async (link) => {
+    let replaced = false;
+    try {
+      const config = getConfig();
+      const { decorateArea } = config;
+      const resp = await customFetch({ resource: `${link.href.split('#')[0]}.plain.html`, withCacheRules: true });
+      if (!resp?.ok) return false;
+      const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
+      if (!doc.querySelector('body > div > .language-selector')) return false;
+      if (decorateArea) decorateArea(doc, { fragmentLink: link });
+      const fragment = createTag('div', { class: 'fragment' });
+      fragment.append(...doc.querySelectorAll('body > div'));
+      await decoratePlaceholders(fragment, config);
+      const block = fragment.querySelector('.language-selector');
+      const styleUrl = `${base}/blocks/language-selector/language-selector.css`;
+      const [{ default: initLanguageSelector }] = await Promise.all([
+        import('../../../blocks/language-selector/language-selector.js'),
+        new Promise((resolve, reject) => {
+          loadStyle(styleUrl, (event) => {
+            if (event === 'error') reject(new Error(`Could not load ${styleUrl}`));
+            else resolve();
+          });
+        }),
+      ]);
+      link.replaceWith(fragment);
+      replaced = true;
+      await initLanguageSelector(block, { focusOnPointerOpen: false });
+      routeDropdownWheelToList(this.elements.regionPicker.querySelector('.language-dropdown'));
+      this.elements.regionPicker.classList.add('language-selector-c2');
+      return true;
+    } catch (error) {
+      lanaLog({ message: 'Could not initialize language selector', error, tags: 'global-footer', errorType: 'e' });
+      return replaced;
+    }
+  };
+
   decorateRegionPicker = async () => {
     this.elements.regionPicker = '';
     const selector = this.body.querySelector('.market-selector');
@@ -612,10 +667,13 @@ class Footer {
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       const { default: initFragment } = await import('../../../blocks/fragment/fragment.js');
-      await initFragment(regionSelector); // load fragment and replace original link
+      const hasLanguageSelector = await this.initLanguageSelector(regionSelector);
+      if (!hasLanguageSelector) await initFragment(regionSelector);
       // Update aria-expanded on click
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();
+        // The language selector manages aria-expanded itself
+        if (hasLanguageSelector) return;
         const isDialogActive = regionPickerElem.getAttribute('aria-expanded') === 'true';
         regionPickerElem.setAttribute('aria-expanded', !isDialogActive);
       });
@@ -892,7 +950,8 @@ class Footer {
     if (!region || !legal || !social) return;
 
     if (this.isFooterMobileLayout()
-      || (region.classList.contains('market-selector-c2')
+      || ((region.classList.contains('market-selector-c2')
+        || region.classList.contains('language-selector-c2'))
         && window.matchMedia(MARKET_SELECTOR_OPTIONS_MEDIA).matches)) {
       options.append(region, social, legal);
     } else {
@@ -903,8 +962,9 @@ class Footer {
 
   initFooterOptionsOrderSync = () => {
     if (!this.footerOrderMediaQuery) {
-      const breakpoint = this.elements.regionPicker?.classList?.contains('market-selector-c2')
-        ? MARKET_SELECTOR_OPTIONS_MEDIA : '(max-width: 899px)';
+      const isC2Selector = this.elements.regionPicker?.classList?.contains('market-selector-c2')
+        || this.elements.regionPicker?.classList?.contains('language-selector-c2');
+      const breakpoint = isC2Selector ? MARKET_SELECTOR_OPTIONS_MEDIA : '(max-width: 899px)';
       this.footerOrderMediaQuery = window.matchMedia(breakpoint);
     }
     if (!this.footerOrderMediaQueryHandler) {

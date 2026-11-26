@@ -897,3 +897,56 @@ afterEach(() => {
     d.style.opacity = '';
   });
 });
+
+describe('Language Selector focusOnPointerOpen option', () => {
+  const setup = async (options) => {
+    document.body.innerHTML = await readFile({ path: './mocks/languages.html' });
+    setConfig({
+      languages: {
+        en: { ietf: 'en', tk: 'hah7vzn.css', rootPath: '', regions: [{ region: 'gb' }, { region: 'apac' }] },
+        de: { ietf: 'de', tk: 'hah7vzn.css' },
+        fr: { ietf: 'fr', tk: 'vrk5vyv.css' },
+        ja: { ietf: 'ja', tk: 'dvg6awq', region: 'jp' },
+        ko: { ietf: 'ko', tk: 'qjs5sfm', region: 'kr' },
+      },
+      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+    });
+    await init(document.body.querySelector('.language-selector'), options);
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+  };
+  const open = async (detail) => {
+    const picker = document.querySelector('.feds-regionPicker');
+    picker.dispatchEvent(new MouseEvent('click', { bubbles: true, detail }));
+    await new Promise((resolve) => { setTimeout(resolve, 150); });
+  };
+
+  afterEach(() => { sinon.restore(); });
+
+  it('focuses the selected option on pointer open by default', async () => {
+    await setup();
+    await open(1);
+    expect(document.activeElement.classList.contains('language-link')).to.be.true;
+  });
+
+  it('does not focus an option on pointer open when focusOnPointerOpen is false', async () => {
+    await setup({ focusOnPointerOpen: false });
+    await open(1);
+    const dropdown = document.querySelector('.language-dropdown');
+    expect(document.activeElement).to.equal(dropdown);
+    expect(document.querySelector('.language-list').getAttribute('aria-activedescendant')).to.not.be.empty;
+  });
+
+  it('still focuses the selected option on keyboard open when focusOnPointerOpen is false', async () => {
+    await setup({ focusOnPointerOpen: false });
+    await open(0);
+    expect(document.activeElement.classList.contains('language-link')).to.be.true;
+  });
+
+  it('moves focus to the selected option on ArrowDown from the dropdown container', async () => {
+    await setup({ focusOnPointerOpen: false });
+    await open(1);
+    const dropdown = document.querySelector('.language-dropdown');
+    dropdown.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(document.activeElement.closest('.language-item').classList.contains('selected')).to.be.true;
+  });
+});

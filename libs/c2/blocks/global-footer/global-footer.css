@@ -607,7 +607,7 @@ span.feds-footer-privacyLink-divider {
 }
 
 @media (max-width: 767px) {
-  .global-footer .feds-footer-options:where(:has(.market-selector)) {
+  .global-footer .feds-footer-options:where(:has(.market-selector, .language-selector)) {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "region"
@@ -616,12 +616,12 @@ span.feds-footer-privacyLink-divider {
     row-gap: var(--s2a-spacing-lg);
   }
 
-  .global-footer .feds-footer-options:where(:has(.market-selector)) > .feds-social {
+  .global-footer .feds-footer-options:where(:has(.market-selector, .language-selector)) > .feds-social {
     justify-self: start;
   }
 }
 
-.global-footer.mobile .feds-footer-options:where(:has(.market-selector)) {
+.global-footer.mobile .feds-footer-options:where(:has(.market-selector, .language-selector)) {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "region"
@@ -630,25 +630,25 @@ span.feds-footer-privacyLink-divider {
   row-gap: var(--s2a-spacing-lg);
 }
 
-.global-footer.mobile .feds-footer-options:where(:has(.market-selector)) > .feds-social {
+.global-footer.mobile .feds-footer-options:where(:has(.market-selector, .language-selector)) > .feds-social {
   justify-self: start;
 }
 
 @media (max-width: 1023px) {
-  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection {
+  .global-footer:has(.market-selector-c2, .language-selector-c2) ul.feds-footer-privacySection {
     flex-flow: row wrap;
   }
 
-  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem {
+  .global-footer:has(.market-selector-c2, .language-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem {
     flex: 0 0 100%;
   }
 
-  .global-footer:has(.market-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
+  .global-footer:has(.market-selector-c2, .language-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child {
     position: static;
   }
 
-  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]),
-  .global-footer:has(.market-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]) + .feds-footer-privacy-listitem:has(a:is([href*="site-map" i], [href*="sitemap" i])) {
+  .global-footer:has(.market-selector-c2, .language-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]),
+  .global-footer:has(.market-selector-c2, .language-selector-c2) ul.feds-footer-privacySection > .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]) + .feds-footer-privacy-listitem:has(a:is([href*="site-map" i], [href*="sitemap" i])) {
     flex: 0 1 auto;
   }
 }
@@ -852,12 +852,12 @@ span.feds-footer-privacyLink-divider {
     flex-direction: row;
   }
 
-  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]),
-  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child:has(.feds-footer-privacyLink) {
+  .global-footer:not(.mobile):has(.market-selector-c2, .language-selector-c2) .feds-footer-privacy-listitem:has(a[href*="#interest-based-ads"]),
+  .global-footer:not(.mobile):has(.market-selector-c2, .language-selector-c2) .feds-footer-legalWrapper .feds-footer-privacy-listitem:last-child:has(.feds-footer-privacyLink) {
     padding-left: var(--s2a-spacing-lg);
   }
 
-  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-options > .feds-footer-miscLinks-legal {
+  .global-footer:not(.mobile):has(.market-selector-c2, .language-selector-c2) .feds-footer-options > .feds-footer-miscLinks-legal {
     gap: var(--s2a-spacing-xl);
   }
 
@@ -891,7 +891,7 @@ span.feds-footer-privacyLink-divider {
     row-gap: var(--s2a-spacing-xl);
   }
 
-  .global-footer:not(.mobile):has(.market-selector-c2) .feds-footer-options > .feds-regionPicker-wrapper {
+  .global-footer:not(.mobile):has(.market-selector-c2, .language-selector-c2) .feds-footer-options > .feds-regionPicker-wrapper {
     margin-inline-end: var(--s2a-spacing-xs);
   }
 
@@ -916,5 +916,14 @@ span.feds-footer-privacyLink-divider {
 
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: var(--s2a-spacing-2xl);
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1499px) {
+  .global-footer:not(.mobile):has(.language-selector-c2) .feds-footer-options {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "region social"
+      "legal legal";
   }
 }
