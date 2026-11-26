@@ -162,14 +162,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .promo .promo-card {
-    animation: promo-fade-in 200ms ease-out both;
+    animation: none;
   }
 }
 
 @keyframes promo-load-in {
   from { transform: translateY(var(--s2a-spacing-xl)); }
-}
-
-@keyframes promo-fade-in {
-  from { opacity: 0; }
 }

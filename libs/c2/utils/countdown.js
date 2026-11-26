@@ -1,12 +1,18 @@
-import { createTag } from '../../utils/utils.js';
-
 const UNITS = [['day', 86400], ['hour', 3600], ['minute', 60], ['second', 1]];
 
-export function parseRange(text = '') {
-  const dates = text.split(',').map((part) => Date.parse(part.trim()));
-  if (dates.length > 2 || dates.some(Number.isNaN)) return null;
-  const [start, end] = dates.length === 2 ? dates : [-Infinity, dates[0]];
-  return start < end ? { start, end } : null;
+// Parsed exactly like the C1 countdown timer: dates without an offset use the visitor's local time
+export const parseDate = (text = '') => Date.parse(text.trim());
+
+// "end" or "start, end[, start, end…]" with ranges in chronological order
+export function parseRanges(text = '') {
+  const dates = text.split(',').map(parseDate);
+  if (dates.some(Number.isNaN)) return null;
+  if (dates.length === 1) return [{ start: -Infinity, end: dates[0] }];
+  if (dates.length % 2) return null;
+  const ranges = [];
+  for (let i = 0; i < dates.length; i += 2) ranges.push({ start: dates[i], end: dates[i + 1] });
+  const isOrdered = ({ start, end }, i) => start < end && (!i || start >= ranges[i - 1].end);
+  return ranges.every(isOrdered) ? ranges : null;
 }
 
 export function splitDuration(ms) {
@@ -18,67 +24,60 @@ export function splitDuration(ms) {
   });
 }
 
+// remaining counts down to the next status change: the range start if pending, its end if running
+export function getCountdownState(now, ranges) {
+  const range = ranges.find(({ end }) => now < end);
+  if (!range) return { status: 'ended', range: null, remaining: 0, parts: splitDuration(0) };
+  const status = now < range.start ? 'pending' : 'running';
+  const remaining = (status === 'pending' ? range.start : range.end) - now;
+  return { status, range, remaining, parts: splitDuration(remaining) };
+}
+
 // ?instant= shifts the clock to preview scheduled states
 function getClockOffset() {
   const instant = Date.parse(new URLSearchParams(window.location.search).get('instant'));
   return Number.isNaN(instant) ? 0 : instant - Date.now();
 }
 
-function getStatus(now, { start, end }) {
-  if (now >= end) return 'ended';
-  return now >= start ? 'running' : 'pending';
-}
+export default function createCountdown(ranges) {
+  const listeners = new Set();
+  const offset = getClockOffset();
+  const now = () => Date.now() + offset;
+  let state;
+  let timeout;
+  let controller;
 
-function buildTimer(className) {
-  const el = createTag('div', { class: className, role: 'timer' });
-  const digits = createTag('span', { class: 'countdown-digits', dir: 'ltr', 'aria-hidden': 'true' });
-  const values = UNITS.map((_, i) => {
-    if (i) createTag('span', { class: 'countdown-separator' }, ':', { parent: digits });
-    return createTag('span', { class: 'countdown-value' }, '00', { parent: digits });
-  });
-  const label = createTag('span', { class: 'sr-only' });
-  el.append(digits, label);
-  return { el, values, label };
-}
-
-export default function createCountdown(range) {
-  const lang = document.documentElement.lang || 'en-US';
-  const formatters = UNITS.map(([unit]) => new Intl.NumberFormat(lang, { style: 'unit', unit, unitDisplay: 'long' }));
-  const timers = [];
-  let interval;
-  let status;
-
-  const render = ({ values, label }, parts) => {
-    parts.forEach(({ value }, i) => { values[i].textContent = String(value).padStart(2, '0'); });
-    label.textContent = parts.map(({ value }, i) => formatters[i].format(value)).join(' ');
+  const stop = () => {
+    clearTimeout(timeout);
+    controller?.abort();
+    controller = null;
   };
 
-  const stop = () => clearInterval(interval);
+  function tick() {
+    state = getCountdownState(now(), ranges);
+    listeners.forEach((listener) => listener(state));
+    if (state.status === 'ended') stop();
+    // Tick just after the displayed second changes so early or late timers never skip a digit
+    else if (!document.hidden) timeout = setTimeout(tick, (state.remaining % 1000) + 10);
+  }
 
   return {
-    createTimer(className = 'countdown') {
-      const timer = buildTimer(className);
-      timers.push(timer);
-      return timer.el;
-    },
-    start(onStatusChange) {
-      const offset = getClockOffset();
-      const tick = () => {
-        const now = Date.now() + offset;
-        const next = getStatus(now, range);
-        if (next === 'running') {
-          const parts = splitDuration(range.end - now);
-          timers.forEach((timer) => render(timer, parts));
-        }
-        if (next !== status) {
-          status = next;
-          onStatusChange?.(status);
-        }
-        if (status === 'ended') stop();
-      };
+    start() {
+      if (controller || state?.status === 'ended') return;
+      controller = new AbortController();
+      // Hidden tabs skip ticks and catch up on return
+      document.addEventListener('visibilitychange', () => {
+        clearTimeout(timeout);
+        if (!document.hidden) tick();
+      }, { signal: controller.signal });
       tick();
-      if (status !== 'ended') interval = setInterval(tick, 1000);
     },
     stop,
+    subscribe(listener) {
+      listeners.add(listener);
+      if (state) listener(state);
+      return () => listeners.delete(listener);
+    },
+    getState: () => state ?? getCountdownState(now(), ranges),
   };
 }

@@ -1,9 +1,9 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
-import createCountdown, { parseRange } from '../../utils/countdown.js';
+import createCountdown, { parseRanges } from '../../utils/countdown.js';
+import createCountdownTimer, { getCountdownLabels } from '../../utils/countdown-timer.js';
 
 const TEXT_CONFIG = { heading: '4', body: 'md' };
-const COUNTDOWN_KEY = 'countdown';
 let idCount = 0;
 
 const nextId = (prefix) => {
@@ -55,43 +55,73 @@ function decorateContent(row) {
   return content;
 }
 
-function addTimer(content, state) {
+function addTimer(content, countdown, labels) {
   let callout = content.querySelector('.promo-callout');
   if (!callout) callout = createTag('div', { class: 'promo-callout' }, null, { parent: content });
-  state.countdown ??= createCountdown(state.range);
-  const timer = state.countdown.createTimer('promo-timer heading-6');
-  const actions = [timer, callout.querySelector('.action-area')].filter(Boolean);
-  createTag('div', { class: 'promo-actions' }, actions, { parent: callout });
+  let actions = callout.querySelector('.promo-actions');
+  if (!actions) {
+    const actionArea = [callout.querySelector('.action-area')].filter(Boolean);
+    actions = createTag('div', { class: 'promo-actions' }, actionArea, { parent: callout });
+  }
+  const timer = createCountdownTimer(countdown, labels, 'promo-timer heading-6');
+  actions.prepend(timer.el);
+  return timer;
 }
 
 function decorate(block, state) {
-  const contentRows = [...block.children].filter((row) => {
-    const [key, value] = row.children;
-    if (!value || key.textContent.trim().toLowerCase() !== COUNTDOWN_KEY) return true;
-    state.range ??= parseRange(value.textContent);
-    if (!state.range) {
-      window.lana?.log(`Invalid promo countdown: ${value.textContent.trim()}`, { tags: 'promo', severity: 'warning' });
-    }
-    return false;
-  });
-
-  const [main, live] = contentRows.map(decorateContent);
+  const [main, live] = [...block.children].map(decorateContent);
   const card = createTag('div', { class: 'promo-card' });
   if (main) card.append(main);
-  if (main && state.range) addTimer(main, state);
-  if (live && state.range) {
-    live.classList.add('live');
-    card.append(live);
-    state.hasLive = true;
-  }
+  live?.classList.add('live');
+  state.views.push({ card, main, live });
   block.replaceChildren(card);
 }
 
-export default function init(el) {
-  const state = { range: null, countdown: null, hasLive: false };
-  decorateViewportContent(el, (block) => decorate(block, state));
-  state.countdown?.start((status) => {
-    el.classList.toggle('has-timer', status === 'running');
-    el.classList.toggle('is-live', status === 'ended' && state.hasLive);
+async function startCountdown(el, state, ranges) {
+  state.labels ??= getCountdownLabels();
+  const labels = await state.labels;
+  state.countdown?.stop();
+  state.timers.forEach(({ el: timer, destroy }) => { destroy(); timer.remove(); });
+  const countdown = createCountdown(ranges);
+  const views = state.views.filter(({ main }) => main);
+  state.countdown = countdown;
+  state.timers = views.map(({ card, main, live }) => {
+    if (live) card.append(live);
+    return addTimer(main, countdown, labels);
   });
+  const hasLive = views.some(({ live }) => live);
+  countdown.subscribe(({ status }) => {
+    el.classList.toggle('has-timer', status === 'running');
+    el.classList.toggle('is-live', status === 'ended' && hasLive);
+  });
+  countdown.start();
+}
+
+function parseDates(dates) {
+  const ranges = parseRanges(dates ?? '');
+  if (!ranges) {
+    window.lana?.log(`Invalid promo countdown: ${dates}`, { tags: 'promo', severity: 'warning' });
+  }
+  return ranges;
+}
+
+// On C2 pages merch.js sends a MAS fragment's cdtStart/cdtEnd as `milo:mas-countdown`
+// instead of adding the C1 timer; these dates win over page sources.
+function watchMasCountdown(el, state) {
+  el.addEventListener('milo:mas-countdown', ({ detail: { dates } }) => {
+    if (dates === state.masDates) return;
+    state.masDates = dates;
+    const ranges = parseDates(dates);
+    if (ranges) startCountdown(el, state, ranges);
+  });
+}
+
+export default async function init(el) {
+  const state = { views: [], timers: [], countdown: null, masDates: null };
+  decorateViewportContent(el, (block) => decorate(block, state));
+  watchMasCountdown(el, state);
+  if (!el.classList.contains('countdown-timer')) return;
+  const { default: getCountdownDates } = await import('../../utils/countdown-dates.js');
+  const ranges = parseDates(getCountdownDates());
+  if (ranges && !state.masDates) await startCountdown(el, state, ranges);
 }

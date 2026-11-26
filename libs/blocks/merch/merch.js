@@ -2327,7 +2327,8 @@ function watchPromoModals() {
  * regular content. As with the backend (see adobecom/mas#1279), the sentinel link itself is
  * what drives the countdown: no separate block variant/class is required. Only the sentinel is
  * consumed; the rest of the field content is preserved. Page metadata-based CDT behavior is
- * unaffected elsewhere.
+ * unaffected elsewhere. C2 pages never get the C1 timer: the dates are sent to the block as a
+ * `milo:mas-countdown` event (detail.dates = "start,end") for its own countdown.
  */
 let masCountdownTimersWatched = false;
 function watchMasCountdownTimers() {
@@ -2342,6 +2343,11 @@ function watchMasCountdownTimers() {
     if (!cdtStart || !cdtEnd) return;
 
     anchor.remove(); // consume: the link only carries the sentinel, never render it
+    if (getMetadata('foundation') === 'c2') {
+      const detail = { dates: `${cdtStart},${cdtEnd}` };
+      mf.dispatchEvent(new CustomEvent('milo:mas-countdown', { bubbles: true, detail }));
+      return;
+    }
     const target = mf.parentElement ?? mf;
     // loadCDT claims the block scope synchronously, so a block that also renders its own
     // countdown (e.g. a `countdown-timer` marquee) never ends up with two timers.

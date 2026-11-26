@@ -1261,6 +1261,24 @@ describe('mas-field', () => {
         expect(timer).to.exist;
       });
 
+      it('sends the dates to the block instead of adding the C1 timer on C2 pages', async () => {
+        document.head.innerHTML = '<meta name="foundation" content="c2">';
+        const container = document.createElement('div');
+        const mf = buildCountdownField();
+        container.append(mf);
+        document.body.append(container);
+        let dates;
+        container.addEventListener('milo:mas-countdown', ({ detail }) => { ({ dates } = detail); });
+
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+        await new Promise((resolve) => { setTimeout(resolve, 100); });
+        document.head.innerHTML = '';
+
+        expect(dates).to.equal(`2001-12-12T12:12:00Z,${futureCdtEnd}`);
+        expect([...mf.querySelectorAll('a')].some((a) => a.textContent.trim() === 'countdown-timer')).to.be.false;
+        expect(container.querySelector('.countdown-timer')).to.not.exist;
+      });
+
       it('keeps the sentinel link when the resolved fragment has no cdtStart/cdtEnd', async () => {
         const mf = document.createElement('mas-field');
         const fragment = document.createElement('aem-fragment');
