@@ -23,7 +23,15 @@ function decorate(block) {
   block.replaceChildren(media, textCell ?? createTag('div', { class: 'plans-hero-content' }));
 }
 
+// Perf-check validation only: deliberate late layout shift (CLS regression). Never merge.
+function lateShift(el) {
+  const shift = () => setTimeout(() => el.before(createTag('div', { style: 'height: 400px' })), 100);
+  if (document.readyState === 'complete') shift();
+  else window.addEventListener('load', shift, { once: true });
+}
+
 export default function init(el) {
   el.classList.add('container');
   decorateViewportContent(el, decorate);
+  lateShift(el);
 }
