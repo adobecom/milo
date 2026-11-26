@@ -1,0 +1,20 @@
+<div id="fragments">
+  <div class="fragment" data-path="/fragments/published">
+    <p>Published fragment</p>
+  </div>
+  <div class="fragment" data-path="/fragments/unpublished">
+    <div class="fragment" data-path="/fragments/nested-unknown"><p>Nested fragment</p></div>
+  </div>
+  <div class="marquee" data-path="/fragments/inline-unpublished"><p>Inline fragment</p></div>
+  <div class="fragment" data-path="/fragments/published"><p>Same fragment again</p></div>
+  <p><a class="modal link-block" href="#modal-a" data-modal-path="/fragments/modal-unpublished" data-modal-hash="#modal-a">Open</a></p>
+  <div><a class="fragment link-block" href="/fragments/broken">/fragments/broken</a></div>
+  <p><a href="/fragments/just-a-link">A plain link, not a fragment block</a></p>
+  <div class="fragment" data-path="javascript:alert(1)"><p>Not a web URL</p></div>
+</div>
+<div id="raw-placeholders">
+  <p data-label="{{raw-attr}}">Price: {{raw-text}}</p>
+  <p><a href="/buy?q=%7B%7Braw-link%7D%7D">Link</a></p>
+  <script type="text/template">{{ignored-script}}</script>
+</div>
+<div id="no-content"><p>Nothing to check</p></div>

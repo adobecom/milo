@@ -37,7 +37,7 @@
     import { stub } from 'sinon';
     import init, { loadCaas } from '../../../libs/blocks/caas/caas.js';
     import { loadScript, loadStyle, parseEncodedConfig } from '../../../libs/utils/utils.js';
-    import { delay, waitFor, waitForElement } from '../../helpers/waitfor.js';
+    import { waitFor } from '../../helpers/waitfor.js';
 
     let config;
     let caasEl;
@@ -54,9 +54,11 @@
     runTests(() => {
       describe('CaaS', () => {
         const ogFetch = window.fetch;
+        const originalMarkup = document.querySelector('main').innerHTML;
 
         beforeEach(() => {
           document.getElementById('caas')?.remove();
+          document.querySelector('main').innerHTML = originalMarkup;
           caasEl = null;
           loadScript.reset();
           loadStyle.reset();
@@ -93,18 +95,24 @@
         it('inits the CaaS collection', async () => {
           const a = document.getElementById('caaslink');
           await init(a);
-          await waitForElement('#caas');
-          await delay(50);
+          await waitFor(() => caasEl !== null);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));
         });
 
+        it('initializes the authored collection from a fresh fixture in each test', async () => {
+          const a = document.getElementById('caaslink');
+          expect(a).to.exist;
+          await init(a);
+          await waitFor(() => caasEl !== null);
+          expect(document.getElementById('caas')).to.exist;
+        });
+
         it('it can use the v2 hash format', async () => {
           const a = document.getElementById('v2-caaslink');
           await init(a);
-          await waitForElement('#caas');
-          await delay(50);
+          await waitFor(() => caasEl !== null);
           expect(loadScript.callCount).to.equal(3);
           expect(loadStyle.callCount).to.equal(1);
           expect(caasEl).to.equal(document.getElementById('caas'));

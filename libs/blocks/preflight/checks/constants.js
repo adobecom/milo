@@ -17,6 +17,42 @@ export const SEVERITY = {
   WARNING: 'warning',
 };
 
+export const PRIORITY = {
+  BLOCKER: 'Blocker',
+  CRITICAL: 'Critical',
+  MAJOR: 'Major',
+  NORMAL: 'Normal',
+};
+
+export const PRIORITY_ORDER = [
+  PRIORITY.BLOCKER,
+  PRIORITY.CRITICAL,
+  PRIORITY.MAJOR,
+  PRIORITY.NORMAL,
+];
+
+export const CHECK_PRIORITIES = {
+  'M@S Unpublished Fragments': PRIORITY.BLOCKER,
+  'unpublished-fragments': PRIORITY.BLOCKER,
+  navigation: PRIORITY.BLOCKER,
+  footer: PRIORITY.BLOCKER,
+  links: PRIORITY.BLOCKER,
+  'broken-links': PRIORITY.BLOCKER,
+  'lorem-ipsum': PRIORITY.BLOCKER,
+  'static-prices': PRIORITY.BLOCKER,
+  title: PRIORITY.MAJOR,
+  'title-size': PRIORITY.MAJOR,
+  description: PRIORITY.MAJOR,
+  'meta-description': PRIORITY.MAJOR,
+  'h1-count': PRIORITY.MAJOR,
+  'body-size': PRIORITY.MAJOR,
+  'lcp-element': PRIORITY.MAJOR,
+  'single-block': PRIORITY.MAJOR,
+  canonical: PRIORITY.MAJOR,
+  georouting: PRIORITY.MAJOR,
+  'image-dimensions-below-fold': PRIORITY.NORMAL,
+};
+
 export const PERFORMANCE_IDS = {
   lcpElement: 'lcp-element',
   singleBlock: 'single-block',

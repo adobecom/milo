@@ -8,18 +8,36 @@ describe('Preflight issue counts', () => {
     expect(countIssues({
       structure: [{ status: 'fail', severity: 'critical' }, { status: 'limbo' }],
       seo: [{ status: 'fail', severity: 'warning' }, { status: 'pass' }],
-      merch: [{ status: 'fail', details: { unpublished: [1, 2] } }],
+      merch: [
+        { status: 'fail', details: { unpublished: [1, 2] } },
+        { status: 'fail', details: { prices: [1, 2, 3] } },
+      ],
       accessibility: [{ status: 'fail', details: { issuesCount: 4 } }],
       performance: [{ status: 'fail' }, { status: 'limbo' }],
       assets: [{ details: { criticalAssetFailures: [1], warningAssetFailures: [1, 2] } }],
     }, 3)).to.deep.equal({
       General: { errors: 4, warnings: 1 },
       SEO: { errors: 0, warnings: 1 },
-      'M@S': { errors: 2, warnings: 0 },
+      'M@S': { errors: 5, warnings: 0 },
       Accessibility: { errors: 4, warnings: 0 },
       Performance: { errors: 1, warnings: 1 },
       Assets: { errors: 1, warnings: 2 },
     });
+  });
+
+  it('adds content check items to General errors and undecided content checks to its warnings', () => {
+    expect(countIssues({
+      structure: [{ status: 'fail', severity: 'critical' }],
+      content: [
+        { status: 'fail', severity: 'critical', details: { items: [1, 2, 3] } },
+        { status: 'limbo', severity: 'critical', details: { items: [] } },
+      ],
+    }, 1).General).to.deep.equal({ errors: 5, warnings: 1 });
+  });
+
+  it('counts an M@S check that could not run as a warning, not as a pass', () => {
+    expect(countIssues({ merch: [{ status: 'limbo', severity: 'critical', details: { unchecked: ['id'] } }] })['M@S'])
+      .to.deep.equal({ errors: 0, warnings: 1 });
   });
 
   it('counts nothing for missing, passing, or detail-less categories', () => {
@@ -28,8 +46,9 @@ describe('Preflight issue counts', () => {
     expect(countIssues({})).to.deep.equal(empty);
     expect(countIssues({
       accessibility: [{ status: 'pass', details: { issuesCount: 4 } }],
-      merch: [{ status: 'fail' }],
+      merch: [{ status: 'fail' }, { status: 'pass', details: { prices: [] } }],
       assets: [{}],
+      content: [{ status: 'pass', details: { items: [] } }, { status: 'fail' }],
     })).to.deep.equal(empty);
   });
 });
