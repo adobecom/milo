@@ -3191,6 +3191,33 @@ async function decorateDocumentExtras() {
   langBannerPromise = decorateLanguageBanner();
 }
 
+export function preloadModuleLowPriority(url) {
+  const link = document.createElement('link');
+  if (!link.relList?.supports?.('modulepreload') || !('fetchPriority' in link)) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    let timeout;
+    let settled = false;
+    const finish = (reason) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      resolve(reason);
+    };
+    timeout = setTimeout(() => finish('timed out'), 10000);
+    try {
+      loadLink(url, {
+        rel: 'modulepreload',
+        crossorigin: 'anonymous',
+        fetchpriority: 'low',
+        callback: (eventType) => finish(eventType === 'error' ? 'failed' : undefined),
+      });
+    } catch (e) {
+      finish(`failed: ${e}`);
+    }
+  });
+}
+
 async function documentPostSectionLoading(config) {
   const injectBlock = getMetadata('injectblock');
   if (injectBlock) {
@@ -3202,9 +3229,20 @@ async function documentPostSectionLoading(config) {
     accessibility.default();
   });
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
-    import('../features/seotech/seotech.js').then((module) => module.default(
-      { locationUrl: window.location.href, getMetadata, createTag, getConfig },
-    ));
+    const url = new URL('../features/seotech/seotech.js', import.meta.url).href;
+    preloadModuleLowPriority(url)
+      .then((reason) => {
+        if (reason) {
+          window.lana?.log(`SEOTECH module preload ${reason}; falling back to import`, {
+            tags: 'seotech',
+            severity: 'warn',
+          });
+        }
+        return import(url);
+      })
+      .then((module) => module.default(
+        { locationUrl: window.location.href, getMetadata, createTag, getConfig },
+      ));
   }
   const richResults = getMetadata('richresults');
   if (richResults) {
@@ -3374,7 +3412,17 @@ export async function loadArea(area = document) {
     if (!jsonLdOptions || jsonLdInitScheduled) return;
     jsonLdInitScheduled = true;
     window.setTimeout(() => {
-      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
+      const url = new URL('../features/jsonld-graph-manager/jsonld-graph-manager.js', import.meta.url).href;
+      preloadModuleLowPriority(url)
+        .then((reason) => {
+          if (reason) {
+            window.lana?.log(`JSON-LD graph manager preload ${reason}; falling back to import`, {
+              tags: 'jsonld-graph-manager',
+              severity: 'warn',
+            });
+          }
+          return import(url);
+        })
         .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
         .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
           tags: 'jsonld-graph-manager',
