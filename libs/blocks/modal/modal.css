@@ -66,7 +66,7 @@
   position: relative;
 }
 
-.aup-modal .aup-workflow-content.loading > iframe {
+.aup-modal .aup-workflow-content.loading > :not(.aup-loading-indicator) {
   visibility: hidden;
 }
 

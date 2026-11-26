@@ -2,15 +2,16 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 import { createFullGlobalNavigation, loadStyles, viewports } from './test-utilities.js';
-import { delay, waitFor, waitForRemoval } from '../../helpers/waitfor.js';
+import { delay, waitFor, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
+import { stubVisibility } from '../../helpers/visibility.js';
 import { getConfig, setConfig, loadScript } from '../../../libs/utils/utils.js';
 import {
-  AUP_SDK_READY_EVENT, fetchCheckoutLinkConfigs, getAupModalHashCleanup,
-  getModalAction, modalState,
+  AUP_SDK_READY_EVENT, clearPreservedAupModalHash, fetchCheckoutLinkConfigs,
+  getAupModalHashCleanup, getModalAction, modalState,
 } from '../../../libs/blocks/merch/merch.js';
 import { getModal as getMiloModal, closeModal } from '../../../libs/blocks/modal/modal.js';
 import { getModal as getC2Modal, closeModal as closeC2Modal } from '../../../libs/c2/blocks/modal/modal.js';
-import { preloadAupSdk, sendAupDialogCloseAnalytics } from '../../../libs/blocks/global-navigation/utilities/aup-sdk.js';
+import { aupPage, preloadAupSdk, sendAupDialogCloseAnalytics } from '../../../libs/blocks/global-navigation/utilities/aup-sdk.js';
 
 describe('AUP', () => {
   let gnav;
@@ -114,6 +115,7 @@ describe('AUP', () => {
     if (dialog()) await waitForRemoval('#aup-workflow-dialog');
     for (const modal of document.querySelectorAll('.dialog-modal')) await closeModal(modal);
     getAupModalHashCleanup()?.();
+    clearPreservedAupModalHash();
     modalState.isOpen = false;
     meta?.remove();
     foundation?.remove();
@@ -446,12 +448,253 @@ describe('AUP', () => {
       await host.showDialog(element, { title: 'Workflow' }, sinon.spy());
       element.dispatchEvent(new Event('close'));
       await waitForRemoval('#aup-workflow-dialog');
-      for (const event of ['popstate', 'hashchange']) {
+      for (const event of ['popstate', 'hashchange', 'pageshow']) {
         const handler = add.withArgs(event).firstCall.args[1];
         expect(remove.calledWith(event, handler)).to.be.true;
       }
       const handler = addElement.withArgs('app_loaded').firstCall.args[1];
       expect(removeElement.calledWith('app_loaded', handler)).to.be.true;
+    });
+
+    describe('bfcache navigation', () => {
+      const setupCheckoutFlow = async ({
+        hash = 'buy-test',
+        initialHash = '#category=photo',
+        foundationName = 'milo',
+        tag = 'iframe',
+        onRelaunch,
+      } = {}) => {
+        foundation = document.createElement('meta');
+        foundation.name = 'foundation';
+        foundation.content = foundationName;
+        document.head.append(foundation);
+        const currentHost = await initializeHost();
+        const url = new URL(originalUrl);
+        url.hash = initialHash;
+        window.history.replaceState(null, '', url);
+        const { element: cta, action } = await createAction(hash);
+        document.body.append(cta);
+        const launched = [];
+        let pending = false;
+        const bind = (target) => {
+          target.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (pending) return;
+            if (launched.length && onRelaunch) {
+              onRelaunch(target, { currentHost, action });
+              return;
+            }
+            pending = true;
+            action.aupHandler({ type: 'open', element: target });
+            const iframe = createElement(tag);
+            const callback = sinon.spy();
+            let resolveLaunch;
+            const launchPromise = new Promise((resolve) => { resolveLaunch = resolve; });
+            const shown = currentHost.showDialog(iframe, { title: 'Checkout' }, (result) => {
+              callback(result);
+              resolveLaunch();
+            });
+            target.aupCheckoutPromise = launchPromise
+              .then(() => action.aupHandler({ type: 'close', element: target }))
+              .finally(() => { pending = false; });
+            launched.push({ iframe, callback, shown, target });
+          });
+        };
+        bind(cta);
+        return { cta, action, url, launched, bind };
+      };
+
+      it('reloads when no trigger CTA exists or a stale promise times out, and stops after close', async () => {
+        const reload = sinon.stub(aupPage, 'reload');
+        const element = createElement('iframe');
+        await host.showDialog(element, { title: 'Workflow' }, sinon.spy());
+
+        window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: false }));
+        expect(reload.called).to.be.false;
+
+        window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+        expect(reload.calledOnce).to.be.true;
+
+        element.dispatchEvent(new Event('close'));
+        await waitForRemoval('#aup-workflow-dialog');
+        window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+        expect(reload.calledOnce).to.be.true;
+
+        const { cta, launched } = await setupCheckoutFlow();
+        const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+        try {
+          cta.click();
+          await launched[0].shown;
+          cta.aupCheckoutPromise = new Promise(() => {});
+
+          window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+          await clock.tickAsync(1999);
+          expect(reload.calledOnce).to.be.true;
+
+          await clock.tickAsync(1);
+          expect(reload.calledTwice).to.be.true;
+          expect(window.location.hash).to.equal('#buy-test');
+          await closeModal(dialog());
+        } finally {
+          clock.restore();
+          cta.remove();
+        }
+      });
+
+      [
+        { name: 'C1 iframe', foundationName: 'milo', close: closeModal, tag: 'iframe' },
+        { name: 'C2 iframe', foundationName: 'c2', close: closeC2Modal, tag: 'iframe' },
+        { name: 'C1 non-iframe', foundationName: 'milo', close: closeModal, tag: 'div' },
+      ].forEach(({ name, foundationName, close, tag }) => {
+        it(`relaunches ${name} checkout AUP modal in place without reloading or changing history`, async () => {
+          const reload = sinon.stub(aupPage, 'reload');
+          const { cta, url, launched } = await setupCheckoutFlow({ foundationName, tag });
+          try {
+            cta.click();
+            await launched[0].shown;
+            if (tag === 'iframe') launched[0].iframe.dispatchEvent(new Event('app_loaded'));
+            expect(dialog().querySelector('sp-progress-circle')).to.be.null;
+            expect(dialog().classList.contains('hide-close-button')).to.be.true;
+            const historyLength = window.history.length;
+
+            window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+
+            expect(reload.called).to.be.false;
+            expect(dialog().querySelector('sp-progress-circle')).to.not.be.null;
+            expect(dialog().querySelector('.aup-workflow-content').classList.contains('loading')).to.be.true;
+            expect(dialog().classList.contains('hide-close-button')).to.be.false;
+            expect(launched[0].callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+
+            await waitFor(() => launched.length === 2, 1000, 10);
+            await launched[1].shown;
+
+            expect(reload.called).to.be.false;
+            expect(window.location.hash).to.equal('#buy-test');
+            expect(window.history.length).to.equal(historyLength);
+            expect(document.querySelectorAll('.dialog-modal.aup-modal').length).to.equal(1);
+            expect(dialog().contains(launched[1].iframe)).to.be.true;
+
+            if (tag === 'iframe') {
+              expect(dialog().querySelector('sp-progress-circle')).to.not.be.null;
+              launched[1].iframe.dispatchEvent(new Event('app_loaded'));
+            }
+            expect(dialog().querySelector('sp-progress-circle')).to.be.null;
+            expect(dialog().classList.contains('hide-close-button')).to.be.true;
+
+            await close(dialog());
+            expect(window.location.href).to.equal(url.href);
+            expect(launched[1].callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+          } finally {
+            cta.remove();
+          }
+        });
+      });
+
+      ['buy:test', 'buy test'].forEach((modalId) => {
+        it(`awaits a detached trigger promise before clicking fallback CTA (${modalId})`, async () => {
+          const reload = sinon.stub(aupPage, 'reload');
+          const { cta, launched, bind } = await setupCheckoutFlow({ hash: modalId });
+          const fallbackCta = document.createElement('a');
+          fallbackCta.setAttribute('is', 'checkout-link');
+          fallbackCta.dataset.modalId = modalId;
+          bind(fallbackCta);
+          document.body.append(fallbackCta);
+
+          try {
+            cta.click();
+            await launched[0].shown;
+            cta.remove();
+
+            window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+            await waitFor(() => launched.length === 2, 1000, 10);
+            await launched[1].shown;
+
+            expect(reload.called).to.be.false;
+            expect(launched[1].target).to.equal(fallbackCta);
+            expect(dialog().contains(launched[1].iframe)).to.be.true;
+          } finally {
+            cta.remove();
+            fallbackCta.remove();
+          }
+        });
+      });
+
+      [
+        {
+          name: 'user closes stale dialog during relaunch wait',
+          duringWait: () => closeModal(dialog()),
+          expectedHash: '#category=photo',
+        },
+        {
+          name: 'hash changes during relaunch wait',
+          duringWait: () => window.history.replaceState(null, '', '#other-hash'),
+          expectedHash: '#other-hash',
+        },
+        {
+          name: 'relaunch rejects without opening a replacement',
+          onRelaunch: (target) => {
+            target.aupCheckoutPromise = Promise.reject(new Error('launch failed'));
+          },
+          expectedHash: '#category=photo',
+        },
+        {
+          name: 'relaunch click starts no promise or modal',
+          onRelaunch: () => {},
+          expectedHash: '#category=photo',
+        },
+        {
+          name: 'replacement showDialog bails early on hash change',
+          onRelaunch: (target, { currentHost, action }) => {
+            action.aupHandler({ type: 'open', element: target });
+            target.aupCheckoutPromise = currentHost.showDialog(
+              createElement('iframe'),
+              { title: 'Checkout' },
+              sinon.spy(),
+            );
+            window.history.replaceState(null, '', '#other-hash');
+          },
+          expectedHash: '#other-hash',
+        },
+        {
+          name: 'relaunch falls back to another modal and keeps the checkout hash',
+          onRelaunch: (target) => {
+            const fallbackModal = document.createElement('div');
+            fallbackModal.id = 'buy-test';
+            fallbackModal.className = 'dialog-modal three-in-one';
+            document.body.append(fallbackModal);
+            target.aupCheckoutPromise = Promise.resolve();
+          },
+          expectedHash: '#buy-test',
+          cleanupExtra: () => document.querySelector('.dialog-modal.three-in-one')?.remove(),
+        },
+      ].forEach(({ name, duringWait, onRelaunch, expectedHash, cleanupExtra }) => {
+        it(`handles edge case: ${name}`, async () => {
+          const { cta, launched } = await setupCheckoutFlow({ onRelaunch });
+          try {
+            cta.click();
+            await launched[0].shown;
+            if (duringWait) {
+              let release;
+              const originalPromise = cta.aupCheckoutPromise;
+              cta.aupCheckoutPromise = new Promise((resolve) => { release = resolve; });
+              window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+              await duringWait();
+              await originalPromise;
+              release();
+              await delay(0);
+            } else {
+              window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+            }
+            await waitForRemoval('#aup-workflow-dialog');
+            expect(dialog() === null).to.be.true;
+            expect(launched).to.have.lengthOf(1);
+            expect(window.location.hash).to.equal(expectedHash);
+          } finally {
+            cleanupExtra?.();
+            cta.remove();
+          }
+        });
+      });
     });
 
     it('cancels a pending iframe without publishing a false lifecycle event', async () => {
@@ -905,6 +1148,57 @@ describe('AUP', () => {
     expect(active.querySelector('sp-progress-circle') === null).to.be.true;
     expect(getComputedStyle(iframe).visibility).to.equal('visible');
     expect(getComputedStyle(close).display).to.equal('none');
+  });
+
+  it('shows retry error after 15s foreground iframe load timeout, retries, and auto-closes on second timeout', async () => {
+    const { showDialog } = await initializeHost();
+    const visibility = stubVisibility();
+    const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
+    const callback = sinon.spy();
+    try {
+      const iframe = createElement('iframe');
+      await showDialog(iframe, { title: 'Workflow' }, callback);
+
+      // Frozen/hidden tab must not consume the 15s foreground budget.
+      visibility.hide();
+      await clock.tickAsync(60000);
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+
+      visibility.show();
+      await clock.tickAsync(14999);
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+
+      await clock.tickAsync(1);
+      await waitForElement('.error-wrapper', { rootEl: dialog() });
+      const retryBtn = dialog().querySelector('.try-again-btn');
+      expect(retryBtn).to.not.be.null;
+      expect(iframe.style.display).to.equal('none');
+
+      retryBtn.click();
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+      expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
+      expect(dialog().querySelector('.aup-workflow-content').classList.contains('loading')).to.be.true;
+
+      await clock.tickAsync(15000);
+      await waitForElement('.error-wrapper', { rootEl: dialog() });
+      expect(dialog().querySelector('.try-again-btn')).to.be.null;
+      expect(callback.called).to.be.false;
+
+      await clock.tickAsync(5000);
+      await waitForRemoval('#aup-workflow-dialog');
+      expect(dialog() === null).to.be.true;
+      expect(callback.calledOnceWithExactly({ type: 'close' })).to.be.true;
+
+      // Completing via app_loaded cancels the 15s load timeout.
+      const loadedIframe = createElement('iframe');
+      await showDialog(loadedIframe, { title: 'Workflow' }, sinon.spy());
+      loadedIframe.dispatchEvent(new Event('app_loaded'));
+      await clock.tickAsync(20000);
+      expect(dialog().querySelector('.error-wrapper')).to.be.null;
+    } finally {
+      clock.restore();
+      visibility.restore();
+    }
   });
 
   [

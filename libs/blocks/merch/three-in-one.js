@@ -50,7 +50,9 @@ export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) 
   startLoadTimeout(iframe, handleTimeoutError);
 };
 
-export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleTimeoutError }) => {
+export const showErrorMsg = async ({
+  iframe, miloIframe, showBtn, theme, handleTimeoutError, onRetry,
+}) => {
   theme.style.display = 'none';
   iframe.style.display = 'none';
   const [errorRefresh, errorTryLater, tryAgain] = await replaceKeyArray(['error-refresh', 'error-try-later', 'try-again'], getConfig());
@@ -75,7 +77,9 @@ export const showErrorMsg = async ({ iframe, miloIframe, showBtn, theme, handleT
 
   if (showBtn) {
     const btn = createTag('button', { class: 'try-again-btn' }, `${tryAgain}`, { parent: msgWrapper });
-    btn.addEventListener('click', () => reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError }));
+    btn.addEventListener('click', () => (onRetry
+      ? onRetry({ iframe, theme, msgWrapper })
+      : reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError })));
   }
 };
 

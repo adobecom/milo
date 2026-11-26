@@ -923,6 +923,7 @@ const closeModalWithoutEvent = (modalId) => {
 // Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 let activeAupModalHash;
+let preservedAupModalHash;
 const aupModalHashCleanups = new WeakMap();
 let modalRestoreController = new AbortController();
 let modalRestoreHash = window.location.hash;
@@ -993,12 +994,25 @@ function restoreAupModalHash(modalHashState) {
   }
 }
 
-function clearAupModalHash(modalHashState) {
+function clearAupModalHash(modalHashState, { preserveHistory = false } = {}) {
   if (!modalHashState || activeAupModalHash !== modalHashState) return;
   cancelModalRestores();
   activeAupModalHash = undefined;
   modalState.isOpen = false;
-  restoreAupModalHash(modalHashState);
+  if (preserveHistory) {
+    preservedAupModalHash = { hash: modalHashState.hash, restoreUrl: modalHashState.restoreUrl };
+  } else {
+    preservedAupModalHash = undefined;
+    restoreAupModalHash(modalHashState);
+  }
+}
+
+export function clearPreservedAupModalHash({ restore = false, hash } = {}) {
+  const preserved = preservedAupModalHash;
+  preservedAupModalHash = undefined;
+  if (restore && preserved && (!hash || preserved.hash === hash)) {
+    restoreAupModalHash(preserved);
+  }
 }
 
 export function getAupModalHashCleanup() {
@@ -1006,10 +1020,10 @@ export function getAupModalHashCleanup() {
   if (!modalHashState) return undefined;
   if (aupModalHashCleanups.has(modalHashState)) return aupModalHashCleanups.get(modalHashState);
   let cleaned = false;
-  const cleanup = () => {
+  const cleanup = (options) => {
     if (cleaned) return;
     cleaned = true;
-    clearAupModalHash(modalHashState);
+    clearAupModalHash(modalHashState, options);
   };
   aupModalHashCleanups.set(modalHashState, cleanup);
   return cleanup;
@@ -1017,6 +1031,10 @@ export function getAupModalHashCleanup() {
 
 export function getAupModalTitle() {
   return activeAupModalHash?.title;
+}
+
+export function getAupModalTrigger() {
+  return activeAupModalHash?.element;
 }
 
 function handleAupModalHash(fallbackModalId, event, modalHashState) {
@@ -1028,14 +1046,21 @@ function handleAupModalHash(fallbackModalId, event, modalHashState) {
   if (type === 'open') {
     cancelModalRestores();
     clearAupModalHash(activeAupModalHash);
-    const restoreUrl = window.location.hash === hash
-      ? `${window.location.pathname}${window.location.search}`
-      : `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    const preserved = preservedAupModalHash;
+    preservedAupModalHash = undefined;
+    let restoreUrl;
+    if (preserved?.hash === hash) {
+      ({ restoreUrl } = preserved);
+    } else if (window.location.hash === hash) {
+      restoreUrl = `${window.location.pathname}${window.location.search}`;
+    } else {
+      restoreUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    }
     if (window.location.hash !== hash) {
       window.history.pushState(window.history.state, '', hash);
     }
     const title = element?.getAttribute('aria-label') || element?.textContent?.trim();
-    activeAupModalHash = { hash, restoreUrl, title };
+    activeAupModalHash = { hash, restoreUrl, title, element };
     modalState.isOpen = true;
     return activeAupModalHash;
   }
@@ -1043,7 +1068,7 @@ function handleAupModalHash(fallbackModalId, event, modalHashState) {
   return undefined;
 }
 
-const isLocaleModal = (dialog) => dialog?.id?.includes('locale-modal')
+export const isLocaleModal = (dialog) => dialog?.id?.includes('locale-modal')
   || dialog?.id?.includes('region-modal');
 
 export async function updateModalState({ cta, closedByUser } = {}) {

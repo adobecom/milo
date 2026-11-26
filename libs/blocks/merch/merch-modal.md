@@ -36,6 +36,10 @@ Reopens the modal on page load if the URL contains the hash. The function waits 
 
 When AUP Select is enabled (`aup-select=on`), the CTA can settle before Gnav has loaded the AUP SDK. Clicking it at that point would make MAS fall back to the legacy 3-in-1 modal, so the click is delayed until Gnav dispatches `milo:aupsdk:ready` (or up to 10 seconds, after which the legacy modal opens). The same applies when the hash is restored by back/forward navigation.
 
+When a browser restores a page from bfcache (`pageshow` with `event.persisted`) while an AUP workflow dialog is still open, the AUP host immediately shows its loading spinner and close button (for both iframe and non-iframe workflows), settles the stale workflow without altering browser history (with a 2s foreground timeout fallback to reload), and relaunches the workflow in place via the initiating CTA (falling back to reloading the page if no trigger CTA is available).
+
+Iframe-based AUP dialogs also enforce a 15-second foreground load timeout (matching the legacy 3-in-1 modal): on the first timeout they show a retry error banner (`Try again`), and if the reloaded iframe times out again they show the try-later message and close after 5 seconds.
+
 Readiness notifications are ignored until the SDK exposes `getOrchestratorContext`; an event alone cannot trigger an early legacy fallback.
 
 Pending SDK waits belong to the current modal intent. Opening another checkout, closing a modal, or observing a different hash aborts those waits and removes their listeners and timers. Restoring the previous hash with `pushState` does not revive an aborted request; a subsequent navigation can start a fresh request.
