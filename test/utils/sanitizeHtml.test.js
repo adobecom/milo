@@ -86,3 +86,37 @@ describe('sanitizeHtml URL scheme allowlist', () => {
     });
   });
 });
+
+describe('sanitizeHtml unsafe elements and attributes', () => {
+  const has = (body, selector) => !!body.querySelector(selector);
+
+  it('removes base and meta http-equiv but keeps other meta', () => {
+    const body = sanitizeHtmlBody('<body><base href="https://evil.example/"><meta http-equiv="refresh" content="0;url=https://evil.example"><meta name="x" content="y"><p>ok</p></body>');
+    expect(has(body, 'base')).to.be.false;
+    expect(has(body, 'meta[http-equiv]')).to.be.false;
+    expect(has(body, 'meta[name="x"]')).to.be.true;
+    expect(has(body, 'p')).to.be.true;
+  });
+
+  it('strips iframe srcdoc', () => {
+    const body = sanitizeHtmlBody('<iframe srcdoc="<script>alert(1)</script>"></iframe>');
+    expect(body.querySelector('iframe').hasAttribute('srcdoc')).to.be.false;
+  });
+
+  it('removes SVG animate/set targeting href but keeps other animations', () => {
+    const body = sanitizeHtmlBody(`<svg><a><animate attributeName="href " values="javascript:alert(1)"/>
+      <set attributeName="xlink:href" to="javascript:alert(1)"/><text>x</text></a>
+      <circle><animate attributeName="r" values="1;2"/></circle></svg>`);
+    expect(has(body, 'a animate')).to.be.false;
+    expect(has(body, 'set')).to.be.false;
+    expect(has(body, 'circle animate')).to.be.true;
+  });
+
+  it('sanitizes template contents', () => {
+    const body = sanitizeHtmlBody('<body><template><img src="x" onerror="alert(1)"><script>alert(1)</script><p>ok</p></template></body>');
+    const { content } = body.querySelector('template');
+    expect(content.querySelector('img').hasAttribute('onerror')).to.be.false;
+    expect(!!content.querySelector('script')).to.be.false;
+    expect(!!content.querySelector('p')).to.be.true;
+  });
+});
