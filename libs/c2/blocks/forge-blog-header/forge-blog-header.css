@@ -188,6 +188,11 @@
   }
 }
 
+.blog-header-share span.icon,
+.blog-share-action span.icon {
+  display: flex;
+}
+
 .blog-share {
   display: flex;
   flex-direction: column;

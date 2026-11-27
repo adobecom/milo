@@ -3,7 +3,7 @@ import {
 } from '../../../utils/utils.js';
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
-import { getIcon } from '../../../features/icons/icons.js';
+import loadIcons from '../../../features/icons/icons.js';
 import { copyMedia } from '../forge-related-content-card/forge-related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
@@ -274,15 +274,16 @@ function getAuthorHref(href) {
   return null;
 }
 
-async function loadIcon(name) {
-  const icon = await getIcon(name).catch(() => null);
-  return icon?.cloneNode(true) || null;
-}
-
-function hideIcon(svg) {
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('focusable', 'false');
-  return svg;
+async function buildIcons(names) {
+  const spans = names.map((name) => createTag('span', { class: `icon icon-${name}` }));
+  await loadIcons(spans);
+  return spans.map((span) => {
+    const svg = span.querySelector('svg');
+    if (!svg) return null;
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    return span;
+  });
 }
 
 async function loadAuthorProfile(profileUrl, data, avatar, info) {
@@ -470,7 +471,7 @@ function buildShareCard(data) {
   return card;
 }
 
-function buildActionLink(platform, svg, label, data) {
+function buildActionLink(platform, icon, label, data) {
   const { href, popup } = SHARE_PLATFORMS[platform];
   const link = createTag('a', {
     class: 'blog-share-action',
@@ -478,7 +479,7 @@ function buildActionLink(platform, svg, label, data) {
   });
   link.setAttribute('aria-label', label);
   link.setAttribute('href', href(encodeURIComponent(data.url), encodeURIComponent(data.title)));
-  link.append(svg);
+  link.append(icon);
   if (popup) {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -488,12 +489,12 @@ function buildActionLink(platform, svg, label, data) {
   return link;
 }
 
-function buildCopyButton(svg, labels, data) {
+function buildCopyButton(icon, labels, data) {
   const button = createTag('button', {
     type: 'button',
     class: 'blog-share-action blog-share-copy',
     'aria-label': labels.copy,
-  }, svg);
+  }, icon);
   // The badge is decorative; the persistent sr-only region owns the announcement.
   const feedback = createTag('span', { class: 'blog-share-feedback', 'aria-hidden': 'true' });
   const status = createTag('span', {
@@ -530,16 +531,15 @@ async function buildShareActions(platforms, data, labels) {
   const list = createTag('ul', { class: 'blog-share-actions' });
   if (!available.length) return list;
   const iconNames = available.map((p) => SHARE_PLATFORMS[p].icon);
-  const svgs = await Promise.all(iconNames.map(loadIcon));
+  const icons = await buildIcons(iconNames);
   available.forEach((platform, index) => {
-    const svg = svgs[index];
-    if (!svg) return;
-    hideIcon(svg);
+    const icon = icons[index];
+    if (!icon) return;
     if (platform === 'copy') {
-      list.append(buildCopyButton(svg, labels, data));
+      list.append(buildCopyButton(icon, labels, data));
       return;
     }
-    const link = buildActionLink(platform, svg, labels[platform], data);
+    const link = buildActionLink(platform, icon, labels[platform], data);
     list.append(createTag('li', null, link));
   });
   return list;
@@ -606,8 +606,8 @@ async function buildShareButton(config) {
     'data-modal-hash': `#${SHARE_MODAL_ID}`,
   });
   button.textContent = label;
-  const svg = await loadIcon('share');
-  if (svg) button.append(hideIcon(svg));
+  const [icon] = await buildIcons(['share']);
+  if (icon) button.append(icon);
   button.addEventListener('click', () => {
     openShareModal(button).catch((e) => logError(`share dialog failed to open: ${e.message}`));
   });
