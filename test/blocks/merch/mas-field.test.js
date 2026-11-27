@@ -28,6 +28,11 @@ if (!customElements.get('mas-field')) {
         } else if (field === 'ctas-checkout') {
           // Simulates a plain commerce link (no em/strong from MAS — e.g. checkout-link)
           content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
+        } else if (field === 'ctas-aria') {
+          content.innerHTML = '<a is="checkout-link" data-wcs-osi="OSI-ARIA" href="https://commerce.adobe.com/">Buy now</a>';
+          const cta = content.querySelector('a');
+          Object.defineProperty(cta, 'onceSettled', { value: () => Promise.resolve(cta) });
+          Object.defineProperty(cta, 'value', { value: [{ productArrangement: { productCode: 'PHSP' } }] });
         } else if (field === 'ctas-promo') {
           // Pre-stamped like real mas-field; asserts the unwrap preserves it.
           content.innerHTML = '<a is="checkout-link" data-wcs-osi="OSI-CTA" data-promotion-code="PROMO26" href="https://commerce.adobe.com/">Buy now</a>';
@@ -695,6 +700,27 @@ describe('mas-field', () => {
       expect(masField).to.exist;
       const link = masField.querySelector('a.con-button.blue.button-xl');
       expect(link).to.exist;
+    });
+
+    it('decorateInlineCtas sets aria-label on mas-field CTAs via addAriaLabelToCta', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=aria-1&field=ctas-aria';
+      a.textContent = '[[aria-test:ctas-aria]]';
+      strong.append(a);
+      p.append(strong);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      const link = p.querySelector('a[is="checkout-link"]');
+      expect(link).to.exist;
+      await waitForCondition(() => link.getAttribute('aria-label')?.startsWith('Buy now'));
+      expect(link.getAttribute('aria-label')).to.equal('Buy now - PHSP');
+      section.remove();
     });
 
     it('removes aem-fragment after hoisting an inline CTA so a later aem:load cannot duplicate it', async () => {
