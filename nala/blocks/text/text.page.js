@@ -39,6 +39,7 @@ export default class Text {
     this.propertiesHeadingM = this.text.locator('#properties-h3').first();
 
     this.outlineButton = this.text.locator('.con-button.outline');
+    this.blueButton = this.text.locator('.con-button.blue');
     this.actionAreaLink = this.page.locator('.body-m.action-area a').nth(1);
     this.bodyLink = this.page.locator('.body-m a');
 

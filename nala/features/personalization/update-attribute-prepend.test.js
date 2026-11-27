@@ -14,9 +14,9 @@ test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const URL = `${baseURL}${features[0].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
-  await expect(text.outlineButton).toHaveClass(/blue/);
-  await expect(text.outlineButton).toHaveAttribute('href', 'https://www.apple.com/');
-  await expect(text.outlineButton).toHaveAttribute('daa-ll', 'new link tracking');
+  await expect(text.blueButton).toHaveClass(/blue/);
+  await expect(text.blueButton).toHaveAttribute('href', 'https://www.apple.com/');
+  await expect(text.blueButton).toHaveAttribute('daa-ll', 'new link tracking');
 });
 
 // 1. check prepend and append using a non-section element
