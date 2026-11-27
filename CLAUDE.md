@@ -55,6 +55,34 @@ Builds CSS scroll-driven animations for C2 blocks using the Scroll-Driven Animat
 
 ---
 
+### `milo-perf-verify` (`.agents/skills/`)
+
+Before/after performance check for any PR: CLS on mobile / tablet / desktop, new requests before LCP, TBT, and changed request initiator stacks or long-task attribution. Interleaved cold loads under Lighthouse-style throttling.
+
+**Requires:** Playwright (`npx playwright install chromium`), a page that loads the changed code on both sides (see `milo-local-testpage`)
+
+**Outputs:** `report.md` (PASS / WATCH / REGRESSION), `report.json`, `runs.json`.
+
+---
+
+### `milo-local-testpage` (`.agents/skills/`)
+
+Runs Milo locally (one `aem up` per checkout, side by side) and finds or authors a test page under `tmp/` that exercises the changed block.
+
+**Outputs:** a local URL per side that loads the PR's code.
+
+---
+
+### `milo-perf-short` (`.agents/skills/`)
+
+A 15–30 s narrated performance short built from a `milo-perf-verify` run: filmed loads on both sides plus a scorecard drawn from `report.json`, screened by the vendored pr-short engine, then posted with the perf writeup to the PR and its Jira ticket.
+
+**Requires:** ffmpeg, `edge-tts`, `gh`, `JIRA_PAT`
+
+**Outputs:** `pr<N>-perf-short-*.mp4`, PR comment, Jira attachment + comment.
+
+---
+
 ## Common development commands
 
 ```sh
