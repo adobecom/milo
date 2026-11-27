@@ -29,6 +29,31 @@ function mostCommon(values) {
   return [...m].sort((p, q) => q[1] - p[1])[0]?.[0] ?? null;
 }
 
+// What the fix suggestions rest on, per new pre-LCP request: when it ends relative to LCP, which block
+// code started it (outermost block frame), and whether it needs its own connection.
+const GATE_MS = 120;
+const blockOf = (q) => {
+  const frames = [...q.initiator.stack].reverse().filter((f) => /\/blocks\/[^/]+\//.test(f.url || ''));
+  const f = frames[0] || (/\/blocks\/[^/]+\//.test(q.initiator.url || '') ? { fn: null, url: q.initiator.url } : null);
+  return f ? { block: f.url.match(/\/blocks\/([^/]+)\//)[1], fn: f.fn && f.fn !== '(anonymous)' ? f.fn : null } : null;
+};
+function evidenceOf(runs, key) {
+  const hits = runs.map((r) => ({ r, q: r.requests.find((q) => q.norm === key && q.preLcp) })).filter((h) => h.q && h.r.lcp?.t != null);
+  const gaps = hits.map(({ r, q }) => r.lcp.t - q.endMs);
+  const q0 = hits[0]?.q;
+  const host = /^https?:\/\//.test(key) ? new URL(key).host : null;
+  const federal = key.startsWith('{federal}') || (!!host && /^main--federal--adobecom\.aem\.(page|live)$/.test(host));
+  return {
+    endMs: median(hits.map((h) => h.q.endMs)),
+    lcpGapMs: median(gaps),
+    // Only code can await a request; a parser-loaded image that happens to end near LCP is not a gate.
+    gates: !!q0?.initiator.stack.length && gaps.filter((g) => g >= 0 && g <= GATE_MS).length >= STABLE * runs.length,
+    from: q0 ? blockOf(q0) : null,
+    host,
+    federal,
+  };
+}
+
 function compareViewport(B, A) {
   const metric = (fn) => ({ before: stat(B.map(fn)), after: stat(A.map(fn)) });
   const pre = (r) => r.requests.filter((q) => q.preLcp);
@@ -55,6 +80,10 @@ function compareViewport(B, A) {
     x.initiator = q ? initOf(q) : null; x.type = q?.type; x.bytes = bytesOf(runs, x.key);
   };
   preDiff.added.forEach((x) => describe(x, A)); preDiff.removed.forEach((x) => describe(x, B));
+  preDiff.added.forEach((x) => Object.assign(x, evidenceOf(A, x.key)));
+  // A gate only matters where LCP actually got later; elsewhere a near miss is a coincidence.
+  const lcpRose = metricDelta({ metrics: m }, 'lcp') > noiseLimit({ metrics: m }, 'lcp');
+  preDiff.added.forEach((x) => { x.gates = x.gates && lcpRose; });
   // A renamed or moved file is not a new request: pair an added with a removed one of the same type that has
   // the same file name, or the same (non-parser) initiator and about the same size.
   const base = (k) => k.split('?')[0].split('/').pop();
@@ -102,22 +131,32 @@ function compareViewport(B, A) {
   return { metrics: m, preLcp: preDiff, requests: allDiff, stacks, commonCount, tasks, shiftSources, lcpEl, lcpRect, errors };
 }
 
+// The smallest median delta that counts as a change, per metric: a floor, a share of the base, or the spread.
+// judge() and the fix check (fixcheck.mjs) both use it, so "resolved" means the same as "not flagged".
+export const metricDelta = (v, k) => (v.metrics[k].after.median ?? 0) - (v.metrics[k].before.median ?? 0);
+export function noiseLimit(v, k) {
+  const noise = Math.max(v.metrics[k].before.iqr, v.metrics[k].after.iqr);
+  const base = v.metrics[k].before.median || 0;
+  if (k === 'clsLoad' || k === 'clsScroll') return Math.max(0.01, noise);
+  if (k === 'tbt') return Math.max(30, 0.1 * base, noise);
+  return Math.max(100, 0.05 * base, noise); // lcp, fcp
+}
+
 function judge(v) {
   const findings = [];
-  const d = (k) => (v.metrics[k].after.median ?? 0) - (v.metrics[k].before.median ?? 0);
-  const noise = (k) => Math.max(v.metrics[k].before.iqr, v.metrics[k].after.iqr);
+  const d = (k) => metricDelta(v, k);
   for (const k of ['clsLoad', 'clsScroll']) {
-    const delta = d(k); const lim = Math.max(0.01, noise(k));
+    const delta = d(k); const lim = noiseLimit(v, k);
     if (delta > lim) findings.push({ level: 'regression', what: `CLS ${k === 'clsLoad' ? 'during load' : 'with scroll'} +${delta.toFixed(3)}` });
     else if (delta < -lim) findings.push({ level: 'improvement', what: `CLS ${k === 'clsLoad' ? 'during load' : 'with scroll'} ${delta.toFixed(3)}` });
   }
   {
-    const delta = d('tbt'); const lim = Math.max(30, 0.1 * (v.metrics.tbt.before.median || 0), noise('tbt'));
+    const delta = d('tbt'); const lim = noiseLimit(v, 'tbt');
     if (delta > lim) findings.push({ level: 'regression', what: `TBT +${Math.round(delta)} ms` });
     else if (delta < -lim) findings.push({ level: 'improvement', what: `TBT ${Math.round(delta)} ms` });
   }
   {
-    const delta = d('lcp'); const lim = Math.max(100, 0.05 * (v.metrics.lcp.before.median || 0), noise('lcp'));
+    const delta = d('lcp'); const lim = noiseLimit(v, 'lcp');
     if (delta > lim) findings.push({ level: 'watch', what: `LCP +${Math.round(delta)} ms` });
     else if (delta < -lim) findings.push({ level: 'improvement', what: `LCP ${Math.round(delta)} ms` });
   }
@@ -154,6 +193,59 @@ const delta = (b, a, unit = '', dp = 0) => {
 const code = (s) => `\`${String(s).replace(/`/g, "'")}\``;
 const ICON = { pass: '✅', watch: '⚠️', regression: '❌' };
 
+// The per-viewport verdict row (with its header), shared by report.md and the top of the PR comment.
+export function verdictTable(r) {
+  const { meta } = r;
+  const L = [];
+  L.push(`|${meta.viewports.map((v) => ` ${v[0].toUpperCase()}${v.slice(1)} |`).join('')}`.replace(/^\|/, '| |'));
+  L.push(`|---|${meta.viewports.map(() => '---').join('|')}|`);
+  L.push(`| Verdict |${meta.viewports.map((v) => { const f = r.viewports[v].findings; const lv = f.some((x) => x.level === 'regression') ? 'regression' : f.some((x) => x.level === 'watch') ? 'watch' : 'pass'; return ` ${ICON[lv]} ${f.map((x) => x.what).join('; ') || 'no change beyond noise'}`; }).join(' |')} |`);
+  return L;
+}
+
+// Fix suggestions from the evidence only: a request LCP lands right after, the block code that started it,
+// a cross-origin host, a shift source, a script whose long-task time grew. Advice, not a finding.
+export function suggestFixes(r) {
+  const vps = r.meta.viewports.map((vp) => [vp, r.viewports[vp]]);
+  const out = [];
+  const byKey = new Map();
+  // alsoLater: requested on both sides, only now before LCP; a consequence of a later LCP, not a cause.
+  for (const [vp, v] of vps) for (const x of v.preLcp.added.filter((y) => !y.alsoLater)) {
+    const e = byKey.get(x.key) || { x, vps: [], gated: [] };
+    e.vps.push(vp); if (x.gates) e.gated.push(`${vp} ${Math.round(x.lcpGapMs)} ms`);
+    byKey.set(x.key, e);
+  }
+  const where = (x) => (x.from ? ` started by the ${code(x.from.block)} block${x.from.fn ? ` in ${code(x.from.fn)}` : ''}` : '');
+  const gating = [...byKey.values()].filter((e) => e.gated.length);
+  for (const { x, gated } of gating) {
+    out.push(`- **LCP waits on ${code(x.key)}**${where(x)}: LCP lands within ${GATE_MS} ms of it finishing (${gated.join(', ')} after). `
+      + 'If it is not part of the LCP element, don\'t await it before the block renders: render the markup first and let it fill in afterwards (no `await` on it in `init`), reserving its box so nothing shifts.');
+  }
+  const blocks = new Map();
+  for (const e of byKey.values()) if (!e.gated.length && e.x.from) blocks.set(e.x.from.block, [...(blocks.get(e.x.from.block) || []), e.x]);
+  for (const [block, xs] of blocks) {
+    out.push(`- **${code(block)} adds ${xs.length} request(s) before LCP** that LCP does not wait on (${xs.map((x) => code(x.key)).join(', ')}). `
+      + 'If they are not needed for the first paint, start them later: `await import()` on demand, after LCP, or from `delayed.js`; lazy-load images below the fold.');
+  }
+  const fedAsIs = r.meta.federal !== 'same-origin';
+  const fed = fedAsIs && [...byKey.values()].some((e) => e.x.federal);
+  const cross = [...new Set([...byKey.values()].filter((e) => !e.x.federal).map((e) => e.x.host).filter(Boolean))];
+  if (cross.length) out.push(`- **Preconnect** helps only for new cross-origin hosts: ${cross.map(code).join(', ')}. Same-origin requests already reuse the connection.`);
+  if (fed) out.push(`- Federal (\`main--federal--adobecom.aem.*\`) is cross-origin only off production: there federal content comes from the page's own origin, so a preconnect won't help. Re-run with \`--federal same-origin\` to measure that.`);
+  for (const [vp, v] of vps) {
+    for (const k of ['clsLoad', 'clsScroll']) {
+      if (metricDelta(v, k) <= noiseLimit(v, k)) continue;
+      const s = v.shiftSources.find((y) => y.after > y.before);
+      out.push(`- **CLS on ${vp}**${s ? `: ${code(s.key)} moves` : ''}. Reserve its space (\`aspect-ratio\`, \`min-height\`, a fixed icon box) or insert the content below the fold.`);
+    }
+    if (metricDelta(v, 'tbt') > noiseLimit(v, 'tbt')) {
+      const t = v.tasks.find((y) => y.delta > 0);
+      out.push(`- **TBT on ${vp}**${t ? `: ${code(t.key)} +${t.delta} ms in long tasks` : ''}. Split the work (yield between steps) or defer it past LCP.`);
+    }
+  }
+  return out;
+}
+
 export function renderMarkdown(r) {
   const L = [];
   const { meta } = r;
@@ -163,9 +255,9 @@ export function renderMarkdown(r) {
   L.push(`After: ${meta.after.label} (${code(meta.after.url)})  `);
   L.push(`${meta.runs} cold loads per side per viewport, interleaved, after ${meta.warmup} warm-up load${meta.warmup === 1 ? '' : 's'}; medians with min–max.`);
   L.push('');
-  L.push(`|${meta.viewports.map((v) => ` ${v[0].toUpperCase()}${v.slice(1)} |`).join('')}`.replace(/^\|/, '| |'));
-  L.push(`|---|${meta.viewports.map(() => '---').join('|')}|`);
-  L.push(`| Verdict |${meta.viewports.map((v) => { const f = r.viewports[v].findings; const lv = f.some((x) => x.level === 'regression') ? 'regression' : f.some((x) => x.level === 'watch') ? 'watch' : 'pass'; return ` ${ICON[lv]} ${f.map((x) => x.what).join('; ') || 'no change beyond noise'}`; }).join(' |')} |`);
+  L.push(...verdictTable(r));
+  const fixes = suggestFixes(r);
+  if (fixes.length) L.push('', '**Suggested fixes** (from the evidence below; check them against the code):', '', ...fixes);
   L.push('');
   const rows = [
     ['CLS (load)', 'clsLoad', '', 3], ['CLS (with scroll)', 'clsScroll', '', 3], ['TBT', 'tbt', ' ms', 0],
@@ -228,6 +320,8 @@ export function renderMarkdown(r) {
   L.push('- A request counts as new/removed only if it appears in at least half the loads on one side and fewer than half on the other. URLs are compared with the Milo origin as `{milo}` and the page origin as `{site}`.');
   L.push('- Initiator stacks compare the top three frames (function @ file, no line numbers) of the most common stack per request.');
   L.push('- Lab numbers on a shared laptop: read the deltas against the min–max ranges, not as field data.');
+  if (meta.federal === 'same-origin') L.push('- Federal content (`{federal}` = `main--federal--adobecom.aem.*`) is served the way production serves it, from the page\'s own origin: each URL is fetched once and replayed under the same throttle, with no extra connection. On localhost and `*.aem.*` Milo loads it cross-origin, which production never does. Pass `--federal as-is` to measure the preview hosts.');
+  else if (meta.federal === 'as-is') L.push('- Federal content is measured as is, cross-origin from `main--federal--adobecom.aem.*`; on production it comes from the page\'s own origin, so its cost here is an upper bound.');
   if (meta.block?.length) L.push(`- Blocked on both sides (environment, not the change): ${meta.block.map(code).join(', ')}.`);
   L.push('</details>');
   return `${L.join('\n')}\n`;

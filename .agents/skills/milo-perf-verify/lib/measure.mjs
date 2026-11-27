@@ -97,7 +97,7 @@ export function tbtOf(tasks, fcp, windowEnd) {
 }
 
 // URL normalization so before and after are comparable: the side's Milo origin becomes {milo}, the page's own
-// origin {site}, volatile query parameters go.
+// origin {site}, federal's preview origin {federal}, volatile query parameters go.
 export function makeNormalizer(pageUrl, miloOrigin) {
   const site = new URL(pageUrl).origin;
   return (raw) => {
@@ -110,6 +110,7 @@ export function makeNormalizer(pageUrl, miloOrigin) {
     let origin = u.origin;
     if (miloOrigin && origin === miloOrigin) origin = '{milo}';
     else if (origin === site) origin = '{site}';
+    else if (FEDERAL_HOST.test(u.hostname)) origin = '{federal}';
     const q = u.searchParams.toString();
     return `${origin}${u.pathname}${q ? `?${q}` : ''}`;
   };
@@ -137,9 +138,36 @@ async function settle(page, net, { quietMs = 2000, minMs = 0, capMs = 30000 }) {
   }
 }
 
+// Federal content (gnav, icons, footers: getFederatedContentRoot in libs/utils/utils.js) is served from
+// main--federal--adobecom.aem.{page,live} on localhost and *.aem.* hosts, but from the page's own origin on
+// production (www.adobe.com/federal/...). Measured as is, a change that starts loading something from federal
+// pays a new cross-origin connection plus a cold preview server on the critical path, which production never
+// does. In 'same-origin' mode (the default) each federal URL is fetched once, kept in memory for the whole check,
+// and fulfilled through the same interception the local libs use: the profile's RTT and bandwidth still apply
+// (Chrome throttles fulfilled responses), the extra connection and the upstream wait do not. Both sides alike.
+export const FEDERAL_HOST = /^main--federal--adobecom\.aem\.(page|live)$/;
+const federalCache = new Map();
+async function routeFederal(context) {
+  await context.route((u) => FEDERAL_HOST.test(u.hostname), async (route) => {
+    const req = route.request();
+    if (req.method() !== 'GET') return route.continue();
+    const key = req.url();
+    let hit = federalCache.get(key);
+    if (!hit) {
+      try {
+        const res = await route.fetch({ timeout: 30000 });
+        const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => !/^(content-encoding|content-length|transfer-encoding)$/i.test(k)));
+        hit = { status: res.status(), headers, body: await res.body() };
+        if (hit.status < 500) federalCache.set(key, hit);
+      } catch { return route.abort('failed'); }
+    }
+    return route.fulfill(hit);
+  });
+}
+
 // One cold load. opts: { url, profile, localPort, scroll, video: { dir } , trace }
 export async function measureRun(browser, opts) {
-  const { url, profile, localPort, scroll = true, video, trace = true, block = [] } = opts;
+  const { url, profile, localPort, scroll = true, video, trace = true, block = [], federal = 'same-origin' } = opts;
   const p = PROFILES[profile];
   const contextOpts = { ...p.context, ignoreHTTPSErrors: false, serviceWorkers: 'block' };
   if (video) contextOpts.recordVideo = { dir: video.dir, size: p.context.viewport };
@@ -150,6 +178,7 @@ export async function measureRun(browser, opts) {
   await routeLocalLibs(page, localPort);
   // Hosts the caller chose to take out of the comparison (a third party that hangs from this network).
   for (const host of block) await context.route((u) => u.hostname === host, (r) => r.abort('blockedbyclient'));
+  if (federal === 'same-origin') await routeFederal(context);
   const cdp = await throttle(context, page, profile);
 
   const reqs = new Map(); const net = { lastActivity: Date.now(), inflight: new Set() };

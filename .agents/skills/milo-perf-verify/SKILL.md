@@ -96,6 +96,7 @@ Options:
 | `--viewports` | `mobile,tablet,desktop` | Profiles in `lib/profiles.mjs`. |
 | `--no-scroll` | scroll on | Skip the scroll-to-bottom pass (lazy sections, sticky elements). |
 | `--block` | none | Hosts aborted on BOTH sides. Use it for a third party that hangs from your network (`geo2.adobe.com` times out after about 5 s off VPN and gates FCP). Say so in the writeup. |
+| `--federal` | `same-origin` | Federal content (`getFederatedContentRoot`: gnav, icons, footers) comes from `main--federal--adobecom.aem.*` on localhost and `*.aem.*`, but from the page's own origin on production (`www.adobe.com/federal/...`). By default each federal URL is fetched once and replayed under the same throttle, with no extra connection, so a change that starts loading federal content isn't charged a cross-origin cost production never pays. Use `as-is` to measure the preview hosts; the report says which mode ran. |
 | `--rerender <dir>` | | Rebuild report.md/json from a saved `runs.json` without measuring. |
 | `PERF_SAVE_TRACE=<prefix>` | | Env var: keep every Chrome trace (open it in DevTools → Performance). |
 
@@ -144,6 +145,21 @@ busters and `milolibs`/`martech` are dropped. Stacks compare the top three frame
 | LCP element changed | most common element differs | watch |
 | Renamed or moved file | same type, same file name, or same JS initiator and size ±5 % | info, not a new request |
 
+Under the verdict table, **Suggested fixes** names the likely cause from the evidence alone:
+
+- **LCP waits on X**: a new request started by code (it has a JS stack), finishing within 120 ms of LCP
+  in at least half the loads. It names the block and the outermost block function that started it.
+  Usually it means `init` awaits something LCP doesn't need, such as an icon or a config. Render first and
+  let it fill in, with its box reserved.
+- **Block adds N requests LCP doesn't wait on**: move them later (`await import()` on demand, after LCP,
+  `delayed.js`).
+- **Preconnect**: only ever for new cross-origin hosts. Federal hosts under `--federal as-is` are called
+  out as same-origin on production, so a preconnect won't help there.
+- **CLS / TBT**: the top new shift source or the script whose long-task time grew.
+
+Requests that were already made and are only before LCP now, because LCP moved later, are effects, not
+causes, so they never produce a suggestion. These are hints to check against the code, not findings.
+
 Then work through the report:
 
 - **New before LCP**: each entry names the stack that started it. The fix is usually to import it
@@ -160,7 +176,29 @@ Then work through the report:
 A regression the PR intends (a new above-the-fold image that is the LCP, say) is fine. Name it in
 the PR rather than leaving it to be discovered.
 
-## Step 4: post it
+## Step 4: review → fix → re-measure
+
+When the PR gets a fix for a finding, measure the fix head against the same base with the same flags as
+the run that found it (page, `--block`, `--federal`, viewports), then compare the two reports:
+
+```sh
+# was: base vs the reviewed head; now: base vs the fix head (re-point the after worktree to the fix)
+node .agents/skills/milo-perf-verify/fixcheck.mjs --was tmp/perf/prNNNN-<head> --now tmp/perf/prNNNN-<fix> \
+  --label-was <head> --label-now <fix> [--direct tmp/perf/prNNNN-head-vs-fix]
+```
+
+It writes `fixcheck.md` and `fixcheck.json` into the `--now` folder (or `--out`). For each viewport and
+metric it says whether the finding is **resolved** (within noise now, the same limit `judge` uses),
+**partly** resolved (smaller but still beyond noise), **persists**, or is **new**. For each new
+pre-LCP request it gives the same outcome, adding "now after LCP" or "no longer new". The overall
+outcome is effective, effective with new findings, partly effective, not effective, or nothing to fix.
+
+It refuses two reports that differ in federal mode, blocked hosts, page path or profiles; exit 2 means
+they are not comparable. `--direct` adds an optional head-vs-fix run, shown as its own row. Exit 1 means
+not effective or partly effective, otherwise exit 0. Post `fixcheck.md` as a reply to the review comment
+that raised the finding.
+
+## Step 5: post it
 
 `report.md` is written to be pasted as a PR comment:
 
@@ -177,5 +215,6 @@ To film the result, run **milo-perf-short** on the same output folder.
 - `perf.mjs`: the CLI (interleaving, warm-ups, output).
 - `lib/profiles.mjs`: device profiles, throttling, the local-libs route.
 - `lib/measure.mjs`: one cold load (observers, CDP network, trace, long-task attribution).
-- `lib/report.mjs`: the comparison, the verdict, and report.md.
+- `lib/report.mjs`: the comparison, the verdict, report.md and the suggested fixes.
+- `fixcheck.mjs`, `lib/fixcheck.mjs`: the review → fix → re-measure comparison.
 - Output: `runs.json` (every load, raw), `report.json` (comparison), `report.md` (writeup).

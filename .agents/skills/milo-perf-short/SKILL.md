@@ -25,7 +25,7 @@ page and throttling, the words say nothing the report doesn't.**
 | write | edit `story.json`, `comment.md` | Fill every `TODO` (lint refuses leftovers). See §2. |
 | build | `node $S/engine/build.mjs $W/story.json` | Lint, synthesize, render, screen → `out/short.mp4`, `sheet.png`, `captions.srt`, `provenance.json`. A draft: look at it (§3). |
 | final | `node $S/engine/build.mjs $W/story.json --final` | Same, plus: refuses if the PR head moved since `record` (or cannot be read), refuses a flagged screen. |
-| publish | `node $S/engine/publish.mjs $W` | Refuses a draft, a flagged screen, an mp4 edited after final, head drift, a `TODO` in `comment.md`, no ticket, or no `JIRA_TOKEN`/`JIRA_PAT`, all before posting anywhere. PR comment = video, `comment.md`, the run's `report.md` under "Full perf report", provenance; Jira = the mp4 attached and embedded, the same words, a medians table, a link to the PR comment. Hosted bytes verified on both; a rerun finishes only the platform still missing. |
+| publish | `node $S/engine/publish.mjs $W` | Refuses a draft, a flagged screen, an mp4 edited after final, head drift, a `TODO` in `comment.md`, no ticket, or no `JIRA_TOKEN`/`JIRA_PAT`, all before posting anywhere. PR comment = the per-viewport verdict table first, then the video, `comment.md`, the run's `report.md` under "Full perf report", provenance. Jira = the short only: the mp4 attached and embedded, and a link to the PR comment; no perf writeup, so the numbers live in one place. Hosted bytes verified on both; a rerun finishes only the platform still missing. |
 
 The engine (`build.mjs`, `screen.mjs`, `tts.py`, `lint.mjs`) is vendored from forgeflex `pr-short`, and only
 `lint.mjs` changes: a comparison may be the scorecard still when it names `evidence: "report.json"`. Read
@@ -88,8 +88,8 @@ and never merges.
 **No GitHub attachments.** GitHub attaches files only for accounts with write access to adobecom/milo, and an
 Enterprise Managed User (`*_adobe`) cannot comment there at all. Without write access, use
 `node $S/engine/publish.mjs $W --video-on-jira`. It attaches and embeds the video on the ticket, verifies
-the hosted sha256, and posts a text-only PR comment (same words and report) whose first line links the Jira
-comment. Then it edits the Jira comment to link the PR comment. If the active `gh` account is an EMU,
+the hosted sha256, and posts a text-only PR comment (verdict table, then a line linking the Jira comment, then the
+same words and report). Then it edits the Jira comment to link the PR comment. If the active `gh` account is an EMU,
 ask the user which account to post from (`gh auth switch -u <user>`), and switch back afterwards.
 A rerun only finishes the steps still missing (`out/published.json`). Then stop any `aem up` you started and remove the before/after worktrees
 (**milo-local-testpage** §1).

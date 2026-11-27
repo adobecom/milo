@@ -9,6 +9,7 @@
 //     [--local-before-port 6457 --local-after-port 6458]   # both sides ?milolibs=local, each on its own aem up
 //     [--runs 5] [--warmup 1] [--viewports mobile,tablet,desktop] [--no-scroll] [--martech off]
 //     [--block geo2.adobe.com]                  # abort a host on both sides (one that hangs from this network)
+//     [--federal same-origin|as-is]             # federal served like production's same origin (default), or as is
 //     [--out tmp/perf/<slug>] [--label-before stage --label-after PR]
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -64,19 +65,20 @@ const sides = {
 const log = (m) => process.stdout.write(`${m}\n`);
 const browser = await chromium.launch({ args: ['--disable-features=HttpsUpgrades', '--no-default-browser-check'] });
 const block = String(a.block || '').split(',').map((s) => s.trim()).filter(Boolean);
-const all = { meta: { before: sides.before, after: sides.after, runs, warmup, viewports, block, scroll: a.scroll !== false, startedAt: new Date().toISOString(), profiles: Object.fromEntries(viewports.map((v) => [v, describeProfile(v)])) }, runs: [] };
+const federal = a.federal === 'as-is' ? 'as-is' : 'same-origin';
+const all = { meta: { before: sides.before, after: sides.after, runs, warmup, viewports, block, federal, scroll: a.scroll !== false, startedAt: new Date().toISOString(), profiles: Object.fromEntries(viewports.map((v) => [v, describeProfile(v)])) }, runs: [] };
 
 for (const vp of viewports) {
   for (let w = 0; w < warmup; w += 1) {
     for (const side of ['before', 'after']) {
       log(`warm-up ${vp} ${side}`);
-      await measureRun(browser, { url: sides[side].url, profile: vp, localPort: sides[side].port, scroll: false, trace: false, block });
+      await measureRun(browser, { url: sides[side].url, profile: vp, localPort: sides[side].port, scroll: false, trace: false, block, federal });
     }
   }
   for (let i = 0; i < runs; i += 1) {
     const order = i % 2 ? ['after', 'before'] : ['before', 'after'];
     for (const side of order) {
-      const r = await measureRun(browser, { url: sides[side].url, profile: vp, localPort: sides[side].port, scroll: a.scroll !== false, block });
+      const r = await measureRun(browser, { url: sides[side].url, profile: vp, localPort: sides[side].port, scroll: a.scroll !== false, block, federal });
       r.side = side; r.run = i;
       all.runs.push(r);
       const pre = r.requests.filter((q) => q.preLcp).length;

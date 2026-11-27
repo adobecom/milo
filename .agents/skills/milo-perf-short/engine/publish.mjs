@@ -1,20 +1,21 @@
 // Publish a FINAL perf short on BOTH platforms: a comment on the PR (GitHub) and a comment on its Jira ticket, each
 // proven to serve the same bytes. Adapted from Adobe-acom/forgeflex .agents/skills/pr-short/engine/publish.mjs
 // @5479db43; milo-perf-short changes: the provenance describes a milo-perf-verify run, the GitHub comment carries
-// the run's report.md under "Full perf report", and the Jira comment carries a compact table from report.json.
+// the run's per-viewport verdict table first and report.md under "Full perf report"; the Jira comment carries
+// only the short (embedded) and a link to the PR comment, never the perf writeup itself.
 //   node publish.mjs <work>
 // Refuses unless: out/provenance.json is a --final build whose screen passed, out/short.mp4 is the file that
 // build produced (sha256), the PR head still matches provenance.head, comment.md has no TODO left, the story
 // names a ticket key and a Jira token (JIRA_TOKEN or JIRA_PAT) is set. All checks run before either post, so a
 // refusal never leaves a half-published short. A rerun skips a platform out/published.json already records for
 // this exact mp4, so a failed Jira post is finished by running publish again, never a second PR comment.
-// Comment = the bare asset URL alone in the first paragraph (GitHub renders a player), comment.md's words,
+// Comment = the verdict table, the bare asset URL alone in its own paragraph (GitHub renders a player), comment.md's words,
 // then a provenance block generated from provenance.json. Uploads with `gh pr comment --attach` (gh >= 2.99),
 // else the documented user-attachments endpoint. Then reads the comment back by its URL, takes the rendered
 // <video src> from body_html, fetches it WITHOUT credentials and compares sha256. The signed media URL is
 // never printed or stored. Jira: uploads the mp4 as an attachment named for the PR and the video hash, reads it
-// back with the token (same host only) and compares sha256, then comments with the embedded player, comment.md's
-// words escaped as Jira markup (jira-markup.mjs), and links to the PR and its comment. Writes
+// back with the token (same host only) and compares sha256, then comments with the embedded player and links to
+// the PR and its comment. Writes
 // out/published.json. Never edits the PR description or the ticket's fields, never transitions, merges or marks
 // ready.
 // --video-on-jira (milo-perf-short): for an account without write access to the repo, which GitHub refuses
@@ -27,6 +28,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { headDrift } from './lint.mjs';
 import { fixCell, wikiLink } from './jira-markup.mjs';
+import { verdictTable } from '../../milo-perf-verify/lib/report.mjs';
 
 export const ATTACH_MIN = '2.99.0';
 export function versionAtLeast(v, min) {
@@ -54,9 +56,10 @@ export function publishRefusals({ prov, mp4Sha, comment, drift, ticket, jiraToke
   return r;
 }
 
-export function composeBody(asset, comment, prov, reportMd = '') {
+export function composeBody(asset, comment, prov, reportMd = '', report = null) {
   const f = prov.facts || {}; const s = (x) => (x ? String(x).slice(0, 12) : '?');
   const lines = [
+    ...(report?.viewports ? [...verdictTable(report), ''] : []),
     asset, '', comment.trim(), '',
     reportMd ? '<details><summary>Full perf report</summary>' : null, reportMd ? '' : null, reportMd ? reportMd.trim() : null,
     reportMd ? '' : null, reportMd ? '</details>' : null, reportMd ? '' : null,
@@ -72,60 +75,29 @@ export function composeBody(asset, comment, prov, reportMd = '') {
   return lines.filter((l) => l !== null).join('\n');
 }
 
+export const ownParagraph = (body, text) => `\n${body}\n`.replace(/\r/g, '').includes(`\n${text}\n`);
 const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { encoding: 'utf8', ...opts }).trim();
 const sha = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 
-// comment.md is GitHub markdown; Jira gets the same words as wiki markup, every line escaped (a list stays a list,
-// a whole-line **heading** stays bold). Inline markdown inside a line renders literally, never as Jira markup.
-// milo-perf-short: inline **bold** and `code` map to Jira *bold* and {{code}} (inner text escaped, so nothing
-// else becomes markup); a <details><summary>X</summary> line becomes a bold X, and </details> is dropped.
-// fixCell trims, so the whitespace around each piece is put back by hand.
-const keepSpace = (raw, f) => `${raw.match(/^\s*/)[0]}${raw.trim() ? f(raw.trim()) : ''}${raw.trim() ? raw.match(/\s*$/)[0] : ''}`;
-const codeToWiki = (text) => text.split(/(`[^`]+`)/).map((part) => (/^`[^`]+`$/.test(part)
-  ? `{{${fixCell(part.slice(1, -1), 300)}}}` : keepSpace(part, (t) => fixCell(t, 1000)))).join('');
-const inlineToWiki = (text) => text.split(/(\*\*[^*]+\*\*)/).map((part) => (/^\*\*[^*]+\*\*$/.test(part)
-  ? `*${codeToWiki(part.slice(2, -2))}*` : codeToWiki(part))).join('');
-export function commentToWiki(comment) {
-  return comment.trim().split('\n').map((line) => {
-    if (/^\s*<\/details>\s*$/.test(line)) return null;
-    const summary = line.match(/^\s*<details>\s*<summary>(.*)<\/summary>\s*$/);
-    if (summary) return `*${fixCell(summary[1], 200)}*`;
-    const bullet = line.match(/^\s*[-*]\s+(.*)$/);
-    if (bullet) return `* ${inlineToWiki(bullet[1])}`;
-    return line.trim() ? inlineToWiki(line) : '';
-  }).filter((l) => l !== null).join('\n');
-}
-
 export const jiraFileName = (pr, sha256) => `pr${Number(pr)}-perf-short-${String(sha256).slice(0, 8)}.mp4`;
 
-// report.json as a Jira table: per viewport, the medians before → after.
-export function jiraTable(report) {
-  if (!report?.viewports) return [];
-  const m = (x, dp = 0) => (x.median == null ? '–' : x.median.toFixed(dp));
-  const pair = (k, dp) => `${m(k.before, dp)} → ${m(k.after, dp)}`;
-  return ['||Viewport||CLS (load + scroll)||TBT ms||LCP ms||Requests before LCP||Findings||',
-    ...Object.entries(report.viewports).map(([vp, v]) => `|${[vp, pair(v.metrics.clsScroll, 3), pair(v.metrics.tbt), pair(v.metrics.lcp), pair(v.metrics.preLcpRequests),
-      v.findings.map((x) => x.what).join(', ') || 'no change beyond noise'].map((c) => fixCell(c, 300)).join('|')}|`)];
-}
-
-export function composeJiraBody({ repo, pr, prUrl, commentUrl, fileName, comment, prov, report }) {
+// The short only: the verdict, numbers and writeup live on the PR comment, so they have one place to be right.
+export function composeJiraBody({ repo, pr, prUrl, commentUrl, fileName, prov }) {
   const f = prov.facts || {}; const s = (x) => (x ? String(x).slice(0, 12) : '?');
   return [
     `*Perf short:* ${wikiLink(prUrl, `${repo}#${pr}`)}`, '',
     `!${fileName}|width=960!`, '',
-    commentToWiki(comment), '',
-    ...jiraTable(report), '',
-    `Full report and provenance: ${wikiLink(commentUrl, 'GitHub comment')}`,
+    `Verdict, perf report and provenance: ${wikiLink(commentUrl, 'GitHub comment')}`,
     `{color:#6b6b6b}${fixCell(`${prov.duration} s; ${f.before ?? '?'} vs ${f.after ?? '?'} @ ${s(f.head)}; video sha256 ${prov.output.sha256}`, 400)}{color}`,
   ].join('\n');
 }
 
-async function postGithub({ work, cfg, mp4, comment, prov, reportMd }) {
+async function postGithub({ work, cfg, mp4, comment, prov, reportMd, report }) {
   const ghv = sh('gh', ['--version']).match(/gh version ([0-9.]+)/)?.[1] ?? '0';
   const bodyFile = path.join(work, 'out', 'comment-body.md');
   let commentUrl;
   if (versionAtLeast(ghv, ATTACH_MIN)) {
-    fs.writeFileSync(bodyFile, composeBody('__ASSET__', comment, prov, reportMd));
+    fs.writeFileSync(bodyFile, composeBody('__ASSET__', comment, prov, reportMd, report));
     commentUrl = sh('gh', ['pr', 'comment', String(cfg.pr), '--repo', cfg.repo, '--body-file', bodyFile, '--attach', mp4]);
   } else {
     const repoId = sh('gh', ['api', `repos/${cfg.repo}`, '--hostname', 'github.com', '--jq', '.id']);
@@ -136,29 +108,29 @@ async function postGithub({ work, cfg, mp4, comment, prov, reportMd }) {
         Authorization: `Bearer ${sh('gh', ['auth', 'token', '--hostname', 'github.com'])}` } });
     const url = res.ok ? (await res.json()).url : null;
     if (!assetUrlIn(url || '')) throw new Error(`upload failed: HTTP ${res.status}`);
-    fs.writeFileSync(bodyFile, composeBody(url, comment, prov, reportMd));
+    fs.writeFileSync(bodyFile, composeBody(url, comment, prov, reportMd, report));
     commentUrl = sh('gh', ['pr', 'comment', String(cfg.pr), '--repo', cfg.repo, '--body-file', bodyFile]);
   }
   const id = commentUrl.match(/issuecomment-(\d+)/)?.[1];
   if (!id) throw new Error(`posted, but no comment URL came back (${commentUrl}); find the comment before retrying`);
   const read = () => JSON.parse(sh('gh', ['api', `repos/${cfg.repo}/issues/comments/${id}`, '-H', 'Accept: application/vnd.github.full+json']));
   let c = read();
-  // --attach appends the bare URL at the end; move it to the first paragraph, where GitHub renders the player.
+  // --attach appends the bare URL at the end; move it to its own paragraph under the verdict, where GitHub renders the player.
   const asset = assetUrlIn(c.body);
   if (!asset) throw new Error(`comment ${commentUrl} has no attachment URL; the upload did not land`);
   if (c.body.includes('__ASSET__')) {
-    const body = composeBody(asset, comment, prov, reportMd);
+    const body = composeBody(asset, comment, prov, reportMd, report);
     sh('gh', ['api', '-X', 'PATCH', `repos/${cfg.repo}/issues/comments/${id}`, '-F', 'body=@-'], { input: body });
     c = read();
   }
-  if (!c.body.startsWith(asset)) throw new Error('the asset URL is not the first paragraph of the comment');
+  if (!ownParagraph(c.body, asset)) throw new Error('the asset URL is not a paragraph of its own in the comment');
   const src = videoSrcIn(c.body_html || '');
   if (!src) throw new Error('GitHub did not render a <video> for the comment');
   const hosted = Buffer.from(await (await fetch(src)).arrayBuffer());
   return { commentUrl, asset, sha256: sha(hosted), bytes: hosted.length, hostedMatches: sha(hosted) === prov.output.sha256 };
 }
 
-async function postJira({ cfg, ticket, token, mp4, comment, prov, commentUrl, report }) {
+async function postJira({ cfg, ticket, token, mp4, prov, commentUrl }) {
   const base = new URL(process.env.JIRA_BASE_URL || JIRA_DEFAULT_BASE);
   if (base.protocol !== 'https:') throw new Error('JIRA_BASE_URL must be https');
   const api = `${base.origin}${base.pathname.replace(/\/$/, '')}/rest/api/2/issue/${ticket}`;
@@ -182,7 +154,7 @@ async function postJira({ cfg, ticket, token, mp4, comment, prov, commentUrl, re
   if (!hostedMatches) return { ticket, attachment: fileName, sha256: sha(hosted), bytes: hosted.length, hostedMatches };
 
   const body = composeJiraBody({ repo: cfg.repo, pr: cfg.pr, prUrl: cfg.url || `https://github.com/${cfg.repo}/pull/${cfg.pr}`,
-    commentUrl, fileName, comment, prov, report });
+    commentUrl, fileName, prov });
   const res = await fetch(`${api}/comment`, { method: 'POST', body: JSON.stringify({ body }),
     headers: { ...auth, 'Content-Type': 'application/json', Accept: 'application/json' } });
   if (!res.ok) throw new Error(`Jira ${ticket}: attachment is up (${fileName}) but the comment failed (HTTP ${res.status}); rerun publish`);
@@ -191,12 +163,12 @@ async function postJira({ cfg, ticket, token, mp4, comment, prov, commentUrl, re
     commentUrl: `${base.origin}/browse/${ticket}?focusedCommentId=${id}#comment-${id}` };
 }
 
-// --video-on-jira: re-point the Jira comment's "Full report" link at the PR comment once that exists.
-async function relinkJira({ cfg, ticket, token, comment, prov, report, jira, commentUrl }) {
+// --video-on-jira: re-point the Jira comment's link at the PR comment once that exists.
+async function relinkJira({ cfg, ticket, token, prov, jira, commentUrl }) {
   const base = new URL(process.env.JIRA_BASE_URL || JIRA_DEFAULT_BASE);
   const api = `${base.origin}${base.pathname.replace(/\/$/, '')}/rest/api/2/issue/${ticket}/comment/${jira.commentId}`;
   const body = composeJiraBody({ repo: cfg.repo, pr: cfg.pr, prUrl: cfg.url || `https://github.com/${cfg.repo}/pull/${cfg.pr}`,
-    commentUrl, fileName: jira.attachment, comment, prov, report });
+    commentUrl, fileName: jira.attachment, prov });
   const res = await fetch(api, { method: 'PUT', body: JSON.stringify({ body }),
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' } });
   if (!res.ok) throw new Error(`Jira ${ticket}: the PR comment is up (${commentUrl}) but relinking the Jira comment failed (HTTP ${res.status})`);
@@ -206,15 +178,15 @@ async function relinkJira({ cfg, ticket, token, comment, prov, report, jira, com
 export const jiraVideoLine = (jira, prov) => `🎬 **Perf short (${prov.duration} s)** is on Jira, embedded in [${jira.ticket}](${jira.commentUrl}) `
   + `as \`${jira.attachment}\` (sha256 \`${String(prov.output.sha256).slice(0, 12)}…\`, Adobe sign-in). GitHub attaches files only for accounts with write access to this repo.`;
 
-async function postGithubText({ work, cfg, comment, prov, reportMd, jira }) {
+async function postGithubText({ work, cfg, comment, prov, reportMd, report, jira }) {
   const bodyFile = path.join(work, 'out', 'comment-body.md');
   const line = jiraVideoLine(jira, prov);
-  fs.writeFileSync(bodyFile, composeBody(line, comment, prov, reportMd));
+  fs.writeFileSync(bodyFile, composeBody(line, comment, prov, reportMd, report));
   const commentUrl = sh('gh', ['pr', 'comment', String(cfg.pr), '--repo', cfg.repo, '--body-file', bodyFile]);
   const id = commentUrl.match(/issuecomment-(\d+)/)?.[1];
   if (!id) throw new Error(`posted, but no comment URL came back (${commentUrl}); find the comment before retrying`);
   const c = JSON.parse(sh('gh', ['api', `repos/${cfg.repo}/issues/comments/${id}`]));
-  if (!c.body.startsWith(line)) throw new Error('the Jira video link is not the first paragraph of the PR comment');
+  if (!ownParagraph(c.body, line)) throw new Error('the Jira video link is not a paragraph of its own in the PR comment');
   return { commentUrl, videoOn: 'jira', sha256: prov.output.sha256, linksJira: jira.commentUrl };
 }
 
@@ -259,19 +231,19 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const result = { pr: cfg.pr, mode: 'video-on-jira', ...prior };
     if (doneFor(prior.jira) && prior.jira.commentUrl && prior.jira.ticket === ticket) console.log(`${ticket} already has this short: ${prior.jira.commentUrl}`);
     else {
-      result.jira = await postJira({ cfg, ticket, token: jiraToken, mp4, comment, prov, commentUrl: cfg.url || `https://github.com/${cfg.repo}/pull/${cfg.pr}`, report });
+      result.jira = await postJira({ cfg, ticket, token: jiraToken, mp4, prov, commentUrl: cfg.url || `https://github.com/${cfg.repo}/pull/${cfg.pr}` });
       save(result);
       console.log(`${result.jira.commentUrl}\n${ticket} attachment ${result.jira.attachment}: hosted bytes ${result.jira.hostedMatches ? 'MATCH' : 'DIFFER'}`);
       if (!result.jira.hostedMatches) process.exit(1);
     }
     if (prior.github?.sha256 === prov.output.sha256 && prior.github.linksJira === result.jira.commentUrl) console.log(`PR already links this short: ${prior.github.commentUrl}`);
     else {
-      result.github = await postGithubText({ work, cfg, comment, prov, reportMd, jira: result.jira });
+      result.github = await postGithubText({ work, cfg, comment, prov, reportMd, report, jira: result.jira });
       save(result);
       console.log(`${result.github.commentUrl}\nPR comment links the Jira video`);
     }
     if (!result.jira.relinked) {
-      await relinkJira({ cfg, ticket, token: jiraToken, comment, prov, report, jira: result.jira, commentUrl: result.github.commentUrl });
+      await relinkJira({ cfg, ticket, token: jiraToken, prov, jira: result.jira, commentUrl: result.github.commentUrl });
       result.jira.relinked = true; result.verifiedAt = new Date().toISOString(); save(result);
       console.log(`${ticket} comment now links ${result.github.commentUrl}`);
     }
@@ -281,7 +253,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   let result = { pr: cfg.pr, ...(doneFor(prior) ? prior : {}) };
   if (doneFor(prior)) console.log(`PR already has this short: ${prior.commentUrl}`);
   else {
-    result = { ...result, ...(await postGithub({ work, cfg, mp4, comment, prov, reportMd })), jira: undefined, verifiedAt: new Date().toISOString() };
+    result = { ...result, ...(await postGithub({ work, cfg, mp4, comment, prov, reportMd, report })), jira: undefined, verifiedAt: new Date().toISOString() };
     save(result);
     console.log(`${result.commentUrl}\n${result.asset}\nPR hosted bytes ${result.hostedMatches ? 'MATCH' : 'DIFFER'} (${result.bytes} B, sha256 ${result.sha256.slice(0, 12)}…)`);
     if (!result.hostedMatches) process.exit(1);
@@ -289,7 +261,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 
   if (doneFor(prior.jira) && prior.jira.commentUrl && prior.jira.ticket === ticket) console.log(`${ticket} already has this short: ${prior.jira.commentUrl}`);
   else {
-    result.jira = await postJira({ cfg, ticket, token: jiraToken, mp4, comment, prov, commentUrl: result.commentUrl, report });
+    result.jira = await postJira({ cfg, ticket, token: jiraToken, mp4, prov, commentUrl: result.commentUrl });
     save(result);
     console.log(`${result.jira.commentUrl ?? ticket}\n${ticket} attachment ${result.jira.attachment}: hosted bytes ${result.jira.hostedMatches ? 'MATCH' : 'DIFFER'}`);
     if (!result.jira.hostedMatches) process.exit(1);
