@@ -576,7 +576,8 @@ describe('Utils', () => {
       window.parallelSectionsTest.gates[id] = new Promise((resolve) => { releases[id] = resolve; });
     };
     const isHidden = (selector) => !!document.querySelector(selector).closest('.section').dataset.status;
-    const psBlock = (id) => `<div><div class="ps-block" data-id="${id}"></div></div>`;
+    const psBlock = (id, rush) => `<div><div class="ps-block" data-id="${id}"${rush ? ` data-rush="${rush}"` : ''}></div></div>`;
+    const nthSection = (n) => `main > div:nth-child(${n})`;
     const setup = (count, sections, prefix = '') => {
       document.head.innerHTML = `${head}<meta name="parallel-sections" content="${count}">`;
       document.body.innerHTML = `${prefix}<main>${sections.join('')}</main>`;
@@ -617,7 +618,7 @@ describe('Utils', () => {
 
     it('caps the number of sections loaded together', async () => {
       const ids = ['a', 'b', 'c', 'd', 'e', 'f'];
-      setup(99, ids.map(psBlock));
+      setup(99, ids.map((id) => psBlock(id)));
       ids.forEach(holdBlock);
       const loaded = utils.loadArea();
       releases.a();
@@ -725,6 +726,91 @@ describe('Utils', () => {
         window.removeEventListener('unhandledrejection', unhandled);
         document.body.querySelector.restore();
       }
+    });
+
+    describe('auto', () => {
+      it('loads the section after the LCP one, then the sections a block asks for', async () => {
+        setup('auto', [psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
+        ['a', 'b', 'd'].forEach(holdBlock);
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 1, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a']);
+        releases.a();
+        await waitFor(() => started().length === 3, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a', 'b', 'd']);
+        releases.b();
+        releases.d();
+        await loaded;
+        expect(started()).to.deep.equal(['a', 'b', 'd', 'c']);
+      });
+
+      it('holds requests made by the LCP section until it has loaded', async () => {
+        setup('auto', [psBlock('a', nthSection(3)), psBlock('b'), psBlock('c')]);
+        ['a', 'b'].forEach(holdBlock);
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 1, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a']);
+        releases.a();
+        await waitFor(() => started().length === 3, 2000, 20);
+        expect(started()).to.include('c');
+        releases.b();
+        await loaded;
+      });
+
+      it('starts the open tab panel sections, not the hidden ones', async () => {
+        const tabSection = (id, tab) => `<div><div class="ps-block" data-id="${id}"></div>
+          <div class="section-metadata"><div><div>tab</div><div>${tab}</div></div></div></div>`;
+        setup('auto', [
+          psBlock('a'),
+          `<div><div class="tabs"><div><div><ul><li>One</li><li>Two</li></ul></div></div>
+            <div><div>id</div><div>t</div></div></div></div>`,
+          tabSection('b', 't, 1'),
+          tabSection('c', 't, 2'),
+          tabSection('d', 't, 1'),
+        ]);
+        ['b', 'd'].forEach(holdBlock);
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 3, 2000, 20);
+        await settle();
+        expect(started()).to.have.members(['a', 'b', 'd']);
+        releases.b();
+        releases.d();
+        await loaded;
+        expect(started()).to.include('c');
+        expect(document.querySelector('#tab-panel-t-1 [data-id="d"]')).to.exist;
+      });
+
+      it('ignores block requests when parallel-sections is a number', async () => {
+        setup(2, [psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
+        holdBlock('b');
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 2, 2000, 20);
+        await settle();
+        expect(started()).to.deep.equal(['a', 'b']);
+        releases.b();
+        await loaded;
+        expect(started()).to.deep.equal(['a', 'b', 'c', 'd']);
+      });
+
+      it('loads sections one at a time when Target runs post LCP', async () => {
+        setup('auto', [psBlock('a', nthSection(3)), psBlock('b'), psBlock('c')], '<header></header>');
+        utils.getConfig().mep = { targetEnabled: 'postlcp', targetAjoManifests: [] };
+        holdBlock('b');
+        try {
+          const loaded = utils.loadArea();
+          await waitFor(() => started().length === 2, 2000, 20);
+          await settle();
+          expect(started()).to.deep.equal(['a', 'b']);
+          releases.b();
+          await loaded;
+          expect(started()).to.deep.equal(['a', 'b', 'c']);
+        } finally {
+          delete utils.getConfig().mep;
+        }
+      });
     });
   });
 

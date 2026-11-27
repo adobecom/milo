@@ -2491,12 +2491,25 @@ const warmGeoIpSheet = (config, section, isDoc = true) => {
 
 const MAX_PARALLEL_SECTIONS = 5;
 
-const getParallelSectionCount = () => {
-  const value = (PAGE_URL.searchParams.get('parallel-sections')
-    ?? getMetadata('parallel-sections'))?.trim() ?? '';
+const getParallelSectionsValue = () => (PAGE_URL.searchParams.get('parallel-sections')
+  ?? getMetadata('parallel-sections'))?.trim().toLowerCase() ?? '';
+
+const getParallelSectionCount = (value) => {
   if (!/^\d+$/.test(value)) return 0;
   return Math.min(Number(value), MAX_PARALLEL_SECTIONS);
 };
+
+let earlySectionLoader = null;
+
+/**
+ * Starts loading the given sections now instead of waiting for their turn.
+ * Used by blocks that know which later sections are visible (e.g. the open tab's panel).
+ * Only active during the page load with `parallel-sections: auto`.
+ * @param {Element[]} sections - pending `body > main > div` sections
+ */
+export function loadSectionsEarly(sections) {
+  earlySectionLoader?.(sections);
+}
 
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
@@ -3335,11 +3348,11 @@ async function processSection(section, config, {
   return section.blocks;
 }
 
-function rushSectionsAfter(lcpIdx, { htmlSections, parallelCount, parallelSections, config }) {
-  htmlSections.slice(lcpIdx + 1, parallelCount).forEach((el, offset) => {
-    const idx = lcpIdx + 1 + offset;
+function rushSections(indices, { htmlSections, parallelSections, config }) {
+  indices.forEach((idx) => {
+    if (parallelSections[idx] || !htmlSections[idx]) return;
     const revealAfter = parallelSections[idx - 1];
-    parallelSections[idx] = decorateSection(el, idx)
+    parallelSections[idx] = decorateSection(htmlSections[idx], idx)
       .then((section) => processSection(section, config, { revealAfter }))
       .catch(async (e) => {
         window.lana?.log(`Failed to load parallel section ${idx}: ${e}`, { tags: 'parallel-sections', severity: 'error' });
@@ -3433,12 +3446,30 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  const parallelCount = isDoc ? getParallelSectionCount() : 0;
+  const parallelValue = isDoc ? getParallelSectionsValue() : '';
+  const parallelCount = getParallelSectionCount(parallelValue);
+  const isTargetPostLcp = config.mep?.targetEnabled === 'postlcp';
+  const isAutoParallel = parallelValue === 'auto' && !isTargetPostLcp;
   let lcpSectionId = null;
   let postLcpPromise;
+  let loopIdx = -1;
   const parallelSections = [];
+  const rushOptions = { htmlSections, parallelSections, config };
+  // Requests that arrive while the LCP section loads wait until it's done.
+  let earlyQueue = isAutoParallel ? [] : null;
+  const rushEarly = (els) => {
+    const indices = [...new Set(els.map((el) => htmlSections.indexOf(el)))]
+      .filter((i) => i > loopIdx)
+      .sort((a, b) => a - b)
+      .slice(0, MAX_PARALLEL_SECTIONS);
+    rushSections(indices, rushOptions);
+  };
+  if (earlyQueue) {
+    earlySectionLoader = (els) => (earlyQueue ? earlyQueue.push(...els) : rushEarly(els));
+  }
 
   for (const [idx, htmlSection] of htmlSections.entries()) {
+    loopIdx = idx;
     let sectionBlocks = await parallelSections[idx];
     if (!sectionBlocks) {
       if (postLcpPromise) await postLcpPromise;
@@ -3448,14 +3479,21 @@ export async function loadArea(area = document) {
         lcpSectionId = section.idx;
       }
       const isLcpSection = section.idx === lcpSectionId;
-      const rushesNext = isLcpSection && idx < parallelCount - 1
-        && config.mep?.targetEnabled !== 'postlcp';
+      // auto rushes the section after the LCP one; blocks in it can then ask for more.
+      const rushEnd = isAutoParallel ? idx + 2 : parallelCount;
+      const rushesNext = isLcpSection && idx < rushEnd - 1 && !isTargetPostLcp;
       sectionBlocks = await processSection(section, config, {
         isLcpSection,
         loadsPostLCP: isDoc && isLcpSection && !rushesNext,
       });
       if (rushesNext) {
-        rushSectionsAfter(idx, { htmlSections, parallelCount, parallelSections, config });
+        const nextIndices = htmlSections.slice(idx + 1, rushEnd).map((el, i) => idx + 1 + i);
+        rushSections(nextIndices, rushOptions);
+        if (earlyQueue) {
+          const queued = earlyQueue;
+          earlyQueue = null;
+          rushEarly(queued);
+        }
         postLcpPromise = loadPostLCP(config);
         postLcpPromise.catch(() => {});
       }
@@ -3467,6 +3505,7 @@ export async function loadArea(area = document) {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
+  if (isDoc) earlySectionLoader = null;
 
   if (postLcpPromise) await postLcpPromise;
   if (isDoc) scheduleJsonLdInit();
