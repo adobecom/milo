@@ -1,0 +1,103 @@
+#!/usr/bin/env node
+// Turns a published consumer page (or a bare block snippet) into a local Milo test page under tmp/, which
+// `aem up` serves as-is. The page gets Milo's own head (libs/scripts/scripts.js from the same origin), so
+// whichever checkout serves it is the code under test.
+//
+//   node .agents/skills/milo-local-testpage/make-testpage.mjs \
+//     --from https://main--da-bacom-blog--adobecom.aem.live/blog/some-article \
+//     --rename blog-header=forge-blog-header,ai-summary=forge-ai-summary \
+//     --meta header=off,footer=off \
+//     --out tmp/perf/blog-article.html
+//
+//   node .agents/skills/milo-local-testpage/make-testpage.mjs --block my-block --html snippet.html \
+//     [--foundation c2] --out tmp/perf/my-block.html
+//
+// --from      a page to copy (its <main> and its <meta name=...> tags; scripts and links are dropped)
+// --html      a file with block markup (the EDS table shape: <div class="block"><div><div>cell</div></div></div>)
+// --rename    old=new block class renames, comma-separated
+// --meta      name=value metadata overrides, comma-separated (value "-" removes the tag)
+// --drop      CSS selectors removed from <main> before saving, comma-separated
+// --foundation c2 adds <meta name="foundation" content="c2"> (C2 blocks load from libs/c2/blocks)
+import { chromium } from 'playwright';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+
+const argv = process.argv.slice(2);
+const a = {};
+for (let i = 0; i < argv.length; i += 1) if (argv[i].startsWith('--')) { a[argv[i].slice(2)] = argv[i + 1]; i += 1; }
+const list = (s) => (s ? String(s).split(',').map((x) => x.trim()).filter(Boolean) : []);
+const pairs = (s) => Object.fromEntries(list(s).map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }));
+if (!a.out || (!a.from && !a.html)) {
+  process.stderr.write('need --out and one of --from <url> or --html <file>\n');
+  process.exit(2);
+}
+
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+let metas = {}; let title = 'Milo test page'; let main = '';
+
+if (a.from) {
+  const resp = await fetch(a.from);
+  if (!resp.ok) { process.stderr.write(`${a.from} answered ${resp.status}\n`); process.exit(1); }
+  const html = await resp.text();
+  const browser = await chromium.launch();
+  const ctx = await browser.newContext({ javaScriptEnabled: false });
+  const page = await ctx.newPage();
+  // Parse only: no network, no scripts. URLs are made absolute against the source page by hand.
+  await page.route('**/*', (r) => r.abort());
+  await page.setContent(html, { waitUntil: 'domcontentloaded' });
+  ({ metas, title, main } = await page.evaluate(({ base, rename, drop }) => {
+    const m = {};
+    for (const el of document.head.querySelectorAll('meta[name], meta[property]')) {
+      const k = el.getAttribute('name') || el.getAttribute('property');
+      if (k === 'viewport' || k === 'head-loaded') continue;
+      m[k] = el.getAttribute('content') || '';
+    }
+    const mainEl = document.querySelector('main');
+    for (const s of drop) mainEl.querySelectorAll(s).forEach((n) => n.remove());
+    for (const [from, to] of Object.entries(rename)) {
+      mainEl.querySelectorAll(`div.${CSS.escape(from)}`).forEach((n) => { n.classList.replace(from, to); });
+    }
+    const abs = (v) => { try { return new URL(v, base).href; } catch { return v; } };
+    for (const n of mainEl.querySelectorAll('[href]')) { const v = n.getAttribute('href'); if (!v.startsWith('#')) n.setAttribute('href', abs(v)); }
+    for (const n of mainEl.querySelectorAll('[src]')) n.setAttribute('src', abs(n.getAttribute('src')));
+    for (const n of mainEl.querySelectorAll('[srcset]')) {
+      n.setAttribute('srcset', n.getAttribute('srcset').split(',').map((part) => { const [u, ...rest] = part.trim().split(/\s+/); return [abs(u), ...rest].join(' '); }).join(', '));
+    }
+    for (const k of ['og:image', 'og:image:secure_url', 'twitter:image', 'og:url']) if (m[k]) m[k] = abs(m[k]);
+    return { metas: m, title: document.title, main: mainEl.innerHTML };
+  }, { base: a.from, rename: pairs(a.rename), drop: list(a.drop) }));
+  await browser.close();
+} else {
+  main = `<div>${readFileSync(a.html, 'utf8')}</div>`;
+  for (const [from, to] of Object.entries(pairs(a.rename))) main = main.replaceAll(`class="${from}`, `class="${to}`);
+}
+
+if (a.foundation) metas.foundation = a.foundation;
+for (const [k, v] of Object.entries(pairs(a.meta))) { if (v === '-') delete metas[k]; else metas[k] = v; }
+// Milo's getMetadata reads names with a colon from `property`, the rest from `name`.
+const metaTags = Object.entries(metas)
+  .map(([k, v]) => `<meta ${k.includes(':') ? 'property' : 'name'}="${esc(k)}" content="${esc(v)}">`)
+  .join('\n    ');
+
+const out = `<!DOCTYPE html>
+<html>
+  <head>
+    <title>${esc(title)}</title>
+    <!-- generated by .agents/skills/milo-local-testpage/make-testpage.mjs${a.from ? ` from ${esc(a.from)}` : ''} -->
+    ${metaTags}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/libs/scripts/scripts.js" type="module"></script>
+    <link rel="icon" href="data:," size="any">
+    <style>body { display: none; }</style>
+  </head>
+  <body>
+    <header></header>
+    <main>${main}</main>
+    <footer></footer>
+  </body>
+</html>
+`;
+const file = resolve(a.out);
+mkdirSync(dirname(file), { recursive: true });
+writeFileSync(file, out);
+process.stdout.write(`${file}\n`);

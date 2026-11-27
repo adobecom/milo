@@ -1,0 +1,26 @@
+<!--
+  EDS block markup, as a page author's table becomes HTML: the block is a div with the block name as
+  its first class (variants follow), each table row is a child div, each cell a div inside it.
+  Wrap with make-testpage.mjs:  --html this-file --foundation c2 --out tmp/perf/<block>.html
+  Several blocks in one file become one section; separate sections with a closing and opening </div><div>.
+-->
+<div class="my-block variant-one">
+  <div>
+    <div>
+      <h2>A heading at a realistic length, wrapping to two lines on mobile</h2>
+      <p>Body copy as long as the real thing. Short placeholder text hides the layout shifts that real copy causes.</p>
+      <p><a href="https://business.adobe.com/">Call to action</a></p>
+    </div>
+    <div>
+      <picture>
+        <img src="https://stage--da-bacom-blog--adobecom.aem.live/blog/drafts/slavin/media_1115bb57fef8274c2642b960ef61dbbbd2f2a9d0b.png?width=750&format=webply&optimize=medium" alt="" width="2000" height="1000">
+      </picture>
+    </div>
+  </div>
+</div>
+<div class="section-metadata">
+  <div>
+    <div>style</div>
+    <div>xl spacing</div>
+  </div>
+</div>
