@@ -103,4 +103,30 @@ describe('C2 gnav on a C1 page: header height reservation', () => {
       expect(height()).to.equal(126);
     });
   });
+
+  describe('desktop compact overflow (breadcrumb-less local-nav)', () => {
+    before(() => setViewport({ width: 1280, height: 800 }));
+
+    it('reserves the compact bar row before and after the nav turns compact', () => {
+      decorate();
+      header.classList.add('c2-reserve-compact');
+      expect(height()).to.equal(126);
+      renderNav();
+      expect(height()).to.equal(126);
+      header.classList.add('is-compact');
+      expect(height()).to.equal(126);
+    });
+
+    it('does not reserve the row without the reserve class', () => {
+      decorate();
+      expect(height()).to.equal(80);
+    });
+
+    it('does not change C1 headers', () => {
+      decorate();
+      header.classList.add('c2-reserve-compact');
+      header.classList.remove('c2-gnav-c1-host');
+      expect(height()).to.equal(64);
+    });
+  });
 });
