@@ -2489,6 +2489,15 @@ const warmGeoIpSheet = (config, section, isDoc = true) => {
     .catch(() => null);
 };
 
+const MAX_PARALLEL_SECTIONS = 5;
+
+const getParallelSectionCount = () => {
+  const value = (PAGE_URL.searchParams.get('parallel-sections')
+    ?? getMetadata('parallel-sections'))?.trim() ?? '';
+  if (!/^\d+$/.test(value)) return 0;
+  return Math.min(Number(value), MAX_PARALLEL_SECTIONS);
+};
+
 export function preloadLcpCodeFiles(area = document) {
   if (getMetadata('disable-mep-perf-optimization') === 'on') return;
   const [firstSection] = area.querySelectorAll('body > main > div');
@@ -3326,14 +3335,14 @@ async function processSection(section, config, {
   return section.blocks;
 }
 
-// Section loads started by loadSectionsEarly; null once the main loop has taken the section.
+// Section loads started by loadSectionsEarly; null once the main loop has handled the section.
 const sectionLoads = new WeakMap();
 let earlySections = null;
 
 /**
  * Starts loading pending page sections now instead of waiting for their turn,
- * e.g. the sections in a tabs block's open panel. Only works with `parallel-sections: auto`
- * once the LCP section and loadPostLCP are done; otherwise it does nothing.
+ * e.g. the sections in a tabs block's open panel. Works during the page load once
+ * the next sections may start (after the LCP section); otherwise it does nothing.
  * @param {Element[]} sections - pending `body > main > div` sections
  */
 export function loadSectionsEarly(sections) {
@@ -3435,26 +3444,34 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
+  const parallelCount = isDoc ? getParallelSectionCount() : 0;
   let lcpSectionId = null;
-  const loadsSectionsEarly = isDoc && (PAGE_URL.searchParams.get('parallel-sections')
-    ?? getMetadata('parallel-sections')) === 'auto';
+  let postLcpPromise;
 
   for (const [idx, htmlSection] of htmlSections.entries()) {
-    const earlyLoad = sectionLoads.get(htmlSection);
+    if (!sectionLoads.has(htmlSection)) sectionLoads.set(htmlSection, null);
+    let sectionBlocks = await sectionLoads.get(htmlSection);
     sectionLoads.set(htmlSection, null);
-    let sectionBlocks = await earlyLoad;
     if (!sectionBlocks) {
+      if (postLcpPromise) await postLcpPromise;
       const section = await decorateSection(htmlSection, idx);
       const isLastSection = section.idx === htmlSections.length - 1;
       if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
         lcpSectionId = section.idx;
       }
       const isLcpSection = section.idx === lcpSectionId;
+      const rushesNext = isLcpSection && idx < parallelCount - 1
+        && config.mep?.targetEnabled !== 'postlcp';
       sectionBlocks = await processSection(section, config, {
         isLcpSection,
-        loadsPostLCP: isDoc && isLcpSection,
+        loadsPostLCP: isDoc && isLcpSection && !rushesNext,
       });
-      if (isLcpSection && loadsSectionsEarly) earlySections = htmlSections;
+      if (isDoc && isLcpSection) earlySections = htmlSections;
+      if (rushesNext) {
+        loadSectionsEarly(htmlSections.slice(idx + 1, parallelCount));
+        postLcpPromise = loadPostLCP(config);
+        postLcpPromise.catch(() => {});
+      }
     }
     areaBlocks.push(...sectionBlocks);
     if (isDoc && idx === lcpSectionId) scheduleJsonLdInit();
@@ -3465,6 +3482,7 @@ export async function loadArea(area = document) {
   }
   if (isDoc) earlySections = null;
 
+  if (postLcpPromise) await postLcpPromise;
   if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
