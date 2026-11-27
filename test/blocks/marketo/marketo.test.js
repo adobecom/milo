@@ -11,6 +11,7 @@ import init, {
   formSubmit,
   formValidate,
   loadMarketo,
+  addDatePlaceholders,
   logFailure,
   formTimeout,
   LANA_MESSAGE,
@@ -319,6 +320,70 @@ describe('Marketo failure logging', () => {
   });
 
   describe('loadMarketo', () => {
+    it('adds a locale-formatted placeholder to empty date fields', () => {
+      buildBlock();
+      const formEl = el.querySelector('form');
+      const fieldWrap = document.createElement('div');
+      fieldWrap.className = 'mktoFieldWrap';
+      const dateField = document.createElement('input');
+      dateField.type = 'date';
+      dateField.lang = 'en-GB';
+      fieldWrap.append(dateField);
+      formEl.append(fieldWrap);
+
+      addDatePlaceholders(formEl);
+
+      const placeholder = fieldWrap.querySelector('.mktoDatePlaceholder');
+      expect(placeholder.textContent).to.equal('DD/MM/YYYY');
+      expect(fieldWrap.classList.contains('mktoDateFieldEmpty')).to.be.true;
+
+      dateField.focus();
+      expect(fieldWrap.classList.contains('mktoDateFieldEmpty')).to.be.true;
+      dateField.value = '2026-02-01';
+      dateField.dispatchEvent(new Event('change'));
+      dateField.blur();
+      expect(fieldWrap.classList.contains('mktoDateFieldEmpty')).to.be.false;
+      dateField.value = '';
+      dateField.dispatchEvent(new Event('change'));
+      expect(fieldWrap.classList.contains('mktoDateFieldEmpty')).to.be.true;
+    });
+
+    ['converted', 'inserted'].forEach((mode) => {
+      it(`adds the placeholder when a date field is ${mode} after Forms2 is ready`, async () => {
+        buildBlock();
+        const formEl = el.querySelector('form');
+        formEl.lang = 'en-US';
+        const fieldWrap = document.createElement('div');
+        fieldWrap.className = 'mktoFieldWrap';
+        const dateField = document.createElement('input');
+        if (mode === 'converted') fieldWrap.append(dateField);
+        formEl.append(fieldWrap);
+
+        const previousForms = window.MktoForms2;
+        window.MktoForms2 = {
+          getFormElem: () => ({ get: () => document.querySelector('form') }),
+          onValidate: () => {},
+          onSubmit: () => {},
+          onSuccess: () => {},
+          loadForm: (host, munchkin, formID, callback) => callback?.(),
+          whenReady: (callback) => callback(window.MktoForms2),
+        };
+        try {
+          await loadMarketo(el, formData);
+          expect(fieldWrap.querySelector('.mktoDatePlaceholder')).to.not.exist;
+
+          dateField.type = 'date';
+          if (mode === 'inserted') fieldWrap.append(dateField);
+          await Promise.resolve();
+
+          expect(fieldWrap.querySelector('.mktoDatePlaceholder').textContent).to.equal('MM/DD/YYYY');
+          expect(fieldWrap.classList.contains('mktoDateFieldEmpty')).to.be.true;
+        } finally {
+          window.MktoForms2 = previousForms || window.MktoForms2;
+        }
+      });
+    });
+
     it('logs handshake failure when the iframe never signals ready', async () => {
       buildBlock();
       await loadMarketo(el, formData);
