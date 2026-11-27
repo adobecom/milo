@@ -140,6 +140,7 @@ describe('aside-c2', () => {
     await setViewport(MOBILE);
     await setViewport(TABLET);
     await waitFor(() => isMediaFirstInDom(block));
+    await waitFor(() => !isMediaFirstInDom(getBlock('lockup')));
     expect(isMediaFirstInDom(getBlock('lockup'))).to.be.false;
   });
 
