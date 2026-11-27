@@ -760,27 +760,30 @@ describe('Utils', () => {
         await loaded;
       });
 
-      it('starts the open tab panel sections, not the hidden ones', async () => {
-        const tabSection = (id, tab) => `<div><div class="ps-block" data-id="${id}"></div>
-          <div class="section-metadata"><div><div>tab</div><div>${tab}</div></div></div></div>`;
-        setup('auto', [
-          psBlock('a'),
-          `<div><div class="tabs"><div><div><ul><li>One</li><li>Two</li></ul></div></div>
-            <div><div>id</div><div>t</div></div></div></div>`,
-          tabSection('b', 't, 1'),
-          tabSection('c', 't, 2'),
-          tabSection('d', 't, 1'),
-        ]);
-        ['b', 'd'].forEach(holdBlock);
-        const loaded = utils.loadArea();
-        await waitFor(() => started().length === 3, 2000, 20);
-        await settle();
-        expect(started()).to.have.members(['a', 'b', 'd']);
-        releases.b();
-        releases.d();
-        await loaded;
-        expect(started()).to.include('c');
-        expect(document.querySelector('#tab-panel-t-1 [data-id="d"]')).to.exist;
+      ['', 'c2'].forEach((foundation) => {
+        it(`starts the open tab panel sections, not the hidden ones (${foundation || 'c1'} tabs)`, async () => {
+          const tabSection = (id, tab) => `<div><div class="ps-block" data-id="${id}"></div>
+            <div class="section-metadata"><div><div>tab</div><div>${tab}</div></div></div></div>`;
+          setup('auto', [
+            psBlock('a'),
+            `<div><div class="tabs"><div><div><ul><li>One</li><li>Two</li></ul></div></div>
+              <div><div>id</div><div>t</div></div></div></div>`,
+            tabSection('b', 't, 1'),
+            tabSection('c', 't, 2'),
+            tabSection('d', 't, 1'),
+          ]);
+          if (foundation) document.head.insertAdjacentHTML('beforeend', `<meta name="foundation" content="${foundation}">`);
+          ['b', 'd'].forEach(holdBlock);
+          const loaded = utils.loadArea();
+          await waitFor(() => started().length === 3, 2000, 20);
+          await settle();
+          expect(started()).to.have.members(['a', 'b', 'd']);
+          releases.b();
+          releases.d();
+          await loaded;
+          expect(started()).to.include('c');
+          expect(document.querySelector('#tab-panel-t-1 [data-id="d"]')).to.exist;
+        });
       });
 
       it('ignores block requests when parallel-sections is a number', async () => {
