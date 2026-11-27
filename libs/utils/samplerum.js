@@ -8,6 +8,7 @@ export function sampleRUM(checkpoint, data) {
     sampleRUM.enhance = () => {};
     if (!window.hlx.rum) {
       const param = new URLSearchParams(window.location.search).get('rum');
+      if (param !== 'on') window.SAMPLE_PAGEVIEWS_AT_RATE ??= 'high';
       const weight = (window.SAMPLE_PAGEVIEWS_AT_RATE === 'high' && 10)
         || (window.SAMPLE_PAGEVIEWS_AT_RATE === 'low' && 1000)
         || (param === 'on' && 1)
