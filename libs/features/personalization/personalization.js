@@ -1733,13 +1733,13 @@ async function handleMartechTargetInteraction(
   let targetAjoPropositions = [];
   if (config?.mep?.enablePersV2 && targetInteractionPromise) {
     const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
-    sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
+    sendTargetResponseAnalytics(!!targetInteractionData.timedOut, respStartTime, calculatedTimeout);
     if (targetInteractionData.result) {
       const roundedResponseTime = roundToQuarter(respTime?.duration ?? respTime);
       performance.clearMarks();
       performance.clearMeasures();
       try {
-        window.lana.log(`${targetAjo} response time: ${roundedResponseTime}`, {
+        window.lana.log(`${targetAjo} response time: ${roundedResponseTime} | pzn=v2`, {
           tags: 'martech',
           errorType: 'e',
           sampleRate: 0.5,

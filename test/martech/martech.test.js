@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import sinon from 'sinon';
 import { getConfig, setConfig } from '../../libs/utils/utils.js';
 
-const { default: init, setupEntitlementCallback } = await import('../../libs/martech/martech.js');
+const { default: init, setupEntitlementCallback, getTargetAjoPersonalization } = await import('../../libs/martech/martech.js');
 
 const SEGMENT_ID = 'segment-1';
 const ENTITLEMENT = 'cc-all-apps';
@@ -104,5 +104,58 @@ describe('martech init without Server-Timing sign-in hint', () => {
     window.adobeid.onReady();
     sendEntitlementEvent();
     expect(await getConfig().entitlements()).to.deep.equal([ENTITLEMENT]);
+  });
+});
+
+describe('getTargetAjoPersonalization timeout logging', () => {
+  let clock;
+  let originalLana;
+  const lanaOptions = { tags: 'martech', errorType: 'e', sampleRate: 10 };
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    originalLana = window.lana;
+    window.lana = { log: sinon.stub() };
+  });
+
+  afterEach(async () => {
+    await clock.tickAsync(1100);
+    clock.restore();
+    sinon.restore();
+    window.lana = originalLana;
+    document.head.querySelector('meta[name="personalization-v2"]')?.remove();
+  });
+
+  const runUntilTimeout = async () => {
+    const result = getTargetAjoPersonalization({
+      handleAlloyResponse: () => [],
+      config: { mep: {} },
+      sendTargetResponseAnalytics: sinon.stub(),
+    });
+    await clock.tickAsync(4000);
+    return result;
+  };
+
+  it('logs a labeled timeout for a signed-out visitor', async () => {
+    const result = await runUntilTimeout();
+
+    expect(result).to.deep.equal({ targetAjoManifests: [], targetAjoPropositions: [] });
+    expect(window.lana.log.calledOnceWith(
+      'target response time: timed out after 4000ms | pzn=v1-signedout',
+      lanaOptions,
+    )).to.be.true;
+  });
+
+  it('labels a signed-in visitor on a v2 page', async () => {
+    document.head.insertAdjacentHTML('beforeend', '<meta name="personalization-v2" content="on">');
+    sinon.stub(window.performance, 'getEntriesByType')
+      .returns([{ serverTiming: [{ name: 'sis', description: '1' }] }]);
+
+    await runUntilTimeout();
+
+    expect(window.lana.log.calledOnceWith(
+      'target response time: timed out after 4000ms | pzn=v1-signedin-v2page',
+      lanaOptions,
+    )).to.be.true;
   });
 });
