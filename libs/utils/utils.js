@@ -3047,11 +3047,23 @@ function reserveBannerSpace() {
   }
 }
 
+function getCleanPath(pageUrl) {
+  try {
+    const path = new URL(pageUrl, window.location.origin).pathname.replace(/(\.html|\/)+$/, '');
+    const { prefix } = getLocale(getConfig().locales, path || '/');
+    return (prefix && path.startsWith(prefix)) ? path.slice(prefix.length) : path;
+  } catch {
+    return pageUrl;
+  }
+}
+
 export async function pageExist(url) {
+  const isOk = (response) => response?.ok
+    && (!response.redirected || getCleanPath(url) === getCleanPath(response.url));
   const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
-  if (headResp?.status !== 401) return headResp?.ok ?? false;
+  if (headResp?.status !== 401) return isOk(headResp);
   if (!(url.includes('.aem.page') || url.includes('.aem.live'))) return false;
-  return (await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null))?.ok ?? false;
+  return isOk(await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null));
 }
 
 export async function decorateLanguageBanner() {
