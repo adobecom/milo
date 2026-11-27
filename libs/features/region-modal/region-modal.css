@@ -360,3 +360,15 @@ html:has(meta[name="foundation"][content="c2"]) {
   }
 }
 }
+
+html[dir="rtl"]:has(meta[name="foundation"][content="c2"]) .dialog-modal.region-modal .dialog-close {
+  left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm));
+  right: auto;
+}
+
+@media (min-width: 838px) {
+  html[dir="rtl"]:has(meta[name="foundation"][content="c2"]) .dialog-modal.region-modal .dialog-close {
+    left: calc(2 * var(--s2a-spacing-lg));
+    right: auto;
+  }
+}
