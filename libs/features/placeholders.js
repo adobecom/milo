@@ -2,6 +2,7 @@ import {
   customFetch,
   getConfig,
   geoIpSiteKey,
+  getGeoIpSheetUrl,
   getGeoIpWarmSheet,
   getMetadata,
   lingoActive,
@@ -73,11 +74,6 @@ const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 const COUNTRY_COL_ALIAS = { gb: 'UK' };
 const countryToColumn = (c) => (c ? (COUNTRY_COL_ALIAS[c] ?? c).toUpperCase() : null);
 
-const getGeoIpPlaceholderPath = (config, source) => {
-  if (source) return source;
-  return `${config.locale?.contentRoot}/placeholders-geo-ip.json`;
-};
-
 const NONE_SENTINEL = '--none--';
 const cellVal = (v) => (typeof v === 'string' ? v.trim() : '');
 
@@ -93,9 +89,8 @@ const parseGeoIpColumnJson = (json, column, out) => {
 };
 
 const geoIpSheetPath = (config, source) => {
-  const basePath = getGeoIpPlaceholderPath(config, source);
-  const lang = geoIpSiteKey(config.locale);
-  return `${basePath}${basePath.includes('?') ? '&' : '?'}sheet=${lang}`;
+  if (!source) return getGeoIpSheetUrl(config);
+  return `${source}${source.includes('?') ? '&' : '?'}sheet=${geoIpSiteKey(config.locale)}`;
 };
 
 const fetchGeoIpSheet = (path) => {
@@ -135,7 +130,7 @@ async function getGeoPlaceholders(config, source) {
 }
 
 // Map of `-geo-ip` overrides (or null) for surfaces outside milo's decorateArea pipeline (e.g.
-// C2 gnav); `source` is an optional absolute sheet URL, else derived from config.locale.
+// C2 gnav); `source` is an optional absolute sheet URL, else the site-root sheet.
 export async function getGeoIpPlaceholders(config = getConfig(), source = undefined) {
   const geo = await getGeoPlaceholders(config, source);
   if (!geo) return null;

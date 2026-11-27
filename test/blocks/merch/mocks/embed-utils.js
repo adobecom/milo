@@ -62,6 +62,7 @@ export const getGeoLocalePrefix = () => Promise.resolve(null);
 export const getPlaceholderPaths = () => [];
 export const getGeoIpWarmSheet = () => undefined;
 export const geoIpSiteKey = ({ base, prefix } = {}) => (base ?? (prefix ?? '').replace('/', '')) || 'en';
+export const getGeoIpSheetUrl = (cfg) => `${cfg.contentRoot ?? ''}/placeholders-geo-ip.json?sheet=${geoIpSiteKey(cfg.locale)}`;
 export const normCountryCode = (country) => {
   if (typeof country !== 'string') return undefined;
   const lower = country.toLowerCase();

@@ -543,10 +543,7 @@ describe('Utils', () => {
       expect(document.head.querySelector('link[rel="preload"][as="style"][href*="/features/icons/icons.css"]')).to.exist;
     });
 
-    const geoIpUrl = () => {
-      const { locale } = utils.getConfig();
-      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
-    };
+    const geoIpUrl = () => utils.getGeoIpSheetUrl(utils.getConfig());
 
     it('warms the geo-ip sheet when lingo is active and the LCP has a -geo-ip token', () => {
       utils.setConfig({ ...config, contentRoot: '/geoip-pos' });
@@ -4323,10 +4320,7 @@ describe('Utils', () => {
     let warmCount = 0;
     let savedFetch;
 
-    const geoUrl = () => {
-      const { locale } = utils.getConfig();
-      return `${locale.contentRoot}/placeholders-geo-ip.json?sheet=${utils.geoIpSiteKey(locale)}`;
-    };
+    const geoUrl = () => utils.getGeoIpSheetUrl(utils.getConfig());
 
     // Unique contentRoot per test → unique sheet URL → sidesteps the module-level
     // warm dedupe cache, so getGeoIpWarmSheet reflects only this test's warm.

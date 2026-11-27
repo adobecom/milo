@@ -675,10 +675,9 @@ describe('Merch Block', () => {
       const setup = ({ lingo, country }) => {
         setConfig({
           ...config,
+          contentRoot: '/test/blocks/merch/mocks',
           placeholders: { CCSN: 'Creative Cloud Pro', EDU: 'Students and teachers' },
         });
-        // mockFetch builds a URL from its argument, so the root must be absolute.
-        getConfig().locale.contentRoot = `${window.location.origin}/test/blocks/merch/mocks`;
         if (lingo) {
           langfirstMeta = createTag('meta', { name: 'langfirst', content: 'on' });
           document.head.appendChild(langfirstMeta);
