@@ -1,10 +1,13 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { stub } from 'sinon';
-import { delay, waitForElement } from '../../helpers/waitfor.js';
+import { restore, stub } from 'sinon';
+import { delay, waitFor, waitForElement } from '../../helpers/waitfor.js';
 import init, { getDefaultStates, cleanPanelData, getConfigOptions } from '../../../libs/blocks/marketo-config/marketo-config.js';
-import { sanitizeConfigValue, sanitizeHashConfig, loadStateFromLocalStorage } from '../../../libs/blocks/marketo-config/context.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { sanitizeConfigValue, sanitizeHashConfig, loadStateFromLocalStorage, ConfiguratorProvider } from '../../../libs/blocks/marketo-config/context.js';
+import { html, render } from '../../../libs/deps/htm-preact.js';
+import FieldsPanel from '../../../libs/blocks/marketo-config/fields-panel.js';
+import { createFieldMap, getTemplateRules, STEP_PREF } from '../../../libs/blocks/marketo-config/field-map.js';
+import { parseEncodedConfig, setConfig } from '../../../libs/utils/utils.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
 const options = JSON.parse(await readFile({ path: './mocks/options.json' }));
@@ -29,6 +32,352 @@ describe('marketo-config', () => {
 
   afterEach(() => {
     window.fetch = ogFetch;
+  });
+
+  describe('multi-step fields', () => {
+    const preferences = [
+      { prop: 'form.template', label: 'Template', options: 'demo:Demo', default: 'demo' },
+      {
+        prop: 'field_visibility.name',
+        label: 'Name',
+        stepname: 'firstName',
+        linkedstepname: 'lastName',
+        defaultstep: 2,
+        requiredpolicy: 'always',
+        default: 'visible',
+        options: 'hidden:Hidden,visible:Visible,required:Required',
+      },
+      {
+        prop: 'field_visibility.company',
+        label: 'Company',
+        stepname: 'company',
+        defaultstep: 3,
+        requiredpolicy: 'toggle',
+        default: 'visible',
+        options: 'hidden:Hidden,visible:Visible,required:Required',
+      },
+      {
+        prop: 'field_filters.products',
+        label: 'Products',
+        stepname: 'products',
+        defaultstep: 3,
+        requiredpolicy: 'always',
+        default: 'all',
+        options: 'hidden:Hidden,all:All products,selected:Selected products',
+      },
+    ];
+    const ruleRows = [
+      ['form.id', '1723'], ['form.subtype', 'contact'], ['form.success.type', 'inline'],
+      ['field_visibility.company', 'required'], ['field_filters.products', 'selected'],
+    ].map(([prop, value]) => ({ template: 'demo', prop, value }));
+    let fieldMap;
+    let templateRules;
+
+    beforeEach(() => {
+      fieldMap = createFieldMap(preferences);
+      templateRules = getTemplateRules(ruleRows, preferences);
+    });
+
+    afterEach(() => {
+      render(null, document.querySelector('.marketo-config'));
+      window.location.hash = '';
+      restore();
+    });
+
+    it('applies template metadata and defaults, and resets edits without replacing unrelated preferences', () => {
+      const defaults = fieldMap.applyTemplate('demo', templateRules, 3);
+      expect(defaults).to.deep.equal({
+        'form.template': 'demo',
+        'form id': '1723',
+        'form.id': '1723',
+        'form.subtype': 'contact',
+        'form.success.type': 'inline',
+        'field_visibility.name': 'required',
+        'field_visibility.company': 'required',
+        'field_filters.products': 'selected',
+        [STEP_PREF]: { 1: ['email', 'country'], 2: ['firstName', 'lastName'], 3: ['company', 'products'] },
+      });
+      const edited = { ...defaults, ...fieldMap.moveField(defaults, 'company', 'hidden'), 'program.poi': 'Acrobat' };
+      expect({ ...edited, ...fieldMap.applyTemplate('demo', templateRules, 3) })
+        .to.deep.equal({ ...defaults, 'program.poi': 'Acrobat' });
+    });
+
+    it('rejects invalid template rules and duplicate field identifiers', () => {
+      const invalidRules = [
+        [[{ ...ruleRows[0], template: 'unknown' }], 'Unknown template: unknown'],
+        [[...ruleRows, ruleRows[0]], 'Duplicate template rule: demo:form.id'],
+        [[...ruleRows, { template: 'demo', prop: 'field_visibility.unknown', value: 'visible' }], 'Unknown template property'],
+        [ruleRows.map((row) => (row.prop === 'field_filters.products' ? { ...row, value: 'invalid' } : row)), 'Invalid template value'],
+        [ruleRows.filter((row) => row.prop !== 'form.id'), 'Missing template rule: demo:form.id'],
+      ];
+      invalidRules.forEach(([rows, message]) => {
+        expect(() => getTemplateRules(rows, preferences)).to.throw(message);
+      });
+      expect(() => createFieldMap([...preferences, preferences[1]])).to.throw('Duplicate field identifier');
+    });
+
+    it('redistributes fields from one to three steps and back, keeping linked fields together', () => {
+      const initial = fieldMap.applyTemplate('demo', templateRules);
+      const expanded = { ...initial, ...fieldMap.setStepCount(initial, 3) };
+      const collapsed = { ...expanded, ...fieldMap.setStepCount(expanded, 1) };
+      expect(expanded[STEP_PREF]).to.deep.equal({ 1: ['email', 'country'], 2: ['firstName', 'lastName'], 3: ['company', 'products'] });
+      expect(collapsed).to.deep.equal(initial);
+      expect(fieldMap.deriveStepCount(expanded)).to.equal(3);
+      expect(fieldMap.deriveStepCount(collapsed)).to.equal(1);
+    });
+
+    it('moves and hides linked fields together while protecting locked and invalid fields', () => {
+      const initial = fieldMap.applyTemplate('demo', templateRules, 3);
+      [['email', 'hidden'], ['country', 'hidden'], ['lastName', '3'], ['unknown', '2']].forEach(([id, bucket]) => {
+        expect(fieldMap.moveField(initial, id, bucket)).to.deep.equal({});
+      });
+      const moved = { ...initial, ...fieldMap.moveField(initial, 'name', '3') };
+      expect(moved[STEP_PREF][2]).to.deep.equal([]);
+      expect(moved[STEP_PREF][3]).to.deep.equal(['company', 'products', 'firstName', 'lastName']);
+      const hidden = { ...moved, ...fieldMap.moveField(moved, 'name', 'hidden') };
+      expect(hidden[STEP_PREF][3]).to.deep.equal(['company', 'products']);
+      expect(fieldMap.deriveBuckets(hidden).hidden).to.deep.equal(['name']);
+      const shown = { ...hidden, ...fieldMap.moveField(hidden, 'name', '2') };
+      expect(shown['field_visibility.name']).to.equal('required');
+      expect(shown[STEP_PREF][2]).to.deep.equal(['firstName', 'lastName']);
+      expect(initial[STEP_PREF][2]).to.deep.equal(['firstName', 'lastName']);
+    });
+
+    it('round-trips multi-step settings and saved filter values through copied links, then resets to the template', async () => {
+      const lsKey = 'marketo-test-ConfiguratorState';
+      const saved = { ...fieldMap.applyTemplate('demo', templateRules, 3), 'field_filters.products': 'retired' };
+      Object.assign(saved, fieldMap.moveField(saved, 'company', '2'));
+      localStorage.setItem(lsKey, JSON.stringify(saved));
+      window.fetch = stub().resolves({
+        ok: true,
+        json: async () => ({
+          ':names': ['metadata', 'preferences', 'template-rules'],
+          metadata: { data: [{ sheet: 'preferences', title: 'Core Preferences' }] },
+          preferences: { data: preferences },
+          'template-rules': { data: ruleRows },
+        }),
+      });
+      stub(navigator.clipboard, 'write').resolves();
+      const el = document.querySelector('.marketo-config');
+      await init(el);
+      const filter = await waitForElement('#ff-filter-products', { rootEl: el });
+      expect(filter.value).to.equal('retired');
+      expect(filter.selectedOptions[0].textContent).to.equal('retired (saved value)');
+      el.querySelector('.copy-config').click();
+      await waitFor(() => el.querySelector('.copy-content').value);
+      const { hash } = new URL(el.querySelector('.copy-content').value);
+      expect(hash).not.to.equal('');
+      render(null, el);
+      localStorage.clear();
+      window.location.hash = hash;
+      document.body.innerHTML = innerHTML;
+      const reloaded = document.querySelector('.marketo-config');
+      await init(reloaded);
+      const restoredFilter = await waitForElement('#ff-filter-products', { rootEl: reloaded });
+      expect(restoredFilter.value).to.equal('retired');
+      await waitFor(() => localStorage.getItem(lsKey));
+      expect(loadStateFromLocalStorage(lsKey)).to.deep.equal(saved);
+      reloaded.querySelector('.ff-reset').click();
+      await waitFor(() => loadStateFromLocalStorage(lsKey)?.['field_filters.products'] === 'selected');
+      expect(loadStateFromLocalStorage(lsKey)).to.deep.equal(fieldMap.applyTemplate('demo', templateRules, 3));
+    });
+
+    it('hides preference panels emptied by managed form fields', async () => {
+      window.fetch = stub().resolves({
+        ok: true,
+        json: async () => ({
+          ':names': ['metadata', 'core-preferences', 'field-preferences', 'template-rules'],
+          metadata: {
+            data: [
+              { sheet: 'core-preferences', title: 'Core Preferences' },
+              { sheet: 'field-preferences', title: 'Field Preferences' },
+            ],
+          },
+          'core-preferences': { data: [{ prop: 'marketo host', label: 'Host', default: 'engage.adobe.com' }] },
+          'field-preferences': { data: preferences },
+          'template-rules': { data: ruleRows },
+        }),
+      });
+      const el = document.querySelector('.marketo-config');
+      await init(el);
+      await waitForElement('#ai_Core_Preferences', { rootEl: el });
+      expect(el.querySelector('#ai_Field_Preferences')).to.equal(null);
+      expect(el.querySelector('#ai_Form_Fields')).not.to.equal(null);
+    });
+
+    it('copies template IDs that load in the Marketo runtime with new and legacy preferences', async () => {
+      const { default: initMarketo } = await import('../../../libs/blocks/marketo/marketo.js');
+      stub(navigator.clipboard, 'write').resolves();
+      for (const legacy of [false, true]) {
+        document.body.innerHTML = innerHTML;
+        localStorage.clear();
+        const runtimePreferences = [
+          ...preferences,
+          { prop: 'marketo host', label: 'Host', default: 'engage.adobe.com' },
+          { prop: 'marketo munckin', label: 'Munchkin', default: '360-KCI-804' },
+          ...(legacy ? [{ prop: 'form id', label: 'Form ID', default: '9999' }] : []),
+        ];
+        window.fetch = stub().resolves({
+          ok: true,
+          json: async () => ({
+            ':names': ['metadata', 'preferences', 'template-rules'],
+            metadata: { data: [{ sheet: 'preferences', title: 'Core Preferences' }] },
+            preferences: { data: runtimePreferences },
+            'template-rules': { data: ruleRows },
+          }),
+        });
+        const el = document.querySelector('.marketo-config');
+        await init(el);
+        const copyButton = await waitForElement('.copy-config', { rootEl: el });
+        copyButton.click();
+        await waitFor(() => el.querySelector('.copy-content').value);
+        const url = el.querySelector('.copy-content').value;
+        const copiedUrl = new URL(url);
+        expect(copiedUrl.origin).to.equal('https://milo.adobe.com');
+        expect(copiedUrl.pathname).to.equal('/tools/marketo');
+        const copiedState = parseEncodedConfig(copiedUrl.hash.slice(1));
+        expect(copiedState['form.id']).to.equal('1723');
+        expect(copiedState['form id']).to.equal('1723');
+
+        const block = document.createElement('div');
+        block.className = 'marketo';
+        block.hidden = true;
+        const wrapper = document.createElement('div');
+        const link = document.createElement('a');
+        link.href = 'https://milo.adobe.com/tools/marketo';
+        link.hash = copiedUrl.hash;
+        expect(link.href).to.equal(copiedUrl.href);
+        link.textContent = 'Configuration';
+        wrapper.append(link);
+        block.append(wrapper);
+        el.append(block);
+        await initMarketo(block);
+        expect(block.querySelector('form')?.id).to.equal('mktoForm_1723');
+        block.remove();
+        render(null, el);
+      }
+    });
+
+    it('preserves placements when selecting the active step count and resets them only on request', async () => {
+      const el = document.querySelector('.marketo-config');
+      el.replaceChildren();
+      render(html`
+        <${ConfiguratorProvider} defaultState=${fieldMap.applyTemplate('demo', templateRules, 3)} lsKey="active-step-count">
+          <${FieldsPanel} fieldMap=${fieldMap} templateRules=${templateRules} />
+        </${ConfiguratorProvider}>`, el);
+      const placement = await waitForElement('#ff-placement-company', { rootEl: el });
+      placement.value = '2';
+      placement.dispatchEvent(new Event('change', { bubbles: true }));
+      await delay(50);
+
+      el.querySelector('.ff-step-count-btn.is-active').click();
+      await delay(50);
+      expect(el.querySelector('#ff-placement-company').closest('[data-bucket]').dataset.bucket)
+        .to.equal('2');
+      expect(el.querySelector('.ff-step-count-btn.is-active').textContent.trim()).to.equal('3');
+
+      el.querySelector('.ff-reset').click();
+      await delay(50);
+      expect(el.querySelector('#ff-placement-company').closest('[data-bucket]').dataset.bucket)
+        .to.equal('3');
+    });
+
+    it('moves dragged fields to the drop target and refuses to hide locked fields', async () => {
+      const el = document.querySelector('.marketo-config');
+      el.replaceChildren();
+      render(html`
+        <${ConfiguratorProvider} defaultState=${fieldMap.applyTemplate('demo', templateRules, 3)} lsKey="field-drag">
+          <${FieldsPanel} fieldMap=${fieldMap} templateRules=${templateRules} />
+        </${ConfiguratorProvider}>`, el);
+      await delay(50);
+      for (const [id, bucket, allowed] of [['name', '3', true], ['email', 'hidden', false]]) {
+        const chip = el.querySelector(`[data-field="${id}"]`);
+        const target = el.querySelector(`[data-bucket="${bucket}"]`);
+        const dataTransfer = new DataTransfer();
+        chip.dispatchEvent(new DragEvent('dragstart', { bubbles: true, dataTransfer }));
+        await delay(50);
+        target.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer }));
+        await waitFor(() => target.classList.contains(allowed ? 'is-over' : 'is-blocked'));
+        const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer });
+        target.dispatchEvent(drop);
+        await delay(50);
+        expect(drop.defaultPrevented).to.be.true;
+        expect(Boolean(target.querySelector(`[data-field="${id}"]`))).to.equal(allowed);
+        el.querySelector(`[data-field="${id}"]`).dispatchEvent(new DragEvent('dragend', { bubbles: true }));
+      }
+    });
+  });
+
+  it('preserves native bucket toggles, field values, and focus across updates and moves', async () => {
+    const el = document.querySelector('.marketo-config');
+    const fieldMap = createFieldMap([
+      { prop: 'field_visibility.company', label: 'Company', stepname: 'company', defaultstep: 1, requiredpolicy: 'toggle' },
+      {
+        prop: 'field_filters.products', label: 'Products', stepname: 'products', defaultstep: 2, requiredpolicy: 'always', options: 'all:All products,selected:Selected products',
+      },
+    ]);
+    const templateRules = { demo: { label: 'Demo', field_visibility: { company: 'visible' }, field_filters: { products: 'all' } } };
+    el.replaceChildren();
+    render(html`
+      <${ConfiguratorProvider} defaultState=${fieldMap.applyTemplate('demo', templateRules, 2)} lsKey="native-buckets">
+        <${FieldsPanel} fieldMap=${fieldMap} templateRules=${templateRules} />
+      </${ConfiguratorProvider}>`, el);
+    await delay(50);
+    const available = el.querySelector('[data-bucket="hidden"]');
+    const step2 = el.querySelector('[data-bucket="2"]');
+    const products = step2.querySelector('[data-field="products"]');
+    expect(products.querySelector('.ff-chip-locked').textContent).to.equal('Always required');
+    expect(products.querySelector('input[type="checkbox"]')).to.equal(null);
+    expect(products.querySelector('.ff-chip-filter').value).to.equal('all');
+    expect(available.open).to.be.false;
+    expect(step2.open).to.be.true;
+    available.querySelector('summary').click();
+    step2.querySelector('summary').click();
+    await delay(50);
+
+    const required = el.querySelector('[data-field="company"] input');
+    expect(required.checked).to.be.false;
+    required.checked = true;
+    required.dispatchEvent(new Event('change', { bubbles: true }));
+    await delay(50);
+    expect(available.open).to.be.true;
+    expect(step2.open).to.be.false;
+
+    const placement = el.querySelector('#ff-placement-company');
+    placement.value = '2';
+    placement.dispatchEvent(new Event('change', { bubbles: true }));
+    await delay(50);
+    expect(step2.open).to.be.true;
+    expect(document.activeElement).to.equal(step2.querySelector('#ff-placement-company'));
+    expect(step2.querySelector('[data-field="company"] input').checked).to.be.true;
+
+    available.querySelector('summary').click();
+    await delay(50);
+    const movedPlacement = step2.querySelector('#ff-placement-company');
+    movedPlacement.value = 'hidden';
+    movedPlacement.dispatchEvent(new Event('change', { bubbles: true }));
+    await delay(50);
+    expect(available.open).to.be.true;
+    expect(document.activeElement).to.equal(available.querySelector('#ff-placement-company'));
+
+    const filter = step2.querySelector('#ff-filter-products');
+    filter.value = 'selected';
+    filter.dispatchEvent(new Event('change', { bubbles: true }));
+    await delay(50);
+    const filterPlacement = step2.querySelector('#ff-placement-products');
+    filterPlacement.value = '1';
+    filterPlacement.dispatchEvent(new Event('change', { bubbles: true }));
+    await delay(50);
+    const step1 = el.querySelector('[data-bucket="1"]');
+    expect(step1.querySelector('#ff-filter-products').value).to.equal('selected');
+    const movedFilterPlacement = step1.querySelector('#ff-placement-products');
+    movedFilterPlacement.value = 'hidden';
+    movedFilterPlacement.dispatchEvent(new Event('change', { bubbles: true }));
+    await delay(50);
+    expect(available.querySelector('#ff-placement-products')).to.exist;
+    expect(el.querySelector('#ff-filter-products')).not.to.exist;
+    expect(el.querySelector('.ff-step-count-btn.is-active').textContent.trim()).to.equal('2');
+    render(null, el);
   });
 
   it('cleans panel data correctly', () => {

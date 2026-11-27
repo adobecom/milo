@@ -51,6 +51,10 @@
   left: 18px;
 }
 
+.marketo-config .accordion {
+  --field-max-size: 100%;
+}
+
 .marketo-config dt.title {
   cursor: pointer;
 }
@@ -63,6 +67,7 @@
 .marketo-config dd.content .field select, 
 .marketo-config dd.content .field input {
   width: 100%;
+  border-right: 16px solid transparent; 
 }
 
 .marketo-config dd.content .field label {
@@ -86,6 +91,248 @@
 .tagselect .tagselect-plus,
 .tagselect .tagselect-plus::after {
   background: #EFEFEF;
+}
+
+.marketo-config .form-fields-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+}
+
+.marketo-config .ff-bucket {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 6px;
+}
+
+.marketo-config .ff-bucket.is-over {
+  border-color: #9bc7ff;
+  background: rgb(155 199 255 / 10%);
+}
+
+.marketo-config .ff-bucket.is-blocked {
+  border-color: #ff9a91;
+  background: rgb(255 154 145 / 10%);
+}
+
+.marketo-config .ff-bucket summary {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  list-style-position: inside;
+  cursor: pointer;
+  align-items: center; 
+}
+
+.marketo-config .ff-bucket-title {
+  flex: 1;
+  margin-left: 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.marketo-config .ff-bucket-count {
+  float: right;
+  min-width: 22px;
+  padding: 2px 4px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 10%);
+  color: #ddd;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.marketo-config .ff-bucket-chevron {
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 0 4px;
+  border-right: 1.5px solid currentcolor;
+  border-bottom: 1.5px solid currentcolor;
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease;
+}
+
+.marketo-config details[open] .ff-bucket-chevron {
+  margin-bottom: 3px;
+  transform: rotate(45deg);
+}
+
+.marketo-config .ff-bucket-fields {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0 8px 8px;
+  list-style: none;
+}
+
+.marketo-config .ff-bucket-empty {
+  margin: 0;
+  padding: 10px 4px;
+  color: #c4c4c4;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.marketo-config .ff-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 12px 8px 28px;
+  border: 1px solid transparent;
+  background: rgb(255 255 255 / 4%);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  cursor: grab;
+}
+
+.marketo-config .ff-chip:focus-within {
+  border-color: #9bc7ff;
+}
+
+.marketo-config .ff-chip:active {
+  cursor: grabbing;
+}
+
+.marketo-config .ff-chip-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.marketo-config .ff-chip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.marketo-config .ff-chip-label {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.marketo-config .ff-chip-handle {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.marketo-config :is(.ff-chip-required, .ff-chip-locked) {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
+  gap: 4px;
+  margin: 2px 0 0;
+  color: #d2d2d2;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.marketo-config .form-fields-panel .ff-chip .ff-chip-required input {
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 0;
+  accent-color: #1473e6;
+  cursor: pointer;
+}
+
+.marketo-config .ff-chip-filter,
+.marketo-config .ff-chip-placement {
+  box-sizing: border-box;
+  width: auto;
+  min-width: 0;
+  height: 30px;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 4px;
+  background: #3c3c3c;
+  color: #fff;
+  color-scheme: dark;
+  font: inherit;
+  appearance: auto;
+  cursor: pointer;
+}
+
+.marketo-config .ff-chip-placement {
+  flex: 0 0 88px;
+}
+
+.marketo-config .ff-chip-filter {
+  flex: 1;
+  height: 28px;
+  min-height: 28px;
+}
+
+.marketo-config .ff-chip-placement:disabled {
+  opacity: 0.75;
+  cursor: default;
+  appearance: none;
+  padding-left: 12px;
+}
+
+.marketo-config .ff-step-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.marketo-config .ff-step-count-group {
+  display: flex;
+  gap: 8px;
+}
+
+.marketo-config .ff-step-count-btn {
+  min-width: 38px;
+  height: auto;
+  margin: 0;
+  padding: 4px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.marketo-config .ff-step-count-btn.is-active {
+  border-color: #9bc7ff;
+  background: #0b63ce;
+}
+
+.marketo-config .ff-reset {
+  grid-column: 1;
+  cursor: pointer;
+}
+
+.marketo-config .form-fields-panel :is(button, summary, select, input):focus-visible {
+  outline: 2px solid #9bc7ff;
+  outline-offset: 2px;
+}
+
+.marketo-config .ff-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .tool-content {
