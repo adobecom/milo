@@ -239,8 +239,7 @@ main .forge-blog-side-navigation {
     border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
     border-radius: var(--s2a-border-radius-6);
     background: var(--s2a-color-gray-50);
-    color: inherit;
-    font: inherit;
+    color: var(--s2a-color-content-default);
     cursor: pointer;
 
     @media (width >= 768px) {

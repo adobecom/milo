@@ -71,10 +71,6 @@
 
   .related-content-card-eyebrow {
     margin: 0;
-    color: var(--s2a-color-gray-600);
-    font-size: var(--s2a-font-size-md);
-    font-weight: var(--s2a-font-weight-adobe-clean-medium);
-    line-height: 1.25;
   }
 
   &.no-date .related-content-card-eyebrow {
@@ -83,20 +79,12 @@
 
   .related-content-card-title {
     margin: 0 0 var(--s2a-spacing-2xs);
-    font-size: var(--s2a-font-size-md);
-    line-height: 1.35;
-    font-weight: var(--s2a-font-weight-adobe-clean-extrabold);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
     /* stylelint-disable-next-line value-no-vendor-prefix */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    @media (width >= 768px) {
-      font-size: var(--s2a-font-size-xl);
-    }
   }
 
   .related-content-card-meta {

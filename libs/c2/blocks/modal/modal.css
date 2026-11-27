@@ -620,6 +620,6 @@ body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   border-radius: var(--s2a-border-radius-sm);
 
   @media (width >= 768px) {
-    padding: 37px var(--s2a-spacing-2xl) var(--s2a-spacing-2xl);
+    padding: var(--s2a-spacing-2xl);
   }
 }

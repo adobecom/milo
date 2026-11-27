@@ -2,7 +2,7 @@ import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { stub, useFakeTimers } from 'sinon';
 import { getConfig, setConfig, loadBlock, MILO_EVENTS } from '../../../../libs/utils/utils.js';
-import { closeModal } from '../../../../libs/blocks/modal/modal.js';
+import { closeModal } from '../../../../libs/c2/blocks/modal/modal.js';
 import initAuthor from '../../../../libs/blocks/blog-author/blog-author.js';
 import initSideNavigation from '../../../../libs/c2/blocks/forge-blog-side-navigation/forge-blog-side-navigation.js';
 import { waitFor } from '../../../helpers/waitfor.js';
@@ -43,7 +43,9 @@ foundationMetadata.content = 'c2';
 before(() => document.head.append(foundationMetadata));
 after(() => foundationMetadata.remove());
 
-const svgText = await readFile({ path: '../../../../libs/c2/blocks/forge-blog-header/forge-blog-header.svg' });
+const FEDERAL_ICON = /\/federal\/assets\/icons\/svgs\/([a-z]+)\.svg$/;
+const iconSvg = (name) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" data-icon="${name}"><path d="M0 0h18v18H0z"/></svg>`;
+const FEDERAL_LOGO = /\/federal\/assets\/svgs\/adobe\.svg$/;
 const blogHeaderCss = await readFile({ path: '../../../../libs/c2/blocks/forge-blog-header/forge-blog-header.css' });
 const sideNavigationCss = await readFile({ path: '../../../../libs/c2/blocks/forge-blog-side-navigation/forge-blog-side-navigation.css' });
 // C2 pages load the C2 styles.css (S2A tokens, grid margins, nav height) instead of core styles.
@@ -83,9 +85,8 @@ function mockFetch({
   profileMarkup = profileHtml,
 } = {}) {
   return stub(window, 'fetch').callsFake((url) => {
-    if (url === '/libs/c2/blocks/forge-blog-header/forge-blog-header.svg') {
-      return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
-    }
+    const icon = typeof url === 'string' && url.match(FEDERAL_ICON);
+    if (icon) return Promise.resolve({ ok: true, text: () => Promise.resolve(iconSvg(icon[1])) });
     if (isProfileRequest(url)) {
       if (profileReject) return Promise.reject(new Error('network down'));
       return Promise.resolve({
@@ -391,7 +392,8 @@ describe('forge-blog-header decoration', () => {
     const share = block.querySelector('.blog-header-share');
     expect(share.getAttribute('aria-haspopup')).to.equal('dialog');
     expect(share.textContent).to.contain('Share');
-    expect(share.querySelector('svg')).to.exist;
+    await waitFor(() => share.querySelector('svg'));
+    expect(share.querySelector('svg').dataset.icon).to.equal('share');
     expect(share.querySelector('svg').getAttribute('aria-hidden')).to.equal('true');
     expect(share.querySelector('svg').getAttribute('focusable')).to.equal('false');
     expect(block.querySelectorAll('.blog-header-author').length).to.equal(1);
@@ -452,7 +454,7 @@ describe('forge-blog-header decoration', () => {
       const button = block.querySelector('.blog-header-share');
       expect(button.firstChild.textContent).to.equal(value);
       expect(button.querySelector('img')).not.to.exist;
-      expect(button.querySelector('svg')).to.exist;
+      await waitFor(() => button.querySelector('svg'));
       const dialog = await openShareModal(button);
       const heading = dialog.querySelector('.blog-share-heading');
       expect(heading.textContent).to.equal(value);
@@ -560,6 +562,8 @@ describe('forge-blog-header decoration', () => {
     expect(source.getAttribute('srcset')).to.contain(`${window.location.origin}/blog/authors/media_rachel.png`);
     expect(block.querySelector('.blog-header-author-name').textContent).to.equal('Rachel Thornton');
     expect(block.querySelector('.blog-header-author-meta').textContent).to.equal('Author Title | Company');
+    expect(block.querySelector('.blog-header-author-name').classList.contains('label')).to.be.true;
+    expect(block.querySelector('.blog-header-author-meta').classList.contains('body-md')).to.be.true;
   });
 
   it('keeps an authored picture while fetching the profile for schema', async () => {
@@ -700,9 +704,8 @@ describe('forge-blog-header decoration', () => {
     let release;
     const pending = new Promise((resolve) => { release = resolve; });
     fetchStub = stub(window, 'fetch').callsFake((url) => {
-      if (url === '/libs/c2/blocks/forge-blog-header/forge-blog-header.svg') {
-        return Promise.resolve({ ok: true, text: () => Promise.resolve(svgText) });
-      }
+      const icon = typeof url === 'string' && url.match(FEDERAL_ICON);
+      if (icon) return Promise.resolve({ ok: true, text: () => Promise.resolve(iconSvg(icon[1])) });
       if (isProfileRequest(url)) {
         return pending.then(() => ({
           ok: true,
@@ -782,7 +785,7 @@ describe('forge-blog-header decoration', () => {
     await init(block);
     await waitFor(() => block.querySelector('.blog-header-author-meta'));
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+      .to.match(FEDERAL_LOGO);
     expect(block.querySelector('.blog-header-author-meta').textContent)
       .to.equal('Profile Title | Profile Company');
     expect(window.lana.log.called).to.equal(false);
@@ -834,7 +837,7 @@ describe('forge-blog-header decoration', () => {
     await init(block);
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     const avatar = block.querySelector('.blog-header-avatar');
-    expect(avatar.getAttribute('src')).to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+    expect(avatar.getAttribute('src')).to.match(FEDERAL_LOGO);
     expect(avatar.alt).to.equal('');
     expect(fetchStub.getCalls().some((c) => isProfileRequest(c.args[0]))).to.equal(false);
   });
@@ -845,7 +848,7 @@ describe('forge-blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     const img = block.querySelector('.blog-header-author-avatar img.blog-header-avatar');
-    expect(img.getAttribute('src')).to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+    expect(img.getAttribute('src')).to.match(FEDERAL_LOGO);
     expect(window.lana.log.called).to.equal(true);
   });
 
@@ -858,7 +861,7 @@ describe('forge-blog-header decoration', () => {
       .to.equal(new URL(profilePath, window.location.origin).href);
     expect(block.querySelectorAll('.blog-header-author-meta').length).to.equal(0);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+      .to.match(FEDERAL_LOGO);
   });
 
   it('uses the default avatar and logs a rejected profile request', async () => {
@@ -867,7 +870,7 @@ describe('forge-blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+      .to.match(FEDERAL_LOGO);
     expect(window.lana.log.firstCall.args[0]).to.contain('network down');
   });
 
@@ -877,7 +880,7 @@ describe('forge-blog-header decoration', () => {
     await init(block);
     await waitFor(() => window.lana.log.called);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+      .to.match(FEDERAL_LOGO);
     expect(window.lana.log.firstCall.args[0]).to.contain('response body failed');
   });
 
@@ -886,7 +889,7 @@ describe('forge-blog-header decoration', () => {
     const { block } = buildBlock();
     await init(block);
     expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-      .to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+      .to.match(FEDERAL_LOGO);
     expect(window.lana.log.called).to.equal(false);
   });
 
@@ -904,7 +907,7 @@ describe('forge-blog-header decoration', () => {
       await init(block);
       await waitFor(() => block.querySelector('.blog-header-author-meta'));
       expect(block.querySelector('.blog-header-avatar').getAttribute('src'))
-        .to.equal('/libs/c2/blocks/forge-blog-header/adobe-logo.svg');
+        .to.match(FEDERAL_LOGO);
       expect(block.querySelector('.blog-header-author-name').textContent).to.equal('Profile Name');
       expect(block.querySelector('.blog-header-author-name').getAttribute('href')).to.equal(profilePath);
       expect(block.querySelector('.blog-header-author-meta').textContent)
@@ -1018,7 +1021,8 @@ describe('forge-blog-header author layout', () => {
             .to.equal(width < 1280 ? 48 : 64);
           expect(author.scrollWidth).to.be.at.most(author.clientWidth);
         });
-        expect(block.querySelector('.blog-header-share svg').getBoundingClientRect().width)
+        // The span reserves the icon's box before the svg arrives (no layout shift).
+        expect(block.querySelector('.blog-header-share .icon').getBoundingClientRect().width)
           .to.equal(width < 1280 ? 16 : 22);
       });
     });
@@ -2030,6 +2034,12 @@ describe('forge-blog-header share modal', () => {
     expect(status.getAttribute('aria-live')).to.equal('polite');
     expect(status.classList.contains('sr-only')).to.equal(true);
     expect(getComputedStyle(status).display).not.to.equal('none');
+  });
+
+  it('loads the share icons from federal', async () => {
+    const dialog = await openShareModal();
+    const names = [...dialog.querySelectorAll('.blog-share-action svg')].map((svg) => svg.dataset.icon);
+    expect(names).to.deep.equal(['twitter', 'email', 'linkedin', 'link']);
   });
 
   it('marks decorative share icons as hidden from assistive technology', async () => {

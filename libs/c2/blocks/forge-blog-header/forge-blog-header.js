@@ -1,13 +1,12 @@
-import { createTag, getConfig, getMetadata, loadBlock, MILO_EVENTS } from '../../../utils/utils.js';
+import {
+  createTag, getConfig, getFederatedContentRoot, getMetadata, loadBlock, MILO_EVENTS,
+} from '../../../utils/utils.js';
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
-import { getSVGsfromFile } from '../../../blocks/share/share.js';
-import { getModal } from '../modal/modal.js';
 import { copyMedia } from '../forge-related-content-card/forge-related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
-const ICON_PATH = 'c2/blocks/forge-blog-header/forge-blog-header.svg';
 
 const SOCIAL_PLATFORMS = {
   'linkedin.com': { name: 'LinkedIn', icon: 'linkedin' },
@@ -19,7 +18,7 @@ const SOCIAL_PLATFORMS = {
 
 const SHARE_PLATFORMS = {
   x: {
-    icon: 'x',
+    icon: 'twitter',
     href: (url, title) => `https://x.com/share?&url=${url}&text=${title}`,
     popup: true,
   },
@@ -232,10 +231,10 @@ function fetchAuthorProfile(profileUrl) {
   return profileCache.get(profileUrl);
 }
 
-function defaultAvatar(base) {
+function defaultAvatar() {
   return createTag('img', {
     class: 'blog-header-avatar',
-    src: `${base}/c2/blocks/forge-blog-header/adobe-logo.svg`,
+    src: `${getFederatedContentRoot()}/federal/assets/svgs/adobe.svg`,
     alt: '',
     loading: 'lazy',
   });
@@ -246,7 +245,7 @@ function setAuthorMeta(info, details) {
   if (!text) return;
   let meta = info.querySelector('.blog-header-author-meta');
   if (!meta) {
-    meta = createTag('span', { class: 'blog-header-author-meta' });
+    meta = createTag('span', { class: 'blog-header-author-meta body-md' });
     info.append(meta);
   }
   meta.textContent = text;
@@ -255,8 +254,8 @@ function setAuthorMeta(info, details) {
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
   const el = (href && name)
-    ? createTag('a', { class: 'blog-header-author-name', href })
-    : createTag('span', { class: 'blog-header-author-name' });
+    ? createTag('a', { class: 'blog-header-author-name label', href })
+    : createTag('span', { class: 'blog-header-author-name label' });
   el.textContent = name ?? '';
   return el;
 }
@@ -274,11 +273,20 @@ function getAuthorHref(href) {
   return null;
 }
 
-function hideIcon(svg) {
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('focusable', 'false');
-  return svg;
+// Dynamic so icons.js stays off the critical path; callers size span.icon in CSS.
+async function loadIconSpans(spans) {
+  const { default: loadIcons } = await import('../../../features/icons/icons.js');
+  await loadIcons(spans);
+  return spans.map((span) => {
+    const svg = span.querySelector('svg');
+    if (!svg) return null;
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    return span;
+  });
 }
+
+const iconSpan = (name) => createTag('span', { class: `icon icon-${name}` });
 
 async function loadAuthorProfile(profileUrl, data, avatar, info) {
   const profile = await fetchAuthorProfile(profileUrl);
@@ -333,7 +341,7 @@ function getAuthorData(row) {
   };
 }
 
-function decorateAuthor(data, authorLinkEnabled, base) {
+function decorateAuthor(data, authorLinkEnabled) {
   const { picture, name, href, details, needsName } = data;
   const author = createTag('div', { class: 'blog-header-author' });
   const avatar = createTag('div', { class: 'blog-header-author-avatar' });
@@ -343,7 +351,7 @@ function decorateAuthor(data, authorLinkEnabled, base) {
 
   setAuthorMeta(info, details);
 
-  avatar.append(picture || defaultAvatar(base));
+  avatar.append(picture || defaultAvatar());
   if (authorLinkEnabled && href && (!picture || !details[0] || !details[1] || needsName)) {
     loadAuthorProfile(resolveUrl(href, window.location.href), data, avatar, info);
   }
@@ -465,7 +473,7 @@ function buildShareCard(data) {
   return card;
 }
 
-function buildActionLink(platform, svg, label, data) {
+function buildActionLink(platform, icon, label, data) {
   const { href, popup } = SHARE_PLATFORMS[platform];
   const link = createTag('a', {
     class: 'blog-share-action',
@@ -473,7 +481,7 @@ function buildActionLink(platform, svg, label, data) {
   });
   link.setAttribute('aria-label', label);
   link.setAttribute('href', href(encodeURIComponent(data.url), encodeURIComponent(data.title)));
-  link.append(svg);
+  link.append(icon);
   if (popup) {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -483,12 +491,12 @@ function buildActionLink(platform, svg, label, data) {
   return link;
 }
 
-function buildCopyButton(svg, labels, data) {
+function buildCopyButton(icon, labels, data) {
   const button = createTag('button', {
     type: 'button',
     class: 'blog-share-action blog-share-copy',
     'aria-label': labels.copy,
-  }, svg);
+  }, icon);
   // The badge is decorative; the persistent sr-only region owns the announcement.
   const feedback = createTag('span', { class: 'blog-share-feedback', 'aria-hidden': 'true' });
   const status = createTag('span', {
@@ -520,21 +528,20 @@ function buildCopyButton(svg, labels, data) {
   return createTag('li', null, [button, feedback, status]);
 }
 
-async function buildShareActions(platforms, data, base, labels) {
+async function buildShareActions(platforms, data, labels) {
   const available = platforms.filter((p) => p !== 'copy' || navigator.clipboard);
   const list = createTag('ul', { class: 'blog-share-actions' });
   if (!available.length) return list;
   const iconNames = available.map((p) => SHARE_PLATFORMS[p].icon);
-  const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, iconNames);
+  const icons = await loadIconSpans(iconNames.map(iconSpan));
   available.forEach((platform, index) => {
-    const svg = svgs?.[index]?.svg;
-    if (!svg) return;
-    hideIcon(svg);
+    const icon = icons[index];
+    if (!icon) return;
     if (platform === 'copy') {
-      list.append(buildCopyButton(svg, labels, data));
+      list.append(buildCopyButton(icon, labels, data));
       return;
     }
-    const link = buildActionLink(platform, svg, labels[platform], data);
+    const link = buildActionLink(platform, icon, labels[platform], data);
     list.append(createTag('li', null, link));
   });
   return list;
@@ -552,7 +559,6 @@ async function getShareLabels(config) {
 
 async function createShareModal(trigger) {
   const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
   const labels = await getShareLabels(config);
   const data = getShareData();
 
@@ -562,12 +568,13 @@ async function createShareModal(trigger) {
   content.append(heading);
   decorateBlockText(content, { heading: '5' });
   content.append(buildShareCard(data));
-  content.append(await buildShareActions(getPlatforms(), data, base, labels));
+  content.append(await buildShareActions(getPlatforms(), data, labels));
 
   if (trigger) {
     trigger.dataset.modalHash = `#${SHARE_MODAL_ID}`;
     trigger.dataset.isModalTrigger = 'true';
   }
+  const { getModal } = await import('../modal/modal.js');
   const dialog = await getModal(null, {
     id: SHARE_MODAL_ID,
     class: 'blog-share-modal',
@@ -592,7 +599,7 @@ export async function openShareModal(trigger) {
   return shareModalRequest;
 }
 
-async function buildShareButton(config, base) {
+async function buildShareButton(config) {
   const label = await replaceKey('blog-share', config);
   const button = createTag('button', {
     type: 'button',
@@ -601,9 +608,14 @@ async function buildShareButton(config, base) {
     'data-modal-hash': `#${SHARE_MODAL_ID}`,
   });
   button.textContent = label;
-  const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, ['share']);
-  const svg = svgs?.[0]?.svg;
-  if (svg) button.append(hideIcon(svg));
+  const icon = iconSpan('share');
+  button.append(icon);
+  loadIconSpans([icon])
+    .then(([loaded]) => { if (!loaded) icon.remove(); })
+    .catch((e) => {
+      icon.remove();
+      logError(`share icon failed to load: ${e.message}`);
+    });
   button.addEventListener('click', () => {
     openShareModal(button).catch((e) => logError(`share dialog failed to open: ${e.message}`));
   });
@@ -620,11 +632,11 @@ function decorateSummary(row) {
   }
 }
 
-async function buildByline(authorsData, config, base) {
+async function buildByline(authorsData, config) {
   const authorLinkEnabled = getMetadata('article-author-link') !== 'off';
   const authors = createTag('div', { class: 'blog-header-authors' });
-  authorsData.forEach((data) => authors.append(decorateAuthor(data, authorLinkEnabled, base)));
-  const shareButton = await buildShareButton(config, base);
+  authorsData.forEach((data) => authors.append(decorateAuthor(data, authorLinkEnabled)));
+  const shareButton = await buildShareButton(config);
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 }
 
@@ -814,7 +826,6 @@ export default async function init(el) {
   window.sessionStorage.setItem('blog-reading-time', readingTime);
 
   const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
 
   const [titleRow, summaryRow, ...authorRows] = el.children;
   const authorsData = authorRows.map(getAuthorData);
@@ -826,7 +837,7 @@ export default async function init(el) {
 
   const [eyebrow, byline] = await Promise.all([
     buildEyebrow(config, readingTime),
-    buildByline(authorsData, config, base),
+    buildByline(authorsData, config),
   ]);
 
   el.prepend(eyebrow);

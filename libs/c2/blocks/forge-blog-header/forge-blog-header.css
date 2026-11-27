@@ -11,10 +11,6 @@
   padding-block-end: var(--s2a-spacing-xl);
   color: var(--s2a-color-content-default);
 
-  @media (width >= 768px) {
-    gap: var(--s2a-spacing-md);
-  }
-
   .blog-header-eyebrow {
     display: flex;
     align-items: center;
@@ -53,15 +49,6 @@
     align-items: flex-start;
     gap: var(--s2a-spacing-lg);
     min-width: 0;
-
-    @media (width >= 768px) {
-      gap: var(--s2a-spacing-2xl);
-    }
-
-    @media (width >= 1280px) {
-      flex-direction: row;
-      align-items: center;
-    }
   }
 
   .blog-header-authors {
@@ -69,11 +56,6 @@
     flex-direction: column;
     gap: var(--s2a-spacing-md);
     min-width: 0;
-
-    @media (width >= 1280px) {
-      flex-direction: row;
-      gap: var(--s2a-spacing-xl);
-    }
   }
 
   .blog-header-author {
@@ -98,11 +80,6 @@
       height: 100%;
       object-fit: cover;
     }
-
-    @media (width >= 1280px) {
-      width: 64px;
-      height: 64px;
-    }
   }
 
   .blog-header-author-info {
@@ -112,9 +89,6 @@
   }
 
   .blog-header-author-name {
-    font-weight: var(--s2a-font-weight-label);
-    font-size: var(--s2a-font-size-md);
-    line-height: 1.5;
     color: var(--s2a-color-content-default);
     text-decoration: none;
     overflow-wrap: anywhere;
@@ -125,9 +99,6 @@
   }
 
   .blog-header-author-meta {
-    font-weight: var(--s2a-font-weight-body);
-    font-size: var(--s2a-font-size-md);
-    line-height: 1.5;
     color: var(--s2a-color-content-default);
     overflow-wrap: anywhere;
   }
@@ -147,14 +118,19 @@
     line-height: 1.2;
     cursor: pointer;
 
-    svg {
+    /* Reserved before the icon loads, so it lands without a layout shift.
+       The button's gap spaces it, not loadIcons' margin-inline-* classes. */
+    .icon {
+      display: flex;
+      flex: none;
       width: 16px;
       height: 16px;
+      margin: 0;
+    }
 
-      @media (width >= 1280px) {
-        width: 22px;
-        height: 22px;
-      }
+    svg {
+      width: 100%;
+      height: 100%;
     }
 
     &:hover {
@@ -168,14 +144,6 @@
     &:focus-visible {
       outline: var(--s2a-border-width-md) solid var(--s2a-color-focus-ring-default);
       outline-offset: var(--s2a-border-width-md);
-    }
-
-    @media (width >= 1280px) {
-      flex: none;
-      font-size: var(--s2a-font-size-lg);
-      margin-inline-start: auto;
-      padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
-      gap: var(--s2a-spacing-sm);
     }
   }
 
@@ -205,32 +173,6 @@
     --blog-divider-gap: var(--s2a-spacing-3xl);
     --blog-divider-rule-size: var(--s2a-border-width-md);
     --blog-divider-rule-image: linear-gradient(var(--s2a-color-gray-400), var(--s2a-color-gray-400));
-
-    @media (width >= 768px) {
-      --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
-    }
-  }
-
-  &::before {
-    @media (width >= 768px) {
-      content: "";
-      position: absolute;
-      inset-block-start: 0;
-      inset-inline: max(0px, calc(var(--grid-margin-width) - 56px));
-      block-size: var(--blog-divider-height, 100%);
-      background-image:
-        repeating-linear-gradient(to bottom, var(--blog-divider-dots)),
-        repeating-linear-gradient(to bottom, var(--blog-divider-dots));
-      background-position: left top, right top;
-      background-repeat: repeat-y;
-      background-size: 2px 100%;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    @media (768px <= width < 1280px) {
-      inset-inline: var(--s2a-spacing-2xl);
-    }
   }
 
   &::after {
@@ -240,10 +182,6 @@
     block-size: var(--blog-divider-rule-size);
     background-image: var(--blog-divider-rule-image);
     pointer-events: none;
-
-    @media (width >= 768px) {
-      content: "";
-    }
   }
 
   /* On mobile the article draws the rule itself; the header draws it only without a navigation. */
@@ -251,70 +189,17 @@
     content: "";
   }
 
-  /* Reserved on the header so the article doesn't shift when the deferred sidenav layout loads. */
-  @media (width >= 768px) {
-    margin-block-end: var(--blog-divider-gap);
-  }
-
-  > .forge-blog-side-navigation {
-    @media (width >= 768px) {
-      --blog-divider-inline-space: var(--s2a-spacing-xl);
-
-      inset-block-start: calc(100% + var(--blog-divider-gap));
-      block-size: max(0px, calc(var(--blog-side-navigation-track-size, 0px) - var(--blog-divider-gap)));
-
-      > .blog-side-navigation-panel {
-        margin-block-start: calc(76px - var(--blog-divider-gap));
-      }
-
-      /* The vertical rule between the navigation and the article. */
-      &::before {
-        content: "";
-        position: absolute;
-        inset-block: calc(-1 * var(--blog-divider-gap)) 0;
-        inset-inline-start: calc(100% + var(--blog-divider-inline-space));
-        inline-size: 2px;
-        background-image: repeating-linear-gradient(to bottom, var(--blog-divider-dots));
-        pointer-events: none;
-        z-index: 1;
-      }
-    }
-
-    @media (width >= 1280px) {
-      --blog-divider-inline-space: 56px;
-    }
-  }
-
   & ~ .blog-article-section {
     --blog-divider-space: 56px;
-
-    @media (width >= 768px) {
-      --blog-article-column-gap: calc(2 * var(--s2a-spacing-xl));
-    }
-
-    @media (width >= 1280px) {
-      --blog-article-column-gap: 112px;
-    }
   }
 
-  /* Below 768px the rule sits between the navigation and the article. */
   & ~ .blog-article-start {
     --blog-article-offset: calc(2 * var(--blog-divider-space) + var(--blog-divider-rule-size));
-
-    /* Mobile only: from 768px this pseudo-element is the navigation's margin guard
-       (forge-blog-side-navigation.css), so the divider must not reset it there. */
-    @media (width < 768px) {
-      &::before {
-        content: "";
-        position: absolute;
-        inset-inline: 0;
-        inset-block-start: calc(-1 * (var(--blog-divider-space) + var(--blog-divider-rule-size)));
-        block-size: var(--blog-divider-rule-size);
-        border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
-        pointer-events: none;
-      }
-    }
   }
+}
+
+.blog-share-action span.icon {
+  display: flex;
 }
 
 .blog-share {
@@ -323,10 +208,6 @@
   gap: var(--s2a-spacing-lg);
   width: 262px;
   max-width: 100%;
-
-  @media (width >= 768px) {
-    width: 368px;
-  }
 
   .blog-share-heading {
     margin: 0;
@@ -349,10 +230,6 @@
     width: 100%;
     height: 131px;
     object-fit: cover;
-
-    @media (width >= 768px) {
-      height: 184px;
-    }
   }
 
   .blog-share-card-text {
@@ -361,10 +238,6 @@
     font-size: var(--s2a-font-size-sm);
     line-height: 1.4;
     color: var(--s2a-color-gray-1000);
-
-    @media (width >= 768px) {
-      font-size: var(--s2a-font-size-lg);
-    }
   }
 
   .blog-share-card-title {
@@ -413,11 +286,6 @@
     svg {
       width: 20px;
       height: 20px;
-
-      @media (width >= 768px) {
-        width: 32px;
-        height: 32px;
-      }
     }
 
     &:hover {
@@ -450,6 +318,148 @@
 
     &:empty {
       display: none;
+    }
+  }
+}
+
+@media (width < 768px) {
+  /* The rule sits between the navigation and the article. From 768px this pseudo-element
+     is the navigation's margin guard (forge-blog-side-navigation.css), so it is mobile only. */
+  .blog-divider-frame ~ .blog-article-start::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: calc(-1 * (var(--blog-divider-space) + var(--blog-divider-rule-size)));
+    block-size: var(--blog-divider-rule-size);
+    border-image: var(--blog-divider-rule-image) fill 0 / 0 / 0 100vw;
+    pointer-events: none;
+  }
+}
+
+@media (width >= 768px) {
+  .forge-blog-header .blog-header-byline {
+    gap: var(--s2a-spacing-2xl);
+  }
+
+  .blog-divider-frame {
+    /* Reserved on the header so the article doesn't shift when the deferred sidenav layout loads. */
+    margin-block-end: var(--blog-divider-gap);
+
+    &,
+    & ~ .blog-article-section {
+      --blog-divider-rule-image: repeating-linear-gradient(to right, var(--blog-divider-dots));
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset-block-start: 0;
+      inset-inline: max(0px, calc(var(--grid-margin-width) - 56px));
+      block-size: var(--blog-divider-height, 100%);
+      background-image:
+        repeating-linear-gradient(to bottom, var(--blog-divider-dots)),
+        repeating-linear-gradient(to bottom, var(--blog-divider-dots));
+      background-position: left top, right top;
+      background-repeat: repeat-y;
+      background-size: 2px 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    &::after {
+      content: "";
+    }
+
+    > .forge-blog-side-navigation {
+      --blog-divider-inline-space: var(--s2a-spacing-xl);
+
+      inset-block-start: calc(100% + var(--blog-divider-gap));
+      block-size: max(0px, calc(var(--blog-side-navigation-track-size, 0px) - var(--blog-divider-gap)));
+
+      > .blog-side-navigation-panel {
+        margin-block-start: calc(76px - var(--blog-divider-gap));
+      }
+
+      /* The vertical rule between the navigation and the article. */
+      &::before {
+        content: "";
+        position: absolute;
+        inset-block: calc(-1 * var(--blog-divider-gap)) 0;
+        inset-inline-start: calc(100% + var(--blog-divider-inline-space));
+        inline-size: 2px;
+        background-image: repeating-linear-gradient(to bottom, var(--blog-divider-dots));
+        pointer-events: none;
+        z-index: 1;
+      }
+    }
+
+    & ~ .blog-article-section {
+      --blog-article-column-gap: calc(2 * var(--s2a-spacing-xl));
+    }
+  }
+
+  .blog-share {
+    width: 368px;
+
+    .blog-share-card-image {
+      height: 184px;
+    }
+
+    .blog-share-card-text {
+      font-size: var(--s2a-font-size-lg);
+    }
+
+    .blog-share-action svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .blog-divider-frame::before {
+    inset-inline: var(--s2a-spacing-2xl);
+  }
+}
+
+@media (width >= 1280px) {
+  .forge-blog-header {
+    .blog-header-byline {
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .blog-header-authors {
+      flex-direction: row;
+      gap: var(--s2a-spacing-xl);
+    }
+
+    .blog-header-author-avatar {
+      width: 64px;
+      height: 64px;
+    }
+
+    .blog-header-share {
+      flex: none;
+      font-size: var(--s2a-font-size-lg);
+      margin-inline-start: auto;
+      padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
+      gap: var(--s2a-spacing-sm);
+
+      .icon {
+        width: 22px;
+        height: 22px;
+      }
+    }
+  }
+
+  .blog-divider-frame {
+    > .forge-blog-side-navigation {
+      --blog-divider-inline-space: 56px;
+    }
+
+    & ~ .blog-article-section {
+      --blog-article-column-gap: 112px;
     }
   }
 }
