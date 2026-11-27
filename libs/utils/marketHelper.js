@@ -23,7 +23,10 @@ export function getMarketLabel(market, langKey, prefix) {
   const key = typeof langKey === 'string' ? langKey.trim().toLowerCase() : '';
   const normPrefix = normalizeMarketLabelPrefix(prefix);
   const prefLangLabel = key
-    ? (market[key] || (normPrefix ? market[`${key}-${normPrefix}`] : ''))
+    ? (market[key]
+      || (normPrefix ? market[`${key}-${normPrefix}`] : '')
+      // Hyphenated language-site prefixes (e.g. zh-hant) may have their own column.
+      || (normPrefix.includes('-') ? market[normPrefix] : ''))
     : '';
   if (typeof prefLangLabel === 'string' && prefLangLabel.trim()) return prefLangLabel.trim();
   const enLabel = market.en;
