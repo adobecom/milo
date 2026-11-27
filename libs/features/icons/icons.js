@@ -90,7 +90,7 @@ async function fetchMiloIcon(iconName) {
   return null;
 }
 
-function getIcon(iconName) {
+export function getIcon(iconName) {
   if (!iconCache.has(iconName)) {
     iconCache.set(
       iconName,

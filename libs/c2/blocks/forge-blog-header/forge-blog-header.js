@@ -1,12 +1,13 @@
-import { createTag, getConfig, getMetadata, loadBlock, MILO_EVENTS } from '../../../utils/utils.js';
+import {
+  createTag, getConfig, getFederatedContentRoot, getMetadata, loadBlock, MILO_EVENTS,
+} from '../../../utils/utils.js';
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
-import { getSVGsfromFile } from '../../../blocks/share/share.js';
+import { getIcon } from '../../../features/icons/icons.js';
 import { copyMedia } from '../forge-related-content-card/forge-related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
-const ICON_PATH = 'c2/blocks/forge-blog-header/share-icons.svg';
 
 const SOCIAL_PLATFORMS = {
   'linkedin.com': { name: 'LinkedIn', icon: 'linkedin' },
@@ -18,7 +19,7 @@ const SOCIAL_PLATFORMS = {
 
 const SHARE_PLATFORMS = {
   x: {
-    icon: 'x',
+    icon: 'twitter',
     href: (url, title) => `https://x.com/share?&url=${url}&text=${title}`,
     popup: true,
   },
@@ -231,10 +232,10 @@ function fetchAuthorProfile(profileUrl) {
   return profileCache.get(profileUrl);
 }
 
-function defaultAvatar(base) {
+function defaultAvatar() {
   return createTag('img', {
     class: 'blog-header-avatar',
-    src: `${base}/blocks/article-header/adobe-logo.svg`,
+    src: `${getFederatedContentRoot()}/federal/assets/svgs/adobe.svg`,
     alt: '',
     loading: 'lazy',
   });
@@ -271,6 +272,11 @@ function getAuthorHref(href) {
   }
   logError('unsupported author profile URL protocol');
   return null;
+}
+
+async function loadIcon(name) {
+  const icon = await getIcon(name).catch(() => null);
+  return icon?.cloneNode(true) || null;
 }
 
 function hideIcon(svg) {
@@ -332,7 +338,7 @@ function getAuthorData(row) {
   };
 }
 
-function decorateAuthor(data, authorLinkEnabled, base) {
+function decorateAuthor(data, authorLinkEnabled) {
   const { picture, name, href, details, needsName } = data;
   const author = createTag('div', { class: 'blog-header-author' });
   const avatar = createTag('div', { class: 'blog-header-author-avatar' });
@@ -342,7 +348,7 @@ function decorateAuthor(data, authorLinkEnabled, base) {
 
   setAuthorMeta(info, details);
 
-  avatar.append(picture || defaultAvatar(base));
+  avatar.append(picture || defaultAvatar());
   if (authorLinkEnabled && href && (!picture || !details[0] || !details[1] || needsName)) {
     loadAuthorProfile(resolveUrl(href, window.location.href), data, avatar, info);
   }
@@ -519,14 +525,14 @@ function buildCopyButton(svg, labels, data) {
   return createTag('li', null, [button, feedback, status]);
 }
 
-async function buildShareActions(platforms, data, base, labels) {
+async function buildShareActions(platforms, data, labels) {
   const available = platforms.filter((p) => p !== 'copy' || navigator.clipboard);
   const list = createTag('ul', { class: 'blog-share-actions' });
   if (!available.length) return list;
   const iconNames = available.map((p) => SHARE_PLATFORMS[p].icon);
-  const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, iconNames);
+  const svgs = await Promise.all(iconNames.map(loadIcon));
   available.forEach((platform, index) => {
-    const svg = svgs?.[index]?.svg;
+    const svg = svgs[index];
     if (!svg) return;
     hideIcon(svg);
     if (platform === 'copy') {
@@ -551,7 +557,6 @@ async function getShareLabels(config) {
 
 async function createShareModal(trigger) {
   const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
   const labels = await getShareLabels(config);
   const data = getShareData();
 
@@ -561,7 +566,7 @@ async function createShareModal(trigger) {
   content.append(heading);
   decorateBlockText(content, { heading: '5' });
   content.append(buildShareCard(data));
-  content.append(await buildShareActions(getPlatforms(), data, base, labels));
+  content.append(await buildShareActions(getPlatforms(), data, labels));
 
   if (trigger) {
     trigger.dataset.modalHash = `#${SHARE_MODAL_ID}`;
@@ -592,7 +597,7 @@ export async function openShareModal(trigger) {
   return shareModalRequest;
 }
 
-async function buildShareButton(config, base) {
+async function buildShareButton(config) {
   const label = await replaceKey('blog-share', config);
   const button = createTag('button', {
     type: 'button',
@@ -601,8 +606,7 @@ async function buildShareButton(config, base) {
     'data-modal-hash': `#${SHARE_MODAL_ID}`,
   });
   button.textContent = label;
-  const svgs = await getSVGsfromFile(`${base}/${ICON_PATH}`, ['share']);
-  const svg = svgs?.[0]?.svg;
+  const svg = await loadIcon('share');
   if (svg) button.append(hideIcon(svg));
   button.addEventListener('click', () => {
     openShareModal(button).catch((e) => logError(`share dialog failed to open: ${e.message}`));
@@ -620,11 +624,11 @@ function decorateSummary(row) {
   }
 }
 
-async function buildByline(authorsData, config, base) {
+async function buildByline(authorsData, config) {
   const authorLinkEnabled = getMetadata('article-author-link') !== 'off';
   const authors = createTag('div', { class: 'blog-header-authors' });
-  authorsData.forEach((data) => authors.append(decorateAuthor(data, authorLinkEnabled, base)));
-  const shareButton = await buildShareButton(config, base);
+  authorsData.forEach((data) => authors.append(decorateAuthor(data, authorLinkEnabled)));
+  const shareButton = await buildShareButton(config);
   return createTag('div', { class: 'blog-header-byline' }, [authors, shareButton]);
 }
 
@@ -814,7 +818,6 @@ export default async function init(el) {
   window.sessionStorage.setItem('blog-reading-time', readingTime);
 
   const config = getConfig();
-  const base = config.miloLibs || config.codeRoot;
 
   const [titleRow, summaryRow, ...authorRows] = el.children;
   const authorsData = authorRows.map(getAuthorData);
@@ -826,7 +829,7 @@ export default async function init(el) {
 
   const [eyebrow, byline] = await Promise.all([
     buildEyebrow(config, readingTime),
-    buildByline(authorsData, config, base),
+    buildByline(authorsData, config),
   ]);
 
   el.prepend(eyebrow);
