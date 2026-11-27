@@ -173,7 +173,8 @@
 .chart.list .chart-container,
 .chart.list .chart-wrapper,
 .chart.oversized-number .chart-container,
-.chart.oversized-number .chart-wrapper {
+.chart.oversized-number .chart-wrapper,
+.chart.bar-line .chart-container {
   height: auto;
 }
 
@@ -211,4 +212,87 @@
 .chart.pie[data-responsive-size=large] .chart-container,
 .chart.pie[data-responsive-size=large] .chart-wrapper {
   height: 512px;
+}
+
+.chart.bar-line .chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.chart.bar-line .chart-legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--spectrum-grey-900);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.chart.bar-line .chart-legend button[aria-pressed=false] {
+  text-decoration: line-through;
+}
+
+.chart.bar-line .chart-legend-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--spectrum-grey-900);
+  border-radius: 3px;
+  background: var(--series-color);
+}
+
+.chart.bar-line .chart-legend-swatch.line {
+  height: 3px;
+  border-radius: 0;
+}
+
+.chart.bar-line .chart-instructions {
+  margin: 8px 0 16px;
+  font-size: 14px;
+}
+
+.chart.bar-line .chart-data {
+  overflow-x: auto;
+}
+
+.chart.bar-line .chart-data summary {
+  width: fit-content;
+  padding: 12px 0;
+  cursor: pointer;
+}
+
+.chart.bar-line .chart-data table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.chart.bar-line .chart-data th,
+.chart.bar-line .chart-data td {
+  padding: 8px;
+  border: 1px solid #767676;
+  text-align: left;
+}
+
+.chart.bar-line .chart-wrapper:focus-visible,
+.chart.bar-line button:focus-visible,
+.chart.bar-line summary:focus-visible {
+  outline: 2px solid #1473e6;
+  outline-offset: 3px;
+}
+
+.chart.bar-line .chart-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

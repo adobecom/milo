@@ -1,0 +1,9 @@
+{
+  ":type": "sheet",
+  "data": [
+    { "Time": "09:00", "Orders": "0", "Price": "18.5", "Secondary Y Axis Unit": "$, USD" },
+    { "Time": "09:15", "Orders": "25", "Price": "19.25" },
+    { "Time": "09:30", "Orders": "18", "Price": "17.75" },
+    { "Time": "09:45", "Orders": "32", "Price": "20" }
+  ]
+}

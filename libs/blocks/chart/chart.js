@@ -7,6 +7,7 @@ import {
   formatExcelDate,
 } from './utils.js';
 import getTheme from './chartLightTheme.js';
+import { getBarLineConfig, getBarLineOptions, decorateBarLineChart } from './bar-line.js';
 
 export const SMALL = 'small';
 export const MEDIUM = 'medium';
@@ -29,6 +30,7 @@ export const colorPalette = {
 };
 const SECTION_CLASSNAME = 'chart-section';
 const chartTypes = [
+  'bar-line',
   'bar',
   'column',
   'line',
@@ -91,7 +93,7 @@ export function processUnits(headers) {
   return units;
 }
 
-export function processDataset(data) {
+export function processDataset(data, preserveCategories = false) {
   const dataset = {};
   const optionalHeaders = [LEGACY_UNIT_HEADER, 'group', 'color', 'subheading', X_AXIS_UNIT_HEADER, Y_AXIS_UNIT_HEADER, SECONDARY_Y_AXIS_UNIT_HEADER];
   const headers = data?.[0];
@@ -110,13 +112,35 @@ export function processDataset(data) {
         index ? parseValue(element[column]) : formatExcelDate(element[column])
       ));
     } else {
-      values = cleanHeaders.map((column) => parseValue(element[column]));
+      values = cleanHeaders.map((column, index) => (
+        preserveCategories && index === 0 ? element[column] : parseValue(element[column])
+      ));
     }
 
     dataset.source.push(values);
   });
 
   return { dataset, headers, units };
+}
+
+export function processBarLineData(data, { dataPoints } = {}) {
+  if (!Array.isArray(data) || !data.length
+    || data.some((row) => !row || typeof row !== 'object' || Array.isArray(row))) return null;
+
+  const processed = processDataset(data, true);
+  const [dimensions, ...rows] = processed.dataset.source;
+  if (dimensions.length !== 3 || data.some((row) => dimensions.some((name, index) => {
+    const value = row[name];
+    if (!['string', 'number'].includes(typeof value) || String(value).trim() === '') return true;
+    return index > 0 && !Number.isFinite(Number(value));
+  }))) return null;
+
+  processed.dataset.source = [
+    dimensions,
+    ...rows.slice(0, dataPoints).map(([category, ...values]) => [category, ...values.map(Number)]),
+  ];
+  processed.units.yAxes[1] ??= { ...processed.units.yAxes[0] };
+  return processed;
 }
 
 export function processMarkData(series, units) {
@@ -404,6 +428,7 @@ export const getChartOptions = ({
   colors,
   labelDeg = 0,
   colorByData,
+  barLineConfig,
 }) => {
   const hasOverride = colorByData ?? (headers ? hasPropertyCI(headers, 'color') : false);
   const source = dataset?.source;
@@ -504,6 +529,8 @@ export const getChartOptions = ({
       if (isPie) return pieSeriesOptions(size);
       return [];
     })(),
+    ...(chartType === 'bar-line'
+      ? getBarLineOptions(dataset, units, { ...barLineConfig, labelDeg }) : {}),
   };
 };
 
@@ -521,7 +548,7 @@ const setDonutListeners = (chart, source, seriesData, units = []) => {
 };
 
 const initChart = ({
-  chartWrapper, chartType, data, series, size, ...rest
+  chartWrapper, chartType, data, series, size, onResize, ...rest
 }) => {
   const themeName = getTheme(size);
   const options = { chartType, processedData: data, series, size, ...rest };
@@ -536,6 +563,9 @@ const initChart = ({
     setDonutListeners(chart, data.dataset?.source, series, data.units);
   }
 
+  const cleanup = chartType === 'bar-line'
+    ? decorateBarLineChart(chart, chartWrapper, data, onResize) : () => {};
+
   const handleEscapeKey = (event) => {
     if (event.key === 'Escape') {
       chart.dispatchAction({ type: 'hideTip' });
@@ -547,6 +577,7 @@ const initChart = ({
   const originalDispose = chart.dispose.bind(chart);
   chart.dispose = () => {
     document.removeEventListener('keyup', handleEscapeKey);
+    cleanup();
     originalDispose();
   };
 
@@ -680,6 +711,8 @@ export const getOversizedNumberSize = (charLength) => {
 
 const init = (el) => {
   const chartType = chartTypes?.find((type) => el.className?.indexOf(type) !== -1);
+  const isBarLine = chartType === 'bar-line';
+  const barLineConfig = isBarLine ? getBarLineConfig(el) : undefined;
   let authoredPalette;
   let invalidPalette = false;
   Array.from(el.children).forEach((row) => {
@@ -722,7 +755,7 @@ const init = (el) => {
 
   if (!chartType || !chartWrapper || !dataLink) return;
 
-  const customPalette = ['column', 'line', 'bar', 'list'].includes(chartType)
+  const customPalette = ['column', 'line', 'bar', 'list', 'bar-line'].includes(chartType)
     ? authoredPalette : undefined;
   const authoredColor = Array.from(chartStyles)?.find((style) => style in colorPalette);
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
@@ -774,15 +807,33 @@ const init = (el) => {
       if (!rawData) return;
 
       const { data, series } = rawData;
-      const processedData = processDataset(data);
+      const processedData = isBarLine
+        ? processBarLineData(data, barLineConfig) : processDataset(data);
+      if (!processedData) {
+        const message = createTag('p', { role: 'status' });
+        message.textContent = 'Chart data must contain a category and two numeric series.';
+        chartWrapper.replaceChildren(message);
+        return;
+      }
       const hasOverride = hasPropertyCI(processedData.headers, 'color');
       const colorByData = customPalette
         ? ['bar', 'column'].includes(chartType) && processedData.dataset.source[0].length === 2
         : undefined;
       let colors = colorByData ? customPalette : getColors(authoredColor, customPalette);
-      if (hasOverride && !customPalette) colors = getOverrideColors(authoredColor, data);
+      if (hasOverride && !customPalette && !isBarLine) {
+        colors = getOverrideColors(authoredColor, data);
+      }
       const options = {
-        chartWrapper, chartType, data: processedData, series, colors, size, labelDeg, colorByData,
+        chartWrapper,
+        chartType,
+        data: processedData,
+        series,
+        colors,
+        size,
+        labelDeg,
+        colorByData,
+        barLineConfig,
+        onResize: () => el.setAttribute('data-responsive-size', getResponsiveSize(authoredSize)),
       };
       const text = propertyValueCI(processedData.headers, 'subheading');
 
@@ -809,10 +860,14 @@ const init = (el) => {
       }
 
       /* c8 ignore next 4 */
-      window.addEventListener('resize', throttle(
-        1000,
-        () => handleResize(el, authoredSize, chartType, processedData, series, colors, colorByData),
-      ));
+      if (!isBarLine) {
+        window.addEventListener('resize', throttle(
+          1000,
+          () => {
+            handleResize(el, authoredSize, chartType, processedData, series, colors, colorByData);
+          },
+        ));
+      }
     })
     // eslint-disable-next-line no-console
     .catch((error) => console.log('Error loading script:', error));
