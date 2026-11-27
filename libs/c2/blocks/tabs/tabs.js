@@ -577,9 +577,10 @@ const init = async (block) => {
   }));
   handleDeferredImages(block);
   initTabs(block, config, rootElem);
-  const openPanel = [...block.querySelectorAll('.tabpanel')]
-    .find((panel) => panel.dataset.blockId === `tabs-${tabId}` && !panel.hidden);
-  if (openPanel) loadSectionsEarly([...openPanel.querySelectorAll(':scope > .section')]);
+  const openPanel = tabContentContainer.querySelector(':scope > .tabpanel:not([hidden])');
+  if (openPanel && !block.closest('.tabpanel[hidden]')) {
+    loadSectionsEarly([...openPanel.querySelectorAll(':scope > .section')]);
+  }
 
   if (tabDropdown) {
     initTabDropdown(tabDropdown);

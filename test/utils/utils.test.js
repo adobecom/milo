@@ -560,27 +560,23 @@ describe('Utils', () => {
       utils.preloadLcpCodeFiles();
       expect(document.head.querySelectorAll(preloadSel).length).to.equal(0);
     });
-
-    it('only warms the first section, even when parallel-sections is set', () => {
-      document.head.innerHTML = '<meta name="parallel-sections" content="3">';
-      document.body.innerHTML = '<main><div><div class="marquee"></div></div><div><div class="tabs"></div></div><div><div class="aside"></div></div></main>';
-      utils.preloadLcpCodeFiles();
-      expect(document.head.querySelector('link[href*="/libs/blocks/marquee/marquee.js"]')).to.exist;
-      expect(document.head.querySelector('link[href*="/libs/blocks/tabs/tabs.js"]')).to.not.exist;
-    });
   });
 
-  describe('parallel-sections in loadArea', () => {
+  describe('parallel-sections: auto in loadArea', () => {
     let releases;
     const holdBlock = (id) => {
       window.parallelSectionsTest.gates[id] = new Promise((resolve) => { releases[id] = resolve; });
     };
     const isHidden = (selector) => !!document.querySelector(selector).closest('.section').dataset.status;
     const psBlock = (id, rush) => `<div><div class="ps-block" data-id="${id}"${rush ? ` data-rush="${rush}"` : ''}></div></div>`;
-    const nthSection = (n) => `main > div:nth-child(${n})`;
-    const setup = (count, sections, prefix = '') => {
-      document.head.innerHTML = `${head}<meta name="parallel-sections" content="${count}">`;
-      document.body.innerHTML = `${prefix}<main>${sections.join('')}</main>`;
+    const nthSection = (...ns) => ns.map((n) => `main > div:nth-child(${n})`).join(', ');
+    const tabsBlock = (id, tab) => `<div><div class="tabs"><div><div><ul><li>One</li><li>Two</li></ul></div></div>
+      <div><div>id</div><div>${id}</div></div></div>${tab ? `<div class="section-metadata"><div><div>tab</div><div>${tab}</div></div></div>` : ''}</div>`;
+    const tabSection = (id, tab) => `<div><div class="ps-block" data-id="${id}"></div>
+      <div class="section-metadata"><div><div>tab</div><div>${tab}</div></div></div></div>`;
+    const setup = (sections, value = 'auto') => {
+      document.head.innerHTML = `${head}<meta name="parallel-sections" content="${value}">`;
+      document.body.innerHTML = `<main>${sections.join('')}</main>`;
     };
     const started = () => window.parallelSectionsTest.started;
     const settle = () => new Promise((r) => { setTimeout(r, 50); });
@@ -596,56 +592,65 @@ describe('Utils', () => {
       utils.setConfig(config);
     });
 
-    it('loads the LCP section alone, then the next sections in parallel, revealed in order', async () => {
-      setup(3, [psBlock('a'), psBlock('b'), psBlock('c')]);
-      ['a', 'b', 'c'].forEach(holdBlock);
+    it('keeps the normal order and starts the sections a block asks for', async () => {
+      setup([psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
+      ['a', 'b', 'd'].forEach(holdBlock);
       const loaded = utils.loadArea();
       await waitFor(() => started().length === 1, 2000, 20);
       await settle();
       expect(started()).to.deep.equal(['a']);
       releases.a();
       await waitFor(() => started().length === 3, 2000, 20);
-      expect(isHidden('[data-id="a"]')).to.be.false;
+      await settle();
+      expect(started()).to.deep.equal(['a', 'b', 'd']);
+      releases.b();
+      releases.d();
+      await loaded;
+      expect(started()).to.deep.equal(['a', 'b', 'd', 'c']);
+    });
+
+    it('reveals the sections of one request in order', async () => {
+      setup([psBlock('a'), psBlock('b', nthSection(3, 4)), psBlock('c'), psBlock('d')]);
+      ['b', 'c', 'd'].forEach(holdBlock);
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 4, 2000, 20);
+      releases.d();
+      await waitFor(() => document.querySelector('[data-id="d"]').dataset.blockStatus === 'loaded', 2000, 20);
+      await settle();
+      expect(isHidden('[data-id="d"]')).to.be.true;
       releases.c();
-      await waitFor(() => document.querySelector('[data-id="c"]').dataset.blockStatus === 'loaded', 2000, 20);
-      await new Promise((r) => { setTimeout(r); });
-      expect(isHidden('[data-id="c"]')).to.be.true;
       releases.b();
       await loaded;
-      expect(isHidden('[data-id="b"]')).to.be.false;
       expect(isHidden('[data-id="c"]')).to.be.false;
+      expect(isHidden('[data-id="d"]')).to.be.false;
     });
 
-    it('caps the number of sections loaded together', async () => {
-      const ids = ['a', 'b', 'c', 'd', 'e', 'f'];
-      setup(99, ids.map((id) => psBlock(id)));
-      ids.forEach(holdBlock);
+    it('ignores requests made while the LCP section loads', async () => {
+      setup([psBlock('a', nthSection(3)), psBlock('b'), psBlock('c')]);
+      holdBlock('b');
       const loaded = utils.loadArea();
-      releases.a();
-      await waitFor(() => started().length === 5, 2000, 20);
+      await waitFor(() => started().length === 2, 2000, 20);
       await settle();
-      expect(started()).to.not.include('f');
-      ids.forEach((id) => releases[id]());
+      expect(started()).to.deep.equal(['a', 'b']);
+      releases.b();
       await loaded;
-      expect(started()).to.include('f');
+      expect(started()).to.deep.equal(['a', 'b', 'c']);
     });
 
-    ['0', '1', '-1', '2abc'].forEach((value) => {
-      it(`loads sections one at a time for parallel-sections "${value}"`, async () => {
-        setup(value, [psBlock('a'), psBlock('b')]);
-        holdBlock('a');
-        const loaded = utils.loadArea();
-        await waitFor(() => started().length === 1, 2000, 20);
-        await settle();
-        expect(started()).to.deep.equal(['a']);
-        releases.a();
-        await loaded;
-        expect(started()).to.deep.equal(['a', 'b']);
-      });
+    it('ignores requests unless parallel-sections is auto', async () => {
+      setup([psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')], '4');
+      holdBlock('b');
+      const loaded = utils.loadArea();
+      await waitFor(() => started().length === 2, 2000, 20);
+      await settle();
+      expect(started()).to.deep.equal(['a', 'b']);
+      releases.b();
+      await loaded;
+      expect(started()).to.deep.equal(['a', 'b', 'c', 'd']);
     });
 
-    it('keeps loading later sections when a rushed section fails', async () => {
-      setup(3, [psBlock('a'), '<div><div class="ps-fail"></div></div>', psBlock('c')]);
+    it('keeps loading later sections when a requested section fails', async () => {
+      setup([psBlock('a'), psBlock('b', nthSection(3)), '<div><div class="ps-fail"></div></div>', psBlock('d')]);
       utils.getConfig().mep = {
         blocks: new Proxy({}, {
           get: (target, name) => {
@@ -662,9 +667,9 @@ describe('Utils', () => {
       try {
         await utils.loadArea();
         await settle();
-        expect(isHidden('[data-id="c"]')).to.be.false;
+        expect(isHidden('[data-id="d"]')).to.be.false;
         expect(isHidden('.ps-fail')).to.be.true;
-        expect(lanaLog.calledWithMatch(/Failed to load parallel section 1/)).to.be.true;
+        expect(lanaLog.calledWithMatch(/Failed to load parallel section 2/)).to.be.true;
         expect(unhandled.called).to.be.false;
       } finally {
         window.lana = ogLana;
@@ -672,131 +677,41 @@ describe('Utils', () => {
       }
     });
 
-    it('runs loadPostLCP once, after the LCP section, without waiting for the parallel sections', async () => {
-      setup(2, [psBlock('a'), psBlock('b')], '<header></header>');
-      holdBlock('b');
-      performance.clearMarks('Gnav-Start');
-      const loaded = utils.loadArea();
-      await waitFor(() => performance.getEntriesByName('Gnav-Start').length === 1, 2000, 20);
-      expect(isHidden('[data-id="b"]')).to.be.true;
-      releases.b();
-      await loaded;
-      expect(performance.getEntriesByName('Gnav-Start').length).to.equal(1);
-    });
-
-    it('waits for loadPostLCP before loading the next sections when Target runs post LCP', async () => {
-      setup(2, [psBlock('a'), psBlock('b')], '<header></header>');
-      utils.getConfig().mep = { targetEnabled: 'postlcp', targetAjoManifests: [] };
-      performance.clearMarks('Gnav-Start');
-      let gnavStartsBeforeB;
-      Object.defineProperty(window.parallelSectionsTest.gates, 'b', {
-        get: () => {
-          gnavStartsBeforeB = performance.getEntriesByName('Gnav-Start').length === 1;
-          return undefined;
-        },
-      });
-      try {
-        await utils.loadArea();
-        expect(gnavStartsBeforeB).to.be.true;
-      } finally {
-        delete utils.getConfig().mep;
-      }
-    });
-
-    it('rejects loadArea without an unhandled rejection when loadPostLCP fails', async () => {
-      setup(2, [psBlock('a'), psBlock('b')]);
-      holdBlock('b');
-      const ogQuerySelector = document.body.querySelector;
-      sinon.stub(document.body, 'querySelector').callsFake(function querySelector(selector) {
-        if (selector === 'header') throw new Error('post-lcp boom');
-        return ogQuerySelector.call(this, selector);
-      });
-      const unhandled = sinon.spy();
-      window.addEventListener('unhandledrejection', unhandled);
-      try {
+    ['', 'c2'].forEach((foundation) => {
+      it(`starts the open tab panel sections, not the hidden ones (${foundation || 'c1'} tabs)`, async () => {
+        setup([psBlock('a'), tabsBlock('t'), tabSection('b', 't, 1'), tabSection('c', 't, 2'), tabSection('d', 't, 1')]);
+        if (foundation) document.head.insertAdjacentHTML('beforeend', `<meta name="foundation" content="${foundation}">`);
+        ['b', 'd'].forEach(holdBlock);
         const loaded = utils.loadArea();
-        await waitFor(() => started().length === 2, 2000, 20);
-        await settle();
-        releases.b();
-        let error;
-        try { await loaded; } catch (e) { error = e; }
-        expect(error?.message).to.equal('post-lcp boom');
-        expect(unhandled.called).to.be.false;
-      } finally {
-        window.removeEventListener('unhandledrejection', unhandled);
-        document.body.querySelector.restore();
-      }
-    });
-
-    describe('auto', () => {
-      it('keeps the normal order and starts the sections a block asks for', async () => {
-        setup('auto', [psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
-        ['a', 'b', 'd'].forEach(holdBlock);
-        const loaded = utils.loadArea();
-        await waitFor(() => started().length === 1, 2000, 20);
-        await settle();
-        expect(started()).to.deep.equal(['a']);
-        releases.a();
         await waitFor(() => started().length === 3, 2000, 20);
         await settle();
-        expect(started()).to.deep.equal(['a', 'b', 'd']);
+        expect(started()).to.have.members(['a', 'b', 'd']);
         releases.b();
         releases.d();
         await loaded;
-        expect(started()).to.deep.equal(['a', 'b', 'd', 'c']);
-      });
-
-      it('holds requests made by the LCP section until it has loaded', async () => {
-        setup('auto', [psBlock('a', nthSection(3)), psBlock('b'), psBlock('c')]);
-        ['a', 'b'].forEach(holdBlock);
-        const loaded = utils.loadArea();
-        await waitFor(() => started().length === 1, 2000, 20);
-        await settle();
-        expect(started()).to.deep.equal(['a']);
-        releases.a();
-        await waitFor(() => started().length === 3, 2000, 20);
         expect(started()).to.include('c');
-        releases.b();
-        await loaded;
+        expect(document.querySelector('#tab-panel-t-1 [data-id="d"]')).to.exist;
       });
 
-      ['', 'c2'].forEach((foundation) => {
-        it(`starts the open tab panel sections, not the hidden ones (${foundation || 'c1'} tabs)`, async () => {
-          const tabSection = (id, tab) => `<div><div class="ps-block" data-id="${id}"></div>
-            <div class="section-metadata"><div><div>tab</div><div>${tab}</div></div></div></div>`;
-          setup('auto', [
-            psBlock('a'),
-            `<div><div class="tabs"><div><div><ul><li>One</li><li>Two</li></ul></div></div>
-              <div><div>id</div><div>t</div></div></div></div>`,
-            tabSection('b', 't, 1'),
-            tabSection('c', 't, 2'),
-            tabSection('d', 't, 1'),
-          ]);
-          if (foundation) document.head.insertAdjacentHTML('beforeend', `<meta name="foundation" content="${foundation}">`);
-          ['b', 'd'].forEach(holdBlock);
-          const loaded = utils.loadArea();
-          await waitFor(() => started().length === 3, 2000, 20);
-          await settle();
-          expect(started()).to.have.members(['a', 'b', 'd']);
-          releases.b();
-          releases.d();
-          await loaded;
-          expect(started()).to.include('c');
-          expect(document.querySelector('#tab-panel-t-1 [data-id="d"]')).to.exist;
-        });
-      });
-
-      it('ignores block requests when parallel-sections is a number', async () => {
-        setup(2, [psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
-        holdBlock('b');
+      it(`does not start sections for tabs inside a hidden tab (${foundation || 'c1'} tabs)`, async () => {
+        setup([psBlock('a'), tabsBlock('t'), tabsBlock('u', 't, 2'), tabSection('e', 'u, 1'), tabSection('f', 'u, 1')]);
+        if (foundation) document.head.insertAdjacentHTML('beforeend', `<meta name="foundation" content="${foundation}">`);
+        holdBlock('e');
         const loaded = utils.loadArea();
-        await waitFor(() => started().length === 2, 2000, 20);
+        await waitFor(() => started().includes('e'), 2000, 20);
         await settle();
-        expect(started()).to.deep.equal(['a', 'b']);
-        releases.b();
+        expect(started()).to.not.include('f');
+        releases.e();
         await loaded;
-        expect(started()).to.deep.equal(['a', 'b', 'c', 'd']);
+        expect(started()).to.include('f');
       });
+    });
+
+    it('loads requested sections again when loadArea(main) runs over them later', async () => {
+      setup([psBlock('a'), psBlock('b', nthSection(3)), psBlock('c')]);
+      await utils.loadArea();
+      await utils.loadArea(document.querySelector('main'));
+      expect(isHidden('[data-id="c"]')).to.be.false;
     });
   });
 
