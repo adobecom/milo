@@ -1,6 +1,11 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { getVisitorStatus, loadAnalyticsAndInteractionData } from '../../libs/martech/helpers.js';
+import {
+  getVisitorStatus,
+  loadAnalyticsAndInteractionData,
+  startEarlyTargetInteraction,
+  startTargetInteraction,
+} from '../../libs/martech/helpers.js';
 
 describe('loadAnalyticsAndInteractionData', () => {
   beforeEach(() => {
@@ -374,6 +379,138 @@ describe('loadAnalyticsAndInteractionData', () => {
       });
 
       expect(result).to.equal('Repeat');
+    });
+  });
+});
+
+describe('v2 Target from the consumer head', () => {
+  const originalGetEntriesByType = window.performance.getEntriesByType;
+  const originalUrl = window.location.href;
+  const metas = [];
+  let interactCalls;
+
+  const setMeta = (md) => Object.entries(md).forEach(([name, content]) => {
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', name);
+    meta.setAttribute('content', content);
+    document.head.append(meta);
+    metas.push(meta);
+  });
+  const clearMeta = () => metas.splice(0).forEach((meta) => meta.remove());
+  const setServerTiming = (serverTiming) => {
+    window.performance.getEntriesByType = (type) => (type === 'navigation'
+      ? [{ serverTiming }] : originalGetEntriesByType.call(window.performance, type));
+  };
+
+  beforeEach(() => {
+    interactCalls = 0;
+    window.fetch = (url) => {
+      if (String(url).includes('/interact')) interactCalls += 1;
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ handle: [] }) });
+    };
+    delete window.milo?.targetInteraction;
+    setServerTiming([]);
+  });
+
+  afterEach(() => {
+    clearMeta();
+    delete window.fetch;
+    delete window.milo?.targetInteraction;
+    window.performance.getEntriesByType = originalGetEntriesByType;
+    window.history.replaceState({}, '', originalUrl);
+  });
+
+  it('starts one interact call that the utils.js path reuses', async () => {
+    setMeta({ 'personalization-v2': 'on', target: 'on' });
+    const headPromise = startEarlyTargetInteraction();
+    const utilsPromise = startTargetInteraction({ locale: { prefix: '' }, env: 'stage', calculatedTimeout: 4000 });
+
+    expect(headPromise).to.be.a('promise');
+    expect(utilsPromise).to.equal(headPromise);
+    expect(window.milo.targetInteraction.source).to.equal('head');
+    const result = await utilsPromise;
+    expect(result).to.have.keys('targetInteractionData', 'respTime', 'respStartTime');
+    expect(interactCalls).to.equal(1);
+  });
+
+  it('does nothing when utils.js would not start a v2 call', async () => {
+    setMeta({ 'personalization-v2': 'on' });
+    expect(startEarlyTargetInteraction()).to.be.null;
+    setMeta({ target: 'on', 'personalization-v2-signed-in': 'on' });
+    setServerTiming([{ name: 'sis', description: '1' }]);
+    expect(startEarlyTargetInteraction()).to.be.null;
+    expect(window.milo?.targetInteraction).to.be.undefined;
+    expect(interactCalls).to.equal(0);
+  });
+
+  it('leaves unmapped locale-shaped prefixes to utils.js', () => {
+    setMeta({ 'personalization-v2': 'on', target: 'on' });
+    window.history.replaceState({}, '', `/xx_zz/page${window.location.search}`);
+    expect(startEarlyTargetInteraction()).to.be.null;
+    expect(window.milo?.targetInteraction).to.be.undefined;
+  });
+
+  it('logs when the configured locale differs from the head locale', async () => {
+    setMeta({ 'personalization-v2': 'on', target: 'on' });
+    window.lana = { log: sinon.spy() };
+    const headPromise = startEarlyTargetInteraction();
+    startTargetInteraction({ locale: { prefix: '/de' }, env: 'stage', calculatedTimeout: 4000 });
+    expect(window.lana.log.calledOnce).to.be.true;
+    await headPromise;
+    delete window.lana;
+  });
+
+  describe('gate parity with utils.js', () => {
+    const PARAMS = ['', 'mep=off', 'martech=off', 'target=off', 'target=postlcp', 'xlg=loggedout',
+      'personalization-v2=off', 'personalization-v2=on', 'personalization-v2-signed-in=on',
+      'target-timeout=1234', 'env=prod', 'env=bogus'];
+    const METAS = [
+      {}, { target: 'on' }, { 'personalization-v2': 'on' },
+      { 'personalization-v2': 'on', target: 'on' },
+      { 'personalization-v2': 'on', target: 'off' },
+      { 'personalization-v2': 'on', target: 'postlcp' },
+      { 'personalization-v2': 'off', target: 'on' },
+      { 'personalization-v2': 'on', xlg: 'loggedout' },
+      { 'personalization-v2': 'on', target: 'on', 'target-timeout': '2500' },
+      { 'personalization-v2': 'on', target: 'on', 'personalization-v2-signed-in': 'on' },
+    ];
+    const TIMINGS = [
+      [],
+      [{ name: 'sis', description: '0' }],
+      [{ name: 'sis', description: '1' }],
+      [{ name: 'geo', description: 'DE' }],
+      [{ name: 'geo', description: 'us' }, { name: 'sis', description: '0' }],
+    ];
+
+    PARAMS.forEach((param, i) => {
+      it(`matches utils.js with ?${param || '(none)'}`, async () => {
+        const url = new URL(originalUrl);
+        if (param) url.search += `${url.search ? '&' : '?'}${param}`;
+        window.history.replaceState({}, '', url);
+        // Fresh module instances so both read this URL at load, as on a real page.
+        const head = await import(`../../libs/martech/helpers.js?parity=${i}`);
+        const utils = await import(`../../libs/utils/utils.js?parity=${i}`);
+        expect(head.getEnvName()).to.equal(utils.getEnv({}).name);
+
+        METAS.forEach((md) => TIMINGS.forEach((timing) => {
+          clearMeta();
+          setMeta(md);
+          setServerTiming(timing);
+          const label = `${param} ${JSON.stringify(md)} ${JSON.stringify(timing)}`;
+          expect(head.shouldStartTargetV2(), label).to.equal(utils.shouldStartTargetV2());
+          expect(head.getTargetTimeout(), label).to.equal(utils.getTargetTimeout());
+
+          const country = (setCountry) => {
+            sessionStorage.removeItem('akamai');
+            sessionStorage.removeItem('feds_location');
+            setCountry();
+            return [sessionStorage.getItem('akamai'), sessionStorage.getItem('feds_location')];
+          };
+          expect(country(head.setCountry), label).to.deep.equal(country(utils.setCountry));
+        }));
+        sessionStorage.removeItem('akamai');
+        sessionStorage.removeItem('feds_location');
+      });
     });
   });
 });
