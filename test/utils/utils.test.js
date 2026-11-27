@@ -4030,6 +4030,53 @@ describe('Utils', () => {
       window.fetch = originalFetch;
       expect(region).to.be.null;
     });
+
+    describe('when the region key suffix differs from the base prefix', () => {
+      const phase5Locales = {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        ara: { ietf: 'ar', tk: 'hah7vzn.css', dir: 'rtl' },
+        ae_ar: { ietf: 'ar-AE', tk: 'hah7vzn.css', dir: 'rtl', base: 'ara' },
+        mena_ar: { ietf: 'ar', tk: 'hah7vzn.css', dir: 'rtl', base: 'ara' },
+        'zh-hant': { ietf: 'zh-Hant', tk: 'hah7vzn.css' },
+        hk_zh: { ietf: 'zh-HK', tk: 'hah7vzn.css', base: 'zh-hant' },
+        tw: { ietf: 'zh-TW', tk: 'hah7vzn.css', base: 'zh-hant' },
+      };
+
+      const getRegion = async (pathname, country, extraConfig = {}) => {
+        const lingoMeta = document.createElement('meta');
+        lingoMeta.setAttribute('name', 'langfirst');
+        lingoMeta.setAttribute('content', 'on');
+        document.head.append(lingoMeta);
+        lingoModule.setConfig({
+          ...lingoRegionConfig,
+          locales: phase5Locales,
+          pathname,
+          ...extraConfig,
+        });
+        sessionStorage.setItem('akamai', country);
+        return lingoModule.getLingoRegion();
+      };
+
+      it('matches ae_ar on /ara', async () => {
+        const region = await getRegion('/ara/creativecloud/', 'ae');
+        expect(region?.prefix).to.equal('/ae_ar');
+      });
+
+      it('matches hk_zh on /zh-hant', async () => {
+        const region = await getRegion('/zh-hant/creativecloud/', 'hk');
+        expect(region?.prefix).to.equal('/hk_zh');
+      });
+
+      it('prefers the country region over a mepLingoCountryToRegion group', async () => {
+        const region = await getRegion('/ara/creativecloud/', 'ae', { mepLingoCountryToRegion: { mena_ar: ['ae', 'bh'] } });
+        expect(region?.prefix).to.equal('/ae_ar');
+      });
+
+      it('still falls back to the group for countries without their own region', async () => {
+        const region = await getRegion('/ara/creativecloud/', 'bh', { mepLingoCountryToRegion: { mena_ar: ['ae', 'bh'] } });
+        expect(region?.prefix).to.equal('/mena_ar');
+      });
+    });
   });
 
   describe('loadIms with Lingo locale', () => {
