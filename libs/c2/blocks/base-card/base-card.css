@@ -115,6 +115,12 @@
   }
 }
 
+@media (768px <= width < 1280px) {
+  div.section.base-card-section {
+    row-gap: var(--s2a-spacing-2xl);
+  }
+}
+
 @media (width >= 1024px) {
   .base-card {
     .media picture:not(.icon) img {

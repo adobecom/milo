@@ -40,29 +40,12 @@ function buildTile(tileRow) {
   return tile;
 }
 
-const mediaQueries = {
-  mobile: window.matchMedia('(width < 768px)'),
-  tablet: window.matchMedia('(768px <= width < 1280px)'),
-};
-
-const N_UP = { mobile: 'two-up', tablet: 'three-up', desktop: 'six-up' };
-
 function decorate(block) {
   const header = decorateSectionHeader(block);
   const tileRows = [...block.children].filter((row) => row.children.length >= 2);
   const grid = createTag('div', { class: 'quick-actions-grid parallax-stagger-ltr' });
 
   tileRows.forEach((row) => grid.append(buildTile(row)));
-
-  const applyNUp = () => {
-    let key = 'desktop';
-    if (mediaQueries.mobile.matches) key = 'mobile';
-    else if (mediaQueries.tablet.matches) key = 'tablet';
-    grid.classList.remove(...Object.values(N_UP));
-    grid.classList.add(N_UP[key]);
-  };
-  applyNUp();
-  Object.keys(mediaQueries).forEach((k) => mediaQueries[k].addEventListener('change', applyNUp));
 
   block.replaceChildren(...[header, grid].filter(Boolean));
 }

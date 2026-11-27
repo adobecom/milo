@@ -131,10 +131,7 @@ function initScaleDownGrid() {
 }
 
 function getColCount(el) {
-  if (el.classList.contains('four-up')) return 4;
-  if (el.classList.contains('three-up')) return 3;
-  if (el.classList.contains('two-up')) return 2;
-  return 1;
+  return parseInt(getComputedStyle(el).getPropertyValue('--parallax-stagger-cols'), 10) || 1;
 }
 
 function setupStaggerEl(el) {
