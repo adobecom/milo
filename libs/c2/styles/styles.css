@@ -1196,6 +1196,15 @@ span.hang-opening-quote {
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
+/* Match pdf-space's short-viewport safeguard, including high-zoom layouts.
+   This can also match short, unzoomed windows on high-density displays.
+   Kept outside @supports so the scroll-animations.js fallback can read it. */
+@media (max-height: 400px) and (min-resolution: 1.5dppx) {
+  .section.parallax-move-up-fast {
+    --parallax-dim-max: 0.15;
+  }
+}
+
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
@@ -1677,7 +1686,7 @@ span.hang-opening-quote {
 
   @keyframes parallax-fade-to-dark {
     from { opacity: 0; }
-    to { opacity: 0.75; }
+    to { opacity: var(--parallax-dim-max, 0.75); }
   }
 
   .section:has(+ .section.parallax-double-garage-door),
