@@ -230,6 +230,12 @@ export async function measureRun(browser, opts) {
     afterScroll = await page.evaluate(() => window.__perf.snapshot());
   }
 
+  // Which blocks Milo loaded (data-block-status) or refused (data-failed: a C1 block on a C2 page).
+  const blocks = navError ? null : await page.evaluate(() => {
+    const first = (sel) => [...document.querySelectorAll(sel)].map((b) => ({ name: b.classList[0], reason: b.dataset.reason || null }));
+    return { loaded: [...new Set(first('main [data-block-status="loaded"]').map((b) => b.name))], failed: first('main [data-failed="true"]') };
+  });
+
   let traceJson = null;
   if (trace) traceJson = JSON.parse((await browser.stopTracing()).toString('utf8'));
   if (trace && process.env.PERF_SAVE_TRACE) {
@@ -273,6 +279,6 @@ export async function measureRun(browser, opts) {
     longTasks: lt.tasks, traceError: lt.error || null,
     // The page's own longtask observer, as a cross-check on the trace (it cannot attribute, the trace can).
     observedLongTasks: load.longtasks,
-    requests, scrollHeight: load.scrollHeight,
+    requests, scrollHeight: load.scrollHeight, blocks,
   };
 }

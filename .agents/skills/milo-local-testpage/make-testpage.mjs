@@ -18,13 +18,29 @@
 // --meta      name=value metadata overrides, comma-separated (value "-" removes the tag)
 // --drop      CSS selectors removed from <main> before saving, comma-separated
 // --foundation c2 adds <meta name="foundation" content="c2"> (C2 blocks load from libs/c2/blocks)
+// --repo      the Milo checkout that will serve the page (default: cwd); its libs/utils/utils.js block lists
+//             decide which names load
+// --changed   git range of the change under test (e.g. origin/stage...HEAD, run in --repo): the blocks it
+//             touches (libs/blocks/<name>, libs/c2/blocks/<name>) must be on the page's foundation; one that
+//             is not authored is noted (another block may load it; perf.mjs --changed proves it ran)
+// --allow-mismatch  write the page even when a check below fails
+//
+// Nothing is renamed for you. The page's foundation is its own metadata (`foundation: c2`, else C1, or
+// --foundation), and the page is checked as authored: every block must load on that foundation (on C2, a
+// C1-only name is refused and a site block 404s locally), and the changed blocks must be there. A block that
+// does not load changes the page's height, requests and shifts, so a failed check is an error.
+// --rename is authoring, not a fix-up: use it to author the C2 (or C1) names of the blocks under test.
 import { chromium } from 'playwright';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 
 const argv = process.argv.slice(2);
 const a = {};
-for (let i = 0; i < argv.length; i += 1) if (argv[i].startsWith('--')) { a[argv[i].slice(2)] = argv[i + 1]; i += 1; }
+for (let i = 0; i < argv.length; i += 1) {
+  if (!argv[i].startsWith('--')) continue;
+  const v = argv[i + 1];
+  if (v === undefined || v.startsWith('--')) a[argv[i].slice(2)] = true; else { a[argv[i].slice(2)] = v; i += 1; }
+}
 const list = (s) => (s ? String(s).split(',').map((x) => x.trim()).filter(Boolean) : []);
 const pairs = (s) => Object.fromEntries(list(s).map((p) => { const i = p.indexOf('='); return [p.slice(0, i), p.slice(i + 1)]; }));
 if (!a.out || (!a.from && !a.html)) {
@@ -73,7 +89,53 @@ if (a.from) {
 }
 
 if (a.foundation) metas.foundation = a.foundation;
-for (const [k, v] of Object.entries(pairs(a.meta))) { if (v === '-') delete metas[k]; else metas[k] = v; }
+const foundation = metas.foundation === 'c2' ? 'c2' : 'c1';
+
+// Block lists of the serving checkout, as getBlockData in libs/utils/utils.js applies them.
+const repo = resolve(a.repo || '.');
+const utilsSrc = readFileSync(resolve(repo, 'libs/utils/utils.js'), 'utf8');
+const listOf = (name) => {
+  const m = utilsSrc.match(new RegExp(`const ${name} = \\[([\\s\\S]*?)\\];`));
+  return new Set(m ? [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]) : []);
+};
+const C1 = listOf('C1_BLOCKS'); const C2 = listOf('C2_BLOCKS');
+if (!C1.size || !C2.size) { process.stderr.write('no C1_BLOCKS/C2_BLOCKS in libs/utils/utils.js; run from a Milo checkout or pass --repo\n'); process.exit(2); }
+const authored = [...new Set([...main.matchAll(/<div class="([a-z0-9-]+)/g)].map((x) => x[1]))];
+const problems = [];
+for (const n of authored) {
+  if (foundation === 'c2' && !C2.has(n)) {
+    if (C1.has(n)) problems.push(`${n} is a C1 block: Milo refuses it on this C2 page`);
+    else if (!n.endsWith('-metadata')) problems.push(`${n} is on neither block list: it loads from the site's codeRoot, which a local Milo does not serve`);
+  }
+  if (foundation === 'c1' && !C1.has(n) && !n.endsWith('-metadata')) {
+    problems.push(C2.has(n) ? `${n} is a C2 block on a C1 page: it loads from libs/blocks, not libs/c2/blocks` : `${n} is on neither block list: it loads from the site's codeRoot, which a local Milo does not serve`);
+  }
+}
+let changed = [];
+if (a.changed) {
+  const { execFileSync } = await import('node:child_process');
+  const files = execFileSync('git', ['-C', repo, 'diff', '--name-only', a.changed], { encoding: 'utf8' }).split('\n');
+  const seen = new Map();
+  for (const f of files) {
+    const m = f.match(/^libs\/(c2\/)?blocks\/([^/]+)\//);
+    if (m) seen.set(m[2], m[1] ? 'c2' : 'c1');
+  }
+  changed = [...seen].map(([name, fnd]) => ({ name, foundation: fnd, onPage: authored.includes(name) }));
+  for (const c of changed) {
+    if (c.foundation !== foundation) problems.push(`changed block ${c.name} is ${c.foundation}, but the page is ${foundation}`);
+    else if (!c.onPage) process.stderr.write(`note: changed block ${c.name} is not authored on the page; it counts only if another block loads it (perf.mjs --changed checks that its files are requested)\n`);
+  }
+  if (!seen.size) process.stderr.write(`${a.changed} changes no block folder; nothing to require on the page\n`);
+}
+process.stderr.write(`foundation: ${foundation} (${a.foundation ? '--foundation' : metas.foundation ? 'page metadata' : 'no foundation metadata'})\n`);
+process.stderr.write(`blocks: ${authored.join(', ') || 'none'}\n`);
+if (changed.length) process.stderr.write(`changed: ${changed.map((c) => `${c.name} (${c.foundation}${c.onPage ? ', on the page' : ''})`).join(', ')}\n`);
+for (const p of problems) process.stderr.write(`mismatch: ${p}\n`);
+if (problems.length && !a['allow-mismatch']) {
+  process.stderr.write('page not written: author the page with the blocks the change touches, on their foundation (or pass --allow-mismatch)\n');
+  process.exit(1);
+}
+
 // Milo's getMetadata reads names with a colon from `property`, the rest from `name`.
 const metaTags = Object.entries(metas)
   .map(([k, v]) => `<meta ${k.includes(':') ? 'property' : 'name'}="${esc(k)}" content="${esc(v)}">`)
@@ -83,7 +145,7 @@ const out = `<!DOCTYPE html>
 <html>
   <head>
     <title>${esc(title)}</title>
-    <!-- generated by .agents/skills/milo-local-testpage/make-testpage.mjs${a.from ? ` from ${esc(a.from)}` : ''} -->
+    <!-- generated by .agents/skills/milo-local-testpage/make-testpage.mjs${a.from ? ` from ${esc(a.from)}` : ''}; foundation ${foundation} -->
     ${metaTags}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="/libs/scripts/scripts.js" type="module"></script>

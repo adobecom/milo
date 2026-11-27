@@ -67,11 +67,29 @@ Common reasons a page doesn't exercise the change:
 gitignored, so a page there never ends up in a commit. Such a page **does not get `head.html`
 injected**: it must include Milo's head itself. The generator does it for you:
 
+A test page is **one foundation, authored throughout**: its `foundation` metadata says C1 or C2, and
+every block on it is a block of that foundation, including the blocks the change touches. Run the
+generator from the checkout that will serve the page, with the change's range. It writes the page only
+when that holds:
+
+- every authored block loads on the page's foundation: on C2 a name in `C2_BLOCKS`, on C1 one in
+  `C1_BLOCKS` (`libs/utils/utils.js` of that checkout). A C1-only name on a C2 page is refused by Milo
+  (the pink "is a C1 block" box), and a site-only block 404s locally because a local Milo doesn't
+  serve the site's codeRoot. Either one changes the page's height, requests and shifts.
+- every block `--changed` touches (`libs/blocks/<name>`, `libs/c2/blocks/<name>`) is on that
+  foundation. One that isn't authored is noted: another block may load it, and milo-perf-verify's
+  `--changed` proves whether its files ran.
+
+It never renames on its own. When the source page authors other names (here the stage draft still
+uses the site's `blog-header`), author the right ones yourself with `--rename`, one per block on
+the page, and say so in the writeup.
+
 ```sh
-# Copy a real consumer page, fixing block names and turning off what you don't need
+# Copy a real consumer page, authored with the C2 names of every block on it
 node .agents/skills/milo-local-testpage/make-testpage.mjs \
   --from "https://stage--da-bacom-blog--adobecom.aem.live/blog/drafts/slavin/blog-demo-page-c2-corrected" \
-  --rename blog-header=forge-blog-header,ai-summary=forge-ai-summary,related-content-card=forge-related-content-card \
+  --changed origin/stage...HEAD \
+  --rename blog-header=forge-blog-header,ai-summary=forge-ai-summary,related-content-card=forge-related-content-card,blog-related-content=forge-blog-related-content,tag-cta=forge-tag-cta \
   --meta header=off,footer=off \
   --out tmp/perf/blog-article.html
 
@@ -87,8 +105,9 @@ What `--from` does:
   whichever checkout serves the page, so the page always runs that checkout's code.
 - It makes every `href`, `src` and `srcset` absolute against the source page, so images and linked
   articles still load from the CDN.
-- `--rename` changes block classes, `--meta k=v` overrides metadata (`k=-` removes a tag), and
-  `--drop <selectors>` removes nodes.
+- `--rename` authors block classes, `--meta k=v` overrides metadata (`k=-` removes a tag), and
+  `--drop <selectors>` removes nodes. `--allow-mismatch` writes a page that fails the checks above;
+  don't measure one.
 
 Templates for blocks without any page are in `templates/`. `block-snippet.html` shows the EDS table
 shape: a `<div class="block-name variant">` holding one `<div>` per row, each holding one `<div>`

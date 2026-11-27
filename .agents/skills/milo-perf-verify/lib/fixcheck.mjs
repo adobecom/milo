@@ -82,7 +82,9 @@ export function buildFixCheck({ was, now, direct = null, labels = {} }) {
     else if (flagged.every((x) => x.outcome === 'resolved')) outcome = hasNew ? 'resolved, with new findings' : 'resolved';
     else if (flagged.some((x) => x.outcome === 'resolved' || x.outcome === 'partly')) outcome = 'partly resolved';
     else outcome = 'not resolved';
-    viewports[vp] = { metrics, requests, stacks, baseDrift, direct: directLcp, outcome, nowFindings: n.findings };
+    // The element that shifts most after the fix (ties: the most specific selector), for a CLS the base has too.
+    const topShift = [...(n.shiftSources || [])].sort((x, y) => (y.after - x.after) || (y.key.length - x.key.length))[0]?.key || null;
+    viewports[vp] = { metrics, requests, stacks, baseDrift, direct: directLcp, outcome, nowFindings: n.findings, topShift };
   }
   const outs = Object.values(viewports).map((v) => v.outcome);
   const anyNew = outs.some((o) => /new/.test(o));
@@ -143,7 +145,15 @@ export function fixPoints(fc) {
     const names = [...new Set(fixed.map((m) => name[m.k]))];
     points.push(`✅ ${list(names)} regression fixed: at the review ${list(lead.map((m) => `${delta(m, m.was)} on ${m.vp}`))} over the base, now ${list(lead.map((m) => delta(m, m.now)))}.`);
   }
+  // CLS beyond web-vitals' "good" line on both sides: not this PR's, but a page that shifts this much hides
+  // a block's own shifts, so name it (once, with the element that moves most).
+  const highCls = vps.map((v) => ({ v, m: fc.viewports[v].metrics.find((m) => m.k === 'clsLoad') })).filter(({ m }) => m && m.fix > 0.1 && m.base > 0.1 && !['new', 'persists', 'partly'].includes(m.outcome));
+  if (highCls.length) {
+    const top = fc.viewports[highCls[0].v].topShift;
+    points.push(`ℹ️ CLS is ${list(highCls.map(({ v, m }) => `${m.fix.toFixed(3)} on ${v}`))} on the base too (over 0.1): not from this PR${top ? `; most of it is ${code(top.replace(/ \[(load|scroll)\]$/, ''))}` : ''}, worth its own fix.`);
+  }
   if (!points.length) points.push('✅ Nothing was flagged and nothing new is flagged.');
+  points.sort((x, y) => Number(x.startsWith('✅')) - Number(y.startsWith('✅')));
   // Keep the resolved point last when trimming, so the reader sees both what is left and what worked.
   if (points.length > 3) { const ok = points.filter((p) => p.startsWith('✅')); return [...points.filter((p) => !p.startsWith('✅')).slice(0, 3 - ok.length), ...ok].slice(0, 3); }
   return points;

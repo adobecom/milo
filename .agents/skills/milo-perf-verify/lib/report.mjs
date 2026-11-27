@@ -254,6 +254,12 @@ export function renderMarkdown(r) {
   L.push(`Before: ${meta.before.label} (${code(meta.before.url)})  `);
   L.push(`After: ${meta.after.label} (${code(meta.after.url)})  `);
   L.push(`${meta.runs} cold loads per side per viewport, interleaved, after ${meta.warmup} warm-up load${meta.warmup === 1 ? '' : 's'}; medians with min–max.`);
+  if (meta.blocks?.after) L.push('', `Blocks on the page (all loaded on both sides): ${meta.blocks.after.map(code).join(', ')}.`);
+  if (meta.changed?.range) {
+    const ran = meta.changed.files.filter((f) => !meta.changed.allowed.some((x) => f.includes(x)));
+    const skipped = meta.changed.files.filter((f) => meta.changed.allowed.some((x) => f.includes(x)));
+    L.push(`Changed code exercised (\`${meta.changed.range}\`): all ${ran.length} changed libs/ file(s) requested on the after side${skipped.length ? `; not on the load path: ${skipped.map(code).join(', ')}` : ''}.`);
+  }
   L.push('');
   L.push(...verdictTable(r));
   const fixes = suggestFixes(r);

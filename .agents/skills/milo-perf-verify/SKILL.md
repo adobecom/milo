@@ -28,9 +28,17 @@ only meaningful as a delta.
 
 ## Step 1: pick a page that runs the changed code
 
-The check is worthless when the page doesn't load what the PR changed. **Verify this first.**
-The changed block's JS and CSS must appear in the request list (`runs.json` → `requests[].norm`).
-Look for `{milo}/libs/blocks/<block>/` or `{milo}/libs/c2/blocks/<block>/`.
+The check is worthless when the page doesn't load what the PR changed. Pass `--changed <range>`
+with `--repo <after checkout>`, and the run enforces it. After each warm-up load it stops as **not
+measurable** (exit 2) when:
+
+- a block on the page was refused (`data-failed`: a C1 block on a C2 page) or never loaded (no
+  `data-block-status="loaded"`), on either side;
+- a changed `libs/` JS or CSS file was never requested on the after side: that logic never ran.
+
+A changed file that only loads on interaction (say `modal.css`) can be excused with
+`--allow-unexercised <path>`, once you've checked that it's off the load path. Say why in the
+writeup. The report lists the page's blocks and what was exercised.
 
 Sources, in order:
 
@@ -97,6 +105,8 @@ Options:
 | `--no-scroll` | scroll on | Skip the scroll-to-bottom pass (lazy sections, sticky elements). |
 | `--block` | none | Hosts aborted on BOTH sides. Use it for a third party that hangs from your network (`geo2.adobe.com` times out after about 5 s off VPN and gates FCP). Say so in the writeup. |
 | `--federal` | `same-origin` | Federal content (`getFederatedContentRoot`: gnav, icons, footers) comes from `main--federal--adobecom.aem.*` on localhost and `*.aem.*`, but from the page's own origin on production (`www.adobe.com/federal/...`). By default each federal URL is fetched once and replayed under the same throttle, with no extra connection, so a change that starts loading federal content isn't charged a cross-origin cost production never pays. Use `as-is` to measure the preview hosts; the report says which mode ran. |
+| `--changed <range>`, `--repo <dir>` | none | The change under test (`git diff` range, run in `--repo`, the after side's checkout). Requires every changed `libs/` JS or CSS file to be requested on the after side. |
+| `--allow-unloaded`, `--allow-unexercised` | none | Comma-separated block names or paths excused from the block and changed-code checks. Only for what is provably off the load path; disclose it. |
 | `--rerender <dir>` | | Rebuild report.md/json from a saved `runs.json` without measuring. |
 | `PERF_SAVE_TRACE=<prefix>` | | Env var: keep every Chrome trace (open it in DevTools → Performance). |
 
@@ -193,7 +203,8 @@ on purpose:
 - the outcome: effective, effective with new findings, partly effective, not effective, or nothing to fix;
 - a table of LCP, FCP, TBT and CLS per viewport, base → fix (medians from the now run);
 - at most three one-sentence points, most severe first: what got worse, what is still open (and what to do
-  about it), and what the fix resolved, with the was → now delta.
+  about it), a CLS over 0.1 that the base has too (with the element that shifts most), and what the
+  fix resolved, with the was → now delta.
 
 A finding is resolved when its now-delta is within the same noise limit the verdict uses. A request still
 before LCP says whether LCP still waits on it. Requests that are before LCP only because LCP moved never
