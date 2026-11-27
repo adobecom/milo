@@ -118,9 +118,19 @@
     line-height: 1.2;
     cursor: pointer;
 
-    svg {
+    /* Reserved before the icon loads, so it lands without a layout shift.
+       The button's gap spaces it, not loadIcons' margin-inline-* classes. */
+    .icon {
+      display: flex;
+      flex: none;
       width: 16px;
       height: 16px;
+      margin: 0;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
     }
 
     &:hover {
@@ -188,7 +198,6 @@
   }
 }
 
-.blog-header-share span.icon,
 .blog-share-action span.icon {
   display: flex;
 }
@@ -437,7 +446,7 @@
       padding: var(--s2a-spacing-xs) var(--s2a-spacing-sm);
       gap: var(--s2a-spacing-sm);
 
-      svg {
+      .icon {
         width: 22px;
         height: 22px;
       }

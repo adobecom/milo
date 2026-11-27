@@ -392,6 +392,7 @@ describe('forge-blog-header decoration', () => {
     const share = block.querySelector('.blog-header-share');
     expect(share.getAttribute('aria-haspopup')).to.equal('dialog');
     expect(share.textContent).to.contain('Share');
+    await waitFor(() => share.querySelector('svg'));
     expect(share.querySelector('svg').dataset.icon).to.equal('share');
     expect(share.querySelector('svg').getAttribute('aria-hidden')).to.equal('true');
     expect(share.querySelector('svg').getAttribute('focusable')).to.equal('false');
@@ -453,7 +454,7 @@ describe('forge-blog-header decoration', () => {
       const button = block.querySelector('.blog-header-share');
       expect(button.firstChild.textContent).to.equal(value);
       expect(button.querySelector('img')).not.to.exist;
-      expect(button.querySelector('svg')).to.exist;
+      await waitFor(() => button.querySelector('svg'));
       const dialog = await openShareModal(button);
       const heading = dialog.querySelector('.blog-share-heading');
       expect(heading.textContent).to.equal(value);
@@ -1020,7 +1021,8 @@ describe('forge-blog-header author layout', () => {
             .to.equal(width < 1280 ? 48 : 64);
           expect(author.scrollWidth).to.be.at.most(author.clientWidth);
         });
-        expect(block.querySelector('.blog-header-share svg').getBoundingClientRect().width)
+        // The span reserves the icon's box before the svg arrives (no layout shift).
+        expect(block.querySelector('.blog-header-share .icon').getBoundingClientRect().width)
           .to.equal(width < 1280 ? 16 : 22);
       });
     });

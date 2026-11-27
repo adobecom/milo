@@ -3,7 +3,6 @@ import {
 } from '../../../utils/utils.js';
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
-import loadIcons from '../../../features/icons/icons.js';
 import { copyMedia } from '../forge-related-content-card/forge-related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
@@ -274,8 +273,9 @@ function getAuthorHref(href) {
   return null;
 }
 
-async function buildIcons(names) {
-  const spans = names.map((name) => createTag('span', { class: `icon icon-${name}` }));
+// Dynamic so icons.js stays off the critical path; callers size span.icon in CSS.
+async function loadIconSpans(spans) {
+  const { default: loadIcons } = await import('../../../features/icons/icons.js');
   await loadIcons(spans);
   return spans.map((span) => {
     const svg = span.querySelector('svg');
@@ -285,6 +285,8 @@ async function buildIcons(names) {
     return span;
   });
 }
+
+const iconSpan = (name) => createTag('span', { class: `icon icon-${name}` });
 
 async function loadAuthorProfile(profileUrl, data, avatar, info) {
   const profile = await fetchAuthorProfile(profileUrl);
@@ -531,7 +533,7 @@ async function buildShareActions(platforms, data, labels) {
   const list = createTag('ul', { class: 'blog-share-actions' });
   if (!available.length) return list;
   const iconNames = available.map((p) => SHARE_PLATFORMS[p].icon);
-  const icons = await buildIcons(iconNames);
+  const icons = await loadIconSpans(iconNames.map(iconSpan));
   available.forEach((platform, index) => {
     const icon = icons[index];
     if (!icon) return;
@@ -606,8 +608,14 @@ async function buildShareButton(config) {
     'data-modal-hash': `#${SHARE_MODAL_ID}`,
   });
   button.textContent = label;
-  const [icon] = await buildIcons(['share']);
-  if (icon) button.append(icon);
+  const icon = iconSpan('share');
+  button.append(icon);
+  loadIconSpans([icon])
+    .then(([loaded]) => { if (!loaded) icon.remove(); })
+    .catch((e) => {
+      icon.remove();
+      logError(`share icon failed to load: ${e.message}`);
+    });
   button.addEventListener('click', () => {
     openShareModal(button).catch((e) => logError(`share dialog failed to open: ${e.message}`));
   });
