@@ -1000,6 +1000,31 @@ describe('chart', () => {
       });
     });
 
+    [false, true].forEach((hasColorColumn) => {
+      it(`applies hex colors to pie slices${hasColorColumn ? ' ahead of spreadsheet colors' : ''}`, async () => {
+        const data = {
+          data: ['First', 'Second', 'Third', 'Fourth', 'Fifth'].map((name, index) => ({
+            Value: `${(index + 1) * 20}`,
+            Name: name,
+            ...(hasColorColumn ? { Color: 'purple' } : {}),
+          })),
+        };
+        const el = await renderChart('pie', `${paletteRow}<div><div>Footnote</div></div>`, data, 'indigo');
+        expect(chart.getOption().color).to.eql(['#112233', '#445566']);
+        const slices = chart.getModel().getSeries()[0].getData();
+        const expected = ['#112233', '#445566', '#112233', '#445566', '#112233'];
+        expect(slices.count()).to.equal(expected.length);
+        expected.forEach((color, index) => {
+          expect(slices.getItemVisual(index, 'style').fill).to.equal(color);
+        });
+        expect(el.querySelector('.chart-wrapper svg path[fill="#112233"]')).to.exist;
+        expect(el.querySelector('.chart-wrapper svg path[fill="#445566"]')).to.exist;
+        expect(el.querySelector('.title').textContent).to.equal('Title');
+        expect(el.querySelector('.footnote').textContent).to.equal('Footnote');
+        expect(el.textContent).not.to.contain('Color-Palette');
+      });
+    });
+
     ['column', 'bar'].forEach((type) => {
       it(`cycles colors across individual ${type} bars without a Color column`, async () => {
         const data = {
@@ -1098,10 +1123,12 @@ describe('chart', () => {
       expect(chart.getOption().color[0]).to.equal('#112233');
     });
 
-    it('preserves legacy named colors when no palette row is present', async () => {
-      const el = await renderChart('column', '<div><div>Footnote</div></div>', json, 'indigo');
-      expect(chart.getOption().color).to.eql(getColors('indigo'));
-      expect(el.hasAttribute('title')).to.equal(false);
+    ['column', 'pie'].forEach((type) => {
+      it(`preserves legacy named colors for ${type} charts without a palette row`, async () => {
+        const el = await renderChart(type, '<div><div>Footnote</div></div>', json, 'indigo');
+        expect(chart.getOption().color).to.eql(getColors('indigo'));
+        expect(el.hasAttribute('title')).to.equal(false);
+      });
     });
 
     it('falls back to the full legacy palette when one custom color is invalid', async () => {
@@ -1130,7 +1157,7 @@ describe('chart', () => {
       expect(chart.getOption().color).to.eql(getColors('indigo', ['#112233', '#445566']));
     });
 
-    ['bar', 'column', 'line'].forEach((type) => {
+    ['bar', 'column', 'line', 'pie'].forEach((type) => {
       it(`preserves spreadsheet colors for ${type} charts with a malformed custom palette`, async () => {
         const data = {
           data: [
