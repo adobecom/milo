@@ -125,7 +125,7 @@ export function renderFindStep(cmp) {
             </label>
             ${cmp._promoteIgnore ? html`
               <textarea name="promote-ignore-paths" rows="3"
-                placeholder="Enter paths to ignore from promote, one per line."></textarea>
+                placeholder="Enter paths to ignore from promote, one per line.\nUse * to ignore all files in a folder."></textarea>
             ` : nothing}
           </div>
         ` : nothing}
