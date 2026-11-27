@@ -78,6 +78,16 @@ describe('News', () => {
     expect(items.querySelectorAll('.news-item').length).to.equal(4);
   });
 
+  it('uses the five-up class when there are five items', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/five-up.html' });
+    const block = document.querySelector('.news');
+    await init(block);
+
+    const items = block.querySelector('.news-items');
+    expect(items.classList.contains('five-up')).to.be.true;
+    expect(items.querySelectorAll('.news-item').length).to.equal(5);
+  });
+
   it('uses the six-up class when there are six items', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/six-up.html' });
     const block = document.querySelector('.news');

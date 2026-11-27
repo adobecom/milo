@@ -3,8 +3,6 @@ import { expect } from '@esm-bundle/chai';
 
 import init from '../../../libs/c2/blocks/quick-actions/quick-actions.js';
 
-const N_UP = ['two-up', 'three-up', 'six-up'];
-
 describe('Quick Actions', () => {
   describe('with a section header and linked tiles', () => {
     let block;
@@ -38,10 +36,9 @@ describe('Quick Actions', () => {
       expect(block.children.length).to.equal(2);
     });
 
-    it('applies exactly one responsive n-up class to the grid', () => {
+    it('keeps the grid independent from the -up grid system', () => {
       const grid = block.querySelector('.quick-actions-grid');
-      const applied = N_UP.filter((cls) => grid.classList.contains(cls));
-      expect(applied.length).to.equal(1);
+      expect([...grid.classList].some((cls) => cls.endsWith('-up'))).to.be.false;
     });
 
     it('uses the label link href as the tile href', () => {
