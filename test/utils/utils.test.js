@@ -729,7 +729,7 @@ describe('Utils', () => {
     });
 
     describe('auto', () => {
-      it('loads the section after the LCP one, then the sections a block asks for', async () => {
+      it('keeps the normal order and starts the sections a block asks for', async () => {
         setup('auto', [psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
         ['a', 'b', 'd'].forEach(holdBlock);
         const loaded = utils.loadArea();
@@ -796,23 +796,6 @@ describe('Utils', () => {
         releases.b();
         await loaded;
         expect(started()).to.deep.equal(['a', 'b', 'c', 'd']);
-      });
-
-      it('loads sections one at a time when Target runs post LCP', async () => {
-        setup('auto', [psBlock('a', nthSection(3)), psBlock('b'), psBlock('c')], '<header></header>');
-        utils.getConfig().mep = { targetEnabled: 'postlcp', targetAjoManifests: [] };
-        holdBlock('b');
-        try {
-          const loaded = utils.loadArea();
-          await waitFor(() => started().length === 2, 2000, 20);
-          await settle();
-          expect(started()).to.deep.equal(['a', 'b']);
-          releases.b();
-          await loaded;
-          expect(started()).to.deep.equal(['a', 'b', 'c']);
-        } finally {
-          delete utils.getConfig().mep;
-        }
       });
     });
   });

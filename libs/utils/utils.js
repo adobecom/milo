@@ -3448,15 +3448,13 @@ export async function loadArea(area = document) {
   const areaBlocks = [];
   const parallelValue = isDoc ? getParallelSectionsValue() : '';
   const parallelCount = getParallelSectionCount(parallelValue);
-  const isTargetPostLcp = config.mep?.targetEnabled === 'postlcp';
-  const isAutoParallel = parallelValue === 'auto' && !isTargetPostLcp;
   let lcpSectionId = null;
   let postLcpPromise;
   let loopIdx = -1;
   const parallelSections = [];
   const rushOptions = { htmlSections, parallelSections, config };
-  // Requests that arrive while the LCP section loads wait until it's done.
-  let earlyQueue = isAutoParallel ? [] : null;
+  // Requests made before the LCP section and loadPostLCP are done wait for them.
+  let earlyQueue = parallelValue === 'auto' ? [] : null;
   const rushEarly = (els) => {
     const indices = [...new Set(els.map((el) => htmlSections.indexOf(el)))]
       .filter((i) => i > loopIdx)
@@ -3479,23 +3477,22 @@ export async function loadArea(area = document) {
         lcpSectionId = section.idx;
       }
       const isLcpSection = section.idx === lcpSectionId;
-      // auto rushes the section after the LCP one; blocks in it can then ask for more.
-      const rushEnd = isAutoParallel ? idx + 2 : parallelCount;
-      const rushesNext = isLcpSection && idx < rushEnd - 1 && !isTargetPostLcp;
+      const rushesNext = isLcpSection && idx < parallelCount - 1
+        && config.mep?.targetEnabled !== 'postlcp';
       sectionBlocks = await processSection(section, config, {
         isLcpSection,
         loadsPostLCP: isDoc && isLcpSection && !rushesNext,
       });
       if (rushesNext) {
-        const nextIndices = htmlSections.slice(idx + 1, rushEnd).map((el, i) => idx + 1 + i);
+        const nextIndices = htmlSections.slice(idx + 1, parallelCount).map((el, i) => idx + 1 + i);
         rushSections(nextIndices, rushOptions);
-        if (earlyQueue) {
-          const queued = earlyQueue;
-          earlyQueue = null;
-          rushEarly(queued);
-        }
         postLcpPromise = loadPostLCP(config);
         postLcpPromise.catch(() => {});
+      }
+      if (isLcpSection && earlyQueue) {
+        const queued = earlyQueue;
+        earlyQueue = null;
+        rushEarly(queued);
       }
     }
     areaBlocks.push(...sectionBlocks);
