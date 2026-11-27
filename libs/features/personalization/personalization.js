@@ -18,6 +18,7 @@ import {
   getCookie,
   isMasImsLoginEnabled,
   normCountryCode,
+  waitForLaunchSendEvent,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
@@ -1666,11 +1667,11 @@ async function updateManifestsAndPropositions(
   });
   config.mep.targetAjoManifests = targetAjoManifests;
   if (config.mep.enablePersV2) {
-    window.addEventListener('alloy_sendEvent', () => {
+    waitForLaunchSendEvent().then(() => {
       if (targetAjoPropositions?.length && window._satellite) {
         window._satellite.track('propositionDisplay', targetAjoPropositions);
       }
-    }, { once: true });
+    });
   } else if (targetAjoPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetAjoPropositions);
   }

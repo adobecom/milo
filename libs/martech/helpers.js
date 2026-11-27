@@ -420,6 +420,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
   const prevPageName = cookies[GPV_COOKIE] || '';
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
+  const authState = isSignedOut() ? 'loggedOut' : 'authenticated';
+  const returningStatus = getVisitorStatus({});
   const webPageDetails = {
     URL: window.location.href,
     siteSection: window.location.hostname,
@@ -441,11 +443,6 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       identityMap: getOrGenerateUserId(),
       web: {
         webPageDetails,
-        webInteraction: isPageViewCall || isCollectCall ? undefined : {
-          name: 'Martech-API',
-          type: 'other',
-          linkClicks: { value: 1 },
-        },
         webReferrer: { URL: document.referrer },
       },
       timestamp: new Date().toISOString(),
@@ -457,7 +454,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       __adobe: {
         target: {
           is404: false,
-          authState: 'loggedOut',
+          authState,
           hitType,
           isMilo: true,
           adobeLocale: getLanguageCode(locale),
@@ -472,7 +469,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           page: { pageInfo: { language: getLanguageCode(locale) } },
           diagnostic: { franklin: { implementation: 'milo' } },
           previousPage: { pageInfo: { pageName: prevPageName } },
-          primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
+          primaryUser: { primaryProfile: { profileInfo: { authState, returningStatus } } },
         },
         otherConsents: getConsentConfiguration({ optOnConsentCookie, consentState }),
         user: { firstVisit: isFirstVisit() },
@@ -805,8 +802,10 @@ export const loadAnalyticsAndInteractionData = async (
   const localTime = getLocalISOString();
   const CURRENT_DATE = new Date();
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  window.hybridPers = true;
-  const hitType = 'pageView';
+  // Signed in: fetch Target decisions only, so Launch still sends the page view with the Adobe ID.
+  const isPageView = isSignedOut();
+  if (isPageView) window.hybridPers = true;
+  const hitType = isPageView ? 'pageView' : 'propositionFetch';
   const pageName = getPageNameForAnalytics();
   const processedPageName = getProcessedPageNameForAnalytics();
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
@@ -851,7 +850,8 @@ export const loadAnalyticsAndInteractionData = async (
 
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
     const filteredPayload = filterPropositionInJson(resultPayload);
-    if (filteredPayload.length) {
+    // Signed in: MEP sends the display through Launch with the Adobe ID, so skip it here.
+    if (isPageView && filteredPayload.length) {
       sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
     }
     const alloyData = {
@@ -869,7 +869,7 @@ export const loadAnalyticsAndInteractionData = async (
 
     if (resultPayload?.length === 0) throw new Error('No propositions found');
 
-    setGpvCookie(pageName);
+    if (isPageView) setGpvCookie(pageName);
     return {
       type: hitType,
       result: { propositions: resultPayload },
@@ -879,7 +879,7 @@ export const loadAnalyticsAndInteractionData = async (
       // eslint-disable-next-line no-console
       console.log(err);
     }
-    setGpvCookie(pageName);
+    if (isPageView) setGpvCookie(pageName);
     return {};
   }
 };

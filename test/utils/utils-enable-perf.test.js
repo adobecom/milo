@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { enablePersonalizationV2 } from '../../libs/utils/utils.js';
+import { enablePersonalizationV2, rememberSignedInEcid, waitForLaunchSendEvent } from '../../libs/utils/utils.js';
 
 function mockPerformanceData(serverTimingData) {
   window.performance.getEntriesByType = () => [{ serverTiming: serverTimingData }];
@@ -86,5 +86,130 @@ describe('enablePersonalizationV2', () => {
     const result = enablePersonalizationV2();
     expect(result).to.be.false;
     metaTag.parentNode.removeChild(metaTag);
+  });
+
+  describe('personalization-v2-signed-in opt-in', () => {
+    const AMCV = 'AMCV_9E1005A551ED61CA0A490D45%40AdobeOrg';
+    const KEY = 'milo-signed-in-ecid';
+    const MINUTE = 60 * 1000;
+    const setEcid = (ecid) => {
+      document.cookie = `${AMCV}=${encodeURIComponent(`MCMID|${ecid}`)}; path=/`;
+    };
+    const hash = async (id) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(id)))]
+      .map((b) => b.toString(16).padStart(2, '0')).join('');
+    let userA;
+    let currentUser;
+    const saveNote = (ecid, ageMs, user = userA) => {
+      localStorage.setItem(KEY, JSON.stringify({ ecid, user, time: Date.now() - ageMs }));
+    };
+    const readNote = () => JSON.parse(localStorage.getItem(KEY));
+    const addMeta = (name, content) => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', name);
+      meta.setAttribute('content', content);
+      document.head.appendChild(meta);
+      return meta;
+    };
+    let metas = [];
+
+    before(async () => {
+      userA = await hash('A@AdobeID');
+    });
+
+    beforeEach(() => {
+      currentUser = 'A@AdobeID';
+      window.adobeIMS = { getProfile: () => Promise.resolve({ userId: currentUser }) };
+      mockPerformanceData([{ name: 'sis', description: '1' }]);
+      setEcid('111');
+      metas = [addMeta('personalization-v2', 'on'), addMeta('personalization-v2-signed-in', 'on')];
+    });
+    afterEach(() => {
+      metas.forEach((meta) => meta.remove());
+      document.cookie = `${AMCV}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      localStorage.removeItem(KEY);
+      delete window.adobeIMS;
+    });
+
+    it('returns true for a signed-in user when the page opts in and the ECID is linked', () => {
+      saveNote('111', 3 * MINUTE);
+      expect(enablePersonalizationV2()).to.be.true;
+    });
+
+    it('returns false on a browser whose ECID was never seen signed in', () => {
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('returns false until Adobe has had time to link the ECID', () => {
+      saveNote('111', 30 * 1000);
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('returns false when the browser now has a different ECID', () => {
+      saveNote('222', 3 * MINUTE);
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('returns false for a signed-in user when the opt-in is off', () => {
+      saveNote('111', 3 * MINUTE);
+      metas[1].setAttribute('content', 'off');
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('returns false when the opt-in is on but personalization-v2 is absent', () => {
+      saveNote('111', 3 * MINUTE);
+      metas[0].remove();
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('keeps the first time for the same ECID and account, so later page views do not restart the wait', async () => {
+      saveNote('111', 3 * MINUTE);
+      await rememberSignedInEcid();
+      expect(enablePersonalizationV2()).to.be.true;
+    });
+
+    it('starts a new wait when the ECID changes', async () => {
+      saveNote('222', 3 * MINUTE);
+      await rememberSignedInEcid();
+      expect(readNote().ecid).to.equal('111');
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('starts a new wait when a different account signs in with the same ECID', async () => {
+      saveNote('111', 3 * MINUTE);
+      currentUser = 'B@AdobeID';
+      await rememberSignedInEcid();
+      expect(readNote().user).to.equal(await hash('B@AdobeID'));
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('does not save the ECID when the account is unknown', async () => {
+      window.adobeIMS = { getProfile: () => Promise.reject(new Error('no profile')) };
+      await rememberSignedInEcid();
+      expect(readNote()).to.be.null;
+    });
+
+    it('returns false for a saved ECID without an account', () => {
+      saveNote('111', 3 * MINUTE, null);
+      expect(enablePersonalizationV2()).to.be.false;
+    });
+
+    it('reads the ECID when the cookie name uses a raw "@"', () => {
+      document.cookie = `${AMCV}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+      document.cookie = `AMCV_9E1005A551ED61CA0A490D45@AdobeOrg=${encodeURIComponent('MCMID|111')}; path=/`;
+      saveNote('111', 3 * MINUTE);
+      expect(enablePersonalizationV2()).to.be.true;
+      document.cookie = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    });
+  });
+
+  describe('waitForLaunchSendEvent', () => {
+    it('resolves for a caller that asks after the Launch event already fired, once', async () => {
+      waitForLaunchSendEvent();
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { launch: 1 } }));
+      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: { launch: 2 } }));
+      const missed = new Promise((resolve) => { setTimeout(() => resolve({ detail: 'missed' }), 50); });
+      const event = await Promise.race([waitForLaunchSendEvent(), missed]);
+      expect(event.detail.launch).to.equal(1);
+    });
   });
 });
