@@ -199,7 +199,7 @@ export function verdictTable(r) {
   const L = [];
   L.push(`|${meta.viewports.map((v) => ` ${v[0].toUpperCase()}${v.slice(1)} |`).join('')}`.replace(/^\|/, '| |'));
   L.push(`|---|${meta.viewports.map(() => '---').join('|')}|`);
-  L.push(`| Verdict |${meta.viewports.map((v) => { const f = r.viewports[v].findings; const lv = f.some((x) => x.level === 'regression') ? 'regression' : f.some((x) => x.level === 'watch') ? 'watch' : 'pass'; return ` ${ICON[lv]} ${f.map((x) => x.what).join('; ') || 'no change beyond noise'}`; }).join(' |')} |`);
+  L.push(`| Verdict |${meta.viewports.map((v) => { const f = r.viewports[v].findings; const lv = f.some((x) => x.level === 'regression') ? 'regression' : f.some((x) => x.level === 'watch') ? 'watch' : 'pass'; const bad = f.filter((x) => x.level !== 'improvement').map((x) => x.what).join('; '); const good = f.filter((x) => x.level === 'improvement').map((x) => x.what).join('; '); return ` ${ICON[lv]} ${[bad, good && (bad ? `better: ${good}` : good)].filter(Boolean).join('. ') || 'no change beyond noise'}`; }).join(' |')} |`);
   return L;
 }
 

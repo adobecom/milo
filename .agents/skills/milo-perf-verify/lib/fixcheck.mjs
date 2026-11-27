@@ -38,7 +38,7 @@ function metricOutcome(w, n, k) {
   else if (flaggedWas && dn < dw - ln) outcome = 'partly';
   else if (flaggedWas) outcome = 'persists';
   else if (flaggedNow) outcome = 'new';
-  return { k, was: dw, now: dn, limit: ln, outcome };
+  return { k, was: dw, now: dn, limit: ln, outcome, base: n.metrics[k].before.median, fix: n.metrics[k].after.median };
 }
 
 // Reports from before the {federal} placeholder name federal's preview host in full; compare both spellings as one.
@@ -53,12 +53,12 @@ function requestOutcomes(w, n) {
   const out = wAdded.map((x) => {
     const y = nowAdded.get(x.key);
     // Still before LCP. If LCP waited on it before and does not now, the fix took it off the critical path.
-    if (y) return { key: x.key, type: x.type, outcome: 'persists', initiator: y.initiator, how: x.gates && !y.gates ? 'LCP no longer waits on it' : (y.gates ? 'LCP still waits on it' : null) };
+    if (y) return { key: x.key, type: x.type, outcome: 'persists', initiator: y.initiator, block: y.from?.block || null, alsoLater: y.alsoLater, how: x.gates && !y.gates ? 'LCP no longer waits on it' : (y.gates ? 'LCP still waits on it' : null) };
     // Off the pre-LCP list. Still a new request overall means it moved past LCP; otherwise it is gone, or the
     // base makes it too (then it was only "new before LCP" because LCP moved).
     return { key: x.key, type: x.type, outcome: 'resolved', how: laterNow.has(x.key) ? 'now after LCP' : 'no longer new' };
   });
-  for (const x of nAdded) if (!wasAdded.has(x.key)) out.push({ key: x.key, type: x.type, outcome: 'new', initiator: x.initiator, how: x.gates ? 'LCP waits on it' : null });
+  for (const x of nAdded) if (!wasAdded.has(x.key)) out.push({ key: x.key, type: x.type, outcome: 'new', initiator: x.initiator, block: x.from?.block || null, alsoLater: x.alsoLater, how: x.gates ? 'LCP waits on it' : null });
   return out;
 }
 
@@ -100,46 +100,71 @@ const VICON = { effective: '✅', 'effective, with new findings': '⚠️', 'par
 const code = (s) => `\`${String(s).replace(/`/g, "'")}\``;
 const cap = (s) => `${s[0].toUpperCase()}${s.slice(1)}`;
 
+const fmt = (x, unit, dp) => (x == null ? '–' : `${x.toFixed(dp)}${unit ? ` ${unit}` : ''}`);
+const short = (k) => k.split('?')[0].split('/').pop();
+const list = (xs) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+const sourceOf = (r) => (r.block ? `\`${r.block}\`` : /^parser/.test(r.initiator || '') ? 'the page markup' : 'other code');
+// "`a` and `b` from `block`; `c` from the page markup"
+const bySource = (rows) => {
+  const m = new Map(); const seen = new Set();
+  for (const r of rows) { const k = `\`${short(r.key)}\``; if (seen.has(k)) continue; seen.add(k); const s = sourceOf(r); m.set(s, new Set([...(m.get(s) || []), k])); }
+  return [...m].map(([s, ks]) => `${list([...ks])} from ${s}`).join('; ');
+};
+
+// At most three one-sentence points, most severe first: what got worse, what is still open, what the fix resolved.
+export function fixPoints(fc) {
+  const vps = Object.keys(fc.viewports);
+  const name = Object.fromEntries(METRICS.map(([k, n]) => [k, n]));
+  const unit = Object.fromEntries(METRICS.map(([k, , u, dp]) => [k, [u, dp]]));
+  const metricRows = (o) => vps.flatMap((v) => fc.viewports[v].metrics.filter((m) => o.includes(m.outcome)).map((m) => ({ ...m, vp: v })));
+  // alsoLater: requested on both sides, before LCP only because LCP moved; an effect, not a finding to fix.
+  const reqRows = (o) => vps.flatMap((v) => fc.viewports[v].requests.filter((r) => o.includes(r.outcome) && !r.alsoLater).map((r) => ({ ...r, vp: v })));
+  const delta = (m, x) => fmtDelta(x, ...unit[m.k]);
+  const byMetric = (rows) => [...new Set(rows.map((m) => m.k))].map((k) => rows.filter((m) => m.k === k));
+  const points = [];
+  const worse = metricRows(['new', 'persists']);
+  if (worse.length) {
+    const lead = byMetric(worse)[0];
+    const verb = lead[0].outcome === 'new' ? 'got worse since the review' : 'are still worse than the base';
+    points.push(`❌ ${list([...new Set(worse.map((m) => name[m.k]))])} ${verb}: ${name[lead[0].k]} ${list(lead.map((m) => `${delta(m, m.now)} on ${m.vp}`))}; find what the change put on the critical path.`);
+  }
+  const newReq = reqRows(['new']);
+  if (newReq.length) points.push(`❌ New before LCP since the review: ${bySource(newReq)}; start ${newReq.length > 1 ? 'them' : 'it'} after LCP unless the first paint needs ${newReq.length > 1 ? 'them' : 'it'}.`);
+  const open = reqRows(['persists']);
+  if (open.length) {
+    const waits = open.some((r) => /still waits/.test(r.how || ''));
+    points.push(`🟡 Still requested before LCP: ${bySource(open)} (${list([...new Set(open.map((r) => r.vp))])}); ${waits ? 'LCP still waits on them, so stop awaiting them before the block renders' : 'LCP no longer waits on them, but starting them after LCP would clear this finding'}.`);
+  }
+  const partly = metricRows(['partly']);
+  if (partly.length) { const g = byMetric(partly)[0]; points.push(`🟡 ${list([...new Set(partly.map((m) => name[m.k]))])} improved but still over the base: ${name[g[0].k]} ${list(g.map((m) => `${delta(m, m.was)} → ${delta(m, m.now)} on ${m.vp}`))}.`); }
+  const fixed = metricRows(['resolved']);
+  if (fixed.length) {
+    const lead = byMetric(fixed)[0];
+    const names = [...new Set(fixed.map((m) => name[m.k]))];
+    points.push(`✅ ${list(names)} regression fixed: at the review ${list(lead.map((m) => `${delta(m, m.was)} on ${m.vp}`))} over the base, now ${list(lead.map((m) => delta(m, m.now)))}.`);
+  }
+  if (!points.length) points.push('✅ Nothing was flagged and nothing new is flagged.');
+  // Keep the resolved point last when trimming, so the reader sees both what is left and what worked.
+  if (points.length > 3) { const ok = points.filter((p) => p.startsWith('✅')); return [...points.filter((p) => !p.startsWith('✅')).slice(0, 3 - ok.length), ...ok].slice(0, 3); }
+  return points;
+}
+
 export function renderFixCheck(fc) {
   const L = [];
   const vps = Object.keys(fc.viewports);
   const { labels: lb } = fc;
   L.push(`## ${VICON[fc.verdict]} Fix check: ${fc.verdict.toUpperCase()}`);
   L.push('');
-  L.push(`Was: ${lb.was || fc.meta.was.after.label} vs ${fc.meta.was.before.label}. Now: ${lb.now || fc.meta.now.after.label} vs ${fc.meta.now.before.label}. Federal ${federalOf(fc.meta.now)}.`);
+  L.push(`Before: ${fc.meta.now.before.label}. After: ${lb.now || fc.meta.now.after.label} (the fix). Reviewed head: ${lb.was || fc.meta.was.after.label}.`);
   L.push('');
   L.push(`| |${vps.map((v) => ` ${cap(v)} |`).join('')}`);
   L.push(`|---|${vps.map(() => '---').join('|')}|`);
-  L.push(`| Fix |${vps.map((v) => ` ${fc.viewports[v].outcome} |`).join('')}`);
-  for (const [k, name, unit, dp] of METRICS) {
-    const cells = vps.map((v) => {
-      const m = fc.viewports[v].metrics.find((x) => x.k === k);
-      return ` ${ICON[m.outcome]} ${fmtDelta(m.was, unit, dp)} → ${fmtDelta(m.now, unit, dp)} |`;
-    });
-    L.push(`| ${name} Δ |${cells.join('')}`);
+  for (const [k, n, unit, dp] of METRICS.filter(([k]) => k !== 'clsScroll')) {
+    L.push(`| ${k === 'clsLoad' ? 'CLS' : n} |${vps.map((v) => { const m = fc.viewports[v].metrics.find((x) => x.k === k); return ` ${fmt(m.base, unit, dp)} → ${fmt(m.fix, unit, dp)} |`; }).join('')}`);
   }
-  L.push(`| New before LCP |${vps.map((v) => { const r = fc.viewports[v].requests; const c = (o) => r.filter((x) => x.outcome === o).length; return ` ${c('resolved')} resolved, ${c('persists')} persist, ${c('new')} new |`; }).join('')}`);
-  L.push(`| Changed stacks |${vps.map((v) => ` ${fc.viewports[v].stacks.was} → ${fc.viewports[v].stacks.now} |`).join('')}`);
-  if (vps.some((v) => fc.viewports[v].direct)) L.push(`| LCP Δ, flagged head → fix (one run) |${vps.map((v) => { const d = fc.viewports[v].direct; return ` ${d ? `${fmtDelta(d.delta, 'ms', 0)}${Math.abs(d.delta) <= d.limit ? ' (within noise)' : ''}` : '–'} |`; }).join('')}`);
   L.push('');
-  L.push('Δ is the median after minus the base, in the run that measured it: was → now. ✅ resolved (within noise now), 🟡 smaller but still beyond noise, ❌ persists, 🆕 new.');
+  L.push(...fixPoints(fc).map((p) => `- ${p}`));
   L.push('');
-  for (const v of vps) {
-    const x = fc.viewports[v];
-    const rows = x.requests.filter((r) => r.outcome !== 'unchanged');
-    if (!rows.length && !x.baseDrift) continue;
-    L.push(`### ${cap(v)}`);
-    L.push('');
-    for (const r of rows) L.push(`- ${ICON[r.outcome]} ${code(r.key)} (${r.type || '?'}): ${r.outcome}${r.how ? `, ${r.how}` : ''}${r.initiator && r.outcome !== 'resolved' ? `; started by ${code(r.initiator)}` : ''}`);
-    if (x.baseDrift) L.push(`- The base's LCP median moved between the runs (${x.baseDrift.was} → ${x.baseDrift.now} ms); compare the deltas, not the absolute numbers.`);
-    L.push('');
-  }
-  L.push('<details><summary>Method</summary>');
-  L.push('');
-  L.push('- Two milo-perf-verify runs against the same base: was (base vs the flagged head) and now (base vs the fix). Each delta is within its own interleaved run, so lab drift between the runs cancels.');
-  L.push('- A finding is resolved when the now-delta is inside the same noise limit the verdict uses (`noiseLimit` in `lib/report.mjs`); partly when it shrank by more than that limit but is still beyond it.');
-  L.push('- A request flagged new before LCP is resolved when the fix head no longer adds it before LCP; "now after LCP" means it is still requested, later.');
-  if (fc.meta.direct) L.push('- The direct row is a third run, flagged head vs fix, interleaved: the fix measured against the code it replaces.');
-  L.push('</details>');
+  L.push(`<sub>Medians of ${fc.meta.now.runs} interleaved cold loads per side, before → after. Federal ${federalOf(fc.meta.now)}. Per-request detail in fixcheck.json.</sub>`);
   return `${L.join('\n')}\n`;
 }

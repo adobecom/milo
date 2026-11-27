@@ -26,6 +26,7 @@ page and throttling, the words say nothing the report doesn't.**
 | build | `node $S/engine/build.mjs $W/story.json` | Lint, synthesize, render, screen → `out/short.mp4`, `sheet.png`, `captions.srt`, `provenance.json`. A draft: look at it (§3). |
 | final | `node $S/engine/build.mjs $W/story.json --final` | Same, plus: refuses if the PR head moved since `record` (or cannot be read), refuses a flagged screen. |
 | publish | `node $S/engine/publish.mjs $W` | Refuses a draft, a flagged screen, an mp4 edited after final, head drift, a `TODO` in `comment.md`, no ticket, or no `JIRA_TOKEN`/`JIRA_PAT`, all before posting anywhere. PR comment = the per-viewport verdict table first, then the video, `comment.md`, the run's `report.md` under "Full perf report", provenance. Jira = the short only: the mp4 attached and embedded, and a link to the PR comment; no perf writeup, so the numbers live in one place. Hosted bytes verified on both; a rerun finishes only the platform still missing. |
+| publish, PR only | `node $S/engine/publish.mjs $W --no-jira` | Posts the short and the description on the PR and nothing on the ticket. If the report folder has a `fixcheck.md` (milo-perf-verify's fix check), it leads the comment instead of the verdict table. |
 
 The engine (`build.mjs`, `screen.mjs`, `tts.py`, `lint.mjs`) is vendored from forgeflex `pr-short`, and only
 `lint.mjs` changes: a comparison may be the scorecard still when it names `evidence: "report.json"`. Read

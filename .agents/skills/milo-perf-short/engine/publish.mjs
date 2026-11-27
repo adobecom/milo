@@ -42,7 +42,7 @@ export const videoSrcIn = (html) => html.match(/<video[^>]*\ssrc="(https:\/\/[^"
 export const TICKET_RE = /^[A-Z][A-Z0-9]+-\d+$/;
 export const JIRA_DEFAULT_BASE = 'https://jira.corp.adobe.com';
 
-export function publishRefusals({ prov, mp4Sha, comment, drift, ticket, jiraToken }) {
+export function publishRefusals({ prov, mp4Sha, comment, drift, ticket, jiraToken, noJira = false }) {
   const r = [];
   if (!prov) return ['out/provenance.json missing: node engine/build.mjs <W>/story.json --final'];
   if (!prov.final) r.push('the last build was a draft: node engine/build.mjs <W>/story.json --final');
@@ -51,15 +51,17 @@ export function publishRefusals({ prov, mp4Sha, comment, drift, ticket, jiraToke
   if (drift) r.push(drift);
   if (!comment.trim()) r.push('comment.md is empty');
   if (/TODO/.test(comment)) r.push('comment.md still has TODO placeholders');
-  if (!TICKET_RE.test(ticket || '')) r.push(`no ticket key to post to (story.json ticket: ${JSON.stringify(ticket ?? null)})`);
-  if (!jiraToken) r.push('no Jira token: set JIRA_TOKEN (or JIRA_PAT) to post the short to the ticket');
+  if (!noJira && !TICKET_RE.test(ticket || '')) r.push(`no ticket key to post to (story.json ticket: ${JSON.stringify(ticket ?? null)})`);
+  if (!noJira && !jiraToken) r.push('no Jira token: set JIRA_TOKEN (or JIRA_PAT) to post the short to the ticket');
   return r;
 }
 
-export function composeBody(asset, comment, prov, reportMd = '', report = null) {
+// fixMd (milo-perf-short): a fix check's fixcheck.md leads instead of the verdict table: the before/after
+// table and at most three points, then the short.
+export function composeBody(asset, comment, prov, reportMd = '', report = null, fixMd = '') {
   const f = prov.facts || {}; const s = (x) => (x ? String(x).slice(0, 12) : '?');
   const lines = [
-    ...(report?.viewports ? [...verdictTable(report), ''] : []),
+    ...(fixMd ? [fixMd.trim(), ''] : report?.viewports ? [...verdictTable(report), ''] : []),
     asset, '', comment.trim(), '',
     reportMd ? '<details><summary>Full perf report</summary>' : null, reportMd ? '' : null, reportMd ? reportMd.trim() : null,
     reportMd ? '' : null, reportMd ? '</details>' : null, reportMd ? '' : null,
@@ -92,12 +94,12 @@ export function composeJiraBody({ repo, pr, prUrl, commentUrl, fileName, prov })
   ].join('\n');
 }
 
-async function postGithub({ work, cfg, mp4, comment, prov, reportMd, report }) {
+async function postGithub({ work, cfg, mp4, comment, prov, reportMd, report, fixMd }) {
   const ghv = sh('gh', ['--version']).match(/gh version ([0-9.]+)/)?.[1] ?? '0';
   const bodyFile = path.join(work, 'out', 'comment-body.md');
   let commentUrl;
   if (versionAtLeast(ghv, ATTACH_MIN)) {
-    fs.writeFileSync(bodyFile, composeBody('__ASSET__', comment, prov, reportMd, report));
+    fs.writeFileSync(bodyFile, composeBody('__ASSET__', comment, prov, reportMd, report, fixMd));
     commentUrl = sh('gh', ['pr', 'comment', String(cfg.pr), '--repo', cfg.repo, '--body-file', bodyFile, '--attach', mp4]);
   } else {
     const repoId = sh('gh', ['api', `repos/${cfg.repo}`, '--hostname', 'github.com', '--jq', '.id']);
@@ -108,7 +110,7 @@ async function postGithub({ work, cfg, mp4, comment, prov, reportMd, report }) {
         Authorization: `Bearer ${sh('gh', ['auth', 'token', '--hostname', 'github.com'])}` } });
     const url = res.ok ? (await res.json()).url : null;
     if (!assetUrlIn(url || '')) throw new Error(`upload failed: HTTP ${res.status}`);
-    fs.writeFileSync(bodyFile, composeBody(url, comment, prov, reportMd, report));
+    fs.writeFileSync(bodyFile, composeBody(url, comment, prov, reportMd, report, fixMd));
     commentUrl = sh('gh', ['pr', 'comment', String(cfg.pr), '--repo', cfg.repo, '--body-file', bodyFile]);
   }
   const id = commentUrl.match(/issuecomment-(\d+)/)?.[1];
@@ -119,7 +121,7 @@ async function postGithub({ work, cfg, mp4, comment, prov, reportMd, report }) {
   const asset = assetUrlIn(c.body);
   if (!asset) throw new Error(`comment ${commentUrl} has no attachment URL; the upload did not land`);
   if (c.body.includes('__ASSET__')) {
-    const body = composeBody(asset, comment, prov, reportMd, report);
+    const body = composeBody(asset, comment, prov, reportMd, report, fixMd);
     sh('gh', ['api', '-X', 'PATCH', `repos/${cfg.repo}/issues/comments/${id}`, '-F', 'body=@-'], { input: body });
     c = read();
   }
@@ -178,10 +180,10 @@ async function relinkJira({ cfg, ticket, token, prov, jira, commentUrl }) {
 export const jiraVideoLine = (jira, prov) => `🎬 **Perf short (${prov.duration} s)** is on Jira, embedded in [${jira.ticket}](${jira.commentUrl}) `
   + `as \`${jira.attachment}\` (sha256 \`${String(prov.output.sha256).slice(0, 12)}…\`, Adobe sign-in). GitHub attaches files only for accounts with write access to this repo.`;
 
-async function postGithubText({ work, cfg, comment, prov, reportMd, report, jira }) {
+async function postGithubText({ work, cfg, comment, prov, reportMd, report, fixMd, jira }) {
   const bodyFile = path.join(work, 'out', 'comment-body.md');
   const line = jiraVideoLine(jira, prov);
-  fs.writeFileSync(bodyFile, composeBody(line, comment, prov, reportMd, report));
+  fs.writeFileSync(bodyFile, composeBody(line, comment, prov, reportMd, report, fixMd));
   const commentUrl = sh('gh', ['pr', 'comment', String(cfg.pr), '--repo', cfg.repo, '--body-file', bodyFile]);
   const id = commentUrl.match(/issuecomment-(\d+)/)?.[1];
   if (!id) throw new Error(`posted, but no comment URL came back (${commentUrl}); find the comment before retrying`);
@@ -202,6 +204,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const reportDir = cfg.report ? path.resolve(work, cfg.report) : null;
   const reportMd = reportDir && fs.existsSync(path.join(reportDir, 'report.md')) ? fs.readFileSync(path.join(reportDir, 'report.md'), 'utf8') : '';
   const report = reportDir && fs.existsSync(path.join(reportDir, 'report.json')) ? JSON.parse(fs.readFileSync(path.join(reportDir, 'report.json'), 'utf8')) : null;
+  // --no-jira (milo-perf-short): the PR only; nothing is posted to the ticket.
+  const noJira = process.argv.includes('--no-jira');
+  const fixMd = reportDir && fs.existsSync(path.join(reportDir, 'fixcheck.md')) ? fs.readFileSync(path.join(reportDir, 'fixcheck.md'), 'utf8') : '';
   const jiraToken = process.env.JIRA_TOKEN || process.env.JIRA_PAT || '';
   const head = spawnSync('gh', ['pr', 'view', String(cfg.pr), '--repo', cfg.repo, '--json', 'headRefOid', '-q', '.headRefOid'], { encoding: 'utf8' });
   let drift = headDrift(story, head.status === 0 ? head.stdout.trim() : null, (head.stderr || '').split('\n')[0]);
@@ -219,7 +224,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       comment = `${comment.trim()}\n\n${driftNote}\n`;
     }
   }
-  const refusals = publishRefusals({ prov, mp4Sha: fs.existsSync(mp4) ? sha(fs.readFileSync(mp4)) : null, comment, ticket, jiraToken, drift });
+  const refusals = publishRefusals({ prov, mp4Sha: fs.existsSync(mp4) ? sha(fs.readFileSync(mp4)) : null, comment, ticket, jiraToken, drift, noJira });
   if (refusals.length) { for (const m of refusals) console.error(`REFUSED: ${m}`); process.exit(1); }
 
   const outFile = path.join(work, 'out', 'published.json');
@@ -227,7 +232,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const doneFor = (x) => x?.hostedMatches && x.sha256 === prov.output.sha256;
   const save = (r) => fs.writeFileSync(outFile, `${JSON.stringify(r, null, 2)}\n`);
 
-  if (process.argv.includes('--video-on-jira')) {
+  if (process.argv.includes('--video-on-jira') && !noJira) {
     const result = { pr: cfg.pr, mode: 'video-on-jira', ...prior };
     if (doneFor(prior.jira) && prior.jira.commentUrl && prior.jira.ticket === ticket) console.log(`${ticket} already has this short: ${prior.jira.commentUrl}`);
     else {
@@ -238,7 +243,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     }
     if (prior.github?.sha256 === prov.output.sha256 && prior.github.linksJira === result.jira.commentUrl) console.log(`PR already links this short: ${prior.github.commentUrl}`);
     else {
-      result.github = await postGithubText({ work, cfg, comment, prov, reportMd, report, jira: result.jira });
+      result.github = await postGithubText({ work, cfg, comment, prov, reportMd, report, fixMd, jira: result.jira });
       save(result);
       console.log(`${result.github.commentUrl}\nPR comment links the Jira video`);
     }
@@ -253,13 +258,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   let result = { pr: cfg.pr, ...(doneFor(prior) ? prior : {}) };
   if (doneFor(prior)) console.log(`PR already has this short: ${prior.commentUrl}`);
   else {
-    result = { ...result, ...(await postGithub({ work, cfg, mp4, comment, prov, reportMd, report })), jira: undefined, verifiedAt: new Date().toISOString() };
+    result = { ...result, ...(await postGithub({ work, cfg, mp4, comment, prov, reportMd, report, fixMd })), jira: undefined, verifiedAt: new Date().toISOString() };
     save(result);
     console.log(`${result.commentUrl}\n${result.asset}\nPR hosted bytes ${result.hostedMatches ? 'MATCH' : 'DIFFER'} (${result.bytes} B, sha256 ${result.sha256.slice(0, 12)}…)`);
     if (!result.hostedMatches) process.exit(1);
   }
 
-  if (doneFor(prior.jira) && prior.jira.commentUrl && prior.jira.ticket === ticket) console.log(`${ticket} already has this short: ${prior.jira.commentUrl}`);
+  if (noJira) console.log('--no-jira: nothing posted to the ticket');
+  else if (doneFor(prior.jira) && prior.jira.commentUrl && prior.jira.ticket === ticket) console.log(`${ticket} already has this short: ${prior.jira.commentUrl}`);
   else {
     result.jira = await postJira({ cfg, ticket, token: jiraToken, mp4, prov, commentUrl: result.commentUrl });
     save(result);

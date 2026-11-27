@@ -187,11 +187,17 @@ node .agents/skills/milo-perf-verify/fixcheck.mjs --was tmp/perf/prNNNN-<head> -
   --label-was <head> --label-now <fix> [--direct tmp/perf/prNNNN-head-vs-fix]
 ```
 
-It writes `fixcheck.md` and `fixcheck.json` into the `--now` folder (or `--out`). For each viewport and
-metric it says whether the finding is **resolved** (within noise now, the same limit `judge` uses),
-**partly** resolved (smaller but still beyond noise), **persists**, or is **new**. For each new
-pre-LCP request it gives the same outcome, adding "now after LCP" or "no longer new". The overall
-outcome is effective, effective with new findings, partly effective, not effective, or nothing to fix.
+It writes `fixcheck.md` and `fixcheck.json` into the `--now` folder (or `--out`). `fixcheck.md` is short
+on purpose:
+
+- the outcome: effective, effective with new findings, partly effective, not effective, or nothing to fix;
+- a table of LCP, FCP, TBT and CLS per viewport, base → fix (medians from the now run);
+- at most three one-sentence points, most severe first: what got worse, what is still open (and what to do
+  about it), and what the fix resolved, with the was → now delta.
+
+A finding is resolved when its now-delta is within the same noise limit the verdict uses. A request still
+before LCP says whether LCP still waits on it. Requests that are before LCP only because LCP moved never
+count. The per-request outcomes are in `fixcheck.json`, not the comment.
 
 It refuses two reports that differ in federal mode, blocked hosts, page path or profiles; exit 2 means
 they are not comparable. `--direct` adds an optional head-vs-fix run, shown as its own row. Exit 1 means
