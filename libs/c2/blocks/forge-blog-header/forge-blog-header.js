@@ -2,12 +2,11 @@ import { createTag, getConfig, getMetadata, loadBlock, MILO_EVENTS } from '../..
 import { decorateBlockText } from '../../../utils/decorate.js';
 import { replaceKey } from '../../../features/placeholders.js';
 import { getSVGsfromFile } from '../../../blocks/share/share.js';
-import { getModal } from '../modal/modal.js';
 import { copyMedia } from '../forge-related-content-card/forge-related-content-card.js';
 
 const SHARE_MODAL_ID = 'blog-share-modal';
 const PREVIEW_PARAMS = ['milolibs', 'martech', 'mep', 'georouting'];
-const ICON_PATH = 'c2/blocks/forge-blog-header/forge-blog-header.svg';
+const ICON_PATH = 'c2/blocks/forge-blog-header/share-icons.svg';
 
 const SOCIAL_PLATFORMS = {
   'linkedin.com': { name: 'LinkedIn', icon: 'linkedin' },
@@ -235,7 +234,7 @@ function fetchAuthorProfile(profileUrl) {
 function defaultAvatar(base) {
   return createTag('img', {
     class: 'blog-header-avatar',
-    src: `${base}/c2/blocks/forge-blog-header/adobe-logo.svg`,
+    src: `${base}/blocks/article-header/adobe-logo.svg`,
     alt: '',
     loading: 'lazy',
   });
@@ -246,7 +245,7 @@ function setAuthorMeta(info, details) {
   if (!text) return;
   let meta = info.querySelector('.blog-header-author-meta');
   if (!meta) {
-    meta = createTag('span', { class: 'blog-header-author-meta' });
+    meta = createTag('span', { class: 'blog-header-author-meta body-md' });
     info.append(meta);
   }
   meta.textContent = text;
@@ -255,8 +254,8 @@ function setAuthorMeta(info, details) {
 /* An interactive link is only rendered once a usable accessible name exists. */
 function createNameEl(name, href) {
   const el = (href && name)
-    ? createTag('a', { class: 'blog-header-author-name', href })
-    : createTag('span', { class: 'blog-header-author-name' });
+    ? createTag('a', { class: 'blog-header-author-name label', href })
+    : createTag('span', { class: 'blog-header-author-name label' });
   el.textContent = name ?? '';
   return el;
 }
@@ -568,6 +567,7 @@ async function createShareModal(trigger) {
     trigger.dataset.modalHash = `#${SHARE_MODAL_ID}`;
     trigger.dataset.isModalTrigger = 'true';
   }
+  const { getModal } = await import('../modal/modal.js');
   const dialog = await getModal(null, {
     id: SHARE_MODAL_ID,
     class: 'blog-share-modal',

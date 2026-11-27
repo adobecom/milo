@@ -119,12 +119,8 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
-  'forge-ai-summary',
   'aside-c2',
   'base-card',
-  'forge-blog-header',
-  'forge-blog-related-content',
-  'forge-blog-side-navigation',
   'brand-concierge',
   'brand-concierge-global',
   'card-metadata',
@@ -136,6 +132,12 @@ const C2_BLOCKS = [
   'faq',
   'firefly-globe',
   'floating-cta',
+  'forge-ai-summary',
+  'forge-blog-header',
+  'forge-blog-related-content',
+  'forge-blog-side-navigation',
+  'forge-related-content-card',
+  'forge-tag-cta',
   'global-footer',
   'global-navigation',
   'globe-gallery',
@@ -155,7 +157,6 @@ const C2_BLOCKS = [
   'quick-actions',
   'quote',
   'region-nav',
-  'forge-related-content-card',
   'rich-content',
   'roller-carousel',
   'router-marquee',
@@ -165,7 +166,6 @@ const C2_BLOCKS = [
   'split-aside-grid',
   'split-hero',
   'tabs',
-  'forge-tag-cta',
   'tour',
   'visually-hidden',
 ];
