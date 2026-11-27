@@ -3335,18 +3335,11 @@ async function processSection(section, config, {
   return section.blocks;
 }
 
-// Section loads started by loadSectionsEarly; null once the main loop has handled the section.
 const sectionLoads = new WeakMap();
 let earlySections = null;
 
-/**
- * Starts loading pending page sections now instead of waiting for their turn,
- * e.g. the sections in a tabs block's open panel. Works during the page load once
- * the next sections may start (after the LCP section); otherwise it does nothing.
- * @param {Element[]} sections - pending `body > main > div` sections
- */
 export function loadSectionsEarly(sections) {
-  sections.forEach((el) => {
+  sections.slice(0, MAX_PARALLEL_SECTIONS).forEach((el) => {
     const idx = earlySections?.indexOf(el) ?? -1;
     if (idx === -1 || sectionLoads.has(el)) return;
     const revealAfter = sectionLoads.get(el.previousElementSibling);

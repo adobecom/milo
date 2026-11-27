@@ -746,6 +746,32 @@ describe('Utils', () => {
         expect(started()).to.deep.equal(['a', 'b', 'd', 'c']);
       });
 
+      it('starts at most five sections per request', async () => {
+        const ids = ['c', 'd', 'e', 'f', 'g', 'h'];
+        setup(null, [psBlock('a'), psBlock('b', nthSection(3, 4, 5, 6, 7, 8)), ...ids.map((id) => psBlock(id))]);
+        ['b', ...ids].forEach(holdBlock);
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 7, 2000, 20);
+        await settle();
+        expect(started()).to.not.include('h');
+        ['b', ...ids].forEach((id) => releases[id]());
+        await loaded;
+        expect(started()).to.include('h');
+      });
+
+      it('lets tabs in rushed sections start their open panel', async () => {
+        setup(4, [psBlock('a'), tabsBlock('t'), tabSection('b', 't, 1'), tabSection('c', 't, 2'), tabSection('d', 't, 1')]);
+        ['b', 'c', 'd'].forEach(holdBlock);
+        const loaded = utils.loadArea();
+        await waitFor(() => started().length === 4, 2000, 20);
+        expect(started()).to.have.members(['a', 'b', 'c', 'd']);
+        ['b', 'c', 'd'].forEach((id) => releases[id]());
+        await loaded;
+        expect(document.querySelectorAll('main .section[data-status]').length).to.equal(0);
+        expect(document.querySelector('#tab-panel-t-1 [data-id="d"]')).to.exist;
+        expect(document.querySelector('#tab-panel-t-2 [data-id="c"]')).to.exist;
+      });
+
       it('keeps the normal order without parallel-sections and starts the sections a block asks for', async () => {
         setup(null, [psBlock('a'), psBlock('b', nthSection(4)), psBlock('c'), psBlock('d')]);
         ['a', 'b', 'd'].forEach(holdBlock);
