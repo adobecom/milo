@@ -2,7 +2,13 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, MILO_EVENTS, getConfig, localizeLinkAsync } from '../../../utils/utils.js';
+import {
+  createTag,
+  MILO_EVENTS,
+  getConfig,
+  localizeLinkAsync,
+  loadSectionsEarly,
+} from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const tabColor = {};
@@ -571,6 +577,10 @@ const init = async (block) => {
   }));
   handleDeferredImages(block);
   initTabs(block, config, rootElem);
+  const openPanel = tabContentContainer.querySelector(':scope > .tabpanel:not([hidden])');
+  if (openPanel && !block.closest('.tabpanel[hidden]')) {
+    loadSectionsEarly([...openPanel.querySelectorAll(':scope > .section')]);
+  }
 
   if (tabDropdown) {
     initTabDropdown(tabDropdown);
