@@ -41,6 +41,7 @@ function sendAnalyticsEvent(eventName, type = 'click') {
 }
 
 const FOCUS_KEYS = ['Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+const fitCleanups = new WeakMap();
 
 let miloLangIsKeyboard = false;
 document.addEventListener('keydown', (e) => {
@@ -245,7 +246,7 @@ function createDropdown(
   showGlobe,
   analyticsLabel,
   getAnalyticsSelectEventName,
-  { focusOnPointerOpen = true, routeWheelToList = false } = {},
+  { focusOnPointerOpen = true, routeWheelToList = false, fitAboveGnav = false } = {},
 ) {
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
@@ -313,7 +314,88 @@ function createDropdown(
 
   if (routeWheelToList) popover.addEventListener('wheel', onPopoverWheel, { passive: false });
 
+  let fitFrame;
+  let footerObserver;
+  let scrollOnOpen = false;
+  const desktopViewport = fitAboveGnav ? window.matchMedia('(min-width: 601px)') : null;
+  const isDesktopFit = () => fitAboveGnav && container.closest('.market-selector-c2')
+    && container.closest('.global-footer:not(.mobile)')
+    && desktopViewport?.matches;
+  const clearFitStyles = () => {
+    popover.style.removeProperty('--market-selector-height');
+    popover.style.removeProperty('--market-selector-list-height');
+    popover.classList.remove('fit-above-gnav', 'overlaps-gnav');
+  };
+  const updateFit = () => {
+    fitFrame = undefined;
+    if (popover.dataset.open !== 'true') return;
+    if (!isDesktopFit()) {
+      clearFitStyles();
+      scrollOnOpen = false;
+      return;
+    }
+
+    popover.classList.add('fit-above-gnav');
+    popover.style.removeProperty('--market-selector-height');
+    popover.style.removeProperty('--market-selector-list-height');
+    const normalListHeight = list.getBoundingClientRect().height;
+    const normalHeight = popover.getBoundingClientRect().height;
+    const chromeHeight = normalHeight - normalListHeight;
+    const header = document.querySelector('header.global-navigation');
+    const nav = header?.getBoundingClientRect();
+    const visibleNav = nav && nav.bottom > 0 && nav.top < window.innerHeight
+      && getComputedStyle(header).visibility !== 'hidden';
+    const boundary = visibleNav ? nav.bottom + 8 : 8;
+
+    if (scrollOnOpen) {
+      scrollOnOpen = false;
+      const needed = Math.max(0, boundary - popover.getBoundingClientRect().top);
+      const buttonRoom = Math.max(
+        0,
+        window.innerHeight - button.getBoundingClientRect().bottom - 8,
+      );
+      const distance = Math.min(needed, window.scrollY, buttonRoom);
+      if (distance > 0) window.scrollBy(0, -distance);
+    }
+
+    // Keep room for any two adjacent options, including translated labels that wrap.
+    const rows = [...list.children].map((item) => item.getBoundingClientRect().height
+      + parseFloat(getComputedStyle(item).marginBottom));
+    const pairHeight = rows.reduce((max, row, index) => (
+      Math.max(max, row + (rows[index + 1] || 0))
+    ), 0);
+    const listStyle = getComputedStyle(list);
+    const minimumListHeight = Math.min(normalListHeight, pairHeight
+      + parseFloat(listStyle.paddingTop) + parseFloat(listStyle.paddingBottom));
+    const available = popover.getBoundingClientRect().bottom - boundary - chromeHeight;
+    const height = Math.max(minimumListHeight, Math.min(normalListHeight, available));
+    if (height < normalListHeight) {
+      popover.style.setProperty('--market-selector-list-height', `${height}px`);
+      popover.style.setProperty('--market-selector-height', `${height + chromeHeight}px`);
+    }
+    const bounds = popover.getBoundingClientRect();
+    popover.classList.toggle('overlaps-gnav', !!visibleNav
+      && bounds.top < nav.bottom && bounds.bottom > nav.top
+      && bounds.left < nav.right && bounds.right > nav.left);
+  };
+  const scheduleFit = () => {
+    if (!fitFrame) fitFrame = requestAnimationFrame(updateFit);
+  };
+  const stopFit = () => {
+    window.removeEventListener('scroll', scheduleFit);
+    window.removeEventListener('resize', scheduleFit);
+    desktopViewport?.removeEventListener('change', scheduleFit);
+    footerObserver?.disconnect();
+    footerObserver = undefined;
+    if (fitFrame) cancelAnimationFrame(fitFrame);
+    fitFrame = undefined;
+    scrollOnOpen = false;
+    clearFitStyles();
+  };
+  if (fitAboveGnav) fitCleanups.set(popover, stopFit);
+
   const closePopoverElement = (popoverEl) => {
+    fitCleanups.get(popoverEl)?.();
     popoverEl.style.display = 'none';
     delete popoverEl.dataset.open;
     popoverEl.classList.remove('fixed-height');
@@ -333,6 +415,7 @@ function createDropdown(
     if (filteredItems.length === 0) {
       const noResult = createTag('li', { class: 'market-selector-item no-search-result-text' }, noResultLabel);
       list.append(noResult);
+      if (fitAboveGnav && popover.dataset.open === 'true') scheduleFit();
       return;
     }
     filteredItems.forEach((item, idx) => {
@@ -385,6 +468,7 @@ function createDropdown(
       li.append(a);
       list.append(li);
     });
+    if (fitAboveGnav && popover.dataset.open === 'true') scheduleFit();
   };
 
   renderItems(items);
@@ -403,6 +487,18 @@ function createDropdown(
       popover.dataset.open = 'true';
       button.setAttribute('aria-expanded', 'true');
       searchInput.value = '';
+      const footer = container.closest('.global-footer');
+      if (fitAboveGnav && footer && container.closest('.market-selector-c2')) {
+        scrollOnOpen = true;
+        window.addEventListener('scroll', scheduleFit, { passive: true });
+        window.addEventListener('resize', scheduleFit);
+        desktopViewport.addEventListener('change', scheduleFit);
+        footerObserver = new MutationObserver(scheduleFit);
+        footerObserver.observe(footer, {
+          attributes: true,
+          attributeFilter: ['class'],
+        });
+      }
       renderItems(items);
       const focusActiveLink = focusOnPointerOpen || e.detail === 0;
       requestAnimationFrame(() => {
@@ -416,7 +512,19 @@ function createDropdown(
         const activeLi = selectedLi || firstLi;
         const activeLink = activeLi?.querySelector('.market-selector-link');
         list.setAttribute('aria-activedescendant', activeLi?.id || '');
-        if (activeLink && focusActiveLink) activeLink.focus();
+        if (activeLink && focusActiveLink) {
+          if (isDesktopFit()) {
+            activeLink.focus({ preventScroll: true });
+            const bounds = activeLink.getBoundingClientRect();
+            const listBounds = list.getBoundingClientRect();
+            if (bounds.top < listBounds.top) list.scrollTop += bounds.top - listBounds.top;
+            if (bounds.bottom > listBounds.bottom) {
+              list.scrollTop += bounds.bottom - listBounds.bottom;
+            }
+          } else {
+            activeLink.focus();
+          }
+        }
       });
     }
   });
@@ -666,6 +774,10 @@ function createDropdown(
     updateItems: renderItems,
     button,
     cleanup: () => {
+      if (fitAboveGnav) {
+        stopFit();
+        fitCleanups.delete(popover);
+      }
       document.removeEventListener('click', onOutsideClick);
       if (!focusOnPointerOpen) {
         button.removeEventListener('keydown', onEscapeFromButton);
@@ -681,6 +793,7 @@ export default async function init(block, {
   onCleanup,
   focusOnPointerOpen = true,
   routeWheelToList = false,
+  fitAboveGnav = false,
 } = {}) {
   const config = await getMarketConfig();
   if (!config || !config.languages?.length) {
@@ -738,7 +851,7 @@ export default async function init(block, {
     true,
     'language-selector',
     (item) => `language-switch:${item.value || 'us'}`,
-    { focusOnPointerOpen, routeWheelToList },
+    { focusOnPointerOpen, routeWheelToList, fitAboveGnav },
   );
 
   const marketDropdown = createDropdown(
@@ -752,7 +865,7 @@ export default async function init(block, {
     false,
     'market-selector',
     (item) => `market-switch:${item.value}`,
-    { focusOnPointerOpen, routeWheelToList },
+    { focusOnPointerOpen, routeWheelToList, fitAboveGnav },
   );
 
   const wrapper = createTag('div', { class: 'market-selector-wrapper' });

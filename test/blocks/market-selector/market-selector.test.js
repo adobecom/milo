@@ -312,6 +312,118 @@ describe('Market selector block', () => {
     }
   });
 
+  it('fits a C2 drop-up around sticky navigation without moving the page on manual scroll', async () => {
+    const originalViewport = { width: window.innerWidth, height: window.innerHeight };
+    const block = document.querySelector('.market-selector');
+    getConfig().marketsConfig.languages.data.push(...Array.from({ length: 12 }, (_, index) => ({
+      prefix: `test-${index}`,
+      nativeName: `Language ${index}`,
+      supportedRegions: 'us',
+      defaultMarket: 'us',
+    })));
+    const header = document.createElement('header');
+    header.className = 'global-navigation';
+    header.style.cssText = 'position: sticky; top: 0; z-index: 10; height: 64px; background: white;';
+    const spacer = document.createElement('div');
+    spacer.style.height = '550px';
+    const tail = document.createElement('div');
+    tail.style.height = '900px';
+    const footer = document.createElement('footer');
+    footer.className = 'global-footer';
+    footer.style.setProperty('--s2a-spacing-xs', '8px');
+    footer.style.setProperty('--s2a-spacing-2xs', '4px');
+    const wrapper = document.createElement('div');
+    wrapper.className = 'feds-footer-wrapper';
+    const style = document.createElement('style');
+    style.textContent = `${await readFile({ path: '../../../libs/c2/blocks/global-footer/global-footer.css' })}
+      ${await readFile({ path: '../../../libs/blocks/market-selector/market-selector.css' })}`;
+    const onCleanup = sinon.spy();
+    block.classList.add('market-selector-c2');
+    block.replaceWith(footer);
+    wrapper.append(block);
+    footer.append(wrapper);
+    document.body.prepend(header, spacer);
+    document.body.append(tail);
+    try {
+      document.head.append(style);
+      await setViewport({ width: 1000, height: 600 });
+      await init(block, {
+        onCleanup,
+        focusOnPointerOpen: false,
+        routeWheelToList: true,
+        fitAboveGnav: true,
+      });
+      const [language, market] = block.querySelectorAll('.market-selector-button');
+      const popover = language.nextElementSibling;
+      const list = popover.querySelector('.market-selector-list');
+      window.scrollBy(0, language.getBoundingClientRect().top - 220);
+      const beforeOpen = window.scrollY;
+      language.click();
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      expect(window.scrollY).to.be.lessThan(beforeOpen);
+      expect(popover.getBoundingClientRect().top)
+        .to.be.at.least(header.getBoundingClientRect().bottom + 7);
+      expect(list.getBoundingClientRect().height).to.be.closeTo(292, 1);
+      expect(popover.classList.contains('overlaps-gnav')).to.equal(false);
+
+      window.scrollBy(0, 260);
+      const manualScroll = window.scrollY;
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      expect(window.scrollY).to.be.closeTo(manualScroll, 1);
+      expect(popover.dataset.open).to.equal('true');
+      expect(list.getBoundingClientRect().height).to.be.lessThan(292);
+      expect(list.getBoundingClientRect().height).to.be.at.least(88);
+      expect(popover.classList.contains('overlaps-gnav')).to.equal(true);
+      expect(getComputedStyle(wrapper).zIndex).to.equal('auto');
+      const bounds = popover.getBoundingClientRect();
+      const x = bounds.left + bounds.width / 2;
+      const y = Math.max(bounds.top + 2, header.getBoundingClientRect().bottom - 4);
+      expect(popover.contains(document.elementFromPoint(x, y))).to.equal(true);
+      list.scrollTop = list.scrollHeight;
+      expect(list.scrollTop).to.be.greaterThan(0);
+
+      window.scrollBy(0, -260);
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      expect(popover.classList.contains('overlaps-gnav')).to.equal(false);
+      expect(list.getBoundingClientRect().height).to.be.closeTo(292, 1);
+      expect(getComputedStyle(wrapper).zIndex).to.equal('1');
+      language.click();
+      const beforeReopen = window.scrollY;
+      language.click();
+      await new Promise(requestAnimationFrame);
+      expect(window.scrollY).to.be.closeTo(beforeReopen, 1);
+      market.click();
+      expect(popover.dataset.open).to.be.undefined;
+      expect(popover.classList.contains('fit-above-gnav')).to.equal(false);
+
+      await setViewport({ width: 601, height: 600 });
+      await new Promise(requestAnimationFrame);
+      expect(market.nextElementSibling.classList.contains('fit-above-gnav')).to.equal(true);
+      await setViewport({ width: 600, height: 600 });
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      expect(market.nextElementSibling.classList.contains('fit-above-gnav')).to.equal(false);
+      expect(getComputedStyle(market.nextElementSibling).position).to.equal('fixed');
+      expect(getComputedStyle(market.nextElementSibling.querySelector('.market-selector-list'))
+        .maxHeight).to.equal('360px');
+      footer.classList.add('mobile');
+      await setViewport({ width: 1000, height: 600 });
+      await new Promise(requestAnimationFrame);
+      await new Promise(requestAnimationFrame);
+      expect(market.nextElementSibling.classList.contains('fit-above-gnav')).to.equal(false);
+      expect(getComputedStyle(market.nextElementSibling).position).to.equal('fixed');
+      expect(getComputedStyle(wrapper).zIndex).to.equal('1');
+    } finally {
+      onCleanup.firstCall?.args[0]();
+      style.remove();
+      window.scrollTo(0, 0);
+      await setViewport(originalViewport);
+    }
+  });
+
   it('orders C2 market selector footer options on a C1 page', async () => {
     const originalViewport = { width: window.innerWidth, height: window.innerHeight };
     const pageFoundation = document.createElement('meta');
