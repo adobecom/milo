@@ -5,7 +5,11 @@ import sinon from 'sinon';
 document.body.innerHTML = await readFile({ path: '../../personalization/mocks/postPersonalization.html' });
 const {
   parsePageAndUrl,
+  parseMepConfig,
+  getManifestList,
+  getManifestStatus,
   getMepPopup,
+  formatDate,
   saveToMmm,
   API_URLS,
 } = await import('../../../../libs/features/mep/mep-next/mep-next.js');
@@ -81,6 +85,208 @@ const config = {
   env: { name: 'stage' },
 };
 setConfig(config);
+
+describe('API_URLS', () => {
+  let originalEnv;
+
+  beforeEach(() => {
+    originalEnv = getConfig().env;
+  });
+
+  afterEach(() => {
+    getConfig().env = originalEnv;
+  });
+
+  const paths = {
+    pageList: '/get-pages',
+    pageDetails: '/get-page',
+    pageDataByURL: '/get-page?url=',
+    save: '/save-mep-call',
+    report: '/get-report',
+    history: '/get-target-history',
+  };
+
+  it('uses production endpoints outside the local environment', () => {
+    getConfig().env = { name: 'stage' };
+    Object.entries(paths).forEach(([key, path]) => {
+      expect(API_URLS[key]).to.equal(`https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws${path}`);
+    });
+  });
+
+  it('resolves local endpoints after config changes', () => {
+    getConfig().env = { name: 'local' };
+    Object.entries(paths).forEach(([key, path]) => {
+      expect(API_URLS[key]).to.equal(`https://bckbr4dhh2sngv5skvo4k7l27i0fvhdk.lambda-url.us-west-2.on.aws${path}`);
+    });
+    getConfig().env = undefined;
+    expect(API_URLS.history).to.equal('https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws/get-target-history');
+  });
+});
+
+describe('shared manifest data', () => {
+  let originalExperiments;
+
+  beforeEach(() => { originalExperiments = config.mep.experiments; });
+  afterEach(() => { config.mep.experiments = originalExperiments; });
+
+  it('retains stage source and placeholder variants for malformed manifests', () => {
+    const { manifests } = getManifestList({ page: { pageId: 42 }, activities: [] }, [{
+      name: 'broken',
+      manifestPath: '/frags/broken.json',
+      error: 'Manifest',
+      source: ['helix', 'target'],
+    }]);
+    expect(manifests[0].source).to.equal('helix, target');
+    expect(manifests[0].options.map(({ value }) => value)).to.deep.equal(['', 'default']);
+    expect(manifests[0].options[1].selected).to.be.true;
+    expect(manifests[0].options[1].dataManifest).to.equal('/frags/broken.json');
+  });
+
+  it('retains overlay eligibility and display fields in the shared config', () => {
+    const fields = {
+      disabledPromo: true,
+      countryEnabled: false,
+      consentEnabled: false,
+      consentNotSpecified: true,
+      manifestType: 'promo',
+      manifestOverrideName: 'override',
+      executionOrder: '0-first',
+    };
+    config.mep.experiments = [{
+      name: 'Shared activity',
+      manifest: 'https://www.adobe.com/shared.json',
+      variantNames: ['variant-a'],
+      selectedVariantName: 'variant-a',
+      ...fields,
+    }];
+    expect(parseMepConfig().activities[0]).to.include(fields);
+    const { manifests, manifestParameter } = getManifestList();
+    expect(manifests[0]).to.include({ manifestType: 'promo', executionOrder: 'First' });
+    expect(manifestParameter).to.deep.equal(['https://www.adobe.com/shared.json--variant-a']);
+    expect(manifests[0].options.find((option) => option.value === 'variant-a').selected).to.be.true;
+  });
+
+  it('accepts MMM data without using the current page experiments', () => {
+    const { manifests } = getManifestList({
+      page: { pageId: 42 },
+      activities: [{
+        manifestPath: 'https://www.adobe.com/mmm.json',
+        manifestUrl: 'https://www.adobe.com/edit.json',
+        variantNames: 'variant-a||variant-b',
+        selectedVariantName: 'variant-b',
+        source: ['target', 'promo'],
+      }],
+    }, []);
+    expect(manifests[0]).to.include({
+      editUrl: 'https://www.adobe.com/edit.json',
+      fileName: 'mmm.json',
+      source: 'target, promo',
+      pageId: 42,
+    });
+    expect(manifests[0].options.find((option) => option.value === 'variant-b')).to.include({
+      selected: true,
+      dataManifest: '/edit.json',
+    });
+  });
+
+  it('prioritizes missing-consent errors over eligibility warnings', () => {
+    const status = getManifestStatus({
+      countryEnabled: false,
+      disabledPromo: true,
+      consentNotSpecified: true,
+    });
+    expect(status).to.deep.equal({
+      level: 'error',
+      label: 'Urgent warning',
+      messages: [
+        'User country is restricted.',
+        'Outside of promo date range.',
+        'Consent type not specified.',
+      ],
+    });
+    expect(getManifestStatus({ countryEnabled: true, consentEnabled: true })).to.be.null;
+  });
+
+  it('maps every historical activity field from the API into shared manifest data', () => {
+    const activity = {
+      manifestId: 1870,
+      url: '/homepage/manifests/separate-kr.json',
+      pathname: '/homepage/manifests/separate-kr.json',
+      variantNames: 'all||test',
+      source: 'promo',
+      analyticsTitle: 'Korean Promo',
+      targetActivityName: 'Promo Activity',
+      manifestConsentType: 'promo or no offer changes',
+      manifestCountryRestriction: 'kr',
+      eventStart: '2026-09-15T05:00:00.000Z',
+      eventEnd: '0000-00-00 00:00:00',
+      lastSeen: '2026-10-05T20:52:57.000Z',
+    };
+    const { manifests } = getManifestList({ page: { pageId: 5 }, activities: [activity] }, []);
+    expect(manifests[0]).to.include({
+      manifestId: activity.manifestId,
+      editUrl: activity.url,
+      pathname: activity.pathname,
+      analyticsTitle: activity.analyticsTitle,
+      targetActivityName: activity.targetActivityName,
+      consentType: activity.manifestConsentType,
+      countryRestriction: 'KR',
+      source: activity.source,
+      eventStart: formatDate(activity.eventStart),
+      eventStartDate: new Date(activity.eventStart).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+      eventStartTime: new Date(activity.eventStart).toLocaleTimeString(undefined, { timeStyle: 'short' }),
+      eventStartIso: activity.eventStart,
+      eventEnd: null,
+      eventEndDate: null,
+      eventEndTime: null,
+      eventEndIso: null,
+      lastSeen: formatDate(activity.lastSeen),
+    });
+    expect(manifests[0].variantNames).to.deep.equal(['all', 'test']);
+  });
+
+  it('derives historical activity status from open-ended schedules without changing live state', () => {
+    const clock = sinon.useFakeTimers({ now: Date.parse('2026-10-05T20:00:00Z'), toFake: ['Date'] });
+    try {
+      const activity = { url: '/promo.json', variantNames: 'all', eventEnd: '0000-00-00 00:00:00' };
+      const { manifests } = getManifestList({
+        page: { pageId: 5 },
+        activities: [
+          { ...activity, eventStart: '2026-09-01T00:00:00Z' },
+          { ...activity, eventStart: '2026-11-01T00:00:00Z' },
+          { ...activity, eventEnd: '2026-09-01T00:00:00Z' },
+          { ...activity, eventEnd: '2026-11-01T00:00:00Z' },
+          { ...activity, eventStart: 'invalid' },
+          { ...activity, eventEnd: '2026-09-01T00:00:00Z', disabled: false },
+          { ...activity, disabled: true },
+        ],
+      }, []);
+      expect(manifests.map((manifest) => manifest.isActive))
+        .to.deep.equal(['active', 'inactive', 'inactive', 'active', 'unknown', 'active', 'inactive']);
+      expect(manifests[4].eventStartIso).to.be.null;
+      expect(manifests[4].eventStartDate).to.be.null;
+      expect(manifests[4].eventStartTime).to.be.null;
+    } finally {
+      clock.restore();
+    }
+  });
+});
+
+describe('formatDate', () => {
+  it('treats absent and MySQL zero dates as unset boundaries', () => {
+    [null, undefined, '', '0000-00-00', '0000-00-00 00:00:00'].forEach((date) => {
+      expect(formatDate(date)).to.equal('');
+      expect(formatDate(date, 'iso')).to.equal('');
+    });
+  });
+
+  it('reports malformed dates without creating an invalid Instant URL or throwing', () => {
+    ['invalid', new Date(NaN)].forEach((date) => {
+      expect(formatDate(date)).to.equal('Invalid date');
+      expect(formatDate(date, 'iso')).to.equal('');
+    });
+  });
+});
 
 describe('preview feature', () => {
   beforeEach(() => {
@@ -1055,6 +1261,13 @@ describe('saveToMmm', () => {
     source: ['mep param', 'target'],
     countryRestriction: 'us',
     consentType: 'test-action',
+    disabledPromo: true,
+    countryEnabled: false,
+    consentEnabled: true,
+    consentNotSpecified: false,
+    manifestType: 'promo',
+    manifestOverrideName: 'test override',
+    executionOrder: '0-first',
   };
 
   beforeEach(() => {
@@ -1088,6 +1301,42 @@ describe('saveToMmm', () => {
       expect(result).to.be.false;
     } finally {
       window.history.pushState({}, '', originalPath);
+    }
+  });
+
+  it('captures page diagnostics outside page fields for compatibility with older backends', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, json: async () => ({ result: 'ok' }) });
+    const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
+    const regional = createTag('div', { 'data-mep-lingo-roc': '' });
+    const fallback = createTag('div', { 'data-mep-lingo-fallback': '' });
+    const collection = createTag('div', { 'data-mas-block': 'collection' });
+    const service = createTag('mas-commerce-service', { country: 'FR' });
+    const regionalBefore = document.querySelectorAll('[data-mep-lingo-roc]').length;
+    const fallbackBefore = document.querySelectorAll('[data-mep-lingo-fallback]').length;
+    const collectionsBefore = document.querySelectorAll('[data-mas-block="collection"]').length;
+    document.head.append(foundation, service);
+    document.body.append(regional, fallback, collection);
+    try {
+      await saveToMmm();
+      const body = JSON.parse(fetchStub.firstCall.args[1].body);
+      expect(body.page).to.not.have.property('pageSummary');
+      expect(body.pageSummary).to.have.all.keys('version', 'capturedAt', 'foundation', 'lingo', 'mas');
+      expect(body.pageSummary.version).to.equal(1);
+      expect(body.pageSummary.foundation).to.equal('C2');
+      expect(Number.isFinite(Date.parse(body.pageSummary.capturedAt))).to.be.true;
+      expect(body.pageSummary.lingo.regional).to.equal(regionalBefore + 1);
+      expect(body.pageSummary.lingo.total).to.equal(regionalBefore + fallbackBefore + 2);
+      expect(body.pageSummary.lingo).to.not.have.property('countryCookie');
+      expect(body.pageSummary.mas.find(([label]) => label === 'Page Market')[1]).to.equal('US');
+      expect(body.pageSummary.mas.find(([label]) => label === 'Market Source')[1]).to.equal('page locale');
+      const surfaces = body.pageSummary.mas.find(([label]) => label === 'Surfaces')[1];
+      expect(surfaces.find(([label]) => label === 'Collections')[1]).to.equal(collectionsBefore + 1);
+    } finally {
+      foundation.remove();
+      service.remove();
+      regional.remove();
+      fallback.remove();
+      collection.remove();
     }
   });
 
@@ -1127,6 +1376,10 @@ describe('saveToMmm', () => {
     expect(body.activities[0].variantNames).to.equal('default||target-smb');
     expect(body.activities[0].source).to.equal('target');
     expect(body.activities[0]).to.not.have.property('selectedVariantName');
+    [
+      'disabledPromo', 'countryEnabled', 'consentEnabled', 'consentNotSpecified',
+      'manifestType', 'manifestOverrideName', 'executionOrder',
+    ].forEach((key) => expect(body.activities[0]).to.not.have.property(key));
     expect(body.activities[1].url).to.equal('not-a-valid-url');
     expect(body.page).to.not.have.property('highlight');
     expect(result).to.deep.equal({ result: 'ok' });
@@ -1213,7 +1466,7 @@ describe('getMepPopup', () => {
 
     const sections = popup.querySelectorAll('.mep-section-data');
     expect([...sections].some((data) => data.textContent.includes('Allowed User Countries')), 'country restriction row rendered').to.be.true;
-    expect([...sections].some((data) => data.textContent.includes('inactive')), 'disabled activity shows inactive').to.be.true;
+    expect(popup.querySelector('.mep-manifest-state.inactive').textContent, 'disabled activity shows inactive').to.equal('Inactive');
     const defaultSelectedOptions = popup.querySelectorAll('option[value="not-in-list"]');
     // selectedVariantName not in variantNames -> falls back to default
     expect(defaultSelectedOptions.length).to.equal(0);
@@ -1225,6 +1478,230 @@ describe('getMepPopup', () => {
   const basePage = {
     url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
   };
+
+  const activityValues = (popup) => {
+    const values = [...popup.querySelector('.mep-manifest-info .mep-section-data').children];
+    return Object.fromEntries(values.filter((_, index) => index % 2 === 0)
+      .map((label, index) => [label.textContent, values[index * 2 + 1].textContent.trim()]));
+  };
+
+  [0, 5].forEach((pageId) => {
+    it(`preserves normalized entries and preview selections in DOM-rendered page ${pageId}`, async () => {
+      const variant = 'test"<b>variant</b>';
+      const activity = {
+        url: '/mep/original.json',
+        manifestUrl: '/mep/edited.json',
+        variantNames: `default||${variant}`,
+        selectedVariantName: variant,
+        source: ['target', 'promo'],
+        manifestConsentType: '<b>consent</b>',
+        manifestCountryRestriction: '',
+      };
+      const mepConfig = { page: { ...basePage, pageId }, activities: [activity] };
+      const { manifests: [entry] } = getManifestList(mepConfig, []);
+      const popup = await renderPopup(mepConfig);
+      const select = popup.querySelector('.mep-experience-dropdown select');
+      expect(select.options.length).to.equal(entry.options.length);
+      [...select.options].forEach((option, index) => {
+        const expected = entry.options[index];
+        expect(option.textContent).to.equal(expected.label);
+        expect(option.value).to.equal(expected.value);
+        expect(option.getAttribute('name')).to.equal(expected.name);
+        expect(option.title).to.equal(expected.title);
+        expect(option.getAttribute('id')).to.equal(expected.id ?? null);
+        expect(option.dataset.manifest).to.equal(expected.dataManifest);
+      });
+      expect(select.value).to.equal(variant);
+      expect(activityValues(popup)).to.include({
+        Source: 'target, promo',
+        'Consent req': activity.manifestConsentType,
+        'Allowed User Countries': 'No restriction',
+        'Manifest URL': activity.manifestUrl,
+      });
+      expect(popup.querySelector('b')).to.be.null;
+      const preview = popup.querySelector('a[data-id="preview-button"]');
+      expect(new URL(preview.href).searchParams.get('mep'))
+        .to.equal(`/mep/edited.json--${variant}`);
+      select.value = 'default';
+      select.dispatchEvent(new Event('change'));
+      expect(new URL(preview.href).searchParams.get('mep')).to.equal('/mep/edited.json--default');
+      select.value = '';
+      select.dispatchEvent(new Event('change'));
+      expect(new URL(preview.href).searchParams.get('mep')).to.equal('');
+    });
+  });
+
+  it('displays all API activity fields including consent, countries and an open-ended schedule', async () => {
+    const activity = {
+      manifestId: 1870,
+      url: '/homepage/manifests/separate-kr.json',
+      pathname: '/homepage/manifests/separate-kr.json',
+      variantNames: 'all||test',
+      source: 'promo',
+      analyticsTitle: 'Korean Promo',
+      targetActivityName: 'Promo Activity',
+      manifestConsentType: 'promo or no offer changes',
+      manifestCountryRestriction: 'kr',
+      eventStart: '2026-09-15T05:00:00.000Z',
+      eventEnd: '0000-00-00 00:00:00',
+      lastSeen: '2026-10-05T20:52:57.000Z',
+    };
+    const popup = await renderPopup({ page: { ...basePage, pageId: 5 }, activities: [activity] });
+    expect(activityValues(popup)).to.include({
+      Source: activity.source,
+      'Consent req': activity.manifestConsentType,
+      'Allowed User Countries': 'KR',
+      'Last Seen': formatDate(activity.lastSeen),
+      Off: 'Not scheduled',
+      Variants: 'all, test',
+      'Analytics Title': activity.analyticsTitle,
+      'Manifest ID': '1870',
+      'Manifest URL': activity.url,
+      'Manifest Path': activity.pathname,
+    });
+    expect(activityValues(popup).On).to.include(formatDate(activity.eventStart));
+    expect(popup.querySelector('.target-activity-name').textContent)
+      .to.equal(activity.targetActivityName);
+    const instant = popup.querySelector('a[href*="instant"]');
+    expect(new URL(instant.href).searchParams.get('instant')).to.equal(activity.eventStart);
+    expect(popup.textContent).to.not.include('Invalid Date');
+    expect(popup.textContent).to.not.include('undefined');
+  });
+
+  it('keeps manifest order numbers outside the filename links', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity(), buildActivity({ url: '/second.json' })],
+    });
+    expect([...popup.querySelectorAll('.mep-manifest-index')].map((number) => number.textContent))
+      .to.deep.equal(['1.', '2.']);
+    popup.querySelectorAll('.mep-manifest-index').forEach((number) => {
+      expect(number.closest('a')).to.be.null;
+    });
+    expect([...popup.querySelectorAll('.mep-edit-manifest')].map((link) => link.textContent.trim()))
+      .to.deep.equal(['a.json', 'second.json']);
+  });
+
+  it('distinguishes missing consent/countries from explicitly unrestricted countries', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ consentType: undefined, countryRestriction: undefined })],
+    });
+    expect(activityValues(popup)).to.include({
+      'Consent req': 'Not specified',
+      'Allowed User Countries': 'Not specified',
+    });
+    const unrestricted = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ manifestCountryRestriction: '' })],
+    });
+    expect(activityValues(unrestricted)['Allowed User Countries']).to.equal('No restriction');
+  });
+
+  it('shows end-only and invalid schedules without invalid Instant links', async () => {
+    const endOnly = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({
+        eventStart: '0000-00-00 00:00:00',
+        eventEnd: '2026-11-13T14:55:00.000Z',
+      })],
+    });
+    expect(activityValues(endOnly).On).to.equal('Not scheduled');
+    expect(activityValues(endOnly).Off).to.equal(formatDate('2026-11-13T14:55:00.000Z'));
+    expect(endOnly.querySelector('a[href*="instant"]')).to.be.null;
+    const invalid = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ eventStart: 'invalid', eventEnd: '0000-00-00 00:00:00' })],
+    });
+    expect(activityValues(invalid).On).to.equal('Invalid date');
+    expect(invalid.querySelector('a[href*="instant"]')).to.be.null;
+  });
+
+  [
+    { name: 'future', now: '2026-01-01', state: 'inactive', progress: 0 },
+    { name: 'at start', now: '2026-01-02', state: 'active', progress: 0 },
+    { name: 'active', now: '2026-01-03', state: 'active', progress: 50 },
+    { name: 'at end', now: '2026-01-04', state: 'active', progress: 100 },
+    { name: 'completed', now: '2026-01-05', state: 'complete', progress: 100 },
+    { name: 'disabled', now: '2026-01-03', state: 'inactive', progress: 50, disabled: true },
+    { name: 'recorded without disabled state', now: '2026-01-03', state: 'active', progress: 50, disabled: undefined },
+  ].forEach((testCase) => {
+    it(`uses the MEP status and timeline for a ${testCase.name} manager schedule`, async () => {
+      const now = sinon.stub(Date, 'now').returns(Date.parse(`${testCase.now}T00:00:00Z`));
+      const eventStart = '2026-01-02T00:00:00.000Z';
+      const eventEnd = '2026-01-04T00:00:00.000Z';
+      try {
+        const popup = await renderPopup({
+          page: { ...basePage },
+          activities: [buildActivity({
+            eventStart,
+            eventEnd,
+            disabled: 'disabled' in testCase ? testCase.disabled : false,
+          })],
+        });
+        const schedule = popup.querySelector('.mep-manifest-summary');
+        expect(schedule.parentElement).to.equal(popup.querySelector('.mep-manifest-info'));
+        const state = schedule.querySelector('.mep-manifest-state');
+        expect(state.classList.contains(testCase.state)).to.be.true;
+        expect(state.textContent.toLowerCase()).to.equal(testCase.state);
+        const timeline = schedule.querySelector('.mep-manifest-timeline');
+        expect(timeline.classList.contains(testCase.state)).to.be.true;
+        expect(timeline.style.getPropertyValue('--mep-manifest-progress')).to.equal(`${testCase.progress}%`);
+        const track = timeline.querySelector('[role="progressbar"]');
+        expect(track.getAttribute('aria-valuenow')).to.equal(`${testCase.progress}`);
+        expect(track.getAttribute('aria-label')).to.equal('Schedule progress');
+        const endpoints = [...timeline.querySelectorAll('.mep-manifest-endpoint')];
+        expect(endpoints).to.have.length(2);
+        [eventStart, eventEnd].forEach((date, index) => {
+          expect(endpoints[index].querySelector('.mep-manifest-date').textContent)
+            .to.equal(new Date(date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }));
+          expect(endpoints[index].querySelector('.mep-manifest-time').textContent)
+            .to.equal(new Date(date).toLocaleTimeString(undefined, { timeStyle: 'short' }));
+        });
+        const instant = schedule.querySelector('.mep-manifest-status-row a');
+        expect(new URL(instant.href).searchParams.get('instant')).to.equal(eventStart);
+        expect(instant.getAttribute('rel')).to.equal('noopener');
+        expect(activityValues(popup)).to.not.have.any.keys('Active?', 'On', 'Off');
+      } finally {
+        now.restore();
+      }
+    });
+  });
+
+  it('does not invent a status or timeline for an unscheduled manager manifest', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity()],
+    });
+    expect(popup.querySelector('.mep-manifest-summary')).to.be.null;
+    expect(popup.querySelector('[role="progressbar"]')).to.be.null;
+  });
+
+  it('escapes API metadata aliases and the newly visible activity fields', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [{
+        url: '/test.json',
+        manifestId: XSS,
+        pathname: XSS,
+        variantNames: XSS,
+        analyticsTitle: XSS,
+        manifestConsentType: XSS,
+        manifestCountryRestriction: XSS,
+      }],
+    });
+    expect(popup.querySelector('img')).to.be.null;
+    expect(activityValues(popup)).to.include({
+      'Consent req': XSS,
+      'Allowed User Countries': XSS.toUpperCase(),
+      'Manifest ID': XSS,
+      'Manifest Path': XSS,
+      'Analytics Title': XSS,
+      Variants: XSS,
+    });
+  });
 
   it('escapes a malicious variant name in both option text and attributes', async () => {
     config.marketsConfig = { languages: { data: [] } };
@@ -1265,7 +1742,7 @@ describe('getMepPopup', () => {
     const summary = popup.querySelector('.mep-summary-body').textContent;
     expect(summary).to.include(XSS);
     expect(summary).to.include(XSS.toLowerCase());
-    expect(summary, 'foundation metadata rendered as text').to.include(XSS.toUpperCase());
+    expect(summary, 'manager foundation metadata is not used').to.not.include(XSS.toUpperCase());
     const regionOption = popup.querySelector('select[id^="mepLingoRegionSelect"] option:not([value=""])');
     expect(regionOption.textContent).to.equal(`x${XSS}_de`);
   });
@@ -1337,6 +1814,151 @@ describe('getMepPopup', () => {
     );
   }
 
+  function summaryValues(popup, title) {
+    popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+    const section = [...popup.querySelectorAll('.mep-section')].find(
+      (item) => item.querySelector('.mep-section-header')?.textContent === title,
+    );
+    const values = [...section.querySelector('.mep-section-data').children];
+    return Object.fromEntries(values.filter((_, index) => index % 2 === 0)
+      .map((label, index) => [label.textContent, values[index * 2 + 1].textContent]));
+  }
+
+  it('shows only recorded summary fields with one note instead of placeholder rows', async () => {
+    const foundation = createTag('meta', { name: 'foundation', content: 'c2' });
+    const theme = createTag('meta', { name: 'theme', content: 'dark' });
+    const lingo = createTag('div', { 'data-mep-lingo-roc': '' });
+    document.head.append(foundation, theme);
+    document.body.append(lingo);
+    try {
+      const popup = await renderPopup({
+        page: { ...basePage, personalization: 'off', locale: 'fr-FR', geo: 'fr' },
+        activities: [buildActivity()],
+      });
+      expect(summaryValues(popup, 'Page')).to.deep.equal({
+        'Manifests Found': '1',
+        'Target Integration': 'on',
+        'Personalization Metadata': 'off',
+        Locale: 'fr-fr',
+      });
+      expect(summaryValues(popup, 'Lingo')).to.deep.equal({ 'Geo Folder': 'fr' });
+      const summary = popup.querySelector('.mep-summary-body');
+      expect(summary.textContent).to.include('Additional page diagnostics have not been captured yet.');
+      expect(summary.textContent).to.not.include('Not recorded');
+      expect(summary.querySelectorAll('p')).to.have.length(1);
+    } finally {
+      foundation.remove();
+      theme.remove();
+      lingo.remove();
+    }
+  });
+
+  it('separates recorded manifest requirements from unrecorded visitor consent', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [
+        buildActivity({ consentType: undefined, manifestConsentType: 'personalized offer' }),
+        buildActivity({ consentType: 'non-personalized offer test' }),
+        buildActivity({ consentType: undefined, manifestConsentType: 'personalized offer' }),
+        buildActivity({ consentType: '' }),
+      ],
+    });
+    expect(summaryValues(popup, 'Consent')).to.deep.equal({ 'Manifest Consent Types': 'personalized offer, non-personalized offer test' });
+  });
+
+  it('restores Foundation, Lingo and M@S from the inspected page snapshot', async () => {
+    const pageSummary = {
+      version: 1,
+      capturedAt: '2026-11-11T18:00:00.000Z',
+      foundation: 'C2',
+      lingo: { regional: 1, total: 3, langFirst: 'on', geoFolder: 'fr' },
+      mas: [
+        ['Mas Geo Detection', 'on'],
+        ['Geo Source', 'Metadata'],
+        ['Page Market', 'FR'],
+        ['Market Source', 'page locale'],
+        ['Surfaces', [
+          ['Detected', 5],
+          ['Collections', 1, true],
+          ['Sub-collections', 3, true],
+          ['Cards', 2, true],
+          ['Inline Fields', 1, true],
+          ['Standalone Offers', 1, true],
+        ]],
+      ],
+    };
+    const popup = await renderPopup({
+      page: { ...basePage, pageSummary },
+      activities: [buildActivity()],
+    });
+    expect(summaryValues(popup, 'Page').Foundation).to.equal('C2');
+    expect(summaryValues(popup, 'Lingo')).to.deep.equal({
+      Total: '1 of 3',
+      'Lang First / Lingo': 'on',
+      'Geo Folder': 'fr',
+    });
+    expect(summaryValues(popup, 'M@S')).to.deep.equal({
+      'Mas Geo Detection': 'on',
+      'Geo Source': 'Metadata',
+      'Page Market': 'FR',
+      'Market Source': 'page locale',
+      'Surfaces Detected': '5',
+      Collections: '1',
+      'Sub-collections': '3',
+      Cards: '2',
+      'Inline Fields': '1',
+      'Standalone Offers': '1',
+    });
+    expect(popup.querySelector('.mep-summary-body p').textContent)
+      .to.equal(`Page diagnostics captured ${formatDate(pageSummary.capturedAt)}.`);
+    pageSummary.lingo.total = 0;
+    pageSummary.lingo.regional = 0;
+    pageSummary.lingo.langFirst = 'off';
+    pageSummary.mas[0][1] = 'off';
+    pageSummary.mas[4][1].forEach((row) => { row[1] = 0; });
+    const zeroPopup = await renderPopup({
+      page: { ...basePage, pageSummary },
+      activities: [],
+    });
+    expect(summaryValues(zeroPopup, 'Lingo')).to.include({ Total: '0 of 0', 'Lang First / Lingo': 'off' });
+    expect(summaryValues(zeroPopup, 'M@S')).to.include({ 'Mas Geo Detection': 'off', Cards: '0' });
+    pageSummary.foundation = XSS;
+    pageSummary.lingo.geoFolder = XSS;
+    pageSummary.mas[2][1] = XSS;
+    const textPopup = await renderPopup({
+      page: { ...basePage, pageSummary },
+      activities: [],
+    });
+    expect(summaryValues(textPopup, 'Page').Foundation).to.equal(XSS);
+    expect(summaryValues(textPopup, 'M@S')['Page Market']).to.equal(XSS);
+    expect(textPopup.querySelector('img')).to.not.exist;
+  });
+
+  it('renders recorded consent types as text, not markup', async () => {
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ consentType: XSS })],
+    });
+    expect(summaryValues(popup, 'Consent')['Manifest Consent Types']).to.equal(XSS);
+    expect(popup.querySelector('img')).to.be.null;
+  });
+
+  it('omits empty summary sections rather than inventing defaults or showing placeholders', async () => {
+    const popup = await renderPopup({ page: { url: basePage.url } });
+    const summary = popup.querySelector('.mep-summary-body');
+    expect(summary.querySelector('.mep-section')).to.not.exist;
+    expect(summary.textContent).to.not.include('Not recorded');
+  });
+
+  it('preserves recorded off and zero values without adding unrecorded diagnostics', async () => {
+    const popup = await renderPopup({ page: { ...basePage, target: 'off' }, activities: [] });
+    expect(summaryValues(popup, 'Page')).to.include({
+      'Manifests Found': '0',
+      'Target Integration': 'off',
+    });
+    expect(summaryValues(popup, 'Page')).to.not.have.property('Load Target Faster (v2)');
+  });
+
   it('setTargetOnText: falls back to page.target when target is undefined, and formats postlcp', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
@@ -1395,7 +2017,8 @@ describe('getMepPopup', () => {
     });
 
     popup.querySelector('#mepFragmentsCheckbox-502').click();
-    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepFragments=true');
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('otherHighlight=true');
+    expect(document.body.dataset.otherHighlight).to.equal('true');
 
     popup.querySelector('#mepCaasHighlightCheckbox-502').click();
     expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepCaasHighlight=true');
@@ -1409,7 +2032,7 @@ describe('getMepPopup', () => {
     expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('variant-b');
   });
 
-  it('renders highlight checkboxes pre-checked from page/URL params, and reports geo-detection + sub-collections in the M@S summary', async () => {
+  it('renders highlight checkboxes without attributing the manager host M@S data to the inspected page', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     window.history.pushState({}, '', `${window.location.pathname}?mepCaasHighlight=true&mepMasHighlight=true&mas-geo-detection=on`);
@@ -1434,12 +2057,10 @@ describe('getMepPopup', () => {
     const masSection = [...popup.querySelectorAll('.mep-section')].find(
       (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
     );
-    expect(masSection.textContent).to.include('Mas Geo Detection');
-    expect(masSection.textContent).to.include('on');
-    expect(masSection.textContent).to.include('Collections');
+    expect(masSection).to.not.exist;
   });
 
-  it('reports geo-detection source from URL param when detection is off', async () => {
+  it('does not use the manager host URL parameter as the inspected page geo source', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     window.history.pushState({}, '', `${window.location.pathname}?mas-geo-detection=off`);
@@ -1456,11 +2077,10 @@ describe('getMepPopup', () => {
     const masSection = [...popup.querySelectorAll('.mep-section')].find(
       (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
     );
-    expect(masSection.textContent).to.include('Geo Source');
-    expect(masSection.textContent).to.include('URL param (off)');
+    expect(masSection).to.not.exist;
   });
 
-  it('reports geo-detection source from metadata when on, and from metadata when off with no URL param', async () => {
+  it('does not use the manager host metadata as the inspected page geo source', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     const meta = document.createElement('meta');
@@ -1479,7 +2099,7 @@ describe('getMepPopup', () => {
       let masSection = [...popupOn.querySelectorAll('.mep-section')].find(
         (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
       );
-      expect(masSection.textContent).to.include('Metadata');
+      expect(masSection).to.not.exist;
 
       meta.setAttribute('content', 'off');
       const popupOff = await renderPopup({
@@ -1492,13 +2112,13 @@ describe('getMepPopup', () => {
       masSection = [...popupOff.querySelectorAll('.mep-section')].find(
         (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
       );
-      expect(masSection.textContent).to.include('Metadata (off)');
+      expect(masSection).to.not.exist;
     } finally {
       meta.remove();
     }
   });
 
-  it('reports the page market from <mas-commerce-service country> when present', async () => {
+  it('does not use the manager host commerce service as the inspected page market', async () => {
     config.marketsConfig = { languages: { data: [] } };
     setConfig(config);
     const svc = document.createElement('mas-commerce-service');
@@ -1516,9 +2136,7 @@ describe('getMepPopup', () => {
       const masSection = [...popup.querySelectorAll('.mep-section')].find(
         (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
       );
-      expect(masSection.textContent).to.include('Page Market');
-      expect(masSection.textContent).to.include('CA');
-      expect(masSection.textContent).to.include('mas-commerce-service');
+      expect(masSection).to.not.exist;
     } finally {
       svc.remove();
     }

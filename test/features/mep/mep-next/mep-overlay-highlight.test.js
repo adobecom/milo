@@ -20,6 +20,7 @@ const {
   HIGHLIGHT_KEYS,
   TOGGLE_KEYS,
   toggleHighlight,
+  setHighlight,
   getParameters,
   setBadgeEventListeners,
   getPageUpdates,
@@ -115,6 +116,29 @@ describe('getParameters', () => {
     const params = getParameters();
     expect(params.mepAkamaiLocale).to.equal('fr');
     expect(params.mepHighlight).to.equal('true');
+  });
+
+  it('accepts legacy MMM fragment links but prefers the new parameter', () => {
+    window.history.replaceState({}, '', '/?mepFragments=true');
+    expect(getParameters().mepOtherHighlight).to.equal('true');
+    window.history.replaceState({}, '', '/?mepFragments=true&otherHighlight=false');
+    expect(getParameters().mepOtherHighlight).to.equal('false');
+  });
+});
+
+describe('shared highlight toggles', () => {
+  afterEach(() => {
+    setHighlight(HIGHLIGHT_KEYS.mep, false);
+    setHighlight(HIGHLIGHT_KEYS.other, false);
+  });
+
+  it('allows MMM and the overlay to use the same highlight handler', () => {
+    setHighlight(HIGHLIGHT_KEYS.mep, true);
+    expect(document.body.dataset.mepHighlight).to.equal('true');
+    toggleHighlight({ target: { id: TOGGLE_KEYS.mep, checked: false } });
+    expect(document.body.dataset.mepHighlight).to.equal('false');
+    setHighlight(HIGHLIGHT_KEYS.other, true);
+    expect(document.body.dataset.otherHighlight).to.equal('true');
   });
 });
 
