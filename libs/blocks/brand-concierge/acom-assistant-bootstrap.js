@@ -21,9 +21,8 @@ function extractCardPrompts(cards) {
   return prompts.length ? prompts : undefined;
 }
 
-/** Kicks off the (idempotent) client load/init without sending a message -- used by
- *  the GNav mount, which needs the client initialized as soon as it renders, before
- *  any user input exists. */
+/** Starts the idempotent client load/init for GNav, inline and floating entry
+ *  points before user input, without opening chat or sending a message. */
 export async function ensureAcomAssistant(cards) {
   const { appid, appver } = getAcomAssistantIdentity();
   const gnavFabState = getAcomAssistantGnavFabState();
